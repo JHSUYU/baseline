@@ -387,10 +387,16 @@ public final class TrialGraph {
     }
 
     private ClosureResult closureResult(String targetSite) {
+        if (targetSite == null || targetSite.isEmpty()) {
+            return closureResult(Collections.<String>emptySet());
+        }
+        return closureResult(Collections.singleton(targetSite));
+    }
+
+    private ClosureResult closureResult(Set<String> targetSites) {
         List<JsonObject> roots = new ArrayList<>();
         for (JsonObject target : targets) {
-            if (targetSite == null || targetSite.isEmpty()
-                    || targetSite.equals(value(target, "siteId"))) {
+            if (targetSites.isEmpty() || targetSites.contains(value(target, "siteId"))) {
                 roots.add(target);
             }
         }
@@ -453,28 +459,56 @@ public final class TrialGraph {
 
     public JsonObject feedback(String targetSite, TrialGraph before,
                                StaticScope staticScope) {
-        ClosureResult exact = closureResult(targetSite);
+        return feedback(Collections.singletonList(targetSite), before, staticScope);
+    }
+
+    public JsonObject feedback(List<String> targetSites, TrialGraph before,
+                               StaticScope staticScope) {
+        if (targetSites == null || targetSites.isEmpty()) {
+            throw new IllegalArgumentException("at least one target site is required");
+        }
+        Set<String> selected = new LinkedHashSet<>();
+        for (String site : targetSites) {
+            if (site == null || site.isEmpty() || !selected.add(site)) {
+                throw new IllegalArgumentException("target sites must be unique nonempty IDs");
+            }
+        }
+        String targetSite = targetSites.get(0);
+        ClosureResult exact = closureResult(selected);
         Set<String> closure = exact.nodes;
         int targetChecks = 0;
         int targetThrows = 0;
         Set<String> thrownClasses = new LinkedHashSet<>();
         Set<String> checkOutcomes = new LinkedHashSet<>();
+        Set<String> observedSites = new LinkedHashSet<>();
+        Map<String, Set<String>> outcomesBySite = new LinkedHashMap<>();
+        Map<String, Integer> checksBySite = new LinkedHashMap<>();
+        Map<String, Integer> throwsBySite = new LinkedHashMap<>();
+        for (String site : selected) {
+            outcomesBySite.put(site, new LinkedHashSet<String>());
+            checksBySite.put(site, 0);
+            throwsBySite.put(site, 0);
+        }
         for (JsonObject target : targets) {
-            if (targetSite != null && !targetSite.isEmpty()
-                    && !targetSite.equals(value(target, "siteId"))) continue;
+            String site = value(target, "siteId");
+            if (!selected.contains(site)) continue;
             if (value(target, "occurrenceId").isEmpty()) continue;
+            observedSites.add(site);
             if ("TARGET_CHECK".equals(value(target, "kind"))) {
                 targetChecks++;
                 checkOutcomes.add(value(target, "outcome"));
+                outcomesBySite.get(site).add(value(target, "outcome"));
+                checksBySite.put(site, checksBySite.get(site) + 1);
             } else if ("TARGET_THROW".equals(value(target, "kind"))) {
                 targetThrows++;
                 thrownClasses.add(value(target, "exceptionClass"));
+                throwsBySite.put(site, throwsBySite.get(site) + 1);
             }
         }
         Set<String> priorNodes = new HashSet<>();
         Set<String> priorEdges = new HashSet<>();
         if (before != null) {
-            ClosureResult prior = before.closureResult(targetSite);
+            ClosureResult prior = before.closureResult(selected);
             for (String id : prior.nodes) priorNodes.add(before.nodeFamily(id));
             for (String id : prior.edges) {
                 JsonObject edge = before.edges.get(id);
@@ -518,11 +552,29 @@ public final class TrialGraph {
         }
         StaticScope.Result may = null;
         Set<String> mayObservedDoors = new LinkedHashSet<>();
+        Map<String, Boolean> staticFoundBySite = new LinkedHashMap<>();
         if (staticScope != null) {
-            Set<String> closureRegions = new LinkedHashSet<>();
-            for (String id : closure) closureRegions.add(
-                    value(nodes.get(id), "regionId"));
-            may = staticScope.mayReach(targetSite, closureRegions);
+            Set<String> mayRegions = new LinkedHashSet<>();
+            Set<String> mayDoorSites = new LinkedHashSet<>();
+            List<JsonObject> mayRelations = new ArrayList<>();
+            Set<String> relationKeys = new LinkedHashSet<>();
+            boolean allFound = true;
+            for (String site : selected) {
+                Set<String> closureRegions = new LinkedHashSet<>();
+                for (String id : closureResult(site).nodes) {
+                    JsonObject node = nodes.get(id);
+                    if (node != null) closureRegions.add(value(node, "regionId"));
+                }
+                StaticScope.Result one = staticScope.mayReach(site, closureRegions);
+                staticFoundBySite.put(site, one.targetFound);
+                allFound &= one.targetFound;
+                mayRegions.addAll(one.regions);
+                mayDoorSites.addAll(one.doorSites);
+                for (JsonObject relation : one.relations) {
+                    if (relationKeys.add(relation.toString())) mayRelations.add(relation);
+                }
+            }
+            may = new StaticScope.Result(allFound, mayRegions, mayDoorSites, mayRelations);
             for (Map.Entry<String, Set<String>> entry : doors.entrySet()) {
                 if (!may.regions.contains(value(nodes.get(entry.getKey()), "regionId")))
                     continue;
@@ -533,7 +585,7 @@ public final class TrialGraph {
         }
         Set<String> previousCoverage = new HashSet<>();
         if (before != null) {
-            ClosureResult prior = before.closureResult(targetSite);
+            ClosureResult prior = before.closureResult(selected);
             for (Map.Entry<String, Long> entry : prior.cutoffs.entrySet()) {
                 for (CoverageEvent event : before.coverageRows.getOrDefault(entry.getKey(),
                         Collections.emptyList())) {
@@ -545,9 +597,38 @@ public final class TrialGraph {
         }
         int newCoverage = 0;
         for (String site : covered) if (!previousCoverage.contains(site)) newCoverage++;
+        Set<String> missingSites = new LinkedHashSet<>(selected);
+        missingSites.removeAll(observedSites);
+        JsonObject perTarget = new JsonObject();
+        for (String site : selected) {
+            ClosureResult oneClosure = closureResult(site);
+            JsonObject one = new JsonObject();
+            one.addProperty("targetReached", observedSites.contains(site));
+            one.addProperty("targetChecks", checksBySite.get(site));
+            one.addProperty("targetThrows", throwsBySite.get(site));
+            one.add("targetCheckOutcomes", new com.google.gson.Gson().toJsonTree(
+                    outcomesBySite.get(site)));
+            one.add("closureOccurrenceIds", new com.google.gson.Gson().toJsonTree(
+                    oneClosure.nodes));
+            one.add("closureOccurrenceCutoffs", new com.google.gson.Gson().toJsonTree(
+                    oneClosure.cutoffs));
+            one.add("closureEdgeIds", new com.google.gson.Gson().toJsonTree(
+                    oneClosure.edges));
+            if (staticScope != null) {
+                one.addProperty("staticScopeTargetFound", staticFoundBySite.get(site));
+            }
+            perTarget.add(site, one);
+        }
         JsonObject row = new JsonObject();
         row.addProperty("schemaVersion", 1);
         row.addProperty("targetSite", targetSite == null ? "" : targetSite);
+        row.add("configuredTargetSites", new com.google.gson.Gson().toJsonTree(selected));
+        row.add("observedTargetSites", new com.google.gson.Gson().toJsonTree(observedSites));
+        row.add("missingTargetSites", new com.google.gson.Gson().toJsonTree(missingSites));
+        row.addProperty("allTargetSitesReached", missingSites.isEmpty());
+        row.add("targetCheckOutcomesBySite", new com.google.gson.Gson().toJsonTree(
+                outcomesBySite));
+        row.add("perTargetClosures", perTarget);
         row.addProperty("targetReached", !closure.isEmpty());
         row.addProperty("targetChecks", targetChecks);
         row.addProperty("targetThrows", targetThrows);
@@ -587,6 +668,8 @@ public final class TrialGraph {
         row.add("closureDoorSiteIds", new com.google.gson.Gson().toJsonTree(closureDoors));
         if (may != null) {
             row.addProperty("staticScopeTargetFound", may.targetFound);
+            row.add("staticScopeTargetFoundBySite", new com.google.gson.Gson().toJsonTree(
+                    staticFoundBySite));
             row.add("staticMayRegionIds", new com.google.gson.Gson().toJsonTree(may.regions));
             row.add("staticMayDoorSiteIds", new com.google.gson.Gson().toJsonTree(may.doorSites));
             row.add("staticMayObservedDoorSiteIds", new com.google.gson.Gson().toJsonTree(mayObservedDoors));

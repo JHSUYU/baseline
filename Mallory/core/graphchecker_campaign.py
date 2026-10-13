@@ -416,8 +416,7 @@ def _manifest_target(manifest: dict[str, Any], target: dict[str, Any]) -> list[d
     if len(throw) != 1 or throw[0].get("exceptionClass") != target["exception_class"]:
         raise ValueError("exact target throw site/type is absent or ambiguous in weave manifest")
     selected = [throw[0]]
-    check = target.get("check_site_id")
-    if check:
+    for check in _configured_check_sites(target):
         rows = [row for row in targets if isinstance(row, dict)
                 and row.get("siteId") == check
                 and row.get("kind") in {"BRANCH", "SWITCH"}]
@@ -425,6 +424,22 @@ def _manifest_target(manifest: dict[str, Any], target: dict[str, Any]) -> list[d
             raise ValueError("exact target branch is absent or ambiguous in weave manifest")
         selected.extend(rows)
     return selected
+
+
+def _configured_check_sites(target: dict[str, Any]) -> list[str]:
+    sites = target.get("check_site_ids", target.get("all_check_site_ids"))
+    primary = target.get("check_site_id")
+    if sites is None:
+        return [primary] if primary else []
+    if (not isinstance(sites, list) or not sites or
+            any(not isinstance(site, str) or not site for site in sites) or
+            len(set(sites)) != len(sites)):
+        raise ValueError("target check_site_ids needs unique nonempty site IDs")
+    if primary is not None:
+        if primary not in sites:
+            raise ValueError("target check_site_id is absent from check_site_ids")
+        return [primary, *(site for site in sites if site != primary)]
+    return sites
 
 
 def load_config(path: Path) -> dict[str, Any]:
@@ -456,6 +471,7 @@ def load_config(path: Path) -> dict[str, Any]:
             not isinstance(target["check_site_id"], str) or
             not target["check_site_id"]):
         raise ValueError("check_site_id must be a nonempty string")
+    _configured_check_sites(target)
     timeout = raw.get("timeout_seconds", 600)
     if not isinstance(timeout, int) or isinstance(timeout, bool) or timeout <= 0:
         raise ValueError("timeout_seconds must be positive")
@@ -735,6 +751,9 @@ def validate_plan(plan: dict[str, Any],
         if not isinstance(fault.get("ordinal"), int) or isinstance(
                 fault["ordinal"], bool) or fault["ordinal"] <= 0:
             raise ValueError(f"fault {index} needs positive ordinal")
+        if "replayOccurrenceId" in fault and (not isinstance(
+                fault["replayOccurrenceId"], str) or not fault["replayOccurrenceId"]):
+            raise ValueError(f"fault {index} needs a nonempty replay occurrence ID")
         if door_types is not None and door_types.get(fault["siteId"]) != fault["exceptionClass"]:
             raise ValueError(f"fault {index} does not match a typed selected door")
     return faults
@@ -837,13 +856,31 @@ def _plan_identity(fault: dict[str, Any]) -> tuple[Any, ...]:
             fault["ordinal"])
 
 
+def _planned_fault_matches(fault: dict[str, Any], actual: dict[str, Any]) -> bool:
+    """Replay selector may differ from the exact occurrence in this trial.
+
+    The exact occurrence remains on the applied row for graph ancestry and
+    must also appear on a preceding FAULT_DOOR row in the same trial.
+    """
+    if fault.get("replayOccurrenceId"):
+        return (actual.get("siteId") == fault["siteId"] and
+                actual.get("node") == fault["node"] and
+                actual.get("replayOccurrenceId") == fault["replayOccurrenceId"] and
+                actual.get("doorOrdinal") == fault["ordinal"] and
+                bool(actual.get("occurrenceId")))
+    return _identity(actual) == _plan_identity(fault)
+
+
 def summarize_evidence(rows: list[dict[str, Any]], graph: dict[str, Any],
                        target: dict[str, Any], faults: list[dict[str, Any]],
                        door_types: dict[str, str] | None = None) -> dict[str, Any]:
     """Return strict runtime identity, exact target oracle, and door tiers."""
+    check_sites = _configured_check_sites(target)
     if graph.get("schemaVersion") != SCHEMA or graph.get("targetSite") != (
-            target.get("check_site_id") or target["throw_site_id"]):
+            check_sites[0] if check_sites else target["throw_site_id"]):
         raise ValueError("GraphChecker feedback does not match selected target")
+    if len(check_sites) > 1 and graph.get("configuredTargetSites") != check_sites:
+        raise ValueError("GraphChecker feedback omitted target guard configuration")
     closure = set(graph.get("closureOccurrenceIds", []))
     cutoffs = graph.get("closureOccurrenceCutoffs", {})
     if not isinstance(cutoffs, dict):
@@ -862,7 +899,9 @@ def summarize_evidence(rows: list[dict[str, Any]], graph: dict[str, Any],
     for fault, actual in zip(faults, applied):
         source = next((door for door in doors if _identity(door) == _identity(actual)
                        and door["seq"] < actual["seq"]), None)
-        if (_identity(actual) != _plan_identity(fault) or
+        if (not _planned_fault_matches(fault, actual) or
+                (fault.get("replayOccurrenceId") and source is not None and
+                 source.get("replayOccurrenceId") != actual.get("replayOccurrenceId")) or
                 actual.get("exceptionClass") != fault["exceptionClass"] or
                 actual["seq"] <= previous_seq or source is None):
             strict = False
@@ -872,10 +911,9 @@ def summarize_evidence(rows: list[dict[str, Any]], graph: dict[str, Any],
     if len(matched) != len(faults):
         strict = False
     last_fault_seq = applied[-1]["seq"] if strict and applied else None
-    check_site = target.get("check_site_id")
     checks = [row for row in rows if row["kind"] == "TARGET_CHECK"
-              and row.get("siteId") == check_site and row.get("occurrenceId")
-              and row.get("node")] if check_site else []
+              and row.get("siteId") in check_sites and row.get("occurrenceId")
+              and row.get("node")] if check_sites else []
     throws = [row for row in rows if row["kind"] == "TARGET_THROW"
               and row.get("siteId") == target["throw_site_id"]
               and row.get("exceptionClass") == target["exception_class"]
@@ -936,10 +974,14 @@ def summarize_evidence(rows: list[dict[str, Any]], graph: dict[str, Any],
             tier = "outside_closure"
         eligible.append({"siteId": door["siteId"], "node": door["node"],
                          "occurrenceId": door["occurrenceId"],
+                         **({"replayOccurrenceId": door["replayOccurrenceId"]}
+                            if door.get("replayOccurrenceId") else {}),
                          "ordinal": door["doorOrdinal"], "seq": door["seq"],
                          "tier": tier,
                          "exceptionClass": (door_types or {}).get(door["siteId"])})
     return {"strict_injection": strict, "applied_faults": len(applied),
+            "actual_fault_occurrence_ids": [row["occurrenceId"] for row in matched]
+            if strict else [],
             "planned_faults": len(faults), "last_fault_seq": last_fault_seq,
             "target_reached": target_reached,
             "post_fault_target_reached": post_fault_target,
@@ -957,6 +999,10 @@ def summarize_evidence(rows: list[dict[str, Any]], graph: dict[str, Any],
                                                         if row["occurrenceId"] in closure],
             "target_throw_seqs_after_check": [row["seq"] for row in check_preceded_throws],
             "target_check_outcomes": sorted({row.get("outcome", "") for row in checks}),
+            "configured_check_sites": check_sites,
+            "observed_check_sites": sorted({row["siteId"] for row in checks}),
+            "missing_check_sites_in_trial": sorted(set(check_sites) - {
+                row["siteId"] for row in checks}),
             "eligible_doors": eligible,
             "causal_closure_occurrences": sorted(closure),
             "causal_closure_cutoffs": cutoffs,
@@ -1090,7 +1136,9 @@ def run_trial(config: dict[str, Any], prepared: Path, trial: Path,
         "target_exception_candidate": False}
     try:
         rows, window_count = scan_window_trace(raw_trace, trace)
-        anchor = config["target"].get("check_site_id") or config["target"]["throw_site_id"]
+        check_sites = _configured_check_sites(config["target"])
+        anchor = check_sites if len(check_sites) > 1 else (
+            check_sites[0] if check_sites else config["target"]["throw_site_id"])
         graph = analyze_trial(scratch, anchor, prior_trace, config["graph_jar"],
                               config["static_scope_map"])
         evidence = summarize_evidence(rows, graph, config["target"], faults,

@@ -73,6 +73,10 @@ Each fault must match the exact observed GraphChecker door identity and is
 applied once in array order. `ordinal` is one based for the door within its
 occurrence. `FAULT_APPLIED` uses the same occurrence, node, site, and ordinal
 as `FAULT_DOOR`. The exception class must match the selected manifest door.
+If the seed door supplies `replayOccurrenceId`, a plan may include it and the
+controller matches that stable cross-trial selector instead of the seed's
+exact occurrence. The actual `FAULT_APPLIED` row still records the trial's
+exact occurrence and the replay ID; graph joins always use exact identity.
 The controller fails on a missing or malformed plan; an unattributed door
 cannot receive a fault.
 Selected constructor sites before the actual `this` or `super` initializer

@@ -149,6 +149,83 @@ public class TrialGraphTest {
                 .has("request-a"));
     }
 
+    @Test public void unionsBothObservedGuardsWithoutAbsorbingAnUnrelatedThrow()
+            throws Exception {
+        JsonObject first = row("kind", "TARGET_CHECK", "occurrenceId", "request-a",
+                "node", "server", "regionId", "region-a",
+                "siteId", "guard-a", "outcome", "TRUE", "seq", 4);
+        JsonObject second = row("kind", "TARGET_CHECK", "occurrenceId", "request-b",
+                "node", "server", "regionId", "region-b",
+                "siteId", "guard-b", "outcome", "FALSE", "seq", 8);
+        JsonObject unrelatedThrow = row("kind", "TARGET_THROW", "occurrenceId", "request-c",
+                "node", "server", "siteId", "fatal-throw",
+                "exceptionClass", "java.io.IOException", "seq", 10);
+        TrialGraph prior = graph(first);
+        TrialGraph trial = graph(first, second, unrelatedThrow);
+        JsonObject feedback = trial.feedback(Arrays.asList("guard-a", "guard-b"), prior, null);
+        assertEquals(2, feedback.get("closureNodes").getAsInt());
+        assertEquals(1, feedback.get("newClosureNodes").getAsInt());
+        assertTrue(feedback.get("allTargetSitesReached").getAsBoolean());
+        assertEquals(0, feedback.getAsJsonArray("missingTargetSites").size());
+        assertEquals("TRUE", feedback.getAsJsonObject("targetCheckOutcomesBySite")
+                .getAsJsonArray("guard-a").get(0).getAsString());
+        assertEquals("FALSE", feedback.getAsJsonObject("targetCheckOutcomesBySite")
+                .getAsJsonArray("guard-b").get(0).getAsString());
+        assertEquals(4, feedback.getAsJsonObject("perTargetClosures")
+                .getAsJsonObject("guard-a").getAsJsonObject("closureOccurrenceCutoffs")
+                .get("request-a").getAsInt());
+        assertEquals(8, feedback.getAsJsonObject("perTargetClosures")
+                .getAsJsonObject("guard-b").getAsJsonObject("closureOccurrenceCutoffs")
+                .get("request-b").getAsInt());
+        assertFalse(feedback.getAsJsonObject("closureOccurrenceCutoffs")
+                .has("request-c"));
+        assertEquals("request-c", feedback.getAsJsonArray("targetThrowClosures")
+                .get(0).getAsJsonObject().get("occurrenceId").getAsString());
+    }
+
+    @Test public void absentConfiguredGuardRemainsMissing() throws Exception {
+        TrialGraph trial = graph(row("kind", "TARGET_CHECK", "occurrenceId", "request-a",
+                "node", "server", "siteId", "guard-a", "outcome", "TRUE", "seq", 4));
+        JsonObject feedback = trial.feedback(Arrays.asList("guard-a", "guard-b"), null, null);
+        assertTrue(feedback.get("targetReached").getAsBoolean());
+        assertFalse(feedback.get("allTargetSitesReached").getAsBoolean());
+        assertEquals("guard-b", feedback.getAsJsonArray("missingTargetSites")
+                .get(0).getAsString());
+        assertEquals(0, feedback.getAsJsonObject("perTargetClosures")
+                .getAsJsonObject("guard-b").getAsJsonObject("closureOccurrenceCutoffs").size());
+    }
+
+    @Test public void sharedOccurrenceKeepsSeparateGuardCutoffs() throws Exception {
+        TrialGraph trial = graph(
+                row("kind", "TARGET_CHECK", "occurrenceId", "request",
+                        "siteId", "guard-a", "outcome", "FALSE", "seq", 4),
+                row("kind", "FAULT_DOOR", "occurrenceId", "request",
+                        "siteId", "between-guards", "seq", 6),
+                row("kind", "TARGET_CHECK", "occurrenceId", "request",
+                        "siteId", "guard-b", "outcome", "TRUE", "seq", 8));
+        JsonObject feedback = trial.feedback(Arrays.asList("guard-a", "guard-b"), null, null);
+        assertEquals(8, feedback.getAsJsonObject("closureOccurrenceCutoffs")
+                .get("request").getAsInt());
+        assertEquals(4, feedback.getAsJsonObject("perTargetClosures")
+                .getAsJsonObject("guard-a").getAsJsonObject("closureOccurrenceCutoffs")
+                .get("request").getAsInt());
+        assertEquals(8, feedback.getAsJsonObject("perTargetClosures")
+                .getAsJsonObject("guard-b").getAsJsonObject("closureOccurrenceCutoffs")
+                .get("request").getAsInt());
+        assertEquals("between-guards", feedback.getAsJsonArray("closureDoorSiteIds")
+                .get(0).getAsString());
+    }
+
+    @Test public void commandTargetArrayParserRejectsAmbiguousValues() {
+        assertEquals(Arrays.asList("guard-a", "guard-b"),
+                TrialGraphMain.targetSites("[\"guard-a\",\"guard-b\"]"));
+        assertEquals(Arrays.asList("guard-a"), TrialGraphMain.targetSites("guard-a"));
+        try {
+            TrialGraphMain.targetSites("[\"guard-a\",1]");
+            org.junit.Assert.fail("numeric site ID must be rejected");
+        } catch (IllegalArgumentException expected) { }
+    }
+
     @Test public void completedSameThreadRootScopesHaveProgramOrder() throws Exception {
         JsonObject first = row("kind", "SCOPE_ENTER", "occurrenceId", "root-a",
                 "regionId", "ROLE.SERVER", "node", "peer#epoch1", "threadKey", "88",

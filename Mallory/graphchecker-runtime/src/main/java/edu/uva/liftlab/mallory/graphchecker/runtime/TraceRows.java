@@ -3,6 +3,7 @@ package edu.uva.liftlab.mallory.graphchecker.runtime;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import edu.uva.liftlab.mallory.graphchecker.contract.CausalContext;
+import edu.uva.liftlab.mallory.graphchecker.contract.Digest;
 import edu.uva.liftlab.mallory.graphchecker.contract.ExecutionIndex;
 import edu.uva.liftlab.mallory.graphchecker.contract.Frame;
 import edu.uva.liftlab.mallory.graphchecker.contract.NodeId;
@@ -128,6 +129,7 @@ final class TraceRows {
         Context context = CURRENT.get();
         long token = ++context.nextToken;
         Saved saved = new Saved(token, context.source, context.cause,
+                context.replayCause,
                 new ArrayList<>(context.frames), new ArrayDeque<>(context.regions),
                 new ArrayDeque<>(context.calls), copyFrameCounts(context.frameCounts),
                 new ArrayDeque<>(context.regionSources),
@@ -143,6 +145,7 @@ final class TraceRows {
             int ordinal = ROOT_COUNTS.computeIfAbsent(key,
                     ignored -> new AtomicInteger()).incrementAndGet();
             context.cause = CausalContext.of(role, family, ordinal);
+            context.replayCause = context.cause.render();
             context.resetFrames();
             context.regions.clear();
             context.regionSources.clear();
@@ -168,6 +171,7 @@ final class TraceRows {
                 fields("token", token, "newRoot", saved.enteredRoot));
         context.source = saved.source;
         context.cause = saved.cause;
+        context.replayCause = saved.replayCause;
         context.restoreFrames(saved.frames, saved.frameCounts);
         context.regions.clear();
         context.regions.addAll(saved.regions);
@@ -361,6 +365,17 @@ final class TraceRows {
                 cause, ExecutionIndex.empty());
     }
 
+    /** A replay selector separate from the exact GraphChecker occurrence. */
+    static String replayOccurrenceId(OccurrenceAddress occurrence) {
+        Context context = CURRENT.get();
+        if (occurrence == null || context.cause == null
+                || context.replayCause == null || context.replayCause.isEmpty()
+                || !context.cause.equals(occurrence.context())) return "";
+        return Digest.digest("replay-occurrence-v1\n" + occurrence.node().render()
+                + "\n" + occurrence.regionId() + "\n" + context.replayCause
+                + "\n" + occurrence.index().render(), 32);
+    }
+
     static boolean hasAttributedScope(Object owner) {
         Context context = CURRENT.get();
         return context.cause != null &&
@@ -520,6 +535,7 @@ final class TraceRows {
     static final class Context {
         SourceRef source;
         CausalContext cause;
+        String replayCause;
         final List<Frame> frames = new ArrayList<>();
         final Deque<OccurrenceAddress> regions = new ArrayDeque<>();
         final Deque<RegionSource> regionSources = new ArrayDeque<>();
@@ -562,6 +578,7 @@ final class TraceRows {
             Context result = new Context();
             result.source = source;
             result.cause = cause;
+            result.replayCause = replayCause;
             result.restoreFrames(frames, frameCounts);
             result.regions.addAll(regions);
             result.regionSources.addAll(regionSources);
@@ -579,6 +596,7 @@ final class TraceRows {
         boolean enteredRoot;
         final SourceRef source;
         final CausalContext cause;
+        final String replayCause;
         final List<Frame> frames;
         final Deque<OccurrenceAddress> regions;
         final Deque<RegionSource> regionSources;
@@ -587,12 +605,14 @@ final class TraceRows {
         final List<Map<String, Integer>> frameCounts;
 
         Saved(long token, SourceRef source, CausalContext cause,
+              String replayCause,
               List<Frame> frames, Deque<OccurrenceAddress> regions,
               Deque<CallEntry> calls, List<Map<String, Integer>> frameCounts,
               Deque<RegionSource> regionSources, Deque<Activation> activations) {
             this.token = token;
             this.source = source;
             this.cause = cause;
+            this.replayCause = replayCause;
             this.frames = frames;
             this.regions = regions;
             this.regionSources = regionSources;
@@ -602,7 +622,8 @@ final class TraceRows {
         }
 
         Saved copy() {
-            Saved result = new Saved(token, source, cause, new ArrayList<>(frames),
+            Saved result = new Saved(token, source, cause, replayCause,
+                    new ArrayList<>(frames),
                     new ArrayDeque<>(regions), new ArrayDeque<>(calls),
                     copyFrameCounts(frameCounts), new ArrayDeque<>(regionSources),
                     new ArrayDeque<>(activations));

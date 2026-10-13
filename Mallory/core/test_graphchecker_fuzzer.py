@@ -10,6 +10,7 @@ from unittest.mock import patch
 
 from Mallory.core.graphchecker_campaign import _archive_jsonl
 from Mallory.core.graphchecker_fuzzer import (_accept_result, _enqueue, _finish,
+                                             _plan_key,
                                              _new_state, _pick, _resume_active,
                                              run_campaign)
 
@@ -59,6 +60,36 @@ class GraphCheckerFuzzerTest(unittest.TestCase):
         self.assertEqual(1, _enqueue(state, self.result([first], doors), [first]))
         self.assertEqual(3, state["queue"][0]["faults"][-1]["ordinal"])
         self.assertEqual(2, len(state["queue"][0]["faults"]))
+
+    def test_enqueue_preserves_stable_replay_selector(self):
+        state = _new_state(self.config(), self.budget())
+        door = {**self.door(1, 1), "replayOccurrenceId": "stable-rpc-lineage"}
+        self.assertEqual(1, _enqueue(state, self.result([], [door]), []))
+        self.assertEqual("stable-rpc-lineage",
+                         state["queue"][0]["faults"][0]["replayOccurrenceId"])
+        changed_seed = {**state["queue"][0]["faults"][0],
+                        "occurrenceId": "different-exact-rpc-id"}
+        self.assertEqual(_plan_key([changed_seed]),
+                         _plan_key(state["queue"][0]["faults"]))
+
+    def test_summary_tracks_guard_coverage_across_trials(self):
+        state = _new_state({**self.config(), "target": {
+            "check_site_id": "guard-a", "check_site_ids": ["guard-a", "guard-b"]}},
+            self.budget())
+        state["active"] = {"index": 0, "name": "r0000", "faults": []}
+        healthy = self.result([], [self.door(1, 1)])
+        healthy["evidence"]["observed_check_sites"] = ["guard-a"]
+        _accept_result(state, "r0000", healthy)
+        state["active"] = {"index": 1, "name": "r0001", "faults": []}
+        faulted = self.result([], [])
+        faulted["evidence"]["observed_check_sites"] = ["guard-b"]
+        _accept_result(state, "r0001", faulted)
+        with tempfile.TemporaryDirectory() as temp:
+            state["status"] = "complete_queue"
+            _finish(state, Path(temp))
+            summary = json.loads((Path(temp) / "summary.json").read_text())
+        self.assertEqual(["guard-a", "guard-b"], summary["observed_check_sites"])
+        self.assertEqual([], summary["missing_check_sites"])
 
     def test_periodic_exploration_selects_static_may(self):
         state = _new_state(self.config(), self.budget())

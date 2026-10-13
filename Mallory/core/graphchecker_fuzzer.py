@@ -17,11 +17,13 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from .graphchecker_campaign import (_json, _write_json, load_config, prepare,
+from .graphchecker_campaign import (_configured_check_sites, _json, _write_json,
+                                    load_config, prepare,
                                     run_trial, verify_trial_artifacts)
 
 SCHEMA = 1
 PLAN_FIELDS = ("siteId", "node", "occurrenceId", "ordinal", "exceptionClass")
+REPLAY_FIELD = "replayOccurrenceId"
 TIER_WEIGHT = {"observed_closure": 100, "static_may_observed": 55,
                "selected_scope_observed": 35, "outside_closure": 15,
                "after_target": -100}
@@ -49,7 +51,17 @@ def _budget(config_path: Path) -> dict[str, int]:
 
 
 def _plan_key(faults: list[dict[str, Any]]) -> str:
-    return hashlib.sha256(json.dumps(faults, sort_keys=True, separators=(",", ":"))
+    # The exact seed occurrence is kept in each plan for provenance, but a
+    # replay lineage selects the same operation even when that occurrence's
+    # per-run RPC correlation changes. Deduplicate by the selector actually
+    # used by the controller.
+    canonical = []
+    for fault in faults:
+        item = dict(fault)
+        if item.get(REPLAY_FIELD):
+            item.pop("occurrenceId", None)
+        canonical.append(item)
+    return hashlib.sha256(json.dumps(canonical, sort_keys=True, separators=(",", ":"))
                           .encode("utf-8")).hexdigest()
 
 
@@ -159,6 +171,8 @@ def _enqueue(state: dict[str, Any], result: dict[str, Any],
             break
         tier = door["tier"]
         fault = {key: door[key] for key in PLAN_FIELDS}
+        if door.get(REPLAY_FIELD):
+            fault[REPLAY_FIELD] = door[REPLAY_FIELD]
         faults = [*prefix, fault]
         key = _plan_key(faults)
         if key in seen:
@@ -175,6 +189,8 @@ def _enqueue(state: dict[str, Any], result: dict[str, Any],
 def _new_state(config: dict[str, Any], budget: dict[str, int]) -> dict[str, Any]:
     return {"schema_version": SCHEMA, "case_id": config["case_id"],
             "config_sha256": config["config_sha256"], "budget": budget,
+            "configured_check_sites": _configured_check_sites(config["target"])
+            if isinstance(config.get("target"), dict) else [],
             "scheduler_version": SCHEDULER_VERSION,
             "last_fault_site_attempts": {}, "last_fault_site_strict": {},
             "target_site_rows": config.get("target_site_rows", []),
@@ -198,6 +214,7 @@ def _trial_record(name: str, result: dict[str, Any]) -> dict[str, Any]:
                 "injection_specific_target_reached", False),
             "target_exception_triggered": result["target_exception_triggered"],
             "target_exception_candidate": result["target_exception_candidate"],
+            "observed_check_sites": evidence.get("observed_check_sites", []),
             "junit_passed": result["junit_passed"]}
 
 
@@ -317,10 +334,17 @@ def _finish(state: dict[str, Any], root: Path) -> dict[str, Any]:
     _write_json(root / "checkpoint.json", state)
     if state["status"] != "running":
         trials = state["trials"]
+        records = ([state["healthy"]] if state.get("healthy") else []) + trials
+        observed_checks = sorted({site for row in records
+                                  for site in row.get("observed_check_sites", [])})
+        configured_checks = state.get("configured_check_sites", [])
         summary = {"schema_version": SCHEMA, "case_id": state["case_id"],
                    "status": state["status"], "terminal": True,
                    "config_sha256": state["config_sha256"],
                    "target_site_rows": state.get("target_site_rows", []),
+                   "configured_check_sites": configured_checks,
+                   "observed_check_sites": observed_checks,
+                   "missing_check_sites": sorted(set(configured_checks) - set(observed_checks)),
                    "budget": state["budget"],
                    "scheduler_version": state.get("scheduler_version", 1),
                    "last_fault_site_attempts": state.get("last_fault_site_attempts", {}),

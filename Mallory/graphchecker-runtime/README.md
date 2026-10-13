@@ -15,7 +15,7 @@ For a queue consumer, a notified exact versioned read followed by `consumed`
 joins the read occurrence to the processing scope through a HANDOFF edge;
 the queue path, version, writer, and unique reader endpoint must agree.
 
-`TrialGraphMain trace graph feedback targetSite [priorTrace|-] [staticScopeMap]`
+`TrialGraphMain trace graph feedback targetSiteOrJsonArray [priorTrace|-] [staticScopeMap]`
 builds NODE, WIRE, STATE, and local SCOPE edges from those rows. It admits an
 edge only with a concrete producer identity and uses event sequence cutoffs
 when walking backward from the target. Coverage and fault doors in a target
@@ -27,6 +27,16 @@ are never reported as observed causal edges or coverage novelty.
 `targetThrowClosures` also records a separate backward closure and sequence
 cutoff for each attributed `TARGET_THROW`, so a fault linked to a check in one
 request cannot be credited for a throw in another request.
+For a JSON array of controlling check sites, feedback reports each site's
+reach, outcomes, and closure, plus their union. A missing guard in one run is
+recorded explicitly; short-circuit evaluation can legitimately skip it. The
+throw event has its own exact closure and is never inferred from guard reach.
+
+RPC headers carry a separate replay lineage derived from the sender's replay
+occurrence and send ordinal. It can select the corresponding fault door in a
+fresh JVM even when the concrete RPC correlation ID changes. Exact WIRE and
+STATE joins continue to use the original per-trial IDs. A missing replay
+header produces a gap and leaves the exact WIRE evidence intact.
 
 Two completed root scopes on the same concrete JVM thread and registered
 source, using the same API, have a `PROGRAM_ORDER` edge when the first scope's

@@ -3,6 +3,7 @@ package edu.uva.liftlab.mallory.graphchecker.runtime;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import edu.uva.liftlab.mallory.graphchecker.contract.CausalContext;
+import edu.uva.liftlab.mallory.graphchecker.contract.Digest;
 import edu.uva.liftlab.mallory.graphchecker.contract.Endpoint;
 import edu.uva.liftlab.mallory.graphchecker.contract.OccurrenceAddress;
 
@@ -31,6 +32,8 @@ public final class MessageDoors {
     private static final ThreadLocal<ReadHandoff> LAST_NOTIFIED_READ = new ThreadLocal<>();
     private static final AtomicLong EXCHANGES = new AtomicLong();
     private static final Map<String, AtomicLong> DOOR_ORDINALS = new ConcurrentHashMap<>();
+    private static final Map<String, AtomicLong> REPLAY_SEND_ORDINALS =
+            new ConcurrentHashMap<>();
     // Coverage feedback is a set of sites per causal occurrence. Repeated
     // execution of one block in a polling loop adds no coverage information.
     private static final Map<String, Boolean> COVERAGE_SEEN = new ConcurrentHashMap<>();
@@ -182,8 +185,11 @@ public final class MessageDoors {
             gap("FAULT_DOOR_IDENTITY_MISSING", siteId, String.valueOf(ordinal));
             return;
         }
-        TraceRows.row("FAULT_DOOR", TraceRows.occurrence(owner),
-                TraceRows.fields("siteId", siteId, "doorOrdinal", ordinal));
+        OccurrenceAddress occurrence = TraceRows.occurrence(owner);
+        String replayOccurrenceId = TraceRows.replayOccurrenceId(occurrence);
+        TraceRows.row("FAULT_DOOR", occurrence,
+                TraceRows.fields("siteId", siteId, "doorOrdinal", ordinal,
+                        "replayOccurrenceId", replayOccurrenceId));
     }
 
     public static void faultDoor(String siteId, Object owner) {
@@ -193,15 +199,17 @@ public final class MessageDoors {
     /** An exact observed door instance for matching one ordered fault plan. */
     public static final class FaultDoorHit {
         public final String occurrenceId;
+        public final String replayOccurrenceId;
         public final String node;
         public final String siteId;
         public final long ordinal;
         private final OccurrenceAddress occurrence;
 
-        private FaultDoorHit(OccurrenceAddress occurrence, String siteId,
-                             long ordinal) {
+        private FaultDoorHit(OccurrenceAddress occurrence, String replayOccurrenceId,
+                             String siteId, long ordinal) {
             this.occurrence = occurrence;
             this.occurrenceId = occurrence.id();
+            this.replayOccurrenceId = replayOccurrenceId;
             this.node = occurrence.node().render();
             this.siteId = siteId;
             this.ordinal = ordinal;
@@ -225,9 +233,16 @@ public final class MessageDoors {
         String key = occurrence.id() + "\n" + siteId;
         long ordinal = DOOR_ORDINALS.computeIfAbsent(key, ignored -> new AtomicLong())
                 .incrementAndGet();
-        FaultDoorHit hit = new FaultDoorHit(occurrence, siteId, ordinal);
+        String replayOccurrenceId = TraceRows.replayOccurrenceId(occurrence);
+        if (empty(replayOccurrenceId)) {
+            gap("REPLAY_LINEAGE_MISSING", siteId,
+                    "fault door has no stable replay cause");
+        }
+        FaultDoorHit hit = new FaultDoorHit(occurrence, replayOccurrenceId,
+                siteId, ordinal);
         TraceRows.row("FAULT_DOOR", occurrence,
-                TraceRows.fields("siteId", siteId, "doorOrdinal", ordinal));
+                TraceRows.fields("siteId", siteId, "doorOrdinal", ordinal,
+                        "replayOccurrenceId", replayOccurrenceId));
         return hit;
     }
 
@@ -240,6 +255,7 @@ public final class MessageDoors {
         TraceRows.row("FAULT_APPLIED", hit.occurrence,
                 TraceRows.fields("siteId", hit.siteId,
                         "doorOrdinal", hit.ordinal,
+                        "replayOccurrenceId", hit.replayOccurrenceId,
                         "exceptionClass", exceptionClass));
     }
 
@@ -287,9 +303,23 @@ public final class MessageDoors {
             previous = TraceRows.install((TraceRows.Context) scope);
         }
         Endpoint endpoint;
+        String replayEndpointId;
         try {
             endpoint = TraceRows.messageEndpoint(localOwner,
                     transport + "." + half, correlationId, attemptId);
+            String replayOccurrenceId = endpoint == null ? ""
+                    : TraceRows.replayOccurrenceId(endpoint.occurrence());
+            if (empty(replayOccurrenceId)) {
+                replayEndpointId = "";
+                gap("REPLAY_LINEAGE_MISSING", transport,
+                        "outbound has no stable replay cause");
+            } else {
+                String key = replayOccurrenceId + "\n" + transport + "\n" + half;
+                long ordinal = REPLAY_SEND_ORDINALS.computeIfAbsent(key,
+                        ignored -> new AtomicLong()).incrementAndGet();
+                replayEndpointId = Digest.digest("replay-endpoint-v1\n" + key
+                        + "\n" + ordinal, 32);
+            }
         } finally {
             if (previous != null) TraceRows.restore(previous);
         }
@@ -303,6 +333,9 @@ public final class MessageDoors {
                 "producer", endpoint.id(),
                 "producerEndpointId", endpoint.id(),
                 "producerOccurrenceId", endpoint.occurrence().id());
+        if (!empty(replayEndpointId)) {
+            header.addProperty("producerReplayEndpointId", replayEndpointId);
+        }
         String trace = Base64.getUrlEncoder().withoutPadding().encodeToString(
                 header.toString().getBytes(StandardCharsets.UTF_8));
         Outbound result = new Outbound(correlationId, attemptId, trace, "",
@@ -377,6 +410,12 @@ public final class MessageDoors {
             gap("WIRE_HEADER_MISMATCH", transport, correlationId + "/" + attemptId);
             return Inbound.EMPTY;
         }
+        String replayEndpointId = value(header, "producerReplayEndpointId");
+        if (!replayEndpointId.matches("[0-9a-f]{32}")) {
+            gap("REPLAY_HEADER_MISSING", transport,
+                    "inbound exact wire is valid but replay lineage is unavailable");
+            replayEndpointId = "";
+        }
         Outbound prepared = PREPARED.get(trace);
         if (prepared != null) sent(prepared); // an actual receipt proves the send
         else gap("WIRE_PRODUCER_UNOBSERVED", transport,
@@ -404,6 +443,10 @@ public final class MessageDoors {
             received.cause = CausalContext.of(
                     header.get("producerEndpointId").getAsString(),
                     transport + "." + half);
+            if (!empty(replayEndpointId)) {
+                received.replayCause = "AnchorReplay:" + replayEndpointId
+                        + "@" + transport + "." + half;
+            }
             TraceRows.install(received);
         }
         Endpoint consumer = TraceRows.endpoint(localOwner,

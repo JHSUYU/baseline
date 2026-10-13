@@ -68,6 +68,45 @@ class GraphCheckerCampaignTest(unittest.TestCase):
         self.assertEqual(("candidate", True),
                          _trial_verdict(evidence, [self.FAULT], 0))
 
+    def test_replay_selector_matches_new_exact_rpc_occurrence(self):
+        plan = {**self.FAULT, "replayOccurrenceId": "stable-rpc-lineage"}
+        rows = self.rows()
+        for row in rows:
+            if row.get("occurrenceId") == "occ-A":
+                row["occurrenceId"] = "occ-B"
+            if row["kind"] in {"FAULT_DOOR", "FAULT_APPLIED"}:
+                row["replayOccurrenceId"] = "stable-rpc-lineage"
+        graph = self.graph()
+        graph["closureOccurrenceIds"] = ["occ-B"]
+        graph["closureOccurrenceCutoffs"] = {"occ-B": 6}
+        graph["targetThrowClosures"][0]["occurrenceId"] = "occ-B"
+        graph["targetThrowClosures"][0]["closureOccurrenceCutoffs"] = {"occ-B": 6}
+        evidence = summarize_evidence(rows, graph, self.TARGET, [plan],
+                                      {"door": "java.io.IOException"})
+        self.assertTrue(evidence["strict_injection"])
+        self.assertEqual(["occ-B"], evidence["actual_fault_occurrence_ids"])
+        self.assertTrue(evidence["injection_specific_target_throw"])
+        self.assertEqual("stable-rpc-lineage",
+                         evidence["eligible_doors"][0]["replayOccurrenceId"])
+        rows[3]["replayOccurrenceId"] = "other-rpc-lineage"
+        rejected = summarize_evidence(rows, graph, self.TARGET, [plan])
+        self.assertFalse(rejected["strict_injection"])
+        self.assertFalse(rejected["target_exception_triggered"])
+
+    def test_short_circuit_throw_can_omit_second_guard_in_one_trial(self):
+        # The negated A && B rollback checks can throw when A is false and B
+        # never executes. The exact THROW is still a valid oracle; guard
+        # completeness is tracked across the campaign, not forced per trial.
+        target = {**self.TARGET, "check_site_ids": ["check", "check-2"]}
+        graph = {**self.graph(), "configuredTargetSites": ["check", "check-2"],
+                 "observedTargetSites": ["check"], "missingTargetSites": ["check-2"],
+                 "allTargetSitesReached": False}
+        evidence = summarize_evidence(self.rows(), graph, target, [self.FAULT])
+        self.assertEqual(["check-2"], evidence["missing_check_sites_in_trial"])
+        self.assertTrue(evidence["injection_specific_target_throw"])
+        self.assertEqual(("candidate", True),
+                         _trial_verdict(evidence, [self.FAULT], 0))
+
     def test_other_request_throw_does_not_inherit_check_closure(self):
         rows = self.rows()
         rows[5]["occurrenceId"] = "occ-B"
@@ -209,6 +248,10 @@ class GraphCheckerCampaignTest(unittest.TestCase):
 
     def test_plan_rejects_partial_identity(self):
         self.assertEqual([self.FAULT], validate_plan({"faults": [self.FAULT]}))
+        replay = {**self.FAULT, "replayOccurrenceId": "stable-rpc-lineage"}
+        self.assertEqual([replay], validate_plan({"faults": [replay]}))
+        with self.assertRaisesRegex(ValueError, "replay occurrence"):
+            validate_plan({"faults": [{**self.FAULT, "replayOccurrenceId": ""}]})
         with self.assertRaises(ValueError):
             validate_plan({"faults": [{**self.FAULT, "occurrenceId": ""}]})
         selected = _door_types({"doors": [{"siteId": "door",
@@ -298,6 +341,27 @@ class GraphCheckerCampaignTest(unittest.TestCase):
                 stream.write(b"corrupt")
             with self.assertRaisesRegex(ValueError, "changed window_trace"):
                 verify_trial_artifacts(trial, result)
+
+    def test_multi_guard_analysis_passes_ordered_sites_to_java(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            trial = root / "trial"
+            trial.mkdir()
+            (trial / "graphchecker-trace.jsonl").write_text("{}\n")
+            jar = root / "graph.jar"
+            jar.write_bytes(b"fixture")
+            seen = []
+
+            def fake_run(command, **_):
+                seen.extend(json.loads(command[-1]))
+                (trial / "graphchecker-feedback.json").write_text(json.dumps({
+                    "schemaVersion": 1, "targetSite": "guard-a",
+                    "configuredTargetSites": ["guard-a", "guard-b"]}))
+
+            with patch("Mallory.core.graphchecker_trial.subprocess.run",
+                       side_effect=fake_run):
+                analyze_trial(trial, ["guard-a", "guard-b"], jar=jar)
+            self.assertEqual(["guard-a", "guard-b"], seen)
 
     def test_compressed_prior_is_materialized_only_during_graph_analysis(self):
         with tempfile.TemporaryDirectory() as temp:

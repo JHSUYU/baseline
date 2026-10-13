@@ -44,7 +44,8 @@ final class GcFaultPlan {
             for (int index = 0; index < parsed.faults.size(); index++) {
                 Fault fault = parsed.faults.get(index);
                 if (fault == null || empty(fault.siteId) || empty(fault.node)
-                        || empty(fault.occurrenceId) || fault.ordinal == null
+                        || (empty(fault.occurrenceId) && empty(fault.replayOccurrenceId))
+                        || fault.ordinal == null
                         || fault.ordinal < 1 || empty(fault.exceptionClass)) {
                     throw new IllegalArgumentException("incomplete fault " + index + " in " + path);
                 }
@@ -60,8 +61,12 @@ final class GcFaultPlan {
         if (hit == null || next >= faults.size()) return null;
         Fault fault = faults.get(next);
         if (!fault.siteId.equals(hit.siteId) || !fault.node.equals(hit.node)
-                || !fault.occurrenceId.equals(hit.occurrenceId)
                 || fault.ordinal.longValue() != hit.ordinal) return null;
+        // Replay selection survives trial-specific RPC correlation IDs. The
+        // trace still records the exact occurrence for causal graph joining.
+        if (!empty(fault.replayOccurrenceId)) {
+            if (!fault.replayOccurrenceId.equals(hit.replayOccurrenceId)) return null;
+        } else if (!fault.occurrenceId.equals(hit.occurrenceId)) return null;
         if (!fault.exceptionClass.equals(doorExceptionClass)) {
             throw new IllegalStateException("fault exception class differs from selected door "
                     + hit.siteId + ": " + fault.exceptionClass + " != " + doorExceptionClass);
@@ -97,6 +102,7 @@ final class GcFaultPlan {
         String siteId;
         String node;
         String occurrenceId;
+        String replayOccurrenceId;
         Long ordinal;
         String exceptionClass;
     }

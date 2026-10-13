@@ -113,8 +113,14 @@ The native fault plan has `{"faults":[{"siteId":"...","node":"nn-1#epoch0",
 Take the four runtime identity fields from a seed `FAULT_DOOR`; `ordinal` is
 one-based for its occurrence and site. The controller injects faults in array
 order. A trial is strict only if each planned fault has a same-identity
-`FAULT_DOOR` followed by a matching `FAULT_APPLIED` in that order. A target
-candidate additionally needs a named, exact `TARGET_THROW` at the selected
+`FAULT_DOOR` followed by a matching `FAULT_APPLIED` in that order. A fault
+door may also carry `replayOccurrenceId`. When present, the plan keeps its
+seed `occurrenceId` for provenance but matches the stable replay ID across
+fresh JVM runs; the applied row retains the new trial's exact occurrence for
+the causal graph. An absent replay ID keeps the original exact match. RPC
+send order can still change, so an unmatched plan consumes budget and is not
+treated as an injection. A target candidate additionally needs a named,
+exact `TARGET_THROW` at the selected
 site and exception type after the last applied fault. GraphChecker also emits
 one backward closure per throw event. The last applied fault must be an
 ancestor of that exact throw for automatic candidate classification; a check
@@ -169,7 +175,12 @@ edges and coverage increase a sequence's priority. A fault that loses the
 target is not expanded. A later target in a different request is recorded as
 raw target activity. A fault occurrence on the check's exact closure, before
 its target-relative cutoff, satisfies `injection_specific_target_reached`;
-an automatic bug candidate additionally requires the fault on the exact
+for a target with several controlling guards, the graph uses the union of
+their observed closures and records each guard separately. A short-circuit
+path may skip one guard in an individual trial. The exact throw and its own
+closure remain the candidate oracle, while the campaign summary records
+which guards were observed across all trials. An automatic bug candidate
+additionally requires the fault on the exact
 throw event's own closure. An exact target throw outside that throw closure
 remains `needs_causal_review`.
 When a closure uses a `PROGRAM_ORDER` edge between completed root scopes,
