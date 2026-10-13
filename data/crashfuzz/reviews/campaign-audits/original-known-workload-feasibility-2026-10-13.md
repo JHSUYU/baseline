@@ -108,6 +108,12 @@ retry separately and matched its key ID to the real target throw. Runs where
 the current key advanced further still followed this expected client recovery
 path. None shows a distinct mirror or DataTransfer key mismatch at the
 target check.
+Through trial 286, I separately inspected 50 mirror-transfer error log
+sections in runs with one exact target throw. Twenty-six report a synthetic
+injected exception, nineteen report EOF, and five report a connection reset.
+None contains the missing key ID from that run's exact line-555 throw. The
+mirror errors therefore do not identify the observed target throw as a
+downstream mirror key mismatch.
 
 A second isolated validation added actor-thread identity propagation for
 DataXceiver and DataTransfer helper calls. The unchanged JUnit passed in
