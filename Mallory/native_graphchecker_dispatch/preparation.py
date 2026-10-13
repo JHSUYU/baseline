@@ -8,6 +8,7 @@ adapters. No case-specific I/O list or fault door enters the request.
 from __future__ import annotations
 
 import fcntl
+import hashlib
 import json
 import os
 import re
@@ -209,7 +210,8 @@ def verify_target_occurrence(proof: dict, config: dict, output: Path,
         raise ValueError("target occurrence receipt bytes changed")
     receipt = _object(path)
     rec = config["recording"]
-    base_site = config["target_site"].rsplit("#", 1)[0]
+    anchor = config["target_site"]
+    base_site = anchor if re.search(r"#u\d+$", anchor) else anchor.rsplit("#", 1)[0]
     selected = receipt.get("selectedOccurrenceAddress")
     seq = receipt.get("selectedEventSeq")
     call = receipt.get("selectedCallId")
@@ -284,11 +286,45 @@ def _validate_output(item: dict, request: dict, output: Path,
                     ("static_scope_map_sha256", "static_scope_map"),
                     ("region_skeletons_sha256", "region_skeletons")))):
         raise ValueError("original GraphChecker static scope receipt differs")
+    static_preimage = scope.get("process_classes_sha256")
+    if (not isinstance(static_preimage, str) or
+            not re.fullmatch(r"[0-9a-f]{64}", static_preimage) or
+            not isinstance(scope.get("ordered_analysis_classpath_sha256"), str) or
+            not re.fullmatch(r"[0-9a-f]{64}",
+                             scope["ordered_analysis_classpath_sha256"])):
+        raise ValueError("static Soot class tree or ordered classpath was not pinned")
+    scope_input_path = Path(scope.get("scope_input_path", ""))
+    analysis_path = Path(scope.get("analysis_path", ""))
+    if (not scope_input_path.is_file() or
+            _sha(scope_input_path) != scope.get("scope_input_sha256") or
+            not analysis_path.is_file() or
+            _sha(analysis_path) != scope.get("analysis_sha256") or
+            scope.get("analysis_kind") != "original_graphchecker_seed_backward" or
+            scope.get("engine_jar_sha256") != _sha(native.JAR)):
+        raise ValueError("original GraphChecker static input/engine receipt differs")
+    scope_input = _object(scope_input_path)
+    analysis_report = _object(analysis_path)
+    analysis = scope_input.get("analysis", {})
+    process_path = Path(scope.get("process_classes_path", ""))
+    classpath = analysis.get("classpath")
+    if (analysis.get("original_graphchecker_seed") is not True or
+            analysis.get("process_dirs") != [str(process_path)] or
+            not isinstance(classpath, list) or not classpath or
+            not all(isinstance(path, str) and Path(path).is_absolute()
+                    for path in classpath) or
+            hashlib.sha256(os.pathsep.join(classpath).encode()).hexdigest()
+            != scope["ordered_analysis_classpath_sha256"] or
+            analysis_report.get("analysisKind") != scope["analysis_kind"] or
+            analysis_report.get("sootDependencyClasspathSha256") != scope[
+                "ordered_analysis_classpath_sha256"] or
+            class_tree_digest(process_path) != static_preimage):
+        raise ValueError("static Soot process classes/classpath identity differs")
     if (recording.get("schema_version") != 1 or
             recording.get("mode") != "original_graphchecker_region_state_weave" or
             recording.get("case_id") != item["case_id"] or
             recording.get("request_sha256") != _digest(request) or
             recording.get("engine_jar_sha256") != _sha(native.JAR) or
+            recording.get("input_classes_sha256") != static_preimage or
             recording.get("input_classes_sha256") != class_tree_digest(Path(
                 recording["input_classes"])) or
             recording.get("output_classes_sha256") != class_tree_digest(Path(
@@ -300,6 +336,8 @@ def _validate_output(item: dict, request: dict, output: Path,
     if (not isinstance(admitted.get("origin"), dict) or
             not isinstance(admitted.get("weave_receipt"), dict)):
         raise ValueError("native original GraphChecker admission failed")
+    if admitted["weave_receipt"].get("input_classes_sha256") != static_preimage:
+        raise ValueError("concolic weave preimage differs from static Soot class tree")
     return config_path, config, proof
 
 

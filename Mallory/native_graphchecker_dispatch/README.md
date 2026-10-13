@@ -15,6 +15,32 @@ former custom-graph `prepare_case.py` scripts do not implement this protocol.
 At present, no real per-system recipe is included, so a missing config remains
 `needs_native_preparation`; this package alone does not make any case ready.
 
+The shared ZooKeeper adapter is
+`python3 -m Mallory.native_graphchecker_dispatch.zookeeper_native_adapter
+/ABS/zookeeper-profile.json {request} {output}`. Its profile names pinned
+source/classes, the source-built planner and runtime classpaths, the
+communication map, Java, bounded budget, and a native protocol gate. Put the
+profile and every referenced source/classpath/mapping artifact in the recipe's
+pin maps. There are no case IDs, target branches, or I/O doors in the profile.
+The adapter derives the original THROW from inventory, runs original
+GraphChecker static seed analysis and REGION_STATE weave, then applies the
+ZooKeeper protocol and actor post-passes in that order. It executes the exact
+inventory JUnit without faults, invokes the original target occurrence
+resolver in AUTO guard mode, and admits only its observed check and the unique
+matching original Scheduler `TARGET_REACH_CLOSURE` task. The native anchor
+ordinal comes from that task's `targetBranch.occurrence`. The concolic weave
+is then cached under the same exact input pin. Both post-passes use
+`NativeZooKeeperCombinedPostWeave.java`, whose compiled class must be pinned
+in the profile classpath. The adapter refuses to launch until a frozen quorum
+protocol and actor-attribution gate exists; no such gate has been accepted yet.
+The gate must pin the source/class tree, communication map, postweave tree,
+adapter build, source-built engine, static map, and closed SessionReader
+manifest, and show an unchanged JUnit pass with a reached target and typed
+FOLLOWERINFO/LEADERINFO wire edges. Campaign JUnit trials use fresh
+`{trial_workdir}` directories. The adapter itself performs static Soot and
+both weaves only during preparation; `run-next` only reruns the cached woven
+JUnit and records a new trace for each fault trial.
+
 The recipe file must pin the 102-row inventory SHA and contain one reusable
 command per implemented system. For example, the schema for one adapter is:
 

@@ -165,10 +165,18 @@ def verify_preparation_receipt(item: dict, config_file: Path,
         raise ValueError("native recording-derived admission changed")
     config = _object(config_file)
     weave = _object(Path(config["native_weave_config"]))
-    if _sha(Path(weave["output_classes"]) /
-            "native-original-weave-receipt.json") != receipt.get(
-                "native_weave_receipt_sha256"):
+    native_receipt_path = (Path(weave["output_classes"]) /
+                           "native-original-weave-receipt.json")
+    if _sha(native_receipt_path) != receipt.get("native_weave_receipt_sha256"):
         raise ValueError("native concolic weave receipt changed")
+    static = _object(Path(receipt["static_scope_receipt_path"]))
+    recording = _object(Path(receipt["recording_weave_receipt_path"]))
+    concolic = _object(native_receipt_path)
+    preimage = static.get("process_classes_sha256")
+    if (not isinstance(preimage, str) or not HEX_SHA.fullmatch(preimage) or
+            recording.get("input_classes_sha256") != preimage or
+            concolic.get("input_classes_sha256") != preimage):
+        raise ValueError("native static/recording/concolic class preimages differ")
     return receipt
 
 

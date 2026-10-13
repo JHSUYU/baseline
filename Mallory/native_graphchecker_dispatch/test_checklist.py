@@ -44,7 +44,8 @@ class NativeChecklistTest(unittest.TestCase):
         woven = self.root / "woven"
         woven.mkdir(exist_ok=True)
         self.write(woven / "native-original-weave-receipt.json",
-                   {"mode": "mallory_vendored_original_graphchecker_concolic_weave"})
+                   {"mode": "mallory_vendored_original_graphchecker_concolic_weave",
+                    "input_classes_sha256": "e" * 64})
         task_plan = self.root / "execution_task_plan.jsonl"
         task_plan.write_text('{"taskId":"recorded"}\n')
         weave_config = self.root / "weave.json"
@@ -116,8 +117,10 @@ class NativeChecklistTest(unittest.TestCase):
                      request, sort_keys=True, separators=(",", ":")).encode()).hexdigest(),
                  "original_cluster_junit_verified": True}
         self.write(attempt / "output/adapter-proof.json", proof)
-        self.write(attempt / "output/static-scope-receipt.json", {"fixture": True})
-        self.write(attempt / "output/recording-weave-receipt.json", {"fixture": True})
+        self.write(attempt / "output/static-scope-receipt.json",
+                   {"process_classes_sha256": "e" * 64})
+        self.write(attempt / "output/recording-weave-receipt.json",
+                   {"input_classes_sha256": "e" * 64})
         occurrence = attempt / "output/target-occurrence.json"
         self.write(occurrence, {
             "kind": "MALLORY_OBSERVED_TARGET_OCCURRENCE",
@@ -209,6 +212,7 @@ class NativeChecklistTest(unittest.TestCase):
             events.append({"kind": "TARGET_THROW", "seq": 4,
                            "siteId": config["target_throw"]["siteId"],
                            "exceptionClass": config["target_throw"]["exceptionClass"],
+                           "node": "nn0", "actorEpochOrdinal": 0,
                            "occurrenceId": "fresh:target"})
         event_path = iteration / "fault-events.jsonl"
         event_path.write_text("".join(json.dumps(row) + "\n" for row in events))
@@ -261,6 +265,7 @@ class NativeChecklistTest(unittest.TestCase):
                 "targetRegionIds": ["R.target"],
                 "perTargetOccurrences": [{
                     "targetOccurrenceId": "fresh:target",
+                    "sessionId": "fixture-session",
                     "targetSiteId": config["target_site"],
                     "targetNodeName": "nn0",
                     "targetRegionId": "R.target",
@@ -336,6 +341,9 @@ class NativeChecklistTest(unittest.TestCase):
         receipt = preparation.verify_target_occurrence(
             proof, config, output, self.item["target"]["site_id"])
         self.assertEqual(17, receipt["selectedEventSeq"])
+        config["target_site"] = receipt["checkSiteId"]
+        preparation.verify_target_occurrence(
+            proof, config, output, self.item["target"]["site_id"])
         config["recording"]["target_occurrence"] = "first"
         with self.assertRaisesRegex(ValueError, "target occurrence"):
             preparation.verify_target_occurrence(
