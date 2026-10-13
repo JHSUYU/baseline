@@ -11,6 +11,7 @@ from fuzzer import (archive_trial_attempts, budget_has_room, campaign,
                     fault_variants_for_io, fingerprint,
                     in_io_scope, point_from_event,
                     independent_reply_fanout, reply_fanout_degree,
+                    repeated_nonempty_reply_profile,
                     rows, static_reason_priority, strict_applied_prefix,
                     strict_injection,
                     retry_lost_target,
@@ -508,6 +509,23 @@ class CoverageIoTest(unittest.TestCase):
                  'reply_fanout_diversity_version': 1}
         self.assertEqual(choose_next_sequence(state), 1)
         state['reply_fanout_diversity_version'] = 0
+        self.assertEqual(choose_next_sequence(state), 0)
+
+    def test_reply_chain_slot_favors_later_repeated_loss_on_one_node(self):
+        reply = {**A, 'phase': 'after',
+                 'responseShape': 'example.Reply|commands=[example.Update]'}
+        one = {**reply, 'occurrence': 'local/heartbeat|node1/<example.Transport: void receive()>#u2'}
+        two = {**reply, 'occurrence': 'local/heartbeat|node2/<example.Transport: void receive()>#u2'}
+        chain = [{**one, 'hitOrdinal': hit} for hit in (6, 8, 11)]
+        fanout = [one, two]
+        self.assertEqual(repeated_nonempty_reply_profile(chain), (3, 11))
+        self.assertEqual(repeated_nonempty_reply_profile(fanout), (1, 1))
+        state = {'completed': [{'sequence': [B]}] * 8,
+                 'queue': [{'sequence': fanout, 'priority': 1000, 'created': 1},
+                           {'sequence': chain, 'priority': 1, 'created': 2}],
+                 'reply_chain_diversity_version': 1}
+        self.assertEqual(choose_next_sequence(state), 1)
+        state['reply_chain_diversity_version'] = 0
         self.assertEqual(choose_next_sequence(state), 0)
 
     def test_strict_injection_accepts_only_complete_unordered_reply_fanout(self):

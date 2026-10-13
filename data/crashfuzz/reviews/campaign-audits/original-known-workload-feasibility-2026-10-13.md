@@ -210,6 +210,18 @@ Every such throw in those archives came from a `DataXceiver` thread, with
 none observed on a `DataNode.DataTransfer` worker.
 Control-branch trial 360, for instance, has two attempt traces with one
 throw each; adding them would create a false positive.
+At the actual `DataNode.DataTransfer.run` SASL I/O point, the runtime trace
+does carry a stable DataNode identity; a `METHOD_ENTER` row lacking that
+optional field is not an identity failure. The reply-loss trace shows why
+several strict multi-fault plans had no differential throw: another
+state-bearing heartbeat reply reached the same node before its transfer
+worker used the key. A general bounded scheduler slot now favors longer
+observed chains of nonempty replies lost on one runtime node. It relies on
+response shape and runtime identity, without naming an HDFS method, command,
+or node. The response-shape campaign resumed from its 104 completed trials
+in tmux `crashfuzz-hdfs-reply-chain-v4`; trial 105 was interrupted once and
+retried under the same checkpoint. This is a search-priority adjustment, not
+a bug detection.
 
 To keep the three active HDFS runs within disk capacity, completed attempts
 from the first 250 trials of `campaign-control-branch` were checksum-verified
