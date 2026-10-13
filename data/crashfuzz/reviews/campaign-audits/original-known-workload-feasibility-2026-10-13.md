@@ -176,6 +176,11 @@ target-retained minimum, and a 160-trial cap; the first 40 trials are not
 rerun. The separate runtime-identity pilot completed 80 trials with no
 differential target exception (45 baseline recurrences, 14 lost target, ten
 unmatched, and eleven checked). Its maximum exact target count was one.
+After 121 completed trials, only 77 had retained the target, so the
+response-shape campaign's target-retained minimum was raised from 80 to 120
+while keeping its 160-trial cap. The running trial 122 was checkpointed and
+resumed in tmux `crashfuzz-hdfs-reply-chain-v6`; no completed trial was
+replayed for this budget change.
 
 Trial 64 exposed a generic replay limitation: its automatically selected
 three-DataNode plan targeted the same nonempty `sendHeartBeat` response shape
