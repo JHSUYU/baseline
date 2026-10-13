@@ -115,6 +115,23 @@ None contains the missing key ID from that run's exact line-555 throw. The
 mirror errors therefore do not identify the observed target throw as a
 downstream mirror key mismatch.
 
+The original JUnit explicitly waits until each DataNode has discarded the
+client's cached key, then verifies one `clearDataEncryptionKey()` call after
+pipeline recovery (`TestEncryptedTransfer.java:488-518`). That one target
+throw is part of its expected client retry. In the NameNode's heartbeat
+handler, `BlockManager.addKeyUpdateCommand` adds `KeyUpdateCommand` and clears
+`needKeyUpdate` before the DataNode receives the response
+(`BlockManager.java:1671-1678`); the DataNode enqueues that command only after
+`sendHeartBeat` returns (`BPServiceActor.java:742-755`). This makes a lost
+response a plausible source of key skew, but the current I/O trace does not
+record whether a particular faulted response carried a key update command.
+Through trial 293, 37 completed plans applied a fault at the selected
+`sendHeartBeat` I/O site (77 such fault events in total; eight plans involved
+multiple DataNodes). Thirty retained the target and each still had exactly
+the one expected throw; six lost the target and one plan was unmatched. These
+trials establish that the general selector reached the control-plane RPC,
+not that it interrupted a key-bearing response or reproduced the bug.
+
 A second isolated validation added actor-thread identity propagation for
 DataXceiver and DataTransfer helper calls. The unchanged JUnit passed in
 26.900 seconds. Its trace identifies all 27 selected server-side SASL I/O
