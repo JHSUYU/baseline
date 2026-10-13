@@ -9,6 +9,7 @@ the old Mallory Probe event file is never an injection or target oracle.
 from __future__ import annotations
 
 import argparse
+import gzip
 import hashlib
 import json
 import os
@@ -16,6 +17,8 @@ import re
 import shutil
 import signal
 import subprocess
+import tarfile
+import tempfile
 import time
 import zipfile
 from pathlib import Path
@@ -42,6 +45,170 @@ def _sha256(path: Path) -> str:
         for block in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(block)
     return digest.hexdigest()
+
+
+def _trace_stream(path: Path):
+    """Open archived and legacy plain traces with the same byte semantics."""
+    return gzip.open(path, "rb") if path.suffix == ".gz" else path.open("rb")
+
+
+def _trace_digest(path: Path) -> tuple[str, int]:
+    digest = hashlib.sha256()
+    size = 0
+    with _trace_stream(path) as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(block)
+            size += len(block)
+    return digest.hexdigest(), size
+
+
+def _tree_sha256(root: Path) -> str:
+    """Pin a fixture directory by names, file bytes and file types."""
+    digest = hashlib.sha256()
+    for path in sorted(root.rglob("*")):
+        if path.is_symlink():
+            raise ValueError(f"trial cwd template contains a symlink: {path}")
+        relative = path.relative_to(root).as_posix().encode("utf-8")
+        if path.is_dir():
+            digest.update(b"D\0" + relative + b"\0")
+        elif path.is_file():
+            digest.update(b"F\0" + relative + b"\0")
+            digest.update(bytes.fromhex(_sha256(path)))
+        else:
+            raise ValueError(f"trial cwd template contains a special file: {path}")
+    return digest.hexdigest()
+
+
+def _trial_arg(value: str, trial: Path, workdir: Path) -> str:
+    return (value.replace("{trial_dir}", str(trial))
+                 .replace("{trial_cwd}", str(workdir)))
+
+
+def _archive_workdir(workdir: Path, trial: Path) -> dict[str, Any]:
+    archive = trial / "workdir.tar.gz"
+    temporary = trial / ".workdir.tar.gz.tmp"
+    if archive.exists() or temporary.exists():
+        raise FileExistsError(f"trial workdir archive already exists: {archive}")
+    try:
+        with temporary.open("wb") as stream:
+            with tarfile.open(fileobj=stream, mode="w:gz") as tar:
+                for path in sorted(workdir.rglob("*")):
+                    tar.add(path, arcname=path.relative_to(workdir).as_posix(),
+                            recursive=False)
+            stream.flush()
+            os.fsync(stream.fileno())
+        temporary.replace(archive)
+        with tarfile.open(archive, mode="r:gz") as tar:
+            tar.getmembers()
+        return {"path": archive.name, "encoding": "tar+gzip",
+                "sha256": _sha256(archive), "bytes": archive.stat().st_size}
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def _archive_jsonl(path: Path, output: Path) -> dict[str, Any]:
+    """Seal one durable gzip artifact before removing its plain source."""
+    archived = output / (path.name + ".gz")
+    temporary = archived.with_name("." + archived.name + ".tmp")
+    if archived.exists() or temporary.exists():
+        raise FileExistsError(f"GraphChecker trace archive already exists: {archived}")
+    original_digest = hashlib.sha256()
+    original_size = 0
+    try:
+        with path.open("rb") as source, temporary.open("wb") as target:
+            with gzip.GzipFile(filename="", mode="wb", fileobj=target,
+                               mtime=0, compresslevel=6) as compressor:
+                for block in iter(lambda: source.read(1024 * 1024), b""):
+                    original_digest.update(block)
+                    original_size += len(block)
+                    compressor.write(block)
+            target.flush()
+            os.fsync(target.fileno())
+        temporary.replace(archived)
+        compressed_digest = _sha256(archived)
+        observed_digest, observed_size = _trace_digest(archived)
+        if (observed_digest != original_digest.hexdigest() or
+                observed_size != original_size):
+            raise ValueError(f"GraphChecker archive failed source verification: {archived}")
+        path.unlink()
+        return {"path": archived.name, "encoding": "gzip",
+                "sha256": compressed_digest,
+                "bytes": archived.stat().st_size,
+                "content_sha256": observed_digest,
+                "content_bytes": observed_size}
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def verify_trial_artifacts(trial: Path, result: dict[str, Any],
+                           names: set[str] | None = None) -> None:
+    """Fail closed if a completed native trial has lost or changed evidence."""
+    if result.get("backend") != "graphchecker_native":
+        return
+    for filename, field in (("fault-plan.json", "fault_plan_sha256"),
+                            ("graphchecker-feedback.json", "feedback_sha256")):
+        expected = result.get(field)
+        if expected is not None:
+            path = trial / filename
+            if not path.is_file() or _sha256(path) != expected:
+                raise ValueError(f"changed native trial receipt {field}: {path}")
+    artifacts = result.get("artifacts")
+    if artifacts is None:
+        # Read-only compatibility for early pilot trials. New trials always
+        # write gzip receipts; a resumed pilot must never be rerun simply
+        # because its already completed evidence predates compression.
+        legacy = {"raw_trace": ("graphchecker-raw.jsonl", "raw_trace_sha256"),
+                  "window_trace": ("graphchecker-trace.jsonl", "trace_sha256"),
+                  "graph": ("graphchecker-graph.jsonl", "graph_sha256")}
+        for name, (filename, field) in legacy.items():
+            if names is not None and name not in names:
+                continue
+            expected = result.get(field)
+            if expected is None and result.get("status") == "invalid_graphchecker_trace":
+                continue
+            path = trial / filename
+            if not path.is_file() or _sha256(path) != expected:
+                raise ValueError(f"changed legacy {name} evidence: {path}")
+        return
+    if not isinstance(artifacts, dict) or (
+            "raw_trace" not in artifacts and result.get("raw_trace_sha256") is not None):
+        raise ValueError(f"native trial has no archived raw trace receipt: {trial}")
+    if result.get("status") != "invalid_graphchecker_trace" and not (
+            {"raw_trace", "window_trace", "graph"} <= artifacts.keys()):
+        raise ValueError(f"completed native trial lacks trace or graph archive: {trial}")
+    if names is not None and not names.issubset(artifacts):
+        raise ValueError(f"native trial lacks required trace archives {names}: {trial}")
+    for name, receipt in artifacts.items():
+        if names is not None and name not in names:
+            continue
+        if not isinstance(receipt, dict) or receipt.get("encoding") != "gzip":
+            raise ValueError(f"invalid {name} archive receipt: {trial}")
+        relative = receipt.get("path")
+        if not isinstance(relative, str) or Path(relative).name != relative or (
+                not relative.endswith(".jsonl.gz")):
+            raise ValueError(f"invalid {name} archive path: {trial}")
+        archive = trial / relative
+        if (not archive.is_file() or archive.stat().st_size != receipt.get("bytes") or
+                _sha256(archive) != receipt.get("sha256")):
+            raise ValueError(f"changed {name} compressed evidence: {archive}")
+        digest, size = _trace_digest(archive)
+        if digest != receipt.get("content_sha256") or size != receipt.get("content_bytes"):
+            raise ValueError(f"changed {name} source evidence: {archive}")
+        result_field = {"raw_trace": "raw_trace_sha256",
+                        "window_trace": "trace_sha256",
+                        "graph": "graph_sha256"}.get(name)
+        if result_field and result.get(result_field) != digest:
+            raise ValueError(f"{name} archive disagrees with result receipt: {trial}")
+    workdir = result.get("workdir_artifact")
+    if workdir is not None:
+        if (not isinstance(workdir, dict) or
+                workdir.get("path") != "workdir.tar.gz" or
+                workdir.get("encoding") != "tar+gzip"):
+            raise ValueError(f"invalid trial workdir receipt: {trial}")
+        path = trial / "workdir.tar.gz"
+        if (not path.is_file() or path.stat().st_size != workdir.get("bytes") or
+                _sha256(path) != workdir.get("sha256")):
+            raise ValueError(f"changed trial workdir evidence: {path}")
 
 
 def _write_json(path: Path, value: dict[str, Any]) -> None:
@@ -100,6 +267,44 @@ def _runner_class_sha256(class_name: str, classpath: list[Path]) -> str:
     raise FileNotFoundError(f"runner class absent from effective classpath: {class_name}")
 
 
+def _java_feature_version(java: str) -> int:
+    completed = subprocess.run([java, "-version"], capture_output=True,
+                               text=True, timeout=15, check=True)
+    version = re.search(r'\bversion\s+"([^"]+)"',
+                        completed.stderr + completed.stdout)
+    if version is None:
+        raise ValueError(f"cannot determine configured Java version: {java}")
+    numbers = re.findall(r"\d+", version.group(1))
+    if not numbers:
+        raise ValueError(f"invalid configured Java version: {java}")
+    feature = int(numbers[1] if numbers[0] == "1" and len(numbers) > 1
+                  else numbers[0])
+    if feature < 8:
+        raise ValueError(f"GraphChecker requires Java 8 or newer: {java}")
+    return feature
+
+
+def _class_major(path: Path) -> int:
+    with path.open("rb") as stream:
+        header = stream.read(8)
+    if len(header) != 8 or header[:4] != b"\xca\xfe\xba\xbe":
+        raise ValueError(f"not a Java class file: {path}")
+    return int.from_bytes(header[6:8], "big")
+
+
+def _check_woven_major(path: Path, feature: int,
+                       original_major: int | None = None) -> int:
+    actual = _class_major(path)
+    maximum = feature + 44
+    if actual > maximum:
+        raise ValueError(f"woven class major {actual} exceeds Java {feature} max "
+                         f"{maximum}: {path}")
+    if original_major is not None and original_major <= 52 and actual > original_major:
+        raise ValueError(f"woven class major {actual} exceeds Java 8-or-earlier "
+                         f"source major {original_major}: {path}")
+    return actual
+
+
 def _runner(raw: Any, junit: dict[str, Any]) -> dict[str, Any]:
     if raw is None:
         args = [junit["class"], junit["method"]]
@@ -122,6 +327,8 @@ def _runner(raw: Any, junit: dict[str, Any]) -> dict[str, Any]:
     if any("-javaagent:" in item for item in jvm_args):
         raise ValueError("runner cannot attach a second Java instrumentation agent")
     substitutions = {"{class}": junit["class"], "{method}": junit["method"]}
+    substitutions["{trial_dir}"] = "{trial_dir}"
+    substitutions["{trial_cwd}"] = "{trial_cwd}"
     if "parameter_index" in junit:
         substitutions["{parameter_index}"] = str(junit["parameter_index"])
     resolved = []
@@ -133,6 +340,35 @@ def _runner(raw: Any, junit: dict[str, Any]) -> dict[str, Any]:
         else:
             resolved.append(item)
     return {"main_class": main_class, "args": resolved, "jvm_args": jvm_args}
+
+
+def _post_weave(raw: Any) -> dict[str, Any] | None:
+    """Validate an optional system-wide bytecode adapter after Soot weaving."""
+    if raw is None:
+        return None
+    if not isinstance(raw, dict):
+        raise ValueError("post_weave needs a Java main_class and argv")
+    main_class = raw.get("main_class")
+    if not isinstance(main_class, str) or not re.fullmatch(
+            r"[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)+", main_class):
+        raise ValueError("post_weave main_class is not a Java binary name")
+    args = raw.get("args")
+    jvm_args = raw.get("jvm_args", [])
+    if not isinstance(args, list) or not args or not all(
+            isinstance(item, str) and item for item in args):
+        raise ValueError("post_weave args need a nonempty argv array")
+    if "{final_woven}" not in args or "{generic_woven}" not in args:
+        raise ValueError("post_weave must name generic and final woven directories")
+    allowed = {"{generic_woven}", "{final_woven}", "{classpath}"}
+    if any(item.startswith("{") and item.endswith("}") and item not in allowed
+           for item in args):
+        raise ValueError("post_weave has an unknown placeholder")
+    if not isinstance(jvm_args, list) or not all(
+            isinstance(item, str) and item for item in jvm_args):
+        raise ValueError("post_weave jvm_args need an argv array")
+    if any("-javaagent:" in item for item in jvm_args):
+        raise ValueError("post_weave cannot attach a Java instrumentation agent")
+    return {"main_class": main_class, "args": args, "jvm_args": jvm_args}
 
 
 def _manifest_target(manifest: dict[str, Any], target: dict[str, Any]) -> list[dict[str, Any]]:
@@ -209,8 +445,18 @@ def load_config(path: Path) -> dict[str, Any]:
     java = raw.get("java", "java")
     if not isinstance(java, str) or not java or os.path.sep in java and not Path(java).is_file():
         raise ValueError("java must be an executable name or existing path")
+    java_feature = _java_feature_version(java)
     runner = _runner(raw.get("runner"), junit)
     _runner_class_sha256(runner["main_class"], [*tool_cp, *originals, *test_cp])
+    post_weave = _post_weave(raw.get("post_weave"))
+    if post_weave is not None:
+        _runner_class_sha256(post_weave["main_class"],
+                             [*tool_cp, *originals, *test_cp])
+    trial_cwd_template = (_path(raw["trial_cwd_template"], base,
+                                "trial_cwd_template", directory=True)
+                          if "trial_cwd_template" in raw else None)
+    template_sha256 = (_tree_sha256(trial_cwd_template)
+                       if trial_cwd_template is not None else None)
     return {"schema_version": SCHEMA, "config_sha256": _sha256(path),
             "case_id": raw.get("case_id"),
             "junit": junit, "target": target,
@@ -218,7 +464,11 @@ def load_config(path: Path) -> dict[str, Any]:
             "weave_manifest": manifest_path, "static_scope_map": static_map,
             "original_class_dirs": originals, "tool_classpath": tool_cp,
             "test_classpath": test_cp, "graph_jar": graph_jar,
-            "cwd": cwd, "java": java, "runner": runner}
+            "cwd": cwd, "java": java, "java_feature_version": java_feature,
+            "runner": runner,
+            "post_weave": post_weave,
+            "trial_cwd_template": trial_cwd_template,
+            "trial_cwd_template_sha256": template_sha256}
 
 
 def prepare(config: dict[str, Any], output: Path) -> Path:
@@ -239,6 +489,7 @@ def prepare(config: dict[str, Any], output: Path) -> Path:
     if not selected_classes:
         raise ValueError("weave manifest selected no classes")
     original_hashes = {}
+    original_majors = {}
     stage = output / "selected-original"
     for clazz in selected_classes:
         relative = Path(clazz.replace(".", "/") + ".class")
@@ -247,6 +498,10 @@ def prepare(config: dict[str, Any], output: Path) -> Path:
         if path is None:
             raise FileNotFoundError(f"selected class absent from original_class_dirs: {clazz}")
         original_hashes[clazz] = {"path": str(path), "sha256": _sha256(path)}
+        original_majors[clazz] = _class_major(path)
+        if original_majors[clazz] > config["java_feature_version"] + 44:
+            raise ValueError(f"original class major {original_majors[clazz]} exceeds "
+                             f"configured Java {config['java_feature_version']}: {path}")
         copy = stage / relative
         copy.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(path, copy)
@@ -264,11 +519,47 @@ def prepare(config: dict[str, Any], output: Path) -> Path:
         subprocess.run(argv, cwd=config["cwd"], check=True, timeout=1800,
                        stdout=stdout, stderr=stderr)
     woven_hashes = {}
+    woven_majors = {}
     for clazz in selected_classes:
         path = woven / (clazz.replace(".", "/") + ".class")
         if not path.is_file():
             raise ValueError(f"weave omitted selected class: {clazz}")
         woven_hashes[clazz] = _sha256(path)
+        woven_majors[clazz] = _check_woven_major(
+            path, config["java_feature_version"], original_majors[clazz])
+    post = config["post_weave"]
+    post_hashes: dict[str, str] = {}
+    post_argv: list[str] | None = None
+    post_main_sha256: str | None = None
+    if post is not None:
+        final = output / "woven-post"
+        post_cp = os.pathsep.join(map(str, [woven, *config["tool_classpath"],
+                                            *config["original_class_dirs"],
+                                            *config["test_classpath"]]))
+        substitutions = {"{generic_woven}": str(woven),
+                         "{final_woven}": str(final),
+                         "{classpath}": post_cp}
+        post_argv = [config["java"], *post["jvm_args"], "-cp", post_cp,
+                     post["main_class"],
+                     *(substitutions.get(item, item) for item in post["args"])]
+        post_main_sha256 = _runner_class_sha256(
+            post["main_class"], [*config["tool_classpath"],
+                                 *config["original_class_dirs"],
+                                 *config["test_classpath"]])
+        with (output / "post-weave.stdout.log").open("wb") as stdout, (
+                output / "post-weave.stderr.log").open("wb") as stderr:
+            subprocess.run(post_argv, cwd=config["cwd"], check=True,
+                           timeout=1800, stdout=stdout, stderr=stderr)
+        if not final.is_dir():
+            raise ValueError("post_weave did not create final woven directory")
+        post_hashes = {path.relative_to(final).as_posix(): _sha256(path)
+                       for path in sorted(final.rglob("*.class"))}
+        if not post_hashes:
+            raise ValueError("post_weave did not emit any class")
+        for path in sorted(final.rglob("*.class")):
+            clazz = path.relative_to(final).as_posix()[:-6].replace("/", ".")
+            _check_woven_major(path, config["java_feature_version"],
+                               original_majors.get(clazz))
     _write_json(output / "weave-receipt.json", {
         "schema_version": SCHEMA, "controller": CONTROLLER,
         "config_sha256": config["config_sha256"],
@@ -276,6 +567,7 @@ def prepare(config: dict[str, Any], output: Path) -> Path:
         "effective_manifest_sha256": _sha256(effective_manifest),
         "static_scope_map_sha256": _sha256(config["static_scope_map"]),
         "graph_jar_sha256": _sha256(config["graph_jar"]),
+        "java_feature_version": config["java_feature_version"],
         "runner_class_sha256": _runner_class_sha256(
             config["runner"]["main_class"],
             [*config["tool_classpath"], *config["original_class_dirs"],
@@ -285,17 +577,25 @@ def prepare(config: dict[str, Any], output: Path) -> Path:
             [*config["tool_classpath"], *config["original_class_dirs"],
              *config["test_classpath"]]),
         "original_class_sha256": original_hashes,
-        "woven_class_sha256": woven_hashes, "weave_argv": argv})
+        "original_class_major": original_majors,
+        "woven_class_sha256": woven_hashes,
+        "woven_class_major": woven_majors, "weave_argv": argv,
+        "post_weave_main_sha256": post_main_sha256,
+        "post_woven_class_sha256": post_hashes,
+        "post_weave_argv": post_argv,
+        "trial_cwd_template_sha256": config["trial_cwd_template_sha256"]})
     return output
 
 
-def _verify_prepared(config: dict[str, Any], prepared: Path) -> Path:
+def _verify_prepared(config: dict[str, Any], prepared: Path) -> list[Path]:
     receipt = _json(prepared / "weave-receipt.json")
     if (receipt.get("controller") != CONTROLLER or
             receipt.get("config_sha256") != config["config_sha256"] or
             receipt.get("source_manifest_sha256") != _sha256(config["weave_manifest"]) or
             receipt.get("static_scope_map_sha256") != _sha256(config["static_scope_map"]) or
             receipt.get("graph_jar_sha256") != _sha256(config["graph_jar"]) or
+            receipt.get("java_feature_version", config["java_feature_version"]) !=
+            config["java_feature_version"] or
             receipt.get("runner_class_sha256") != _runner_class_sha256(
                 config["runner"]["main_class"],
                 [*config["tool_classpath"], *config["original_class_dirs"],
@@ -305,7 +605,11 @@ def _verify_prepared(config: dict[str, Any], prepared: Path) -> Path:
                 [*config["tool_classpath"], *config["original_class_dirs"],
                  *config["test_classpath"]]) or
             receipt.get("effective_manifest_sha256") != _sha256(
-                prepared / "weave-manifest.json")):
+                prepared / "weave-manifest.json") or
+            receipt.get("trial_cwd_template_sha256") != config["trial_cwd_template_sha256"] or
+            (config["trial_cwd_template"] is not None and
+             _tree_sha256(config["trial_cwd_template"]) !=
+             config["trial_cwd_template_sha256"])):
         raise ValueError("prepared weave inputs changed")
     for clazz, source in receipt.get("original_class_sha256", {}).items():
         path = Path(source["path"])
@@ -313,11 +617,44 @@ def _verify_prepared(config: dict[str, Any], prepared: Path) -> Path:
                     config["original_class_dirs"]) or
                 _sha256(path) != source["sha256"]):
             raise ValueError(f"original selected class changed: {clazz}")
+        major = _class_major(path)
+        if (major > config["java_feature_version"] + 44 or
+                (receipt.get("original_class_major") and
+                 receipt["original_class_major"].get(clazz) != major)):
+            raise ValueError(f"original class major incompatible or changed: {path}")
     for clazz, expected in receipt.get("woven_class_sha256", {}).items():
         path = prepared / "woven" / (clazz.replace(".", "/") + ".class")
         if _sha256(path) != expected:
             raise ValueError(f"prepared woven class changed: {clazz}")
-    return prepared / "woven"
+        original = receipt["original_class_sha256"].get(clazz)
+        original_major = _class_major(Path(original["path"])) if original else None
+        major = _check_woven_major(path, config["java_feature_version"], original_major)
+        if (receipt.get("woven_class_major") and
+                receipt["woven_class_major"].get(clazz) != major):
+            raise ValueError(f"prepared woven class major changed: {clazz}")
+    post = config["post_weave"]
+    post_hashes = receipt.get("post_woven_class_sha256")
+    if post is None:
+        if receipt.get("post_weave_main_sha256") is not None or post_hashes:
+            raise ValueError("unexpected post-weave classes in prepared receipt")
+        return [prepared / "woven"]
+    if not isinstance(post_hashes, dict) or not post_hashes or (
+            receipt.get("post_weave_main_sha256") != _runner_class_sha256(
+                post["main_class"], [*config["tool_classpath"],
+                                     *config["original_class_dirs"],
+                                     *config["test_classpath"]])):
+        raise ValueError("post-weave adapter or receipt changed")
+    final = prepared / "woven-post"
+    found = {path.relative_to(final).as_posix(): _sha256(path)
+             for path in sorted(final.rglob("*.class"))}
+    if found != post_hashes:
+        raise ValueError("post-weave classes changed")
+    for path in sorted(final.rglob("*.class")):
+        clazz = path.relative_to(final).as_posix()[:-6].replace("/", ".")
+        original = receipt["original_class_sha256"].get(clazz)
+        original_major = _class_major(Path(original["path"])) if original else None
+        _check_woven_major(path, config["java_feature_version"], original_major)
+    return [final, prepared / "woven"]
 
 
 def _door_types(manifest: dict[str, Any]) -> dict[str, str]:
@@ -359,12 +696,16 @@ def load_trace(path: Path, *, max_bytes: int = 256 * 1024 * 1024) -> list[dict[s
     Embedded-cluster threads can emit after teardown until process exit.
     Those rows are real raw evidence but cannot influence this trial's graph.
     """
-    if not path.is_file() or path.stat().st_size > max_bytes:
-        raise ValueError(f"GraphChecker trace missing or over {max_bytes} bytes: {path}")
+    if not path.is_file():
+        raise ValueError(f"GraphChecker trace missing: {path}")
     rows: list[dict[str, Any]] = []
     prior = 0
-    with path.open("rb") as stream:
+    consumed = 0
+    with _trace_stream(path) as stream:
         for number, line in enumerate(stream, 1):
+            consumed += len(line)
+            if consumed > max_bytes:
+                raise ValueError(f"GraphChecker trace over {max_bytes} decoded bytes: {path}")
             if not line.endswith(b"\n"):
                 raise ValueError(f"incomplete GraphChecker row {number}: {path}")
             row = json.loads(line)
@@ -380,6 +721,60 @@ def load_trace(path: Path, *, max_bytes: int = 256 * 1024 * 1024) -> list[dict[s
             kinds.index("WINDOW_OPEN") >= kinds.index("WINDOW_CLOSE")):
         raise ValueError("GraphChecker trace lacks one complete JUnit window")
     return rows[kinds.index("WINDOW_OPEN"):kinds.index("WINDOW_CLOSE") + 1]
+
+
+def scan_window_trace(path: Path, output: Path | None = None, *,
+                      selected_kinds: set[str] | None = None,
+                      max_bytes: int = 4 * 1024 * 1024 * 1024
+                      ) -> tuple[list[dict[str, Any]], int]:
+    """Validate and stream one JUnit window, retaining only oracle/door rows.
+
+    Full HDFS traces may exceed a gigabyte. The graph still receives every
+    window row, while Python retains only the rows used for fault selection
+    and the exact target oracle. Raw bytes are copied unchanged into output.
+    """
+    selected = selected_kinds if selected_kinds is not None else {
+        "FAULT_DOOR", "FAULT_APPLIED", "TARGET_CHECK", "TARGET_THROW"}
+    rows: list[dict[str, Any]] = []
+    previous = 0
+    opened = False
+    closed = False
+    count = 0
+    consumed = 0
+    if not path.is_file():
+        raise ValueError(f"GraphChecker trace missing: {path}")
+    with _trace_stream(path) as source, (
+            output.open("wb") if output is not None else open(os.devnull, "wb")) as target:
+        for number, line in enumerate(source, 1):
+            consumed += len(line)
+            if consumed > max_bytes:
+                raise ValueError(f"GraphChecker trace over {max_bytes} decoded bytes: {path}")
+            if not line.endswith(b"\n"):
+                raise ValueError(f"incomplete GraphChecker row {number}: {path}")
+            row = json.loads(line)
+            if not isinstance(row, dict) or not isinstance(row.get("kind"), str):
+                raise ValueError(f"invalid GraphChecker row {number}: {path}")
+            seq = row.get("seq")
+            if not isinstance(seq, int) or isinstance(seq, bool) or seq <= previous:
+                raise ValueError(f"nonmonotone GraphChecker seq at row {number}: {path}")
+            previous = seq
+            kind = row["kind"]
+            if kind == "WINDOW_OPEN":
+                if opened:
+                    raise ValueError(f"multiple GraphChecker windows: {path}")
+                opened = True
+            if opened and not closed:
+                target.write(line)
+                count += 1
+                if kind in selected:
+                    rows.append(row)
+            if kind == "WINDOW_CLOSE":
+                if not opened or closed:
+                    raise ValueError(f"GraphChecker window closes without an open: {path}")
+                closed = True
+    if not opened or not closed:
+        raise ValueError(f"GraphChecker trace lacks one complete JUnit window: {path}")
+    return rows, count
 
 
 def _identity(row: dict[str, Any]) -> tuple[Any, ...]:
@@ -491,18 +886,40 @@ def run_trial(config: dict[str, Any], prepared: Path, trial: Path,
     door_types = _door_types(_json(prepared / "weave-manifest.json"))
     faults = validate_plan(plan, door_types)
     prior_throw_count = None
+    prior_digest = None
+    prior_archive_digest = None
     if prior_trace is not None:
-        prior_rows = load_trace(prior_trace)
+        prior_result = prior_trace.parent / "result.json"
+        if prior_trace.suffix == ".gz" and prior_result.is_file():
+            verify_trial_artifacts(prior_trace.parent, _json(prior_result),
+                                   {"window_trace"})
+        prior_rows, _ = scan_window_trace(prior_trace,
+                                          selected_kinds={"TARGET_THROW"})
         prior_throw_count = sum(
             row.get("kind") == "TARGET_THROW" and
             row.get("siteId") == config["target"]["throw_site_id"] and
             row.get("exceptionClass") == config["target"]["exception_class"] and
             bool(row.get("occurrenceId")) for row in prior_rows)
+        prior_digest, _ = _trace_digest(prior_trace)
+        prior_archive_digest = _sha256(prior_trace) if prior_trace.suffix == ".gz" else None
     trial.mkdir(parents=True, exist_ok=False)
     native_plan = trial / "fault-plan.json"
     _write_json(native_plan, {"faults": faults})
-    raw_trace = trial / "graphchecker-raw.jsonl"
-    trace = trial / "graphchecker-trace.jsonl"
+    scratch_root = Path("/dev/shm") if Path("/dev/shm").is_dir() else None
+    scratch = Path(tempfile.mkdtemp(prefix="mallory-gc-trial-", dir=scratch_root))
+    raw_trace = scratch / "graphchecker-raw.jsonl"
+    trace = scratch / "graphchecker-trace.jsonl"
+    workdir = scratch / "workdir"
+    template = config["trial_cwd_template"]
+    if template is None:
+        workdir.mkdir()
+    else:
+        if _tree_sha256(template) != config["trial_cwd_template_sha256"]:
+            raise ValueError("trial cwd template changed after config load")
+        shutil.copytree(template, workdir)
+        for copied in workdir.rglob("*"):
+            copied.chmod(copied.stat().st_mode | 0o200)
+        workdir.chmod(workdir.stat().st_mode | 0o200)
     env = os.environ.copy()
     env["MALLORY_GC_TRACE"] = str(raw_trace)
     env["MALLORY_GC_FAULT_PLAN"] = str(native_plan)
@@ -512,22 +929,26 @@ def run_trial(config: dict[str, Any], prepared: Path, trial: Path,
         env.pop(name, None)
     if "-javaagent:" in env.get("JAVA_TOOL_OPTIONS", ""):
         raise ValueError("JAVA_TOOL_OPTIONS contains a legacy Java agent")
-    cp = os.pathsep.join(map(str, [woven, *config["tool_classpath"],
+    cp = os.pathsep.join(map(str, [*woven, *config["tool_classpath"],
                                     *config["original_class_dirs"],
                                     *config["test_classpath"]]))
     runner = config["runner"]
-    argv = [config["java"], *runner["jvm_args"], "-cp", cp,
-            runner["main_class"], *runner["args"]]
+    argv = [config["java"], *(_trial_arg(arg, trial, workdir)
+                               for arg in runner["jvm_args"]), "-cp", cp,
+            runner["main_class"], *(_trial_arg(arg, trial, workdir)
+                                    for arg in runner["args"])]
     started = time.time()
     timed_out = False
     with (trial / "stdout.log").open("wb") as stdout, (
             trial / "stderr.log").open("wb") as stderr:
-        process = subprocess.Popen(argv, cwd=config["cwd"], env=env,
+        process = subprocess.Popen(argv, cwd=workdir, env=env,
                                    stdout=stdout, stderr=stderr,
                                    start_new_session=True)
         _write_json(trial / "process.json", {
             "pid": process.pid, "start_ticks": _process_start_ticks(process.pid),
-            "runner_class": runner["main_class"], "junit_class": config["junit"]["class"]})
+            "runner_class": runner["main_class"], "junit_class": config["junit"]["class"],
+            "scratch_dir": str(scratch), "trial_cwd": str(workdir),
+            "trial_cwd_template_sha256": config["trial_cwd_template_sha256"]})
         try:
             return_code = process.wait(timeout=config["timeout_seconds"])
         except subprocess.TimeoutExpired:
@@ -546,19 +967,19 @@ def run_trial(config: dict[str, Any], prepared: Path, trial: Path,
         "return_code": return_code, "timed_out": timed_out,
         "elapsed_seconds": elapsed, "junit_passed": return_code == 0 and not timed_out,
         "fault_plan": faults, "fault_plan_sha256": _sha256(native_plan),
-        "raw_trace_sha256": _sha256(raw_trace) if raw_trace.is_file() else None,
-        "prior_trace_sha256": _sha256(prior_trace) if prior_trace is not None else None,
+        "raw_trace_sha256": None,
+        "prior_trace_sha256": prior_digest,
+        "prior_trace_archive_sha256": prior_archive_digest,
         "prior_seed_target_throw_count": prior_throw_count,
         "static_scope_map_sha256": _sha256(config["static_scope_map"]),
         "weave_receipt_sha256": _sha256(prepared / "weave-receipt.json"),
+        "trial_cwd_template_sha256": config["trial_cwd_template_sha256"],
         "target_exception_triggered": False,
         "target_exception_candidate": False}
     try:
-        rows = load_trace(raw_trace)
-        trace.write_text("".join(json.dumps(row, sort_keys=True) + "\n"
-                                 for row in rows), encoding="utf-8")
+        rows, window_count = scan_window_trace(raw_trace, trace)
         anchor = config["target"].get("check_site_id") or config["target"]["throw_site_id"]
-        graph = analyze_trial(trial, anchor, prior_trace, config["graph_jar"],
+        graph = analyze_trial(scratch, anchor, prior_trace, config["graph_jar"],
                               config["static_scope_map"])
         evidence = summarize_evidence(rows, graph, config["target"], faults,
                                       door_types)
@@ -574,17 +995,32 @@ def run_trial(config: dict[str, Any], prepared: Path, trial: Path,
                        else "unmatched" if faults and not evidence["strict_injection"]
                        else "lost_target" if faults else "healthy_seed",
                        "graphchecker_feedback": graph, "evidence": evidence,
-                       "window_rows": len(rows),
+                       "window_rows": window_count,
                        "trace_sha256": _sha256(trace),
                        "target_exception_triggered": triggered,
                        "target_exception_candidate": differential,
-                       "graph_sha256": _sha256(trial / "graphchecker-graph.jsonl"),
-                       "feedback_sha256": _sha256(trial / "graphchecker-feedback.json")})
+                       "graph_sha256": _sha256(scratch / "graphchecker-graph.jsonl"),
+                       "feedback_sha256": _sha256(scratch / "graphchecker-feedback.json")})
+        shutil.copyfile(scratch / "graphchecker-feedback.json",
+                        trial / "graphchecker-feedback.json")
     except (ValueError, FileNotFoundError, subprocess.SubprocessError, OSError,
             json.JSONDecodeError) as failure:
         result.update({"status": "invalid_graphchecker_trace",
                        "analysis_error": str(failure)})
+    artifacts = {}
+    for name, filename in (("raw_trace", "graphchecker-raw.jsonl"),
+                           ("window_trace", "graphchecker-trace.jsonl"),
+                           ("graph", "graphchecker-graph.jsonl")):
+        source = scratch / filename
+        if source.is_file():
+            artifacts[name] = _archive_jsonl(source, trial)
+    result["artifacts"] = artifacts
+    result["raw_trace_sha256"] = (artifacts.get("raw_trace") or {}).get("content_sha256")
+    if result["target_exception_triggered"]:
+        result["workdir_artifact"] = _archive_workdir(workdir, trial)
+    shutil.rmtree(scratch)
     _write_json(trial / "result.json", result)
+    verify_trial_artifacts(trial, result)
     return result
 
 

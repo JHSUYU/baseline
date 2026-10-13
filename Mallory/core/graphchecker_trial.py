@@ -6,8 +6,11 @@ events or static may-relevance as observed causal edges or target evidence.
 
 from __future__ import annotations
 
+import gzip
 import json
+import shutil
 import subprocess
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -26,18 +29,29 @@ def analyze_trial(trial: Path, target_site: str, prior_trace: Path | None = None
     trace = trial / "graphchecker-trace.jsonl"
     graph = trial / "graphchecker-graph.jsonl"
     feedback = trial / "graphchecker-feedback.json"
-    command = ["java", "-jar", str(selected_jar), str(trace), str(graph),
-               str(feedback), target_site]
-    if prior_trace is not None or static_scope_map is not None:
-        if prior_trace is not None and not prior_trace.is_file():
-            raise FileNotFoundError(f"prior GraphChecker trace missing: {prior_trace}")
-        command.append(str(prior_trace) if prior_trace is not None else "-")
-    if static_scope_map is not None:
-        if not static_scope_map.is_file():
-            raise FileNotFoundError(f"GraphChecker static scope map missing: {static_scope_map}")
-        command.append(str(static_scope_map))
-    subprocess.run(command, check=True, timeout=120, stdout=subprocess.DEVNULL,
-                   stderr=subprocess.PIPE)
+    if prior_trace is not None and not prior_trace.is_file():
+        raise FileNotFoundError(f"prior GraphChecker trace missing: {prior_trace}")
+    if static_scope_map is not None and not static_scope_map.is_file():
+        raise FileNotFoundError(f"GraphChecker static scope map missing: {static_scope_map}")
+    # TrialGraphMain reads plain JSONL. A healthy seed is stored durably as
+    # gzip, so materialize it only for this analysis invocation and remove it
+    # even when Java fails. The current trial trace remains plain until its
+    # result and archive receipts are complete.
+    scratch = Path("/dev/shm") if Path("/dev/shm").is_dir() else None
+    with tempfile.TemporaryDirectory(prefix="mallory-gc-prior-", dir=scratch) as temp:
+        prior_input = prior_trace
+        if prior_trace is not None and prior_trace.suffix == ".gz":
+            prior_input = Path(temp) / "prior.jsonl"
+            with gzip.open(prior_trace, "rb") as source, prior_input.open("wb") as target:
+                shutil.copyfileobj(source, target, length=1024 * 1024)
+        command = ["java", "-jar", str(selected_jar), str(trace), str(graph),
+                   str(feedback), target_site]
+        if prior_input is not None or static_scope_map is not None:
+            command.append(str(prior_input) if prior_input is not None else "-")
+        if static_scope_map is not None:
+            command.append(str(static_scope_map))
+        subprocess.run(command, check=True, timeout=120, stdout=subprocess.DEVNULL,
+                       stderr=subprocess.PIPE)
     value = json.loads(feedback.read_text(encoding="utf-8"))
     if not isinstance(value, dict) or value.get("schemaVersion") != 1:
         raise ValueError(f"invalid GraphChecker trial feedback: {feedback}")

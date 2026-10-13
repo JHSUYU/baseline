@@ -6,10 +6,15 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
-from Mallory.core.graphchecker_campaign import (_door_types, _runner,
+from Mallory.core.graphchecker_campaign import (_archive_jsonl, _check_woven_major,
+                                                _door_types, _runner, _tree_sha256,
+                                                _trial_arg,
                                                 _runner_class_sha256, load_config, load_trace,
-                                                summarize_evidence, validate_plan)
+                                                scan_window_trace, summarize_evidence,
+                                                validate_plan, verify_trial_artifacts)
+from Mallory.core.graphchecker_trial import analyze_trial
 
 
 class GraphCheckerCampaignTest(unittest.TestCase):
@@ -202,6 +207,88 @@ class GraphCheckerCampaignTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "second Java instrumentation"):
             _runner({"main_class": "fixture.Runner", "args": ["{class}"],
                      "jvm_args": ["-javaagent:old.jar"]}, junit)
+
+    def test_stream_window_and_durable_gzip_receipts(self):
+        with tempfile.TemporaryDirectory() as temp:
+            trial = Path(temp)
+            raw = trial / "graphchecker-raw.jsonl"
+            window = trial / "graphchecker-trace.jsonl"
+            graph = trial / "graphchecker-graph.jsonl"
+            rows = [{"kind": "COVERAGE", "seq": 1},
+                    *[{**row, "seq": row["seq"] + 1} for row in self.rows()],
+                    {"kind": "COVERAGE", "seq": 9}]
+            raw.write_text("".join(json.dumps(row) + "\n" for row in rows))
+            selected, count = scan_window_trace(raw, window)
+            self.assertEqual(7, count)
+            self.assertEqual(["FAULT_DOOR", "FAULT_APPLIED", "TARGET_CHECK",
+                              "TARGET_THROW"], [row["kind"] for row in selected])
+            self.assertEqual(7, len(load_trace(window)))
+            graph.write_text('{"kind":"edge"}\n')
+            artifacts = {name: _archive_jsonl(trial / filename, trial)
+                         for name, filename in (
+                             ("raw_trace", raw.name),
+                             ("window_trace", window.name),
+                             ("graph", graph.name))}
+            result = {"backend": "graphchecker_native", "status": "checked",
+                      "artifacts": artifacts,
+                      "raw_trace_sha256": artifacts["raw_trace"]["content_sha256"],
+                      "trace_sha256": artifacts["window_trace"]["content_sha256"],
+                      "graph_sha256": artifacts["graph"]["content_sha256"]}
+            verify_trial_artifacts(trial, result)
+            self.assertFalse(raw.exists())
+            self.assertFalse(window.exists())
+            self.assertEqual(7, len(load_trace(trial / "graphchecker-trace.jsonl.gz")))
+            with (trial / "graphchecker-trace.jsonl.gz").open("ab") as stream:
+                stream.write(b"corrupt")
+            with self.assertRaisesRegex(ValueError, "changed window_trace"):
+                verify_trial_artifacts(trial, result)
+
+    def test_compressed_prior_is_materialized_only_during_graph_analysis(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            trial = root / "trial"
+            trial.mkdir()
+            (trial / "graphchecker-trace.jsonl").write_text('{}\n')
+            jar = root / "graph.jar"
+            jar.write_bytes(b"fixture")
+            prior = root / "prior.jsonl"
+            prior.write_text("".join(json.dumps(row) + "\n" for row in self.rows()))
+            receipt = _archive_jsonl(prior, root)
+            observed = []
+
+            def fake_run(command, **_):
+                materialized = Path(command[-1])
+                observed.append((materialized, materialized.read_bytes()))
+                (trial / "graphchecker-feedback.json").write_text(
+                    json.dumps({"schemaVersion": 1, "targetSite": "check"}))
+
+            with patch("Mallory.core.graphchecker_trial.subprocess.run",
+                       side_effect=fake_run):
+                analyze_trial(trial, "check", root / receipt["path"], jar)
+            self.assertEqual(prior.read_bytes() if prior.exists() else
+                             "".join(json.dumps(row) + "\n" for row in self.rows()).encode(),
+                             observed[0][1])
+            self.assertFalse(observed[0][0].exists())
+
+    def test_pinned_trial_template_and_java_major_gate(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            fixture = root / "fixture"
+            fixture.mkdir()
+            file = fixture / "initial.txt"
+            file.write_text("before")
+            before = _tree_sha256(fixture)
+            file.write_text("after")
+            self.assertNotEqual(before, _tree_sha256(fixture))
+            self.assertEqual(f"-Djava.io.tmpdir={root}/cwd",
+                             _trial_arg("-Djava.io.tmpdir={trial_cwd}",
+                                        root / "trial", root / "cwd"))
+            clazz = root / "Selected.class"
+            clazz.write_bytes(b"\xca\xfe\xba\xbe\x00\x00\x00\x37")
+            with self.assertRaisesRegex(ValueError, "exceeds Java 8 max 52"):
+                _check_woven_major(clazz, 8, 52)
+            clazz.write_bytes(b"\xca\xfe\xba\xbe\x00\x00\x00\x34")
+            self.assertEqual(52, _check_woven_major(clazz, 8, 52))
 
 
 if __name__ == "__main__":

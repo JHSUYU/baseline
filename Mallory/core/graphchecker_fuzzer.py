@@ -18,13 +18,14 @@ from pathlib import Path
 from typing import Any
 
 from .graphchecker_campaign import (_json, _write_json, load_config, prepare,
-                                    run_trial)
+                                    run_trial, verify_trial_artifacts)
 
 SCHEMA = 1
 PLAN_FIELDS = ("siteId", "node", "occurrenceId", "ordinal", "exceptionClass")
 TIER_WEIGHT = {"observed_closure": 100, "static_may_observed": 55,
                "outside_closure": 15, "after_target": -100}
 MAX_QUEUE = 5000
+MAX_UNMATCHED_RETRIES = 2
 
 
 def _now() -> str:
@@ -153,6 +154,7 @@ def _new_state(config: dict[str, Any], budget: dict[str, int]) -> dict[str, Any]
             "started_at": _now(), "updated_at": _now(),
             "completed_fault_trials": 0, "trial_elapsed_seconds": 0.0,
             "healthy": None, "trials": [], "queue": [], "seen_plan_keys": [],
+            "unmatched_retries": {},
             "active": None, "next_trial_index": 1}
 
 
@@ -175,6 +177,7 @@ def _accept_result(state: dict[str, Any], name: str,
     if active is None or active["name"] != name:
         raise ValueError("checkpoint active trial disagrees with result")
     record = _trial_record(name, result)
+    record["unmatched_retry"] = active.get("unmatched_retry", 0)
     state["trial_elapsed_seconds"] = round(
         state["trial_elapsed_seconds"] + result["elapsed_seconds"], 3)
     if active["index"] == 0:
@@ -193,6 +196,21 @@ def _accept_result(state: dict[str, Any], name: str,
         state["trials"].append(record)
         state["completed_fault_trials"] += 1
         evidence = result.get("evidence", {})
+        if result["status"] == "unmatched" and active["faults"]:
+            # The planned I/O may disappear under scheduling nondeterminism.
+            # Give this exact plan at most two more chances; each attempt still
+            # consumes the trial/time budget and is recorded independently.
+            key = _plan_key(active["faults"])
+            retries = state.setdefault("unmatched_retries", {})
+            count = int(retries.get(key, 0))
+            if count < MAX_UNMATCHED_RETRIES and len(state["queue"]) < MAX_QUEUE:
+                retries[key] = count + 1
+                state["queue"].append({
+                    "key": key, "faults": active["faults"],
+                    "tier": active.get("selection_tier", "outside_closure"),
+                    "novelty": -10 * (count + 1),
+                    "enqueued_at": state["completed_fault_trials"],
+                    "unmatched_retry": count + 1})
         if evidence.get("strict_injection") and (
                 evidence.get("post_fault_target_reached") or
                 result.get("target_exception_triggered")):
@@ -214,6 +232,7 @@ def _resume_active(state: dict[str, Any], root: Path,
         result = _json(result_file)
         if result.get("case_id") != state["case_id"] or result.get("fault_plan") != active["faults"]:
             raise ValueError("completed active trial does not match checkpoint")
+        verify_trial_artifacts(trial, result)
         _accept_result(state, name, result)
         _write_json(root / "checkpoint.json", state)
         return
@@ -227,11 +246,28 @@ def _resume_active(state: dict[str, Any], root: Path,
             suffix += 1
         trial.rename(archive / f"{name}-attempt{suffix}")
         active["interrupted_attempts"] = suffix
-    prior = root / "trials" / "r0000" / "graphchecker-trace.jsonl"
+    prior = root / "trials" / "r0000" / "graphchecker-trace.jsonl.gz"
+    if active["index"] > 0 and not prior.is_file():
+        # Allow trials from the initial uncompressed pilot to resume without
+        # replaying their completed healthy seed.
+        legacy = prior.with_suffix("")
+        if not legacy.is_file():
+            raise FileNotFoundError(f"healthy GraphChecker trace missing: {prior}")
+        prior = legacy
     result = run_trial(config, prepared, trial, {"faults": active["faults"]},
                        prior if active["index"] > 0 else None)
     _accept_result(state, name, result)
     _write_json(root / "checkpoint.json", state)
+
+
+def _verify_recorded_evidence(state: dict[str, Any], root: Path) -> None:
+    """Resume only when every recorded terminal trial still has its evidence."""
+    for record in ([state["healthy"]] if state.get("healthy") else []) + state.get("trials", []):
+        path = root / record["result"]
+        result = _json(path)
+        if result.get("case_id") != state["case_id"] or result.get("fault_plan") != record["faults"]:
+            raise ValueError(f"checkpoint trial receipt changed: {path}")
+        verify_trial_artifacts(path.parent, result)
 
 
 def _finish(state: dict[str, Any], root: Path) -> dict[str, Any]:
@@ -256,6 +292,8 @@ def _finish(state: dict[str, Any], root: Path) -> dict[str, Any]:
                    "trial_elapsed_seconds": state["trial_elapsed_seconds"],
                    "healthy": state["healthy"],
                    "strict_trials": sum(row["strict_injection"] for row in trials),
+                   "unmatched_trials": sum(row["status"] == "unmatched"
+                                           for row in trials),
                    "post_fault_target_trials": sum(row["post_fault_target_reached"]
                                                    for row in trials),
                    "target_exception_triggered_trials": sum(
@@ -288,6 +326,7 @@ def run_campaign(config_path: Path, root: Path) -> dict[str, Any]:
                     state.get("config_sha256") != config["config_sha256"] or
                     state.get("budget") != budget):
                 raise ValueError("campaign checkpoint does not match immutable config")
+            _verify_recorded_evidence(state, root)
         else:
             state = _new_state(config, budget)
             _write_json(checkpoint, state)
@@ -314,7 +353,8 @@ def run_campaign(config_path: Path, root: Path) -> dict[str, Any]:
             state["active"] = {"index": index, "name": f"r{index:04d}",
                                "faults": selected["faults"],
                                "selection_tier": selected["tier"],
-                               "selection_score": _score(selected, state["completed_fault_trials"])}
+                               "selection_score": _score(selected, state["completed_fault_trials"]),
+                               "unmatched_retry": selected.get("unmatched_retry", 0)}
             _write_json(checkpoint, state)
             _resume_active(state, root, config, prepared)
         return _finish(state, root)

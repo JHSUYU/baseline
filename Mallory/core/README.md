@@ -43,6 +43,30 @@ receipt. The runner must open exactly one GraphChecker window and bind a named
 request scope on the thread executing the unchanged test method. The default
 runner is `JUnitTrialMain`; a second Java agent is rejected.
 
+Each trial gets a fresh writable cwd in `/dev/shm`; set the optional
+`"trial_cwd_template":"/absolute/pinned/fixture-directory"` to copy initial
+fixtures into it. The template's names and file contents are hashed in the
+weave receipt and checked before each run. The runner's `args` and `jvm_args`
+may use `{trial_dir}` for the durable evidence directory and `{trial_cwd}` for
+the fresh cwd, for example `"-Djava.io.tmpdir={trial_cwd}"`. The JVM runs from
+that cwd. An interrupted trial starts again from a clean template copy.
+
+When a system needs an adapter after the generic Soot weave, use the optional
+`post_weave` object:
+
+```json
+"post_weave": {
+  "main_class": "org.example.PortableAdapter",
+  "jvm_args": [],
+  "args": ["{generic_woven}", "{final_woven}", "{classpath}"]
+}
+```
+
+The adapter runs once during preparation, and its output class bytes and
+adapter class are pinned in the weave receipt. Trial classpath places the
+final adapter output before the generic weave output. Its static scope and
+fault controller still come from the same Soot manifest.
+
 For a target that is itself a selected `THROW`, omit `check_site_id`. Both
 target site IDs must resolve to unique sites in the static weave manifest;
 the throw site must declare the same exception class. The current preparation
@@ -69,7 +93,7 @@ python3 -m Mallory.core.graphchecker_campaign trial \
 python3 -m Mallory.core.graphchecker_campaign trial \
   --config /absolute/case.json --prepared /absolute/campaign/prepared \
   --plan /absolute/campaign/fault-001.json \
-  --prior-trace /absolute/campaign/healthy/graphchecker-trace.jsonl \
+  --prior-trace /absolute/campaign/healthy/graphchecker-trace.jsonl.gz \
   --out /absolute/campaign/trial-001
 ```
 
@@ -89,17 +113,23 @@ result also records its exact target throw count, so an injected trigger stays
 distinct from an exception already expected by the original JUnit.
 
 Each `result.json` keeps GraphChecker closure occurrence IDs, edge IDs,
-coverage sites, gaps, and observed fault doors. The full recorder output is
-`graphchecker-raw.jsonl`; the graph consumes only rows between its unique
-`WINDOW_OPEN` and `WINDOW_CLOSE`, saved as `graphchecker-trace.jsonl`. This
-prevents server shutdown activity after JUnit teardown from entering the
-trial's causal graph. Both traces have SHA-256 receipts. Door tiers are
+coverage sites, gaps, and observed fault doors. The full recorder output,
+JUnit window trace, and graph are stored durably as `graphchecker-raw.jsonl.gz`,
+`graphchecker-trace.jsonl.gz`, and `graphchecker-graph.jsonl.gz`. Their receipts
+pin both compressed and original byte hashes. Uncompressed files and a fresh
+JUnit cwd exist only in `/dev/shm` during the trial. The graph consumes only
+rows between its unique `WINDOW_OPEN` and `WINDOW_CLOSE`; server shutdown
+activity after teardown cannot enter the causal graph. When an exact target
+exception is triggered, the trial cwd is also retained as `workdir.tar.gz`.
+Peak tmpfs use during a fault trial is approximately the current raw trace,
+its JUnit window copy, the generated graph, the fresh cluster cwd, and one
+temporary healthy-window decompression. Only gzip/tar receipts remain on the
+durable filesystem after a completed trial.
+Door tiers are
 `observed_closure`, `static_may_observed`, and `outside_closure`. Static MAY
 membership can guide a later scheduler, but does not add a causal edge or
-count as closure coverage. This module executes and verifies **one trial at a
-time**; it does not yet own a campaign queue, replay budget, or resume policy.
-The caller must give each trial a new output directory and preserve completed
-receipts. The old `campaign.py` runner below remains for archived campaigns.
+count as closure coverage. The old `campaign.py` runner below remains for
+archived campaigns.
 
 To run a whole per-check campaign, add a bounded budget to the same config:
 
@@ -121,20 +151,28 @@ static MAY scope, with occasional exploration outside both. It samples early,
 middle and late repeated I/O occurrences, then adds one later observed fault
 to a successful sequence up to the configured depth. New closure nodes,
 edges and coverage increase a sequence's priority. A fault that loses the
-target is not expanded. The time budget counts actual JUnit trial runtime.
+target is not expanded. A plan whose selected I/O disappears may be retried
+twice, with every unmatched attempt counted against the fault-trial and time
+budgets. The time budget counts actual JUnit trial runtime.
 
 `checkpoint.json` is written atomically before and after each trial. A restart
 reconciles a completed active trial, refuses to duplicate a still-running JVM,
 and archives an incomplete attempt before retrying its plan. Terminal cases
 have `terminal: true` and `summary.json`; restarting one returns immediately.
-Every trial retains its exact plan, trace, graph feedback, result and elapsed
-time. An exact post-fault target throw is recorded even when the static graph
+Every trial retains its exact plan, compressed trace and graph, feedback,
+result, and elapsed time. Resume verifies the archived evidence before
+accepting a completed checkpoint; the prior healthy trace is decompressed
+temporarily in `/dev/shm` for GraphChecker. An exact post-fault target throw is
+recorded even when the static graph
 has a gap. If the healthy JUnit already throws the same exception, the trial
 is `needs_differential_review`; only an excess exact throw count is called a
 `candidate`. Source review and replay remain necessary for a new-bug claim.
 The current runner requires all selected original classes to be present in the
 declared compiled-class directories and a completed GraphChecker window to fit
-within 256 MiB.
+within 4 GiB of decoded JSONL. Preparation also verifies that selected woven
+classes and optional post-weave output fit the configured Java runtime's
+classfile version; Java 8 source classes cannot silently become Java 11
+classfiles.
 
 ## Legacy campaign runner
 
