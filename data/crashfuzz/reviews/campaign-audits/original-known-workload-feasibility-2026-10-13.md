@@ -191,6 +191,11 @@ observed exactly the one target exception present in the healthy run. These
 are replay validation results, not bug detections. The response-shape
 campaign resumed from its existing checkpoint with an isolated build of the
 new matcher; completed trials 1–77 were retained without rerunning them.
+Its first automatically selected three-node fanout trial after the restart,
+trial 84, applied all three faults in `data5`, `data7`, `data3` arrival order,
+different from the requested `data7`, `data5`, `data3` order. Strict matching
+passed. The exact target throw count was still one, equal to the healthy
+baseline, so trial 84 is also not a bug detection.
 
 To keep the three active HDFS runs within disk capacity, completed attempts
 from the first 250 trials of `campaign-control-branch` were checksum-verified
@@ -207,6 +212,12 @@ fault plans, and checkpoints remain on node0.
 The response-shape pilot's completed attempts 1–40 were checksum-verified on
 node1 before removal from node0; its receipt is
 `campaign-response-shape-v1/HDFS-17967-MIRROR/.archive-attempts-0001-0040.json`.
+Completed control-branch attempts 321–350 and response-shape attempts 41–70
+were later copied to node1 and passed a checksum dry run before removal of
+the local attempt directories. Their receipts are
+`.archive-attempts-0321-0350.json` and `.archive-attempts-0041-0070.json`
+in the respective campaign directories. All trial-level final results,
+plans, and checkpoints remain on node0.
 
 Evidence roots: `static-rerun/original-known/HDFS-54`, `HDFS-55`,
 `HDFS-11-balancer`, and `HDFS-17967-mirror` on node0, and
