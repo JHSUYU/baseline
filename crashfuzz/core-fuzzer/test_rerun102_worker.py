@@ -111,8 +111,13 @@ class ExceptionResolutionTest(unittest.TestCase):
             trace = Path(directory) / 'trace.jsonl'
             trace.write_text('{"event":"CHECK_REACHED"}\n')
             self.assertFalse(rerun102_worker.observed_fault_points(trace))
-            trace.write_text('{"event":"CHECK_REACHED"}\n'
-                             '{"event":"FAULT_POINT_OBSERVED"}\n')
+            point = {'schemaVersion': 3, 'event': 'FAULT_POINT_OBSERVED',
+                     'marker': 'FAULT:IO', 'siteId': '<T: void call()>#u1',
+                     'occurrenceAddress': 'actor/io/1', 'hitOrdinal': 1}
+            trace.write_text(json.dumps({**point, 'identityGap': True}) + '\n')
+            self.assertFalse(rerun102_worker.observed_fault_points(trace))
+            trace.write_text(json.dumps({**point, 'identityGap': True}) + '\n' +
+                             json.dumps(point) + '\n')
             self.assertTrue(rerun102_worker.observed_fault_points(trace))
 
     def test_failed_healthy_junit_is_retained_and_retried_once(self):

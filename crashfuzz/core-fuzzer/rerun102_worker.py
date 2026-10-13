@@ -17,7 +17,7 @@ import sys
 import time
 from pathlib import Path
 
-from fuzzer import atomic_json, campaign
+from fuzzer import atomic_json, campaign, point_from_event
 from prepare_case_selection import analysis_for
 from soot_selection import prepare
 
@@ -175,7 +175,8 @@ def healthy_matches(manifest: Path, digest: str) -> bool:
 
 def observed_fault_points(trace: Path) -> bool:
     with trace.open() as stream:
-        return any(json.loads(line).get('event') == 'FAULT_POINT_OBSERVED'
+        return any((event := json.loads(line)).get('event') ==
+                   'FAULT_POINT_OBSERVED' and point_from_event(event) is not None
                    for line in stream)
 
 
