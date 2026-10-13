@@ -188,6 +188,12 @@ prefers untested I/O families and coverage while balancing one fault and
 longer sequences. Every third trial reserves a slot for an I/O point selected
 near a target-side field writer or its actor callback, when one is queued.
 This rule uses the same Soot reasons for every check.
+New campaigns prefer an untried static I/O callsite in three of every four
+selection rounds. The fourth round retains the existing timing and fault-type
+diversity rule. This keeps phase and later-occurrence variants from crowding
+out distinct I/O locations under a bounded budget. A checkpoint records its
+site-diversity version; older campaigns retain their original order unless
+explicitly migrated with a saved checkpoint.
 New campaigns also distinguish the first, second to third, fourth to seventh,
 eighth to fifteenth, and later occurrences of a recurring I/O site when
 diversifying the queue. This gives later protocol rounds a chance within a
