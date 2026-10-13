@@ -152,6 +152,26 @@ fuzzer an observed, replayable distinction between key-bearing and empty
 responses without naming the heartbeat callsite in the selector. The trace
 is in `response-shape-healthy-validation/runtime_trace.jsonl`. This validation
 is not a fault-injection result or a bug detection.
+The separate `campaign-response-shape-v1` uses this healthy trace, the same
+unchanged JUnit, and the same Soot-selected I/O sites, with a 40-trial pilot
+and a 10-fault sequence cap. Trial 6 strictly applied a post-call reply-loss
+fault to `data7`'s `sendHeartBeat` response whose recorded object array
+contained `KeyUpdateCommand` (trace seq 896). The exact target throw later
+occurred on `data7` (seq 960), but it was still the single expected stale
+client-key rejection and was followed by the normal client retry. The trace
+also shows another key-bearing response to `data7` at seq 922, before that
+throw. Trial 8 automatically extended the sequence to lose `data7`'s two
+key-bearing responses at hit ordinals 6 and 8, with one intervening empty
+response; its one exact target throw occurred on `data3`. Neither trial is
+a bug detection. The campaign checkpoint and per-trial evidence remain under
+`campaign-response-shape-v1/HDFS-17967-MIRROR`.
+
+To keep the three active HDFS runs within disk capacity, completed attempts
+from the first 250 trials of `campaign-control-branch` were checksum-verified
+on node1 before their local attempt directories were removed. Their final
+`result.json` files, fault plans, and live checkpoint remain on node0. The
+archive receipt is `.archive-attempts-0001-0250.json` in that campaign
+directory.
 
 Evidence roots: `static-rerun/original-known/HDFS-54`, `HDFS-55`,
 `HDFS-11-balancer`, and `HDFS-17967-mirror` on node0, and
