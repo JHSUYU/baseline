@@ -340,9 +340,7 @@ public final class ConcolicInstrumentationSelections {
          */
         Set<String> envelopeMethods() {
             Set<String> methods = new LinkedHashSet<>(branchMethods);
-            methods.addAll(materializations.localMethods());
-            methods.addAll(materializations.methodArgumentMethods());
-            methods.addAll(materializations.accessorCallerMethods());
+            addMaterializationMethods(methods, materializations);
             for (CommunicationHandoffSpec handoff : communicationHandoffs) {
                 methods.add(handoff.method());
             }
@@ -351,6 +349,17 @@ public final class ConcolicInstrumentationSelections {
             if (!targetMethod.isEmpty()) methods.add(targetMethod);
             methods.remove("");
             return methods;
+        }
+
+        static void addMaterializationMethods(Set<String> methods,
+                ConcolicMaterializationSelection materializations) {
+            methods.addAll(materializations.localMethods());
+            methods.addAll(materializations.methodArgumentMethods());
+            methods.addAll(materializations.accessorCallerMethods());
+            // Observed field/container sites are woven after the replay
+            // root, communication, and context hooks. Freeze their original
+            // unit indices before any of those passes can rewrite the body.
+            methods.addAll(materializations.observedSiteMethods());
         }
 
     }
@@ -459,7 +468,7 @@ public final class ConcolicInstrumentationSelections {
          * ({@code container}).  One site naming two cells is refused, and so
          * is a row observing nothing.
          */
-        private void addObservedSites(JsonArray sites)
+        void addObservedSites(JsonArray sites)
                 throws IOException {
             for (JsonElement element : sites == null
                     ? new JsonArray() : sites) {
@@ -501,6 +510,14 @@ public final class ConcolicInstrumentationSelections {
 
         Collection<ObservedSite> observedSites() {
             return observedSitesBySite.values();
+        }
+
+        Set<String> observedSiteMethods() {
+            Set<String> methods = new LinkedHashSet<>();
+            for (ObservedSite site : observedSitesBySite.values()) {
+                methods.add(site.method);
+            }
+            return methods;
         }
 
         private void addLocal(String method, String local, int unitIndex) {
