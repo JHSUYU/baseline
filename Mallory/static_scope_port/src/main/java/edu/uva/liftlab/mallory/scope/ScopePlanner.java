@@ -1,5 +1,6 @@
 package edu.uva.liftlab.mallory.scope;
 
+import edu.uva.liftlab.mallory.graphcheckerstatic.GraphCheckerRegionPlanner;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -161,6 +162,23 @@ public final class ScopePlanner {
         Files.write(output.resolve("analysis.json"),
                 new GsonBuilder().setPrettyPrinting().create().toJson(result)
                         .getBytes(StandardCharsets.UTF_8));
+        if (result.has("graphCheckerRegionPort")) {
+            JsonObject port = result.getAsJsonObject("graphCheckerRegionPort");
+            StringBuilder portRows = new StringBuilder();
+            for (JsonElement row : port.getAsJsonArray("staticScopeSites"))
+                portRows.append(JSON.toJson(row)).append('\n');
+            Files.write(output.resolve("graphchecker_static_scope_map.jsonl"),
+                    portRows.toString().getBytes(StandardCharsets.UTF_8));
+            Files.write(output.resolve("graphchecker_region_skeletons.json"),
+                    new GsonBuilder().setPrettyPrinting().create().toJson(
+                            port.get("regions")).getBytes(StandardCharsets.UTF_8));
+            Files.write(output.resolve("graphchecker_weave_manifest.json"),
+                    new GsonBuilder().setPrettyPrinting().create().toJson(
+                            port.get("weaveManifest")).getBytes(StandardCharsets.UTF_8));
+            Files.write(output.resolve("graphchecker_static_facts.json"),
+                    new GsonBuilder().setPrettyPrinting().create().toJson(
+                            port.get("facts")).getBytes(StandardCharsets.UTF_8));
+        }
         return result;
     }
 
@@ -1205,10 +1223,242 @@ public final class ScopePlanner {
         result.addProperty("throwSiteId", fatalThrow == null ? "" : fatalThrow.id);
         result.add("scopeSites", scope);
         result.add("weaveManifest", manifest);
+        if (analysisConfig.has("graphchecker_region_port")
+                && analysisConfig.get("graphchecker_region_port").getAsBoolean()) {
+            result.add("graphCheckerRegionPort", graphCheckerRegionPort(
+                    selectedMethods, manifest, rows));
+        }
         JsonArray gaps = new JsonArray();
         for (String gap : analysisGaps) gaps.add(gap);
         result.add("analysisGaps", gaps);
         return result;
+    }
+
+    /**
+     * Opt-in migration bridge. The source facts are selected Jimple units,
+     * not reconstructed from a finished manifest. Their edge names and port
+     * captures match GraphChecker's StaticProgram/SymbolicRegionPlanner input.
+     * This branch never runs for the immutable ScopePlanner campaigns.
+     */
+    private JsonObject graphCheckerRegionPort(Set<Method> selectedMethods,
+                                               JsonObject originalManifest,
+                                               List<JsonObject> originalRows) {
+        GraphCheckerRegionPlanner.Input facts = new GraphCheckerRegionPlanner.Input();
+        String targetMethod = target.owner.soot.getSignature();
+        facts.targetMethod = targetMethod;
+        for (Method method : selectedMethods) {
+            if (!materializedClasses.contains(method.soot.getDeclaringClass().getName())) continue;
+            facts.selectedMethods.add(method.soot.getSignature());
+            if (method.isCallback()) {
+                facts.executionContextAuthorities.put(method.soot.getSignature(), "TASK_ENTRY");
+            }
+        }
+        for (Site site : selected.values()) {
+            String method = site.owner.soot.getSignature();
+            if (!facts.selectedMethods.contains(method)) continue;
+            Stmt stmt = (Stmt) site.unit;
+            if (stmt instanceof AssignStmt) {
+                Value left = ((AssignStmt) stmt).getLeftOp();
+                Value right = ((AssignStmt) stmt).getRightOp();
+                String leftCell = graphCheckerCell(method, left);
+                if (right instanceof FieldRef) {
+                    String field = ((FieldRef) right).getFieldRef().getSignature();
+                    facts.edges.add(graphCheckerEdge(method, site.id, "HEAP_READ",
+                            field, leftCell, ""));
+                } else {
+                    for (ValueBox used : right.getUseBoxes()) {
+                        if (used.getValue() instanceof Local) facts.edges.add(
+                                graphCheckerEdge(method, site.id, "LOCAL",
+                                        graphCheckerCell(method, used.getValue()), leftCell, ""));
+                    }
+                    if (right instanceof Local) facts.edges.add(graphCheckerEdge(
+                            method, site.id, "LOCAL", graphCheckerCell(method, right),
+                            leftCell, ""));
+                }
+                if (left instanceof FieldRef) {
+                    String field = ((FieldRef) left).getFieldRef().getSignature();
+                    facts.edges.add(graphCheckerEdge(method, site.id, "HEAP_WRITE",
+                            graphCheckerCell(method, right), field, ""));
+                }
+            }
+            if (stmt.containsInvokeExpr()) {
+                for (Method callee : resolveCallees(site)) {
+                    if (facts.selectedMethods.contains(callee.soot.getSignature()))
+                        facts.edges.add(graphCheckerEdge(method, site.id,
+                                "CALL", "", "", callee.soot.getSignature()));
+                }
+            }
+        }
+        // GraphChecker's exception seed is a value node. Here the selected
+        // controlling branch feeds that node with its Jimple condition uses.
+        // We do not infer an outcome or a runtime field version from it.
+        List<Site> controls = checkSites.isEmpty()
+                ? Collections.singletonList(target) : checkSites;
+        String failureCell = targetMethod + "#exception:"
+                + string(object(config, "target"), "exception", "java.lang.Throwable");
+        for (Site control : controls) {
+            if (!facts.selectedMethods.contains(control.owner.soot.getSignature())) continue;
+            if (control.unit.getUseBoxes().isEmpty()) facts.edges.add(graphCheckerEdge(
+                    control.owner.soot.getSignature(), control.id, "CONTROL",
+                    "", failureCell, ""));
+            for (ValueBox used : control.unit.getUseBoxes()) {
+                if (!(used.getValue() instanceof Local)) continue;
+                facts.edges.add(graphCheckerEdge(control.owner.soot.getSignature(),
+                        control.id, "CONTROL", graphCheckerCell(
+                                control.owner.soot.getSignature(), used.getValue()),
+                        failureCell, ""));
+            }
+        }
+        for (String field : selectedFields) {
+            soot.SootField resolved = Scene.v().grabField(field);
+            if (resolved != null && resolved.isStatic() && resolved.isFinal())
+                facts.constantFields.add(field);
+        }
+        for (Port port : ports) {
+            Map<String, Object> flow = new LinkedHashMap<>();
+            flow.put("portId", port.id);
+            flow.put("name", port.id);
+            flow.put("exchangeSiteKey", port.id);
+            flow.put("transport", port.transport);
+            List<Map<String, Object>> producers = new ArrayList<>();
+            List<Map<String, Object>> consumers = new ArrayList<>();
+            for (Site site : port.producers) {
+                if (facts.selectedMethods.contains(site.owner.soot.getSignature()))
+                    producers.add(graphCheckerCapture(site, "CALL_ARGUMENT"));
+            }
+            for (Site site : port.consumers) {
+                if (facts.selectedMethods.contains(site.owner.soot.getSignature()))
+                    consumers.add(graphCheckerCapture(site, "CALL_RETURN"));
+            }
+            flow.put("producers", producers);
+            flow.put("consumers", consumers);
+            if (!producers.isEmpty() || !consumers.isEmpty())
+                facts.communicationCallSites.add(flow);
+        }
+        GraphCheckerRegionPlanner.Result planned = GraphCheckerRegionPlanner.plan(facts);
+        JsonObject out = new JsonObject();
+        JsonObject factRows = new JsonObject();
+        factRows.add("selectedMethods", JSON.toJsonTree(facts.selectedMethods));
+        factRows.add("edges", JSON.toJsonTree(facts.edges));
+        factRows.add("executionContextAuthorities",
+                JSON.toJsonTree(facts.executionContextAuthorities));
+        factRows.add("communicationCallSites",
+                JSON.toJsonTree(facts.communicationCallSites));
+        factRows.add("constantFields", JSON.toJsonTree(facts.constantFields));
+        factRows.addProperty("targetMethod", facts.targetMethod);
+        out.add("facts", factRows);
+        out.add("regions", JSON.toJsonTree(planned.regions));
+        out.add("gaps", JSON.toJsonTree(planned.gaps));
+        JsonArray portScopeRows = new JsonArray();
+        for (JsonObject row : originalRows) {
+            String siteId = string(row, "siteId", "");
+            int unit = siteId.lastIndexOf("#u");
+            if (unit < 0) continue;
+            for (String regionId : planned.regionsHolding(siteId.substring(0, unit))) {
+                JsonObject owned = row.deepCopy();
+                owned.addProperty("regionId", regionId);
+                portScopeRows.add(owned);
+            }
+        }
+        out.add("staticScopeSites", portScopeRows);
+        out.add("weaveManifest", graphCheckerWeaveManifest(planned,
+                originalManifest));
+        return out;
+    }
+
+    private static String graphCheckerCell(String method, Value value) {
+        return method + "::" + value;
+    }
+
+    private static Map<String, Object> graphCheckerEdge(String method,
+            String siteId, String transfer, String from, String to, String invoke) {
+        Map<String, Object> edge = new LinkedHashMap<>();
+        edge.put("method", method);
+        edge.put("siteId", siteId);
+        edge.put("transferKind", transfer);
+        edge.put("fromCell", from);
+        edge.put("toCell", to);
+        if (!invoke.isEmpty()) edge.put("invoke", invoke);
+        return edge;
+    }
+
+    private static Map<String, Object> graphCheckerCapture(Site site, String kind) {
+        Map<String, Object> capture = new LinkedHashMap<>();
+        capture.put("definitionMethod", site.owner.soot.getSignature());
+        capture.put("callSiteId", site.id);
+        capture.put("definitionUnitIndex", site.index);
+        capture.put("outputCaptureKind", kind);
+        return capture;
+    }
+
+    private JsonObject graphCheckerWeaveManifest(GraphCheckerRegionPlanner.Result planned,
+                                                 JsonObject original) {
+        JsonObject out = new JsonObject();
+        for (String key : Arrays.asList("schemaVersion", "caseId",
+                "sootDependencyClasspathSha256")) out.add(key, original.get(key));
+        Set<String> held = planned.instrumentedMethods();
+        Set<String> refKeys = new HashSet<>();
+        JsonArray roots = new JsonArray();
+        JsonArray frames = new JsonArray();
+        for (String signature : held) {
+            Method method = methods.get(signature);
+            if (method == null || !materializedClasses.contains(
+                    method.soot.getDeclaringClass().getName())) continue;
+            frames.add(methodRef(method));
+            refKeys.add(graphCheckerMethodKey(method));
+        }
+        for (Map<String, Object> region : planned.regions) {
+            Method method = methods.get(String.valueOf(region.get("rootMethod")));
+            if (method == null || !materializedClasses.contains(
+                    method.soot.getDeclaringClass().getName())) continue;
+            JsonObject root = methodRef(method);
+            root.addProperty("regionId", String.valueOf(region.get("regionId")));
+            root.addProperty("sourceOwner", sourceOwner(method));
+            roots.add(root);
+        }
+        out.add("regions", roots);
+        out.add("frames", frames);
+        for (String family : Arrays.asList("coverage", "doors", "stateCandidates")) {
+            JsonArray chosen = new JsonArray();
+            for (JsonElement value : original.getAsJsonArray(family)) {
+                JsonObject row = value.getAsJsonObject();
+                if (refKeys.contains(graphCheckerMethodKey(row))) chosen.add(row.deepCopy());
+            }
+            out.add(family, chosen);
+        }
+        out.add("targets", original.getAsJsonArray("targets").deepCopy());
+        JsonArray selectedPorts = new JsonArray();
+        for (JsonElement value : original.getAsJsonArray("rpcPorts")) {
+            JsonObject port = value.getAsJsonObject().deepCopy();
+            JsonArray exports = new JsonArray();
+            JsonArray imports = new JsonArray();
+            for (JsonElement site : port.getAsJsonArray("exports")) {
+                String siteId = site.getAsString();
+                int unit = siteId.lastIndexOf("#u");
+                if (unit >= 0 && held.contains(siteId.substring(0, unit))) exports.add(site);
+            }
+            for (JsonElement site : port.getAsJsonArray("imports")) {
+                String siteId = site.getAsString();
+                int unit = siteId.lastIndexOf("#u");
+                if (unit >= 0 && held.contains(siteId.substring(0, unit))) imports.add(site);
+            }
+            if (exports.size() == 0 && imports.size() == 0) continue;
+            port.add("exports", exports);
+            port.add("imports", imports);
+            selectedPorts.add(port);
+        }
+        out.add("rpcPorts", selectedPorts);
+        return out;
+    }
+
+    private static String graphCheckerMethodKey(Method method) {
+        return method.soot.getDeclaringClass().getName() + "#"
+                + method.soot.getName() + "#" + descriptor(method.soot);
+    }
+
+    private static String graphCheckerMethodKey(JsonObject row) {
+        return string(row, "clazz", "") + "#" + string(row, "method", "")
+                + "#" + string(row, "descriptor", "");
     }
 
     private JsonObject row(String role, Site site, String cell, String extra) {

@@ -15,6 +15,51 @@ import static org.junit.Assert.assertTrue;
 
 public class ScopePlannerTest {
     @Test
+    public void graphCheckerRegionPortSelectsRealFixtureDoorWithoutChangingDefault()
+            throws Exception {
+        String source = new String(Files.readAllBytes(Paths.get(
+                "src/test/java/edu/uva/liftlab/mallory/scope/ScopeFixture.java")),
+                StandardCharsets.UTF_8);
+        int line = 1;
+        for (String text : source.split("\n", -1)) {
+            if (text.contains("READ_TARGET")) break;
+            line++;
+        }
+        JsonObject config = new JsonObject();
+        JsonObject target = new JsonObject();
+        target.addProperty("class", ScopeFixture.class.getName());
+        target.addProperty("method", "checkReader");
+        target.addProperty("line", line);
+        target.addProperty("exception", "java.io.IOException");
+        config.add("target", target);
+        JsonObject analysis = new JsonObject();
+        JsonArray paths = new JsonArray();
+        paths.add("target/test-classes");
+        analysis.add("process_dirs", paths);
+        analysis.add("classpath", paths);
+        config.add("analysis", analysis);
+
+        JsonObject defaultResult = ScopePlanner.analyze(config);
+        assertTrue(!defaultResult.has("graphCheckerRegionPort"));
+        analysis.addProperty("graphchecker_region_port", true);
+        JsonObject migrated = ScopePlanner.analyze(config);
+        JsonObject port = migrated.getAsJsonObject("graphCheckerRegionPort");
+        assertTrue(port.getAsJsonArray("regions").size() > 0);
+        assertTrue(port.getAsJsonObject("facts").getAsJsonArray("edges").size() > 0);
+        boolean readLine = false;
+        for (JsonElement entry : port.getAsJsonObject("weaveManifest")
+                .getAsJsonArray("doors")) {
+            if (entry.getAsJsonObject().get("callee").getAsString()
+                    .contains("readLine()")) readLine = true;
+        }
+        assertTrue(readLine);
+        assertEquals(defaultResult.getAsJsonObject("weaveManifest")
+                        .getAsJsonArray("targets").size(),
+                port.getAsJsonObject("weaveManifest")
+                        .getAsJsonArray("targets").size());
+    }
+
+    @Test
     public void instrumentationHelperIsInScopeButCannotBeAFaultDoor() throws Exception {
         String source = new String(Files.readAllBytes(Paths.get(
                 "src/test/java/edu/uva/liftlab/mallory/scope/ScopeFixture.java")),
