@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "oracle": "strict fault application followed by target-check exception, established by exact EXPLICIT_THROW or the configured method/type oracle plus source and exception-message evidence",
+  "cases": {
+    "HBASE-16": {
+      "fault_trial_numbers": [22, 64],
+      "evidence_kind": "exact EXPLICIT_THROW at selected bytecode line and exception type",
+      "healthy_expected": "yes: healthy identity-v2 trace contains five exact EXPLICIT_THROW events at confirmClosed:371; the JUnit exercises close-region retry after RegionServer crash",
+      "first_trigger_elapsed_seconds": 1451.942,
+      "first_trigger_breakdown": {
+        "healthy_seed_seconds": 56.206,
+        "fault_trials_1_through_22_seconds": 1395.736,
+        "retired_prior_campaign_seconds_excluded": 5333.328
+      },
+      "evidence": "node1:/users/ZhenyuLi/static-rerun/results/HBASE-16/campaign-identity-v2/HBASE-16/trials/0022-0206c9bc2b165c71d077/result.json; FAULT_APPLIED seq502 then EXPLICIT_THROW seq522 at TransitRegionStateProcedure.confirmClosed:371 HBaseIOException; see reviews/campaign-audits/static102-exact-throw-oracle-audit-2026-10-13.md"
+    },
+    "HBASE-21": {
+      "fault_trial_numbers": [36],
+      "evidence_kind": "exact EXPLICIT_THROW at selected bytecode line and exception type",
+      "healthy_expected": "yes by method/type and JUnit source: healthy trace contains METHOD_EXIT_THROW of QuotaExceededException from checkAndUpdateNamespaceRegionCount; old seed instrumentation lacks EXPLICIT_THROW, so exact healthy bytecode throw was not independently recorded",
+      "first_trigger_elapsed_seconds": 3232.781,
+      "first_trigger_breakdown": {
+        "healthy_seed_seconds": 45.327,
+        "fault_trials_1_through_36_seconds": 3187.454
+      },
+      "evidence": "node1:/users/ZhenyuLi/static-rerun/archive-node0/HBASE-21/campaign/HBASE-21/trials/0036-d7cfb0a85054e0a5769e/result.json; FAULT_APPLIED seq465 then EXPLICIT_THROW seq1281 at NamespaceStateManager.checkAndUpdateNamespaceRegionCount:133 QuotaExceededException; see reviews/campaign-audits/static102-exact-throw-oracle-audit-2026-10-13.md"
+    },
+    "HBASE-27": {
+      "fault_trial_numbers": [3, 4, 9],
+      "evidence_kind": "configured target method/type oracle plus exact exception-message and source-path review; old selector did not emit EXPLICIT_THROW",
+      "healthy_expected": "no: healthy JUnit reaches blockAndCheckIfStopped without throwing; injected HMaster startup failure shuts down the RegionServer, setting stopped=true before this check",
+      "first_trigger_elapsed_seconds": 159.83,
+      "first_trigger_breakdown": {
+        "healthy_seed_seconds": 43.182,
+        "fault_trials_1_through_3_seconds": 116.648
+      },
+      "evidence": "node1:/users/ZhenyuLi/static-rerun/results/HBASE-27/campaign/HBASE-27/trials/0003-35e682845c0c0374a866/result.json; strict FAULT_APPLIED seq112 followed by HRegionServer.blockAndCheckIfStopped METHOD_EXIT_THROW IOException seq144/209, with junit.log exact 'Received the shutdown message while waiting.'; trials 4 and 9 likewise; source review data/crashfuzz/reviews/campaign-audits/hbase27-static102-three-candidate-source-review-2026-10-12.md"
+    }
+  }
+}

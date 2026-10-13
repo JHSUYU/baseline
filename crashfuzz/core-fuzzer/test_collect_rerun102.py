@@ -4,12 +4,37 @@ import unittest
 from pathlib import Path
 
 from collect_rerun102 import (accepts_remote_case, apply_campaign_migration,
-                              apply_candidate_review,
+                              apply_candidate_review, apply_target_exception_review,
+                              apply_local_archive,
                               enrich_live_summary, enrich_live_trials,
                               enrich_result_metrics, reconcile_elapsed)
 
 
 class LiveTrialSummaryTest(unittest.TestCase):
+    def test_exact_target_throw_does_not_imply_new_bug(self):
+        row = {'case_id': 'CHECK-01', 'bug_mark': 'none',
+               'target_exception_candidates': 0}
+        apply_target_exception_review(row, {'CHECK-01': {
+            'fault_trial_numbers': [3], 'evidence_kind': 'EXPLICIT_THROW',
+            'healthy_expected': 'yes',
+            'first_trigger_elapsed_seconds': 24.5, 'evidence': 'trace'}})
+        self.assertTrue(row['target_exception_triggered'])
+        self.assertEqual(row['target_exception_trigger_trials'], [3])
+        self.assertEqual(row['bug_mark'], 'none')
+        self.assertEqual(row['target_exception_candidates'], 0)
+
+    def test_archived_result_is_located_by_receipt(self):
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory) / 'CHECK-01'
+            base.mkdir()
+            (base / 'archive.json').write_text(json.dumps({
+                'host': 'node1', 'remote_path': '/remote/CHECK-01'}))
+            row = {'campaign_result': str(base / 'campaign/CHECK-01/result.json')}
+            apply_local_archive(row, base)
+            self.assertEqual(row['archive_host'], 'node1')
+            self.assertEqual(row['archive_path'],
+                             '/remote/CHECK-01/campaign/CHECK-01/result.json')
+
     def test_review_rejects_only_the_examined_candidates(self):
         reviews = {'CHECK-01': {'reviewed_candidate_count': 2,
                                 'verdict': 'rejected_expected_failure',

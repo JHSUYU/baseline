@@ -18,6 +18,7 @@ REMOTE_ROOT = '/users/ZhenyuLi/static-rerun/results'
 LOCAL_ROOT = ROOT / '.study-repairs/static102-rerun'
 OFFLOADS = ROOT / 'data/crashfuzz/static102-offloads.json'
 REVIEWS = ROOT / 'data/crashfuzz/static102-candidate-reviews.json'
+TARGET_EXCEPTIONS = ROOT / 'data/crashfuzz/static102-target-exception-reviews.json'
 MIGRATIONS = ROOT / 'data/crashfuzz/static102-campaign-migrations.json'
 COLUMNS = ('case_id', 'system', 'status', 'finished', 'bug_mark',
            'review_verdict', 'review_reason', 'review_evidence',
@@ -33,6 +34,9 @@ COLUMNS = ('case_id', 'system', 'status', 'finished', 'bug_mark',
            'lost_target_trials', 'target_outcome_changed_trials',
            'coverage_gain_methods', 'coverage_gain_branches',
            'target_exception_candidates',
+           'target_exception_triggered', 'target_exception_trigger_trials',
+           'target_exception_evidence_kind', 'healthy_expected_target_exception',
+           'first_target_exception_elapsed_seconds', 'target_exception_review_evidence',
            'static_io_calls', 'static_coverage_methods', 'campaign_result',
            'archive_host', 'archive_path', 'error')
 
@@ -113,6 +117,36 @@ def apply_candidate_review(value: dict, reviews: dict[str, dict]) -> None:
         value['bug_mark'] = 'rejected'
 
 
+def apply_target_exception_review(value: dict, reviews: dict[str, dict]) -> None:
+    """Keep target-check triggering distinct from bug classification."""
+    review = reviews.get(value['case_id'])
+    if not review:
+        return
+    value['target_exception_triggered'] = True
+    value['target_exception_trigger_trials'] = review['fault_trial_numbers']
+    value['target_exception_evidence_kind'] = review['evidence_kind']
+    value['healthy_expected_target_exception'] = review['healthy_expected']
+    value['first_target_exception_elapsed_seconds'] = review['first_trigger_elapsed_seconds']
+    value['target_exception_review_evidence'] = review['evidence']
+
+
+def apply_local_archive(value: dict, base: Path) -> None:
+    """Resolve a case's archived result without losing its original path."""
+    receipt = base / 'archive.json'
+    result = value.get('campaign_result')
+    if not receipt.is_file() or not result or Path(result).is_file():
+        return
+    archive = json.loads(receipt.read_text())
+    original = base.resolve()
+    source = Path(result)
+    try:
+        relative = source.relative_to(original)
+    except ValueError:
+        return
+    value['archive_host'] = archive['host']
+    value['archive_path'] = str(Path(archive['remote_path']) / relative)
+
+
 def enrich_result_metrics(value: dict, record: dict) -> None:
     gain = record.get('coverage_gain_by_kind') or {}
     value['healthy_target_reached'] = record.get('target_reached')
@@ -159,6 +193,7 @@ def local_summaries() -> dict[str, dict]:
                     enrich_result_metrics(value, record)
                     if not value.get('active_runtime_seconds'):
                         value['active_runtime_seconds'] = record.get('total_elapsed_seconds')
+            apply_local_archive(value, path.parent)
             enrich_live_summary(path.parent, value)
             reconcile_elapsed(value)
             result[value['case_id']] = value
@@ -239,6 +274,8 @@ def main() -> int:
         raise ValueError(f'expected 102 original checks, got {len(original)}')
     offloads = json.loads(OFFLOADS.read_text()).get('cases', {}) if OFFLOADS.is_file() else {}
     reviews = json.loads(REVIEWS.read_text()).get('cases', {}) if REVIEWS.is_file() else {}
+    target_exceptions = (json.loads(TARGET_EXCEPTIONS.read_text()).get('cases', {})
+                         if TARGET_EXCEPTIONS.is_file() else {})
     migrations = (json.loads(MIGRATIONS.read_text()).get('cases', {})
                   if MIGRATIONS.is_file() else {})
     summaries = local_summaries()
@@ -266,8 +303,10 @@ def main() -> int:
                     'check_code': row.get('check_code'),
                     'cluster_test': row.get('cluster_test')}
         merged = {**baseline, **summaries.get(row['case_id'], {})}
+        apply_local_archive(merged, LOCAL_ROOT / row['case_id'])
         apply_campaign_migration(merged, migrations)
         apply_candidate_review(merged, reviews)
+        apply_target_exception_review(merged, target_exceptions)
         writer.writerow({key: (value.replace('\r', ' ').replace('\n', '\\n')
                               if isinstance(value, str) else value)
                          for key, value in merged.items()})
