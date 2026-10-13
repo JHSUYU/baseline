@@ -52,6 +52,10 @@ an isolated weave input, then pins each source file hash. The singular
 and RPC/state carriers remain
 system adapter obligations; an absent identity is recorded as a gap, never
 filled by a matching name or timestamp.
+When no controlling branch is selected, the healthy run may have no reached
+target to seed an exact closure. The runner records that outcome as
+`no_healthy_target`; a later exact throw still remains an observable oracle in
+an individually supplied fault trial.
 
 Run the preparation once and then run individual plans:
 

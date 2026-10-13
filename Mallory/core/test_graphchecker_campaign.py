@@ -121,6 +121,15 @@ class GraphCheckerCampaignTest(unittest.TestCase):
         self.assertEqual([], evidence["target_throw_seqs_on_closure_occurrence"])
         self.assertEqual([], evidence["target_throw_seqs_after_check"])
 
+    def test_throw_only_target_does_not_require_static_branch_anchor(self):
+        rows = self.rows()
+        target = {"throw_site_id": "throw", "exception_class": "java.io.IOException"}
+        graph = self.graph()
+        graph["targetSite"] = "throw"
+        graph["staticScopeTargetFound"] = False
+        evidence = summarize_evidence(rows, graph, target, [self.FAULT])
+        self.assertTrue(evidence["target_exception_triggered"])
+
     def test_trace_requires_complete_window_and_monotone_rows(self):
         with tempfile.TemporaryDirectory() as temp:
             path = Path(temp) / "trace.jsonl"

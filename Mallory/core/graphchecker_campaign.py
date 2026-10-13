@@ -403,7 +403,7 @@ def summarize_evidence(rows: list[dict[str, Any]], graph: dict[str, Any],
     cutoffs = graph.get("closureOccurrenceCutoffs", {})
     if not isinstance(cutoffs, dict):
         raise ValueError("GraphChecker closure cutoff map is invalid")
-    if graph.get("staticScopeTargetFound") is not True:
+    if target.get("check_site_id") and graph.get("staticScopeTargetFound") is not True:
         raise ValueError("static may-scope does not contain the selected target")
     may_sites = set(graph.get("staticMayObservedDoorSiteIds", []))
     doors = [row for row in rows if row["kind"] == "FAULT_DOOR"
