@@ -63,6 +63,10 @@ class GraphCheckerCampaignTest(unittest.TestCase):
     def test_exact_native_receipt_and_throw_trigger_target(self):
         evidence = summarize_evidence(self.rows(), self.graph(), self.TARGET,
                                       [self.FAULT])
+        self.assertEqual((1, 1, 0, 0), (
+            evidence["raw_target_check_rows"], evidence["raw_target_throw_rows"],
+            evidence["unattributed_target_check_rows"],
+            evidence["unattributed_target_throw_rows"]))
         self.assertTrue(evidence["strict_injection"])
         self.assertTrue(evidence["target_exception_triggered"])
         self.assertEqual([6], evidence["target_throw_seqs_after_fault"])
@@ -71,6 +75,39 @@ class GraphCheckerCampaignTest(unittest.TestCase):
         self.assertTrue(evidence["injection_specific_target_throw"])
         self.assertEqual(("candidate", True),
                          _trial_verdict(evidence, [self.FAULT], 0))
+
+    def test_real_hdfs_target_row_shape_is_counted_without_attribution(self):
+        # HDFS-29 healthy raw trace has this exact selected TARGET_CHECK
+        # shape: the source site executed, but no node/occurrence was set.
+        site = ("<org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker: "
+                "org.apache.hadoop.hdfs.protocolPB.DatanodeProtocolClientSideTranslatorPB "
+                "getActiveNamenodeForBP(java.lang.String)>#u4")
+        target = {"check_site_id": site, "throw_site_id": "throw",
+                  "exception_class": "java.io.IOException"}
+        graph = {**self.graph(), "targetSite": site, "targetReached": False,
+                 "closureOccurrenceIds": [], "closureOccurrenceCutoffs": {}}
+        rows = [{"siteId": site, "outcome": "TRUE", "kind": "TARGET_CHECK",
+                 "threadKey": "410", "seq": 1186925}]
+        evidence = summarize_evidence(rows, graph, target, [])
+        self.assertEqual(1, evidence["raw_target_check_rows"])
+        self.assertEqual(1, evidence["unattributed_target_check_rows"])
+        self.assertEqual(0, evidence["attributed_target_check_rows"])
+        self.assertFalse(evidence["target_reached"])
+
+    def test_only_exact_selected_target_rows_contribute_raw_counts(self):
+        rows = [
+            {"kind": "TARGET_CHECK", "siteId": "other", "seq": 1},
+            {"kind": "TARGET_THROW", "siteId": "throw",
+             "exceptionClass": "java.lang.IllegalStateException", "seq": 2},
+            {"kind": "TARGET_THROW", "siteId": "throw",
+             "exceptionClass": "java.io.IOException", "seq": 3},
+        ]
+        graph = {**self.graph(), "targetReached": False,
+                 "closureOccurrenceIds": [], "closureOccurrenceCutoffs": {}}
+        evidence = summarize_evidence(rows, graph, self.TARGET, [])
+        self.assertEqual(0, evidence["raw_target_check_rows"])
+        self.assertEqual(1, evidence["raw_target_throw_rows"])
+        self.assertEqual(1, evidence["unattributed_target_throw_rows"])
 
     def test_replay_selector_matches_new_exact_rpc_occurrence(self):
         plan = {**self.FAULT, "replayOccurrenceId": "stable-rpc-lineage"}

@@ -39,6 +39,12 @@ class GraphCheckerFuzzerTest(unittest.TestCase):
                              "post_fault_target_reached": bool(plan),
                              "injection_specific_target_reached": bool(plan),
                              "target_reached": True,
+                             "raw_target_check_rows": 0,
+                             "raw_target_throw_rows": 0,
+                             "unattributed_target_check_rows": 0,
+                             "unattributed_target_throw_rows": 0,
+                             "attributed_target_check_rows": 0,
+                             "attributed_target_throw_rows": 0,
                              "last_fault_seq": 4 if plan else None,
                              "eligible_doors": doors or []},
                 "graphchecker_feedback": {"newClosureEdges": 1,
@@ -316,6 +322,54 @@ class GraphCheckerFuzzerTest(unittest.TestCase):
         self.assertEqual("no_observed_fault_door", state["status"])
         self.assertEqual(0, state["bootstrap_seed_doors"])
         self.assertEqual([], state["queue"])
+
+    def test_v5_unattributed_healthy_target_blocks_without_spending_budget(self):
+        state = _new_state(self.config(), self.budget())
+        state["active"] = {"index": 0, "name": "r0000", "faults": []}
+        healthy = self.result([], [self.door(1, 1, "static_may_observed", "may")])
+        healthy["evidence"].update(
+            target_reached=False, raw_target_check_rows=2,
+            unattributed_target_check_rows=2)
+        _accept_result(state, "r0000", healthy)
+        self.assertEqual("blocked_healthy_target_attribution", state["status"])
+        self.assertTrue(state["terminal"])
+        self.assertEqual(0, state["completed_fault_trials"])
+        self.assertEqual([], state["queue"])
+        self.assertEqual(2, state["healthy"]["unattributed_target_check_rows"])
+
+    def test_v5_truly_absent_healthy_target_keeps_bootstrap(self):
+        state = _new_state(self.config(), self.budget())
+        state["active"] = {"index": 0, "name": "r0000", "faults": []}
+        healthy = self.result([], [self.door(1, 1, "static_may_observed", "may")])
+        healthy["evidence"]["target_reached"] = False
+        _accept_result(state, "r0000", healthy)
+        self.assertEqual("running", state["status"])
+        self.assertEqual(1, state["bootstrap_seed_doors"])
+        self.assertEqual(1, len(state["queue"]))
+
+    def test_v5_healthy_gate_requires_all_exact_rows_unattributed(self):
+        state = _new_state(self.config(), self.budget())
+        state["active"] = {"index": 0, "name": "r0000", "faults": []}
+        healthy = self.result([], [self.door(1, 1, "static_may_observed", "may")])
+        healthy["evidence"].update(
+            target_reached=False, raw_target_check_rows=2,
+            unattributed_target_check_rows=1,
+            attributed_target_check_rows=1)
+        _accept_result(state, "r0000", healthy)
+        self.assertEqual("running", state["status"])
+        self.assertEqual(1, len(state["queue"]))
+
+    def test_v4_unattributed_healthy_target_preserves_old_bootstrap(self):
+        state = _new_state(self.config(), self.budget())
+        state["scheduler_version"] = 4
+        state["active"] = {"index": 0, "name": "r0000", "faults": []}
+        healthy = self.result([], [self.door(1, 1, "static_may_observed", "may")])
+        healthy["evidence"].update(
+            target_reached=False, raw_target_check_rows=1,
+            unattributed_target_check_rows=1)
+        _accept_result(state, "r0000", healthy)
+        self.assertEqual("running", state["status"])
+        self.assertEqual(1, len(state["queue"]))
 
     def test_v4_bootstrap_expands_only_after_strict_causal_target_discovery(self):
         state = _new_state(self.config(), {**self.budget(),

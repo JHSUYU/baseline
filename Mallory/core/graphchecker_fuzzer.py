@@ -234,6 +234,22 @@ def _result_novelty(state: dict[str, Any], result: dict[str, Any]
     return _novelty(result), {}
 
 
+def _healthy_target_attribution_missing(evidence: dict[str, Any]) -> bool:
+    """Distinguish a reached but unscoped target from a truly absent target."""
+    totals = []
+    for kind in ("check", "throw"):
+        names = (f"raw_target_{kind}_rows",
+                 f"unattributed_target_{kind}_rows",
+                 f"attributed_target_{kind}_rows")
+        values = [evidence.get(name) for name in names]
+        if (any(not isinstance(value, int) or isinstance(value, bool) or value < 0
+                for value in values) or values[0] != values[1] + values[2]):
+            raise ValueError(f"invalid healthy target attribution counts: {kind}")
+        totals.append((values[0], values[2]))
+    return sum(raw for raw, _ in totals) > 0 and sum(
+        attributed for _, attributed in totals) == 0
+
+
 def _bootstrap_sites(result: dict[str, Any]) -> set[str]:
     """Typed, observed I/O in the static selection, never inferred closure."""
     return {door["siteId"] for door in result.get("evidence", {}).get(
@@ -431,6 +447,11 @@ def _accept_result(state: dict[str, Any], name: str,
     if state.get("scheduler_version", 1) >= 5:
         record["target_closure_novelty"] = target_novelty
         record["target_closure_feedback"] = closure_feedback
+        for field in ("raw_target_check_rows", "raw_target_throw_rows",
+                      "unattributed_target_check_rows", "unattributed_target_throw_rows",
+                      "attributed_target_check_rows", "attributed_target_throw_rows"):
+            if field in result.get("evidence", {}):
+                record[field] = result["evidence"][field]
     record["unmatched_retry"] = active.get("unmatched_retry", 0)
     if active["index"] > 0:
         record["selection_tier"] = active.get("selection_tier")
@@ -451,7 +472,10 @@ def _accept_result(state: dict[str, Any], name: str,
         elif not result["junit_passed"]:
             state["status"] = "blocked_healthy_junit"
         elif not result.get("evidence", {}).get("target_reached"):
-            if state.get("scheduler_version", 1) >= 4:
+            if (state.get("scheduler_version", 1) >= 5 and
+                    _healthy_target_attribution_missing(result["evidence"])):
+                state["status"] = "blocked_healthy_target_attribution"
+            elif state.get("scheduler_version", 1) >= 4:
                 _bootstrap_feedback(state, result)
                 state["bootstrap_seed_doors"] = _enqueue(
                     state, result, [], bootstrap=True)

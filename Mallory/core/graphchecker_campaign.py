@@ -983,13 +983,13 @@ def summarize_evidence(rows: list[dict[str, Any]], graph: dict[str, Any],
     if len(matched) != len(faults):
         strict = False
     last_fault_seq = applied[-1]["seq"] if strict and applied else None
-    checks = [row for row in rows if row["kind"] == "TARGET_CHECK"
-              and row.get("siteId") in check_sites and row.get("occurrenceId")
-              and row.get("node")] if check_sites else []
-    throws = [row for row in rows if row["kind"] == "TARGET_THROW"
-              and row.get("siteId") == target["throw_site_id"]
-              and row.get("exceptionClass") == target["exception_class"]
-              and row.get("occurrenceId") and row.get("node")]
+    raw_checks = [row for row in rows if row["kind"] == "TARGET_CHECK"
+                  and row.get("siteId") in check_sites] if check_sites else []
+    raw_throws = [row for row in rows if row["kind"] == "TARGET_THROW"
+                  and row.get("siteId") == target["throw_site_id"]
+                  and row.get("exceptionClass") == target["exception_class"]]
+    checks = [row for row in raw_checks if row.get("occurrenceId") and row.get("node")]
+    throws = [row for row in raw_throws if row.get("occurrenceId") and row.get("node")]
     exact = []
     for thrown in throws:
         if last_fault_seq is None or thrown["seq"] <= last_fault_seq:
@@ -1055,6 +1055,12 @@ def summarize_evidence(rows: list[dict[str, Any]], graph: dict[str, Any],
             "actual_fault_occurrence_ids": [row["occurrenceId"] for row in matched]
             if strict else [],
             "planned_faults": len(faults), "last_fault_seq": last_fault_seq,
+            "raw_target_check_rows": len(raw_checks),
+            "raw_target_throw_rows": len(raw_throws),
+            "unattributed_target_check_rows": len(raw_checks) - len(checks),
+            "unattributed_target_throw_rows": len(raw_throws) - len(throws),
+            "attributed_target_check_rows": len(checks),
+            "attributed_target_throw_rows": len(throws),
             "target_reached": target_reached,
             "post_fault_target_reached": post_fault_target,
             "fault_occurrences_in_target_closure": fault_occurrences_in_closure,
