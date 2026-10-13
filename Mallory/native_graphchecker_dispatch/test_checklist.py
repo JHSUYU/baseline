@@ -363,6 +363,34 @@ class NativeChecklistTest(unittest.TestCase):
         self.assertEqual("receipt_error", row["terminal_disposition"])
         self.assertIn("temporal", row["reason"])
 
+    def test_cross_occurrence_without_throw_is_review_not_negative(self) -> None:
+        self.make_complete()
+        events_path = self.case_root / "trials/r0001/iteration-native/fault-events.jsonl"
+        events = [json.loads(line) for line in events_path.read_text().splitlines()]
+        for event in events:
+            if event["kind"] in ("FAULT_DOOR", "FAULT_APPLIED"):
+                event["occurrenceId"] = "fresh:door"
+        events_path.write_text("".join(json.dumps(event) + "\n" for event in events))
+        result_path = self.case_root / "trials/r0001/result.json"
+        result = json.loads(result_path.read_text())
+        result.update(status="needs_causal_review",
+                      target_temporal_admitted=False,
+                      target_temporal_reason="cross_occurrence_order_unproved",
+                      target_temporal_evidence=None,
+                      fault_events_sha256=dispatch._sha(events_path))
+        self.write(result_path, result)
+        checkpoint_path = self.case_root / "checkpoint.json"
+        checkpoint = json.loads(checkpoint_path.read_text())
+        checkpoint["trials"][0]["status"] = "needs_causal_review"
+        self.write(checkpoint_path, checkpoint)
+        self.write(self.case_root / "summary.json", {
+            key: value for key, value in checkpoint.items()
+            if key not in ("queue", "seen_plan_keys", "active")})
+        row = dispatch.inspect_case(self.item, "node1", self.config_root,
+                                    self.state_root)
+        self.assertEqual("tested_no_target_throw", row["terminal_disposition"])
+        self.assertEqual(1, row["strict_target_retained_fault_trials"])
+
     def test_no_cluster_junit_is_terminal_but_not_fuzzed(self) -> None:
         evidence = self.root / "source-review.md"
         evidence.write_text("Reviewed original tests.\n")

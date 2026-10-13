@@ -358,8 +358,11 @@ def _audit_terminal(case_id: str, config_path: Path, root: Path,
                     row["occurrenceId"] == evidence["targetOccurrenceId"] and
                     row["seq"] > evidence["checkSeq"] for row in exact))
                 if not admitted:
-                    expected_status = ("needs_causal_review" if exact else
-                                       "unrelated_target")
+                    expected_status = (
+                        "needs_causal_review" if exact or reason in (
+                            "cross_occurrence_order_unproved",
+                            "target_check_not_recorded") else
+                        "unrelated_target")
                 elif exact and not linked_throw:
                     expected_status = "needs_causal_review"
                 else:
