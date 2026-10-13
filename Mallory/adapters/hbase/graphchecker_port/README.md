@@ -12,10 +12,10 @@ old Mallory `Probe` graph.
 2. Run `python3 apply.py --check /path/to/hbase-2.6.6`, then
    `python3 apply.py /path/to/hbase-2.6.6`. The command refuses already
    modified anchors and writes only after all source inputs validate.
-3. Build the patched HBase `hbase-protocol-shaded`, `hbase-client`, and
-   `hbase-server` modules with their reactor dependencies. The script adds
-   the Mallory runtime dependency to both client and server POMs and copies
-   `GraphCheckerHBaseProtocol.java` into `hbase-client`. Keep the resulting
+3. Build the patched HBase `hbase-protocol-shaded`, `hbase-procedure`,
+   `hbase-client`, and `hbase-server` modules with their reactor dependencies.
+   The script adds the Mallory runtime dependency to client, procedure, and
+   server POMs and copies the GraphChecker bridge classes into those modules. Keep the resulting
    patched jars together; do not mix them with the unpatched 2.6.6 jars.
    HBase 2.6.6 requires a Java 8 Maven build here. The JUnit launcher must
    match the distribution's JUnit Platform 1.13.4 jars.
@@ -54,6 +54,27 @@ and attempt. Duplicate replay keys get an explicit collision ordinal and a
 `RPC_REPLAY_KEY_COLLISION` gap. A call without a registered source is left
 unattributed with `RPC_REPLAY_KEY_MISSING` instead of inventing a replay key.
 
+The optional Netty SASL overlay carries a separate envelope in each client
+SASL response frame, before normal RPC headers exist. The server strips that
+envelope before `SaslServer.evaluateResponse`, so the SASL mechanism receives
+the original token bytes. A captured call-thread scope gives the connection a
+stable source and correlation key; the frame's response ordinal is its attempt
+ID. A successful Netty write confirms SEND, and the server enters RECEIVE
+only while evaluating that exact frame. An unregistered source sends the
+original SASL bytes and records a gap. This covers the authentication phase
+used by `AuthenticationTokenSecretManager.retrievePassword`, including the
+HBASE-34 check's transport phase. The frame format and exact source are
+compiled and verified in a focused round-trip smoke. The unchanged secure
+`TestGenerateDelegationToken#testOnlyToken` JUnit also passed with the
+isolated overlay: its trace had eight prepared SASL frames, eight confirmed
+EXPORTs, eight server ATTACHes, and TrialGraph reconstructed eight ordered
+`hbase-sasl.REQUEST` WIRE edges. This is a protocol-only pilot: the target
+check was not woven, and the ZooKeeper key update to `allKeys` has no exact
+observed state version yet. It is not an HBASE-34 case result. Blocking SASL and
+server-to-client SASL challenges are outside this overlay. The SASL frame
+extension requires both ends of the isolated test cluster to use this patch;
+the patched client is not wire compatible with an unpatched SASL server.
+
 `BlockingRpcCallback.run()` publishes its `result` and `resultSet` under the
 callback monitor. The overlay records a `WRITE` of that callback's unique
 one-time version before `notifyAll()`. `get()` records the matching `READ`
@@ -71,12 +92,41 @@ causal-graph evidence. The two-phase `MessageDoors.prepareOutbound`/`sent`
 API is required; a header preparation is not a proven SEND.
 
 The callback edge is limited to the callback's synchronized publication.
-The overlay adds **no HBase metadata state edge**: that requires an actual
-atomic metadata key/version read. The previous Mallory probe's synthetic
-object-key counters must not be promoted to a state edge. Until a metadata
-adapter is added, the JUnit runner emits one `STATE_VERSION_UNHOOKED` gap per
-trial. Likewise, if a server/client source is not registered by the Mallory
-GraphChecker runtime, do not infer it from thread names.
+The updated overlay also observes the `hbase:meta` table-state Cell. After
+`MetaTableAccessor.updateTableState` receives a successful `Table.put` return,
+it records a WRITE of that Put's actual Cell version. Synchronous and
+asynchronous `getTableState(Result)` record a READ only after parsing the Cell
+returned by the Get. The version key uses the Cell's row, family, qualifier,
+timestamp, type, and value digest. GraphChecker connects WRITE to READ only
+when a unique observed writer has the identical version; a missing source,
+missing writer, or duplicate version remains an explicit gap. This hook covers
+the table-state column, not every `hbase:meta` field. A direct writer outside
+the `MetaTableAccessor` API must be instrumented before its reads can be
+treated as fully explained.
+
+`ProcedureExecutor` now captures the submitting request scope for a root
+procedure and for each child procedure, then restores it around each worker
+execution. This is a general HBase procedure handoff; it is needed because
+the table-state WRITE often runs on a master procedure worker rather than the
+master's main thread. Procedures recovered from durable storage without an
+observed submission remain unattributed. The JUnit runner still emits its
+general `STATE_VERSION_UNHOOKED` gap for other state families; do not treat
+that gap as proof that the table-state Cell hook failed. Likewise, if a
+server/client source is not registered, do not infer it from thread names.
+
+An isolated diagnostic on the unchanged
+`TestConnectionImplementation#testMetaLookupThreadPoolCreated` passed and
+observed a master WRITE and client READ with the same table-state Cell version.
+TrialGraph placed their STATE edge in the target check's backward closure.
+This diagnostic overlaid the new source hooks on an older full weave; it is
+not an accepted static-scope campaign. A fresh exact-classpath HBASE-02 scan,
+full weave, and unchanged healthy JUnit subsequently passed with the same
+versioned STATE edge in the target closure. The scan selected the controlling
+branch at `ConnectionImplementation.relocateRegion` line 910/unit 8 and the
+`TableNotEnabledException` throw at line 911/unit 17, with 612 typed doors.
+The healthy run observed the branch once and did not throw. Fault trials under
+this fresh weave and a terminal campaign receipt are still required before
+counting HBASE-02 as complete.
 For HBASE-01 specifically, `ConnectionImplementation.isDeadServer` reads
 `ClusterStatusListener.deadServers`; `receive(ClusterMetrics)` adds to that
 list on the multicast listener path. Soot marks both sites as possible state

@@ -50,6 +50,32 @@ def patches() -> dict[str, list[tuple[str, str]]]:
             "  </properties>\n  <dependencies>\n",
             "    <hbase.webapps.dir>hbase-webapps</hbase.webapps.dir>\n"
             "  </properties>\n  <dependencies>\n" + DEPENDENCY)],
+        "hbase-procedure/pom.xml": [(
+            "  <description>Procedure Framework</description>\n\n  <dependencies>\n",
+            "  <description>Procedure Framework</description>\n\n"
+            "  <dependencies>\n" + DEPENDENCY)],
+        "hbase-procedure/src/main/java/org/apache/hadoop/hbase/procedure2/ProcedureExecutor.java": [(
+            "    procedures.put(currentProcId, proc);\n"
+            "    sendProcedureAddedNotification(currentProcId);\n"
+            "    scheduler.addBack(proc);\n",
+            "    procedures.put(currentProcId, proc);\n"
+            "    sendProcedureAddedNotification(currentProcId);\n"
+            "    GraphCheckerHBaseProcedureScope.capture(proc);\n"
+            "    scheduler.addBack(proc);\n"), (
+            "      procedures.put(subproc.getProcId(), subproc);\n"
+            "      scheduler.addFront(subproc);\n",
+            "      procedures.put(subproc.getProcId(), subproc);\n"
+            "      GraphCheckerHBaseProcedureScope.capture(subproc);\n"
+            "      scheduler.addFront(subproc);\n"), (
+            "          this.activeProcedure = proc;\n"
+            "          lastUpdate = TraceUtil.trace(this::runProcedure, new ProcedureSpanBuilder(proc));\n",
+            "          this.activeProcedure = proc;\n"
+            "          long graphScope = GraphCheckerHBaseProcedureScope.enter(proc);\n"
+            "          try {\n"
+            "            lastUpdate = TraceUtil.trace(this::runProcedure, new ProcedureSpanBuilder(proc));\n"
+            "          } finally {\n"
+            "            GraphCheckerHBaseProcedureScope.exit(graphScope);\n"
+            "          }\n")],
         client + "Call.java": [(
             "    this.span = Span.current();\n  }\n",
             "    this.span = Span.current();\n"
@@ -73,6 +99,28 @@ def patches() -> dict[str, list[tuple[str, str]]]:
             "    return result;\n  }\n}\n",
             "    MessageDoors.fetched(\"hbase-blocking-rpc-callback\", malloryGraphVersion, null);\n"
             "    return result;\n  }\n}\n")],
+        "hbase-client/src/main/java/org/apache/hadoop/hbase/MetaTableAccessor.java": [(
+            "    try {\n      return TableState.parseFrom(TableName.valueOf(r.getRow()),\n"
+            "        Arrays.copyOfRange(cell.getValueArray(), cell.getValueOffset(),\n"
+            "          cell.getValueOffset() + cell.getValueLength()));\n",
+            "    try {\n      TableState parsed = TableState.parseFrom(TableName.valueOf(r.getRow()),\n"
+            "        Arrays.copyOfRange(cell.getValueArray(), cell.getValueOffset(),\n"
+            "          cell.getValueOffset() + cell.getValueLength()));\n"
+            "      GraphCheckerHBaseMetaState.readCell(cell);\n"
+            "      return parsed;\n"), (
+            "    putToMetaTable(connection, put);\n    LOG.info(\"Updated {} in hbase:meta\", state);\n",
+            "    putToMetaTable(connection, put);\n"
+            "    GraphCheckerHBaseMetaState.writeAck(put);\n"
+            "    LOG.info(\"Updated {} in hbase:meta\", state);\n")],
+        "hbase-client/src/main/java/org/apache/hadoop/hbase/AsyncMetaTableAccessor.java": [(
+            "      return Optional.of(\n"
+            "        TableState.parseFrom(TableName.valueOf(r.getRow()), Arrays.copyOfRange(cell.getValueArray(),\n"
+            "          cell.getValueOffset(), cell.getValueOffset() + cell.getValueLength())));\n",
+            "      TableState parsed = TableState.parseFrom(TableName.valueOf(r.getRow()),\n"
+            "        Arrays.copyOfRange(cell.getValueArray(), cell.getValueOffset(),\n"
+            "          cell.getValueOffset() + cell.getValueLength()));\n"
+            "      GraphCheckerHBaseMetaState.readCell(cell);\n"
+            "      return Optional.of(parsed);\n")],
         client + "IPCUtil.java": [(
             "    builder.setTimeout(call.timeout);\n\n    return builder.build();\n",
             "    builder.setTimeout(call.timeout);\n"
@@ -90,7 +138,32 @@ def patches() -> dict[str, list[tuple[str, str]]]:
             "                call.setException(toIOE(future.cause()));\n"
             "              } else {\n"
             "                GraphCheckerHBaseProtocol.requestSent(call);\n"
-            "              }\n")],
+            "              }\n"), (
+            "    header.writeTo(new ByteBufOutputStream(this.connectionHeaderWithLength));\n",
+            "    header.writeTo(new ByteBufOutputStream(this.connectionHeaderWithLength));\n"
+            "    GraphCheckerHBaseSaslProtocol.connectionCreated(this, remoteId.getServiceName());\n"), (
+            "        rpcClient.fallbackAllowed, this.rpcClient.conf);\n"
+            "    } catch (IOException e) {\n",
+            "        rpcClient.fallbackAllowed, this.rpcClient.conf);\n"
+            "      GraphCheckerHBaseSaslProtocol.bindHandler(saslHandler, this);\n"
+            "    } catch (IOException e) {\n")],
+        "hbase-client/src/main/java/org/apache/hadoop/hbase/security/NettyHBaseSaslRpcClientHandler.java": [(
+            "import org.apache.hadoop.hbase.ipc.FallbackDisallowedException;\n",
+            "import org.apache.hadoop.hbase.ipc.FallbackDisallowedException;\n"
+            "import org.apache.hadoop.hbase.ipc.GraphCheckerHBaseSaslProtocol;\n"), (
+            "import org.apache.hbase.thirdparty.io.netty.channel.ChannelHandlerContext;\n",
+            "import org.apache.hbase.thirdparty.io.netty.channel.ChannelHandlerContext;\n"
+            "import org.apache.hbase.thirdparty.io.netty.channel.ChannelFuture;\n"), (
+            "    NettyFutureUtils.safeWriteAndFlush(ctx,\n"
+            "      ctx.alloc().buffer(4 + response.length).writeInt(response.length).writeBytes(response));\n",
+            "    GraphCheckerHBaseSaslProtocol.Frame frame =\n"
+            "      GraphCheckerHBaseSaslProtocol.prepareResponse(this, response);\n"
+            "    ChannelFuture write = ctx.writeAndFlush(ctx.alloc().buffer(4 + frame.payload.length)\n"
+            "      .writeInt(frame.payload.length).writeBytes(frame.payload));\n"
+            "    NettyFutureUtils.consume(write);\n"
+            "    NettyFutureUtils.addListener(write, future -> {\n"
+            "      if (future.isSuccess()) frame.sent();\n"
+            "    });\n")],
         client + "BlockingRpcConnection.java": [(
             "        call.callStats.setRequestSizeBytes(write(this.out, requestHeader, call.param, cellBlock));\n",
             "        call.callStats.setRequestSizeBytes(write(this.out, requestHeader, call.param, cellBlock));\n"
@@ -128,6 +201,26 @@ def patches() -> dict[str, list[tuple[str, str]]]:
             "    try (Scope ignored = span.makeCurrent();\n"
             "      GraphCheckerHBaseProtocol.RequestScope graphScope =\n"
             "        GraphCheckerHBaseProtocol.enterRequest(rpcServer, call)) {\n")],
+        server + "NettyHBaseSaslRpcServerHandler.java": [(
+            "import org.apache.hadoop.hbase.security.HBaseSaslRpcServer;\n",
+            "import org.apache.hadoop.hbase.security.HBaseSaslRpcServer;\n"
+            "import org.apache.hadoop.hbase.ipc.GraphCheckerHBaseSaslProtocol.Scope;\n"), (
+            "    byte[] replyToken = saslServer.evaluateResponse(saslToken);\n"
+            "    if (replyToken != null) {\n",
+            "    try (Scope graphScope = GraphCheckerHBaseSaslProtocol.enterResponse(rpcServer, saslToken)) {\n"
+            "    byte[] replyToken = saslServer.evaluateResponse(graphScope.saslToken);\n"
+            "    if (replyToken != null) {\n"), (
+            "      p.remove(DECODER_NAME);\n"
+            "    }\n"
+            "  }\n\n"
+            "  @Override\n"
+            "  public void exceptionCaught",
+            "      p.remove(DECODER_NAME);\n"
+            "    }\n"
+            "    }\n"
+            "  }\n\n"
+            "  @Override\n"
+            "  public void exceptionCaught")],
         server + "ServerCall.java": [(
             "import org.apache.hbase.thirdparty.com.google.protobuf.BlockingService;\n",
             "import org.apache.hbase.thirdparty.com.google.protobuf.BlockingService;\n"
@@ -218,6 +311,21 @@ def main() -> None:
     if pool.exists():
         raise ValueError(f"already patched: {pool}")
     changed[pool] = (Path(__file__).parent / "src/GraphCheckerContextThreadPoolExecutor.java").read_text(
+        encoding="utf-8")
+    sasl = root / "hbase-client/src/main/java/org/apache/hadoop/hbase/ipc/GraphCheckerHBaseSaslProtocol.java"
+    if sasl.exists():
+        raise ValueError(f"already patched: {sasl}")
+    changed[sasl] = (Path(__file__).parent / "src/GraphCheckerHBaseSaslProtocol.java").read_text(
+        encoding="utf-8")
+    meta_state = root / "hbase-client/src/main/java/org/apache/hadoop/hbase/GraphCheckerHBaseMetaState.java"
+    if meta_state.exists():
+        raise ValueError(f"already patched: {meta_state}")
+    changed[meta_state] = (Path(__file__).parent / "src/GraphCheckerHBaseMetaState.java").read_text(
+        encoding="utf-8")
+    procedure_scope = root / "hbase-procedure/src/main/java/org/apache/hadoop/hbase/procedure2/GraphCheckerHBaseProcedureScope.java"
+    if procedure_scope.exists():
+        raise ValueError(f"already patched: {procedure_scope}")
+    changed[procedure_scope] = (Path(__file__).parent / "src/GraphCheckerHBaseProcedureScope.java").read_text(
         encoding="utf-8")
     if not args.check:
         for path, content in changed.items():

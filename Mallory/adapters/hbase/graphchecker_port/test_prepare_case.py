@@ -18,9 +18,10 @@ class PrepareCaseTest(unittest.TestCase):
             classes = root / "classes"
             test_classes = root / "tests"
             for base, name in ((classes, "example/Target.class"),
-                               (test_classes, "example/OriginalTest.class")):
+                               (test_classes, "example/OriginalTest.class"),
+                               (test_classes, "example/SelectedRunner.class")):
                 path = base / name
-                path.parent.mkdir(parents=True)
+                path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_bytes(b"class")
             row = {
                 "case_id": "HBASE-TEST", "target_class": "example.Target",
@@ -52,11 +53,18 @@ class PrepareCaseTest(unittest.TestCase):
             (scope_dir / "analysis.json").write_text(json.dumps(analysis))
             (scope_dir / "weave_manifest.json").write_text(json.dumps(manifest))
             campaign = {"original_class_dirs": [str(classes)],
-                        "test_classpath": [str(test_classes)], "case_id": "old"}
+                        "test_classpath": [str(test_classes)],
+                        "tool_classpath": [],
+                        "runner": {"main_class": "example.SelectedRunner"},
+                        "case_id": "old"}
             config = prepare_case.campaign_config(row, scope_input, scope_dir, campaign)
             self.assertEqual(config["target"]["check_site_id"], branch)
             self.assertEqual(config["target"]["throw_site_id"], throw)
             self.assertEqual(config["junit"]["method"], "testOriginal")
+            (test_classes / "example/SelectedRunner.class").unlink()
+            with self.assertRaisesRegex(ValueError, "runner bytecode unavailable"):
+                prepare_case.campaign_config(row, scope_input, scope_dir, campaign)
+            (test_classes / "example/SelectedRunner.class").write_bytes(b"class")
             scoped_guard = prepare_case.target_input(row, template, check_line=11)
             self.assertEqual(scoped_guard["target"]["check_line"], 11)
             prepare_case.campaign_config(row, scoped_guard, scope_dir, campaign)

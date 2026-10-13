@@ -119,6 +119,11 @@ def campaign_config(row: dict[str, str], scope_input: dict,
     test_entries = template["test_classpath"] + template["original_class_dirs"]
     if not class_present(row["junit_class"], test_entries):
         raise ValueError(f"original JUnit bytecode unavailable: {row['junit_class']}")
+    runner = template.get("runner", {}).get("main_class")
+    runtime_entries = (template["original_class_dirs"] + ordered_cp
+                       + template["test_classpath"] + template["tool_classpath"])
+    if not runner or not class_present(runner, runtime_entries):
+        raise ValueError(f"selected JUnit runner bytecode unavailable: {runner}")
     config = dict(template)
     config.update({
         "case_id": row["case_id"],

@@ -33,6 +33,16 @@ class HBasePortPatchTest(unittest.TestCase):
                           / "ConnectionImplementation.java").read_text()
             callback = (root / "hbase-client/src/main/java/org/apache/hadoop/hbase/ipc"
                         / "BlockingRpcCallback.java").read_text()
+            sasl_client = (root / "hbase-client/src/main/java/org/apache/hadoop/hbase/security"
+                           / "NettyHBaseSaslRpcClientHandler.java").read_text()
+            sasl_server = (root / "hbase-server/src/main/java/org/apache/hadoop/hbase/ipc"
+                           / "NettyHBaseSaslRpcServerHandler.java").read_text()
+            meta = (root / "hbase-client/src/main/java/org/apache/hadoop/hbase"
+                    / "MetaTableAccessor.java").read_text()
+            async_meta = (root / "hbase-client/src/main/java/org/apache/hadoop/hbase"
+                          / "AsyncMetaTableAccessor.java").read_text()
+            procedure = (root / "hbase-procedure/src/main/java/org/apache/hadoop/hbase/procedure2"
+                         / "ProcedureExecutor.java").read_text()
             rpc_server = (SOURCE / "hbase-server/src/main/java/org/apache/hadoop/hbase/ipc"
                           / "RpcServer.java").read_text()
             self.assertIn("if (future.isSuccess()) {\n"
@@ -45,7 +55,27 @@ class HBasePortPatchTest(unittest.TestCase):
             self.assertIn("new GraphCheckerContextThreadPoolExecutor(", connection)
             self.assertIn('MessageDoors.stored("hbase-blocking-rpc-callback",', callback)
             self.assertIn('MessageDoors.fetched("hbase-blocking-rpc-callback",', callback)
+            self.assertIn("GraphCheckerHBaseSaslProtocol.connectionCreated(this,", client)
+            self.assertIn("GraphCheckerHBaseSaslProtocol.bindHandler(saslHandler, this)", client)
+            self.assertIn("GraphCheckerHBaseSaslProtocol.prepareResponse(this, response)",
+                          sasl_client)
+            self.assertIn("if (future.isSuccess()) frame.sent();", sasl_client)
+            self.assertIn("GraphCheckerHBaseSaslProtocol.enterResponse(rpcServer, saslToken)",
+                          sasl_server)
+            self.assertIn("saslServer.evaluateResponse(graphScope.saslToken)", sasl_server)
             self.assertNotIn("GraphCheckerHBaseProtocol.responseSent", rpc_server)
+            self.assertIn("putToMetaTable(connection, put);\n"
+                          "    GraphCheckerHBaseMetaState.writeAck(put);", meta)
+            self.assertIn("GraphCheckerHBaseMetaState.readCell(cell);\n"
+                          "      return parsed;", meta)
+            self.assertIn("GraphCheckerHBaseMetaState.readCell(cell);\n"
+                          "      return Optional.of(parsed);", async_meta)
+            self.assertIn("GraphCheckerHBaseProcedureScope.capture(proc);\n"
+                          "    scheduler.addBack(proc);", procedure)
+            self.assertIn("GraphCheckerHBaseProcedureScope.capture(subproc);\n"
+                          "      scheduler.addFront(subproc);", procedure)
+            self.assertIn("GraphCheckerHBaseProcedureScope.enter(proc);", procedure)
+            self.assertIn("GraphCheckerHBaseProcedureScope.exit(graphScope);", procedure)
             self.assertIn("optional bytes mallory_graph_context = 4;",
                           (root / "hbase-protocol-shaded/src/main/protobuf/RPC.proto").read_text())
 
