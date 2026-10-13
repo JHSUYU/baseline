@@ -1372,6 +1372,15 @@ class CaseLease:
         self.lock.close()
 
 
+def config_identity(config: dict[str, Any]) -> str:
+    """Checkpoint identity excludes knobs that may grow on resume."""
+    return fingerprint({key: value for key, value in config.items()
+                        if key not in {"budget", "timeout_seconds",
+                                       "archive_completed_trials",
+                                       "_static_io_priority",
+                                       "_static_io_exceptions"}})
+
+
 def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
     validate(config)
     case_dir = root / config["case_id"]
@@ -1386,14 +1395,9 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
             if selected_lines and "throw_event" not in target:
                 target.update(throw_event="EXPLICIT_THROW",
                               explicit_throw_lines=selected_lines)
-            if target.get("check_events") == ["CHECK_REACHED"]:
-                controls = selected_target_control_branches(
-                    selection, target, selected_lines)
-                if controls:
-                    target["check_events"] = ["CHECK_REACHED", "BRANCH"]
-                    target["check_site_ids"] = sorted(set(
-                        target.get("check_site_ids", []) + controls +
-                        ([target["site_id"]] if target.get("site_id") else [])))
+            controls = (selected_target_control_branches(selection, target,
+                        selected_lines) if target.get("check_events") ==
+                        ["CHECK_REACHED"] else [])
             config = {**config, "target": target,
                       "io_scope": {"site_ids": [row["site_id"]
                                                for row in selection["io_calls"]]},
@@ -1408,6 +1412,21 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
                       "_static_selection_digest": selection.get(
                           "input_digest", selection.get("artifact_sha256")),
                       "_static_selection_artifact": selection["artifact_path"]}
+            if controls:
+                check_target = {**target,
+                                "check_events": ["CHECK_REACHED", "BRANCH"],
+                                "check_site_ids": sorted(set(
+                                    target.get("check_site_ids", []) + controls +
+                                    ([target["site_id"]]
+                                     if target.get("site_id") else [])))}
+                checkpoint = case_dir / "state.json"
+                # A previous checkpoint retains its original observation
+                # contract. New campaigns gain the Soot-derived branch, while
+                # campaigns already using it resume with the same digest.
+                if (not checkpoint.is_file() or
+                        json.loads(checkpoint.read_text()).get("config_digest") !=
+                        config_identity(config)):
+                    config = {**config, "target": check_target}
             validate(config)
             if not config["io_scope"]["site_ids"]:
                 raise ValueError("static selection found no I/O callsites")
@@ -1415,11 +1434,7 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
         # Budgets can grow without changing the JUnit/test/target identity of
         # already completed trials.  A changed workload or fault selector
         # contract still requires a new case directory.
-        config_digest = fingerprint({key: value for key, value in config.items()
-                                     if key not in {"budget", "timeout_seconds",
-                                                    "archive_completed_trials",
-                                                    "_static_io_priority",
-                                                    "_static_io_exceptions"}})
+        config_digest = config_identity(config)
         if path.exists():
             state = json.loads(path.read_text())
             if state["config_digest"] != config_digest:
