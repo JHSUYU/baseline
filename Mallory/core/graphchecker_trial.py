@@ -73,6 +73,15 @@ def _healthy_summary(prior_trace: Path, sites: list[str], jar: Path) -> Path:
                 return cached
         except (ValueError, KeyError, TypeError):
             pass
+    # Old TrialGraphMain accepts four positional arguments. Passing the new
+    # --healthy-summary command to such a jar would make it treat prior_trace
+    # as an output graph path and truncate the evidence. One argument is a
+    # safe probe: old jars reject it before opening any output path.
+    probe = subprocess.run(["java", "-jar", str(jar), "--capabilities"],
+                           timeout=30, stdout=subprocess.PIPE,
+                           stderr=subprocess.PIPE, check=False)
+    if probe.returncode != 0 or probe.stdout.strip() != b"mallory-healthy-summary-v1":
+        raise ValueError("GraphChecker jar lacks safe healthy-summary-v1 capability")
     target_arg = json.dumps(sites) if len(sites) > 1 else sites[0]
     with tempfile.NamedTemporaryFile(mode="w", prefix=".healthy-summary-",
                                      suffix=".summary.json", dir=prior_trace.parent,

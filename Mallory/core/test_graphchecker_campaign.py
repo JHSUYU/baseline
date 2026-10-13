@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -465,6 +466,9 @@ class GraphCheckerCampaignTest(unittest.TestCase):
             observed = []
 
             def fake_run(command, **_):
+                if "--capabilities" in command:
+                    return subprocess.CompletedProcess(
+                        command, 0, b"mallory-healthy-summary-v1\n", b"")
                 if "--healthy-summary" in command:
                     self.assertEqual(root / receipt["path"], Path(command[5]))
                     Path(command[6]).write_text(json.dumps({
@@ -502,6 +506,33 @@ class GraphCheckerCampaignTest(unittest.TestCase):
             with patch("Mallory.core.graphchecker_trial.subprocess.run",
                        side_effect=plain_run):
                 analyze_trial(fallback, "check", plain, jar)
+
+    def test_old_graph_jar_is_rejected_before_it_can_truncate_prior_archive(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            trial = root / "trial"
+            trial.mkdir()
+            (trial / "graphchecker-trace.jsonl").write_text("{}\n")
+            jar = root / "old-graph.jar"
+            jar.write_bytes(b"old jar fixture")
+            prior = root / "healthy.jsonl"
+            prior.write_text("".join(json.dumps(row) + "\n" for row in self.rows()))
+            receipt = _archive_jsonl(prior, root)
+            archived = root / receipt["path"]
+            before = archived.read_bytes()
+            commands = []
+
+            def old_run(command, **_):
+                commands.append(command)
+                return subprocess.CompletedProcess(command, 2, b"", b"usage")
+
+            with patch("Mallory.core.graphchecker_trial.subprocess.run",
+                       side_effect=old_run):
+                with self.assertRaisesRegex(ValueError, "lacks safe healthy-summary"):
+                    analyze_trial(trial, "check", archived, jar)
+            self.assertEqual(1, len(commands))
+            self.assertEqual("--capabilities", commands[0][-1])
+            self.assertEqual(before, archived.read_bytes())
 
     def test_pinned_trial_template_and_java_major_gate(self):
         with tempfile.TemporaryDirectory() as temp:

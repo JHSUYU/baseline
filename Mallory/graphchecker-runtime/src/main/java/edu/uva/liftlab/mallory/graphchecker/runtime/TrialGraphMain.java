@@ -30,6 +30,14 @@ public final class TrialGraphMain {
     }
 
     public static void main(String[] args) throws Exception {
+        // A one-argument probe is safe against older jars: their ordinary
+        // graph entry point rejects it before opening any output path. Never
+        // send --healthy-summary to an unprobed jar, because an older entry
+        // point would interpret the prior archive as its graph output.
+        if (args.length == 1 && "--capabilities".equals(args[0])) {
+            System.out.println("mallory-healthy-summary-v1");
+            return;
+        }
         if (args.length == 4 && "--healthy-summary".equals(args[0])) {
             TrialGraph prior = TrialGraph.read(Paths.get(args[1]));
             Path summaryFile = Paths.get(args[2]);
