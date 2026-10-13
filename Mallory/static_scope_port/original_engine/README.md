@@ -13,11 +13,12 @@ sites into a JUnit weave manifest.
 ## Provenance
 
 The source baseline is GraphChecker revision
-`c4a90033c654737206466ed36ce837c5b3c12457`. The 185 files under
+`c4a90033c654737206466ed36ce837c5b3c12457`. The 227 files under
 `vendor/src/main/java` are the compiler-transitive Java source closure of
-`MalloryOriginalSeedBridge` plus `SeedBackwardStaticAnalyzer`; the selection
-was obtained by compiling those entry sources with GraphChecker's source tree
-on `javac -sourcepath` and **without** a GraphChecker JAR. Per-file upstream
+`MalloryOriginalSeedBridge`, `SeedBackwardStaticAnalyzer`, and the original
+post-run `Corpus`, `Branches`, and `ClosurePlanner`. The selection was obtained
+by compiling those entry sources with GraphChecker's source tree on
+`javac -sourcepath` and **without** a GraphChecker JAR. Per-file upstream
 and copied SHA-256 digests are in `UPSTREAM_SOURCES.json`. The only Java source
 change is that `SeedBackwardStaticAnalyzer` names its own class, rather than
 `CausynthPipeline`, as the SLF4J logger category. That avoids importing the
@@ -32,6 +33,9 @@ The resource digest and its upstream digest are also recorded in
 The module's `pom.xml` has only published Soot, Guava, SLF4J and Gson build
 dependencies. Its compile and runtime classpaths contain the Mallory module
 JAR and these libraries, and contain **no** `GraphChecker/target` JAR.
+The older `Mallory/graphchecker_closure_port` copies those three post-run
+classes but obtains their remaining dependencies from `GraphChecker/target`;
+this module builds the transitive dependencies from source too.
 
 ## Invocation
 
@@ -98,3 +102,23 @@ prevented quorum startup, so the JUnit failed before reaching the target
 check (`lost_target`). This verifies the source-built analysis-to-weave-to-
 injection path; it is not evidence of a target exception bug. The ZK run
 still has no established cross-process communication port.
+
+## Original post-run closure
+
+`Corpus.read(iteration, null)` reads native `SessionReader` contract files,
+`Branches.of` checks which focused sessions can parent tasks, and
+`ClosurePlanner.plan` demands observed values and static may-writers from a
+target occurrence. `OriginalClosureSessionTest` writes a native seed session
+with two different threads, one versioned shared-state write and read, a
+target predicate, and a static target site. It verifies that the original
+planner includes the writer in the target closure. This test does not use the
+older Mallory trace-to-contract translator. The native feedback adapter is a
+separate integration point; adding these classes does not change frozen
+campaign behavior.
+
+The Java source closure includes GraphChecker's `Z3` helper because the
+compiler dependency graph reaches it. The focused post-run closure test does
+not launch an external solver. Broader Explore/Compose solving may require a
+`z3` executable; this module does not bundle one. Static planning still needs
+target-system bytecode and Soot's dependency classpath. Post-run closure needs
+native session files and a static scope map.
