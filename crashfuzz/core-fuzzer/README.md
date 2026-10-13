@@ -181,6 +181,8 @@ first 80 trials reaches the target after an exact fault, the worker stops for
 workload and scope review. A smaller explicit `--max-trials` remains a hard
 cap. `max_seconds` limits active run time if supplied.
 Changing only `budget` or `timeout_seconds` keeps the same completed trials.
+The checkpoint stores visited sequence IDs as a JSON object for constant-time
+deduplication; older list-based checkpoints migrate on resume.
 `max_unmatched_retries` defaults to 1: an unmatched sequence gets one fresh
 attempt before it is recorded as unmatched. Every mutation adds exactly one
 fault from the actual trace after the last applied fault. The scheduler
@@ -188,6 +190,9 @@ prefers untested I/O families and coverage while balancing one fault and
 longer sequences. Every third trial reserves a slot for an I/O point selected
 near a target-side field writer or its actor callback, when one is queued.
 This rule uses the same Soot reasons for every check.
+Every eleventh selection reserves a slot for a sequence affecting two or more
+observed runtime actors. This explores reply loss and subsequent I/O on
+different nodes without declaring any case-specific fault site.
 New campaigns prefer an untried static I/O callsite in three of every four
 selection rounds. The fourth round retains the existing timing and fault-type
 diversity rule. This keeps phase and later-occurrence variants from crowding
@@ -200,12 +205,17 @@ diversifying the queue. This gives later protocol rounds a chance within a
 bounded budget while retaining call-stack families. Resumed campaigns keep
 the scheduler version with which they started.
 
-A valid trial must prove all requested faults were applied in exact order and
-must execute the target check after the final fault. A `lost_target` trial is
-discarded from feedback and mutation. An exact post-fault target exception
-that exceeds the healthy exception count is a `target_exception_candidate`.
-This is a **source review and replay candidate**, not a confirmed bug. The
-driver never marks `confirmed_bug` or `quality_complete` automatically.
+A fully matched trial must prove all requested faults were applied in exact
+order and must execute the target check after the final fault. A `lost_target`
+trial is discarded from feedback and mutation. An exact post-fault target
+exception that exceeds the healthy exception count is a
+`target_exception_candidate`. If later planned faults do not occur, the driver
+accepts the actually applied faults only when they exactly match a nonempty
+prefix of the selected sequence. A new target exception on that prefix is a
+`partial_target_exception_candidate`, with `strict_injection=false` for the
+unmatched full plan and `strict_applied_prefix=true` for the observed prefix.
+Both statuses require source review and strict replay before claiming a bug.
+The driver never marks `confirmed_bug` or `quality_complete` automatically.
 The healthy JUnit only has to expose an I/O seed. If its target check is
 unreached, the driver still tests those observed I/O points: a fault may
 expose the target branch. Such a trial contributes feedback only after the

@@ -56,7 +56,13 @@ def atomic_json(path: Path, value: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_name(path.name + f".tmp.{os.getpid()}")
     with temporary.open("w", encoding="utf-8") as stream:
-        json.dump(value, stream, indent=2, sort_keys=True)
+        if path.name == "state.json":
+            # The resumable queue can contain tens of thousands of observed
+            # fault sequences. Compact checkpoints avoid repeatedly writing
+            # the same large indentation buffer after every trial.
+            json.dump(value, stream, sort_keys=True, separators=(",", ":"))
+        else:
+            json.dump(value, stream, indent=2, sort_keys=True)
         stream.write("\n")
         stream.flush()
         os.fsync(stream.fileno())
@@ -545,6 +551,22 @@ def strict_injection(result: dict[str, Any],
             result.get("applied_fault_ids") == expected)
 
 
+def strict_applied_prefix(result: dict[str, Any],
+                          sequence: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Return the exact realized prefix of a partially matched fault plan.
+
+    A later selector can disappear after an earlier fault. The observed
+    execution is still a valid shorter fault sequence when every applied
+    point matches the requested prefix in order. Never infer a prefix from
+    only an applied count or from non-prefix matches.
+    """
+    count = result.get("applied_count", 0)
+    if not isinstance(count, int) or not 0 < count < len(sequence):
+        return []
+    prefix = sequence[:count]
+    return prefix if strict_injection(result, prefix) else []
+
+
 def retry_lost_target(result: dict[str, Any], sequence: list[dict[str, Any]],
                       attempt: int, max_retries: int) -> bool:
     """Retry a matched multi-fault plan whose last fault passed the check."""
@@ -556,10 +578,16 @@ def retry_lost_target(result: dict[str, Any], sequence: list[dict[str, Any]],
 
 def enqueue(state: dict[str, Any], sequence: list[dict[str, Any]],
             priority: int = 0, target_proximity: int = 0) -> None:
+    # Old checkpoints stored these IDs in a list. Once the queue grows to
+    # tens of thousands of observed I/O continuations, repeated list scans
+    # dominate the campaign runtime. A JSON object keeps resumability and
+    # gives constant-time duplicate checks.
+    if isinstance(state["seen_sequences"], list):
+        state["seen_sequences"] = dict.fromkeys(state["seen_sequences"], True)
     name = sequence_id(sequence)
     if name in state["seen_sequences"]:
         return
-    state["seen_sequences"].append(name)
+    state["seen_sequences"][name] = True
     state["queue"].append({"id": name, "sequence": sequence,
                            "priority": priority, "created": time.time(),
                            "target_proximity": target_proximity})
@@ -671,6 +699,12 @@ def same_actor_followup(sequence: list[dict[str, Any]]) -> bool:
     return (first["siteId"] != second["siteId"] and
             first["occurrence"].rsplit("/<", 1)[0] ==
             second["occurrence"].rsplit("/<", 1)[0])
+
+
+def fault_actors(sequence: list[dict[str, Any]]) -> tuple[str, ...]:
+    """Stable runtime actors affected by one observed fault sequence."""
+    return tuple(sorted({point["occurrence"].rsplit("/<", 1)[0]
+                         for point in sequence}))
 
 
 def identity_priority(point: dict[str, Any]) -> int:
@@ -790,6 +824,7 @@ def enqueue_extensions(state: dict[str, Any], sequence: list[dict[str, Any]],
     """Extend an admitted run with one I/O actually seen after its final fault."""
     if (len(sequence) >= max_faults or result.get("status") not in
             {"checked", "target_exception_candidate",
+             "partial_target_exception_candidate",
              "baseline_exception_recurrence", "target_exception_unlinked"}):
         return
     new_io = set(result.get("new_io_families", []))
@@ -833,6 +868,7 @@ def budget_has_room(state: dict[str, Any], budget: dict[str, Any]) -> bool:
     if minimum is None or len(completed) < budget["base_trials"]:
         return True
     retained = sum(item["status"] in {"checked", "target_exception_candidate",
+                                      "partial_target_exception_candidate",
                                       "baseline_exception_recurrence",
                                       "target_exception_unlinked"}
                    for item in completed)
@@ -850,6 +886,24 @@ def choose_next_sequence(state: dict[str, Any],
     before other observed fault sites have been tested.
     """
     previous = list(completed_sequences(state))
+    # A lost control-plane reply on one actor can affect a data operation on
+    # another actor. Reserve a bounded share for observed multi-actor plans;
+    # keep shorter, less-tested actor combinations ahead of long repeats.
+    if (state.get("cross_actor_diversity_version", 0) >= 1 and
+            len(previous) % 11 == 10):
+        cross = [(index, item) for index, item in enumerate(state["queue"])
+                 if len(fault_actors(item["sequence"])) >= 2]
+        if cross:
+            tried: dict[tuple[str, ...], int] = {}
+            for sequence in previous:
+                actors = fault_actors(sequence)
+                if len(actors) >= 2:
+                    tried[actors] = tried.get(actors, 0) + 1
+            return min(cross, key=lambda entry: (
+                tried.get(fault_actors(entry[1]["sequence"]), 0),
+                len(entry[1]["sequence"]),
+                -entry[1].get("target_proximity", 0),
+                -entry[1]["priority"], entry[1]["created"], entry[0]))[0]
     # A lost reply can be repaired by the next RPC. Reserve a bounded share
     # for losing a second observed reply from the same actor and callsite.
     if (state.get("repeated_reply_loss_version", 0) >= 1 and
@@ -1201,6 +1255,11 @@ def process_trial(config: dict[str, Any], state: dict[str, Any],
         return
     result["selector_matched"] = selector_matched
     result["strict_injection"] = selector_matched
+    realized_prefix = (strict_applied_prefix(result, active["sequence"])
+                       if not selector_matched else [])
+    result["strict_applied_prefix"] = bool(realized_prefix)
+    result["realized_fault_count"] = (len(active["sequence"])
+                                      if selector_matched else len(realized_prefix))
     baseline_fatal_count = state["seed"]["feedback"].get(
         "target_fatal_exception_count", 0)
     result["baseline_target_fatal_exception_count"] = baseline_fatal_count
@@ -1209,7 +1268,10 @@ def process_trial(config: dict[str, Any], state: dict[str, Any],
     baseline_outcomes = set(state["seed"]["feedback"].get("target_outcomes", []))
     result["target_outcome_changed"] = bool(
         set(result.get("target_outcomes_after_fault", [])) - baseline_outcomes)
-    if not selector_matched:
+    if (realized_prefix and result["oracle"] and
+            result["differential_target_exception"]):
+        status = "partial_target_exception_candidate"
+    elif not selector_matched:
         status = "unmatched"
     elif not result.get("target_reached_after_fault"):
         status = "lost_target"
@@ -1228,6 +1290,7 @@ def process_trial(config: dict[str, Any], state: dict[str, Any],
     old_io = set(state.get("io_families", []))
     observed_io = {fault_family(point) for point in result.get("points", [])} - old_io
     admitted = status in {"checked", "target_exception_candidate",
+                          "partial_target_exception_candidate",
                           "baseline_exception_recurrence",
                           "target_exception_unlinked"}
     new_coverage = observed_coverage if admitted else set()
@@ -1238,7 +1301,8 @@ def process_trial(config: dict[str, Any], state: dict[str, Any],
     result["new_io_count"] = len(new_io)
     result["new_io_families"] = sorted(new_io)
     result["status"] = status
-    if config.get("archive_completed_trials") and status != "target_exception_candidate":
+    if (config.get("archive_completed_trials") and status not in
+            {"target_exception_candidate", "partial_target_exception_candidate"}):
         result["archived_artifacts"] = sorted(set(
             result.get("archived_artifacts", []) +
             archive_trial_attempts(trial_dir, result)))
@@ -1251,7 +1315,7 @@ def process_trial(config: dict[str, Any], state: dict[str, Any],
                                "status": status, "result": str(result_file),
                                "elapsed_seconds": result["elapsed_seconds"],
                                "sequence": active["sequence"]})
-    enqueue_extensions(state, active["sequence"], result,
+    enqueue_extensions(state, realized_prefix or active["sequence"], result,
                        config["budget"]["max_faults"],
                        config.get("_static_io_priority"),
                        config.get("_static_io_exceptions"))
@@ -1448,7 +1512,9 @@ def write_case_result(case_dir: Path, state: dict[str, Any]) -> None:
     results = [json.loads(Path(item["result"]).read_text())
                for item in completed]
     candidates = [item for item, result in zip(completed, results)
-                  if result.get("status") == "target_exception_candidate"]
+                  if result.get("status") in
+                  {"target_exception_candidate",
+                   "partial_target_exception_candidate"}]
     status = state.get("status", "recorded_seed")
     if candidates and status not in TERMINAL:
         status = "candidate_review"
@@ -1490,6 +1556,8 @@ def write_case_result(case_dir: Path, state: dict[str, Any]) -> None:
             fault_family(sequence[-1]) for sequence in sequences}),
         "strict_injections": sum(bool(result.get("strict_injection"))
                                  for result in results),
+        "strict_applied_prefixes": sum(bool(result.get("strict_applied_prefix"))
+                                        for result in results),
         "post_fault_target_reach_trials": sum(
             bool(result.get("strict_injection") and
                  result.get("target_reached_after_fault")) for result in results),
@@ -1503,12 +1571,16 @@ def write_case_result(case_dir: Path, state: dict[str, Any]) -> None:
         "target_outcome_changed_trials": sum(
             bool(result.get("target_outcome_changed")) for result in results),
         "oracle_candidates": len(candidates),
+        "partial_target_exception_candidates": sum(
+            result.get("status") == "partial_target_exception_candidate"
+            for result in results),
         "coverage_gain": len(coverage_delta),
         "coverage_gain_by_kind": coverage_gain_by_kind,
         "coverage_include_prefixes": state.get("coverage_include_prefixes", []),
         "static_selection_digest": state.get("static_selection_digest"),
         "static_selection_artifact": state.get("static_selection_artifact"),
         "temporal_diversity_version": state.get("temporal_diversity_version", 1),
+        "cross_actor_diversity_version": state.get("cross_actor_diversity_version", 0),
         "io_family_gain": max(0, len(state.get("io_families", [])) - len({
             fault_family(point) for point in
             seed.get("feedback", {}).get("points", [])})),
@@ -1675,7 +1747,7 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
                     queue_ids.add(new_id)
                     seen.add(new_id)
                 state["queue"] = queue
-                state["seen_sequences"] = sorted(seen)
+                state["seen_sequences"] = dict.fromkeys(sorted(seen), True)
                 state["typed_zookeeper_fault_version"] = 1
             state.setdefault("active_runtime_seconds", 0.0)
             state.setdefault("seed_runtime_seconds", 0.0)
@@ -1689,6 +1761,7 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
             state.setdefault("repeated_reply_loss_version", 1)
             state.setdefault("deep_sequence_version", 1)
             state.setdefault("same_actor_followup_version", 1)
+            state.setdefault("cross_actor_diversity_version", 1)
             if state.get("fault_family_version", 0) < 2:
                 observed = state.get("seed", {}).get("feedback", {}).get(
                     "points", []) if state.get("seed") else []
@@ -1763,7 +1836,7 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
                      "static_selection_artifact": config.get(
                          "_static_selection_artifact"),
                      "config_digest": config_digest, "seed": None,
-                     "coverage": [], "queue": [], "seen_sequences": [],
+                     "coverage": [], "queue": [], "seen_sequences": {},
                      "io_families": [], "active_runtime_seconds": 0.0,
                      "identity_priority_version": 1,
                      "fault_family_version": 2,
@@ -1775,6 +1848,7 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
                      "repeated_reply_loss_version": 1,
                      "deep_sequence_version": 1,
                      "same_actor_followup_version": 1,
+                    "cross_actor_diversity_version": 1,
                      "site_diversity_version": 2,
                      "typed_zookeeper_fault_version": 1,
                      "seed_runtime_seconds": 0.0,
@@ -1860,6 +1934,7 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
                                   state["active_runtime_seconds"] >= max_runtime))
         if state["finished"] and state.get("status") not in TERMINAL:
             valid_trial_statuses = {"checked", "target_exception_candidate",
+                                    "partial_target_exception_candidate",
                                     "baseline_exception_recurrence"}
             state["status"] = (
                 "budget_or_queue_complete" if any(

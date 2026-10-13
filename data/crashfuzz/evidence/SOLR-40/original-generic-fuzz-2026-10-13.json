@@ -1,0 +1,127 @@
+{
+  "case_id": "SOLR-40",
+  "system": "Solr 8.11.4",
+  "workload": "org.apache.solr.update.processor.TimeRoutedAliasUpdateProcessorTest#test",
+  "workload_modified": false,
+  "selection": "Soot-derived I/O and coverage; no manually declared fault site",
+  "target": "org.apache.solr.update.processor.RoutedAliasUpdateProcessor.getAliasProps",
+  "target_source": "solr/core/src/java/org/apache/solr/update/processor/RoutedAliasUpdateProcessor.java:133",
+  "healthy_target_fatal_exception_count": 0,
+  "generic_campaign": {
+    "trial_number": 31,
+    "requested_fault_count": 2,
+    "applied_fault_count": 1,
+    "full_plan_status": "unmatched",
+    "strict_applied_prefix": true,
+    "applied_fault_selector": [
+      {
+        "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "hitOrdinal": 1,
+        "marker": "FAULT:STATIC:IO",
+        "occurrence": "local/solr:watch:node2/<org.apache.solr.common.cloud.ZkStateReader$AliasesManager: void process(org.apache.zookeeper.WatchedEvent)>#u13",
+        "occurrenceOrdinal": 1,
+        "phase": "after",
+        "siteId": "<org.apache.solr.common.cloud.ZkStateReader$AliasesManager: void process(org.apache.zookeeper.WatchedEvent)>#u13",
+        "sourceKey": "<org.apache.solr.common.cloud.SolrZkClient: byte[] getData(java.lang.String,org.apache.zookeeper.Watcher,org.apache.zookeeper.data.Stat,boolean)>"
+      }
+    ],
+    "target_fatal_exception_count": 1,
+    "target_oracle": true,
+    "first_observed_wall_seconds": 2102.391,
+    "trial_result_path": "/users/ZhenyuLi/static-rerun/original-known/SOLR-40/campaign-node-identity-v4/SOLR-40/trials/0031-a002453e128d7bc6206c/result.json"
+  },
+  "strict_prefix_replay": {
+    "attempts": [
+      {
+        "attempt": 1,
+        "elapsed_seconds": 24.69,
+        "exit": 0,
+        "applied_count": 1,
+        "check_after": true,
+        "throw_after": false,
+        "target_throws": 0,
+        "applied": [
+          [
+            3745,
+            "solr:watch:node2",
+            "33c7636ed55491eb6667"
+          ]
+        ],
+        "throw": []
+      },
+      {
+        "attempt": 2,
+        "elapsed_seconds": 24.936,
+        "exit": 0,
+        "applied_count": 1,
+        "check_after": true,
+        "throw_after": false,
+        "target_throws": 0,
+        "applied": [
+          [
+            3764,
+            "solr:watch:node2",
+            "33c7636ed55491eb6667"
+          ]
+        ],
+        "throw": []
+      },
+      {
+        "attempt": 3,
+        "elapsed_seconds": 17.92,
+        "exit": 1,
+        "applied_count": 1,
+        "check_after": true,
+        "throw_after": true,
+        "target_throws": 1,
+        "applied": [
+          [
+            3777,
+            "solr:watch:node2",
+            "33c7636ed55491eb6667"
+          ]
+        ],
+        "throw": [
+          [
+            3810,
+            null
+          ]
+        ]
+      }
+    ],
+    "first_reproduced_attempt": 3,
+    "cumulative_junit_seconds_to_reproduction": 67.546,
+    "trace_path": "/users/ZhenyuLi/static-rerun/original-known/SOLR-40/replay-prefix31-general/attempt-03/runtime_trace.jsonl",
+    "trace_sha256": "a06c4af278fbe35e153b67c05fb26a5f2a3cbc203f8cda4a403484a0eed2a463",
+    "causal_events": [
+      {
+        "event": "FAULT_APPLIED",
+        "seq": 3777,
+        "thread": "zkCallback-61-thread-1",
+        "logicalNodeId": "solr:watch:node2",
+        "siteId": "<org.apache.solr.common.cloud.ZkStateReader$AliasesManager: void process(org.apache.zookeeper.WatchedEvent)>#u13",
+        "sourceKey": "<org.apache.solr.common.cloud.SolrZkClient: byte[] getData(java.lang.String,org.apache.zookeeper.Watcher,org.apache.zookeeper.data.Stat,boolean)>",
+        "faultId": "33c7636ed55491eb6667"
+      },
+      {
+        "event": "CHECK_REACHED",
+        "seq": 3805,
+        "thread": "qtp276096417-251",
+        "logicalNodeId": "solr:watch:node2",
+        "method": "<org.apache.solr.update.processor.RoutedAliasUpdateProcessor: java.util.Map getAliasProps(org.apache.solr.request.SolrQueryRequest,java.lang.String)>",
+        "siteId": "<org.apache.solr.update.processor.RoutedAliasUpdateProcessor: java.util.Map getAliasProps(org.apache.solr.request.SolrQueryRequest,java.lang.String)>#u10"
+      },
+      {
+        "event": "METHOD_EXIT_THROW",
+        "seq": 3810,
+        "thread": "qtp276096417-251",
+        "method": "<org.apache.solr.update.processor.RoutedAliasUpdateProcessor: java.util.Map getAliasProps(org.apache.solr.request.SolrQueryRequest,java.lang.String)>",
+        "runtimeType": "org.apache.solr.common.SolrException"
+      }
+    ],
+    "create_alias_status_0_log": [
+      "16306 INFO  (qtp545965570-216) [n:127.0.0.1:35033_solr     ] o.a.s.s.HttpSolrCall [admin] webapp=null path=/admin/collections params={router.interval=%2B1DAY&router.start=2017-10-23T00:00:00Z&create-collection.collection.configName=test&create-collection.maxShardsPerNode=2&router.field=timestamp_dt&name=myalias&router.name=time&create-collection.numShards=1&create-collection.nrtReplicas=1&action=CREATEALIAS&wt=javabin&version=2} status=0 QTime=154"
+    ],
+    "failure_on_first_original_junit_add": true
+  }
+}

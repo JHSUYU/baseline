@@ -7,10 +7,11 @@ import unittest
 from pathlib import Path
 
 from fuzzer import (archive_trial_attempts, budget_has_room, campaign,
-                    choose_next_sequence, fault_family, fault_point_for_io,
+                    choose_next_sequence, enqueue, fault_family, fault_point_for_io,
                     fault_variants_for_io, fingerprint,
                     in_io_scope, point_from_event,
-                    rows, static_reason_priority, strict_injection,
+                    rows, static_reason_priority, strict_applied_prefix,
+                    strict_injection,
                     retry_lost_target,
                     target_proximity_score,
                     trace_feedback, stable_occurrence,
@@ -81,6 +82,8 @@ for point in trial['faults']:
     seq += 1
     rows.append({'schemaVersion':3,'event':'FAULT_APPLIED','seq':seq,
                  'faultId':point['faultId'],**identity})
+    if mode == 'partial' and len(trial['faults']) > 1:
+        break
 if len(trial['faults']) == 1:
     seq += 1
     rows.append({'schemaVersion':3,'event':'FAULT_POINT_OBSERVED','seq':seq,
@@ -444,6 +447,16 @@ class CoverageIoTest(unittest.TestCase):
             {'status': 'lost_target'}] * 50
         self.assertFalse(budget_has_room(state, budget))
 
+    def test_old_seen_sequence_list_migrates_without_duplicate_trials(self):
+        state = {'seen_sequences': [fingerprint([A])], 'queue': []}
+        enqueue(state, [A])
+        self.assertEqual(state['queue'], [])
+        self.assertIsInstance(state['seen_sequences'], dict)
+        enqueue(state, [B])
+        self.assertEqual(len(state['queue']), 1)
+        enqueue(state, [B])
+        self.assertEqual(len(state['queue']), 1)
+
     def test_every_third_trial_reserves_a_static_target_io(self):
         state = {'completed': [{'sequence': [A, B]}, {'sequence': [B, A]}],
                  'queue': [{'sequence': [B], 'priority': 1000, 'created': 1},
@@ -550,6 +563,23 @@ class CoverageIoTest(unittest.TestCase):
                             'target_proximity': 80, 'created': 2}],
                  'same_actor_followup_version': 1}
         self.assertEqual(choose_next_sequence(state), 1)
+
+    def test_cross_actor_slot_explores_distinct_fault_actors(self):
+        first = {**A, 'occurrence':
+                 'local/heartbeat|node1/<example.Transport: void receive()>#u2'}
+        same = {**B, 'occurrence':
+                'local/heartbeat|node1/<example.Recovery: void read()>#u3'}
+        other = {**B, 'occurrence':
+                 'local/transfer|node2/<example.Recovery: void read()>#u3'}
+        state = {'completed': [{'sequence': [A]}] * 10,
+                 'queue': [{'sequence': [first, same], 'priority': 1000,
+                            'created': 1},
+                           {'sequence': [first, other], 'priority': 10,
+                            'created': 2}],
+                 'cross_actor_diversity_version': 1}
+        self.assertEqual(choose_next_sequence(state), 1)
+        state['cross_actor_diversity_version'] = 0
+        self.assertEqual(choose_next_sequence(state), 0)
 
     def test_followup_slot_prefers_same_component_on_less_tried_root(self):
         watch = {**A, 'siteId': '<example.Watch: void process()>#u1',
@@ -943,6 +973,30 @@ class CoverageIoTest(unittest.TestCase):
         self.assertFalse(retry_lost_target(applied, [A], 1, 2))
         self.assertFalse(retry_lost_target(
             {**applied, 'target_reached_after_fault': True}, [A, B], 1, 2))
+
+    def test_partially_matched_target_throw_records_exact_realized_prefix(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            config = fixture(root, mode='partial', max_trials=2)
+            state = campaign(config, root / 'out')
+            self.assertEqual(len(state['completed']), 2)
+            result = json.loads(Path(state['completed'][1]['result']).read_text())
+            self.assertEqual(result['status'],
+                             'partial_target_exception_candidate')
+            self.assertFalse(result['strict_injection'])
+            self.assertTrue(result['strict_applied_prefix'])
+            self.assertEqual(result['realized_fault_count'], 1)
+            self.assertEqual(strict_applied_prefix(result,
+                             state['completed'][1]['sequence']), [A])
+            summary = json.loads((root / 'out' / 'CHECK-01' / 'result.json').read_text())
+            self.assertEqual(summary['partial_target_exception_candidates'], 1)
+            self.assertEqual(summary['strict_applied_prefixes'], 1)
+
+    def test_applied_nonprefix_cannot_be_salvaged(self):
+        applied = {'matched_count': 1, 'applied_count': 1,
+                   'applied_points': [B],
+                   'applied_fault_ids': [fingerprint(B)]}
+        self.assertEqual(strict_applied_prefix(applied, [A, B]), [])
 
     def test_exact_selector_and_target_check_after_final_fault(self):
         point = dict(A)

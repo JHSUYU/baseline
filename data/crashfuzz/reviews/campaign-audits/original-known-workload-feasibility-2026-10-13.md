@@ -12,15 +12,66 @@ generic-fuzz detections.
 | HDFS-17899 / HDFS-55 | `TestBalancerWithEncryptedTransfer.testEncryptedBalancer0`; `Dispatcher.PendingMove.dispatch` | The JUnit enables encrypted transfer and executes Balancer block moves. The release `dispatch` catches general `IOException` without clearing the cached key (`Dispatcher.java:394-429`). Its current HDFS-55 target is a cache branch in `KeyManager.newDataEncryptionKey`, which has no target exception oracle. | 80 completed generic-fuzz trials; typed one-shot SASL exceptions were injected, but this is not evidence of a stale key retained across moves. No target exception candidate. |
 | HDFS-17899 Balancer and HDFS-17967 proxy / HDFS-11 | Same unchanged Balancer JUnit; `Dispatcher.PendingMove.dispatch`, `DataXceiver.replaceBlock`, and `BlockTokenSecretManager.retrieveDataEncryptionKey` at `allKeys.get(keyId)` | The healthy trace observes 15 Balancer dispatches and 15 `replaceBlock` proxy SASL calls. The Soot selection includes these calls, DataNode handshake, key-updater RPC, and the exact `InvalidEncryptionKeyException` throw. The default block-key update interval and token lifetime are both 600 minutes (`DFSConfigKeys.java:1060-1063`, interpreted as minutes in `BlockManager.java:710-718`); the JUnit timeout is 60 seconds. A natural key rotation is therefore not expected in this workload. | Running in an isolated campaign. This Balancer workload has not itself produced the exact target throw after a fault; its result must remain separate from the pipeline-recovery workload below. |
 | HDFS-17967 mirror and HDFS-17899 DataNode transfer | `TestEncryptedTransfer.testLongLivedClientPipelineRecovery[0]`; `DataXceiver.writeBlock` mirror SASL and `DataNode.DataTransfer.run` | This original four-DataNode JUnit enables encrypted transfer, reduces the key-update interval and token lifetime to 2 seconds, clears old keys, and induces pipeline recovery after stopping a DataNode (`TestEncryptedTransfer.java:376-437`). Its passing healthy trace observes both outbound I/O methods, the NameNode heartbeat RPC, and one expected receiver-side `InvalidEncryptionKeyException` from the client retry path. Soot selects 138 I/O calls and 400 coverage methods without a manual I/O list. A post-call heartbeat failure can prevent a `DNA_ACCESSKEYUPDATE` reply from being queued on one DataNode (`BPServiceActor.java:703-739`), while `BPOfferService.java:779-784` updates local keys only when the command is processed. | **No fault-induced target exception detected in the first 174 trials.** The 55.859-second figure is only the first post-fault *observation* of the same exception the healthy JUnit deliberately triggers once: seed 27.151 seconds and trial 1 28.708 seconds. In that trial, a synthetic handshake failure applied at trace seq 698 on one DataXceiver, while the exact `BlockTokenSecretManager.retrieveDataEncryptionKey` throw at source line 555 occurred later at seq 954 on another DataXceiver. The healthy trace already has the same exact throw at seq 932. No strictly injected trial through 174 has more than the healthy run's one target throw. The separate `CHECK_REACHED` hook missed trial 1, but repairing that bookkeeping does not make its exception new. The campaign resumed from its checkpoint after this correction. |
-| SOLR-40 | `TimeRoutedAliasUpdateProcessorTest.test` | The original four-node JUnit creates a time-routed alias and immediately adds a document (`TimeRoutedAliasUpdateProcessorTest.java:132-139`). `ZkStateReader.AliasesManager.process` reads the watched alias data; on `ConnectionLossException` it logs and leaves the local cache as-is (`ZkStateReader.java:2302-2317`). The generic Soot selection includes that callback's `getData` I/O sites. | The previous generic campaign stopped at 98 trials with no target exception. Trial 61 strictly injected `ConnectionLossException` at the alias-watch `getData` call and reached the target, but the JUnit passed. Other callback selectors often failed to match because the `zkCallback` pool number changed between runs. A new generic campaign uses stable, distinct `node1`–`node4` identities derived from the embedded cluster's Solr homes; its unchanged JUnit healthy run passed. A separate precise replay triggered the target and remains a different result. |
+| HDFS HA alternative | `TestFailoverWithBlockTokensEnabled.TestFailoverAfterAccessKeyUpdate` | This original JUnit shortens block-key update intervals and fails over between NameNodes, but its setup creates only one DataNode and enables block access tokens without `dfs.encrypt.data.transfer` (`TestFailoverWithBlockTokensEnabled.java:67-77, 157-205`). | Excluded for the `DataXceiver.writeBlock` encrypted mirror and `allKeys.get(keyId)` target: no downstream DataNode or encrypted data-transfer handshake exists in this workload. |
+| SOLR-40 | `TimeRoutedAliasUpdateProcessorTest.test` | The original four-node JUnit creates a time-routed alias and immediately adds a document (`TimeRoutedAliasUpdateProcessorTest.java:132-139`). `ZkStateReader.AliasesManager.process` reads the watched alias data; on `ConnectionLossException` it logs and leaves the local cache as-is (`ZkStateReader.java:2302-2317`). The generic Soot selection includes that callback's `getData` I/O sites. | **Detected by the generic selector and unchanged JUnit.** The healthy run had zero target `SolrException` throws. In campaign trial 31, the first of two selected faults applied to alias-watch `getData` on `node2` at trace seq 3776; the same node reached `getAliasProps` at seq 3805 and threw at seq 3810. The second planned fault did not occur, so the full two-fault plan is `unmatched`. Replaying its tool-selected, actually applied one-fault prefix as a strict single-fault plan reproduced the same target throw in attempt 3 of 3; attempts 1 and 2 injected successfully and reached the check without a throw. The failing replay trace shows fault seq 3777, target check seq 3805, and target throw seq 3810. This is a reproducible fault-induced target exception, not a healthy-run recurrence. |
 
 The original HDFS-17897 JUnit choices each cover only one half of the required
 encrypted striped-checksum path. The encrypted pipeline-recovery JUnit is the
 strongest unchanged workload for the DataNode mirror and transfer paths because
-it combines key rotation with observed outbound SASL I/O. The Balancer and Solr
-workloads reach their relevant operations; their remaining question is whether
-a generic fault sequence produces the necessary state and reaches the target
+it combines key rotation with observed outbound SASL I/O. The Balancer
+workload reaches its relevant operations; its remaining question is whether
+a generic fault sequence produces a stale-key state and reaches the target
 afterward.
+
+SOLR-40 timing: the generic campaign first observed the fault-induced target
+throw 2,102.391 seconds (35 minutes 2.391 seconds) after its checkpoint's
+`started` timestamp, at trial 31. Because the second requested fault was
+unmatched, this was a candidate observation. Three subsequent strict replays
+of the automatically selected one-fault prefix took 24.690, 24.936, and
+17.920 seconds of JUnit execution, respectively; the third reproduced the
+target throw. Their combined execution time was 67.546 seconds. The replay
+log shows `CREATEALIAS` returned status 0 before the original test's first
+document add at line 138 failed with the routed-alias exception. The strict
+replay evidence is on node2 in
+`static-rerun/original-known/SOLR-40/replay-prefix31-general/attempt-03`;
+the original trial is in
+`static-rerun/original-known/SOLR-40/campaign-node-identity-v4/SOLR-40/trials/0031-a002453e128d7bc6206c`.
+A compact event and timing record is in
+`data/crashfuzz/evidence/SOLR-40/original-generic-fuzz-2026-10-13.json`.
+The fuzzer now labels an unmatched full plan as a partial target exception
+candidate when its actually applied faults exactly match a nonempty prefix
+of the selected plan and the target exception exceeds the healthy count.
+It retains the full-plan mismatch in the result, so strict full-sequence
+statistics are not inflated. The node2 campaign loaded the older runner at
+startup; this result was identified by direct audit of its saved trace and
+validated by strict prefix replay.
+
+The HDFS mirror campaign remains open. Its healthy JUnit intentionally causes
+one exact `InvalidEncryptionKeyException` at `allKeys.get(keyId)`. A faulted
+run that shows only that same expected throw is `baseline_exception_recurrence`
+and has no detection time. Through trial 189, no strict faulted run produced
+an additional exact target throw.
+
+The original pipeline-recovery test explicitly waits until **every** DataNode
+has discarded the client's cached key before it appends and forces recovery
+(`TestEncryptedTransfer.java:407-437`). This explains the healthy target throw:
+the first DataNode approached with that stale client key rejects it, and the
+client clears the key. It also narrows the window for a distinct downstream
+DataNode key mismatch. Such a mismatch would require a later divergence among
+DataNodes after this wait, rather than just the stale client key that the test
+deliberately creates. Faults that merely recreate the single client-retry
+throw are therefore not counted even when they precede it in the trace.
+For example, trial 70 failed its JUnit assertion because two synthetic
+`InvalidEncryptionKeyException` failures made `clearDataEncryptionKey()` run
+twice, while its exact `allKeys.get(keyId)` throw still occurred only once.
+That is a failure of the chosen faulted workload, not evidence of the target
+coordination bug.
+The Soot-generated HDFS selection does include the relevant general RPC
+families: `ClientNamenodeProtocolServerSideTranslatorPB.getDataEncryptionKey`
+(`io_calls` site `#u5`), `BPServiceActor.sendHeartBeat` (`#u75`), and
+`DataNode.DataTransfer.run` (`#u64`). It also includes
+`KeyManager$BlockKeyUpdater.run` (`#u8`) for the Balancer path. These are
+selected by the static scope rather than declared as manual fault sites.
 
 Evidence roots: `static-rerun/original-known/HDFS-54`, `HDFS-55`,
 `HDFS-11-balancer`, and `HDFS-17967-mirror` on node0, and
