@@ -45,6 +45,8 @@ final class TraceRows {
     private static final ThreadLocal<Context> CURRENT =
             ThreadLocal.withInitial(Context::new);
     private static final Gson GSON = new Gson();
+    private static final boolean COMPACT_TRACE = Boolean.getBoolean(
+            "mallory.graphchecker.trace.compact");
     private static BufferedWriter writer;
     private static long sequence;
     private static boolean closed;
@@ -474,7 +476,6 @@ final class TraceRows {
         JsonObject row = values == null ? new JsonObject() : values;
         row.addProperty("kind", kind);
         if (occurrence != null) {
-            row.addProperty("occurrence", occurrence.render());
             row.addProperty("occurrenceId", occurrence.id());
             row.addProperty("regionId", occurrence.regionId());
             row.addProperty("node", occurrence.node().render());
@@ -485,6 +486,17 @@ final class TraceRows {
             try {
                 open();
                 if (writer == null) return;
+                // A materialized ACTIVATION already carries this exact path.
+                // Keep the legacy encoding by default, and retain full paths
+                // for role occurrences without an activation in this trace.
+                if (occurrence != null && COMPACT_TRACE
+                        && ("COVERAGE".equals(kind) || "FAULT_DOOR".equals(kind)
+                                || "REGION_COMPLETE".equals(kind))
+                        && EMITTED_ACTIVATIONS.contains(occurrence.id())) {
+                    row.addProperty("occurrenceRef", "ACTIVATION");
+                } else if (occurrence != null) {
+                    row.addProperty("occurrence", occurrence.render());
+                }
                 row.addProperty("seq", ++sequence);
                 writer.write(GSON.toJson(row));
                 writer.newLine();

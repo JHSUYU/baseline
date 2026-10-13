@@ -3,6 +3,7 @@ package edu.uva.liftlab.mallory.graphchecker.runtime;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import edu.uva.liftlab.mallory.graphchecker.contract.OccurrenceAddress;
 
 import java.io.IOException;
 import java.io.BufferedReader;
@@ -147,6 +148,7 @@ public final class TrialGraph {
 
     private void eachRow(Path trace, boolean countInvalid,
                          Consumer<JsonObject> consumer) throws IOException {
+        Map<String, JsonObject> activations = new HashMap<>();
         try (InputStream raw = Files.newInputStream(trace);
              InputStream input = trace.toString().endsWith(".gz")
                      ? new GZIPInputStream(raw) : raw;
@@ -160,6 +162,44 @@ public final class TrialGraph {
                 catch (RuntimeException invalid) {
                     if (countInvalid) gap("TRACE_ROW_INVALID");
                     continue;
+                }
+                if ("ACTIVATION".equals(value(row, "kind"))) {
+                    String id = value(row, "occurrenceId");
+                    if (!id.isEmpty() && !value(row, "occurrence").isEmpty()) {
+                        activations.put(id, row);
+                    }
+                } else if ("ACTIVATION".equals(value(row, "occurrenceRef"))) {
+                    String kind = value(row, "kind");
+                    String id = value(row, "occurrenceId");
+                    JsonObject activation = activations.get(id);
+                    OccurrenceAddress address = null;
+                    if (activation != null) {
+                        try {
+                            address = OccurrenceAddress.parse(
+                                    value(activation, "occurrence"));
+                        } catch (IllegalArgumentException invalid) {
+                            // A digest alone must never authenticate an
+                            // absent path in a compact row.
+                        }
+                    }
+                    if (!("COVERAGE".equals(kind) || "FAULT_DOOR".equals(kind)
+                            || "REGION_COMPLETE".equals(kind))
+                            || row.has("occurrence") || address == null
+                            || !id.equals(address.id())
+                            || !value(activation, "node").equals(
+                                    address.node().render())
+                            || !value(activation, "regionId").equals(
+                                    address.regionId())
+                            || !value(row, "node").equals(value(activation, "node"))
+                            || !value(row, "regionId").equals(
+                                    value(activation, "regionId"))
+                            || number(activation, "seq") < 0
+                            || number(activation, "seq") >= number(row, "seq")) {
+                        throw new IllegalArgumentException(
+                                "compact trace occurrence lacks an exact prior activation "
+                                        + id + " at seq " + value(row, "seq"));
+                    }
+                    row.addProperty("occurrence", value(activation, "occurrence"));
                 }
                 consumer.accept(row);
             }

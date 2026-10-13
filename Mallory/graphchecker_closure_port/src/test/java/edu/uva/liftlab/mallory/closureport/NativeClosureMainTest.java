@@ -31,9 +31,84 @@ public class NativeClosureMainTest {
         row.addProperty("kind", kind);
         row.addProperty("occurrence", occurrence.render());
         row.addProperty("occurrenceId", occurrence.id());
+        row.addProperty("node", occurrence.node().render());
+        row.addProperty("regionId", occurrence.regionId());
         row.addProperty("threadKey", "junit-1");
         row.addProperty("seq", sequence);
         return row;
+    }
+
+    @Test public void compactRowsPreserveOriginalPlannerAndObservedFaultPredecessor()
+            throws Exception {
+        Path root = folder.newFolder().toPath();
+        OccurrenceAddress first = OccurrenceAddress.of(NodeId.of("zk-peer-1", 1),
+                "R.register", CausalContext.of(Role.of("SERVER"), "REGISTER", 1),
+                ExecutionIndex.empty());
+        OccurrenceAddress second = OccurrenceAddress.of(NodeId.of("zk-peer-1", 1),
+                "R.register", CausalContext.of(Role.of("SERVER"), "REGISTER", 2),
+                ExecutionIndex.empty());
+        JsonObject activation = event("ACTIVATION", first, 1);
+        JsonObject fault = event("FAULT_APPLIED", first, 2);
+        fault.addProperty("siteId", "Register#io");
+        JsonObject coverage = event("COVERAGE", first, 3);
+        coverage.addProperty("siteId", "Register#block");
+        JsonObject door = event("FAULT_DOOR", first, 4);
+        door.addProperty("siteId", "Register#io");
+        JsonObject completion = event("REGION_COMPLETE", first, 5);
+        JsonObject target = event("TARGET_CHECK", second, 7);
+        target.addProperty("siteId", "Register#check");
+        target.addProperty("outcome", "FALSE");
+        Path legacy = root.resolve("legacy.jsonl");
+        Files.write(legacy, Arrays.asList(activation.toString(), fault.toString(),
+                coverage.toString(), door.toString(), completion.toString(),
+                event("ACTIVATION", second, 6).toString(), target.toString()),
+                StandardCharsets.UTF_8);
+        JsonObject compactCoverage = coverage.deepCopy();
+        JsonObject compactDoor = door.deepCopy();
+        JsonObject compactCompletion = completion.deepCopy();
+        for (JsonObject compact : Arrays.asList(compactCoverage, compactDoor,
+                compactCompletion)) {
+            compact.remove("occurrence");
+            compact.addProperty("occurrenceRef", "ACTIVATION");
+        }
+        Path compact = root.resolve("compact.jsonl");
+        Files.write(compact, Arrays.asList(activation.toString(), fault.toString(),
+                compactCoverage.toString(), compactDoor.toString(),
+                compactCompletion.toString(), event("ACTIVATION", second, 6).toString(),
+                target.toString()), StandardCharsets.UTF_8);
+        Path scope = root.resolve("scope.jsonl");
+        JsonObject site = new JsonObject();
+        site.addProperty("kind", "STATIC_SCOPE_SITE");
+        site.addProperty("role", "TARGET_SITE");
+        site.addProperty("regionId", "R.register");
+        site.addProperty("siteId", "Register#check");
+        Files.write(scope, Arrays.asList(site.toString()), StandardCharsets.UTF_8);
+        JsonObject oldResult = NativeClosureMain.run(legacy, scope,
+                "Register#check", root.resolve("old-iteration"), null);
+        JsonObject newResult = NativeClosureMain.run(compact, scope,
+                "Register#check", root.resolve("compact-iteration"), null);
+        oldResult.remove("traceSha256");
+        oldResult.remove("adaptedSession");
+        newResult.remove("traceSha256");
+        newResult.remove("adaptedSession");
+        assertEquals(oldResult, newResult);
+        assertEquals(1, newResult.getAsJsonArray("programOrderFaultEdges").size());
+        assertEquals(first.id(), newResult.getAsJsonArray(
+                "programOrderFaultEdges").get(0).getAsJsonObject()
+                .get("fromOccurrenceId").getAsString());
+    }
+
+    @Test public void compactNativeRowsWithoutExactActivationFailClosed() {
+        OccurrenceAddress occurrence = OccurrenceAddress.of(NodeId.of("n", 0),
+                "R.target", CausalContext.of(Role.of("SERVER"), "X", 1),
+                ExecutionIndex.empty());
+        JsonObject compact = event("REGION_COMPLETE", occurrence, 2);
+        compact.remove("occurrence");
+        compact.addProperty("occurrenceRef", "ACTIVATION");
+        try {
+            new NativeClosureMain.Adapted().take(compact, "R.target#check");
+            org.junit.Assert.fail("missing activation must not invent a path");
+        } catch (IllegalArgumentException expected) { }
     }
 
     @Test public void copiedPlannerRunsAndExcludesUndemandedMalloryAncestor()

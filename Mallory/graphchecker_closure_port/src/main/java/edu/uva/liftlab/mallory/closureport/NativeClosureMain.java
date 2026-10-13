@@ -106,6 +106,7 @@ public final class NativeClosureMain {
         final Map<String, OccurrenceAddress> targetOccurrences = new LinkedHashMap<>();
         final Map<String, Integer> sourceCounts = new LinkedHashMap<>();
         final Map<String, Integer> mappedCounts = new LinkedHashMap<>();
+        final Map<String, JsonObject> activationByOccurrence = new LinkedHashMap<>();
 
         void count(Map<String, Integer> counts, String kind) {
             counts.put(kind, counts.containsKey(kind) ? counts.get(kind) + 1 : 1);
@@ -113,6 +114,34 @@ public final class NativeClosureMain {
 
         void take(JsonObject row, String targetSite) {
             String kind = string(row, "kind");
+            if ("ACTIVATION".equals(kind)) {
+                // A compact runtime event may refer only to an activation
+                // already published in this same ordered trace.
+                exactOccurrence(row);
+                activationByOccurrence.put(string(row, "occurrenceId"), row);
+            } else if ("ACTIVATION".equals(string(row, "occurrenceRef"))) {
+                JsonObject activation = activationByOccurrence.get(
+                        string(row, "occurrenceId"));
+                OccurrenceAddress address = activation == null ? null
+                        : exactOccurrence(activation);
+                if (!("COVERAGE".equals(kind) || "FAULT_DOOR".equals(kind)
+                        || "REGION_COMPLETE".equals(kind))
+                        || row.has("occurrence") || address == null
+                        || !string(activation, "node").equals(
+                                address.node().render())
+                        || !string(activation, "regionId").equals(
+                                address.regionId())
+                        || !string(row, "node").equals(string(activation, "node"))
+                        || !string(row, "regionId").equals(
+                                string(activation, "regionId"))
+                        || sequence(activation) >= sequence(row)) {
+                    throw new IllegalArgumentException(
+                            "compact trace occurrence lacks an exact prior activation "
+                                    + string(row, "occurrenceId") + " at seq "
+                                    + sequence(row));
+                }
+                row.addProperty("occurrence", string(activation, "occurrence"));
+            }
             count(sourceCounts, kind);
             if ("ACTIVATION".equals(kind)) {
                 OccurrenceAddress occurrence = exactOccurrence(row);

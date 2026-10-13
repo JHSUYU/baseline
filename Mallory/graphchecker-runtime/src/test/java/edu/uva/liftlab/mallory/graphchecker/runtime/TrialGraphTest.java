@@ -1,6 +1,11 @@
 package edu.uva.liftlab.mallory.graphchecker.runtime;
 
 import com.google.gson.JsonObject;
+import edu.uva.liftlab.mallory.graphchecker.contract.CausalContext;
+import edu.uva.liftlab.mallory.graphchecker.contract.ExecutionIndex;
+import edu.uva.liftlab.mallory.graphchecker.contract.NodeId;
+import edu.uva.liftlab.mallory.graphchecker.contract.OccurrenceAddress;
+import edu.uva.liftlab.mallory.graphchecker.contract.Role;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -14,6 +19,88 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class TrialGraphTest {
+    @Test public void compactEventPathsPreserveCompletionClosureAndFeedback()
+            throws Exception {
+        OccurrenceAddress parentAddress = OccurrenceAddress.of(NodeId.of("server0", 0),
+                "R.parent", CausalContext.of(Role.of("SERVER"), "get", 1),
+                ExecutionIndex.empty());
+        OccurrenceAddress childAddress = OccurrenceAddress.of(NodeId.of("server0", 0),
+                "R.child", CausalContext.of(Role.of("SERVER"), "get", 1),
+                ExecutionIndex.empty());
+        JsonObject parent = row("kind", "ACTIVATION", "occurrenceId", parentAddress.id(),
+                "occurrence", parentAddress.render(), "node", parentAddress.node().render(),
+                "regionId", "R.parent",
+                "seq", 1);
+        JsonObject child = row("kind", "ACTIVATION", "occurrenceId", childAddress.id(),
+                "occurrence", childAddress.render(), "node", childAddress.node().render(),
+                "regionId", "R.child",
+                "parentOccurrenceId", parentAddress.id(),
+                "parentOccurrence", parentAddress.render(),
+                "seq", 2);
+        JsonObject coverage = row("kind", "COVERAGE", "occurrenceId", childAddress.id(),
+                "occurrence", childAddress.render(), "node", childAddress.node().render(),
+                "regionId", "R.child",
+                "siteId", "block-A", "seq", 3);
+        JsonObject door = row("kind", "FAULT_DOOR", "occurrenceId", childAddress.id(),
+                "occurrence", childAddress.render(), "node", childAddress.node().render(),
+                "regionId", "R.child",
+                "siteId", "rpc-A", "seq", 4);
+        JsonObject complete = row("kind", "REGION_COMPLETE", "occurrenceId",
+                childAddress.id(), "occurrence", childAddress.render(), "node",
+                childAddress.node().render(), "regionId", "R.child",
+                "parentOccurrenceId", parentAddress.id(),
+                "parentOccurrence", parentAddress.render(),
+                "seq", 5);
+        JsonObject target = row("kind", "TARGET_CHECK", "occurrenceId",
+                parentAddress.id(), "occurrence", parentAddress.render(), "node",
+                parentAddress.node().render(), "regionId", "R.parent",
+                "siteId", "T", "outcome", "FALSE", "seq", 6);
+        TrialGraph legacy = graph(parent, child, coverage, door, complete, target);
+        JsonObject compactCoverage = coverage.deepCopy();
+        JsonObject compactDoor = door.deepCopy();
+        JsonObject compactComplete = complete.deepCopy();
+        for (JsonObject compact : Arrays.asList(compactCoverage, compactDoor,
+                compactComplete)) {
+            compact.remove("occurrence");
+            compact.addProperty("occurrenceRef", "ACTIVATION");
+        }
+        TrialGraph compressed = graph(parent, child, compactCoverage, compactDoor,
+                compactComplete, target);
+        assertEquals(legacy.feedback("T", null), compressed.feedback("T", null));
+        assertEquals(2, compressed.feedback("T", null).get("closureNodes").getAsInt());
+        assertEquals("[\"block-A\"]", compressed.feedback("T", null)
+                .getAsJsonArray("closureCoverageSiteIds").toString());
+        assertEquals("[\"rpc-A\"]", compressed.feedback("T", null)
+                .getAsJsonArray("closureDoorSiteIds").toString());
+        Path oldGraph = Files.createTempFile("mallory-legacy-", ".jsonl");
+        Path compactGraph = Files.createTempFile("mallory-compact-", ".jsonl");
+        legacy.write(oldGraph);
+        compressed.write(compactGraph);
+        assertEquals(Files.readAllLines(oldGraph), Files.readAllLines(compactGraph));
+    }
+
+    @Test public void compactPathWithoutPriorExactActivationFailsClosed()
+            throws Exception {
+        OccurrenceAddress child = OccurrenceAddress.of(NodeId.of("server0", 0),
+                "R.child", CausalContext.of(Role.of("SERVER"), "get", 1),
+                ExecutionIndex.empty());
+        JsonObject compact = row("kind", "REGION_COMPLETE", "occurrenceId", child.id(),
+                "occurrenceRef", "ACTIVATION", "node", child.node().render(),
+                "regionId", "R.child", "seq", 2);
+        try {
+            graph(compact);
+            org.junit.Assert.fail("missing activation must not invent a path");
+        } catch (IllegalArgumentException expected) { }
+        JsonObject activation = row("kind", "ACTIVATION", "occurrenceId", child.id(),
+                "occurrence", child.render(), "node", child.node().render(),
+                "regionId", "R.child", "seq", 1);
+        compact.addProperty("node", "different-server");
+        try {
+            graph(activation, compact);
+            org.junit.Assert.fail("mismatched node must not borrow a path");
+        } catch (IllegalArgumentException expected) { }
+    }
+
     @Test public void compressedAndPlainStreamingTracesAgree() throws Exception {
         String lines = row("kind", "ACTIVATION", "occurrenceId", "o1",
                 "occurrence", "o1-render", "node", "server0", "regionId", "R",
