@@ -107,6 +107,11 @@ def load_import_index(path: Path) -> dict[str, Path]:
                                     r"/[0-9a-f]{16}-[0-9a-f]{12}", relative)):
             raise ValueError("invalid imported case path")
         directory = root / relative
+        if (directory.is_symlink() or directory.parent.is_symlink() or
+                any((directory / name).is_symlink() for name in
+                    ("config.json", "checkpoint.json", "summary.json",
+                     "import-receipt.json"))):
+            raise ValueError(f"imported receipt contains a symlink: {case_id}")
         receipt = _load_json(directory / "import-receipt.json")
         if receipt is None or receipt.get("schema_version") != 1 or (
                 receipt.get("case_id") != case_id):

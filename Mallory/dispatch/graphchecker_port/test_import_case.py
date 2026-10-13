@@ -135,6 +135,20 @@ class ImportCaseTest(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "feedback differs"):
                 import_case("HBASE-01", config, campaign, root / "data")
 
+    def test_index_rejects_linked_receipt(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            config, campaign = self.make_campaign(root / "source", "test")
+            data = root / "data"
+            import_case("HBASE-01", config, campaign, data)
+            selected = load_import_index(data / "import-index.json")["HBASE-01"]
+            summary = selected / "summary.json"
+            original = selected / "summary-original.json"
+            summary.rename(original)
+            summary.symlink_to(original.name)
+            with self.assertRaisesRegex(ValueError, "symlink"):
+                load_import_index(data / "import-index.json")
+
 
 if __name__ == "__main__":
     unittest.main()
