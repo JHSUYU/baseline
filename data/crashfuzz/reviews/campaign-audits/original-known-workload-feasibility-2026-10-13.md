@@ -87,6 +87,17 @@ checkpoint was therefore resumed with a larger budget of 300 retained target
 trials and a 450-trial cap, without changing the original JUnit, target, or
 Soot-selected I/O scope.
 
+A separate identity validation used the unchanged
+`TestEncryptedTransfer.testLongLivedClientPipelineRecovery[0]` JUnit with the
+same Soot selection and a separately packaged runtime agent. The test passed
+in 26.451 seconds. Both observed `DataNode.DataTransfer.run` I/O events now
+carry the owning `hdfs:dn:data1` runtime identity, obtained from the task's
+enclosing DataNode. This repairs a generic actor identity gap for outbound
+DataNode replication; it does not select an I/O callsite or establish a bug.
+The running 450-trial campaign retains its original agent and checkpoint so
+its results are comparable. The validation trace is under
+`static-rerun/original-known/HDFS-17967-mirror/identity-healthy-validation`.
+
 Evidence roots: `static-rerun/original-known/HDFS-54`, `HDFS-55`,
 `HDFS-11-balancer`, and `HDFS-17967-mirror` on node0, and
 `static-rerun/original-known/SOLR-40` on node2.

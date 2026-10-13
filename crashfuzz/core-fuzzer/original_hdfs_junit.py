@@ -93,7 +93,10 @@ def main() -> int:
                        str(output / "jacoco.exec") +
                        ",includes=org.apache.hadoop.hdfs.*,dumponexit=true,append=false")
     if args.static_selection:
-        agent = HERE.parent / "runtime-agent" / "target" / "crashfuzz-runtime-agent-0.1.0.jar"
+        agent = Path(os.environ.get(
+            "CRASHFUZZ_RUNTIME_AGENT_JAR",
+            str(HERE.parent / "runtime-agent" / "target" /
+                "crashfuzz-runtime-agent-0.1.0.jar")))
         if not agent.is_file():
             raise FileNotFoundError(f"build runtime agent first: {agent}")
         command.insert(command.index("-cp"), "-javaagent:" + str(agent))

@@ -196,6 +196,12 @@ threads on one node count as one node. When no queued sequence has two
 confirmed nodes, the scheduler falls back to distinct observed actors. This
 explores reply loss and subsequent I/O across nodes without declaring any
 case-specific fault site.
+For MiniDFSCluster, the runtime identifies outbound `DataNode.DataTransfer`
+tasks through their enclosing DataNode's configured storage slot, as it does
+for heartbeat and inbound DataXceiver actors. An isolated agent build can be
+selected with `CRASHFUZZ_RUNTIME_AGENT_JAR` when running the unchanged HDFS
+JUnit; campaigns without that environment variable use the repository's
+packaged runtime agent.
 New campaigns prefer an untried static I/O callsite in three of every four
 selection rounds. The fourth round retains the existing timing and fault-type
 diversity rule. This keeps phase and later-occurrence variants from crowding

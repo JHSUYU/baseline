@@ -13,6 +13,8 @@ final class ActorIdentity {
             "org.apache.hadoop.hdfs.server.datanode.BPServiceActor";
     private static final String DATA_XCEIVER =
             "org.apache.hadoop.hdfs.server.datanode.DataXceiver";
+    private static final String DATA_TRANSFER =
+            "org.apache.hadoop.hdfs.server.datanode.DataNode$DataTransfer";
     private static final String DATA_DIR_KEY = "dfs.datanode.data.dir";
     private static final Pattern MINI_DFS_SLOT = Pattern.compile(
             "/data/dfs/data/(data[0-9]+)(?=,|/|$)");
@@ -64,6 +66,7 @@ final class ActorIdentity {
         for (Class<?> current = type; current != null; current = current.getSuperclass()) {
             if (BP_ACTOR.equals(current.getName())) return "dn";
             if (DATA_XCEIVER.equals(current.getName())) return "datanode";
+            if (DATA_TRANSFER.equals(current.getName())) return "this$0";
         }
         return null;
     }

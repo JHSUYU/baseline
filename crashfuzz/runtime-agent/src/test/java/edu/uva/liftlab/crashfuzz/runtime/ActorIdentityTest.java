@@ -2,6 +2,7 @@ package edu.uva.liftlab.crashfuzz.runtime;
 
 import org.apache.hadoop.hdfs.server.datanode.BPServiceActor;
 import org.apache.hadoop.hdfs.server.datanode.DataXceiver;
+import org.apache.hadoop.hdfs.server.datanode.DataNode;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -62,5 +63,17 @@ public class ActorIdentityTest {
         assertTrue(two.gap);
         assertNotEquals(one.logicalNodeId, two.logicalNodeId);
         assertEquals("dfs.datanode.data.dir has no MiniDFSCluster dataN slot", one.reason);
+    }
+
+    @Test
+    public void dataTransferUsesItsEnclosingDataNodeSlot() {
+        ActorIdentity.Resolution first = ActorIdentity.resolve(
+                new DataNode("[DISK]file:/tmp/runA/data/dfs/data/data1").new DataTransfer());
+        ActorIdentity.Resolution second = ActorIdentity.resolve(
+                new DataNode("[DISK]file:/tmp/runA/data/dfs/data/data5").new DataTransfer());
+        assertEquals("hdfs:dn:data1", first.logicalNodeId);
+        assertEquals("hdfs:dn:data5", second.logicalNodeId);
+        assertFalse(first.gap);
+        assertFalse(second.gap);
     }
 }
