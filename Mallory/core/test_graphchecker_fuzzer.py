@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from Mallory.core.graphchecker_campaign import _archive_jsonl
+from Mallory.core.graphchecker_campaign import _archive_jsonl, _trial_verdict
 from Mallory.core.graphchecker_fuzzer import (_accept_result, _enqueue, _finish,
                                              _actor_site_key, _plan_key,
                                              _retention_score,
@@ -275,6 +275,164 @@ class GraphCheckerFuzzerTest(unittest.TestCase):
         self.assertEqual("blocked_healthy_junit", state["status"])
         self.assertEqual([], state["queue"])
 
+    def test_v4_target_absent_bootstraps_only_observed_typed_static_doors(self):
+        state = _new_state(self.config(), self.budget())
+        state["active"] = {"index": 0, "name": "r0000", "faults": []}
+        doors = [self.door(1, 1, "observed_closure", "fake-closure"),
+                 self.door(2, 2, "static_may_observed", "may"),
+                 self.door(3, 3, "selected_scope_observed", "scope"),
+                 self.door(4, 4, "outside_closure", "outside"),
+                 {**self.door(5, 5, "static_may_observed", "untyped"),
+                  "exceptionClass": None}]
+        healthy = self.result([], doors)
+        healthy["status"] = "healthy_seed"
+        healthy["evidence"]["target_reached"] = False
+        healthy["graphchecker_feedback"] = {"newClosureEdges": 99,
+                                             "newClosureNodes": 99}
+        _accept_result(state, "r0000", healthy)
+        self.assertEqual(4, state["scheduler_version"])
+        self.assertEqual(1, state["bootstrap_policy_version"])
+        self.assertEqual("running", state["status"])
+        self.assertFalse(state["healthy_target_reached"])
+        self.assertEqual(2, state["bootstrap_seed_doors"])
+        self.assertEqual({"may", "scope"}, {
+            item["faults"][0]["siteId"] for item in state["queue"]})
+        self.assertTrue(all(len(item["faults"]) == 1 and
+                            item["novelty"] == 0 and item["bootstrap_seed"]
+                            for item in state["queue"]))
+
+    def test_v4_target_absent_requires_observed_typed_static_door(self):
+        state = _new_state(self.config(), self.budget())
+        state["active"] = {"index": 0, "name": "r0000", "faults": []}
+        healthy = self.result([], [self.door(1, 1, "outside_closure")])
+        healthy["evidence"]["target_reached"] = False
+        _accept_result(state, "r0000", healthy)
+        self.assertEqual("no_observed_fault_door", state["status"])
+        self.assertEqual(0, state["bootstrap_seed_doors"])
+        self.assertEqual([], state["queue"])
+
+    def test_v4_bootstrap_expands_only_after_strict_causal_target_discovery(self):
+        state = _new_state(self.config(), {**self.budget(),
+                                           "max_faults_per_trial": 3})
+        state["active"] = {"index": 0, "name": "r0000", "faults": []}
+        healthy = self.result([], [self.door(1, 1, "static_may_observed", "may")])
+        healthy["evidence"]["target_reached"] = False
+        _accept_result(state, "r0000", healthy)
+        seed = state["queue"].pop()
+        fault = seed["faults"][0]
+        state["active"] = {"index": 1, "name": "r0001", "faults": [fault],
+                           "bootstrap_seed": True}
+        absent = self.result([fault], [self.door(6, 2, "static_may_observed", "new")])
+        absent["evidence"].update(target_reached=False,
+                                  injection_specific_target_reached=False)
+        absent["graphchecker_feedback"].update(edges=5, nodes=3,
+            globalCoverageSiteIds=["branch:a:true"])
+        _accept_result(state, "r0001", absent)
+        self.assertEqual(1, len(state["queue"]))
+        self.assertIsNone(state["target_discovered_trial"])
+        self.assertEqual(1, state["bootstrap_fault_trials"])
+        second = state["queue"].pop()
+        self.assertEqual(["may", "new"], [
+            fault["siteId"] for fault in second["faults"]])
+        self.assertEqual("static_may_observed", second["tier"])
+        self.assertTrue(second["bootstrap_seed"])
+        self.assertFalse(second["parent_target_retained"])
+        self.assertEqual(0, second["parent_graph_delta"])
+        self.assertGreater(second["novelty"], 0)
+        self.assertEqual({"new_io_sites": 1, "new_coverage_sites": 1,
+                          "graph_edge_count_gain": 5,
+                          "graph_node_count_gain": 3},
+                         state["trials"][0]["bootstrap_feedback"])
+
+        state["active"] = {"index": 2, "name": "r0002", "faults": second["faults"],
+                           "bootstrap_seed": True}
+        discovered = self.result(second["faults"], [self.door(6, 3)])
+        _accept_result(state, "r0002", discovered)
+        self.assertEqual("r0002", state["target_discovered_trial"])
+        self.assertEqual(2, state["bootstrap_fault_trials"])
+        self.assertEqual(1, len(state["queue"]))
+        self.assertEqual(3, len(state["queue"][0]["faults"]))
+        self.assertEqual("observed_closure", state["queue"][0]["tier"])
+        self.assertGreater(state["queue"][0]["novelty"], 0)
+
+    def test_v4_bootstrap_does_not_expand_from_unrelated_target_or_unmatched(self):
+        for strict, reached in ((True, True), (False, False)):
+            with self.subTest(strict=strict, reached=reached):
+                state = _new_state(self.config(), self.budget())
+                state["active"] = {"index": 0, "name": "r0000", "faults": []}
+                healthy = self.result([], [self.door(
+                    1, 1, "static_may_observed", "may")])
+                healthy["evidence"]["target_reached"] = False
+                _accept_result(state, "r0000", healthy)
+                seed = state["queue"].pop()
+                state["active"] = {"index": 1, "name": "r0001",
+                                   "faults": seed["faults"],
+                                   "bootstrap_seed": True}
+                later = self.result(seed["faults"], [self.door(
+                    6, 2, "observed_closure", "fake-closure")])
+                later["evidence"].update(
+                    strict_injection=strict, target_reached=reached,
+                    injection_specific_target_reached=False)
+                if not strict:
+                    later["status"] = "unmatched"
+                _accept_result(state, "r0001", later)
+                self.assertIsNone(state["target_discovered_trial"])
+                self.assertFalse(any(len(item["faults"]) > 1 for item in state["queue"]))
+
+    def test_v4_bootstrap_depth_and_trial_limits(self):
+        state = _new_state(self.config(), {"fault_trials": 2, "seconds": 60,
+                                            "max_faults_per_trial": 5})
+        self.assertEqual({"fault_trials": 2, "max_faults_per_trial": 3},
+                         state["bootstrap_limits"])
+        state["active"] = {"index": 0, "name": "r0000", "faults": []}
+        healthy = self.result([], [self.door(1, 1, "static_may_observed", "may")])
+        healthy["evidence"]["target_reached"] = False
+        _accept_result(state, "r0000", healthy)
+        for index in (1, 2):
+            item = state["queue"].pop()
+            state["active"] = {"index": index, "name": f"r{index:04d}",
+                               "faults": item["faults"],
+                               "bootstrap_seed": True}
+            absent = self.result(item["faults"], [self.door(
+                5 + index, index + 1, "static_may_observed", f"next-{index}")])
+            absent["evidence"].update(target_reached=False,
+                                      injection_specific_target_reached=False)
+            _accept_result(state, f"r{index:04d}", absent)
+        self.assertEqual("complete_bootstrap_budget", state["status"])
+        self.assertEqual([], state["queue"])
+        self.assertIsNone(state["target_discovered_trial"])
+
+    def test_v2_v3_checkpoints_keep_target_absent_terminal_behavior(self):
+        for version in (2, 3):
+            with self.subTest(version=version):
+                state = _new_state(self.config(), self.budget())
+                state["scheduler_version"] = version
+                state.pop("bootstrap_policy_version")
+                state["active"] = {"index": 0, "name": "r0000", "faults": []}
+                healthy = self.result([], [self.door(
+                    1, 1, "static_may_observed", "may")])
+                healthy["evidence"]["target_reached"] = False
+                _accept_result(state, "r0000", healthy)
+                self.assertEqual("no_healthy_target", state["status"])
+                self.assertEqual([], state["queue"])
+
+    def test_healthy_expected_throw_uses_prior_count_differential(self):
+        state = _new_state(self.config(), self.budget())
+        state["active"] = {"index": 0, "name": "r0000", "faults": []}
+        healthy = self.result([], [self.door(1, 1)])
+        healthy["evidence"]["target_throw_seen"] = True
+        _accept_result(state, "r0000", healthy)
+        self.assertTrue(state["healthy_target_reached"])
+        self.assertEqual(1, len(state["queue"]))
+        evidence = {"target_exception_triggered": True,
+                    "injection_specific_target_reached": True,
+                    "injection_specific_target_throw": True,
+                    "target_throw_rows_after_fault": [{}, {}]}
+        self.assertEqual(("candidate", True), _trial_verdict(evidence, [{}], 1))
+        evidence["target_throw_rows_after_fault"].pop()
+        self.assertEqual(("needs_differential_review", False),
+                         _trial_verdict(evidence, [{}], 1))
+
     def test_unmatched_plan_requeues_twice_with_budget_accounting(self):
         state = _new_state(self.config(), self.budget())
         fault = {key: self.door(1, 1)[key] for key in
@@ -314,6 +472,32 @@ class GraphCheckerFuzzerTest(unittest.TestCase):
             prepare.assert_not_called()
             self.assertTrue(returned["terminal"])
             self.assertTrue((root / "summary.json").is_file())
+
+    def test_checkpoint_policy_is_pinned_without_breaking_v2_v3_replay(self):
+        for version in (2, 3, 4):
+            with self.subTest(version=version), tempfile.TemporaryDirectory() as temp:
+                root = Path(temp)
+                config_file = root / "config.json"
+                config_file.write_text("{}")
+                state = _new_state(self.config(), self.budget())
+                state["scheduler_version"] = version
+                state["status"] = "complete_queue"
+                state["terminal"] = True
+                if version < 4:
+                    for field in ("bootstrap_policy_version", "bootstrap_limits"):
+                        state.pop(field)
+                (root / "checkpoint.json").write_text(json.dumps(state))
+                with patch("Mallory.core.graphchecker_fuzzer.load_config",
+                           return_value=self.config()), patch(
+                           "Mallory.core.graphchecker_fuzzer._budget",
+                           return_value=self.budget()):
+                    self.assertEqual("complete_queue", run_campaign(
+                        config_file, root)["status"])
+                    if version == 4:
+                        state["bootstrap_policy_version"] = 99
+                        (root / "checkpoint.json").write_text(json.dumps(state))
+                        with self.assertRaisesRegex(ValueError, "bootstrap checkpoint"):
+                            run_campaign(config_file, root)
 
 
 if __name__ == "__main__":

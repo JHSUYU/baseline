@@ -27,7 +27,10 @@ REPLAY_FIELD = "replayOccurrenceId"
 TIER_WEIGHT = {"observed_closure": 100, "static_may_observed": 55,
                "selected_scope_observed": 35, "outside_closure": 15,
                "after_target": -100}
-SCHEDULER_VERSION = 3
+SCHEDULER_VERSION = 4
+BOOTSTRAP_POLICY_VERSION = 1
+BOOTSTRAP_MAX_FAULTS = 3
+BOOTSTRAP_MAX_TRIALS = 128
 MAX_QUEUE = 5000
 MAX_UNMATCHED_RETRIES = 2
 
@@ -169,17 +172,74 @@ def _novelty(result: dict[str, Any]) -> int:
                int(graph.get("newClosureCoverageSites", 0)))
 
 
+def _bootstrap_sites(result: dict[str, Any]) -> set[str]:
+    """Typed, observed I/O in the static selection, never inferred closure."""
+    return {door["siteId"] for door in result.get("evidence", {}).get(
+        "eligible_doors", []) if door.get("tier") in (
+            "static_may_observed", "selected_scope_observed") and
+            all(door.get(key) for key in PLAN_FIELDS)}
+
+
+def _bootstrap_feedback(state: dict[str, Any], result: dict[str, Any]
+                        ) -> tuple[int, set[str], dict[str, int]]:
+    """Score available global feedback without scanning a large trace again.
+
+    The current graph receipt provides total graph edge/node counts, not
+    global coverage IDs. A future compact coverage summary can contribute
+    exact site novelty; an absent summary contributes zero rather than
+    mislabeling target-closure coverage as global coverage.
+    """
+    sites = _bootstrap_sites(result)
+    seen_sites = set(state.get("bootstrap_seen_door_sites", []))
+    new_sites = sites - seen_sites
+    state["bootstrap_seen_door_sites"] = sorted(seen_sites | sites)
+    graph = result.get("graphchecker_feedback", {})
+    coverage = graph.get("globalCoverageSiteIds", [])
+    if not isinstance(coverage, list) or any(not isinstance(site, str)
+                                             for site in coverage):
+        coverage = []
+    seen_coverage = set(state.get("bootstrap_seen_coverage_sites", []))
+    new_coverage = set(coverage) - seen_coverage
+    state["bootstrap_seen_coverage_sites"] = sorted(seen_coverage | set(coverage))
+    counts = {}
+    for name in ("edges", "nodes"):
+        value = graph.get(name, 0)
+        value = value if isinstance(value, int) and not isinstance(value, bool) else 0
+        previous = int(state.get("bootstrap_max_graph_" + name, 0))
+        counts[name] = max(0, value - previous)
+        state["bootstrap_max_graph_" + name] = max(previous, value)
+    novelty = min(60, 8 * len(new_sites) + 2 * len(new_coverage) +
+                  2 * counts["edges"] + counts["nodes"])
+    return novelty, new_sites, {"new_io_sites": len(new_sites),
+                                "new_coverage_sites": len(new_coverage),
+                                "graph_edge_count_gain": counts["edges"],
+                                "graph_node_count_gain": counts["nodes"]}
+
+
 def _enqueue(state: dict[str, Any], result: dict[str, Any],
-             prefix: list[dict[str, Any]]) -> int:
+             prefix: list[dict[str, Any]], *, bootstrap: bool = False,
+             bootstrap_novelty: int = 0,
+             bootstrap_new_sites: set[str] | None = None) -> int:
     evidence = result.get("evidence", {})
+    if bootstrap and (state.get("scheduler_version", 1) < 4 or
+                      evidence.get("target_reached") or
+                      (prefix and not evidence.get("strict_injection"))):
+        raise ValueError("target-absent bootstrap requires a strict target-absent v4 seed")
     last_seq = evidence.get("last_fault_seq") or 0
     if len(prefix) >= state["budget"]["max_faults_per_trial"]:
+        return 0
+    if bootstrap and len(prefix) >= state["bootstrap_limits"]["max_faults_per_trial"]:
         return 0
     seen = set(state["seen_plan_keys"])
     added = 0
     groups: dict[tuple[str, str, str], list[dict[str, Any]]] = {}
     for door in evidence.get("eligible_doors", []):
         tier = door.get("tier")
+        if bootstrap and tier not in ("static_may_observed",
+                                      "selected_scope_observed"):
+            # A target-absent run has no observed target closure. Static MAY
+            # is a selection bound, never a runtime causal edge.
+            continue
         if state.get("scheduler_version", 1) < 2 and tier == "selected_scope_observed":
             tier = "outside_closure"
             door = {**door, "tier": tier}
@@ -222,12 +282,19 @@ def _enqueue(state: dict[str, Any], result: dict[str, Any],
             continue
         seen.add(key)
         item = {"key": key, "faults": faults, "tier": tier,
-                "novelty": _novelty(result),
+                "novelty": (min(60, bootstrap_novelty +
+                                (15 if door["siteId"] in (
+                                    bootstrap_new_sites or set()) else 0))
+                            if bootstrap else _novelty(result)),
                 "enqueued_at": state["completed_fault_trials"]}
+        if bootstrap:
+            item["bootstrap_seed"] = True
         if state.get("scheduler_version", 1) >= 3:
             item["parent_target_retained"] = bool(
-                prefix and evidence.get("injection_specific_target_reached"))
-            item["parent_graph_delta"] = _novelty(result) if prefix else 0
+                not bootstrap and prefix and
+                evidence.get("injection_specific_target_reached"))
+            item["parent_graph_delta"] = (
+                _novelty(result) if prefix and not bootstrap else 0)
         state["queue"].append(item)
         added += 1
     state["seen_plan_keys"] = sorted(seen)
@@ -240,6 +307,19 @@ def _new_state(config: dict[str, Any], budget: dict[str, int]) -> dict[str, Any]
             "configured_check_sites": _configured_check_sites(config["target"])
             if isinstance(config.get("target"), dict) else [],
             "scheduler_version": SCHEDULER_VERSION,
+            "bootstrap_policy_version": BOOTSTRAP_POLICY_VERSION,
+            "bootstrap_limits": {
+                "fault_trials": min(BOOTSTRAP_MAX_TRIALS, budget["fault_trials"]),
+                "max_faults_per_trial": min(BOOTSTRAP_MAX_FAULTS,
+                                            budget["max_faults_per_trial"])},
+            "healthy_target_reached": None,
+            "bootstrap_seed_doors": 0,
+            "bootstrap_fault_trials": 0,
+            "bootstrap_seen_door_sites": [],
+            "bootstrap_seen_coverage_sites": [],
+            "bootstrap_max_graph_edges": 0,
+            "bootstrap_max_graph_nodes": 0,
+            "target_discovered_trial": None,
             "last_fault_site_attempts": {}, "last_fault_site_strict": {},
             "last_fault_actor_site_attempts": {},
             "site_target_retention": {},
@@ -280,16 +360,28 @@ def _accept_result(state: dict[str, Any], name: str,
         record["selection_score"] = active.get("selection_score")
         record["parent_target_retained"] = active.get("parent_target_retained", False)
         record["parent_graph_delta"] = active.get("parent_graph_delta", 0)
+        if state.get("scheduler_version", 1) >= 4:
+            record["bootstrap_seed"] = active.get("bootstrap_seed", False)
     state["trial_elapsed_seconds"] = round(
         state["trial_elapsed_seconds"] + result["elapsed_seconds"], 3)
     if active["index"] == 0:
         state["healthy"] = record
+        if state.get("scheduler_version", 1) >= 4:
+            state["healthy_target_reached"] = bool(result.get(
+                "evidence", {}).get("target_reached"))
         if result["status"] == "invalid_graphchecker_trace":
             state["status"] = "blocked_healthy_trace"
         elif not result["junit_passed"]:
             state["status"] = "blocked_healthy_junit"
         elif not result.get("evidence", {}).get("target_reached"):
-            state["status"] = "no_healthy_target"
+            if state.get("scheduler_version", 1) >= 4:
+                _bootstrap_feedback(state, result)
+                state["bootstrap_seed_doors"] = _enqueue(
+                    state, result, [], bootstrap=True)
+                if not state["queue"]:
+                    state["status"] = "no_observed_fault_door"
+            else:
+                state["status"] = "no_healthy_target"
         else:
             _enqueue(state, result, [])
             if not state["queue"]:
@@ -298,6 +390,31 @@ def _accept_result(state: dict[str, Any], name: str,
         state["trials"].append(record)
         state["completed_fault_trials"] += 1
         evidence = result.get("evidence", {})
+        if state.get("scheduler_version", 1) >= 4:
+            if active.get("bootstrap_seed"):
+                state["bootstrap_fault_trials"] += 1
+            if (state.get("healthy_target_reached") is False and
+                    state.get("target_discovered_trial") is None and
+                    evidence.get("strict_injection") and
+                    evidence.get("injection_specific_target_reached") and
+                    evidence.get("target_reached")):
+                state["target_discovered_trial"] = name
+            if (active.get("bootstrap_seed") and
+                    evidence.get("strict_injection") and
+                    not evidence.get("target_reached") and
+                    state["bootstrap_fault_trials"] < state[
+                        "bootstrap_limits"]["fault_trials"]):
+                novelty, new_sites, feedback = _bootstrap_feedback(state, result)
+                record["bootstrap_feedback"] = feedback
+                _enqueue(state, result, active["faults"], bootstrap=True,
+                         bootstrap_novelty=novelty,
+                         bootstrap_new_sites=new_sites)
+            if (state.get("healthy_target_reached") is False and
+                    state.get("target_discovered_trial") is None and
+                    state["bootstrap_fault_trials"] >= state[
+                        "bootstrap_limits"]["fault_trials"]):
+                state["status"] = "complete_bootstrap_budget"
+                state["queue"].clear()
         if (state.get("scheduler_version", 1) >= 2 and
                 evidence.get("strict_injection") and active["faults"]):
             site = active["faults"][-1]["siteId"]
@@ -313,7 +430,8 @@ def _accept_result(state: dict[str, Any], name: str,
                         history["productive"] += 1
                 else:
                     history["lost"] += 1
-        if result["status"] == "unmatched" and active["faults"]:
+        if (state["status"] == "running" and result["status"] == "unmatched"
+                and active["faults"]):
             # The planned I/O may disappear under scheduling nondeterminism.
             # Give this exact plan at most two more chances; each attempt still
             # consumes the trial/time budget and is recorded independently.
@@ -327,6 +445,7 @@ def _accept_result(state: dict[str, Any], name: str,
                     "tier": active.get("selection_tier", "outside_closure"),
                     "novelty": -10 * (count + 1),
                     "enqueued_at": state["completed_fault_trials"],
+                    "bootstrap_seed": active.get("bootstrap_seed", False),
                     "unmatched_retry": count + 1})
         if evidence.get("strict_injection") and evidence.get(
                 "injection_specific_target_reached"):
@@ -412,6 +531,12 @@ def _finish(state: dict[str, Any], root: Path) -> dict[str, Any]:
                    "missing_check_sites": sorted(set(configured_checks) - set(observed_checks)),
                    "budget": state["budget"],
                    "scheduler_version": state.get("scheduler_version", 1),
+                   "bootstrap_policy_version": state.get("bootstrap_policy_version"),
+                   "bootstrap_limits": state.get("bootstrap_limits"),
+                   "healthy_target_reached": state.get("healthy_target_reached"),
+                   "bootstrap_seed_doors": state.get("bootstrap_seed_doors", 0),
+                   "bootstrap_fault_trials": state.get("bootstrap_fault_trials", 0),
+                   "target_discovered_trial": state.get("target_discovered_trial"),
                    "last_fault_site_attempts": state.get("last_fault_site_attempts", {}),
                    "last_fault_site_strict": state.get("last_fault_site_strict", {}),
                    "last_fault_actor_site_attempts": state.get(
@@ -458,6 +583,14 @@ def run_campaign(config_path: Path, root: Path) -> dict[str, Any]:
                     state.get("config_sha256") != config["config_sha256"] or
                     state.get("budget") != budget):
                 raise ValueError("campaign checkpoint does not match immutable config")
+            if state.get("scheduler_version", 1) >= 4 and (
+                    state.get("bootstrap_policy_version") != BOOTSTRAP_POLICY_VERSION or
+                    state.get("bootstrap_limits") != {
+                        "fault_trials": min(BOOTSTRAP_MAX_TRIALS,
+                                            budget["fault_trials"]),
+                        "max_faults_per_trial": min(BOOTSTRAP_MAX_FAULTS,
+                                                    budget["max_faults_per_trial"])}):
+                raise ValueError("campaign bootstrap checkpoint policy changed")
             _verify_recorded_evidence(state, root)
         else:
             state = _new_state(config, budget)
@@ -501,6 +634,7 @@ def run_campaign(config_path: Path, root: Path) -> dict[str, Any]:
                                "parent_target_retained": selected.get(
                                    "parent_target_retained", False),
                                "parent_graph_delta": selected.get("parent_graph_delta", 0),
+                               "bootstrap_seed": selected.get("bootstrap_seed", False),
                                "unmatched_retry": selected.get("unmatched_retry", 0)}
             _write_json(checkpoint, state)
             _resume_active(state, root, config, prepared)
