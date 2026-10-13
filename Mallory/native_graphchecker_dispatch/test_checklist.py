@@ -12,6 +12,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from Mallory.native_graphchecker_dispatch import checklist as dispatch
+from Mallory.native_graphchecker_dispatch import preparation
 from Mallory.native_graphchecker_feedback.feedback import _session_digest, delta
 
 
@@ -57,14 +58,16 @@ class NativeChecklistTest(unittest.TestCase):
         config = {
             "case_id": self.case_id,
             "target_site": self.item["target"]["site_id"].split("#", 1)[0] + "#u1#1",
-            "target_throw": {"siteId": "GraphChecker#throw#u2",
+            "target_throw": {"siteId": self.item["target"]["site_id"],
                              "exceptionClass": self.item["target"]["target_exception"]},
             "native_weave_config": str(weave_config),
             "recording": {"trace_dir": str(self.root / "recording"),
-                          "test_id": "recorded", "target_name": "target",
+                          "test_id": workload["selected_selector"],
+                          "target_name": "target",
                           "candidate_graph": str(self.root / "graph.jsonl"),
                           "static_scope_map": str(static),
                           "region_skeletons": str(self.root / "regions.jsonl"),
+                          "target_occurrence": "fixture:observed-target",
                           "max_jobs": 256},
             "junit": {"class": workload["test_class"],
                       "method": workload["test_method"]},
@@ -115,6 +118,24 @@ class NativeChecklistTest(unittest.TestCase):
         self.write(attempt / "output/adapter-proof.json", proof)
         self.write(attempt / "output/static-scope-receipt.json", {"fixture": True})
         self.write(attempt / "output/recording-weave-receipt.json", {"fixture": True})
+        occurrence = attempt / "output/target-occurrence.json"
+        self.write(occurrence, {
+            "kind": "MALLORY_OBSERVED_TARGET_OCCURRENCE",
+            "test": workload["selected_selector"],
+            "checkSiteId": config["target_site"].rsplit("#", 1)[0],
+            "selectedOccurrenceAddress": "fixture:observed-target",
+            "selectedEventSeq": 17, "selectedCallId": 11,
+            "reachedEvents": [{"eventSeq": 17, "callId": 11,
+                               "occurrenceAddress": "fixture:observed-target"}],
+            "traceManifestSha256": dispatch._sha(
+                recording / "streaming_trace_manifest.json"),
+            "scopeMapSha256": dispatch._sha(static),
+            "candidateGraphSha256": dispatch._sha(self.root / "graph.jsonl"),
+            "regionSkeletonsSha256": dispatch._sha(self.root / "regions.jsonl"),
+        })
+        proof["target_occurrence_receipt_path"] = str(occurrence)
+        proof["target_occurrence_receipt_sha256"] = dispatch._sha(occurrence)
+        self.write(attempt / "output/adapter-proof.json", proof)
         self.write(attempt / "output/case.json", config)
         recipe_file = self.root / "adapter-recipes.json"
         self.write(recipe_file, {"fixture": True})
@@ -146,6 +167,8 @@ class NativeChecklistTest(unittest.TestCase):
                 attempt / "output/recording-weave-receipt.json"),
             "recording_weave_receipt_sha256": dispatch._sha(
                 attempt / "output/recording-weave-receipt.json"),
+            "target_occurrence_receipt_path": str(occurrence),
+            "target_occurrence_receipt_sha256": dispatch._sha(occurrence),
             "recording_admission_sha256": dispatch._sha(
                 self.case_root / "recording-admission.json"),
             "native_weave_receipt_sha256": dispatch._sha(receipt_path),
@@ -305,6 +328,18 @@ class NativeChecklistTest(unittest.TestCase):
         self.assertEqual(1, row["candidate_trials"])
         self.assertEqual(3.0, row["elapsed_seconds"])
         self.assertIn("ConnectionImplementation.java", row["target_source_path"])
+
+    def test_preparation_uses_observed_original_target_occurrence(self) -> None:
+        config = self.make_config()
+        output = self.case_root / "preparation/attempt-fixture/output"
+        proof = json.loads((output / "adapter-proof.json").read_text())
+        receipt = preparation.verify_target_occurrence(
+            proof, config, output, self.item["target"]["site_id"])
+        self.assertEqual(17, receipt["selectedEventSeq"])
+        config["recording"]["target_occurrence"] = "first"
+        with self.assertRaisesRegex(ValueError, "target occurrence"):
+            preparation.verify_target_occurrence(
+                proof, config, output, self.item["target"]["site_id"])
 
     def test_zero_retained_fault_trials_is_tested_inconclusive(self) -> None:
         self.make_complete(reached=False)

@@ -38,7 +38,13 @@ command per implemented system. For example, the schema for one adapter is:
 
 The adapter receives absolute `request.json` and output directory paths. It
 must emit `case.json`, `adapter-proof.json`, a static scope receipt, and a
-REGION_STATE recording-weave receipt. The proof names those receipts and
+REGION_STATE recording-weave receipt. It must also emit the original runtime
+`MalloryTargetOccurrenceResolver` receipt: the selected check must have been
+observed in the closed healthy trace, with an exact event, call, and
+occurrence address. The dispatcher verifies this receipt against the original
+JUnit, target throw site, trace manifest, graph, scope, and skeleton bytes;
+`first` or an unobserved check cannot be used as a selector. The proof names
+those receipts and
 original source evidence for the selected cluster JUnit. The request contains
 the check, original JUnit, and build identity, with no fault point list.
 Preparation fails closed if the original cluster JUnit or any original

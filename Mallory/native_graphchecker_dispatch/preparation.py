@@ -161,6 +161,7 @@ def load_recipes(path: Path, inventory: Path) -> dict[str, dict]:
 def build_request(item: dict, inventory: Path) -> dict:
     """Only the target, original JUnit, and source/build identity are passed."""
     target, workload, build = item["target"], item["workload"], item.get("build", {})
+    mapping = target.get("runtime_mapping", {})
     if (not isinstance(workload.get("test_class"), str) or
             not isinstance(workload.get("test_method"), str) or
             workload.get("selected_selector") !=
@@ -175,7 +176,10 @@ def build_request(item: dict, inventory: Path) -> dict:
         "target": {
             "site_id": target["site_id"],
             "source_path": target["source_path"],
+            "source_sha256": target.get("source_sha256"),
             "source_line": target["source_line"],
+            "compiled_throw_source_line": mapping.get("selected_source_line"),
+            "compiled_throw_site": mapping.get("throw_site"),
             "function": target["function"],
             "target_throw": target.get("target_throw"),
             "target_exception": target["target_exception"],
@@ -190,6 +194,47 @@ def build_request(item: dict, inventory: Path) -> dict:
             "source_root": build.get("cwd"), "module": build.get("module"),
         },
     }
+
+
+def verify_target_occurrence(proof: dict, config: dict, output: Path,
+                             expected_throw_site: str) -> dict:
+    """Accept only a reached original-runtime check selected from the healthy trace."""
+    name = proof.get("target_occurrence_receipt_path")
+    if not isinstance(name, str) or not name:
+        raise ValueError("native adapter lacks observed target occurrence receipt")
+    path = Path(name).resolve(strict=True)
+    if not path.is_relative_to(output.resolve(strict=True)) or not path.is_file():
+        raise ValueError("target occurrence receipt is outside native adapter output")
+    if _sha(path) != proof.get("target_occurrence_receipt_sha256"):
+        raise ValueError("target occurrence receipt bytes changed")
+    receipt = _object(path)
+    rec = config["recording"]
+    base_site = config["target_site"].rsplit("#", 1)[0]
+    selected = receipt.get("selectedOccurrenceAddress")
+    seq = receipt.get("selectedEventSeq")
+    call = receipt.get("selectedCallId")
+    reached = receipt.get("reachedEvents")
+    if (receipt.get("kind") != "MALLORY_OBSERVED_TARGET_OCCURRENCE" or
+            receipt.get("test") != rec["test_id"] or
+            receipt.get("checkSiteId") != base_site or
+            config["target_throw"]["siteId"] != expected_throw_site or
+            not isinstance(selected, str) or not selected or
+            rec.get("target_occurrence") != selected or
+            not isinstance(seq, int) or isinstance(seq, bool) or seq < 0 or
+            not isinstance(call, int) or isinstance(call, bool) or call < 0 or
+            not isinstance(reached, list) or not any(
+                isinstance(row, dict) and row.get("eventSeq") == seq and
+                row.get("callId") == call and
+                row.get("occurrenceAddress") == selected for row in reached) or
+            receipt.get("traceManifestSha256") != _sha(
+                Path(rec["trace_dir"]) / "streaming_trace_manifest.json") or
+            receipt.get("scopeMapSha256") != _sha(Path(rec["static_scope_map"])) or
+            receipt.get("candidateGraphSha256") != _sha(
+                Path(rec["candidate_graph"])) or
+            receipt.get("regionSkeletonsSha256") != _sha(
+                Path(rec["region_skeletons"]))):
+        raise ValueError("original-runtime target occurrence does not match healthy recording")
+    return receipt
 
 
 def _validate_output(item: dict, request: dict, output: Path,
@@ -215,11 +260,13 @@ def _validate_output(item: dict, request: dict, output: Path,
     if (config["case_id"] != item["case_id"] or
             config["junit"] != {"class": junit["class"],
                                 "method": junit["method"]} or
+            config["recording"]["test_id"] != junit["selector"] or
             config["target_site"].split("#", 1)[0] != request["target"][
                 "site_id"].split("#", 1)[0] or
             config["target_throw"]["exceptionClass"] != request["target"][
                 "target_exception"]):
         raise ValueError("native adapter output changed inventory target/JUnit")
+    verify_target_occurrence(proof, config, output, request["target"]["site_id"])
     scope_path = Path(proof.get("static_scope_receipt_path", ""))
     recording_path = Path(proof.get("recording_weave_receipt_path", ""))
     if not scope_path.is_file() or not recording_path.is_file():
@@ -345,6 +392,9 @@ def _promote(item: dict, request: dict, recipe_file: Path, recipe: dict,
         "recording_weave_receipt_path": proof["recording_weave_receipt_path"],
         "recording_weave_receipt_sha256": _sha(Path(
             proof["recording_weave_receipt_path"])),
+        "target_occurrence_receipt_path": proof["target_occurrence_receipt_path"],
+        "target_occurrence_receipt_sha256": _sha(Path(
+            proof["target_occurrence_receipt_path"])),
         "source_config_path": str(source_config),
         "config_sha256": _sha(config_file),
         "recording_admission_sha256": _sha(case_root / "recording-admission.json"),

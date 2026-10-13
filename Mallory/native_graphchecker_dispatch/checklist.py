@@ -139,6 +139,7 @@ def verify_preparation_receipt(item: dict, config_file: Path,
         ("source_config_path", "config_sha256"),
         ("static_scope_receipt_path", "static_scope_receipt_sha256"),
         ("recording_weave_receipt_path", "recording_weave_receipt_sha256"),
+        ("target_occurrence_receipt_path", "target_occurrence_receipt_sha256"),
     ):
         path = Path(receipt.get(path_key, "")).resolve(strict=True)
         if not path.is_relative_to(prep_root) or path.is_symlink() or (
