@@ -44,13 +44,16 @@ def analyze_trial(trial: Path, target_site: str, prior_trace: Path | None = None
             prior_input = Path(temp) / "prior.jsonl"
             with gzip.open(prior_trace, "rb") as source, prior_input.open("wb") as target:
                 shutil.copyfileobj(source, target, length=1024 * 1024)
-        command = ["java", "-jar", str(selected_jar), str(trace), str(graph),
+        # A full static scope can yield a large original-JUnit trace. Bound
+        # graph-builder heap independently of the workload JVM and allow two
+        # streaming passes over the current and prior traces to finish.
+        command = ["java", "-Xmx6g", "-jar", str(selected_jar), str(trace), str(graph),
                    str(feedback), target_site]
         if prior_input is not None or static_scope_map is not None:
             command.append(str(prior_input) if prior_input is not None else "-")
         if static_scope_map is not None:
             command.append(str(static_scope_map))
-        subprocess.run(command, check=True, timeout=120, stdout=subprocess.DEVNULL,
+        subprocess.run(command, check=True, timeout=300, stdout=subprocess.DEVNULL,
                        stderr=subprocess.PIPE)
     value = json.loads(feedback.read_text(encoding="utf-8"))
     if not isinstance(value, dict) or value.get("schemaVersion") != 1:
