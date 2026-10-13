@@ -314,6 +314,10 @@ def _audit_terminal(case_id: str, config_path: Path, root: Path,
         verified, last_fault_seq = native._strict_faults(faults, events)
         if result.get("strict_injection") is not bool(faults and verified):
             raise ValueError("native exact fault receipt mismatch")
+        if not result.get("native_target_retained") and (
+                result.get("target_temporal_admitted") is True or
+                result.get("target_temporal_evidence") is not None):
+            raise ValueError("temporal target claim without retained target")
         if index and verified:
             strict += 1
         if result.get("native_target_retained"):
@@ -344,14 +348,29 @@ def _audit_terminal(case_id: str, config_path: Path, root: Path,
                 inside = bool(applied and applied[-1].get("occurrenceId") in closure)
                 if result.get("fault_in_target_closure") is not inside:
                     raise ValueError("fault/target closure attribution differs from native graph")
-                expected_status = ("candidate" if exact else "checked") if inside else (
-                    "needs_causal_review" if exact else "unrelated_target")
+                admitted, reason, evidence = native._temporal_target(
+                    events, target_summary, config["target_site"])
+                if (result.get("target_temporal_admitted") is not admitted or
+                        result.get("target_temporal_reason") != reason or
+                        result.get("target_temporal_evidence") != evidence):
+                    raise ValueError("target temporal admission differs from receipts")
+                linked_throw = bool(exact and evidence and any(
+                    row["occurrenceId"] == evidence["targetOccurrenceId"] and
+                    row["seq"] > evidence["checkSeq"] for row in exact))
+                if not admitted:
+                    expected_status = ("needs_causal_review" if exact else
+                                       "unrelated_target")
+                elif exact and not linked_throw:
+                    expected_status = "needs_causal_review"
+                else:
+                    expected_status = "candidate" if linked_throw else "checked"
                 if result.get("status") != expected_status:
                     raise ValueError("native trial disposition disagrees with receipts")
             if result.get("status") == "candidate":
                 applied = [item for item in events
                            if item.get("kind") == "FAULT_APPLIED"]
                 if (not verified or not exact or not result.get("fault_in_target_closure")
+                        or result.get("target_temporal_admitted") is not True
                         or not applied or applied[-1].get("occurrenceId") not in {
                             member.get("occurrenceId") for member in
                             target_summary["closureMembers"]}):

@@ -174,10 +174,16 @@ class NativeChecklistTest(unittest.TestCase):
         door = {"kind": "FAULT_DOOR", "seq": 1, "siteId": "RPC#door",
                 "node": "nn0", "actorEpochOrdinal": 0, "ordinal": 1,
                 "exceptionClass": "java.io.IOException",
-                "occurrenceId": "fresh:door"}
+                "occurrenceId": "fresh:target"}
         events = [] if healthy else [door, {**door, "kind": "FAULT_APPLIED", "seq": 2}]
+        if reached and not healthy:
+            events.append({"kind": "TARGET_CHECK", "seq": 3,
+                           "siteId": config["target_site"].rsplit("#", 1)[0],
+                           "targetAnchorSiteId": config["target_site"],
+                           "node": "nn0", "actorEpochOrdinal": 0,
+                           "occurrenceId": "fresh:target"})
         if throw and not healthy:
-            events.append({"kind": "TARGET_THROW", "seq": 3,
+            events.append({"kind": "TARGET_THROW", "seq": 4,
                            "siteId": config["target_throw"]["siteId"],
                            "exceptionClass": config["target_throw"]["exceptionClass"],
                            "occurrenceId": "fresh:target"})
@@ -195,13 +201,25 @@ class NativeChecklistTest(unittest.TestCase):
             "native_target_retained": reached,
             "target_exception_triggered": bool(throw and reached),
             "fault_in_target_closure": not healthy and reached,
+            "target_temporal_admitted": not healthy and reached,
+            "target_temporal_reason": (
+                "same_occurrence_before_check" if not healthy and reached else
+                "no_applied_fault"),
+            "target_temporal_evidence": ({
+                "faultSeq": 2, "checkSeq": 3,
+                "targetOccurrenceId": "fresh:target",
+                "targetAnchorSiteId": config["target_site"],
+            } if not healthy and reached else None),
             "fault_events_sha256": dispatch._sha(event_path),
             "native_session_sha256": session_sha if reached else None,
             "native_target_occurrence_ids": ["fresh:target"] if reached else [],
-            "target_throw_rows": events[2:] if throw and reached else [],
+            "target_throw_rows": [row for row in events
+                                  if row["kind"] == "TARGET_THROW"]
+                                 if throw and reached else [],
         }
         if reached:
-            target_row = {"occurrenceId": "fresh:target", "reachedAnchor": True}
+            target_row = {"occurrenceId": "fresh:target", "reachedAnchor": True,
+                          "siteId": config["target_site"]}
             members = [{"occurrenceId": "fresh:target", "family": "nn0|R.target"},
                        {"occurrenceId": "fresh:door", "family": "nn0|R.door"}]
             summary = {
@@ -221,6 +239,7 @@ class NativeChecklistTest(unittest.TestCase):
                 "perTargetOccurrences": [{
                     "targetOccurrenceId": "fresh:target",
                     "targetSiteId": config["target_site"],
+                    "targetNodeName": "nn0",
                     "targetRegionId": "R.target",
                     "targetFamily": "nn0|R.target",
                     "targetRows": [target_row], "closureMembers": members}],
@@ -304,7 +323,7 @@ class NativeChecklistTest(unittest.TestCase):
         self.assertFalse(row["native_tested_complete"])
         self.make_complete(throw=True)
         events = self.case_root / "trials/r0001/iteration-native/fault-events.jsonl"
-        events.write_text(events.read_text().replace("fresh:door", "wrong:door", 1))
+        events.write_text(events.read_text().replace("fresh:target", "wrong:door", 1))
         row = dispatch.inspect_case(self.item, "node1", self.config_root,
                                     self.state_root)
         self.assertEqual("receipt_error", row["terminal_disposition"])
@@ -316,11 +335,33 @@ class NativeChecklistTest(unittest.TestCase):
         row = dispatch.inspect_case(self.item, "node1", self.config_root,
                                     self.state_root)
         self.assertEqual("receipt_error", row["terminal_disposition"])
+
         self.make_complete(throw=True)
         (self.root / "scope.jsonl").write_text('{"changed":true}\n')
         row = dispatch.inspect_case(self.item, "node1", self.config_root,
                                     self.state_root)
         self.assertEqual("receipt_error", row["terminal_disposition"])
+
+    def test_post_target_fault_cannot_keep_candidate_label(self) -> None:
+        self.make_complete(throw=True)
+        events_path = self.case_root / "trials/r0001/iteration-native/fault-events.jsonl"
+        events = [json.loads(line) for line in events_path.read_text().splitlines()]
+        check = next(row for row in events if row["kind"] == "TARGET_CHECK")
+        door = next(row for row in events if row["kind"] == "FAULT_DOOR")
+        applied = next(row for row in events if row["kind"] == "FAULT_APPLIED")
+        thrown = next(row for row in events if row["kind"] == "TARGET_THROW")
+        check["seq"], door["seq"], applied["seq"], thrown["seq"] = 1, 2, 3, 4
+        events_path.write_text("".join(json.dumps(row) + "\n" for row in
+                                       (check, door, applied, thrown)))
+        result_path = self.case_root / "trials/r0001/result.json"
+        result = json.loads(result_path.read_text())
+        result["fault_events_sha256"] = dispatch._sha(events_path)
+        result["target_throw_rows"] = [thrown]
+        self.write(result_path, result)
+        row = dispatch.inspect_case(self.item, "node1", self.config_root,
+                                    self.state_root)
+        self.assertEqual("receipt_error", row["terminal_disposition"])
+        self.assertIn("temporal", row["reason"])
 
     def test_no_cluster_junit_is_terminal_but_not_fuzzed(self) -> None:
         evidence = self.root / "source-review.md"
