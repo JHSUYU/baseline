@@ -13,6 +13,14 @@ ROOT = Path(__file__).resolve().parents[2]
 INCOMPLETE = {'preparing', 'healthy', 'blocked_setup', 'claimed_elsewhere'}
 
 
+def default_checklist() -> Path:
+    for path in (ROOT / 'data/crashfuzz/checklist102.json',
+                 ROOT / 'checklist102.json'):
+        if path.is_file():
+            return path
+    return ROOT / 'data/crashfuzz/checklist102.json'
+
+
 def applied_digests(trace: Path) -> list[str]:
     with trace.open() as stream:
         return [event.get('digest') for line in stream
@@ -149,7 +157,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument('--result-root', required=True, type=Path)
     parser.add_argument('--checklist', type=Path,
-                        default=ROOT / 'data/crashfuzz/checklist102.json')
+                        default=default_checklist())
     args = parser.parse_args()
     report = audit(args.result_root, args.checklist)
     print(json.dumps(report, indent=2))
