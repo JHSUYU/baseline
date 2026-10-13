@@ -226,6 +226,18 @@ def inputs(config_file: Path):
         if part and "GraphChecker/target/" in Path(part).as_posix():
             raise ValueError("live GraphChecker/target artifact is forbidden")
     post_weave_spec(config)
+    native_fault = config.get("native_fault_manifest")
+    if native_fault is not None:
+        if not isinstance(native_fault, str) or not native_fault:
+            raise ValueError("native_fault_manifest must name a static manifest")
+        Path(native_fault).resolve(strict=True)
+    process_dirs = config.get("process_dirs", [])
+    if (not isinstance(process_dirs, list) or
+            not all(isinstance(item, str) and item for item in process_dirs)):
+        raise ValueError("process_dirs must be a list of class directories")
+    for item in process_dirs:
+        if not Path(item).resolve(strict=True).is_dir():
+            raise ValueError(f"process directory is absent: {item}")
     return config, source, output, plan, skeletons
 
 
@@ -244,10 +256,16 @@ def run(config_file: Path) -> dict:
         f"-Dcausynth.concolic.task.plan={plan}",
         f"-Dcausynth.concolic.task.id={config['task_id']}",
         f"-Dcausynth.region.skeletons={skeletons}",
-        "-cp", classpath,
-        "edu.uva.liftlab.graphchecker.GraphCheckerMain",
-        "-i", str(source), "-x", extra, "-o", str(output),
     ]
+    if config.get("native_fault_manifest"):
+        command.append("-Dmallory.native.fault.manifest=" + str(
+            Path(config["native_fault_manifest"]).resolve(strict=True)))
+    if config.get("process_dirs"):
+        command.append("-Dcausynth.process.dirs=" + os.pathsep.join(
+            str(Path(item).resolve(strict=True)) for item in config["process_dirs"]))
+    command.extend(["-cp", classpath,
+                    "edu.uva.liftlab.graphchecker.GraphCheckerMain",
+                    "-i", str(source), "-x", extra, "-o", str(output)])
     subprocess.run(command, check=True, timeout=int(config.get("timeout_seconds", 600)))
     post = post_weave_spec(config)
     post_receipt = None
@@ -290,6 +308,12 @@ def run(config_file: Path) -> dict:
         "post_weave": post_receipt,
         "original_hook_families": ["root", "branch", "state", "work_handoff"],
     }
+    if config.get("native_fault_manifest"):
+        receipt["native_fault_manifest_sha256"] = digest(
+            Path(config["native_fault_manifest"]).resolve(strict=True))
+    if config.get("process_dirs"):
+        receipt["process_dir_artifacts"] = dependency_digests(os.pathsep.join(
+            config["process_dirs"]))
     receipt_file = output / "native-original-weave-receipt.json"
     temporary = receipt_file.with_suffix(".json.tmp")
     temporary.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n")
@@ -318,6 +342,12 @@ def verify_existing(config_file: Path) -> dict:
         "dependency_artifacts": dependency_digests(config["dependency_classpath"]),
         "java_sha256": digest(Path(config["java"]).resolve(strict=True)),
     }
+    if config.get("native_fault_manifest"):
+        observed["native_fault_manifest_sha256"] = digest(
+            Path(config["native_fault_manifest"]).resolve(strict=True))
+    if config.get("process_dirs"):
+        observed["process_dir_artifacts"] = dependency_digests(os.pathsep.join(
+            config["process_dirs"]))
     post = post_weave_spec(config)
     if post is None:
         if receipt.get("post_weave") is not None:

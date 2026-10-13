@@ -1,0 +1,66 @@
+{
+  "adapterJarSha256": "0f143e452a22d5a1e3bf812b2985ae64854a2b2ad8d3c1abc85d5a5b5e1770d6",
+  "closureDiagnostic": {
+    "healthyClosureMembers": 1,
+    "observedEdgesWithinClosure": 0,
+    "staticScopeMap": "empty diagnostic map, not a full case graph",
+    "typedWireFieldBranchDelta": 0
+  },
+  "engineJarSha256": "b6ac3c7a8577b1b45e3a22589e5008d26fb66b005a3cf4185127f986b305b714",
+  "healthy": {
+    "faultDoorCount": 18,
+    "junitExitCode": 0,
+    "targetCheckCount": 2,
+    "targetRow": {
+      "observedFatal": false,
+      "occurrenceId": "ac7b41829c4b1d4d",
+      "reachedAnchor": true,
+      "siteId": "<org.apache.zookeeper.server.quorum.Learner: long registerWithLeader(int)>#u51#1"
+    }
+  },
+  "inputLearnerClassSha256": "9c62a910a88cf3789e380014ec81be479dda9a93a4b23b94cc7893b38579f509",
+  "postTargetFault": {
+    "actorEpochOrdinal": 1,
+    "admission": "late_fault_rejected",
+    "faultAppliedSeq": 11,
+    "node": "zk-peer-1",
+    "occurrenceId": "ac7b41829c4b1d4d",
+    "siteId": "<org.apache.zookeeper.server.quorum.Learner: long registerWithLeader(int)>#u69",
+    "targetAnchorSiteId": "<org.apache.zookeeper.server.quorum.Learner: long registerWithLeader(int)>#u51#1",
+    "targetCheckSeq": 9,
+    "targetRow": {
+      "observedFatal": false,
+      "occurrenceId": "ac7b41829c4b1d4d",
+      "reachedAnchor": true,
+      "siteId": "<org.apache.zookeeper.server.quorum.Learner: long registerWithLeader(int)>#u51#1"
+    }
+  },
+  "preTargetFault": {
+    "actorEpochOrdinal": 1,
+    "admission": "target_lost",
+    "faultAppliedSeq": 8,
+    "junitExitCode": 0,
+    "laterCheckInDifferentOccurrence": {
+      "occurrenceId": "de2fcc248d380952",
+      "targetCheckSeq": 11
+    },
+    "node": "zk-peer-1",
+    "occurrenceId": "ac7b41829c4b1d4d",
+    "sameWovenClassSha256": "c3a51f048f422a86c4ce176047c8ffe29823f4abc07f2715258c6e4ceab190eb",
+    "siteId": "<org.apache.zookeeper.server.quorum.Learner: long registerWithLeader(int)>#u24",
+    "targetRow": {
+      "observedFatal": false,
+      "occurrenceId": "ac7b41829c4b1d4d",
+      "reachedAnchor": false,
+      "siteId": "<org.apache.zookeeper.server.quorum.Learner: long registerWithLeader(int)>#u51#1"
+    }
+  },
+  "purpose": "native exact-unit fault adapter gate, not a completed ZK07 fuzz check",
+  "sameWovenClassesAcrossHealthyAndFault": true,
+  "schemaVersion": 1,
+  "staticManifestSource": "ScopePlanner weave_manifest.json; subset of source-selected Learner units #u24, #u25, #u69 and BRANCH #u51 / THROW #u66",
+  "system": "ZooKeeper 3.8.7",
+  "targetThrowProof": "NativeFaultWeaverTest.injectedIoHasExactFreshReceiptsAndTargetThrow uses two fresh JVMs and original SessionReader; real ZK JUnit did not execute target ATHROW",
+  "unchangedJUnit": "org.apache.zookeeper.test.QuorumRestartTest#testRollingRestart",
+  "wovenLearnerClassSha256": "c3a51f048f422a86c4ce176047c8ffe29823f4abc07f2715258c6e4ceab190eb"
+}

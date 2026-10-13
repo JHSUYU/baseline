@@ -2,6 +2,7 @@ package edu.uva.liftlab.graphchecker;
 
 import edu.uva.liftlab.graphchecker.causynth.LineageScope;
 import edu.uva.liftlab.graphchecker.causynth.ConcolicInstrumentationSelections;
+import edu.uva.liftlab.graphchecker.causynth.MalloryNativeFaultWeave;
 import edu.uva.liftlab.graphchecker.option.GraphCheckerOptions;
 import edu.uva.liftlab.graphchecker.transformer.GraphCheckerTransformer;
 import org.slf4j.Logger;
@@ -39,12 +40,33 @@ public class GraphCheckerMain {
 
     public void initialize() {
         IndexedSourceLocator.install();
+        MalloryNativeFaultWeave nativeFault = MalloryNativeFaultWeave.requested()
+                ? new MalloryNativeFaultWeave() : null;
+        if (nativeFault != null) {
+            Transform capture = new Transform("wjtp.malloryFaultCapture",
+                    nativeFault.capture());
+            capture.setDeclaredOptions("enabled");
+            capture.setDefaultOptions("enabled:true");
+            PackManager.v().getPack(GraphCheckerTransformer.PHASE_PACK).add(capture);
+        }
         Transform phase = new Transform(GraphCheckerTransformer.PHASE_NAME,
                 new GraphCheckerTransformer(options));
         phase.setDeclaredOptions("enabled");
         phase.setDefaultOptions("enabled:false");
         PackManager.v().getPack(GraphCheckerTransformer.PHASE_PACK).add(phase);
+        if (nativeFault != null) {
+            Transform insert = new Transform("wjtp.malloryFaultInsert",
+                    nativeFault.insert());
+            insert.setDeclaredOptions("enabled");
+            insert.setDefaultOptions("enabled:true");
+            PackManager.v().getPack(GraphCheckerTransformer.PHASE_PACK).add(insert);
+        }
         configureSoot();
+        if (nativeFault != null) {
+            // Resolve the helper before Soot enters whole-program packs.
+            Scene.v().addBasicClass(
+                    "edu.uva.liftlab.graphchecker.runtime.NativeFaultHooks", SIGNATURES);
+        }
         // One whole-program phase, no call graph: the pipeline builds its own.
         PhaseOptions.v().setPhaseOption(
                 GraphCheckerTransformer.PHASE_NAME, "enabled:true");
