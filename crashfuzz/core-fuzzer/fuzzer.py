@@ -844,13 +844,16 @@ def choose_next_sequence(state: dict[str, Any],
                      if state.get("temporal_diversity_version", 1) >= 2
                      else fault_family)
     family_counts: dict[Any, int] = {}
-    site_counts: dict[str, int] = {}
+    # A failed request and a lost reply have different effects on remote
+    # state. Count them separately when reserving untried I/O sites.
+    site_counts: dict[tuple[str, str], int] = {}
     root_counts: dict[Any, int] = {}
     for sequence in previous:
         last = diversity_key(sequence[-1])
         root = diversity_key(sequence[0])
         family_counts[last] = family_counts.get(last, 0) + 1
-        site = sequence[-1]["siteId"]
+        site = (sequence[-1]["siteId"],
+                sequence[-1].get("phase", "before"))
         site_counts[site] = site_counts.get(site, 0) + 1
         root_counts[root] = root_counts.get(root, 0) + 1
     # CrashFuzz first favors new I/O points. A phase, exception class, or
@@ -865,7 +868,9 @@ def choose_next_sequence(state: dict[str, Any],
         sequence = item["sequence"]
         root_penalty = (root_counts.get(diversity_key(sequence[0]), 0)
                         if len(sequence) > 1 else 0)
-        return ((site_counts.get(sequence[-1]["siteId"], 0)
+        site = (sequence[-1]["siteId"],
+                sequence[-1].get("phase", "before"))
+        return ((site_counts.get(site, 0)
                  if prefer_new_site else 0),
                 family_counts.get(diversity_key(sequence[-1]), 0),
                 root_penalty,

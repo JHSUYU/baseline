@@ -433,6 +433,16 @@ class CoverageIoTest(unittest.TestCase):
         state['completed'] += [{'sequence': [A]}, {'sequence': [B]}]
         self.assertEqual(choose_next_sequence(state), 0)
 
+    def test_request_failure_does_not_starve_reply_loss_at_same_site(self):
+        reply_loss = {**A, 'phase': 'after'}
+        state = {'completed': [{'sequence': [A]}],
+                 'queue': [{'sequence': [reply_loss], 'priority': 100,
+                            'created': 1},
+                           {'sequence': [B], 'priority': 10,
+                            'created': 2}],
+                 'site_diversity_version': 2}
+        self.assertEqual(choose_next_sequence(state), 0)
+
     def test_bounded_late_occurrence_slot_prevents_family_starvation(self):
         late = {**A, 'hitOrdinal': 4, 'phase': 'after'}
         state = {'completed': [{'sequence': [A]}] * 5,
