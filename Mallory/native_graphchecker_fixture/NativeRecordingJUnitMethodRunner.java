@@ -1,0 +1,51 @@
+package edu.uva.liftlab.graphchecker.runtime;
+
+import java.io.PrintWriter;
+import org.junit.platform.engine.discovery.DiscoverySelectors;
+import org.junit.platform.launcher.Launcher;
+import org.junit.platform.launcher.LauncherDiscoveryRequest;
+import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
+import org.junit.platform.launcher.core.LauncherFactory;
+import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
+import org.junit.platform.launcher.listeners.TestExecutionSummary;
+
+/** Opens a native GraphChecker recording window around an unchanged Jupiter method. */
+public final class NativeRecordingJUnitMethodRunner {
+    private NativeRecordingJUnitMethodRunner() { }
+
+    public static void main(String[] args) {
+        if (args.length != 2) {
+            throw new IllegalArgumentException("expected JUnit class and method");
+        }
+        Object source = new Object();
+        RuntimeTraceContext.registerSource(source,
+                new SourceRef("SYSTEM", "CLIENT", "native-junit", 0));
+        long request = RuntimeTraceContext.beginRequest(source, args[1]);
+        long frame = Identity.enterFrame(args[1], source);
+        int status = 1;
+        CausynthTraceRecorder.startRecording();
+        try {
+            LauncherDiscoveryRequest discovery = LauncherDiscoveryRequestBuilder.request()
+                    .selectors(DiscoverySelectors.selectMethod(args[0], args[1]))
+                    .build();
+            Launcher launcher = LauncherFactory.create();
+            SummaryGeneratingListener listener = new SummaryGeneratingListener();
+            launcher.registerTestExecutionListeners(listener);
+            launcher.execute(discovery);
+            TestExecutionSummary summary = listener.getSummary();
+            summary.printFailuresTo(new PrintWriter(System.err, true));
+            status = summary.getTestsSucceededCount() == 1
+                    && summary.getTestsFailedCount() == 0 ? 0 : 1;
+            System.out.println("NATIVE_RECORDING_JUNIT_RESULT passed="
+                    + summary.getTestsSucceededCount() + " failed="
+                    + summary.getTestsFailedCount() + " skipped="
+                    + summary.getTestsSkippedCount());
+        } finally {
+            CausynthTraceRecorder.stopRecording();
+            Identity.exitFrame(frame);
+            RuntimeTraceContext.endRequest(request);
+        }
+        // A MiniCluster can retain non-daemon threads after Jupiter teardown.
+        System.exit(status);
+    }
+}
