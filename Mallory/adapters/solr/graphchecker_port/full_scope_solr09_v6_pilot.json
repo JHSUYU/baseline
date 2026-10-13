@@ -1,0 +1,32 @@
+{
+  "caseId": "SOLR-09",
+  "status": "diagnostic_one_fault_pilot_only",
+  "sourceCommit": "e27f44e3d78dfcec230c97e0a1240e3751daeff9",
+  "workload": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup",
+  "plannerSha256": "f0395fbf44f6fa5becedb6bce88e57bbe010d74dd54abfafe81f76d84a41f41e",
+  "weaverSha256": "925a0a50d50fb571ac121983f1fed45d5bee377183ca2dd54011f5c5632fdf4a",
+  "runtimeSha256": "38bdafadfb457e8ef4919ae855f5e9fc01cba346fc0a29975c16cf78d8e2be13",
+  "orderedDependencyClasspathSha256": "57064050ed916746aac77bdee5afb33b9efd27b8bf42b17c3443e6292f93fd85",
+  "healthy": {
+    "junitPassed": true,
+    "elapsedSeconds": 33.834,
+    "targetChecks": 1,
+    "targetThrows": 0,
+    "graphNodes": 15276,
+    "graphEdges": 30547,
+    "closureNodes": 2886,
+    "closureEdges": 5766
+  },
+  "trial": {
+    "count": 1,
+    "fault": "org.apache.zookeeper.KeeperException$ConnectionLossException at ZkStateReader.fetchCollectionState#u12",
+    "strictInjection": true,
+    "postFaultTargetReached": true,
+    "targetThrows": 0,
+    "junitPassed": true,
+    "elapsedSeconds": 62.871
+  },
+  "cumulativeTrialSeconds": 96.705,
+  "limit": "The selected Overseer queue item lost its exact ZooKeeper mzxid at task handoff, so the target backward closure lacked that HANDOFF and its upstream WIRE/STATE chain. This pilot does not count as a completed full-budget check.",
+  "node2Evidence": "/dev/shm/mallory-solr-causal-e27f44e/mallory-trials/solr09-full-scope-v6/native-campaign"
+}
