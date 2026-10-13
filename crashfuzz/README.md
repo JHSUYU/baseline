@@ -48,10 +48,10 @@ thread names and temporary cluster ports, including HBase's
 `Listener at localhost/port` form, are normalized across JUnit runs;
 the I/O site, actor class, and hit ordinal remain part of the match. Repeated
 observations with the same normalized address also carry an occurrence ordinal.
-The scheduler reserves one trial in six for a later observed invocation of a
-selected I/O callsite. It groups these invocations by callsite, phase, and a
-coarse ordinal bucket so repeated early faults do not consume the entire
-budget before state changes later in the JUnit run.
+When one is available, the scheduler reserves one trial in six for a later
+observed invocation of a selected I/O callsite. It groups these invocations
+by callsite, phase, and a coarse ordinal bucket so repeated early faults do
+not consume the entire budget before state changes later in the JUnit run.
 An I/O observation with unresolved actor identity is excluded from the fault
 queue and does not count as a replayable healthy I/O point when deciding
 whether to widen the Soot selection.
