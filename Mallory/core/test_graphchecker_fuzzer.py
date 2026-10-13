@@ -80,6 +80,15 @@ class GraphCheckerFuzzerTest(unittest.TestCase):
             self.assertEqual("r0000", state["healthy"]["name"])
             self.assertEqual(1, len(state["queue"]))
 
+    def test_failing_healthy_junit_does_not_seed_fault_queue(self):
+        state = _new_state(self.config(), self.budget())
+        state["active"] = {"index": 0, "name": "r0000", "faults": []}
+        baseline = self.result([], [self.door(1, 1)])
+        baseline["junit_passed"] = False
+        _accept_result(state, "r0000", baseline)
+        self.assertEqual("blocked_healthy_junit", state["status"])
+        self.assertEqual([], state["queue"])
+
     def test_terminal_checkpoint_returns_without_prepare_or_trial(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)

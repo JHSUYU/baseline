@@ -181,6 +181,8 @@ def _accept_result(state: dict[str, Any], name: str,
         state["healthy"] = record
         if result["status"] == "invalid_graphchecker_trace":
             state["status"] = "blocked_healthy_trace"
+        elif not result["junit_passed"]:
+            state["status"] = "blocked_healthy_junit"
         elif not result.get("evidence", {}).get("target_reached"):
             state["status"] = "no_healthy_target"
         else:
