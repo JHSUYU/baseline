@@ -17,6 +17,11 @@ must pass at the event itself:
 | State read | Same location, **observed** version, read symbol and concrete value, site execution index |
 | Wire export/attach | Exact producer and consumer endpoints, payload expression, minted handoff symbol, correlation and pairing key |
 
+`producerHeader`/`producerFromHeader` use GraphChecker's original
+`RowCodec.writeEndpoint`/`readEndpoint` for a full cross-process producer
+address. A transport-specific adapter still has to carry those bytes in its
+message header and associate them with the correct payload leaf.
+
 The current Mallory JSON trace does not contain these expression DAGs or
 exact Java field read versions. This bridge therefore refuses to infer them
 from the trace. Passing only an opaque `locationVersion` or a boolean target

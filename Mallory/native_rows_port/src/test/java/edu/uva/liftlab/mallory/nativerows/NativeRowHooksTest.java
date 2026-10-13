@@ -59,8 +59,11 @@ public class NativeRowHooksTest {
                 ExecutionIndex.parse("Worker.run()#u1@0"), 0);
         Endpoint consumer = Endpoint.of(address, "XCH.test.receive",
                 ExecutionIndex.parse("Worker.run()#u2@0"), 0);
+        Endpoint carried = NativeRowHooks.producerFromHeader(
+                NativeRowHooks.producerHeader(producer));
+        assertEquals(producer.id(), carried.id());
         hooks.export(producer, 14, value, "I", 42, "7");
-        hooks.attach(consumer, producer, 15, "M_I_handoff", "I",
+        hooks.attach(consumer, carried, 15, "M_I_handoff", "I",
                 "7", "rpc-1", "HANDLE");
         RowRuntime.closeSession();
 

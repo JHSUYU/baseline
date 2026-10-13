@@ -10,6 +10,7 @@ import edu.uva.liftlab.graphchecker.contract.GapKind;
 import edu.uva.liftlab.graphchecker.contract.LocationId;
 import edu.uva.liftlab.graphchecker.contract.OccurrenceAddress;
 import edu.uva.liftlab.graphchecker.contract.ReadRow;
+import edu.uva.liftlab.graphchecker.contract.RowCodec;
 import edu.uva.liftlab.graphchecker.runtime.RowRuntime;
 import edu.uva.liftlab.graphchecker.runtime.SessionPublisher;
 import java.io.IOException;
@@ -141,6 +142,18 @@ public final class NativeRowHooks {
         session.attach(AttachRow.of(sessionId(), vmSeq, consumer, symbol,
                 javaType, arrival, false, null, producer, correlationId,
                 pairingKey));
+    }
+
+    /** Transport adapters can carry this original contract object in a header. */
+    public static JsonObject producerHeader(Endpoint producer) {
+        if (producer == null) throw new IllegalArgumentException("producer endpoint");
+        return RowCodec.writeEndpoint(producer);
+    }
+
+    /** The receiving JVM reconstructs the same full endpoint, not only its ID. */
+    public static Endpoint producerFromHeader(JsonObject encoded) {
+        if (encoded == null) throw new IllegalArgumentException("producer header");
+        return RowCodec.readEndpoint(encoded);
     }
 
     /** A missing exact version or expression is an explicit blocking gap. */
