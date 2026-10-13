@@ -253,6 +253,10 @@ plans, and checkpoints remain on node0.
 The same verified procedure later archived completed control-branch attempts
 351–370 and response-shape attempts 71–90. Their additional receipts are
 `.archive-attempts-0351-0370.json` and `.archive-attempts-0071-0090.json`.
+Completed control-branch attempts 371–390 and response-shape attempts 91–110
+were subsequently checksum-verified on node1 before their local attempt
+directories were removed. Receipts are `.archive-attempts-0371-0390.json`
+and `.archive-attempts-0091-0110.json` in the respective campaign directories.
 
 Evidence roots: `static-rerun/original-known/HDFS-54`, `HDFS-55`,
 `HDFS-11-balancer`, and `HDFS-17967-mirror` on node0, and
