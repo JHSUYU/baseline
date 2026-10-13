@@ -22,6 +22,11 @@ source/classes, the source-built planner and runtime classpaths, the
 communication map, Java, bounded budget, and a native protocol gate. Put the
 profile and every referenced source/classpath/mapping artifact in the recipe's
 pin maps. There are no case IDs, target branches, or I/O doors in the profile.
+For ZooKeeper, `prepare-next` audits the nested gate inputs too: its full
+session directory, verifier source/build/receipt, static map, postweave and
+adapter builds, profile, Java, adapter code, and every ordered classpath entry
+must be present in the matching pin map. An omitted input is rejected before
+the preparation cache can be reused.
 The adapter derives the original THROW from inventory, runs original
 GraphChecker static seed analysis and REGION_STATE weave, then applies the
 ZooKeeper protocol and actor post-passes in that order. It executes the exact

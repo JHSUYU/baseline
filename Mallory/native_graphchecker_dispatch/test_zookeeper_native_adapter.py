@@ -13,6 +13,61 @@ from Mallory.native_graphchecker_dispatch import zookeeper_native_adapter as zk
 
 
 class ZooKeeperNativeAdapterTest(unittest.TestCase):
+    def test_recipe_cache_pins_nested_gate_session_and_classpaths(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            paths = {name: str(root / name) for name in (
+                "profile.json", "gate.json", "java", "source", "classes",
+                "mapping.jsonl", "dependency.jar", "session", "postweave",
+                "adapter-build", "verifier.jar", "verifier.java",
+                "session-reader.json", "scope.jsonl")}
+            gate = {
+                "session_dir_path": paths["session"],
+                "postweave_class_tree_path": paths["postweave"],
+                "adapter_build_path": paths["adapter-build"],
+                "session_reader_verifier_artifact_path": paths["verifier.jar"],
+                "session_reader_verifier_source_path": paths["verifier.java"],
+                "session_reader_receipt_path": paths["session-reader.json"],
+                "static_map_path": paths["scope.jsonl"],
+            }
+            profile = {
+                "mode": zk.PROFILE_MODE,
+                "protocol_gate": paths["gate.json"],
+                "java": paths["java"],
+                "source_root": paths["source"],
+                "source_classes": paths["classes"],
+                "communication_mapping": paths["mapping.jsonl"],
+                "analysis_classpath": [paths["classes"], paths["dependency.jar"]],
+                "scope_planner_classpath": [paths["dependency.jar"]],
+                "runtime_classpath": [paths["dependency.jar"]],
+                "runner_classpath": [paths["dependency.jar"]],
+                "post_weave_classpath": [paths["dependency.jar"]],
+            }
+            Path(paths["gate.json"]).write_text(json.dumps(gate), encoding="utf-8")
+            Path(paths["profile.json"]).write_text(json.dumps(profile), encoding="utf-8")
+            recipe = {
+                "argv": ["python3", "-m", "Mallory.native_graphchecker_dispatch.zookeeper_native_adapter",
+                         paths["profile.json"], "{request}", "{output}"],
+                "pins": {name: "pin" for name in (
+                    paths["profile.json"], paths["gate.json"], paths["java"],
+                    paths["session-reader.json"], paths["verifier.java"],
+                    str(Path(zk.__file__).resolve()),
+                    str(Path(zk.__file__).with_name(
+                        "NativeZooKeeperCombinedPostWeave.java").resolve()))},
+                "source_tree_pins": {paths["source"]: "pin", paths["session"]: "pin"},
+                "class_tree_pins": {paths["classes"]: "pin",
+                                    paths["postweave"]: "pin"},
+                "mapping_pins": {paths["mapping.jsonl"]: "pin",
+                                 paths["scope.jsonl"]: "pin"},
+                "classpath_pins": {paths["dependency.jar"]: "pin",
+                                   paths["adapter-build"]: "pin",
+                                   paths["verifier.jar"]: "pin"},
+            }
+            preparation._audit_zookeeper_recipe_pins(recipe)
+            del recipe["source_tree_pins"][paths["session"]]
+            with self.assertRaisesRegex(ValueError, "session"):
+                preparation._audit_zookeeper_recipe_pins(recipe)
+
     def test_session_gate_requires_pinned_session_reader_verdict(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

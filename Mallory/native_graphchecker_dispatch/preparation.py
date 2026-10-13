@@ -99,6 +99,70 @@ def _new_attempt(prep_root: Path, item: dict, request: dict,
     return attempt, state
 
 
+def _audit_zookeeper_recipe_pins(recipe: dict) -> None:
+    """Require every shared native ZooKeeper profile input in the cache key.
+
+    The profile itself is pinned as an argv file, but that alone would let a
+    referenced session, verifier, classpath, or gate change behind a cached
+    preparation.  The pin maps are the cache key's complete input manifest.
+    """
+    pins = recipe["pins"]
+    profiles = []
+    for name in pins:
+        if name not in recipe["argv"] or not name.endswith(".json"):
+            continue
+        try:
+            value = _object(Path(name))
+        except (OSError, ValueError):
+            continue
+        if value.get("mode") == "original_graphchecker_zookeeper_profile":
+            profiles.append((name, value))
+    if len(profiles) != 1:
+        raise ValueError("ZooKeeper recipe needs one pinned shared profile")
+    _, profile = profiles[0]
+    gate_name = profile.get("protocol_gate")
+    if not isinstance(gate_name, str) or gate_name not in pins:
+        raise ValueError("ZooKeeper protocol gate JSON is not pinned")
+    gate = _object(Path(gate_name))
+    maps = {
+        "file": pins,
+        "source": recipe["source_tree_pins"],
+        "classes": recipe["class_tree_pins"],
+        "mapping": recipe["mapping_pins"],
+        "classpath": recipe["classpath_pins"],
+    }
+    def require(kind: str, value: object) -> None:
+        if not isinstance(value, str) or value not in maps[kind]:
+            raise ValueError(f"ZooKeeper {kind} input omitted from recipe pins: {value}")
+
+    for value in (Path(__file__).with_name("zookeeper_native_adapter.py"),
+                  Path(__file__).with_name("NativeZooKeeperCombinedPostWeave.java")):
+        require("file", str(value.resolve(strict=True)))
+    for key in ("java", "protocol_gate"):
+        require("file", profile.get(key))
+    require("source", profile.get("source_root"))
+    require("classes", profile.get("source_classes"))
+    require("mapping", profile.get("communication_mapping"))
+    for key in ("analysis_classpath", "scope_planner_classpath",
+                "runtime_classpath", "runner_classpath", "post_weave_classpath"):
+        values = profile.get(key)
+        if not isinstance(values, list) or not values:
+            raise ValueError(f"ZooKeeper {key} is not a pinned ordered classpath")
+        for value in values:
+            if value == profile["source_classes"]:
+                require("classes", value)
+            else:
+                require("classpath", value)
+    for key in ("session_reader_receipt_path",
+                "session_reader_verifier_source_path"):
+        require("file", gate.get(key))
+    require("source", gate.get("session_dir_path"))
+    require("classes", gate.get("postweave_class_tree_path"))
+    for key in ("adapter_build_path", "session_reader_verifier_artifact_path"):
+        require("classpath", gate.get(key))
+    require("mapping", gate.get("static_map_path"))
+
+
 def load_recipes(path: Path, inventory: Path) -> dict[str, dict]:
     document = _object(path)
     if (document.get("schema_version") != 1 or
@@ -156,6 +220,8 @@ def load_recipes(path: Path, inventory: Path) -> dict[str, dict]:
                            and Path(arg).is_file()]
         if any(arg not in pins for arg in absolute_inputs):
             raise ValueError(f"un-pinned absolute adapter input for {system}")
+        if system == "zookeeper":
+            _audit_zookeeper_recipe_pins(recipe)
     return document["systems"]
 
 
