@@ -77,6 +77,13 @@ object-key counters must not be promoted to a state edge. Until a metadata
 adapter is added, the JUnit runner emits one `STATE_VERSION_UNHOOKED` gap per
 trial. Likewise, if a server/client source is not registered by the Mallory
 GraphChecker runtime, do not infer it from thread names.
+For HBASE-01 specifically, `ConnectionImplementation.isDeadServer` reads
+`ClusterStatusListener.deadServers`; `receive(ClusterMetrics)` adds to that
+list on the multicast listener path. Soot marks both sites as possible state
+accesses, but the current runtime has no observed collection-element version
+or transported multicast context. The meta-scanner RPC closure therefore
+does not prove the dead-server predicate's cross-thread input. This remains a
+quality gap even if a faulted trial reaches the target check.
 
 An initial full-scope `testMetaLookupThreadPoolCreated` run exposed two general
 graph gaps: a transported header exceeded the runtime's size limit, and the
@@ -92,3 +99,37 @@ weave receipt, and native fault receipt before a case is counted.
 `test_apply.py` checks the source anchors and confirms the successful-write
 boundaries are present in the generated patch. It does not replace an HBase
 build or a MiniCluster trace run.
+
+## Prepare another HBase checklist case
+
+`prepare_case.py` reads one HBase row from
+`data/mallory/graphchecker_port/final-results.tsv`. It takes the named throw
+and original JUnit method from that row, runs the Soot scope planner on the
+same patched HBase bytecode, and writes a campaign config only when the
+planner finds an exact controlling branch and a throw of the listed class.
+It also verifies both sites against the inventory class and method, and the
+throw against the listed source line. If several branches guard the same
+throw, `--check-line` selects the source line of the intended guard; it never
+selects an I/O or fault door.
+The generated manifest supplies every region, coverage site and fault door;
+the script contains no per-case I/O list.
+
+```sh
+python3 Mallory/adapters/hbase/graphchecker_port/prepare_case.py \
+  --inventory data/mallory/graphchecker_port/final-results.tsv \
+  --case-id HBASE-02 \
+  --scope-template /path/to/pinned-scope-input.json \
+  --campaign-template /path/to/pinned-campaign-case.json \
+  --planner-classpath /path/to/planner-classpath.txt \
+  --output /path/to/new-case-preparation
+```
+
+The scope template's `analysis.process_dirs` must contain the compiled target
+class, and its ordered `analysis.classpath` must be the same dependency
+classpath passed to WeaveMain. The campaign template must refer to original
+JUnit bytecode and the pinned runtime, weaver and runner. The script fails
+before creating a campaign config if the target class, JUnit class, branch,
+throw or classpath receipt cannot be verified. Each prepared case then needs
+its own unchanged-JUnit healthy gate before fault trials. The HBASE-01 v3
+merged bytecode lacks `hbase-zookeeper`'s `MasterAddressTracker`, so HBASE-37
+needs that module included in a new exact static/weave input.
