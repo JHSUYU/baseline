@@ -1,0 +1,94 @@
+# HBase 2.6.6 GraphChecker protocol port
+
+This overlay installs source hooks for the original HBase MiniCluster JUnit
+tests. It is confined to `Mallory/adapters/hbase/graphchecker_port` until
+explicitly applied to an isolated HBase 2.6.6 checkout. It does not reuse the
+old Mallory `Probe` graph.
+
+## Install in an isolated source checkout
+
+1. Build and install `Mallory/graphchecker-runtime` as Maven artifact
+   `edu.uva.liftlab.mallory:mallory-graphchecker-runtime:1.0-SNAPSHOT`.
+2. Run `python3 apply.py --check /path/to/hbase-2.6.6`, then
+   `python3 apply.py /path/to/hbase-2.6.6`. The command refuses already
+   modified anchors and writes only after all source inputs validate.
+3. Build the patched HBase `hbase-protocol-shaded`, `hbase-client`, and
+   `hbase-server` modules with their reactor dependencies. The script adds
+   the Mallory runtime dependency to both client and server POMs and copies
+   `GraphCheckerHBaseProtocol.java` into `hbase-client`. Keep the resulting
+   patched jars together; do not mix them with the unpatched 2.6.6 jars.
+   HBase 2.6.6 requires a Java 8 Maven build here. The JUnit launcher must
+   match the distribution's JUnit Platform 1.13.4 jars.
+4. Run the unchanged
+   `org.apache.hadoop.hbase.client.TestConnectionImplementation#testMetaLookupThreadPoolCreated`
+   through `edu.uva.liftlab.mallory.hbase.graphchecker.SelectedJUnitGraph`,
+   passing the test class and method as arguments. Put patched HBase jars and
+   `mallory-graphchecker-runtime` before stock HBase distribution jars on the
+   classpath, and set `MALLORY_GC_TRACE=/path/to/trace.jsonl`.
+   The runner records MiniCluster startup and the test body in one window;
+   use a fresh JVM and the pinned classpath per trial.
+
+## Boundaries and evidence
+
+The request envelope uses HBase's existing `RequestHeader.attribute` field.
+`Call` construction captures the caller scope before a sender-thread handoff.
+MiniCluster thread constructors register the exact master/RegionServer objects
+using their explicit constructor indices. `Call` also registers itself as an
+alias of the current client source before its asynchronous send.
+The dedicated master and RegionServer threads enter an actor scope while their
+original `run()` executes. HBase's client `ThreadPoolExecutor` captures the
+submitting scope for each task and restores it around that task's `run()`.
+This covers asynchronous meta scans without attributing unrelated worker
+threads from their names.
+Netty confirms a request SEND only on successful `ChannelFuture`; the blocking
+client confirms it after `IPCUtil.write` returns from its flush. The server
+installs the request context while `CallRunner` executes. A new optional
+`ResponseHeader.mallory_graph_context` field carries the response's context.
+Netty confirms response SEND only on successful write future, and the Simple
+server confirms it after the complete response buffer has been written.
+`RpcConnection.readResponse` installs the received context only after it has
+found the matching live `Call`; unknown or timed-out calls create no RECEIVE
+edge. The GraphChecker correlation ID is a deterministic name UUID derived
+from the registered client source, RPC method, actual HBase call ID,
+and attempt. Duplicate replay keys get an explicit collision ordinal and a
+`RPC_REPLAY_KEY_COLLISION` gap. A call without a registered source is left
+unattributed with `RPC_REPLAY_KEY_MISSING` instead of inventing a replay key.
+
+`BlockingRpcCallback.run()` publishes its `result` and `resultSet` under the
+callback monitor. The overlay records a `WRITE` of that callback's unique
+one-time version before `notifyAll()`. `get()` records the matching `READ`
+under the same monitor after observing `resultSet`. This is the precise
+cross-thread result handoff used by blocking HBase RPCs. Reaching a later
+check through nested scanner calls also requires a proven return dependency
+from the child call back to its caller. A scope edge alone does not prove that
+the caller consumed the returned value.
+
+The first verification gate should check that one exact request and response
+pair has matching correlation/attempt on named client and server sources,
+that `sent` is absent for a failed write, and that the original JUnit target
+is reached after a successfully applied fault. A passing JUnit alone is not
+causal-graph evidence. The two-phase `MessageDoors.prepareOutbound`/`sent`
+API is required; a header preparation is not a proven SEND.
+
+The callback edge is limited to the callback's synchronized publication.
+The overlay adds **no HBase metadata state edge**: that requires an actual
+atomic metadata key/version read. The previous Mallory probe's synthetic
+object-key counters must not be promoted to a state edge. Until a metadata
+adapter is added, the JUnit runner emits one `STATE_VERSION_UNHOOKED` gap per
+trial. Likewise, if a server/client source is not registered by the Mallory
+GraphChecker runtime, do not infer it from thread names.
+
+An initial full-scope `testMetaLookupThreadPoolCreated` run exposed two general
+graph gaps: a transported header exceeded the runtime's size limit, and the
+scanner's nested return was absent from the target's backward closure. The
+generic runtime now uses a compact transport identity and a validated child
+completion receipt. On an unchanged-JUnit diagnostic run with those changes,
+the target's backward closure contained 11 observed fault-door site IDs,
+including the scanner RPC path; `WIRE_HEADER_INVALID` and
+`REGION_COMPLETE_UNPROVEN` were both zero. This diagnostic used an older
+static manifest. The strict campaign must use a new matching static manifest,
+weave receipt, and native fault receipt before a case is counted.
+
+`test_apply.py` checks the source anchors and confirms the successful-write
+boundaries are present in the generated patch. It does not replace an HBase
+build or a MiniCluster trace run.
