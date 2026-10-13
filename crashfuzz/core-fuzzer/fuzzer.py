@@ -463,6 +463,7 @@ def trace_feedback(path: Path, target: dict[str, Any],
         "target_site_after_fault": target_site_after_fault,
         "target_outcomes": target_outcomes,
         "target_outcomes_after_fault": target_outcomes_after_fault,
+        "target_check_seqs": [e.get("seq", -1) for e in check_rows],
         "target_guard_seen": target_guard_seen,
         "target_guard_after_fault": target_guard_after_fault,
         "target_exception": target_exception,
@@ -529,13 +530,14 @@ def strict_injection(result: dict[str, Any],
 
 
 def enqueue(state: dict[str, Any], sequence: list[dict[str, Any]],
-            priority: int = 0) -> None:
+            priority: int = 0, target_proximity: int = 0) -> None:
     name = sequence_id(sequence)
     if name in state["seen_sequences"]:
         return
     state["seen_sequences"].append(name)
     state["queue"].append({"id": name, "sequence": sequence,
-                           "priority": priority, "created": time.time()})
+                           "priority": priority, "created": time.time(),
+                           "target_proximity": target_proximity})
 
 
 def fault_family(point: dict[str, Any]) -> str:
@@ -566,6 +568,39 @@ def temporal_site_key(point: dict[str, Any]) -> tuple[str, str, int]:
     bucket = (min(ordinal.bit_length() - 1, 4)
               if isinstance(ordinal, int) and ordinal > 0 else 0)
     return point["siteId"], point.get("phase", "before"), bucket
+
+
+def observed_identity(point: dict[str, Any]) -> tuple[Any, ...]:
+    """Match a recorded I/O call to its typed fault variants."""
+    return tuple(point.get(key) for key in
+                 ("siteId", "occurrence", "hitOrdinal", "occurrenceOrdinal",
+                  "phase", "sourceKey"))
+
+
+def target_proximity_score(io_seq: int, check_seqs: list[int]) -> int:
+    """Give bounded preference to I/O immediately preceding a target check."""
+    distance = min((check - io_seq for check in check_seqs if check > io_seq),
+                   default=None)
+    if distance is None:
+        return 0
+    if distance <= 64:
+        return 80
+    if distance <= 256:
+        return 50
+    if distance <= 1024:
+        return 20
+    return 0
+
+
+def observed_proximity(feedback: dict[str, Any]) -> dict[tuple[Any, ...], int]:
+    checks = feedback.get("target_check_seqs", [])
+    scores: dict[tuple[Any, ...], int] = {}
+    for observed in feedback.get("point_events", []):
+        point = observed["point"]
+        key = observed_identity(point)
+        scores[key] = max(scores.get(key, 0),
+                          target_proximity_score(observed.get("seq", -1), checks))
+    return scores
 
 
 def exact_temporal_site_key(point: dict[str, Any]) -> tuple[str, str, int]:
@@ -694,6 +729,7 @@ def enqueue_extensions(state: dict[str, Any], sequence: list[dict[str, Any]],
              "baseline_exception_recurrence", "target_exception_unlinked"}):
         return
     new_io = set(result.get("new_io_families", []))
+    checks = result.get("target_check_seqs", [])
     for observed in result.get("point_events", []):
         if observed.get("seq", -1) <= result.get("last_applied_seq", -1):
             continue
@@ -706,7 +742,10 @@ def enqueue_extensions(state: dict[str, Any], sequence: list[dict[str, Any]],
                         (static_priorities or {}).get(point["siteId"], 0) +
                         (15 if point.get("exceptionClass") in
                          (static_exceptions or {}).get(point["siteId"], []) else 0) +
-                        identity_priority(point))
+                        identity_priority(point) +
+                        target_proximity_score(observed["seq"], checks),
+                        target_proximity=target_proximity_score(
+                            observed["seq"], checks))
 
 
 def completed_sequences(state: dict[str, Any]) -> Iterable[list[dict[str, Any]]]:
@@ -784,6 +823,13 @@ def choose_next_sequence(state: dict[str, Any],
                 if (len(item["sequence"]) == 1) == (preferred_length == 1)]
     if not eligible:
         eligible = list(enumerate(state["queue"]))
+    # Keep a bounded share for I/O just before an observed target check. A
+    # later fault may still be valuable, so the other rounds remain broad.
+    if len(previous) % 5 == 4:
+        near = [(index, item) for index, item in eligible
+                if item.get("target_proximity", 0) >= 50]
+        if near:
+            eligible = near
     # Reserve every third trial for a target-side field writer or actor I/O
     # found by static analysis. Diversity still ranks sequences within that
     # tier; the remaining trials can explore all observed I/O families.
@@ -940,14 +986,16 @@ def ensure_seed(config: dict[str, Any], state: dict[str, Any],
         return
     state["status"] = "fuzzing"
     static_priorities = config.get("_static_io_priority", {})
+    proximity = observed_proximity(feedback)
     for observed in feedback["points"]:
         for point in fault_variants_for_io(
                 observed, config.get("_static_io_exceptions")):
+            near = proximity.get(observed_identity(point), 0)
             enqueue(state, [point], priority=20 + identity_priority(point) +
                     static_priorities.get(point["siteId"], 0) +
                     (15 if point.get("exceptionClass") in config.get(
                         "_static_io_exceptions", {}).get(point["siteId"], [])
-                     else 0))
+                     else 0) + near, target_proximity=near)
 
 
 def process_trial(config: dict[str, Any], state: dict[str, Any],
@@ -1534,6 +1582,17 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
                     queued["priority"] += priorities.get(
                         queued["sequence"][-1]["siteId"], 0)
                 state["static_priority_version"] = 1
+            if state.get("target_proximity_version", 0) < 1:
+                seed_trace = Path((state.get("seed") or {}).get("trace", ""))
+                proximity = (observed_proximity(trace_feedback(
+                    seed_trace, config["target"], config.get("io_scope")))
+                    if seed_trace.is_file() else {})
+                for queued in state.get("queue", []):
+                    near = proximity.get(observed_identity(
+                        queued["sequence"][-1]), 0)
+                    queued["priority"] += near
+                    queued["target_proximity"] = near
+                state["target_proximity_version"] = 1
             state.setdefault("setup_seconds", float(config.get("setup_seconds", 0)))
             state.setdefault("build_seconds", float(config.get("build_seconds", 0)))
             state.setdefault("target_method", config["target"]["method"])
@@ -1579,6 +1638,7 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
                      "identity_priority_version": 1,
                      "fault_family_version": 2,
                      "static_priority_version": 1,
+                     "target_proximity_version": 1,
                      "temporal_diversity_version": 2,
                      "late_occurrence_diversity_version": 1,
                      "exact_late_occurrence_version": 1,

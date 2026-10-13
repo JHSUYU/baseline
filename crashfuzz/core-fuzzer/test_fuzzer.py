@@ -11,6 +11,7 @@ from fuzzer import (archive_trial_attempts, budget_has_room, campaign,
                     fault_variants_for_io, fingerprint,
                     in_io_scope, point_from_event,
                     rows, static_reason_priority, strict_injection,
+                    target_proximity_score,
                     trace_feedback, stable_occurrence,
                     selected_target_control_branches,
                     selected_target_throw_lines, validate,
@@ -452,6 +453,20 @@ class CoverageIoTest(unittest.TestCase):
                  'exact_late_occurrence_version': 1,
                  'late_occurrence_diversity_version': 1}
         self.assertEqual(choose_next_sequence(state), 1)
+
+    def test_target_near_slot_keeps_a_precheck_fault_in_budget(self):
+        state = {'completed': [{'sequence': [A]}] * 4,
+                 'queue': [{'sequence': [B], 'priority': 1000,
+                            'target_proximity': 0, 'created': 1},
+                           {'sequence': [A], 'priority': 20,
+                            'target_proximity': 80, 'created': 2}],
+                 'site_diversity_version': 2}
+        self.assertEqual(choose_next_sequence(state), 1)
+
+    def test_proximity_uses_the_next_check_after_the_io(self):
+        self.assertEqual(target_proximity_score(3747, [3786, 4363]), 80)
+        self.assertEqual(target_proximity_score(4000, [3786, 4363]), 20)
+        self.assertEqual(target_proximity_score(4500, [3786, 4363]), 0)
 
     def test_zookeeper_fault_uses_connection_loss_and_exact_identity(self):
         observed = {**A, 'sourceKey':

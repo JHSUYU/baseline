@@ -56,6 +56,9 @@ by callsite, phase, and a coarse ordinal bucket so repeated early faults do
 not consume the entire budget before state changes later in the JUnit run.
 Another bounded slot samples an untried exact invocation when several calls
 from a short JUnit fall in the same coarse bucket.
+The healthy trace also identifies I/O observed shortly before a target check.
+One trial in five is reserved for these near-check I/O observations when any
+remain; other trials continue to explore the broader Soot-selected scope.
 An I/O observation with unresolved actor identity is excluded from the fault
 queue and does not count as a replayable healthy I/O point when deciding
 whether to widen the Soot selection.
