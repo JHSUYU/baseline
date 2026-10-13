@@ -55,6 +55,9 @@ byte from `original_engine/vendor/src/main/java/edu/uva/liftlab/graphchecker/Lam
 lambda methods the same names in static region skeletons and the original
 GraphChecker weave. The regression test checks the exact source copy and
 compares lambda names across independent Soot scenes.
+The opt-in original GraphChecker seed uses its `wjtp` phase and Scene
+normalization (`SharedInitializationSplitter`, sorted locals, one Soot thread)
+for its site indices. The default Mallory bytecode weaver keeps `jtp` indices.
 
 Outputs:
 

@@ -74,8 +74,10 @@ The loop bound is the explicit value required by GraphChecker's original
 an exception **construction** site. Mallory resolves the configured target
 branch and its controlled fatal throw, follows the thrown local to its unique
 `new Exception` definition, then declares that source line to GraphChecker.
-It restores the captured `jtp` Jimple bodies before invoking the original
+It restores the captured `wjtp` Jimple bodies before invoking the original
 analyzer because Soot otherwise lowers active bodies to Baf after `runPacks`.
+The original concolic weave also reads bodies in `wjtp`; `jtp` can change
+unit order, so its site indices cannot be used for this opt-in path.
 
 The `original` output directory contains unmodified GraphChecker artifacts.
 The Mallory output directory contains a converted `weave_manifest.json` and

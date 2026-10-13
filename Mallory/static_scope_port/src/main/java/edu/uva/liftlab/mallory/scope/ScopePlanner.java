@@ -2,6 +2,7 @@ package edu.uva.liftlab.mallory.scope;
 
 import edu.uva.liftlab.mallory.graphcheckerstatic.GraphCheckerRegionPlanner;
 import edu.uva.liftlab.graphchecker.MalloryLambdaClassNames;
+import edu.uva.liftlab.graphchecker.MallorySharedInitializationSplitter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -14,8 +15,10 @@ import soot.Body;
 import soot.BodyTransformer;
 import soot.Local;
 import soot.PackManager;
+import soot.PhaseOptions;
 import soot.RefType;
 import soot.Scene;
+import soot.SceneTransformer;
 import soot.SootClass;
 import soot.SootMethod;
 import soot.SootMethodRef;
@@ -40,6 +43,7 @@ import soot.jimple.Stmt;
 import soot.jimple.TableSwitchStmt;
 import soot.jimple.ThrowStmt;
 import soot.options.Options;
+import soot.util.Chain;
 import soot.tagkit.BytecodeOffsetTag;
 import soot.tagkit.Tag;
 import soot.toolkits.graph.BriefUnitGraph;
@@ -208,30 +212,72 @@ public final class ScopePlanner {
         }
         List<String> classpath = new ArrayList<>(dirs);
         classpath.addAll(dependencies);
+        boolean originalSeed = analysis.has("original_graphchecker_seed")
+                && analysis.get("original_graphchecker_seed").getAsBoolean();
         soot.G.reset();
         Options.v().set_prepend_classpath(true);
         Options.v().set_allow_phantom_refs(true);
-        Options.v().set_whole_program(false);
-        // The runtime Soot weaver selects original units at jtp entry.
-        // Analyse a cloned snapshot from that exact phase, never the
-        // pre-pack retrieveActiveBody() unit order.
+        Options.v().set_whole_program(originalSeed);
+        // Legacy bytecode weaving selects jtp-entry units; the original
+        // GraphChecker pipeline selects wjtp units. Capture each mode's
+        // active body at the phase where its corresponding weaver reads it.
         Options.v().set_output_format(Options.output_format_class);
         Options.v().set_keep_line_number(true);
-        Options.v().set_keep_offset(true);
+        Options.v().set_keep_offset(!originalSeed);
+        if (originalSeed) {
+            // Match the original GraphCheckerMain scene before any Jimple
+            // body materializes. A selected WRITE_SITE must keep its exact
+            // original unit index in the later concolic weave.
+            Options.v().set_num_threads(1);
+            MallorySharedInitializationSplitter.install();
+            PhaseOptions.v().setPhaseOption("jb.lns", "sort-locals:true");
+            PhaseOptions.v().setPhaseOption("cg", "off");
+            graphCheckerBasicClasses();
+        }
         Options.v().set_process_dir(dirs);
         Options.v().set_soot_classpath(String.join(File.pathSeparator, classpath));
         Scene.v().loadNecessaryClasses();
+        if (originalSeed) orderSceneClassesByName();
         // The original GraphChecker installs this factory after class loading
         // and before the first body is materialized.  Static region/site IDs
         // must use the same content-derived names as its weaver.
         MalloryLambdaClassNames.install();
-        PackManager.v().getPack("jtp").add(new Transform("jtp.malloryStaticCapture",
-                new BodyTransformer() {
-                    @Override protected void internalTransform(Body body, String phase,
-                                                               Map<String, String> options) {
-                        jtpBodies.put(body.getMethod().getSignature(), (Body) body.clone());
-                    }
-                }));
+        if (originalSeed) {
+            // GraphCheckerTransformer runs in wjtp and reads active Jimple
+            // bodies there.  jtp can rewrite their unit order afterwards;
+            // capturing at jtp made a static #u48 refer to a different unit
+            // when GraphChecker's concolic weave later read #u48 in wjtp.
+            PackManager.v().getPack("wjtp").add(new Transform("wjtp.malloryStaticCapture",
+                    new SceneTransformer() {
+                        @Override protected void internalTransform(String phase,
+                                                                   Map<String, String> options) {
+                            List<SootClass> owners = new ArrayList<>(Scene.v().getApplicationClasses());
+                            owners.sort(Comparator.comparing(SootClass::getName));
+                            for (SootClass owner : owners) {
+                                List<SootMethod> sorted = new ArrayList<>(owner.getMethods());
+                                sorted.sort(Comparator.comparing(SootMethod::getSignature));
+                                for (SootMethod method : sorted) {
+                                    if (!method.isConcrete()) continue;
+                                    try {
+                                        jtpBodies.put(method.getSignature(),
+                                                (Body) method.retrieveActiveBody().clone());
+                                    } catch (RuntimeException unavailable) {
+                                        analysisGaps.add("wjtp_body_unavailable:"
+                                                + method.getSignature());
+                                    }
+                                }
+                            }
+                        }
+                    }));
+        } else {
+            PackManager.v().getPack("jtp").add(new Transform("jtp.malloryStaticCapture",
+                    new BodyTransformer() {
+                        @Override protected void internalTransform(Body body, String phase,
+                                                                   Map<String, String> options) {
+                            jtpBodies.put(body.getMethod().getSignature(), (Body) body.clone());
+                        }
+                    }));
+        }
         PackManager.v().runPacks();
         index();
         System.err.println("Mallory static scope indexed " + methods.size()
@@ -273,6 +319,36 @@ public final class ScopePlanner {
         return output();
     }
 
+    private static void graphCheckerBasicClasses() {
+        Class<?>[] basics = {java.io.PrintStream.class, System.class,
+                Thread.class, Throwable.class};
+        for (Class<?> basic : basics) {
+            Scene.v().addBasicClass(basic.getCanonicalName(),
+                    SootClass.SIGNATURES);
+            for (Class<?> inner : basic.getDeclaredClasses()) {
+                Scene.v().addBasicClass(inner.getName(),
+                        SootClass.SIGNATURES);
+            }
+        }
+        Scene.v().addBasicClass(
+                "edu.uva.liftlab.graphchecker.runtime.CausynthTraceRecorder",
+                SootClass.SIGNATURES);
+        Scene.v().addBasicClass("java.lang.Object[]", SootClass.HIERARCHY);
+        Scene.v().addBasicClass("java.lang.String[]", SootClass.HIERARCHY);
+    }
+
+    private static void orderSceneClassesByName() {
+        Scene scene = Scene.v();
+        for (Chain<SootClass> chain : Arrays.asList(scene.getClasses(),
+                scene.getApplicationClasses(), scene.getLibraryClasses(),
+                scene.getPhantomClasses())) {
+            List<SootClass> named = new ArrayList<>(chain);
+            named.sort(Comparator.comparing(SootClass::getName));
+            chain.clear();
+            chain.addAll(named);
+        }
+    }
+
     /**
      * Experimental exact GraphChecker engine path. The optional bridge lives
      * in the ORIGINAL GraphChecker package so it can call the package-private
@@ -282,9 +358,9 @@ public final class ScopePlanner {
     private JsonObject originalGraphCheckerSeed(List<String> dirs, JsonObject analysis) {
         if (fatalThrow == null) throw new IllegalArgumentException(
                 "original GraphChecker seed requires one explicit fatal throw");
-        // runPacks() lowers active bodies after jtp. GraphChecker's original
-        // analyzer reads retrieveActiveBody() and requires Jimple ThrowStmt,
-        // so restore the exact jtp-entry snapshots ONLY for this opt-in path.
+        // GraphChecker's original analyzer reads retrieveActiveBody() in
+        // wjtp. Restore those exact wjtp snapshots after runPacks() so later
+        // jtp transforms cannot change their unit indices on this opt-in path.
         for (SootClass owner : Scene.v().getApplicationClasses()) {
             for (SootMethod method : owner.getMethods()) {
                 Body captured = jtpBodies.get(method.getSignature());

@@ -487,6 +487,15 @@ public class ScopePlannerTest {
         assertTrue(weaveLambdaNames.toString(), weaveLambdaNames.containsAll(staticLambdaNames));
     }
 
+    @Test
+    public void originalSeedUsesIdenticalSharedInitializationSplitter() throws Exception {
+        assertArrayEquals("The original seed and concolic weave must lower the same Jimple",
+                Files.readAllBytes(Paths.get("original_engine/vendor/src/main/java/edu/uva/"
+                        + "liftlab/graphchecker/SharedInitializationSplitter.java")),
+                Files.readAllBytes(Paths.get("src/main/java/edu/uva/liftlab/graphchecker/"
+                        + "SharedInitializationSplitter.java")));
+    }
+
     private static java.util.Set<String> lambdaNames(JsonObject scope) {
         java.util.Set<String> names = new java.util.HashSet<>();
         for (JsonElement entry : scope.getAsJsonArray("scopeSites")) {
