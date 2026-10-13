@@ -153,6 +153,24 @@ Mallory.dispatch.graphchecker_port.test_launcher -v` for the isolated tests.
 
 ## 102-check result table
 
+Completed campaigns may live in different immutable `/proj` roots. Import a
+terminal campaign only after its original config, checkpoint, summary, and
+every trial result/archive pass read-only verification:
+
+```bash
+python3 -m Mallory.dispatch.graphchecker_port.import_case \
+  --case-id HBASE-02 \
+  --config /proj/silentfailure-PG0/ZhenyuLi/mallory-hbase02-v1/config/case.json \
+  --campaign /proj/silentfailure-PG0/ZhenyuLi/mallory-hbase02-v1/campaign
+```
+
+The importer writes a content-addressed copy of only the small table receipts
+under `data/mallory/graphchecker_port/imports/`, preserves prior snapshots,
+and atomically selects the latest verified one in `import-index.json`. Full
+trial traces remain in their source campaign. A running campaign or changed
+trial artifact cannot be imported. Re-importing the same terminal campaign is
+safe after an interrupted index update.
+
 `aggregate.py` reads native `checkpoint.json` and `summary.json` from each
 case's owner host via read-only SSH (node0 locally). It emits all 102 inventory
 rows, including checks with no config or execution. It records the exact
@@ -179,8 +197,11 @@ python3 -m Mallory.dispatch.graphchecker_port.aggregate \
   --inventory Mallory/cases/inventory.json \
   --config-root data/mallory/graphchecker_port/configs \
   --state-root data/mallory/graphchecker_port/cases \
+  --import-index data/mallory/graphchecker_port/import-index.json \
   --out data/mallory/graphchecker_port/final-results.tsv
 ```
+
+Omit `--import-index` until the first terminal campaign has been imported.
 
 Use `--local-only` only when receipts from all hosts have already been mirrored
 into the supplied state root. Without `--out`, the table prints to stdout.

@@ -56,12 +56,17 @@ def _load_json(path: Path) -> dict | None:
 
 class ReceiptReader:
     def __init__(self, state_root: Path, *, remote: bool,
-                 ssh_key: Path | None = None):
+                 ssh_key: Path | None = None,
+                 imports: dict[str, Path] | None = None):
         self.state_root = state_root.resolve()
         self.remote = remote
         self.ssh_key = ssh_key or (Path.home() / ".ssh/id_ed25519_nodes")
+        self.imports = imports or {}
 
     def read(self, case_id: str, host: str) -> tuple[dict | None, dict | None]:
+        if case_id in self.imports:
+            root = self.imports[case_id]
+            return _load_json(root / "checkpoint.json"), _load_json(root / "summary.json")
         if not self.remote or host == "node0":
             root = self.state_root / case_id
             return _load_json(root / "checkpoint.json"), _load_json(root / "summary.json")
@@ -85,6 +90,36 @@ class ReceiptReader:
         if any(value is not None and not isinstance(value, dict) for value in values):
             raise ValueError(f"invalid remote receipt object from {host}")
         return values[0], values[1]
+
+
+def load_import_index(path: Path) -> dict[str, Path]:
+    """Resolve only complete, hash-verified local receipt snapshots."""
+    index = _load_json(path)
+    if index is None or index.get("schema_version") != 1 or not isinstance(
+            index.get("cases"), dict):
+        raise ValueError("invalid import index")
+    root = path.resolve().parent
+    result = {}
+    for case_id, relative in index["cases"].items():
+        if (not isinstance(case_id, str) or not CASE_ID.fullmatch(case_id)
+                or not isinstance(relative, str)
+                or not re.fullmatch(r"imports/" + re.escape(case_id) +
+                                    r"/[0-9a-f]{16}-[0-9a-f]{12}", relative)):
+            raise ValueError("invalid imported case path")
+        directory = root / relative
+        receipt = _load_json(directory / "import-receipt.json")
+        if receipt is None or receipt.get("schema_version") != 1 or (
+                receipt.get("case_id") != case_id):
+            raise ValueError(f"invalid import receipt: {case_id}")
+        hashes = receipt.get("source_sha256")
+        if not isinstance(hashes, dict) or any(
+                not isinstance(hashes.get(name), str) or
+                sha256(directory / ("config.json" if name == "config" else name + ".json"))
+                != hashes[name]
+                for name in ("config", "checkpoint", "summary")):
+            raise ValueError(f"imported receipt bytes changed: {case_id}")
+        result[case_id] = directory
+    return result
 
 
 def _review_rows(path: Path | None) -> dict[str, dict]:
@@ -230,7 +265,8 @@ def _workload(item: dict, config: dict | None) -> tuple[str, str, str]:
 
 def aggregate(inventory_path: Path, config_root: Path, state_root: Path,
               reader: ReceiptReader, review_path: Path | None = None,
-              quality_path: Path | None = DEFAULT_QUALITY_FILE) -> list[dict]:
+              quality_path: Path | None = DEFAULT_QUALITY_FILE,
+              imports: dict[str, Path] | None = None) -> list[dict]:
     inventory = _load_json(inventory_path)
     if inventory is None or inventory.get("schema_version") != 1:
         raise ValueError("invalid inventory")
@@ -251,7 +287,9 @@ def aggregate(inventory_path: Path, config_root: Path, state_root: Path,
         function = target["function"]
         head = function.split("(", 1)[0]
         clazz, method = head.rsplit(".", 1)
-        config_path = config_root / (case_id + ".json")
+        imported = (imports or {}).get(case_id)
+        config_path = (imported / "config.json" if imported is not None else
+                       config_root / (case_id + ".json"))
         config = _load_json(config_path)
         if config is not None and config.get("case_id") != case_id:
             raise ValueError(f"config case identity mismatch: {case_id}")
@@ -272,8 +310,10 @@ def aggregate(inventory_path: Path, config_root: Path, state_root: Path,
                     "junit_method": junit_method,
                     "config_sha256": config_digest or "",
                     "receipt_host": host,
-                    "checkpoint_path": str(state_root / case_id / "checkpoint.json"),
-                    "summary_path": str(state_root / case_id / "summary.json")})
+                    "checkpoint_path": str((imported if imported is not None else
+                                            state_root / case_id) / "checkpoint.json"),
+                    "summary_path": str((imported if imported is not None else
+                                         state_root / case_id) / "summary.json")})
         row["quality_state"] = "unassessed"
         try:
             checkpoint, summary = reader.read(case_id, host)
@@ -338,6 +378,8 @@ def main() -> int:
                         default=Path("data/mallory/graphchecker_port/cases"))
     parser.add_argument("--review-file", type=Path)
     parser.add_argument("--quality-file", type=Path, default=DEFAULT_QUALITY_FILE)
+    parser.add_argument("--import-index", type=Path,
+                        help="Atomically selected, locally verified campaign snapshots")
     parser.add_argument("--local-only", action="store_true",
                         help="Read all case receipts locally; intended for mirrored fixtures")
     parser.add_argument("--ssh-key", type=Path,
@@ -346,10 +388,11 @@ def main() -> int:
                         help="Atomically replace a derived TSV; trial data stays read-only")
     args = parser.parse_args()
     state_root = args.state_root.resolve()
+    imports = load_import_index(args.import_index) if args.import_index else {}
     reader = ReceiptReader(state_root, remote=not args.local_only,
-                           ssh_key=args.ssh_key)
+                           ssh_key=args.ssh_key, imports=imports)
     rows = aggregate(args.inventory.resolve(), args.config_root.resolve(), state_root,
-                     reader, args.review_file, args.quality_file)
+                     reader, args.review_file, args.quality_file, imports)
     output = render_tsv(rows)
     if args.out is None:
         print(output, end="")
