@@ -421,9 +421,16 @@ public final class ScopePlanner {
         }
         if (originalTargetRegion.isEmpty()) throw new IllegalStateException(
                 "original GraphChecker target has no selected region: " + fatalThrow.id);
-        JsonObject checkRow = row("TARGET_SITE", target, "", "");
-        checkRow.addProperty("regionId", originalTargetRegion);
-        addOriginal(rows, seen, checkRow);
+        // The inventory may name the throw as its target. Runtime feedback
+        // must anchor the controlling check, which is reached in the healthy
+        // run, rather than the exceptional throw that healthy execution skips.
+        List<Site> anchors = checkSites.isEmpty()
+                ? Collections.singletonList(target) : checkSites;
+        for (Site check : anchors) {
+            JsonObject checkRow = row("TARGET_SITE", check, "", "");
+            checkRow.addProperty("regionId", originalTargetRegion);
+            addOriginal(rows, seen, checkRow);
+        }
         JsonObject throwRow = row("THROW_SITE", fatalThrow, "", "");
         throwRow.addProperty("regionId", originalTargetRegion);
         addOriginal(rows, seen, throwRow);
@@ -527,7 +534,7 @@ public final class ScopePlanner {
         result.addProperty("schemaVersion", 1);
         result.addProperty("analysisKind", "original_graphchecker_seed_backward");
         result.addProperty("caseId", string(config, "case_id", ""));
-        result.addProperty("targetSiteId", target.id);
+        result.addProperty("targetSiteId", anchors.get(0).id);
         result.addProperty("throwSiteId", fatalThrow.id);
         result.addProperty("sootDependencyClasspathSha256", sha256Full(
                 String.join(File.pathSeparator, strings(analysisConfig.get("classpath")))));
