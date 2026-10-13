@@ -32,8 +32,35 @@ public class TrialGraphTest {
         }
         String expected = TrialGraph.read(plain).feedback("T", null).toString();
         assertEquals(expected, TrialGraph.read(compressed).feedback("T", null).toString());
+        assertEquals("[\"block1\"]", TrialGraph.read(compressed).feedback("T", null)
+                .getAsJsonArray("globalCoverageSiteIds").toString());
         assertEquals(1, TrialGraph.read(compressed).feedback("T", null)
                 .getAsJsonObject("gaps").get("TRACE_ROW_INVALID").getAsInt());
+    }
+
+    @Test public void targetAbsentGlobalCoverageIsSortedDistinctAndCompact()
+            throws Exception {
+        JsonObject small = repeatedTargetAbsentCoverage(20).feedback("missing", null);
+        JsonObject large = repeatedTargetAbsentCoverage(2000).feedback("missing", null);
+        assertFalse(large.get("targetReached").getAsBoolean());
+        assertEquals("[]", large.getAsJsonArray("closureCoverageSiteIds").toString());
+        assertEquals("[\"a\",\"m\",\"z\"]",
+                large.getAsJsonArray("globalCoverageSiteIds").toString());
+        assertEquals(small, large);
+        assertTrue(large.toString().length() < 1200);
+    }
+
+    private static TrialGraph repeatedTargetAbsentCoverage(int repeats) throws Exception {
+        JsonObject[] rows = new JsonObject[repeats + 2];
+        rows[0] = row("kind", "ACTIVATION", "occurrenceId", "o1",
+                "node", "server", "regionId", "R", "seq", 1);
+        for (int index = 0; index < repeats; index++) {
+            rows[index + 1] = row("kind", "COVERAGE", "occurrenceId", "o1",
+                    "siteId", index % 2 == 0 ? "z" : "a", "seq", index + 2);
+        }
+        rows[repeats + 1] = row("kind", "COVERAGE", "siteId", "m",
+                "seq", repeats + 2);
+        return graph(rows);
     }
 
     @Test public void healthySummaryMatchesFullPriorForMultiTargetNovelty()

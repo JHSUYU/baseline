@@ -39,6 +39,7 @@ public final class TrialGraph {
     private final List<JsonObject> targets = new ArrayList<>();
     private final Map<String, Set<String>> doors = new LinkedHashMap<>();
     private final Map<String, List<CoverageEvent>> coverageRows = new LinkedHashMap<>();
+    private final Set<String> globalCoverageSiteIds = new TreeSet<>();
     private final Map<String, List<JsonObject>> doorRows = new LinkedHashMap<>();
     private PriorSummary priorSummary;
 
@@ -205,6 +206,10 @@ public final class TrialGraph {
             if ("COVERAGE".equals(kind)) {
                 String occurrence = value(row, "occurrenceId");
                 String site = value(row, "siteId");
+                // Global code coverage is useful even when no target occurs.
+                // Keep it separate from attributed, cutoff-bounded closure
+                // coverage; a static MAY relation cannot create a causal hit.
+                if (!site.isEmpty()) globalCoverageSiteIds.add(site);
                 if (occurrence.isEmpty() || site.isEmpty()) gap("COVERAGE_UNATTRIBUTED");
                 else {
                     coverageRows.computeIfAbsent(occurrence,
@@ -747,6 +752,8 @@ public final class TrialGraph {
         row.addProperty("newClosureEdges", newEdgeFamilies.size());
         row.addProperty("closureCoverageSites", covered.size());
         row.addProperty("newClosureCoverageSites", newCoverage);
+        row.add("globalCoverageSiteIds", new com.google.gson.Gson().toJsonTree(
+                globalCoverageSiteIds));
         row.add("closureOccurrenceIds", new com.google.gson.Gson().toJsonTree(closure));
         row.add("closureOccurrenceCutoffs", new com.google.gson.Gson().toJsonTree(exact.cutoffs));
         // Keep throw ancestry per event. A check in one request must not make
