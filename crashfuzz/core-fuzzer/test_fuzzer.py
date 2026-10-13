@@ -376,6 +376,19 @@ class CoverageIoTest(unittest.TestCase):
         state['temporal_diversity_version'] = 2
         self.assertEqual(choose_next_sequence(state), 0)
 
+    def test_new_io_site_precedes_repeated_timing_variants(self):
+        later = {**A, 'hitOrdinal': 4}
+        state = {'completed': [{'sequence': [A]}],
+                 'queue': [{'sequence': [later], 'priority': 100, 'created': 1},
+                           {'sequence': [B], 'priority': 10, 'created': 2}],
+                 'temporal_diversity_version': 2,
+                 'site_diversity_version': 2}
+        self.assertEqual(choose_next_sequence(state), 1)
+        # A recurring call can run at a different distributed state, so a
+        # periodic temporal slot still explores the later observation.
+        state['completed'] += [{'sequence': [A]}, {'sequence': [B]}]
+        self.assertEqual(choose_next_sequence(state), 0)
+
     def test_zookeeper_fault_uses_connection_loss_and_exact_identity(self):
         observed = {**A, 'sourceKey':
                     '<org.apache.solr.common.cloud.SolrZkClient: byte[] getData(java.lang.String)>'}
