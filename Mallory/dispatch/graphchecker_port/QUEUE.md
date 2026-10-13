@@ -2,8 +2,9 @@
 
 `queue.py` is a lane worker for the native GraphChecker Mallory baseline. Run
 one worker on each owner host (`node0`, `node1`, or `node2`). Each worker takes
-a host `flock` lease and executes one inventory check at a time; independent
-hosts can run concurrently. Its default mode is a read-only plan.
+the same per-UID, per-host `/tmp/mallory-gc-queue-<uid>-<host>.lock` lease,
+independent of its `state_root`, and executes one inventory check at a time;
+independent hosts can run concurrently. Its default mode is a read-only plan.
 
 ```bash
 python3 -m Mallory.dispatch.graphchecker_port.queue --manifest /path/to/lane.json

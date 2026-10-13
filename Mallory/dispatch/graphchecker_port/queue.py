@@ -658,15 +658,35 @@ def _record_review_skip(document: dict, case_id: str, root: Path, kind: str) -> 
         _atomic_json(path, row)
 
 
+def _host_lease_path(host: str) -> Path:
+    """All state roots used by one UID on this host share one local lease."""
+    if host not in ("node0", "node1", "node2"):
+        raise ValueError("unknown queue host")
+    return Path("/tmp") / f"mallory-gc-queue-{os.getuid()}-{host}.lock"
+
+
+def _open_host_lease(host: str):
+    path = _host_lease_path(host)
+    flags = os.O_CREAT | os.O_RDWR | os.O_CLOEXEC | os.O_NOFOLLOW
+    descriptor = os.open(path, flags, 0o600)
+    try:
+        stat = os.fstat(descriptor)
+        if stat.st_uid != os.getuid() or stat.st_mode & 0o077:
+            raise ValueError(f"host lease has unsafe ownership or mode: {path}")
+        return os.fdopen(descriptor, "a+")
+    except BaseException:
+        os.close(descriptor)
+        raise
+
+
 def run_queue(document: dict, inventory: dict[str, dict], manifest_sha: str,
               *, max_cases: int | None = None) -> dict:
     if socket.gethostname().split(".")[0] != document["host"]:
         raise ValueError("run this lane only on its declared owner host")
     root = Path(document["state_root"])
     root.mkdir(parents=True, exist_ok=True)
-    lease_path = root / (".host-" + document["host"] + ".lock")
     completed = []
-    with lease_path.open("a+") as lease:
+    with _open_host_lease(document["host"]) as lease:
         fcntl.flock(lease, fcntl.LOCK_EX | fcntl.LOCK_NB)
         for case_id in document["case_ids"]:
             if max_cases is not None and len(completed) >= max_cases:

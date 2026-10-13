@@ -24,12 +24,20 @@ class QueueTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
+        lease_patch = mock.patch.object(queue, "_host_lease_path",
+                                        return_value=self.root / "host.lock")
+        lease_patch.start()
+        self.addCleanup(lease_patch.stop)
         rows = []
         for system, count in (("hdfs", 38), ("hbase", 30), ("solr", 21),
                               ("zookeeper", 13)):
             for index in range(1, count + 1):
                 case_id = f"{system.upper()}-{index:02d}"
                 rows.append({"case_id": case_id, "system": system,
+                             "target": {"source_path": "src/Example.java",
+                                        "function": "example.Example.check()",
+                                        "source_line": 42,
+                                        "target_exception": "java.io.IOException"},
                              "workload": {"selected_selector": "example.Test#test",
                                           "test_class": "example.Test",
                                           "test_method": "test"},
@@ -149,6 +157,17 @@ class QueueTests(unittest.TestCase):
         self.assertEqual("host_busy", result["outcomes"][0]["status"])
         self.assertFalse((self.state_root / "ZOOKEEPER-07").exists())
 
+    def test_distinct_state_roots_share_one_host_lease(self):
+        document, rows, digest = self.loaded()
+        other = dict(document)
+        other["state_root"] = str(self.root / "another-state-root")
+        with queue._open_host_lease("node0") as first:
+            queue.fcntl.flock(first, queue.fcntl.LOCK_EX | queue.fcntl.LOCK_NB)
+            with mock.patch.object(queue, "_live_graph_jobs", return_value=[]):
+                with self.assertRaises(BlockingIOError):
+                    queue.run_queue(other, rows, digest)
+        self.assertFalse((Path(other["state_root"]) / "ZOOKEEPER-07").exists())
+
     def test_recipe_rejects_hand_selected_io(self):
         self.document["recipe"]["steps"][0]["argv"].extend(
             ["--doors", "allkeys.get:12"])
@@ -242,6 +261,56 @@ class QueueTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "lacks compact trace"):
             queue._enable_compact_runtime_trace(
                 {"tool_classpath": [str(runtime)], "runner": {"jvm_args": []}}, {})
+
+    def test_imported_receipt_recovers_missing_result_without_source_campaign(self):
+        document, rows, digest = self.loaded()
+        case = self.state_root / "ZOOKEEPER-07"
+        write(case / "queue-state.json", {
+            "schema_version": 1, "case_id": "ZOOKEEPER-07",
+            "manifest_sha256": digest, "phase": "imported",
+            "attempts": [{"elapsed_seconds": 12.5}]})
+        config = {"case_id": "ZOOKEEPER-07"}
+        checkpoint = {"case_id": "ZOOKEEPER-07", "terminal": True}
+        summary = {"case_id": "ZOOKEEPER-07", "status": "complete_trial_budget",
+                   "completed_fault_trials": 8, "strict_trials": 5,
+                   "trial_elapsed_seconds": 45.25}
+        source_config = self.root / "missing-source-config.json"
+        source_campaign = self.root / "missing-source-campaign"
+        config_sha = sha256(self._write_temp_json("config", config))
+        checkpoint_sha = sha256(self._write_temp_json("checkpoint", checkpoint))
+        relative = f"imports/ZOOKEEPER-07/{config_sha[:16]}-{checkpoint_sha[:12]}"
+        snapshot = self.import_root / relative
+        write(snapshot / "config.json", config)
+        write(snapshot / "checkpoint.json", checkpoint)
+        write(snapshot / "summary.json", summary)
+        hashes = {name: sha256(snapshot / ("config.json" if name == "config"
+                                                else name + ".json"))
+                  for name in ("config", "checkpoint", "summary")}
+        write(snapshot / "import-receipt.json", {
+            "schema_version": 1, "case_id": "ZOOKEEPER-07",
+            "source_campaign": str(source_campaign),
+            "source_paths": {"config": str(source_config)},
+            "source_sha256": hashes})
+        write(self.import_root / "import-index.json", {
+            "schema_version": 1, "cases": {"ZOOKEEPER-07": relative}})
+        with mock.patch.object(queue, "_live_graph_jobs", return_value=[]):
+            planned = queue.plan(document, rows, digest)
+            self.assertEqual("ready_result_receipt", planned["cases"][0]["status"])
+            outcome = queue.run_queue(document, rows, digest)
+        self.assertEqual("result_receipt_recovered", outcome["outcomes"][0]["status"])
+        result = queue._object(case / "result.json")
+        self.assertEqual(45.25, result["trial_elapsed_seconds"])
+        self.assertEqual(12.5, result["queue_launcher_elapsed_seconds"])
+        self.assertEqual(str(source_campaign), result["campaign"])
+        self.assertEqual(str(source_config), result["config"])
+        with mock.patch.object(queue, "_live_graph_jobs", return_value=[]):
+            self.assertEqual("skip_imported_terminal",
+                             queue.plan(document, rows, digest)["cases"][0]["status"])
+
+    def _write_temp_json(self, name: str, value: object) -> Path:
+        path = self.root / (name + ".json")
+        write(path, value)
+        return path
 
 
 if __name__ == "__main__":
