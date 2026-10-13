@@ -634,6 +634,42 @@ def selected_target_throw_lines(selection: dict[str, Any],
     return sorted(lines)
 
 
+def selected_target_control_branches(selection: dict[str, Any],
+                                     target: dict[str, Any],
+                                     throw_lines: list[int]) -> list[str]:
+    """Use Soot's branch-to-throw relation to observe an exact target check.
+
+    A Soot throw unit is not necessarily an ASM branch or a source-line check
+    probe.  Its controlling branches are independently recorded at runtime.
+    Restrict the relation to the same typed, selected throw as the oracle.
+    """
+    if not throw_lines:
+        return []
+    branches = {row.get("site_id"): row.get("line")
+                for row in selection.get("branches", [])
+                if row.get("method") == target["method"] and
+                isinstance(row.get("line"), int)}
+    selected = [site for site in selection.get("target_throw_sites", [])
+                if site.get("method") == target["method"] and
+                site.get("thrown_type") == target["exception_type"] and
+                site.get("line") in throw_lines and
+                (site.get("soot_site_id") == target.get("site_id") or
+                 site.get("line") == selection.get("target_selected_line"))]
+    controlled = {branch for site in selected
+                  for branch in site.get("controlled_by", [])
+                  if branch in branches}
+    if not controlled:
+        return []
+    check_line = selection.get("target_check_line")
+    if not isinstance(check_line, int):
+        check_line = selection.get("target_selected_line")
+    if not isinstance(check_line, int):
+        return sorted(controlled)
+    nearest = min(abs(branches[branch] - check_line) for branch in controlled)
+    return sorted(branch for branch in controlled
+                  if abs(branches[branch] - check_line) == nearest)
+
+
 def enqueue_extensions(state: dict[str, Any], sequence: list[dict[str, Any]],
                        result: dict[str, Any], max_faults: int,
                        static_priorities: dict[str, int] | None = None,
@@ -1350,6 +1386,14 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
             if selected_lines and "throw_event" not in target:
                 target.update(throw_event="EXPLICIT_THROW",
                               explicit_throw_lines=selected_lines)
+            if target.get("check_events") == ["CHECK_REACHED"]:
+                controls = selected_target_control_branches(
+                    selection, target, selected_lines)
+                if controls:
+                    target["check_events"] = ["CHECK_REACHED", "BRANCH"]
+                    target["check_site_ids"] = sorted(set(
+                        target.get("check_site_ids", []) + controls +
+                        ([target["site_id"]] if target.get("site_id") else [])))
             config = {**config, "target": target,
                       "io_scope": {"site_ids": [row["site_id"]
                                                for row in selection["io_calls"]]},

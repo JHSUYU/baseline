@@ -12,6 +12,7 @@ from fuzzer import (archive_trial_attempts, budget_has_room, campaign,
                     in_io_scope, point_from_event,
                     rows, static_reason_priority, strict_injection,
                     trace_feedback, stable_occurrence,
+                    selected_target_control_branches,
                     selected_target_throw_lines, validate,
                     write_case_result, write_trial)
 
@@ -235,6 +236,48 @@ class CoverageIoTest(unittest.TestCase):
         target = {'method': TARGET, 'site_id': TARGET + '#u11',
                   'exception_type': 'example.TargetException'}
         self.assertEqual(selected_target_throw_lines(selection, target), [23])
+
+    def test_soot_throw_control_branch_recovers_exact_check_observation(self):
+        guard = TARGET + '#u4'
+        ancestor = TARGET + '#u2'
+        selection = {'target_check_line': 20, 'target_selected_line': 23,
+                     'branches': [{'method': TARGET, 'site_id': ancestor,
+                                   'line': 10},
+                                  {'method': TARGET, 'site_id': guard,
+                                   'line': 20}],
+                     'target_throw_sites': [
+                         {'method': TARGET, 'line': 23,
+                          'soot_site_id': TARGET + '#u11',
+                          'thrown_type': 'example.TargetException',
+                          'controlled_by': [ancestor, guard]},
+                         {'method': TARGET, 'line': 30,
+                          'soot_site_id': TARGET + '#u22',
+                          'thrown_type': 'example.TargetException',
+                          'controlled_by': [TARGET + '#u9']}]}
+        target = {'method': TARGET, 'site_id': TARGET + '#u11',
+                  'exception_type': 'example.TargetException',
+                  'check_events': ['CHECK_REACHED', 'BRANCH'],
+                  'check_site_ids': [TARGET + '#u11', guard],
+                  'throw_event': 'EXPLICIT_THROW',
+                  'explicit_throw_lines': [23]}
+        self.assertEqual(selected_target_control_branches(
+            selection, target, [23]), [guard])
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'trace.jsonl'
+            jsonl(path, [
+                {'event': 'METHOD_ENTER', 'seq': 1,
+                 'method': TARGET, 'callId': 7},
+                marker(A, 'FAULT_APPLIED', 2, faultId=fingerprint(A)),
+                {'event': 'BRANCH', 'seq': 3, 'method': TARGET,
+                 'siteId': guard, 'outcome': False, 'callId': 7},
+                {'event': 'EXPLICIT_THROW', 'seq': 4, 'method': TARGET,
+                 'siteId': TARGET + '#bytecode:throw:23:0',
+                 'sourceLine': 23, 'callId': 7,
+                 'runtimeType': 'example.TargetException'},
+            ])
+            feedback = trace_feedback(path, target)
+            self.assertTrue(feedback['target_reached_after_fault'])
+            self.assertTrue(feedback['oracle'])
 
     def test_selected_explicit_throw_counts_even_if_caught_in_method(self):
         with tempfile.TemporaryDirectory() as directory:
