@@ -4,12 +4,64 @@ This package reads the original 102-case inventory and the pinned three-host
 ownership map. It is separate from the former custom-graph campaigns and their
 import table. It never counts those old runs as native completion.
 
-For each case, place a validated `native_graphchecker_campaign` config at
-`CONFIG_ROOT/CASE-ID.json`. Its original JUnit class and method must match the
-inventory. The case's one-time original recording and concolic weave are
-prepared before dispatch. The dispatcher neither chooses I/O points by hand
-nor creates a substitute target. A missing config remains
-`needs_native_preparation` in the checklist.
+`prepare-next` derives each case's target and original JUnit selector from the
+102-row inventory. It invokes a **shared per-system native adapter**, which
+must produce original GraphChecker static scope, a REGION_STATE recording
+weave, a closed healthy recording, and the recording-derived concolic weave.
+The native adapter supplies a proof for each stage. The dispatcher checks
+those proofs and promotes a `native_graphchecker_campaign` config at
+`CONFIG_ROOT/CASE-ID.json`. It never supplies a hand-picked I/O door. The
+former custom-graph `prepare_case.py` scripts do not implement this protocol.
+At present, no real per-system recipe is included, so a missing config remains
+`needs_native_preparation`; this package alone does not make any case ready.
+
+The recipe file must pin the 102-row inventory SHA and contain one reusable
+command per implemented system. For example, the schema for one adapter is:
+
+```json
+{
+  "schema_version": 1,
+  "inventory_sha256": "<sha256 of inventory.json>",
+  "systems": {
+    "hdfs": {
+      "argv": ["python3", "/ABS/native-hdfs-adapter.py", "{request}", "{output}"],
+      "timeout_seconds": 3600,
+      "pins": {"/ABS/native-hdfs-adapter.py": "<sha256>"},
+      "source_tree_pins": {"/ABS/hadoop-source": "<file-tree-sha256>"},
+      "classpath_pins": {"/ABS/hdfs-classes": "<file-tree-sha256>"},
+      "mapping_pins": {"/ABS/hdfs-runtime-map.json": "<sha256>"},
+      "class_tree_pins": {"/ABS/hdfs-classes": "<class-tree-sha256>"}
+    }
+  }
+}
+```
+
+The adapter receives absolute `request.json` and output directory paths. It
+must emit `case.json`, `adapter-proof.json`, a static scope receipt, and a
+REGION_STATE recording-weave receipt. The proof names those receipts and
+original source evidence for the selected cluster JUnit. The request contains
+the check, original JUnit, and build identity, with no fault point list.
+Preparation fails closed if the original cluster JUnit or any original
+GraphChecker receipt cannot be verified.
+
+```bash
+python3 -m Mallory.native_graphchecker_dispatch prepare-next \
+  --host node1 --recipes /ABS/native-recipes.json \
+  --config-root /ABS/CONFIG_ROOT --state-root /ABS/NATIVE_STATE_ROOT
+```
+
+Each case has a locked preparation state under `STATE_ROOT/CASE-ID/preparation`.
+The cache key includes the inventory target and JUnit, pinned source bytes,
+classpath bytes, runtime mapping, adapter command, and verified source-built
+GraphChecker engine. Identical inputs reuse the static scope and both weaves;
+the dispatcher audits their receipt and output hashes before reuse. A changed
+input fails closed and requires a fresh isolated preparation directory. Each
+fault trial still runs the already woven original JUnit and creates a fresh
+session trace. Static analysis and weaving do not run inside the trial loop.
+If the controller disconnects during adapter execution, its PID and start
+ticks prevent a second launch; a closed adapter output can be adopted after
+the process exits. The recipe and produced config are host-local, so run
+`prepare-next` on each case's owner node.
 
 On each owner host, run one case at a time. `run-next` checks the physical host
 name (`node0`, `node1`, or `node2`) and uses a host lock plus a case lock.
@@ -74,5 +126,6 @@ assertion failure or JUnit exit code cannot stand in for `TARGET_THROW`.
 Receipt-level tests (no live distributed JUnit):
 
 ```bash
-python3 -m unittest Mallory.native_graphchecker_dispatch.test_checklist -v
+python3 -m unittest Mallory.native_graphchecker_dispatch.test_checklist \
+  Mallory.native_graphchecker_dispatch.test_preparation -v
 ```

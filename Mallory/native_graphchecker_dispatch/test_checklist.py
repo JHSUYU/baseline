@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import fcntl
+import hashlib
 import tempfile
 import unittest
 from pathlib import Path
@@ -74,6 +75,88 @@ class NativeChecklistTest(unittest.TestCase):
             "timeout_seconds": 30,
         }
         self.write(self.config_path, config)
+        weave = json.loads(weave_config.read_text())
+        receipt_path = woven / "native-original-weave-receipt.json"
+        origin = {
+            "recording_manifest_sha256": dispatch._sha(
+                recording / "streaming_trace_manifest.json"),
+            "recording_plan_sha256": dispatch._sha(Path(weave["task_plan"])),
+            "scheduler_source_sha256": "c" * 64,
+            "static_scope_map_sha256": dispatch._sha(static),
+        }
+        self.write(self.case_root / "recording-admission.json", {
+            "schema_version": 1, "origin": origin,
+            "recording_fingerprint": {
+                "engine_jar_sha256": "a" * 64,
+                "static_scope_map_sha256": dispatch._sha(static),
+                "candidate_graph_sha256": dispatch._sha(self.root / "graph.jsonl"),
+                "region_skeletons_sha256": dispatch._sha(self.root / "regions.jsonl"),
+                "trace_tree_sha256": "d" * 64,
+                "scheduler_source_sha256": "c" * 64,
+                "weave_receipt_sha256": dispatch._sha(receipt_path),
+                "weave_config_sha256": dispatch._sha(weave_config),
+            },
+        })
+        attempt = self.case_root / "preparation/attempt-fixture"
+        row_sha = hashlib.sha256(json.dumps(self.item, sort_keys=True,
+                                            separators=(",", ":")).encode()).hexdigest()
+        request = {"mode": dispatch.PREP_MODE, "case_id": self.case_id,
+                   "inventory_row_sha256": row_sha,
+                   "target": {"site_id": self.item["target"]["site_id"]},
+                   "original_junit": {"class": workload["test_class"],
+                                      "method": workload["test_method"]}}
+        self.write(attempt / "request.json", request)
+        self.write(attempt / "recipe.json", {"fixture": True})
+        proof = {"mode": "original_graphchecker_native_adapter",
+                 "case_id": self.case_id,
+                 "request_sha256": hashlib.sha256(json.dumps(
+                     request, sort_keys=True, separators=(",", ":")).encode()).hexdigest(),
+                 "original_cluster_junit_verified": True}
+        self.write(attempt / "output/adapter-proof.json", proof)
+        self.write(attempt / "output/static-scope-receipt.json", {"fixture": True})
+        self.write(attempt / "output/recording-weave-receipt.json", {"fixture": True})
+        self.write(attempt / "output/case.json", config)
+        recipe_file = self.root / "adapter-recipes.json"
+        self.write(recipe_file, {"fixture": True})
+        engine_file = self.root / "engine.jar"
+        engine_file.write_bytes(b"fixture engine")
+        cache_key = "0" * 64
+        prep_receipt = {
+            "schema_version": 1, "mode": dispatch.PREP_MODE,
+            "case_id": self.case_id, "inventory_row_sha256": row_sha,
+            "cache_key": cache_key,
+            "input_pins": [{"path": str(static), "sha256": dispatch._sha(static),
+                            "kind": "file"}],
+            "recipe_file_path": str(recipe_file),
+            "recipe_file_sha256": dispatch._sha(recipe_file),
+            "engine_jar_path": str(engine_file),
+            "engine_jar_sha256": dispatch._sha(engine_file),
+            "request_path": str(attempt / "request.json"),
+            "request_sha256": dispatch._sha(attempt / "request.json"),
+            "recipe_snapshot_path": str(attempt / "recipe.json"),
+            "recipe_snapshot_sha256": dispatch._sha(attempt / "recipe.json"),
+            "adapter_proof_path": str(attempt / "output/adapter-proof.json"),
+            "adapter_proof_sha256": dispatch._sha(attempt / "output/adapter-proof.json"),
+            "source_config_path": str(attempt / "output/case.json"),
+            "config_sha256": dispatch._sha(self.config_path),
+            "static_scope_receipt_path": str(attempt / "output/static-scope-receipt.json"),
+            "static_scope_receipt_sha256": dispatch._sha(
+                attempt / "output/static-scope-receipt.json"),
+            "recording_weave_receipt_path": str(
+                attempt / "output/recording-weave-receipt.json"),
+            "recording_weave_receipt_sha256": dispatch._sha(
+                attempt / "output/recording-weave-receipt.json"),
+            "recording_admission_sha256": dispatch._sha(
+                self.case_root / "recording-admission.json"),
+            "native_weave_receipt_sha256": dispatch._sha(receipt_path),
+            "original_cluster_junit_verified": True,
+        }
+        self.write(self.config_path.with_suffix(".prep.json"), prep_receipt)
+        self.write(self.case_root / "preparation/state.json", {
+            "status": "complete", "cache_key": cache_key,
+            "receipt_sha256": hashlib.sha256(json.dumps(
+                prep_receipt, sort_keys=True, separators=(",", ":")).encode()).hexdigest(),
+        })
         return config
 
     def make_trial(self, config: dict, name: str, *, healthy: bool,
@@ -127,6 +210,7 @@ class NativeChecklistTest(unittest.TestCase):
                 "engineJarSha256": "a" * 64,
                 "staticScopeMapSha256": dispatch._sha(
                     Path(config["recording"]["static_scope_map"])),
+                "staticScopeBundleSha256": "b" * 64,
                 "bridgeSourceSha256": dispatch._sha(
                     dispatch.BASE / "Mallory/native_graphchecker_feedback/NativeFeedbackMain.java"),
                 "nativeSessionSha256": session_sha, "maxTasks": 256,
@@ -166,32 +250,8 @@ class NativeChecklistTest(unittest.TestCase):
                                      reached=reached, throw=throw)
         weave = json.loads(Path(config["native_weave_config"]).read_text())
         receipt_path = Path(weave["output_classes"]) / "native-original-weave-receipt.json"
-        origin = {
-            "recording_manifest_sha256": dispatch._sha(
-                Path(config["recording"]["trace_dir"]) /
-                "streaming_trace_manifest.json"),
-            "recording_plan_sha256": dispatch._sha(Path(weave["task_plan"])),
-            "scheduler_source_sha256": "c" * 64,
-            "static_scope_map_sha256": dispatch._sha(Path(
-                config["recording"]["static_scope_map"])),
-        }
-        self.write(self.case_root / "recording-admission.json", {
-            "schema_version": 1, "origin": origin,
-            "recording_fingerprint": {
-                "engine_jar_sha256": "a" * 64,
-                "static_scope_map_sha256": dispatch._sha(Path(
-                    config["recording"]["static_scope_map"])),
-                "candidate_graph_sha256": dispatch._sha(Path(
-                    config["recording"]["candidate_graph"])),
-                "region_skeletons_sha256": dispatch._sha(Path(
-                    config["recording"]["region_skeletons"])),
-                "trace_tree_sha256": "d" * 64,
-                "scheduler_source_sha256": "c" * 64,
-                "weave_receipt_sha256": dispatch._sha(receipt_path),
-                "weave_config_sha256": dispatch._sha(Path(
-                    config["native_weave_config"])),
-            },
-        })
+        origin = json.loads((self.case_root /
+                             "recording-admission.json").read_text())["origin"]
         checkpoint = {
             "schema_version": 1, "case_id": self.case_id,
             "config_sha256": dispatch._sha(self.config_path),
@@ -245,6 +305,19 @@ class NativeChecklistTest(unittest.TestCase):
         self.make_complete(throw=True)
         events = self.case_root / "trials/r0001/iteration-native/fault-events.jsonl"
         events.write_text(events.read_text().replace("fresh:door", "wrong:door", 1))
+        row = dispatch.inspect_case(self.item, "node1", self.config_root,
+                                    self.state_root)
+        self.assertEqual("receipt_error", row["terminal_disposition"])
+
+    def test_changed_preparation_scope_or_input_invalidates_terminal(self) -> None:
+        self.make_complete(throw=True)
+        scope_receipt = self.case_root / "preparation/attempt-fixture/output/static-scope-receipt.json"
+        scope_receipt.write_text('{"changed":true}\n')
+        row = dispatch.inspect_case(self.item, "node1", self.config_root,
+                                    self.state_root)
+        self.assertEqual("receipt_error", row["terminal_disposition"])
+        self.make_complete(throw=True)
+        (self.root / "scope.jsonl").write_text('{"changed":true}\n')
         row = dispatch.inspect_case(self.item, "node1", self.config_root,
                                     self.state_root)
         self.assertEqual("receipt_error", row["terminal_disposition"])

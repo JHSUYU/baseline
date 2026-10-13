@@ -11,16 +11,19 @@ from pathlib import Path
 from .checklist import (DEFAULT_INVENTORY, DEFAULT_OWNERSHIP,
                         _sha, build_checklist, build_distributed_checklist,
                         run_next, tsv)
+from .preparation import prepare_next
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("status", "run-next"))
+    parser.add_argument("command", choices=("status", "prepare-next", "run-next"))
     parser.add_argument("--inventory", type=Path, default=DEFAULT_INVENTORY)
     parser.add_argument("--ownership", type=Path, default=DEFAULT_OWNERSHIP)
     parser.add_argument("--config-root", type=Path, required=True)
     parser.add_argument("--state-root", type=Path, required=True)
     parser.add_argument("--reviews", type=Path)
+    parser.add_argument("--recipes", type=Path,
+                        help="pinned per-system native adapter commands")
     parser.add_argument("--host", choices=("node0", "node1", "node2"))
     parser.add_argument("--format", choices=("json", "tsv"), default="json")
     parser.add_argument("--out", type=Path)
@@ -28,6 +31,16 @@ def main() -> None:
                         help="on node0, collect audited owner rows from node1/node2")
     parser.add_argument("--ssh-key", type=Path)
     args = parser.parse_args()
+    if args.command == "prepare-next":
+        if args.remote:
+            parser.error("--remote is status-only")
+        if not args.host or args.recipes is None:
+            parser.error("prepare-next requires --host and --recipes")
+        result = prepare_next(args.inventory, args.ownership, args.recipes,
+                              args.config_root, args.state_root, args.host,
+                              args.reviews)
+        print(json.dumps(result, sort_keys=True))
+        return
     if args.command == "run-next":
         if args.remote:
             parser.error("--remote is status-only")

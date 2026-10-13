@@ -22,6 +22,9 @@ from typing import Any
 
 from Mallory.native_graphchecker_campaign import campaign as native
 from Mallory.native_graphchecker_feedback.feedback import _session_digest, delta
+from Mallory.instrumentation.graphchecker_port.native_original_weave import (
+    class_tree_digest, file_tree_digest,
+)
 
 HERE = Path(__file__).resolve().parent
 BASE = HERE.parents[1]
@@ -30,6 +33,7 @@ DEFAULT_OWNERSHIP = BASE / "Mallory/dispatch/shards/ownership.json"
 CASE_ID = re.compile(r"^(HDFS|HBASE|SOLR|ZOOKEEPER)-[0-9]{2}$")
 HEX_SHA = re.compile(r"^[0-9a-f]{64}$")
 NATIVE_METHOD = "original-graphchecker-corpus-closureplanner"
+PREP_MODE = "original_graphchecker_native_preparation"
 FINISHED = {"complete_trial_budget", "complete_time_budget", "complete_queue"}
 FIELDS = (
     "case_id", "system", "system_version", "owner", "terminal_disposition",
@@ -76,6 +80,95 @@ def _same_checkpoint_summary(checkpoint: dict, summary: dict) -> None:
                 if key not in ("queue", "seen_plan_keys", "active")}
     if summary != expected:
         raise ValueError("native summary differs from terminal checkpoint")
+
+
+def verify_preparation_receipt(item: dict, config_file: Path,
+                               case_root: Path) -> dict:
+    """Verify the one-time static/recording/concolic preparation receipt."""
+    case_id = item["case_id"]
+    receipt_file = config_file.with_suffix(".prep.json")
+    if config_file.is_symlink() or receipt_file.is_symlink():
+        raise ValueError("native preparation uses a symlink")
+    receipt = _object(receipt_file)
+    if (receipt.get("schema_version") != 1 or receipt.get("mode") != PREP_MODE or
+            receipt.get("case_id") != case_id or
+            receipt.get("inventory_row_sha256") != hashlib.sha256(json.dumps(
+                item, sort_keys=True, separators=(",", ":")).encode()).hexdigest() or
+            receipt.get("config_sha256") != _sha(config_file) or
+            receipt.get("original_cluster_junit_verified") is not True):
+        raise ValueError("native preparation receipt/config identity mismatch")
+    prep_state = _object(case_root / "preparation/state.json")
+    if (prep_state.get("status") != "complete" or
+            prep_state.get("cache_key") != receipt.get("cache_key") or
+            hashlib.sha256(json.dumps(receipt, sort_keys=True,
+                                      separators=(",", ":")).encode()).hexdigest()
+            != prep_state.get("receipt_sha256")):
+        raise ValueError("native preparation cache identity changed")
+    for path_key, sha_key in (("recipe_file_path", "recipe_file_sha256"),
+                              ("engine_jar_path", "engine_jar_sha256")):
+        path = Path(receipt.get(path_key, ""))
+        if not path.is_file() or path.is_symlink() or _sha(path) != receipt.get(sha_key):
+            raise ValueError(f"native preparation input changed: {path_key}")
+    pins = receipt.get("input_pins")
+    if not isinstance(pins, list) or not pins:
+        raise ValueError("native preparation has no pinned inputs")
+    for pin in pins:
+        if not isinstance(pin, dict) or set(pin) != {"path", "sha256", "kind"}:
+            raise ValueError("invalid native preparation input pin")
+        path = Path(pin["path"])
+        if not path.is_absolute() or path.is_symlink():
+            raise ValueError("native preparation input uses unpinned path")
+        kind = pin["kind"]
+        if kind == "class_tree":
+            actual = class_tree_digest(path)
+        elif kind == "tree":
+            actual = file_tree_digest(path)
+        elif kind == "file_or_tree":
+            actual = _sha(path) if path.is_file() else file_tree_digest(path)
+        elif kind == "file":
+            actual = _sha(path)
+        else:
+            raise ValueError("invalid native preparation input kind")
+        if actual != pin["sha256"]:
+            raise ValueError(f"native preparation source/classpath/mapping changed: {path}")
+    prep_root = (case_root / "preparation").resolve()
+    for path_key, sha_key in (
+        ("request_path", "request_sha256"),
+        ("recipe_snapshot_path", "recipe_snapshot_sha256"),
+        ("adapter_proof_path", "adapter_proof_sha256"),
+        ("source_config_path", "config_sha256"),
+        ("static_scope_receipt_path", "static_scope_receipt_sha256"),
+        ("recording_weave_receipt_path", "recording_weave_receipt_sha256"),
+    ):
+        path = Path(receipt.get(path_key, "")).resolve(strict=True)
+        if not path.is_relative_to(prep_root) or path.is_symlink() or (
+                _sha(path) != receipt.get(sha_key)):
+            raise ValueError(f"native preparation artifact changed: {path_key}")
+    request = _object(Path(receipt["request_path"]))
+    proof = _object(Path(receipt["adapter_proof_path"]))
+    canonical_sha = hashlib.sha256(json.dumps(request, sort_keys=True,
+                                              separators=(",", ":")).encode()).hexdigest()
+    target, workload = item["target"], item["workload"]
+    if (request.get("mode") != PREP_MODE or request.get("case_id") != case_id or
+            request.get("inventory_row_sha256") != receipt["inventory_row_sha256"] or
+            request.get("target", {}).get("site_id") != target["site_id"] or
+            request.get("original_junit", {}).get("class") != workload.get("test_class") or
+            request.get("original_junit", {}).get("method") != workload.get("test_method") or
+            proof.get("mode") != "original_graphchecker_native_adapter" or
+            proof.get("case_id") != case_id or proof.get("request_sha256") != canonical_sha or
+            proof.get("original_cluster_junit_verified") is not True):
+        raise ValueError("native preparation request/proof differs from inventory")
+    admission = case_root / "recording-admission.json"
+    if (not admission.is_file() or
+            _sha(admission) != receipt.get("recording_admission_sha256")):
+        raise ValueError("native recording-derived admission changed")
+    config = _object(config_file)
+    weave = _object(Path(config["native_weave_config"]))
+    if _sha(Path(weave["output_classes"]) /
+            "native-original-weave-receipt.json") != receipt.get(
+                "native_weave_receipt_sha256"):
+        raise ValueError("native concolic weave receipt changed")
+    return receipt
 
 
 def _verified_native_summary(path: Path, iteration: Path, result: dict,
@@ -369,6 +462,21 @@ def inspect_case(item: dict, owner: str, config_root: Path, state_root: Path,
         if native_state_exists:
             row.update(terminal_disposition="receipt_error",
                        reason="native state exists without its case config")
+        else:
+            prep_state = case_root / "preparation/state.json"
+            if prep_state.is_file():
+                try:
+                    state = _object(prep_state)
+                    phase = state.get("status")
+                    if phase in ("running", "failed"):
+                        row.update(terminal_disposition=(
+                            "native_preparing" if phase == "running" else
+                            "native_preparation_failed"),
+                            status=phase, evidence=str(prep_state),
+                            reason=state.get("reason", ""))
+                except (OSError, ValueError) as failure:
+                    row.update(terminal_disposition="receipt_error",
+                               reason=str(failure))
         return row
     try:
         config = _object(config_file)
@@ -385,9 +493,11 @@ def inspect_case(item: dict, owner: str, config_root: Path, state_root: Path,
                 config["target_throw"]["exceptionClass"] != target[
                     "target_exception"]):
             raise ValueError("native target exception differs from inventory")
+        verify_preparation_receipt(item, config_file, case_root)
         row["native_target_site"] = config["target_site"]
         if not checkpoint_file.exists():
-            if native_state_exists:
+            if any((case_root / name).exists() for name in
+                   ("summary.json", "trials")):
                 raise ValueError("native trial/admission state exists without checkpoint")
             row["terminal_disposition"] = "ready"
             return row
