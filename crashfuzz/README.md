@@ -40,9 +40,13 @@ seed single-fault trials that may expose it.
 JUnit test, and uses new selected I/O and method/branch coverage to choose
 later plans. A fault counts only when its full runtime identity matches and
 the target check still executes afterward. Object identity hashes in generated
-thread names and temporary cluster ports are normalized across JUnit runs;
+thread names and temporary cluster ports, including HBase's
+`Listener at localhost/port` form, are normalized across JUnit runs;
 the I/O site, actor class, and hit ordinal remain part of the match. Repeated
 observations with the same normalized address also carry an occurrence ordinal.
+An I/O observation with unresolved actor identity is excluded from the fault
+queue and does not count as a replayable healthy I/O point when deciding
+whether to widen the Soot selection.
 For HDFS embedded-cluster DataNode actors, the agent adds the stable `dataN`
 slot from `dfs.datanode.data.dir` to the runtime address. If that slot cannot
 be resolved, the trace records `ACTOR_IDENTITY_GAP` and the fuzzer does not
