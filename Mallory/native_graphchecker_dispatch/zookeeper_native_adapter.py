@@ -14,6 +14,7 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 from Mallory.instrumentation.graphchecker_port import native_original_weave as weave
@@ -23,6 +24,12 @@ from .preparation import _atomic, _digest, _object, _sha
 PROFILE_MODE = "original_graphchecker_zookeeper_profile"
 GATE_MODE = "original_graphchecker_zookeeper_protocol_gate"
 SITE = re.compile(r"^<([^:]+): (.+)>#u([0-9]+)$")
+SESSION_FILES = (
+    "manifest.json", "activations.jsonl", "decisions.jsonl",
+    "exports.jsonl", "attaches.jsonl", "writes.jsonl", "reads.jsonl",
+    "roots.jsonl", "targets.jsonl", "gaps.jsonl", "obligations.jsonl",
+    "expressions.jsonl", "schedule.jsonl",
+)
 
 
 def _paths(values: object, label: str) -> list[Path]:
@@ -33,6 +40,86 @@ def _paths(values: object, label: str) -> list[Path]:
            for path in paths):
         raise ValueError(f"{label} has an absent or mutable path")
     return paths
+
+
+def _verify_closed_session(gate: dict) -> None:
+    """Admit a session only with a pinned original SessionReader verdict.
+
+    The original SessionManifest does not state closure.  Its row files must
+    be read by SessionReader; the protocol gate pins that verifier's source,
+    build, receipt, and every byte of the session read by it.
+    """
+    session = Path(gate.get("session_dir_path", ""))
+    manifest = Path(gate.get("session_manifest_path", ""))
+    if (not session.is_absolute() or not session.is_dir() or
+            session.is_symlink() or manifest != session / "manifest.json" or
+            any(not (session / name).is_file() or
+                (session / name).is_symlink() for name in SESSION_FILES) or
+            any(path.is_symlink() for path in session.rglob("*")) or
+            weave.file_tree_digest(session) != gate.get("session_tree_sha256")):
+        raise ValueError("ZooKeeper gate original session tree changed")
+    for name in ("session_reader_receipt", "session_reader_verifier_source"):
+        path = Path(gate.get(f"{name}_path", ""))
+        if (not path.is_absolute() or not path.is_file() or path.is_symlink() or
+                _sha(path) != gate.get(f"{name}_sha256")):
+            raise ValueError(f"ZooKeeper SessionReader proof changed: {name}")
+    artifact = Path(gate.get("session_reader_verifier_artifact_path", ""))
+    if (not artifact.is_absolute() or not artifact.exists() or
+            artifact.is_symlink() or
+            (_sha(artifact) if artifact.is_file() else
+             weave.file_tree_digest(artifact)) != gate.get(
+                "session_reader_verifier_artifact_sha256")):
+        raise ValueError("ZooKeeper SessionReader verifier build changed")
+    receipt = _object(Path(gate["session_reader_receipt_path"]))
+    wire_sites = gate.get("schedule_wire_sites")
+    if (not isinstance(wire_sites, str) or not wire_sites or
+            any(not site.strip() for site in wire_sites.split(",")) or
+            len(set(wire_sites.split(","))) != len(wire_sites.split(","))):
+        raise ValueError("ZooKeeper gate lacks exact typed wire sites")
+    if (receipt.get("mode") != "original_session_reader_complete" or
+            receipt.get("session_reader_incomplete") != "" or
+            receipt.get("session_role") != "SEED" or
+            receipt.get("schedule_wire_sites") != wire_sites or
+            not isinstance(receipt.get("schedule_wire_pairs"), int) or
+            isinstance(receipt.get("schedule_wire_pairs"), bool) or
+            receipt["schedule_wire_pairs"] <= 0 or
+            receipt.get("schedule_pairing_gaps") != 0 or
+            receipt.get("gap_rows") != 0 or
+            receipt.get("session_dir_path") != str(session) or
+            receipt.get("session_tree_sha256") != gate["session_tree_sha256"] or
+            receipt.get("session_manifest_sha256") != gate[
+                "session_manifest_sha256"] or
+            receipt.get("engine_jar_sha256") != gate["engine_jar_sha256"]):
+        raise ValueError("ZooKeeper gate original SessionReader did not close")
+    manifest_row = _object(manifest)
+    if (manifest_row.get("kind") != "SESSION_MANIFEST" or
+            manifest_row.get("schemaVersion") != 2 or
+            manifest_row.get("sessionId") != session.name or
+            manifest_row.get("role") != "SEED" or
+            receipt.get("session_id") != session.name):
+        raise ValueError("ZooKeeper gate original SessionManifest is invalid")
+
+
+def _rerun_session_reader(gate: dict, java: Path) -> None:
+    """Recheck a gated session with the source-built original reader now."""
+    artifact = Path(gate["session_reader_verifier_artifact_path"])
+    classpath = os.pathsep.join((str(artifact.resolve(strict=True)),
+                                 _original_cp([])))
+    with tempfile.TemporaryDirectory(prefix="mallory-session-gate-") as tmp:
+        fresh_path = Path(tmp) / "session-reader.json"
+        command = [str(java.resolve(strict=True)),
+                   f"-Dcausynth.engine.jar={native.JAR.resolve(strict=True)}",
+                   f"-Dcausynth.typed.wire.sites={gate['schedule_wire_sites']}",
+                   "-cp", classpath,
+                   "edu.uva.liftlab.graphchecker.runtime.NativeZooKeeperSessionVerifier",
+                   gate["session_dir_path"], str(fresh_path)]
+        result = subprocess.run(command, capture_output=True, timeout=30)
+        if result.returncode or not fresh_path.is_file():
+            raise ValueError("ZooKeeper original SessionReader verifier failed")
+        fresh = _object(fresh_path)
+        pinned = _object(Path(gate["session_reader_receipt_path"]))
+        if fresh != pinned:
+            raise ValueError("ZooKeeper original SessionReader receipt changed")
 
 
 def _profile(request: dict, profile_file: Path) -> dict:
@@ -126,8 +213,8 @@ def _profile(request: dict, profile_file: Path) -> dict:
              weave.file_tree_digest(adapter_build)) != gate.get(
                 "adapter_build_sha256")):
         raise ValueError("ZooKeeper gate adapter build changed")
-    if _object(Path(gate["session_manifest_path"])).get("closed") is not True:
-        raise ValueError("ZooKeeper gate original session did not close")
+    _verify_closed_session(gate)
+    _rerun_session_reader(gate, Path(profile["java"]))
     return profile
 
 

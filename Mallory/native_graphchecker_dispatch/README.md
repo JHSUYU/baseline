@@ -34,8 +34,14 @@ is then cached under the same exact input pin. Both post-passes use
 in the profile classpath. The adapter refuses to launch until a frozen quorum
 protocol and actor-attribution gate exists; no such gate has been accepted yet.
 The gate must pin the source/class tree, communication map, postweave tree,
-adapter build, source-built engine, static map, and closed SessionReader
-manifest, and show an unchanged JUnit pass with a reached target and typed
+adapter build, source-built engine, static map, full original session tree,
+and a source-built `SessionReader` verifier receipt with empty `incomplete()`.
+Admission reruns the pinned verifier against the pinned session and compares
+its fresh result with the gate receipt; this is a lightweight read, not a JUnit.
+The original `SessionManifest` has no closure field; a manifest alone cannot
+pass this gate. The verifier also parses the schedule and attests a `SEED`
+session with paired typed SEND/RECV events and no pairing gaps. The gate must
+show an unchanged JUnit pass with a reached target and typed
 FOLLOWERINFO/LEADERINFO wire edges. Campaign JUnit trials use fresh
 `{trial_workdir}` directories. The adapter itself performs static Soot and
 both weaves only during preparation; `run-next` only reruns the cached woven
