@@ -216,6 +216,10 @@ public final class SelectionProbe {
     }
 
     public static void check(String siteId) {
+        check(siteId, null);
+    }
+
+    public static void check(String siteId, Object context) {
         Deque<Long> calls = CALLS.get();
         synchronized (SelectionProbe.class) {
             try {
@@ -223,7 +227,8 @@ public final class SelectionProbe {
                 row.addProperty("siteId", siteId);
                 row.addProperty("method", siteId.split("#", 2)[0]);
                 row.addProperty("callId", calls.isEmpty() ? 0 : calls.peek());
-                ActorIdentity.Resolution node = SolrActorIdentity.targetCheckNode(siteId);
+                ActorIdentity.Resolution node = SolrActorIdentity.targetCheckNode(
+                        siteId, context);
                 if (node.applies() && !node.gap) {
                     row.addProperty("logicalNodeId", node.logicalNodeId);
                 }

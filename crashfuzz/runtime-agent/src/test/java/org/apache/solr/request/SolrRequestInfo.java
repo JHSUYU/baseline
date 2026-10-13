@@ -15,7 +15,7 @@ public class SolrRequestInfo {
 
     public Request getReq() { return req; }
 
-    public static class Request {
+    public static class Request implements SolrQueryRequest {
         private final Core core;
         public Request(String home) { core = new Core(home); }
         public Core getCore() { return core; }

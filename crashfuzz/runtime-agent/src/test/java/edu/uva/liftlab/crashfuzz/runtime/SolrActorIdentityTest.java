@@ -93,6 +93,11 @@ public class SolrActorIdentityTest {
             assertEquals("solr:watch:node4", SolrActorIdentity.targetCheckNode(
                     "<org.apache.solr.update.processor.RoutedAliasUpdateProcessor: "
                             + "java.util.Map getAliasProps()>#u10").logicalNodeId);
+            assertEquals("solr:watch:node5", SolrActorIdentity.targetCheckNode(
+                    "<org.apache.solr.update.processor.RoutedAliasUpdateProcessor: "
+                            + "java.util.Map getAliasProps()>#u10",
+                    new SolrRequestInfo.Request("/tmp/solr-test/node5")
+            ).logicalNodeId);
         } finally {
             SolrRequestInfo.setCurrent(null);
         }

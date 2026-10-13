@@ -61,18 +61,31 @@ final class SolrActorIdentity {
     }
 
     static ActorIdentity.Resolution targetCheckNode(String siteId) {
+        return targetCheckNode(siteId, null);
+    }
+
+    static ActorIdentity.Resolution targetCheckNode(String siteId, Object context) {
         if (!siteId.startsWith("<org.apache.solr.")) {
             return ActorIdentity.Resolution.NOT_APPLICABLE;
         }
         try {
             ClassLoader loader = Thread.currentThread().getContextClassLoader();
             if (loader == null) loader = SolrActorIdentity.class.getClassLoader();
-            Class<?> type = Class.forName("org.apache.solr.request.SolrRequestInfo", false, loader);
-            Object info = type.getMethod("getRequestInfo").invoke(null);
-            if (info == null) return ActorIdentity.Resolution.NOT_APPLICABLE;
-            Object request = info.getClass().getMethod("getReq").invoke(info);
-            if (request == null) return ActorIdentity.Resolution.NOT_APPLICABLE;
-            Object core = request.getClass().getMethod("getCore").invoke(request);
+            Object core = null;
+            Class<?> requestType = Class.forName(
+                    "org.apache.solr.request.SolrQueryRequest", false, loader);
+            if (context != null && requestType.isInstance(context)) {
+                core = requestType.getMethod("getCore").invoke(context);
+            }
+            if (core == null) {
+                Class<?> type = Class.forName(
+                        "org.apache.solr.request.SolrRequestInfo", false, loader);
+                Object info = type.getMethod("getRequestInfo").invoke(null);
+                if (info == null) return ActorIdentity.Resolution.NOT_APPLICABLE;
+                Object request = info.getClass().getMethod("getReq").invoke(info);
+                if (request == null) return ActorIdentity.Resolution.NOT_APPLICABLE;
+                core = requestType.getMethod("getCore").invoke(request);
+            }
             if (core == null) return ActorIdentity.Resolution.NOT_APPLICABLE;
             Object container = core.getClass().getMethod("getCoreContainer").invoke(core);
             if (container == null) return ActorIdentity.Resolution.NOT_APPLICABLE;

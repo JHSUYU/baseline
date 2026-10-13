@@ -339,6 +339,7 @@ public final class SelectionAgent {
         final MethodPlan plan;
         final WeaveStats stats;
         final boolean instanceMethod;
+        final int solrRequestLocal;
         final Map<String, Integer> ioOrdinals = new HashMap<>();
         final Map<Integer, Integer> branchOrdinals = new HashMap<>();
         final Map<Integer, Integer> throwOrdinals = new HashMap<>();
@@ -358,6 +359,18 @@ public final class SelectionAgent {
             this.plan = plan;
             this.stats = stats;
             this.instanceMethod = (access & ACC_STATIC) == 0;
+            int local = instanceMethod ? 1 : 0;
+            int request = -1;
+            for (Type argument : Type.getArgumentTypes(descriptor)) {
+                if (argument.getSort() == Type.OBJECT &&
+                        "org.apache.solr.request.SolrQueryRequest".equals(
+                                argument.getClassName())) {
+                    request = local;
+                    break;
+                }
+                local += argument.getSize();
+            }
+            this.solrRequestLocal = request;
         }
 
         @Override protected void onMethodEnter() {
@@ -393,8 +406,11 @@ public final class SelectionAgent {
             super.visitLineNumber(line, start);
             if (line == plan.checkLine) {
                 mv.visitLdcInsn(plan.checkSiteId);
+                if (solrRequestLocal >= 0) mv.visitVarInsn(ALOAD, solrRequestLocal);
+                else if (thisAvailable) mv.visitVarInsn(ALOAD, 0);
+                else mv.visitInsn(ACONST_NULL);
                 mv.visitMethodInsn(INVOKESTATIC, PROBE, "check",
-                        "(Ljava/lang/String;)V", false);
+                        "(Ljava/lang/String;Ljava/lang/Object;)V", false);
             }
         }
 
