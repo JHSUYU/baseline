@@ -76,4 +76,20 @@ public class ActorIdentityTest {
         assertFalse(first.gap);
         assertFalse(second.gap);
     }
+
+    @Test
+    public void actorThreadPropagatesNodeIdentityIntoHelperIoAndClearsIt() {
+        DataXceiver actor = new DataXceiver(
+                "[DISK]file:/tmp/runA/data/dfs/data/data5");
+        ActorIdentity.bindCurrentThread(actor);
+        try {
+            assertEquals("hdfs:dn:data5", ActorIdentity.resolve(
+                    new Object(), "<example.Helper: void io()>#u1", "worker")
+                    .logicalNodeId);
+        } finally {
+            ActorIdentity.clearCurrentThread();
+        }
+        assertFalse(ActorIdentity.resolve(new Object(),
+                "<example.Helper: void io()>#u1", "worker").applies());
+    }
 }

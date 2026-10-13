@@ -109,6 +109,17 @@ the current key advanced further still followed this expected client recovery
 path. None shows a distinct mirror or DataTransfer key mismatch at the
 target check.
 
+A second isolated validation added actor-thread identity propagation for
+DataXceiver and DataTransfer helper calls. The unchanged JUnit passed in
+26.900 seconds. Its trace identifies all 27 selected server-side SASL I/O
+events by DataNode, both outbound DataTransfer I/O events, and the exact
+line-555 target throw's DataNode. The client-side SASL calls from ordinary
+client threads remain unbound, as expected. The trace is under
+`static-rerun/original-known/HDFS-17967-mirror/identity-healthy-validation-v3`.
+An independent 80-trial campaign using this agent and the same Soot selection
+was started in `campaign-identity-v2`; its original JUnit, target, and fault
+types are unchanged. It is separate from the ongoing 450-trial checkpoint.
+
 Evidence roots: `static-rerun/original-known/HDFS-54`, `HDFS-55`,
 `HDFS-11-balancer`, and `HDFS-17967-mirror` on node0, and
 `static-rerun/original-known/SOLR-40` on node2.

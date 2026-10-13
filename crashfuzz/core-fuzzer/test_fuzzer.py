@@ -293,6 +293,7 @@ class CoverageIoTest(unittest.TestCase):
                 {'event': 'EXPLICIT_THROW', 'seq': 4, 'method': TARGET,
                  'siteId': TARGET + '#bytecode:throw:23:0',
                  'sourceLine': 23, 'callId': 7,
+                 'logicalNodeId': 'hdfs:dn:data5',
                  'runtimeType': 'example.TargetException'},
             ])
             feedback = trace_feedback(path, target)
@@ -316,6 +317,7 @@ class CoverageIoTest(unittest.TestCase):
                 {'event': 'EXPLICIT_THROW', 'seq': 4, 'method': TARGET,
                  'siteId': TARGET + '#bytecode:throw:23:0',
                  'sourceLine': 23, 'callId': 7,
+                 'logicalNodeId': 'hdfs:dn:data5',
                  'runtimeType': 'example.TargetException'},
                 {'event': 'METHOD_EXIT_NORMAL', 'seq': 5,
                  'method': TARGET, 'callId': 7},
@@ -323,6 +325,8 @@ class CoverageIoTest(unittest.TestCase):
             feedback = trace_feedback(path, target)
             self.assertTrue(feedback['oracle'])
             self.assertEqual(feedback['target_exception_count'], 1)
+            self.assertEqual(feedback['target_fatal_exception_nodes'], [
+                {'seq': 4, 'logicalNodeId': 'hdfs:dn:data5'}])
             target['explicit_throw_lines'] = [24]
             self.assertFalse(trace_feedback(path, target)['oracle'])
 

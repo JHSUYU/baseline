@@ -194,6 +194,7 @@ def trace_feedback(path: Path, target: dict[str, Any],
     target_exception = False
     target_exception_count = 0
     target_fatal_exception_count = 0
+    target_fatal_exception_nodes: list[dict[str, Any]] = []
     target_site_seen = False
     target_site_after_fault = False
     target_guard_seen = False
@@ -439,6 +440,10 @@ def trace_feedback(path: Path, target: dict[str, Any],
                 bool(site_before_throw) if required_throw_site else True)
             if fatal_in_call:
                 target_fatal_exception_count += 1
+                if thrown.get("logicalNodeId"):
+                    target_fatal_exception_nodes.append({
+                        "seq": thrown.get("seq", -1),
+                        "logicalNodeId": thrown["logicalNodeId"]})
             if thrown.get("seq", -1) > applied_seq >= 0:
                 target_after_fault = True
                 guard_after = (any(last is not None and last > applied_seq
@@ -491,6 +496,7 @@ def trace_feedback(path: Path, target: dict[str, Any],
         "target_exception": target_exception,
         "target_exception_count": target_exception_count,
         "target_fatal_exception_count": target_fatal_exception_count,
+        "target_fatal_exception_nodes": target_fatal_exception_nodes,
         "target_after_fault": target_after_fault,
         "oracle": oracle,
         "fault_summary": summary,

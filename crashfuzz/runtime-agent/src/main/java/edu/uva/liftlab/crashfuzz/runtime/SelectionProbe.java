@@ -100,6 +100,11 @@ public final class SelectionProbe {
         SolrActorIdentity.registerController(controller);
     }
 
+    /** Propagate an embedded node's identity into I/O helpers on its actor thread. */
+    public static void bindActor(Object actor) { ActorIdentity.bindCurrentThread(actor); }
+
+    public static void unbindActor() { ActorIdentity.clearCurrentThread(); }
+
     private static JsonObject event(String kind) {
         JsonObject row = new JsonObject();
         row.addProperty("schemaVersion", 3);
@@ -207,6 +212,10 @@ public final class SelectionProbe {
                 // ATHROW with a null operand raises NullPointerException itself.
                 row.addProperty("runtimeType", thrown == null
                         ? NullPointerException.class.getName() : thrown.getClass().getName());
+                ActorIdentity.Resolution node = ActorIdentity.currentThread();
+                if (node.applies() && !node.gap) {
+                    row.addProperty("logicalNodeId", node.logicalNodeId);
+                }
                 if (thrown == null) row.addProperty("nullThrowable", true);
                 write(row, true);
             } catch (IOException error) {
@@ -229,6 +238,7 @@ public final class SelectionProbe {
                 row.addProperty("callId", calls.isEmpty() ? 0 : calls.peek());
                 ActorIdentity.Resolution node = SolrActorIdentity.targetCheckNode(
                         siteId, context);
+                if (!node.applies()) node = ActorIdentity.currentThread();
                 if (node.applies() && !node.gap) {
                     row.addProperty("logicalNodeId", node.logicalNodeId);
                 }

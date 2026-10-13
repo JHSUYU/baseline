@@ -191,6 +191,10 @@ public final class SelectionAgent {
 
     private static final class Transformer implements ClassFileTransformer {
         private static final String SOLR_CONTROLLER = "org/apache/solr/cloud/ZkController";
+        private static final String HDFS_DATA_XCEIVER =
+                "org/apache/hadoop/hdfs/server/datanode/DataXceiver";
+        private static final String HDFS_DATA_TRANSFER =
+                "org/apache/hadoop/hdfs/server/datanode/DataNode$DataTransfer";
         final Map<String, Map<String, MethodPlan>> classes;
         Transformer(Map<String, Map<String, MethodPlan>> classes) { this.classes = classes; }
 
@@ -198,7 +202,9 @@ public final class SelectionAgent {
                 Class<?> redefining, ProtectionDomain domain, byte[] original) {
             Map<String, MethodPlan> selected = classes.get(className);
             boolean solrController = SOLR_CONTROLLER.equals(className);
-            if (selected == null && !solrController) return null;
+            boolean hdfsActor = HDFS_DATA_XCEIVER.equals(className)
+                    || HDFS_DATA_TRANSFER.equals(className);
+            if (selected == null && !solrController && !hdfsActor) return null;
             final Map<String, MethodPlan> methods = selected == null
                     ? Collections.emptyMap() : selected;
             try {
@@ -220,9 +226,14 @@ public final class SelectionAgent {
                         MethodPlan plan = methods.get(methodKey(name, descriptor));
                         if (plan != null && originalVisitor != null) stats.methods++;
                         if (originalVisitor == null) return null;
+                        boolean actorRun = hdfsActor && "run".equals(name)
+                                && "()V".equals(descriptor);
                         MethodVisitor visitor = plan == null ? originalVisitor
                                 : new SelectedMethod(originalVisitor, access, name,
-                                        descriptor, plan, stats);
+                                        descriptor, plan, stats, actorRun);
+                        if (actorRun && plan == null) {
+                            visitor = new ActorRunBinding(visitor, access, name, descriptor);
+                        }
                         return solrController && "<init>".equals(name)
                                 ? new SolrControllerConstructor(visitor, access, name, descriptor)
                                 : visitor;
@@ -256,6 +267,40 @@ public final class SelectionAgent {
                 mv.visitMethodInsn(INVOKESTATIC, PROBE, "registerSolrController",
                         "(Ljava/lang/Object;)V", false);
             }
+        }
+    }
+
+    /** Identity hook only: no I/O or coverage site is added by this visitor. */
+    private static final class ActorRunBinding extends AdviceAdapter {
+        private final Label start = new Label();
+        private final Label end = new Label();
+        private final Label handler = new Label();
+
+        ActorRunBinding(MethodVisitor delegate, int access, String name,
+                        String descriptor) {
+            super(Opcodes.ASM9, delegate, access, name, descriptor);
+        }
+
+        @Override protected void onMethodEnter() {
+            mv.visitVarInsn(ALOAD, 0);
+            mv.visitMethodInsn(INVOKESTATIC, PROBE, "bindActor",
+                    "(Ljava/lang/Object;)V", false);
+            mv.visitLabel(start);
+        }
+
+        @Override protected void onMethodExit(int opcode) {
+            if (opcode != ATHROW) {
+                mv.visitMethodInsn(INVOKESTATIC, PROBE, "unbindActor", "()V", false);
+            }
+        }
+
+        @Override public void visitMaxs(int maxStack, int maxLocals) {
+            mv.visitLabel(end);
+            mv.visitTryCatchBlock(start, end, handler, "java/lang/Throwable");
+            mv.visitLabel(handler);
+            mv.visitMethodInsn(INVOKESTATIC, PROBE, "unbindActor", "()V", false);
+            mv.visitInsn(ATHROW);
+            super.visitMaxs(maxStack, maxLocals);
         }
     }
 
@@ -339,6 +384,7 @@ public final class SelectionAgent {
         final MethodPlan plan;
         final WeaveStats stats;
         final boolean instanceMethod;
+        final boolean actorRun;
         final int solrRequestLocal;
         final Map<String, Integer> ioOrdinals = new HashMap<>();
         final Map<Integer, Integer> branchOrdinals = new HashMap<>();
@@ -354,10 +400,12 @@ public final class SelectionAgent {
         boolean lastLoadedCatchAllException;
 
         SelectedMethod(MethodVisitor delegate, int access, String name,
-                       String descriptor, MethodPlan plan, WeaveStats stats) {
+                       String descriptor, MethodPlan plan, WeaveStats stats,
+                       boolean actorRun) {
             super(Opcodes.ASM9, delegate, access, name, descriptor);
             this.plan = plan;
             this.stats = stats;
+            this.actorRun = actorRun;
             this.instanceMethod = (access & ACC_STATIC) == 0;
             int local = instanceMethod ? 1 : 0;
             int request = -1;
@@ -375,6 +423,11 @@ public final class SelectionAgent {
 
         @Override protected void onMethodEnter() {
             thisAvailable = instanceMethod;
+            if (actorRun) {
+                mv.visitVarInsn(ALOAD, 0);
+                mv.visitMethodInsn(INVOKESTATIC, PROBE, "bindActor",
+                        "(Ljava/lang/Object;)V", false);
+            }
             mv.visitLdcInsn(plan.signature);
             mv.visitMethodInsn(INVOKESTATIC, PROBE, "enter", NO_CALL, false);
             mv.visitLabel(tryStart);
@@ -384,6 +437,9 @@ public final class SelectionAgent {
             if (opcode != ATHROW) {
                 mv.visitLdcInsn(plan.signature);
                 mv.visitMethodInsn(INVOKESTATIC, PROBE, "exitNormal", NO_CALL, false);
+                if (actorRun) {
+                    mv.visitMethodInsn(INVOKESTATIC, PROBE, "unbindActor", "()V", false);
+                }
             }
         }
 
@@ -397,6 +453,9 @@ public final class SelectionAgent {
             mv.visitInsn(SWAP);
             mv.visitMethodInsn(INVOKESTATIC, PROBE, "exitThrow",
                     "(Ljava/lang/String;Ljava/lang/Throwable;)V", false);
+            if (actorRun) {
+                mv.visitMethodInsn(INVOKESTATIC, PROBE, "unbindActor", "()V", false);
+            }
             mv.visitInsn(ATHROW);
             super.visitMaxs(maxStack, maxLocals);
         }

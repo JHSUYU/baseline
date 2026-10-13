@@ -19,6 +19,7 @@ final class ActorIdentity {
     private static final Pattern MINI_DFS_SLOT = Pattern.compile(
             "/data/dfs/data/(data[0-9]+)(?=,|/|$)");
     private static final Map<Object, Resolution> CACHE = new IdentityHashMap<>();
+    private static final ThreadLocal<Resolution> CURRENT_ACTOR = new ThreadLocal<>();
     private static int nextUnknown;
 
     private ActorIdentity() {}
@@ -59,7 +60,21 @@ final class ActorIdentity {
 
     static Resolution resolve(Object owner, String siteId, String thread) {
         Resolution hdfs = resolve(owner);
-        return hdfs.applies() ? hdfs : SolrActorIdentity.resolve(owner, siteId, thread);
+        if (hdfs.applies()) return hdfs;
+        Resolution current = CURRENT_ACTOR.get();
+        return current != null ? current : SolrActorIdentity.resolve(owner, siteId, thread);
+    }
+
+    static void bindCurrentThread(Object owner) {
+        Resolution resolution = resolve(owner);
+        if (resolution.applies()) CURRENT_ACTOR.set(resolution);
+    }
+
+    static void clearCurrentThread() { CURRENT_ACTOR.remove(); }
+
+    static Resolution currentThread() {
+        Resolution current = CURRENT_ACTOR.get();
+        return current == null ? Resolution.NOT_APPLICABLE : current;
     }
 
     private static String dataNodeField(Class<?> type) {

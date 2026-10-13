@@ -202,6 +202,10 @@ for heartbeat and inbound DataXceiver actors. An isolated agent build can be
 selected with `CRASHFUZZ_RUNTIME_AGENT_JAR` when running the unchanged HDFS
 JUnit; campaigns without that environment variable use the repository's
 packaged runtime agent.
+The DataXceiver and DataTransfer actor scopes also carry that identity into
+their SASL helper calls on the same thread. Actor scopes clear on method exit,
+including exceptional exit. Exact target throws retain the observed logical
+node ID in `target_fatal_exception_nodes` when the runtime supplied one.
 New campaigns prefer an untried static I/O callsite in three of every four
 selection rounds. The fourth round retains the existing timing and fault-type
 diversity rule. This keeps phase and later-occurrence variants from crowding
