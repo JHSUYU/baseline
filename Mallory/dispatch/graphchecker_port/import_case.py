@@ -8,17 +8,23 @@ by the 102-check aggregate table.  It never edits the source campaign.
 from __future__ import annotations
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import fcntl
 import json
 import shutil
 import tempfile
 from datetime import datetime, timezone
+from functools import partial
 from pathlib import Path
 from typing import Any
 
 from Mallory.core.graphchecker_campaign import verify_trial_artifacts
 from Mallory.dispatch.graphchecker_port.aggregate import _native_status
 from Mallory.dispatch.graphchecker_port.plan import CASE_ID, sha256
+
+
+DEFAULT_VERIFY_WORKERS = 4
+MAX_VERIFY_WORKERS = 8
 
 
 def _json(path: Path) -> dict[str, Any]:
@@ -62,6 +68,23 @@ def _trial_result(campaign: Path, case_id: str, record: dict[str, Any]) -> Path:
     return path
 
 
+def _verify_trials(campaign: Path, case_id: str, records: list[Any],
+                   workers: int) -> None:
+    """Verify independent trial archives concurrently, reporting in record order.
+
+    ``map`` yields results in checkpoint order. Its context waits for all
+    readers to finish before an error can escape, so a failed import never
+    races with later index publication or background verification.
+    """
+    if (not isinstance(workers, int) or isinstance(workers, bool) or
+            not 1 <= workers <= MAX_VERIFY_WORKERS):
+        raise ValueError(f"verify workers must be 1..{MAX_VERIFY_WORKERS}")
+    verify = partial(_trial_result, campaign, case_id)
+    with ThreadPoolExecutor(max_workers=workers) as executor:
+        for _ in executor.map(verify, records):
+            pass
+
+
 def _publish_index(data_root: Path, case_id: str, relative: str) -> None:
     """One atomic pointer selects a complete immutable snapshot for a case."""
     data_root.mkdir(parents=True, exist_ok=True)
@@ -88,7 +111,8 @@ def _publish_index(data_root: Path, case_id: str, relative: str) -> None:
             staged.unlink(missing_ok=True)
 
 
-def import_case(case_id: str, config: Path, campaign: Path, data_root: Path) -> dict:
+def import_case(case_id: str, config: Path, campaign: Path, data_root: Path,
+                *, verify_workers: int = DEFAULT_VERIFY_WORKERS) -> dict:
     if not CASE_ID.fullmatch(case_id):
         raise ValueError("invalid case ID")
     config = config.resolve(strict=True)
@@ -111,10 +135,10 @@ def import_case(case_id: str, config: Path, campaign: Path, data_root: Path) -> 
     if not terminal:
         raise ValueError(f"cannot publish a running campaign: {status}")
     records = documents["checkpoint"]["trials"]
-    for record in records:
-        if not isinstance(record, dict):
-            raise ValueError("invalid native trial record")
-        _trial_result(campaign, case_id, record)
+    if not isinstance(records, list) or any(not isinstance(record, dict)
+                                             for record in records):
+        raise ValueError("invalid native trial record")
+    _verify_trials(campaign, case_id, records, verify_workers)
     source_hashes = {name: sha256(path) for name, path in source_paths.items()}
     if source_hashes != initial_hashes:
         raise ValueError("terminal receipt changed during native trial verification")
@@ -160,9 +184,13 @@ def main() -> int:
     parser.add_argument("--campaign", required=True, type=Path)
     parser.add_argument("--data-root", type=Path,
                         default=Path("data/mallory/graphchecker_port"))
+    parser.add_argument("--verify-workers", type=int,
+                        default=DEFAULT_VERIFY_WORKERS,
+                        help=f"parallel read-only trial verifiers (1..{MAX_VERIFY_WORKERS})")
     args = parser.parse_args()
     print(json.dumps(import_case(args.case_id, args.config, args.campaign,
-                                 args.data_root), sort_keys=True, indent=2))
+                                 args.data_root, verify_workers=args.verify_workers),
+                     sort_keys=True, indent=2))
     return 0
 
 

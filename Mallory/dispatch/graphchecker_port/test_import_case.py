@@ -1,5 +1,7 @@
+import gzip
 import json
 import tempfile
+import threading
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -168,6 +170,58 @@ class ImportCaseTest(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "changed during"):
                     import_case("HBASE-01", config, campaign, root / "data")
             self.assertFalse((root / "data" / "import-index.json").exists())
+
+    def test_parallel_archive_verification_rejects_corruption_without_publication(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            config, campaign = self.make_campaign(root / "source", "test")
+            trial = campaign / "trials" / "r0001"
+            result = json.loads((trial / "result.json").read_text())
+            artifacts = {}
+            for name, filename in (("raw_trace", "graphchecker-raw.jsonl"),
+                                   ("window_trace", "graphchecker-trace.jsonl"),
+                                   ("graph", "graphchecker-graph.jsonl")):
+                plain = trial / filename
+                content = plain.read_bytes()
+                archive = trial / (filename + ".gz")
+                archive.write_bytes(gzip.compress(content, mtime=0))
+                artifacts[name] = {
+                    "path": archive.name, "encoding": "gzip",
+                    "sha256": sha256(archive), "bytes": archive.stat().st_size,
+                    "content_sha256": sha256(plain), "content_bytes": len(content),
+                }
+                plain.unlink()
+            result["artifacts"] = artifacts
+            _write(trial / "result.json", result)
+            archive = trial / artifacts["window_trace"]["path"]
+            archive.write_bytes(archive.read_bytes()[:-1] + b"X")
+            data = root / "data"
+            with self.assertRaisesRegex(ValueError, "changed window_trace compressed evidence"):
+                import_case("HBASE-01", config, campaign, data, verify_workers=4)
+            self.assertFalse((data / "import-index.json").exists())
+
+    def test_parallel_verification_reports_errors_in_checkpoint_order(self):
+        second_finished = threading.Event()
+        completed = []
+
+        def verify(_campaign, _case_id, record):
+            if record["name"] == "r0001":
+                self.assertTrue(second_finished.wait(2), "workers did not overlap")
+                completed.append("r0001")
+                raise ValueError("first trial failed")
+            completed.append("r0002")
+            second_finished.set()
+            raise ValueError("second trial failed")
+
+        records = [{"name": "r0001"}, {"name": "r0002"}]
+        with patch.object(import_module, "_trial_result", side_effect=verify):
+            with self.assertRaisesRegex(ValueError, "first trial failed"):
+                import_module._verify_trials(Path("/unused"), "HBASE-01", records, 2)
+        self.assertEqual(["r0002", "r0001"], completed)
+
+    def test_parallel_verifier_rejects_unbounded_worker_count(self):
+        with self.assertRaisesRegex(ValueError, "verify workers must be"):
+            import_module._verify_trials(Path("/unused"), "HBASE-01", [], 9)
 
 
 if __name__ == "__main__":
