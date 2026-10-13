@@ -105,8 +105,8 @@ post-call injection. Phase is part of each observation and replay identity,
 with independent hit and occurrence ordinals for each phase. Generated plans
 write the phase explicitly. Post-call plans use only a transport-level response
 loss exception; typed callee rejection variants apply only before the call.
-Older selections without `post_call_rpc_enabled`
-observe only `before`, and older plans without a phase still match `before`.
+Saved checkpoints retain the selection and injection phase used to create
+their trials, so a resumed campaign does not silently change its fault model.
 
 ## Run a selected check
 
@@ -141,6 +141,8 @@ trials, new method and branch coverage, and candidate count.
 that site is the `throw` inside a guard, `False` in the healthy run is expected
 and does not imply that the enclosing guard was never evaluated.
 
-`cases/`, the older shared adapters, and `entrypoints.json` preserve the
-previous case-specific campaign and its reproduction records. The Soot
-selected campaign above does not import their per-case I/O or coverage lists.
+The implementation tree contains only the Soot selector, the selected-site
+runtime agent, the generic fuzzer and original-JUnit runners. The earlier
+case-specific probes and actor experiments were removed. Historical results
+and source reviews remain in [`data/crashfuzz`](../data/crashfuzz/README.md);
+the removed implementation can be inspected in Git history at `1c470454`.

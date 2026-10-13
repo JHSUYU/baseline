@@ -10,7 +10,7 @@ BASELINE = Path(__file__).resolve().parents[4]
 SOURCE = Path(os.environ.get('MALLORY_ZK11_SOURCE', '/users/ZhenyuLi/zk11-independent-unit'))
 REPORT = Path(os.environ.get('MALLORY_ZK11_REPORT',
     '/tmp/zk387-unit-smoke-20261006/zookeeper-server/target/surefire-reports/TEST-org.apache.zookeeper.test.QuorumRestartTest.xml'))
-RUNNER = BASELINE / 'crashfuzz/vendor/0e00f21aa9596261-independent-runner.jar'
+RUNNER = BASELINE / 'Mallory/vendor/0e00f21aa9596261-independent-runner.jar'
 TEST = 'org.apache.zookeeper.server.quorum.CurrentEpochWriteFailureTest'
 METHOD = 'testReadCurrentEpochFromAcceptedEpochTmpFile'
 PEER_CLASS_SHA = 'cdcb7a67d5905fef27a8e36824b5d504c8df2c907dfac1a3cb8af6e3abbb6052'

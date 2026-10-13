@@ -38,7 +38,7 @@ def main():
     parser.add_argument('--report', type=Path,
                         default=Path('/tmp/zk387-unit-smoke-20261006/zookeeper-server/target/surefire-reports/TEST-org.apache.zookeeper.test.QuorumRestartTest.xml'))
     parser.add_argument('--runner', type=Path,
-                        default=BASELINE / 'crashfuzz/vendor/0e00f21aa9596261-independent-runner.jar')
+                        default=BASELINE / 'Mallory/vendor/0e00f21aa9596261-independent-runner.jar')
     parser.add_argument('--output', type=Path, default=MODULE / 'target/pilots/zk11-healthy')
     parser.add_argument('--timeout', type=int, default=300)
     parser.add_argument('--slot', type=int, default=16)

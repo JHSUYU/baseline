@@ -1,1 +1,0 @@
-../../../../../../../../../independent-coverage-io/source/main/org/apache/hadoop/hdfs/server/blockmanagement/BlockInfo.java
