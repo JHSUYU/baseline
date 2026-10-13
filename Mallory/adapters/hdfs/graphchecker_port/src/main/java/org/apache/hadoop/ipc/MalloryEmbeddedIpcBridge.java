@@ -161,7 +161,8 @@ public final class MalloryEmbeddedIpcBridge {
       // recovery daemon its own DataNode root and retain the explicit gap.
       MessageDoors.gap("BLOCK_RECOVERY_PARENT_UNPROVEN",
           "BlockRecoveryWorker.recoverBlocks",
-          "caller source does not match the owning DataNode");
+          "caller source " + current + " does not match owning DataNode "
+              + id + "#epoch" + epoch);
       long turn = MessageDoors.beginTick(dataNode,
           "BlockRecoveryWorker.recoverBlocks");
       try { scope = MessageDoors.captureScope(); }
@@ -232,6 +233,8 @@ public final class MalloryEmbeddedIpcBridge {
     }
     register(dataNode, "HDFS", "DATANODE", id);
     alias(field(dataNode, "ipcServer"), dataNode);
+    alias(field(dataNode, "saslClient"), dataNode);
+    alias(field(dataNode, "saslServer"), dataNode);
     long tick = MessageDoors.beginTick(dataNode, "DataNode.startDataNode");
     INITIAL_BP_TICK.set(tick);
     return tick;
@@ -287,6 +290,8 @@ public final class MalloryEmbeddedIpcBridge {
     // at waitActive is intentional; duplicate aliases with the same source are
     // accepted by MessageDoors.
     alias(field(node, "ipcServer"), node);
+    alias(field(node, "saslClient"), node);
+    alias(field(node, "saslServer"), node);
   }
 
   private static void registerNameNodeAt(Object node, int index)

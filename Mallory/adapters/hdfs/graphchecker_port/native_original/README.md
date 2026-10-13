@@ -74,3 +74,23 @@ JUnit has not yet run the accepted static target/port weave. The vendored
 engine does not yet implement the later CODEC_PORT walker: when a transport
 declares that codec, the compatibility door emits a blocking gap instead of
 claiming its payload leaves were propagated.
+
+`combined-engine-smoke-receipt.json` records a further unchanged-JUnit run
+against the combined original engine pin `0059dfd3`. Its 152 Hadoop IPC sends
+and 152 receives pair by exact transport identity, with each send before its
+receive. The one block-recovery Daemon gap is now source-specific: the caller
+still stands in the JUnit client root while the recovery worker belongs to
+`dn3#epoch0`. The adapter leaves that parent edge unproved. This remains a
+protocol smoke, without target weave or a fault-induced target exception.
+
+The HDFS key-ID mappings also have a separate transport boundary. In Hadoop
+3.4.3, `SaslDataTransferClient.getUserNameFromEncryptionKey` appends the
+`DataEncryptionKey.keyId` integer to the SASL username; on the server,
+`SaslDataTransferServer.getEncryptionKeyFromUserName` parses that integer and
+passes it to `BlockTokenSecretManager.retrieveDataEncryptionKey`. The current
+native adapter records `HADOOP_IPC` only. Its exact IPC pairs do not prove an
+`HDFS_SASL` message edge or the key-ID WIRE_FLOW mapping. The separate
+`sasl/` overlay now provides a source-backed same-JVM SASL handoff; its
+original-JUnit protocol proof is recorded in `sasl/protocol-smoke-receipt.json`.
+A mapped static scope and observed producer/consumer ports are still needed
+before the key-ID mapping can be used in a claimed causal closure.
