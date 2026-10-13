@@ -1,0 +1,3433 @@
+{
+  "active": null,
+  "budget": {
+    "fault_trials": 64,
+    "max_faults_per_trial": 4,
+    "seconds": 1800
+  },
+  "case_id": "ZOOKEEPER-07",
+  "completed_fault_trials": 64,
+  "config_sha256": "bba1516d9f9ca5eacce2086d67583b9f3726af6b260a4a36f3dfd5355553d85f",
+  "healthy": {
+    "elapsed_seconds": 6.487,
+    "faults": [],
+    "injection_specific_target_reached": false,
+    "junit_passed": true,
+    "name": "r0000",
+    "post_fault_target_reached": false,
+    "result": "trials/r0000/result.json",
+    "status": "healthy_seed",
+    "strict_injection": false,
+    "target_exception_candidate": false,
+    "target_exception_triggered": false,
+    "unmatched_retry": 0
+  },
+  "last_fault_site_attempts": {
+    "<org.apache.zookeeper.common.AtomicFileWritingIdiom: void <init>(java.io.File,org.apache.zookeeper.common.AtomicFileWritingIdiom$OutputStreamStatement,org.apache.zookeeper.common.AtomicFileWritingIdiom$WriterStatement)>#u18": 2,
+    "<org.apache.zookeeper.server.persistence.FileSnap: long deserialize(org.apache.zookeeper.server.DataTree,java.util.Map)>#u23": 3,
+    "<org.apache.zookeeper.server.persistence.FileSnap: void serialize(org.apache.zookeeper.server.DataTree,java.util.Map,java.io.File,boolean)>#u13": 2,
+    "<org.apache.zookeeper.server.persistence.FileTxnSnapLog: long restore(org.apache.zookeeper.server.DataTree,java.util.Map,org.apache.zookeeper.server.persistence.FileTxnSnapLog$PlayBackListener)>#u20": 6,
+    "<org.apache.zookeeper.server.persistence.SnapStream: boolean isValidCheckedStream(java.io.File)>#u12": 2,
+    "<org.apache.zookeeper.server.persistence.SnapStream: boolean isValidCheckedStream(java.io.File)>#u20": 2,
+    "<org.apache.zookeeper.server.persistence.SnapStream: boolean isValidCheckedStream(java.io.File)>#u4": 2,
+    "<org.apache.zookeeper.server.persistence.SnapStream: boolean isValidCheckedStream(java.io.File)>#u58": 2,
+    "<org.apache.zookeeper.server.quorum.Learner: long registerWithLeader(int)>#u24": 6,
+    "<org.apache.zookeeper.server.quorum.Learner: long registerWithLeader(int)>#u25": 6,
+    "<org.apache.zookeeper.server.quorum.Learner: long registerWithLeader(int)>#u69": 4,
+    "<org.apache.zookeeper.server.quorum.Learner: void closeSockSync()>#u5": 1,
+    "<org.apache.zookeeper.server.quorum.Learner: void connectToLeader(org.apache.zookeeper.server.quorum.MultipleAddresses,java.lang.String)>#u82": 2,
+    "<org.apache.zookeeper.server.quorum.Learner: void connectToLeader(org.apache.zookeeper.server.quorum.MultipleAddresses,java.lang.String)>#u88": 1,
+    "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u137": 2,
+    "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u14": 2,
+    "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u392": 2,
+    "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u404": 1,
+    "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u423": 2,
+    "<org.apache.zookeeper.server.quorum.LearnerHandler: void closeSockSync()>#u5": 1,
+    "<org.apache.zookeeper.server.quorum.LearnerHandler: void run()>#u12": 2,
+    "<org.apache.zookeeper.server.quorum.LearnerHandler: void run()>#u135": 1,
+    "<org.apache.zookeeper.server.quorum.LearnerHandler: void run()>#u206": 1,
+    "<org.apache.zookeeper.server.quorum.LearnerHandler: void run()>#u233": 2,
+    "<org.apache.zookeeper.server.quorum.LearnerHandler: void run()>#u276": 2,
+    "<org.apache.zookeeper.server.quorum.QuorumPeer: long readLongFromFile(java.lang.String)>#u11": 1,
+    "<org.apache.zookeeper.server.quorum.QuorumPeer: long readLongFromFile(java.lang.String)>#u14": 2,
+    "<org.apache.zookeeper.server.quorum.QuorumPeer: long readLongFromFile(java.lang.String)>#u8": 2
+  },
+  "last_fault_site_strict": {
+    "<org.apache.zookeeper.common.AtomicFileWritingIdiom: void <init>(java.io.File,org.apache.zookeeper.common.AtomicFileWritingIdiom$OutputStreamStatement,org.apache.zookeeper.common.AtomicFileWritingIdiom$WriterStatement)>#u18": 2,
+    "<org.apache.zookeeper.server.persistence.FileSnap: long deserialize(org.apache.zookeeper.server.DataTree,java.util.Map)>#u23": 3,
+    "<org.apache.zookeeper.server.persistence.FileSnap: void serialize(org.apache.zookeeper.server.DataTree,java.util.Map,java.io.File,boolean)>#u13": 2,
+    "<org.apache.zookeeper.server.persistence.FileTxnSnapLog: long restore(org.apache.zookeeper.server.DataTree,java.util.Map,org.apache.zookeeper.server.persistence.FileTxnSnapLog$PlayBackListener)>#u20": 6,
+    "<org.apache.zookeeper.server.persistence.SnapStream: boolean isValidCheckedStream(java.io.File)>#u12": 2,
+    "<org.apache.zookeeper.server.persistence.SnapStream: boolean isValidCheckedStream(java.io.File)>#u20": 2,
+    "<org.apache.zookeeper.server.persistence.SnapStream: boolean isValidCheckedStream(java.io.File)>#u4": 2,
+    "<org.apache.zookeeper.server.persistence.SnapStream: boolean isValidCheckedStream(java.io.File)>#u58": 2,
+    "<org.apache.zookeeper.server.quorum.Learner: long registerWithLeader(int)>#u24": 6,
+    "<org.apache.zookeeper.server.quorum.Learner: long registerWithLeader(int)>#u25": 6,
+    "<org.apache.zookeeper.server.quorum.Learner: long registerWithLeader(int)>#u69": 4,
+    "<org.apache.zookeeper.server.quorum.Learner: void closeSockSync()>#u5": 1,
+    "<org.apache.zookeeper.server.quorum.Learner: void connectToLeader(org.apache.zookeeper.server.quorum.MultipleAddresses,java.lang.String)>#u82": 2,
+    "<org.apache.zookeeper.server.quorum.Learner: void connectToLeader(org.apache.zookeeper.server.quorum.MultipleAddresses,java.lang.String)>#u88": 1,
+    "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u137": 2,
+    "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u14": 2,
+    "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u392": 2,
+    "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u404": 1,
+    "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u423": 2,
+    "<org.apache.zookeeper.server.quorum.LearnerHandler: void closeSockSync()>#u5": 1,
+    "<org.apache.zookeeper.server.quorum.LearnerHandler: void run()>#u12": 2,
+    "<org.apache.zookeeper.server.quorum.LearnerHandler: void run()>#u135": 1,
+    "<org.apache.zookeeper.server.quorum.LearnerHandler: void run()>#u206": 1,
+    "<org.apache.zookeeper.server.quorum.LearnerHandler: void run()>#u233": 2,
+    "<org.apache.zookeeper.server.quorum.LearnerHandler: void run()>#u276": 2,
+    "<org.apache.zookeeper.server.quorum.QuorumPeer: long readLongFromFile(java.lang.String)>#u11": 1,
+    "<org.apache.zookeeper.server.quorum.QuorumPeer: long readLongFromFile(java.lang.String)>#u14": 2,
+    "<org.apache.zookeeper.server.quorum.QuorumPeer: long readLongFromFile(java.lang.String)>#u8": 2
+  },
+  "next_trial_index": 65,
+  "queue": [
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch0",
+          "occurrenceId": "641117ede5c8862d",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.FileSnap: void serialize(org.apache.zookeeper.server.DataTree,java.util.Map,java.io.File,boolean)>#u13"
+        }
+      ],
+      "key": "2bbbce5f59529be5d339fa00cbdee78123b5fd4298d4efa7a3c40c629110b87a",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch0",
+          "occurrenceId": "682d4df52720c406",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.QuorumPeer: long readLongFromFile(java.lang.String)>#u8"
+        }
+      ],
+      "key": "7dd9bed14a03b3b0811741a09fa8d08ff4aacc363c31f11b586aa9ab7e08b759",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch0",
+          "occurrenceId": "624a4873fb01ae14",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.common.AtomicFileWritingIdiom: void <init>(java.io.File,org.apache.zookeeper.common.AtomicFileWritingIdiom$OutputStreamStatement,org.apache.zookeeper.common.AtomicFileWritingIdiom$WriterStatement)>#u18"
+        }
+      ],
+      "key": "22d2befb7f53dca53af4fd199f4ff4420676a3b16a23eb0476d439e46d61167b",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch0",
+          "occurrenceId": "d3f6a6ea3e86eb5d",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.FileSnap: void serialize(org.apache.zookeeper.server.DataTree,java.util.Map,java.io.File,boolean)>#u13"
+        }
+      ],
+      "key": "6fb59c862a697dbe5a6a1aa58c7e983b5fe59d0db02edfdb2542d84c0780f3b9",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch0",
+          "occurrenceId": "4eafa58df448cdca",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.QuorumPeer: long readLongFromFile(java.lang.String)>#u8"
+        }
+      ],
+      "key": "514e48f1539c582d5ade7421b23805b65af68a8b0572a577e8aa240431954561",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch0",
+          "occurrenceId": "6a37220a5dd15536",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.common.AtomicFileWritingIdiom: void <init>(java.io.File,org.apache.zookeeper.common.AtomicFileWritingIdiom$OutputStreamStatement,org.apache.zookeeper.common.AtomicFileWritingIdiom$WriterStatement)>#u18"
+        }
+      ],
+      "key": "c193dfc6b4de5954f9c8e370b459f1469bda6594827984c9b4ef8318c8e58bcd",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch0",
+          "occurrenceId": "ac8c7bf898bbd418",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.QuorumPeer: long readLongFromFile(java.lang.String)>#u8"
+        }
+      ],
+      "key": "aeda1158c875dd3ed1d204c121bbe47ae1e60d97d5d610724d17310568fb5d70",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch0",
+          "occurrenceId": "66883780f346706b",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.FileSnap: void serialize(org.apache.zookeeper.server.DataTree,java.util.Map,java.io.File,boolean)>#u13"
+        }
+      ],
+      "key": "bfe898b162851f0313ee7e5e8380311e1f6311953490e02286db20ce308ae7db",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch0",
+          "occurrenceId": "81ecbbe7032d103d",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.QuorumPeer: long readLongFromFile(java.lang.String)>#u8"
+        }
+      ],
+      "key": "74e4d5d28bb0685369c87b0069c5f603f3a036ca730b63ecc93a3456d052595e",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch0",
+          "occurrenceId": "8a8e01a8a7ab013b",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.common.AtomicFileWritingIdiom: void <init>(java.io.File,org.apache.zookeeper.common.AtomicFileWritingIdiom$OutputStreamStatement,org.apache.zookeeper.common.AtomicFileWritingIdiom$WriterStatement)>#u18"
+        }
+      ],
+      "key": "97f687d219ed05652bff813894174421643c813b9719a5665a62b86e451a6f62",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch0",
+          "occurrenceId": "7d63d7d496133794",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.QuorumPeer: long readLongFromFile(java.lang.String)>#u8"
+        }
+      ],
+      "key": "a717b0a38e9d7459aa31678b7d19edd8cd28db58e2a57e17dca4fd963dcbd4f5",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch0",
+          "occurrenceId": "cb0beefba474acac",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.common.AtomicFileWritingIdiom: void <init>(java.io.File,org.apache.zookeeper.common.AtomicFileWritingIdiom$OutputStreamStatement,org.apache.zookeeper.common.AtomicFileWritingIdiom$WriterStatement)>#u18"
+        }
+      ],
+      "key": "7dc1f3c4978d2055dc44e6541195e4ca828e545758eda05cca43317894803fa5",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch0",
+          "occurrenceId": "6362d412639ccf5b",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void connectToLeader(org.apache.zookeeper.server.quorum.MultipleAddresses,java.lang.String)>#u88"
+        }
+      ],
+      "key": "27e8bdd8ad7992e4e79bf0b2904c6a86d2143a4b1849de21bc5ebaf312ef921a",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch0",
+          "occurrenceId": "26ad674387c62fa4",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.LearnerHandler: void run()>#u12"
+        }
+      ],
+      "key": "91686057891146137792bbfcdf76d4b92f81523c5b41b8b63927a6551993a470",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch0",
+          "occurrenceId": "3c783aea813b2532",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.LearnerHandler: void run()>#u12"
+        }
+      ],
+      "key": "892f9db15b7d837544b38e4be6f4f77b92b496bcd7f2c722668fd64b45fb55e2",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch0",
+          "occurrenceId": "86e8c56634d9a2c8",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.common.AtomicFileWritingIdiom: void <init>(java.io.File,org.apache.zookeeper.common.AtomicFileWritingIdiom$OutputStreamStatement,org.apache.zookeeper.common.AtomicFileWritingIdiom$WriterStatement)>#u18"
+        }
+      ],
+      "key": "2e5146a361d912123e8f6ebc873cb06a91c4a112e10c137a62e788434f812cff",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch0",
+          "occurrenceId": "26ad674387c62fa4",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.LearnerHandler: void run()>#u135"
+        }
+      ],
+      "key": "71f20ee27dd6c38edbd311bab6aa19f126a7c1e1e21ec65c0d3850241614f5f3",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch0",
+          "occurrenceId": "3c783aea813b2532",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.LearnerHandler: void run()>#u135"
+        }
+      ],
+      "key": "6bdb57d03bc683532d867f88cfe4332c261a75a50fcc49a09fca331b6a4417f1",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch0",
+          "occurrenceId": "a554b8ce15a2bbc0",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.common.AtomicFileWritingIdiom: void <init>(java.io.File,org.apache.zookeeper.common.AtomicFileWritingIdiom$OutputStreamStatement,org.apache.zookeeper.common.AtomicFileWritingIdiom$WriterStatement)>#u18"
+        }
+      ],
+      "key": "63a0e78ce8bf30ed70a3ded0c5cfe34c33a21c1a9130f529b5d673d9d11b1985",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch0",
+          "occurrenceId": "e4f1f95ea26ec4fb",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.common.AtomicFileWritingIdiom: void <init>(java.io.File,org.apache.zookeeper.common.AtomicFileWritingIdiom$OutputStreamStatement,org.apache.zookeeper.common.AtomicFileWritingIdiom$WriterStatement)>#u18"
+        }
+      ],
+      "key": "db86878d7baf733d2ad0f34d83f77ca5fe82a256360e25027ebeffe51c6ea5d1",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch0",
+          "occurrenceId": "443c140495cce646",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u14"
+        }
+      ],
+      "key": "e8f82234836e4cb9f8943c3d7c0de14f8b858a56556ec514976ed573fd220a07",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch0",
+          "occurrenceId": "0521abf1dc9157b4",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.common.AtomicFileWritingIdiom: void <init>(java.io.File,org.apache.zookeeper.common.AtomicFileWritingIdiom$OutputStreamStatement,org.apache.zookeeper.common.AtomicFileWritingIdiom$WriterStatement)>#u18"
+        }
+      ],
+      "key": "89b7128c854a54cecbaae1d0fce46f3c7ffa648b09d9e2f0b8b9a058bf256d33",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch0",
+          "occurrenceId": "3c783aea813b2532",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.LearnerHandler: void run()>#u276"
+        }
+      ],
+      "key": "5ff6d09c2a2ad666741b2c0e4cb155f78b6e5e7c02e3db79636cb6606fd2a0bd",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch0",
+          "occurrenceId": "26ad674387c62fa4",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.LearnerHandler: void run()>#u276"
+        }
+      ],
+      "key": "b688886f211871353b14177adf06c8b11cb82422dad275ae75b41627784c6ec5",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch0",
+          "occurrenceId": "443c140495cce646",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u137"
+        }
+      ],
+      "key": "36b955bd1f945eb004287e8d70a18723067cd5caeedde122a63e69ad77435040",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch0",
+          "occurrenceId": "9053124ca99c2277",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u137"
+        }
+      ],
+      "key": "2d7db52ecda6380479801bc858af5c951f8d4fd20fa44bdb467e857845a14292",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch0",
+          "occurrenceId": "4b78f188b6c02bc5",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.common.AtomicFileWritingIdiom: void <init>(java.io.File,org.apache.zookeeper.common.AtomicFileWritingIdiom$OutputStreamStatement,org.apache.zookeeper.common.AtomicFileWritingIdiom$WriterStatement)>#u18"
+        }
+      ],
+      "key": "cf59acdfeb9b4594c854c788144458696ff889e6ec6170386578cd80d64523c9",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch0",
+          "occurrenceId": "5a92cb6dd790dbcc",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.common.AtomicFileWritingIdiom: void <init>(java.io.File,org.apache.zookeeper.common.AtomicFileWritingIdiom$OutputStreamStatement,org.apache.zookeeper.common.AtomicFileWritingIdiom$WriterStatement)>#u18"
+        }
+      ],
+      "key": "7a9fd02dc750e622a49c00022438b54c0a303aa4f8233ed30be69e71ce6ba759",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch0",
+          "occurrenceId": "9053124ca99c2277",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u392"
+        }
+      ],
+      "key": "202a6d0a408ceb6555ea048954fcdc1a53d17fe440bcb07e86f72a4477004631",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch0",
+          "occurrenceId": "443c140495cce646",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u392"
+        }
+      ],
+      "key": "5f33b70c2df0f0c500d89abaf8697e67c048e075841701aa9f223d0c6a5a80d3",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch0",
+          "occurrenceId": "443c140495cce646",
+          "ordinal": 2,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u137"
+        }
+      ],
+      "key": "2bec96bb198a7d73dc4805e3fca6821c60bd9d9952e6664534e09956b8e5324e",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch0",
+          "occurrenceId": "9053124ca99c2277",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u404"
+        }
+      ],
+      "key": "6101e46e2572980baf5835933592f91111d33dbf71c6f16d7365c0b0c2e42ccc",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch0",
+          "occurrenceId": "443c140495cce646",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u423"
+        }
+      ],
+      "key": "757befe932c22500aa4368e4ba220e4680c9b98e693e3e06ac67ffa4a2dedc83",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch0",
+          "occurrenceId": "87ce437534676ac8",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.LearnerHandler: void closeSockSync()>#u5"
+        }
+      ],
+      "key": "94bc5a6ad47c0a4f309c624cb7c35a4e8bf16634287e07becd97d6149c6b857a",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "b470654dec855fb6",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.SnapStream: boolean isValidCheckedStream(java.io.File)>#u4"
+        }
+      ],
+      "key": "272351175e978ddbccbfa7aeb0328bae4a0b6a442428b4706ae71f33e66c5caa",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "b470654dec855fb6",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.SnapStream: boolean isValidCheckedStream(java.io.File)>#u20"
+        }
+      ],
+      "key": "58b140eaedb8496c20613f4e7f8260cc71a2c74fcaedea8dc4019877e04b029f",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "b470654dec855fb6",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.SnapStream: boolean isValidCheckedStream(java.io.File)>#u58"
+        }
+      ],
+      "key": "1b467c1c8254e99f2465a69f60070cd067256e5f4483b09544123ae1f944095b",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "036a2708fb2e8bee",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.QuorumPeer: long readLongFromFile(java.lang.String)>#u8"
+        }
+      ],
+      "key": "6d67228c5be5c53b1171874c560390bfe71770f4622136acc583000f7f125c50",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "036a2708fb2e8bee",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.QuorumPeer: long readLongFromFile(java.lang.String)>#u14"
+        }
+      ],
+      "key": "c0582e1e81a80d96defe21de979c949c1fa7aaa1a8224b2dcf03560b4b93b83e",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "8cba2faa1f7a2315",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.QuorumPeer: long readLongFromFile(java.lang.String)>#u8"
+        }
+      ],
+      "key": "b05954132fe41d1504a9dc099690db0855520e664f01aea07024aa0d03f6b897",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "8cba2faa1f7a2315",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.QuorumPeer: long readLongFromFile(java.lang.String)>#u11"
+        }
+      ],
+      "key": "453f6c0242f85361c7c5eb17953b588cdad674720ccd43566f0a065b5ba31a5d",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "0bed6243aae15775",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void connectToLeader(org.apache.zookeeper.server.quorum.MultipleAddresses,java.lang.String)>#u82"
+        }
+      ],
+      "key": "6da54ddf86e9966bd067b0cc42d19173e47b7f8e91bf878d15867dd4f5de537e",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "0bed6243aae15775",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void connectToLeader(org.apache.zookeeper.server.quorum.MultipleAddresses,java.lang.String)>#u88"
+        }
+      ],
+      "key": "0565a77dd533daf7cdf6d9283fd0c52d6bc641736893fe94d1ba6db8d14cc8fb",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch0",
+          "occurrenceId": "273d39d2c728edf7",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.SnapStream: boolean isValidCheckedStream(java.io.File)>#u4"
+        }
+      ],
+      "key": "aa08a629cfc209fc254760f97655502702344aba81369f62c3c821d78909b87c",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch0",
+          "occurrenceId": "273d39d2c728edf7",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.SnapStream: boolean isValidCheckedStream(java.io.File)>#u12"
+        }
+      ],
+      "key": "31361389dd079e495bc05e29cceafc17dca3883414b2f45f9a06f12cdbb31957",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "4f856025e2582d3c",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.FileSnap: void serialize(org.apache.zookeeper.server.DataTree,java.util.Map,java.io.File,boolean)>#u13"
+        }
+      ],
+      "key": "64cfd4bbec3236e865fe42ecedb57b785ce860eb10c890ebea14d95a69c73acd",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "161bf62977da7d5d",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.common.AtomicFileWritingIdiom: void <init>(java.io.File,org.apache.zookeeper.common.AtomicFileWritingIdiom$OutputStreamStatement,org.apache.zookeeper.common.AtomicFileWritingIdiom$WriterStatement)>#u18"
+        }
+      ],
+      "key": "2b989a107811860a40bfbff4b7470b97fb8cd6b5054e1ae7a1c7a7937a7c040c",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "3bfe9048a929c8d2",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u392"
+        }
+      ],
+      "key": "809372c7620c9b6aec03e8139bb8bb7219909dc2b8da01c1bce3c36799a7d61f",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "3bfe9048a929c8d2",
+          "ordinal": 2,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u137"
+        }
+      ],
+      "key": "5ab4cf9549f0ec55514042eeb484f62e1e22a52e230df01f9e68aeec6bb54e33",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "3bfe9048a929c8d2",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u404"
+        }
+      ],
+      "key": "0369a727f7f6cfff38b32aae515f9b1acabc0ef84f1af690ecb63b563afcddb7",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "4d1633c4fbc825e4",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.SnapStream: boolean isValidCheckedStream(java.io.File)>#u4"
+        }
+      ],
+      "key": "bd8d2cc44a617705c13d3dac817f923f3aea62f15a989544a27dd48399aa6688",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "4d1633c4fbc825e4",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.SnapStream: boolean isValidCheckedStream(java.io.File)>#u20"
+        }
+      ],
+      "key": "530663545c9cb7af4ab33eb078d731a68bd227413e06878df21347ed6665497c",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "4d1633c4fbc825e4",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.SnapStream: boolean isValidCheckedStream(java.io.File)>#u58"
+        }
+      ],
+      "key": "8561efd7e65fb171605ce0997e2609eebf5d06ad01e2bc2311906502b0e63dbd",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "91e4506d8c725f20",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.QuorumPeer: long readLongFromFile(java.lang.String)>#u8"
+        }
+      ],
+      "key": "6e54f034201cf514bc872f7bf510a4ce7535970de3a8b5bfc2686c9e97dfd972",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "91e4506d8c725f20",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.QuorumPeer: long readLongFromFile(java.lang.String)>#u11"
+        }
+      ],
+      "key": "5796df715db7fcc746bf39dc3753bbcfd9b9ad1a0afa4804c511debb415f4b1d",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "d6d0e4768e49ac04",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.QuorumPeer: long readLongFromFile(java.lang.String)>#u8"
+        }
+      ],
+      "key": "08e380946248d10a574dc3d99067585407b87ecd900dec11bdd6d86e25411470",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "d6d0e4768e49ac04",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.QuorumPeer: long readLongFromFile(java.lang.String)>#u11"
+        }
+      ],
+      "key": "0e2556e01af974c6caa453ec736be5c7097957f27691b6ebb9de1e6d0fb286ed",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "d6d0e4768e49ac04",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.QuorumPeer: long readLongFromFile(java.lang.String)>#u14"
+        }
+      ],
+      "key": "369ba6761d7bcdd4411e49974a382aa875eae17a373af6aa68bb4cb8350eb1c3",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "4c5ab02e2e64f7a2",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void connectToLeader(org.apache.zookeeper.server.quorum.MultipleAddresses,java.lang.String)>#u82"
+        }
+      ],
+      "key": "79149f8a69b090f2108604b1d2672dfd7851cf7dc6ceea91971f27069d66a21a",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "4c5ab02e2e64f7a2",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void connectToLeader(org.apache.zookeeper.server.quorum.MultipleAddresses,java.lang.String)>#u88"
+        }
+      ],
+      "key": "3011c54020618f3bb725cd54a7fc1ce13ae401c66702c3a4c37a2eb344433d73",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch0",
+          "occurrenceId": "61ece9b88ac8e0ba",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.LearnerHandler: void run()>#u12"
+        }
+      ],
+      "key": "d9bfd40685be61bb4a39db3e50cb0c8d0a6d3e1bc9d33dae042bbc1a98f87de9",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch0",
+          "occurrenceId": "61ece9b88ac8e0ba",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.LearnerHandler: void run()>#u135"
+        }
+      ],
+      "key": "4cb4ea448ba17c14cd4468827ed9bfd59645fb77910b5d2c6b3e95eb57e4d92a",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "f835774a27d1d246",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u14"
+        }
+      ],
+      "key": "0207880f5e9e9f86df76098f873cb8f60645fd6a36976abe753fd46faa7a85f5",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch0",
+          "occurrenceId": "bc338b37240188e9",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.SnapStream: boolean isValidCheckedStream(java.io.File)>#u12"
+        }
+      ],
+      "key": "966d9ba5dbd05a911a538104dbaa258f065cf8e4b91e8e3d47951b9d570fbddc",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch0",
+          "occurrenceId": "bc338b37240188e9",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.SnapStream: boolean isValidCheckedStream(java.io.File)>#u20"
+        }
+      ],
+      "key": "7de3c4af32f87cf860cea33df5e9ba9e2f903af225047027c97c96ffcf9eca64",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch0",
+          "occurrenceId": "61ece9b88ac8e0ba",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.LearnerHandler: void run()>#u206"
+        }
+      ],
+      "key": "061a82093d37b65e66facbcbcced8c23e1b98a728b147031cefd41e1d19ce77c",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch0",
+          "occurrenceId": "61ece9b88ac8e0ba",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.LearnerHandler: void run()>#u276"
+        }
+      ],
+      "key": "1220b586dcdf4f63bc91a9f7ad6681133b825b0d52f6606ee6919a7170e70daf",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "f835774a27d1d246",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u137"
+        }
+      ],
+      "key": "4c4449a8a9498cfb0b9158a01e61207873a146a39d047f5e3aec1a10736129ed",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "7542de9df533282a",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.common.AtomicFileWritingIdiom: void <init>(java.io.File,org.apache.zookeeper.common.AtomicFileWritingIdiom$OutputStreamStatement,org.apache.zookeeper.common.AtomicFileWritingIdiom$WriterStatement)>#u18"
+        }
+      ],
+      "key": "920f1e69a25f0d13bc025bf34860f08e7db957db6d466f5dc3176dd67bff0472",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "f835774a27d1d246",
+          "ordinal": 2,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u137"
+        }
+      ],
+      "key": "c2e523afc7cc22fbe6000b7c81e6468e1ffc2cc8fe6974e1bd843361f514d6f9",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "f835774a27d1d246",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u404"
+        }
+      ],
+      "key": "007460df420239a4780131240ac578ed0179905b754472c00697a48b116d3790",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "f835774a27d1d246",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u423"
+        }
+      ],
+      "key": "7b1842876d2ecab535cc05f11b4d798edabf00bda988ec73b59a5b153f7453cf",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "177c01a76453ba00",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void closeSockSync()>#u5"
+        }
+      ],
+      "key": "9c3bee4bbed4134e5d8fa94c5df7f187af1ed487a8200e915defc9ac1d3dbf8d",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "f0929aaeae9d887c",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void closeSockSync()>#u5"
+        }
+      ],
+      "key": "53c886deb85cfb8c7e633818a6545716ba2d24b87aad1a26a6efcc53080d8d79",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch1",
+          "occurrenceId": "5cbc7c3e0a5c6c4a",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.SnapStream: boolean isValidCheckedStream(java.io.File)>#u4"
+        }
+      ],
+      "key": "0e832aa0a9169c5179dcb1630f2b8d1216f308f5ede0532058e85ca514e7ebc0",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch1",
+          "occurrenceId": "5cbc7c3e0a5c6c4a",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.SnapStream: boolean isValidCheckedStream(java.io.File)>#u12"
+        }
+      ],
+      "key": "994397fbd3cffb23e1b032d1bd2e52ff61fb96e8d39a5556bb9c9804018568b9",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch1",
+          "occurrenceId": "5cbc7c3e0a5c6c4a",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.SnapStream: boolean isValidCheckedStream(java.io.File)>#u20"
+        }
+      ],
+      "key": "37b20dd76982863774fc08dd8de3c4c049e411f3010ba731f576fd4535e5fea7",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch1",
+          "occurrenceId": "5cbc7c3e0a5c6c4a",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.SnapStream: boolean isValidCheckedStream(java.io.File)>#u58"
+        }
+      ],
+      "key": "86e4456244db467cefede99b05b385515b1b8195df19e7bc8a7ecf74408337d3",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch1",
+          "occurrenceId": "ee91b9fcfc38cbc3",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.QuorumPeer: long readLongFromFile(java.lang.String)>#u8"
+        }
+      ],
+      "key": "4bf1f423565e3f705b563baed5175fd995b7119c71358369a832fdc2da7375da",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch1",
+          "occurrenceId": "ee91b9fcfc38cbc3",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.QuorumPeer: long readLongFromFile(java.lang.String)>#u11"
+        }
+      ],
+      "key": "3a5efd75bfc6cce841490e386b5427756af6da416463d720b7d52d8058d3a6e0",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch1",
+          "occurrenceId": "ee91b9fcfc38cbc3",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.QuorumPeer: long readLongFromFile(java.lang.String)>#u14"
+        }
+      ],
+      "key": "1c95268df7a9d4d959282d541dd32396c1cf8b08ee20fb29a7e7a52880d93772",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch1",
+          "occurrenceId": "0859b5760a6f261f",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.QuorumPeer: long readLongFromFile(java.lang.String)>#u11"
+        }
+      ],
+      "key": "66c2d383413ae26472a16a5e15672c6bc42680916ec3d41ccbda1346ad07ed1d",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch1",
+          "occurrenceId": "0859b5760a6f261f",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.QuorumPeer: long readLongFromFile(java.lang.String)>#u14"
+        }
+      ],
+      "key": "896cbe84d847f188afb20070e56394188806fc91f164ea06509e9feb9ecf5e4a",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "4fe92373e28ac23f",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void connectToLeader(org.apache.zookeeper.server.quorum.MultipleAddresses,java.lang.String)>#u82"
+        }
+      ],
+      "key": "9f4391544b4a0344239d8265309a5e713b8b6208806d7e11fc9770e815d40e00",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "4fe92373e28ac23f",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void connectToLeader(org.apache.zookeeper.server.quorum.MultipleAddresses,java.lang.String)>#u88"
+        }
+      ],
+      "key": "8871659c9b8bf7bf292a8a7023d8f7082bbca4fd89f8ff5a12439c105270f49e",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "65801d3327ab966e",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.FileSnap: void serialize(org.apache.zookeeper.server.DataTree,java.util.Map,java.io.File,boolean)>#u13"
+        }
+      ],
+      "key": "c449dd056a9394e37cb6927d9652d363a155482cb51260650544e7294d66e62d",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch1",
+          "occurrenceId": "ce85fcf28133a90b",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void connectToLeader(org.apache.zookeeper.server.quorum.MultipleAddresses,java.lang.String)>#u82"
+        }
+      ],
+      "key": "24db597e9f17663749bb743ad112fdd9678ad40bd587161640b0d6f4e5f0b25d",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch1",
+          "occurrenceId": "ce85fcf28133a90b",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void connectToLeader(org.apache.zookeeper.server.quorum.MultipleAddresses,java.lang.String)>#u88"
+        }
+      ],
+      "key": "3c33ca270664ee1bd0c2da896eeb4628acc683dfe4f0c80e312681c1ffd7491c",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "541b399adfdab8ef",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.LearnerHandler: void run()>#u12"
+        }
+      ],
+      "key": "36554da5b50993a0475f6f323acaefe0a1448bd828500da64028c620923973b8",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "f7eb174e341d80a2",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.common.AtomicFileWritingIdiom: void <init>(java.io.File,org.apache.zookeeper.common.AtomicFileWritingIdiom$OutputStreamStatement,org.apache.zookeeper.common.AtomicFileWritingIdiom$WriterStatement)>#u18"
+        }
+      ],
+      "key": "58e1f0687a2287e70340febdb1665742fe5d1e0e31ff00ced2ec020a0f6af651",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "1cd8f778512bddc7",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.LearnerHandler: void run()>#u135"
+        }
+      ],
+      "key": "a4072740e7273fc857ffcc5ada2389d90f0092675f45790e05951e8235017fad",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "541b399adfdab8ef",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.LearnerHandler: void run()>#u135"
+        }
+      ],
+      "key": "70ba8ebcb3b35d7583dc332a34d6676b100816a9bbe40828c115d5be789d19eb",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "54ac01eda03eb81d",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.common.AtomicFileWritingIdiom: void <init>(java.io.File,org.apache.zookeeper.common.AtomicFileWritingIdiom$OutputStreamStatement,org.apache.zookeeper.common.AtomicFileWritingIdiom$WriterStatement)>#u18"
+        }
+      ],
+      "key": "3fcd653d1c33142714f163ab0be34db2ef0febdc4dbe77ac96f388bd639867db",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch1",
+          "occurrenceId": "eb94123672c317dc",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.common.AtomicFileWritingIdiom: void <init>(java.io.File,org.apache.zookeeper.common.AtomicFileWritingIdiom$OutputStreamStatement,org.apache.zookeeper.common.AtomicFileWritingIdiom$WriterStatement)>#u18"
+        }
+      ],
+      "key": "7b66e7bd5817cd4615590086a614829f02334fafdb9ef07a1b6d81584055ed99",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "712f573d7f0071bc",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u14"
+        }
+      ],
+      "key": "d3a7488b598c8b2d8cd49315434fd4ae51152f44de2d07c600e224c97d78a8be",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch1",
+          "occurrenceId": "d8fc93a263c7bdfd",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u14"
+        }
+      ],
+      "key": "1aca0b3c87b3d474d583b125db2d78904927b6d44128e9d4c24e6f0d1ed05cef",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "cbb1c4348d2952e9",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.common.AtomicFileWritingIdiom: void <init>(java.io.File,org.apache.zookeeper.common.AtomicFileWritingIdiom$OutputStreamStatement,org.apache.zookeeper.common.AtomicFileWritingIdiom$WriterStatement)>#u18"
+        }
+      ],
+      "key": "23344d37782784f2f6952f94029a9a4486594939e3ad7cbcb9c78c36358c29ef",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "1cd8f778512bddc7",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.LearnerHandler: void run()>#u276"
+        }
+      ],
+      "key": "647d14b68513dcb8dac04092d7799bf7fa814ee75f3ce92b6a7af41118a4203b",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "effef98d49909b40",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.SnapStream: boolean isValidCheckedStream(java.io.File)>#u12"
+        }
+      ],
+      "key": "8350df463e19f4dd1a7e0cb3ae8414bc826eb4a1c10a01d4aaf5ae6eac2f9901",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "effef98d49909b40",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.SnapStream: boolean isValidCheckedStream(java.io.File)>#u58"
+        }
+      ],
+      "key": "92a5af0b7c9b92355b75681c3acd581de5e278869310124f2adfbaa7e84a4d28",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "541b399adfdab8ef",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.LearnerHandler: void run()>#u206"
+        }
+      ],
+      "key": "3a097313671d8a5505d22f86acc8bea2800c08ab9b9bb1881e446f339b98dce3",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "541b399adfdab8ef",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.LearnerHandler: void run()>#u233"
+        }
+      ],
+      "key": "b9834c78d9fac3b785dc552467732bf705150a40b7276298d40a45d4e4f79820",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "712f573d7f0071bc",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u137"
+        }
+      ],
+      "key": "66fa9df0c95fa3e3f418a7d2a72e9752644e0550d1dddc2b2f7143442e19100f",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "070cf6c05cfcd79b",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.common.AtomicFileWritingIdiom: void <init>(java.io.File,org.apache.zookeeper.common.AtomicFileWritingIdiom$OutputStreamStatement,org.apache.zookeeper.common.AtomicFileWritingIdiom$WriterStatement)>#u18"
+        }
+      ],
+      "key": "1778a6a4b26bbfe28328a7975f4489be1a2330b59143cf08e0cd489655cb72eb",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "712f573d7f0071bc",
+          "ordinal": 2,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u137"
+        }
+      ],
+      "key": "42630a8ea44f57d68787c724e5eee24c3c5bd0d7117a486a7b5def09151b8c76",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch1",
+          "occurrenceId": "d8fc93a263c7bdfd",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u137"
+        }
+      ],
+      "key": "ab887a3ea6e42f4032f963ec64dfd33d02c09b776e0eb26d40e5dd034fc27b4b",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch1",
+          "occurrenceId": "92dbfeb6379e987a",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.FileSnap: void serialize(org.apache.zookeeper.server.DataTree,java.util.Map,java.io.File,boolean)>#u13"
+        }
+      ],
+      "key": "41e1e8e7922acd34964dc16b25217358995fa32ef720527aec03229c1e5da5db",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "712f573d7f0071bc",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u404"
+        }
+      ],
+      "key": "6c43a3acf5a998caa6d8f7e26a2f6a81f95d16815448d3961f2b5b65ad685dc4",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "712f573d7f0071bc",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u423"
+        }
+      ],
+      "key": "c8ed14e58b829acbb64524d3b19c4efc685a5310358e48320a8de4b5207e9ce5",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch1",
+          "occurrenceId": "e058af9db67e9445",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.common.AtomicFileWritingIdiom: void <init>(java.io.File,org.apache.zookeeper.common.AtomicFileWritingIdiom$OutputStreamStatement,org.apache.zookeeper.common.AtomicFileWritingIdiom$WriterStatement)>#u18"
+        }
+      ],
+      "key": "0d2b3adbb1cb580cbb3dcef1ce6d029142f70560d7ac5396b72973d3b1a03da5",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch1",
+          "occurrenceId": "d8fc93a263c7bdfd",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u392"
+        }
+      ],
+      "key": "a53dff207907b183c1862045e74b822918e5f5078d649a2c8c93454c35a330be",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch1",
+          "occurrenceId": "d8fc93a263c7bdfd",
+          "ordinal": 2,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u137"
+        }
+      ],
+      "key": "644a803677a4ea96db804cffd84caedd07baaf339675b4bd63e0e9796cdb26ec",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch1",
+          "occurrenceId": "d8fc93a263c7bdfd",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u404"
+        }
+      ],
+      "key": "4dd2bd99549751607434bc827cb5618cc625eb24c8ffbc40f7777c7600ac692c",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch1",
+          "occurrenceId": "d8fc93a263c7bdfd",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u423"
+        }
+      ],
+      "key": "6592b3aca74fee6fab45071a461495bc6e840158eaead4c2f47d0527c40d90f7",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "9437266e724bddb1",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.LearnerHandler: void closeSockSync()>#u5"
+        }
+      ],
+      "key": "19c8026a662224ec1824d0ea2934099e9af43888d4f8aeaafde451ac43c0d9aa",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    }
+  ],
+  "scheduler_version": 2,
+  "schema_version": 1,
+  "seen_plan_keys": [
+    "007460df420239a4780131240ac578ed0179905b754472c00697a48b116d3790",
+    "0207880f5e9e9f86df76098f873cb8f60645fd6a36976abe753fd46faa7a85f5",
+    "0369a727f7f6cfff38b32aae515f9b1acabc0ef84f1af690ecb63b563afcddb7",
+    "0565a77dd533daf7cdf6d9283fd0c52d6bc641736893fe94d1ba6db8d14cc8fb",
+    "061a82093d37b65e66facbcbcced8c23e1b98a728b147031cefd41e1d19ce77c",
+    "08e380946248d10a574dc3d99067585407b87ecd900dec11bdd6d86e25411470",
+    "0d2b3adbb1cb580cbb3dcef1ce6d029142f70560d7ac5396b72973d3b1a03da5",
+    "0e2556e01af974c6caa453ec736be5c7097957f27691b6ebb9de1e6d0fb286ed",
+    "0e832aa0a9169c5179dcb1630f2b8d1216f308f5ede0532058e85ca514e7ebc0",
+    "0fada4bf0560776d6c45dfbe7c72d545289619d19f7398b3df18d7428694947c",
+    "1220b586dcdf4f63bc91a9f7ad6681133b825b0d52f6606ee6919a7170e70daf",
+    "165e8aceb814f4c103ea6a5f60df6be5791c25ac1b40196e4b262783aaa82f10",
+    "1778a6a4b26bbfe28328a7975f4489be1a2330b59143cf08e0cd489655cb72eb",
+    "19c8026a662224ec1824d0ea2934099e9af43888d4f8aeaafde451ac43c0d9aa",
+    "1aca0b3c87b3d474d583b125db2d78904927b6d44128e9d4c24e6f0d1ed05cef",
+    "1b467c1c8254e99f2465a69f60070cd067256e5f4483b09544123ae1f944095b",
+    "1c95268df7a9d4d959282d541dd32396c1cf8b08ee20fb29a7e7a52880d93772",
+    "202a6d0a408ceb6555ea048954fcdc1a53d17fe440bcb07e86f72a4477004631",
+    "2293f9f0dadf0364f4d21422b2eb57bf75c343296634681fdcce4d0a9af8218c",
+    "22d2befb7f53dca53af4fd199f4ff4420676a3b16a23eb0476d439e46d61167b",
+    "23344d37782784f2f6952f94029a9a4486594939e3ad7cbcb9c78c36358c29ef",
+    "24db597e9f17663749bb743ad112fdd9678ad40bd587161640b0d6f4e5f0b25d",
+    "272351175e978ddbccbfa7aeb0328bae4a0b6a442428b4706ae71f33e66c5caa",
+    "27e8bdd8ad7992e4e79bf0b2904c6a86d2143a4b1849de21bc5ebaf312ef921a",
+    "29b52c7c37d07a5be929a10f0a53a291cb9e6e28c2820b2de3210adba8778075",
+    "2b989a107811860a40bfbff4b7470b97fb8cd6b5054e1ae7a1c7a7937a7c040c",
+    "2bbbce5f59529be5d339fa00cbdee78123b5fd4298d4efa7a3c40c629110b87a",
+    "2bec96bb198a7d73dc4805e3fca6821c60bd9d9952e6664534e09956b8e5324e",
+    "2d7db52ecda6380479801bc858af5c951f8d4fd20fa44bdb467e857845a14292",
+    "2e5146a361d912123e8f6ebc873cb06a91c4a112e10c137a62e788434f812cff",
+    "3011c54020618f3bb725cd54a7fc1ce13ae401c66702c3a4c37a2eb344433d73",
+    "31361389dd079e495bc05e29cceafc17dca3883414b2f45f9a06f12cdbb31957",
+    "31a9c9c823c39e938cadeeae984e4813e8b3aed0924addc29374a01117116444",
+    "326f6384d62637029102179b970518b37a1f516172a04dca23c0ba7d725eca99",
+    "352699ad378425c1f0daab7d35fc77f8645b3b2b3e6b401b31aa320d91edeabd",
+    "36554da5b50993a0475f6f323acaefe0a1448bd828500da64028c620923973b8",
+    "369ba6761d7bcdd4411e49974a382aa875eae17a373af6aa68bb4cb8350eb1c3",
+    "36b955bd1f945eb004287e8d70a18723067cd5caeedde122a63e69ad77435040",
+    "37b20dd76982863774fc08dd8de3c4c049e411f3010ba731f576fd4535e5fea7",
+    "3a097313671d8a5505d22f86acc8bea2800c08ab9b9bb1881e446f339b98dce3",
+    "3a5efd75bfc6cce841490e386b5427756af6da416463d720b7d52d8058d3a6e0",
+    "3c33ca270664ee1bd0c2da896eeb4628acc683dfe4f0c80e312681c1ffd7491c",
+    "3fcd653d1c33142714f163ab0be34db2ef0febdc4dbe77ac96f388bd639867db",
+    "41e1e8e7922acd34964dc16b25217358995fa32ef720527aec03229c1e5da5db",
+    "42630a8ea44f57d68787c724e5eee24c3c5bd0d7117a486a7b5def09151b8c76",
+    "43b4358393037f5f43399fcfd3a91d13619d89e073db3c80b19e7890b49cd8c8",
+    "453f6c0242f85361c7c5eb17953b588cdad674720ccd43566f0a065b5ba31a5d",
+    "4bf1f423565e3f705b563baed5175fd995b7119c71358369a832fdc2da7375da",
+    "4c4449a8a9498cfb0b9158a01e61207873a146a39d047f5e3aec1a10736129ed",
+    "4cb4ea448ba17c14cd4468827ed9bfd59645fb77910b5d2c6b3e95eb57e4d92a",
+    "4dd2bd99549751607434bc827cb5618cc625eb24c8ffbc40f7777c7600ac692c",
+    "51144eadd83df66130a0d4802ffe63bf8c86cdf1047057c5ef5290910d66786d",
+    "514e48f1539c582d5ade7421b23805b65af68a8b0572a577e8aa240431954561",
+    "530663545c9cb7af4ab33eb078d731a68bd227413e06878df21347ed6665497c",
+    "53c886deb85cfb8c7e633818a6545716ba2d24b87aad1a26a6efcc53080d8d79",
+    "53fff540e1d4931aeee1b4b38c081f3a788b6a22b949129fb78108bbf39422e4",
+    "543711e42a8801a6194a5975d9f606d252d80e2cad170d64956f14f16fbc331f",
+    "561e68256086f51b44cdf292056cbeca3daa1435f79c895ad6d82233dc718db2",
+    "5796df715db7fcc746bf39dc3753bbcfd9b9ad1a0afa4804c511debb415f4b1d",
+    "58b140eaedb8496c20613f4e7f8260cc71a2c74fcaedea8dc4019877e04b029f",
+    "58e1f0687a2287e70340febdb1665742fe5d1e0e31ff00ced2ec020a0f6af651",
+    "5ab4cf9549f0ec55514042eeb484f62e1e22a52e230df01f9e68aeec6bb54e33",
+    "5ac9aebcd1f70e7c80547463f422a9c674891e9c7809bfa0eba56dbe32dfb72e",
+    "5b239128b797196d0507027d018127ebf1d446b12b875a12390802b375d1ba6a",
+    "5c4b83fc226309fc4f45e04874b5e652666c15364139d2fb54fa775be35100f6",
+    "5f33b70c2df0f0c500d89abaf8697e67c048e075841701aa9f223d0c6a5a80d3",
+    "5ff6d09c2a2ad666741b2c0e4cb155f78b6e5e7c02e3db79636cb6606fd2a0bd",
+    "6101e46e2572980baf5835933592f91111d33dbf71c6f16d7365c0b0c2e42ccc",
+    "63a0e78ce8bf30ed70a3ded0c5cfe34c33a21c1a9130f529b5d673d9d11b1985",
+    "644a803677a4ea96db804cffd84caedd07baaf339675b4bd63e0e9796cdb26ec",
+    "647d14b68513dcb8dac04092d7799bf7fa814ee75f3ce92b6a7af41118a4203b",
+    "64cfd4bbec3236e865fe42ecedb57b785ce860eb10c890ebea14d95a69c73acd",
+    "6592b3aca74fee6fab45071a461495bc6e840158eaead4c2f47d0527c40d90f7",
+    "66c2d383413ae26472a16a5e15672c6bc42680916ec3d41ccbda1346ad07ed1d",
+    "66fa9df0c95fa3e3f418a7d2a72e9752644e0550d1dddc2b2f7143442e19100f",
+    "67d6aa000ed5dd23d236c1a3aad56b59d5d84d319fc5c3df537ebc79352ecd8f",
+    "6bdb57d03bc683532d867f88cfe4332c261a75a50fcc49a09fca331b6a4417f1",
+    "6c43a3acf5a998caa6d8f7e26a2f6a81f95d16815448d3961f2b5b65ad685dc4",
+    "6d67228c5be5c53b1171874c560390bfe71770f4622136acc583000f7f125c50",
+    "6da54ddf86e9966bd067b0cc42d19173e47b7f8e91bf878d15867dd4f5de537e",
+    "6e54f034201cf514bc872f7bf510a4ce7535970de3a8b5bfc2686c9e97dfd972",
+    "6fb59c862a697dbe5a6a1aa58c7e983b5fe59d0db02edfdb2542d84c0780f3b9",
+    "70ba8ebcb3b35d7583dc332a34d6676b100816a9bbe40828c115d5be789d19eb",
+    "71f20ee27dd6c38edbd311bab6aa19f126a7c1e1e21ec65c0d3850241614f5f3",
+    "74e4d5d28bb0685369c87b0069c5f603f3a036ca730b63ecc93a3456d052595e",
+    "757befe932c22500aa4368e4ba220e4680c9b98e693e3e06ac67ffa4a2dedc83",
+    "78613cddc95b517428d0d639fb7597a83a7a1772f86861e0d207f6700381d2a9",
+    "79149f8a69b090f2108604b1d2672dfd7851cf7dc6ceea91971f27069d66a21a",
+    "7a9fd02dc750e622a49c00022438b54c0a303aa4f8233ed30be69e71ce6ba759",
+    "7ac2befda56678bc74e6d9f913466296efae85343b32cf6ae1ffa04430300b16",
+    "7b1842876d2ecab535cc05f11b4d798edabf00bda988ec73b59a5b153f7453cf",
+    "7b66e7bd5817cd4615590086a614829f02334fafdb9ef07a1b6d81584055ed99",
+    "7c9410ae67d3c392c8bc197416905de5f91a0ae01420f7750803100c9cc3732f",
+    "7d7995cc929e6bf5c33f9a7a37d6274e3948b99b1f363295f15717ca6726b6fb",
+    "7dc1f3c4978d2055dc44e6541195e4ca828e545758eda05cca43317894803fa5",
+    "7dd9bed14a03b3b0811741a09fa8d08ff4aacc363c31f11b586aa9ab7e08b759",
+    "7de3c4af32f87cf860cea33df5e9ba9e2f903af225047027c97c96ffcf9eca64",
+    "809372c7620c9b6aec03e8139bb8bb7219909dc2b8da01c1bce3c36799a7d61f",
+    "8350df463e19f4dd1a7e0cb3ae8414bc826eb4a1c10a01d4aaf5ae6eac2f9901",
+    "83c2ef2fa1bf2af3b0de401b0abeb32f88ca84683b6b28d94d3ed0ca7ad10474",
+    "8561efd7e65fb171605ce0997e2609eebf5d06ad01e2bc2311906502b0e63dbd",
+    "86e4456244db467cefede99b05b385515b1b8195df19e7bc8a7ecf74408337d3",
+    "8871659c9b8bf7bf292a8a7023d8f7082bbca4fd89f8ff5a12439c105270f49e",
+    "892f9db15b7d837544b38e4be6f4f77b92b496bcd7f2c722668fd64b45fb55e2",
+    "896cbe84d847f188afb20070e56394188806fc91f164ea06509e9feb9ecf5e4a",
+    "89b7128c854a54cecbaae1d0fce46f3c7ffa648b09d9e2f0b8b9a058bf256d33",
+    "91686057891146137792bbfcdf76d4b92f81523c5b41b8b63927a6551993a470",
+    "920f1e69a25f0d13bc025bf34860f08e7db957db6d466f5dc3176dd67bff0472",
+    "92a5af0b7c9b92355b75681c3acd581de5e278869310124f2adfbaa7e84a4d28",
+    "94bc5a6ad47c0a4f309c624cb7c35a4e8bf16634287e07becd97d6149c6b857a",
+    "966d9ba5dbd05a911a538104dbaa258f065cf8e4b91e8e3d47951b9d570fbddc",
+    "97f687d219ed05652bff813894174421643c813b9719a5665a62b86e451a6f62",
+    "994397fbd3cffb23e1b032d1bd2e52ff61fb96e8d39a5556bb9c9804018568b9",
+    "9c3bee4bbed4134e5d8fa94c5df7f187af1ed487a8200e915defc9ac1d3dbf8d",
+    "9f4391544b4a0344239d8265309a5e713b8b6208806d7e11fc9770e815d40e00",
+    "a3f18e694e04712d55e130660acf350c8afb24800d38dac6c928c5be23577780",
+    "a4072740e7273fc857ffcc5ada2389d90f0092675f45790e05951e8235017fad",
+    "a53dff207907b183c1862045e74b822918e5f5078d649a2c8c93454c35a330be",
+    "a717b0a38e9d7459aa31678b7d19edd8cd28db58e2a57e17dca4fd963dcbd4f5",
+    "aa08a629cfc209fc254760f97655502702344aba81369f62c3c821d78909b87c",
+    "aa90f6a19d082cfc740bcadf19217ae74a181836b1b06ae39c817a03852eec17",
+    "ab887a3ea6e42f4032f963ec64dfd33d02c09b776e0eb26d40e5dd034fc27b4b",
+    "adb47064a800106ac5dba6bd0a8ed7dccc28448b68a38437d600a5ecb5c80f29",
+    "aeda1158c875dd3ed1d204c121bbe47ae1e60d97d5d610724d17310568fb5d70",
+    "b05954132fe41d1504a9dc099690db0855520e664f01aea07024aa0d03f6b897",
+    "b4f2c05f9a94bb489658e4baa0e9895b30003a58dbb87af392b8067f05f27f26",
+    "b5c514bcbee030355e0def356803ffc8b229fcd96b0c530bdd5e7ca7ff6a5c6d",
+    "b688886f211871353b14177adf06c8b11cb82422dad275ae75b41627784c6ec5",
+    "b74998bfb16bf25c5f3f1e0c0fd46787f93eea6c1c5c416c7c37512cb2519eca",
+    "b9834c78d9fac3b785dc552467732bf705150a40b7276298d40a45d4e4f79820",
+    "b9ad0fc27571407ed84e6d1964886570f2691399a971f91727d516fae9a8116a",
+    "bb0c2b8a4d3992a968e832699bacda760045e671aa7c34f1b087234ac4fe0fdd",
+    "bb28008a6c953771e721fbd75607afa264c885d59a3ee2094417feaaf1e16bfa",
+    "bbbdb65da043ece24b5720f666e782fd600f467e89e1395e57371f39b0b980b9",
+    "bd8d2cc44a617705c13d3dac817f923f3aea62f15a989544a27dd48399aa6688",
+    "be85c2aa8c89dad01c09f9a9e4ef78ff7270e4520146659ebe23adb0cb112f79",
+    "bf2e21e92fc444b7c79e1b28e929df18104b89716d85a9d4797fdf3d910fa65d",
+    "bf6c5aae4b2224be4103ea5a982bb625c0e68144dd2ce31fdab5f9e459f7101d",
+    "bfe898b162851f0313ee7e5e8380311e1f6311953490e02286db20ce308ae7db",
+    "c0582e1e81a80d96defe21de979c949c1fa7aaa1a8224b2dcf03560b4b93b83e",
+    "c193dfc6b4de5954f9c8e370b459f1469bda6594827984c9b4ef8318c8e58bcd",
+    "c2e523afc7cc22fbe6000b7c81e6468e1ffc2cc8fe6974e1bd843361f514d6f9",
+    "c449dd056a9394e37cb6927d9652d363a155482cb51260650544e7294d66e62d",
+    "c465ec7a830feeb6f0c18b782415e4d0952b61ada89240a7fe9a981e5a6cb844",
+    "c58513ef061d2db9aab9f6eb1e77e06d94ed67e4fc193ab49704f6c760ce7cb5",
+    "c6261a777da19fa20b4d40229a0c613e90898691c5dd60246d6c646a0caf0666",
+    "c8ed14e58b829acbb64524d3b19c4efc685a5310358e48320a8de4b5207e9ce5",
+    "ce67c9b44cbdcced92df3c06fd1b593618edb500f04b560a1756bd92c7b81a26",
+    "cee3d64234a47b5d6ca5f879b2f8bbc2351ff4bb2964c825220af4e145236c77",
+    "cf59acdfeb9b4594c854c788144458696ff889e6ec6170386578cd80d64523c9",
+    "d0ecfb8ed4d21fbf761ba9a73dca9cf55f89afe629c5061388b34a0a196b9672",
+    "d3a7488b598c8b2d8cd49315434fd4ae51152f44de2d07c600e224c97d78a8be",
+    "d3b854cb69f1a0054aa233a3e25e91d8bebe142f2d96ade384d22f990bd56607",
+    "d84c99662d00cccdb868db355a2a72f7da57ede016bdec2f45d0c8c6ded2ecd7",
+    "d8df7f11ed9f94826402af71c93dd017e9d92116883ae34802a3a8ec1ae89665",
+    "d8e88f2e474b0ea1bd3246966f64599c7cd92eaaa8e0fa2d80f8c9888c0c5569",
+    "d9ba1b5a21d172dc8ba4c84297ef3c478e1c8bdd0339a5e9a178a101764a70d6",
+    "d9bfd40685be61bb4a39db3e50cb0c8d0a6d3e1bc9d33dae042bbc1a98f87de9",
+    "db86878d7baf733d2ad0f34d83f77ca5fe82a256360e25027ebeffe51c6ea5d1",
+    "dcda1b3ec1ed9e753c122f127649f91850aa277100ae5b698f03dba29a9287b8",
+    "ded6806dcd8ebbcb4ca340e754c0ee6f02f11c5db507984cf5f932447d1fc257",
+    "e3cf984287d00a1d830226dc3f2960e18cb6f976633d11f635bf4029ebfb7bd1",
+    "e4b4a0cf065669e1da4f2bf76d0b39464bed85b88c362ebcad92790681435b12",
+    "e5af6dd636636fd452456b875bc68b625fc17425f3ceefb51e609b4d14228595",
+    "e7e594b99e7de93f3e6f5e77ff861518dddd5c852b23ded34311ba6155686691",
+    "e7f9a3ce1764fcd0e8afd3ef96a9f0dee78af3d4d72137b4365fa151e80a9598",
+    "e824c9e3678886b45f78ab8526e5a8e96c8c3021e9077a34d3c0dbf37181f63b",
+    "e8f82234836e4cb9f8943c3d7c0de14f8b858a56556ec514976ed573fd220a07",
+    "f0cd7deb6be765b38e798df1af3b03a10b930ad94f3c6e91ffeb52eaa7897bb7",
+    "f22097a794ae45cc1e3d24e1ab6cf7a1ab0eaba5a38d7908a0b4846b7aae6cf4",
+    "f5bedd2934457d7063b048212e5e985c3ca9a1b7b61d346861945bfb06a79903",
+    "f777f0b98f32cfa442e7b5838284296492d1f72371de755db1164ad97b052fa3",
+    "f7f1b0fb82bdceafc8c41ec26a9b4c0b4d44f4409636cc9e234ecf4fa5734cbe",
+    "f80e974c815c768cf1775ef2d09f6ee8f583e81a726725df37b5ae8b996929cc",
+    "f95dabe096f0132c6945354f799dd1495d0cf8b34e08e2bd6955041df9111ad9",
+    "fcf57ea76510062936d1b3ef750dbd3968c330de6b066337c2d4a5ceae01d9d1",
+    "fd08bd2d23a2d38ca59d0e07091c9847364af5816dd2a7241e823fa736118c69",
+    "feb0a2ea81cd4f4f9f532a11ae95565be8b7b7424504351bcb2120a316cf5979",
+    "ffc83b95c4d1c4b701bb00972d8cc9eba4841aaa4756fcd98bd79e9e07b699c0"
+  ],
+  "started_at": "2026-10-13T20:49:50+00:00",
+  "status": "complete_trial_budget",
+  "target_site_rows": [
+    {
+      "clazz": "org.apache.zookeeper.server.quorum.Learner",
+      "descriptor": "(I)J",
+      "exceptionClass": "java.io.IOException",
+      "kind": "THROW",
+      "line": 525,
+      "method": "registerWithLeader",
+      "siteId": "<org.apache.zookeeper.server.quorum.Learner: long registerWithLeader(int)>#u66",
+      "unitIndex": 66
+    },
+    {
+      "clazz": "org.apache.zookeeper.server.quorum.Learner",
+      "descriptor": "(I)J",
+      "kind": "BRANCH",
+      "line": 515,
+      "method": "registerWithLeader",
+      "siteId": "<org.apache.zookeeper.server.quorum.Learner: long registerWithLeader(int)>#u51",
+      "unitIndex": 51
+    }
+  ],
+  "terminal": true,
+  "trial_elapsed_seconds": 416.55,
+  "trials": [
+    {
+      "elapsed_seconds": 6.489,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "fec0f6be1747798c",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: long registerWithLeader(int)>#u25"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0001",
+      "post_fault_target_reached": true,
+      "result": "trials/r0001/result.json",
+      "status": "unrelated_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.839,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "a6bb1e64cd47544b",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: long registerWithLeader(int)>#u24"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0002",
+      "post_fault_target_reached": true,
+      "result": "trials/r0002/result.json",
+      "status": "unrelated_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 2.625,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch0",
+          "occurrenceId": "1d939206013fe907",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.FileTxnSnapLog: long restore(org.apache.zookeeper.server.DataTree,java.util.Map,org.apache.zookeeper.server.persistence.FileTxnSnapLog$PlayBackListener)>#u20"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0003",
+      "post_fault_target_reached": false,
+      "result": "trials/r0003/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.236,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "a6bb1e64cd47544b",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: long registerWithLeader(int)>#u25"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0004",
+      "post_fault_target_reached": true,
+      "result": "trials/r0004/result.json",
+      "status": "unrelated_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.435,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "fec0f6be1747798c",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: long registerWithLeader(int)>#u24"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0005",
+      "post_fault_target_reached": true,
+      "result": "trials/r0005/result.json",
+      "status": "unrelated_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.486,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch0",
+          "occurrenceId": "bc338b37240188e9",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.SnapStream: boolean isValidCheckedStream(java.io.File)>#u4"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0006",
+      "post_fault_target_reached": false,
+      "result": "trials/r0006/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.385,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch0",
+          "occurrenceId": "261df6fd2b685146",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: long registerWithLeader(int)>#u69"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0007",
+      "post_fault_target_reached": true,
+      "result": "trials/r0007/result.json",
+      "status": "unrelated_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 5.683,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch1",
+          "occurrenceId": "78a9d9e7bb55199c",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.FileSnap: long deserialize(org.apache.zookeeper.server.DataTree,java.util.Map)>#u23"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0008",
+      "post_fault_target_reached": false,
+      "result": "trials/r0008/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 2.725,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch0",
+          "occurrenceId": "6ac0f9c77caa13a8",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.FileTxnSnapLog: long restore(org.apache.zookeeper.server.DataTree,java.util.Map,org.apache.zookeeper.server.persistence.FileTxnSnapLog$PlayBackListener)>#u20"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0009",
+      "post_fault_target_reached": false,
+      "result": "trials/r0009/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.837,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch1",
+          "occurrenceId": "7276ed0367aa9591",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: long registerWithLeader(int)>#u69"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0010",
+      "post_fault_target_reached": true,
+      "result": "trials/r0010/result.json",
+      "status": "unrelated_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 4.981,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "c8cd37670f898d1b",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.FileSnap: long deserialize(org.apache.zookeeper.server.DataTree,java.util.Map)>#u23"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0011",
+      "post_fault_target_reached": false,
+      "result": "trials/r0011/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 3.076,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch0",
+          "occurrenceId": "67d18fefb8f51c44",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.common.AtomicFileWritingIdiom: void <init>(java.io.File,org.apache.zookeeper.common.AtomicFileWritingIdiom$OutputStreamStatement,org.apache.zookeeper.common.AtomicFileWritingIdiom$WriterStatement)>#u18"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0012",
+      "post_fault_target_reached": false,
+      "result": "trials/r0012/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.585,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch0",
+          "occurrenceId": "d147bba1b545e73a",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: long registerWithLeader(int)>#u25"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0013",
+      "post_fault_target_reached": true,
+      "result": "trials/r0013/result.json",
+      "status": "unrelated_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.485,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch0",
+          "occurrenceId": "261df6fd2b685146",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: long registerWithLeader(int)>#u24"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0014",
+      "post_fault_target_reached": true,
+      "result": "trials/r0014/result.json",
+      "status": "unrelated_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 3.125,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch0",
+          "occurrenceId": "4009dad82d1d9145",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.FileTxnSnapLog: long restore(org.apache.zookeeper.server.DataTree,java.util.Map,org.apache.zookeeper.server.persistence.FileTxnSnapLog$PlayBackListener)>#u20"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0015",
+      "post_fault_target_reached": false,
+      "result": "trials/r0015/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.384,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch0",
+          "occurrenceId": "d147bba1b545e73a",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: long registerWithLeader(int)>#u69"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0016",
+      "post_fault_target_reached": true,
+      "result": "trials/r0016/result.json",
+      "status": "unrelated_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 4.931,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "8de3278da5530fa6",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.FileSnap: long deserialize(org.apache.zookeeper.server.DataTree,java.util.Map)>#u23"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0017",
+      "post_fault_target_reached": false,
+      "result": "trials/r0017/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.334,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "712f573d7f0071bc",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u392"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0018",
+      "post_fault_target_reached": true,
+      "result": "trials/r0018/result.json",
+      "status": "unrelated_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.942,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch0",
+          "occurrenceId": "d147bba1b545e73a",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: long registerWithLeader(int)>#u24"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0019",
+      "post_fault_target_reached": true,
+      "result": "trials/r0019/result.json",
+      "status": "unrelated_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 5.938,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch0",
+          "occurrenceId": "261df6fd2b685146",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: long registerWithLeader(int)>#u25"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0020",
+      "post_fault_target_reached": true,
+      "result": "trials/r0020/result.json",
+      "status": "unrelated_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 11.888,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "c18f6993e4497c93",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.FileTxnSnapLog: long restore(org.apache.zookeeper.server.DataTree,java.util.Map,org.apache.zookeeper.server.persistence.FileTxnSnapLog$PlayBackListener)>#u20"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0021",
+      "post_fault_target_reached": false,
+      "result": "trials/r0021/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 20.657,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "9c007e978e45dba2",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: long registerWithLeader(int)>#u69"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0022",
+      "post_fault_target_reached": true,
+      "result": "trials/r0022/result.json",
+      "status": "unrelated_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.589,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "9c007e978e45dba2",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: long registerWithLeader(int)>#u24"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0023",
+      "post_fault_target_reached": false,
+      "result": "trials/r0023/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.535,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "3bfe9048a929c8d2",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u14"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0024",
+      "post_fault_target_reached": true,
+      "result": "trials/r0024/result.json",
+      "status": "unrelated_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.736,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch1",
+          "occurrenceId": "7276ed0367aa9591",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: long registerWithLeader(int)>#u25"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0025",
+      "post_fault_target_reached": false,
+      "result": "trials/r0025/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 5.683,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "301faa2ac953a7e2",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.FileTxnSnapLog: long restore(org.apache.zookeeper.server.DataTree,java.util.Map,org.apache.zookeeper.server.persistence.FileTxnSnapLog$PlayBackListener)>#u20"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0026",
+      "post_fault_target_reached": false,
+      "result": "trials/r0026/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.287,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch1",
+          "occurrenceId": "7276ed0367aa9591",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: long registerWithLeader(int)>#u24"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0027",
+      "post_fault_target_reached": false,
+      "result": "trials/r0027/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.736,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "9c007e978e45dba2",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: long registerWithLeader(int)>#u25"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0028",
+      "post_fault_target_reached": false,
+      "result": "trials/r0028/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.893,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch1",
+          "occurrenceId": "84400992efecb2f2",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.FileTxnSnapLog: long restore(org.apache.zookeeper.server.DataTree,java.util.Map,org.apache.zookeeper.server.persistence.FileTxnSnapLog$PlayBackListener)>#u20"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0029",
+      "post_fault_target_reached": false,
+      "result": "trials/r0029/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.684,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "1cd8f778512bddc7",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.LearnerHandler: void run()>#u12"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0030",
+      "post_fault_target_reached": false,
+      "result": "trials/r0030/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 4.579,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "036a2708fb2e8bee",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.QuorumPeer: long readLongFromFile(java.lang.String)>#u11"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0031",
+      "post_fault_target_reached": false,
+      "result": "trials/r0031/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 5.832,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch1",
+          "occurrenceId": "0859b5760a6f261f",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.QuorumPeer: long readLongFromFile(java.lang.String)>#u8"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0032",
+      "post_fault_target_reached": false,
+      "result": "trials/r0032/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.434,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch0",
+          "occurrenceId": "a19033caa54a42d7",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void connectToLeader(org.apache.zookeeper.server.quorum.MultipleAddresses,java.lang.String)>#u82"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0033",
+      "post_fault_target_reached": true,
+      "result": "trials/r0033/result.json",
+      "status": "unrelated_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.787,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch0",
+          "occurrenceId": "9053124ca99c2277",
+          "ordinal": 2,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u137"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0034",
+      "post_fault_target_reached": true,
+      "result": "trials/r0034/result.json",
+      "status": "unrelated_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.685,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "f783934cc4a79864",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.FileSnap: void serialize(org.apache.zookeeper.server.DataTree,java.util.Map,java.io.File,boolean)>#u13"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0035",
+      "post_fault_target_reached": false,
+      "result": "trials/r0035/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.386,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "541b399adfdab8ef",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.LearnerHandler: void run()>#u276"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0036",
+      "post_fault_target_reached": true,
+      "result": "trials/r0036/result.json",
+      "status": "unrelated_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.436,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch0",
+          "occurrenceId": "1b60611bcbf7e57a",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.LearnerHandler: void run()>#u233"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0037",
+      "post_fault_target_reached": true,
+      "result": "trials/r0037/result.json",
+      "status": "unrelated_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 5.881,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "91e4506d8c725f20",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.QuorumPeer: long readLongFromFile(java.lang.String)>#u14"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0038",
+      "post_fault_target_reached": false,
+      "result": "trials/r0038/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.887,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch0",
+          "occurrenceId": "9bb7240f1a127796",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.LearnerHandler: void closeSockSync()>#u5"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0039",
+      "post_fault_target_reached": true,
+      "result": "trials/r0039/result.json",
+      "status": "unrelated_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.734,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "3bfe9048a929c8d2",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u423"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0040",
+      "post_fault_target_reached": true,
+      "result": "trials/r0040/result.json",
+      "status": "unrelated_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.586,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch0",
+          "occurrenceId": "273d39d2c728edf7",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.SnapStream: boolean isValidCheckedStream(java.io.File)>#u58"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0041",
+      "post_fault_target_reached": true,
+      "result": "trials/r0041/result.json",
+      "status": "unrelated_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 7.591,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "b470654dec855fb6",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.SnapStream: boolean isValidCheckedStream(java.io.File)>#u12"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0042",
+      "post_fault_target_reached": true,
+      "result": "trials/r0042/result.json",
+      "status": "unrelated_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.635,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch0",
+          "occurrenceId": "a19033caa54a42d7",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void connectToLeader(org.apache.zookeeper.server.quorum.MultipleAddresses,java.lang.String)>#u88"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0043",
+      "post_fault_target_reached": true,
+      "result": "trials/r0043/result.json",
+      "status": "unrelated_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.939,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch1",
+          "occurrenceId": "b3eac22b30428ba4",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void closeSockSync()>#u5"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0044",
+      "post_fault_target_reached": false,
+      "result": "trials/r0044/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.539,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch0",
+          "occurrenceId": "273d39d2c728edf7",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.SnapStream: boolean isValidCheckedStream(java.io.File)>#u20"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0045",
+      "post_fault_target_reached": true,
+      "result": "trials/r0045/result.json",
+      "status": "unrelated_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.687,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch0",
+          "occurrenceId": "1b60611bcbf7e57a",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.LearnerHandler: void run()>#u135"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0046",
+      "post_fault_target_reached": true,
+      "result": "trials/r0046/result.json",
+      "status": "unrelated_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.541,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch0",
+          "occurrenceId": "443c140495cce646",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u404"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0047",
+      "post_fault_target_reached": true,
+      "result": "trials/r0047/result.json",
+      "status": "unrelated_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.034,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch0",
+          "occurrenceId": "1b60611bcbf7e57a",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.LearnerHandler: void run()>#u206"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0048",
+      "post_fault_target_reached": true,
+      "result": "trials/r0048/result.json",
+      "status": "unrelated_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 2.825,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch0",
+          "occurrenceId": "e072c2e1235ea2ec",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.common.AtomicFileWritingIdiom: void <init>(java.io.File,org.apache.zookeeper.common.AtomicFileWritingIdiom$OutputStreamStatement,org.apache.zookeeper.common.AtomicFileWritingIdiom$WriterStatement)>#u18"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0049",
+      "post_fault_target_reached": false,
+      "result": "trials/r0049/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.692,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch0",
+          "occurrenceId": "9053124ca99c2277",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u14"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0050",
+      "post_fault_target_reached": true,
+      "result": "trials/r0050/result.json",
+      "status": "unrelated_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.838,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch0",
+          "occurrenceId": "1b60611bcbf7e57a",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.LearnerHandler: void run()>#u12"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0051",
+      "post_fault_target_reached": true,
+      "result": "trials/r0051/result.json",
+      "status": "unrelated_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 2.876,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch0",
+          "occurrenceId": "fdebbdfb5ca7c2f0",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.QuorumPeer: long readLongFromFile(java.lang.String)>#u8"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0052",
+      "post_fault_target_reached": false,
+      "result": "trials/r0052/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.485,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch0",
+          "occurrenceId": "9053124ca99c2277",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u423"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0053",
+      "post_fault_target_reached": true,
+      "result": "trials/r0053/result.json",
+      "status": "unrelated_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 7.542,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch0",
+          "occurrenceId": "ac70cb18b9f72a33",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.FileSnap: void serialize(org.apache.zookeeper.server.DataTree,java.util.Map,java.io.File,boolean)>#u13"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0054",
+      "post_fault_target_reached": true,
+      "result": "trials/r0054/result.json",
+      "status": "unrelated_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 4.58,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "8cba2faa1f7a2315",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.QuorumPeer: long readLongFromFile(java.lang.String)>#u14"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0055",
+      "post_fault_target_reached": false,
+      "result": "trials/r0055/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.786,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch0",
+          "occurrenceId": "61ece9b88ac8e0ba",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.LearnerHandler: void run()>#u233"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0056",
+      "post_fault_target_reached": true,
+      "result": "trials/r0056/result.json",
+      "status": "unrelated_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.684,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "effef98d49909b40",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.SnapStream: boolean isValidCheckedStream(java.io.File)>#u4"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0057",
+      "post_fault_target_reached": false,
+      "result": "trials/r0057/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.942,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch1",
+          "occurrenceId": "3bfe9048a929c8d2",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u137"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0058",
+      "post_fault_target_reached": true,
+      "result": "trials/r0058/result.json",
+      "status": "unrelated_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.585,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-1#epoch0",
+          "occurrenceId": "6362d412639ccf5b",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void connectToLeader(org.apache.zookeeper.server.quorum.MultipleAddresses,java.lang.String)>#u82"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0059",
+      "post_fault_target_reached": true,
+      "result": "trials/r0059/result.json",
+      "status": "unrelated_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.534,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch0",
+          "occurrenceId": "1b60611bcbf7e57a",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.LearnerHandler: void run()>#u276"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0060",
+      "post_fault_target_reached": true,
+      "result": "trials/r0060/result.json",
+      "status": "unrelated_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.134,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "f835774a27d1d246",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.quorum.Learner: void syncWithLeader(long)>#u392"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0061",
+      "post_fault_target_reached": true,
+      "result": "trials/r0061/result.json",
+      "status": "unrelated_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.385,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-3#epoch0",
+          "occurrenceId": "bc338b37240188e9",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.SnapStream: boolean isValidCheckedStream(java.io.File)>#u58"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0062",
+      "post_fault_target_reached": false,
+      "result": "trials/r0062/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 7.187,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "4d1633c4fbc825e4",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.SnapStream: boolean isValidCheckedStream(java.io.File)>#u12"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0063",
+      "post_fault_target_reached": true,
+      "result": "trials/r0063/result.json",
+      "status": "unrelated_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 6.586,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "zk-peer-2#epoch1",
+          "occurrenceId": "effef98d49909b40",
+          "ordinal": 1,
+          "siteId": "<org.apache.zookeeper.server.persistence.SnapStream: boolean isValidCheckedStream(java.io.File)>#u20"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0064",
+      "post_fault_target_reached": false,
+      "result": "trials/r0064/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    }
+  ],
+  "unmatched_retries": {},
+  "updated_at": "2026-10-13T21:07:01+00:00"
+}

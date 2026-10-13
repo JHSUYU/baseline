@@ -165,9 +165,10 @@ human-reviewed `quality_reviews.json`; the default is `unassessed`. A review
 applies only to a terminal receipt with the same config SHA-256, status, and
 completed trial count. A changed rerun makes the old review stale and returns
 the row to `unassessed` until the metadata is updated. In particular,
-ZOOKEEPER-07 is `budget_finished_preliminary`, not high-quality complete:
-its 64-trial receipt is terminal, while the static scope misses a read-side
-I/O door and the injected fault sites lack diversity.
+ZOOKEEPER-07 is `budget_finished_preliminary`: the frozen v2 receipt has 64
+strict trials, including read-side I/O doors, but its graph lacks the
+same-thread `registerWithLeader` retry edge. The separate v3 run tests that
+edge before the case can receive a complete causal review.
 It cross-checks terminal summaries against checkpoint trial records. A remote
 read failure or inconsistent receipt is `receipt_error`, never `unrun` or
 `confirmed`. The command does not read the legacy table and does not alter

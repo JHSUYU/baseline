@@ -4,14 +4,29 @@
     {
       "case_id": "ZOOKEEPER-07",
       "state": "budget_finished_preliminary",
-      "reason": "The 64-trial budget finished, but the frozen static I/O selection omits the BufferedReader.readLine read side (and FileReader constructor). The 64 strict trials injected only 3 distinct door sites among 26 distinct sites and 163 FAULT_DOOR events observed in the healthy run; no new closure coverage was recorded. This is a preliminary result pending scope repair and rerun.",
-      "config_sha256": "04f326cf4ec2aaf82deb63cee497c35b4f1ad1d44bafc1576cdfe69c25158ffe",
+      "reason": "The frozen v2 budget finished with 64 strict trials and 28 distinct injected I/O site IDs, including the newly selected FileReader(File) and BufferedReader.readLine doors. There were 37 post-fault target reaches but none on an injection-specific target ancestor: a same-peer, same-thread retry from registerWithLeader occurrence #1 to #2 lacked a PROGRAM_ORDER edge in the pinned v2 graph, preventing deeper sequence mutation. No selected target throw occurred. A separately pinned v3 rerun will test the corrected causal edge before high-quality review.",
+      "config_sha256": "bba1516d9f9ca5eacce2086d67583b9f3726af6b260a4a36f3dfd5355553d85f",
       "receipt_status": "complete_trial_budget",
       "completed_fault_trials": 64,
       "evidence_paths": [
-        "data/mallory/graphchecker_port/cases/ZOOKEEPER-07/checkpoint.json",
-        "data/mallory/graphchecker_port/cases/ZOOKEEPER-07/summary.json",
-        "/users/ZhenyuLi/.mallory-graphchecker-campaigns/ZOOKEEPER-07-20261013/config/scope/weave_manifest.json"
+        "data/mallory/graphchecker_port/evidence/ZOOKEEPER-07-snapshots.json",
+        "data/mallory/graphchecker_port/evidence/ZOOKEEPER-07-v1/summary.json",
+        "data/mallory/graphchecker_port/evidence/ZOOKEEPER-07-v1/checkpoint.json.gz",
+        "data/mallory/graphchecker_port/evidence/ZOOKEEPER-07-v2/config.json",
+        "data/mallory/graphchecker_port/evidence/ZOOKEEPER-07-v2/checkpoint.json",
+        "data/mallory/graphchecker_port/evidence/ZOOKEEPER-07-v2/summary.json",
+        "data/mallory/graphchecker_port/evidence/ZOOKEEPER-07-v2/r0001-result.json.gz",
+        "data/mallory/graphchecker_port/evidence/ZOOKEEPER-07-v2/r0031-result.json.gz",
+        "data/mallory/graphchecker_port/evidence/ZOOKEEPER-07-v2/r0032-result.json.gz",
+        "data/mallory/graphchecker_port/evidence/ZOOKEEPER-07-v2/weave_manifest.json.gz",
+        "/users/ZhenyuLi/.mallory-graphchecker-campaigns/ZOOKEEPER-07-20261013/campaign/summary.json",
+        "/users/ZhenyuLi/.mallory-graphchecker-campaigns/ZOOKEEPER-07-20261013/campaign/checkpoint.json",
+        "/proj/silentfailure-PG0/ZhenyuLi/Mallory/ZOOKEEPER-07-20261013-v2/campaign/summary.json",
+        "/proj/silentfailure-PG0/ZhenyuLi/Mallory/ZOOKEEPER-07-20261013-v2/campaign/checkpoint.json",
+        "/proj/silentfailure-PG0/ZhenyuLi/Mallory/ZOOKEEPER-07-20261013-v2/campaign/trials/r0001/result.json",
+        "/proj/silentfailure-PG0/ZhenyuLi/Mallory/ZOOKEEPER-07-20261013-v2/campaign/trials/r0031/result.json",
+        "/proj/silentfailure-PG0/ZhenyuLi/Mallory/ZOOKEEPER-07-20261013-v2/campaign/trials/r0032/result.json",
+        "/proj/silentfailure-PG0/ZhenyuLi/Mallory/ZOOKEEPER-07-20261013-v2/config/scope/weave_manifest.json"
       ]
     }
   ]

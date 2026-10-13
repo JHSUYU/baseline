@@ -161,7 +161,7 @@ class AggregateTest(unittest.TestCase):
         self.assertEqual("budget_finished_preliminary", review["state"])
         self.assertEqual(64, review["completed_fault_trials"])
         self.assertIn("BufferedReader.readLine", review["reason"])
-        self.assertIn("163 FAULT_DOOR events", review["reason"])
+        self.assertIn("PROGRAM_ORDER", review["reason"])
 
 
 if __name__ == "__main__":
