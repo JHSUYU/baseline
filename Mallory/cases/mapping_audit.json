@@ -1,13 +1,16 @@
 {
   "schema_version": 1,
   "original_count": 102,
-  "mapped_config_count": 100,
-  "ready_for_seed_count": 95,
+  "mapped_config_count": 102,
+  "ready_for_seed_count": 97,
   "build_tool_unavailable_count": 0,
-  "workload_oracle_unfit_count": 1,
+  "original_junit_skipped_count": 4,
+  "workload_oracle_unfit_count": 0,
   "workload_target_overload_mismatch_count": 1,
-  "source_infeasible_healthy_guard_count": 3,
-  "unready_count": 2,
+  "source_infeasible_healthy_guard_count": 0,
+  "healthy_exact_guard_requires_fault_count": 3,
+  "differential_oracle_required_count": 1,
+  "unready_count": 0,
   "cases": [
     {
       "case_id": "HBASE-01",
@@ -1542,9 +1545,7 @@
         "selection_guard_id": "org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager#checkAccess(Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/hdfs/security/token/block/BlockTokenIdentifier$AccessMode;)V#B1",
         "selection_throw_id": "org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager#checkAccess(Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/hdfs/security/token/block/BlockTokenIdentifier$AccessMode;)V#L432",
         "mapping_status": "unique_compiled_site",
-        "gaps": [
-          "selected_cluster_test_executes_six_argument_token_overload_not_four_argument_target"
-        ],
+        "gaps": [],
         "descriptor": "(Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/hdfs/security/token/block/BlockTokenIdentifier$AccessMode;)V",
         "check_sites": [
           "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager#checkAccess(Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/hdfs/security/token/block/BlockTokenIdentifier$AccessMode;)V@431:branch:1"
@@ -3069,7 +3070,7 @@
     },
     {
       "case_id": "SOLR-10",
-      "status": "ready_for_healthy_seed",
+      "status": "original_junit_skipped",
       "site_mapping": {
         "class": "org.apache.solr.cloud.api.collections.MaintainRoutedAliasCmd",
         "method": "call",
@@ -3109,7 +3110,7 @@
     },
     {
       "case_id": "SOLR-13",
-      "status": "ready_for_healthy_seed",
+      "status": "original_junit_skipped",
       "site_mapping": {
         "class": "org.apache.solr.cloud.api.collections.RoutedAlias",
         "method": "doSynchronous",
@@ -3189,7 +3190,7 @@
     },
     {
       "case_id": "SOLR-15",
-      "status": "source_infeasible_healthy_guard",
+      "status": "ready_for_healthy_seed",
       "site_mapping": {
         "class": "org.apache.solr.cloud.api.collections.SplitShardCmd",
         "method": "split",
@@ -3205,9 +3206,7 @@
         "selection_guard_id": "org/apache/solr/cloud/api/collections/SplitShardCmd#split(Lorg/apache/solr/common/cloud/ClusterState;Lorg/apache/solr/common/cloud/ZkNodeProps;Lorg/apache/solr/common/util/NamedList;)Z#B40",
         "selection_throw_id": "org/apache/solr/cloud/api/collections/SplitShardCmd#split(Lorg/apache/solr/common/cloud/ClusterState;Lorg/apache/solr/common/cloud/ZkNodeProps;Lorg/apache/solr/common/util/NamedList;)Z#L538",
         "mapping_status": "unique_compiled_site",
-        "gaps": [
-          "selected_inner_guard_requires_enclosing_throw_path"
-        ],
+        "gaps": [],
         "descriptor": "(Lorg/apache/solr/common/cloud/ClusterState;Lorg/apache/solr/common/cloud/ZkNodeProps;Lorg/apache/solr/common/util/NamedList;)Z",
         "check_sites": [
           "org.apache.solr.cloud.api.collections.SplitShardCmd#split(Lorg/apache/solr/common/cloud/ClusterState;Lorg/apache/solr/common/cloud/ZkNodeProps;Lorg/apache/solr/common/util/NamedList;)Z@536:branch:40"
@@ -3231,7 +3230,7 @@
     },
     {
       "case_id": "SOLR-16",
-      "status": "source_infeasible_healthy_guard",
+      "status": "ready_for_healthy_seed",
       "site_mapping": {
         "class": "org.apache.solr.cloud.api.collections.SplitShardCmd",
         "method": "split",
@@ -3247,9 +3246,7 @@
         "selection_guard_id": "org/apache/solr/cloud/api/collections/SplitShardCmd#split(Lorg/apache/solr/common/cloud/ClusterState;Lorg/apache/solr/common/cloud/ZkNodeProps;Lorg/apache/solr/common/util/NamedList;)Z#B41",
         "selection_throw_id": "org/apache/solr/cloud/api/collections/SplitShardCmd#split(Lorg/apache/solr/common/cloud/ClusterState;Lorg/apache/solr/common/cloud/ZkNodeProps;Lorg/apache/solr/common/util/NamedList;)Z#L543",
         "mapping_status": "unique_compiled_site",
-        "gaps": [
-          "selected_inner_guard_requires_enclosing_throw_path"
-        ],
+        "gaps": [],
         "source_inspected_guard_line_override": 539,
         "descriptor": "(Lorg/apache/solr/common/cloud/ClusterState;Lorg/apache/solr/common/cloud/ZkNodeProps;Lorg/apache/solr/common/util/NamedList;)Z",
         "check_sites": [
@@ -3530,7 +3527,7 @@
     },
     {
       "case_id": "SOLR-34",
-      "status": "source_infeasible_healthy_guard",
+      "status": "ready_for_healthy_seed",
       "site_mapping": {
         "class": "org.apache.solr.servlet.CoordinatorHttpSolrCall",
         "method": "getCore",
@@ -3546,9 +3543,7 @@
         "selection_guard_id": "org/apache/solr/servlet/CoordinatorHttpSolrCall#getCore(Lorg/apache/solr/servlet/CoordinatorHttpSolrCall$Factory;Lorg/apache/solr/servlet/HttpSolrCall;Ljava/lang/String;Z)Lorg/apache/solr/core/SolrCore;#B6",
         "selection_throw_id": "org/apache/solr/servlet/CoordinatorHttpSolrCall#getCore(Lorg/apache/solr/servlet/CoordinatorHttpSolrCall$Factory;Lorg/apache/solr/servlet/HttpSolrCall;Ljava/lang/String;Z)Lorg/apache/solr/core/SolrCore;#L143",
         "mapping_status": "unique_compiled_site",
-        "gaps": [
-          "selected_inner_guard_requires_enclosing_throw_path"
-        ],
+        "gaps": [],
         "descriptor": "(Lorg/apache/solr/servlet/CoordinatorHttpSolrCall$Factory;Lorg/apache/solr/servlet/HttpSolrCall;Ljava/lang/String;Z)Lorg/apache/solr/core/SolrCore;",
         "check_sites": [
           "org.apache.solr.servlet.CoordinatorHttpSolrCall#getCore(Lorg/apache/solr/servlet/CoordinatorHttpSolrCall$Factory;Lorg/apache/solr/servlet/HttpSolrCall;Ljava/lang/String;Z)Lorg/apache/solr/core/SolrCore;@139:branch:6"
@@ -3724,7 +3719,7 @@
     },
     {
       "case_id": "SOLR-39",
-      "status": "ready_for_healthy_seed",
+      "status": "original_junit_skipped",
       "site_mapping": {
         "class": "org.apache.solr.update.processor.RoutedAliasUpdateProcessor",
         "method": "lookupShardLeadersOfCollections",
@@ -3764,7 +3759,7 @@
     },
     {
       "case_id": "SOLR-40",
-      "status": "ready_for_healthy_seed",
+      "status": "original_junit_skipped",
       "site_mapping": {
         "class": "org.apache.solr.update.processor.RoutedAliasUpdateProcessor",
         "method": "getAliasProps",
@@ -4095,7 +4090,7 @@
     },
     {
       "case_id": "ZOOKEEPER-08",
-      "status": "unready",
+      "status": "ready_for_healthy_seed",
       "site_mapping": {
         "class": "org.apache.zookeeper.server.quorum.LearnerSessionTracker",
         "method": "checkSession",
@@ -4111,9 +4106,7 @@
         "selection_guard_id": null,
         "selection_throw_id": null,
         "mapping_status": "unique_compiled_site",
-        "gaps": [
-          "no_source_mapped_cluster_test"
-        ],
+        "gaps": [],
         "descriptor": "(JLjava/lang/Object;)V",
         "check_sites": [
           "org.apache.zookeeper.server.quorum.LearnerSessionTracker#checkSession(JLjava/lang/Object;)V@173:branch:2"
@@ -4137,7 +4130,7 @@
     },
     {
       "case_id": "ZOOKEEPER-09",
-      "status": "unready",
+      "status": "ready_for_healthy_seed",
       "site_mapping": {
         "class": "org.apache.zookeeper.server.quorum.LearnerSessionTracker",
         "method": "setOwner",
@@ -4153,9 +4146,7 @@
         "selection_guard_id": null,
         "selection_throw_id": null,
         "mapping_status": "unique_compiled_site",
-        "gaps": [
-          "no_source_mapped_cluster_test"
-        ],
+        "gaps": [],
         "descriptor": "(JLjava/lang/Object;)V",
         "check_sites": [
           "org.apache.zookeeper.server.quorum.LearnerSessionTracker#setOwner(JLjava/lang/Object;)V@190:branch:2"
@@ -4299,7 +4290,7 @@
     },
     {
       "case_id": "ZOOKEEPER-13",
-      "status": "workload_oracle_unfit",
+      "status": "ready_for_healthy_seed",
       "site_mapping": {
         "class": "org.apache.zookeeper.server.quorum.ReadOnlyZooKeeperServer",
         "method": "validateSession",
@@ -4315,9 +4306,7 @@
         "selection_guard_id": null,
         "selection_throw_id": null,
         "mapping_status": "unique_compiled_site",
-        "gaps": [
-          "selected_cluster_test_intentionally_exercises_target_rejection"
-        ],
+        "gaps": [],
         "descriptor": "(Lorg/apache/zookeeper/server/ServerCnxn;J)V",
         "check_sites": [
           "org.apache.zookeeper.server.quorum.ReadOnlyZooKeeperServer#validateSession(Lorg/apache/zookeeper/server/ServerCnxn;J)V@123:branch:1"

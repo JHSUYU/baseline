@@ -54,6 +54,14 @@ INFERRED_TESTS = {
         "selector": "TestBlockTokenWithDFS#testEnd2End",
         "evidence": "The @Test enables block tokens and invokes TestBalancer.integrationTest, which uses MiniDFSCluster.",
     },
+    "ZOOKEEPER-08": {
+        "selector": "ReadOnlyModeTest#testMultiTransaction",
+        "evidence": "The quorum JUnit enables local sessions, enters read-only mode and calls getData. ReadOnlyZooKeeperServer sends reads through PrepRequestProcessor, which calls LearnerSessionTracker.checkSession. Exact B2 reach remains unverified.",
+    },
+    "ZOOKEEPER-09": {
+        "selector": "ReadOnlyModeTest#testSessionEstablishment",
+        "evidence": "The quorum JUnit creates a local session on a read-only peer. ReadOnlyRequestProcessor admits local createSession; PrepRequestProcessor calls ZooKeeperServer.setOwner, which delegates to LearnerSessionTracker.setOwner. Exact B2 reach remains unverified.",
+    },
 }
 ALTERNATE_TESTS = {
     "HDFS-01": {
@@ -89,6 +97,22 @@ SOURCE_ORACLE_WARNINGS = {
     "HDFS-13": "The selected TestBlockTokenWithDFS#testEnd2End MiniCluster test executes the six-argument Token.checkAccess overload, whereas this check is in the four-argument Token overload. The latter is called directly from TestBlockToken without a cluster in the known source tests; an appropriate cluster workload remains unmapped.",
     "HDFS-43": "The recorded testTruncateTwiceTogether deliberately expects the selected AlreadyBeingCreatedException. The selected testMultipleTruncate alternate has a separate healthy MiniDFSCluster calibration with seven exact nn0 checks and zero selected throws; fault trials remain pending.",
     "HDFS-49": "The recorded TestSnapshot#testSnapshot workload produced a truncated trace. The selected testUpdateDirectory alternate has a separate healthy MiniDFSCluster calibration with one exact nn0 check, zero selected throws, 44 eligible doors, and no truncation; fault trials remain pending.",
+}
+# This is a source-reviewed property of the original JUnit workload, not an
+# inference from an exception name. It must remain separate from whether the
+# workload is suitable for a healthy seed.
+EXPECTED_BASELINE_TARGET_EXCEPTIONS = {
+    "ZOOKEEPER-13": {
+        "source_test": "zookeeper-server/src/test/java/org/apache/zookeeper/test/ReadOnlyModeTest.java:247-280",
+        "source_target": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/ReadOnlyZooKeeperServer.java:122-127",
+        "reason": "The JUnit deliberately reconnects a global session in read-only mode and expects rejection.",
+    },
+}
+AWAIT_FIX_OPT_IN_FAILURES = {
+    "org.apache.solr.update.processor.TimeRoutedAliasUpdateProcessorTest": {
+        "evidence": "Mallory/adapters/solr/graphchecker_port/solr40_original_test_failure.txt",
+        "reason": "With tests.awaitsfix enabled, inherited createConfigSet fails at trusted baseConfigSet setup before a routed document ADD can reach the target.",
+    },
 }
 HDFS_PARAMETERIZED_CLASS_SELECTORS = {"HDFS-11", "HDFS-12", "HDFS-14"}
 HEALTHY_PILOT_ATTESTATIONS = {
@@ -155,6 +179,30 @@ def index_tests(root: Path) -> dict[str, list[Path]]:
     return result
 
 
+def inherited_awaits_fix(root: Path, index: dict[str, list[Path]], path: Path) -> list[str]:
+    """Find class-level @AwaitsFix on a JUnit class or its source superclasses."""
+    annotations = []
+    seen = set()
+    while path not in seen:
+        seen.add(path)
+        source = path.read_text(errors="replace")
+        declaration = re.search(r"\bclass\s+" + re.escape(path.stem)
+                                + r"\b[^\{]*", source)
+        if not declaration:
+            break
+        prefix = source[max(0, declaration.start() - 900):declaration.start()]
+        if re.search(r"@(?:[\w.]+\.)?AwaitsFix\b", prefix):
+            annotations.append(str(path.relative_to(root)))
+        parent = re.search(r"\bextends\s+([A-Za-z_]\w*)", declaration.group(0))
+        if not parent:
+            break
+        candidates = index.get(parent.group(1), [])
+        if len(candidates) != 1 or not candidates[0].is_file():
+            break
+        path = candidates[0]
+    return annotations
+
+
 def parse_selectors(raw: str | None) -> list[dict]:
     result = []
     if not raw:
@@ -205,6 +253,7 @@ def test_evidence(root: Path, index: dict[str, list[Path]], selector: dict,
         resolution = "test_method_missing" if not declarations else "ambiguous_method_declaration"
         line_number = None
     markers = [marker for marker in FIXTURE_MARKERS if marker in "\n".join(lines)]
+    awaits_fix_sources = inherited_awaits_fix(root, index, path)
     return {**selector, "class":
             (package.group(1) + "." if package else "") + selector["simple_class"],
             "selector": ((package.group(1) + "." if package else "")
@@ -212,7 +261,9 @@ def test_evidence(root: Path, index: dict[str, list[Path]], selector: dict,
             "source_path": str(path.relative_to(root)), "source_sha256": digest(path),
             "method_line": line_number, "has_junit_annotation": annotated,
             "test_like": test_like, "cluster_fixture_markers_in_test_source": markers,
-            "resolution": resolution}
+            "resolution": resolution} | (
+                {"inherited_awaits_fix_sources": awaits_fix_sources}
+                if awaits_fix_sources else {})
 
 
 def build_recipe(system: str, source_root: Path, test: dict | None,
@@ -324,6 +375,7 @@ def case_entry(site: dict, historical: dict | None, roots: dict,
         selector_source = VERIFIED_ALTERNATE_SELECTORS[site["case_id"]]
         tests += alternate_tests
     source_file = source_root / site["source_path"]
+    opt_in_failure = AWAIT_FIX_OPT_IN_FAILURES.get(selected["class"]) if selected else None
     source_lines = source_file.read_text(errors="replace").splitlines() if source_file.is_file() else []
     source_line = site.get("source_line")
     source_at_line = (source_lines[source_line - 1].strip()
@@ -355,7 +407,11 @@ def case_entry(site: dict, historical: dict | None, roots: dict,
                      "test_source_path": selected["source_path"] if selected else None,
                      "parameter_variant_note": (
                          "Build selector runs all parameterized variants; bind target occurrence during calibration."
-                         if selected and selected.get("parameter_variant") else None)},
+                         if selected and selected.get("parameter_variant") else None)}
+        | ({"expected_baseline_target_exception":
+            EXPECTED_BASELINE_TARGET_EXCEPTIONS[site["case_id"]]}
+           if site["case_id"] in EXPECTED_BASELINE_TARGET_EXCEPTIONS else {})
+        | ({"opt_in_healthy_failure": opt_in_failure} if opt_in_failure else {}),
         "eligibility": {"state": eligibility,
                         "may_attempt_seed": selected is not None,
                         "cluster_and_target_reach_verified_for_mallory": False,

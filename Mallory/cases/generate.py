@@ -33,9 +33,7 @@ BUILD = HERE / ".build"
 CHECK_LINES = json.loads((BASELINE / "data" / "crashfuzz" / "check_locations.json").read_text())["check_start_lines"]
 CALLTHROW = {row["case_id"]: row for row in json.loads(
     (HERE / "called_throw_gaps.json").read_text())["cases"]}
-WORKLOAD_ORACLE_UNFIT = {"ZOOKEEPER-13"}
 WORKLOAD_OVERLOAD_MISMATCH = {"HDFS-13"}
-SOURCE_INFEASIBLE_HEALTHY_GUARD = {"SOLR-15", "SOLR-16", "SOLR-34"}
 SOLR_AUDIT = {row["case_id"]: row for row in json.loads(
     (HERE / "solr_test_mapping_recommendations.json").read_text())["cases"]}
 ISOLATED_ROOTS = {
@@ -462,7 +460,8 @@ def build_case(row: dict, site: dict) -> dict:
     site_file = ((BASELINE / "Mallory" / "adapters" / row["system"] / "cases"
                   / row["case_id"] / "sites.json")
                  if row["system"] in ("solr", "hdfs")
-                 and row["case_id"] not in SOURCE_INFEASIBLE_HEALTHY_GUARD
+                 and row["eligibility"].get("healthy_exact_guard_reachability")
+                 != "requires_fault_to_reach_exact_guard"
                  else generated_site_file)
     if not site_file.is_file():
         site_file = generated_site_file
@@ -550,6 +549,14 @@ def build_case(row: dict, site: dict) -> dict:
                     "target_source_sha256": site["runtime_target_source_sha256"],
                     "healthy_seed_verified": False},
     }
+    if row["workload"].get("expected_baseline_target_exception"):
+        config["oracle"] = {
+            "policy": "baseline_differential_required",
+            "expected_baseline_target_exception":
+                row["workload"]["expected_baseline_target_exception"],
+        }
+    if row["eligibility"].get("healthy_exact_guard_reachability") == "requires_fault_to_reach_exact_guard":
+        config["mapping"]["healthy_exact_guard_reachability"] = "requires_fault_to_reach_exact_guard"
     if row["system"] in ISOLATED_ROOTS or row["system"] == "hbase":
         config["expected_target_class_sha256"] = site["class_sha256"]
     if row["system"] == "hdfs":
@@ -611,14 +618,46 @@ def build_case(row: dict, site: dict) -> dict:
     return config
 
 
+def classify_eligibility(row: dict, site: dict) -> tuple[str, list[str]]:
+    """Classify workload dispatch separately from exact-guard/oracle fitness.
+
+    An original cluster JUnit can be worth calibrating when its successful run
+    reaches the surrounding operation but an inner abort guard requires a fault.
+    Likewise, an expected baseline throw requires a differential oracle rather
+    than making the original workload disappear from the inventory.
+    """
+    gaps = list(site["gaps"])
+    if not row["eligibility"]["may_attempt_seed"]:
+        return "no_mapped_cluster_test", gaps + ["no_source_mapped_cluster_test"]
+    if site["mapping_status"] not in ("unique_compiled_site", "unique_compiled_callthrow_site"):
+        return "unready", gaps + ["bytecode_mapping_unresolved"]
+    selected = row["workload"].get("selected_selector")
+    candidate = next((item for item in row["workload"].get("candidates", [])
+                      if item.get("selector") == selected), None)
+    if candidate and candidate.get("inherited_awaits_fix_sources"):
+        return "original_junit_skipped", gaps + ["selected_junit_inherits_awaits_fix"]
+    if row["case_id"] in WORKLOAD_OVERLOAD_MISMATCH:
+        return "workload_target_overload_mismatch", gaps + [
+            "selected_cluster_test_executes_six_argument_token_overload_not_four_argument_target"]
+    build = row["build"]
+    if not (build.get("tool_available_on_inventory_host", False)
+            or build.get("runner_ready_on_designated_host", False)):
+        return "build_tool_unavailable", gaps + [
+            "build_tool_unavailable_on_inventory_host:" + build["tool"]]
+    return "ready_for_healthy_seed", gaps
+
+
 def main() -> None:
     compile_helper()
     inventory = json.loads((HERE / "inventory.json").read_text())
     summary = {"schema_version": 1, "original_count": 102, "mapped_config_count": 0,
                "ready_for_seed_count": 0, "build_tool_unavailable_count": 0,
+               "original_junit_skipped_count": 0,
                "workload_oracle_unfit_count": 0,
                "workload_target_overload_mismatch_count": 0,
                "source_infeasible_healthy_guard_count": 0,
+               "healthy_exact_guard_requires_fault_count": 0,
+               "differential_oracle_required_count": 0,
                "unready_count": 0, "cases": []}
     for row in inventory["cases"]:
         site = resolve(row)
@@ -637,41 +676,51 @@ def main() -> None:
             audit = SOLR_AUDIT[row["case_id"]]
             row["workload"]["source_reachability_audit"] = {
                 key: audit[key] for key in ("healthy_guard_reachability", "source_evidence", "reason", "caveat")}
+        source_audit = row["workload"].get("source_reachability_audit") or {}
+        exact_guard_requires_fault = (source_audit.get("healthy_guard_reachability")
+                                      == "source_infeasible_healthy_guard")
+        baseline_exception_expected = bool(
+            row["workload"].get("expected_baseline_target_exception"))
+        if exact_guard_requires_fault:
+            row["eligibility"]["healthy_exact_guard_reachability"] = (
+                "requires_fault_to_reach_exact_guard")
+        else:
+            row["eligibility"].pop("healthy_exact_guard_reachability", None)
+        if baseline_exception_expected:
+            row["eligibility"]["oracle_policy"] = "baseline_differential_required"
+        else:
+            row["eligibility"].pop("oracle_policy", None)
+        if exact_guard_requires_fault:
+            summary["healthy_exact_guard_requires_fault_count"] += 1
+        if baseline_exception_expected:
+            summary["differential_oracle_required_count"] += 1
         eligible = row["eligibility"]["may_attempt_seed"]
         if eligible and site["mapping_status"] in ("unique_compiled_site", "unique_compiled_callthrow_site"):
             config = build_case(row, site)
             write_json(HERE / f"{row['case_id']}.json", config)
             summary["mapped_config_count"] += 1
-            if row["case_id"] in WORKLOAD_ORACLE_UNFIT:
-                status = "workload_oracle_unfit"
-                summary["workload_oracle_unfit_count"] += 1
-                site["gaps"].append("selected_cluster_test_intentionally_exercises_target_rejection")
-            elif row["case_id"] in WORKLOAD_OVERLOAD_MISMATCH:
-                status = "workload_target_overload_mismatch"
-                summary["workload_target_overload_mismatch_count"] += 1
-                site["gaps"].append("selected_cluster_test_executes_six_argument_token_overload_not_four_argument_target")
-            elif row["case_id"] in SOURCE_INFEASIBLE_HEALTHY_GUARD:
-                status = "source_infeasible_healthy_guard"
-                summary["source_infeasible_healthy_guard_count"] += 1
-                site["gaps"].append("selected_inner_guard_requires_enclosing_throw_path")
-            elif not (row["build"].get("tool_available_on_inventory_host", False)
-                    or row["build"].get("runner_ready_on_designated_host", False)):
-                status = "build_tool_unavailable"
-                summary["build_tool_unavailable_count"] += 1
-                site["gaps"].append("build_tool_unavailable_on_inventory_host:" + row["build"]["tool"])
-            else:
-                status = "ready_for_healthy_seed"
-                summary["ready_for_seed_count"] += 1
         else:
-            status = "unready"
-            summary["unready_count"] += 1
-            site["gaps"].append("no_source_mapped_cluster_test" if not eligible else "bytecode_mapping_unresolved")
             (HERE / f"{row['case_id']}.json").unlink(missing_ok=True)
             (HERE / f"{row['case_id']}.sites.json").unlink(missing_ok=True)
-        row["eligibility"]["state"] = status if eligible else "no_mapped_cluster_test"
+        status, gaps = classify_eligibility(row, site)
+        if status == "ready_for_healthy_seed":
+            summary["ready_for_seed_count"] += 1
+        elif status == "build_tool_unavailable":
+            summary["build_tool_unavailable_count"] += 1
+        elif status == "workload_target_overload_mismatch":
+            summary["workload_target_overload_mismatch_count"] += 1
+        elif status == "original_junit_skipped":
+            summary["original_junit_skipped_count"] += 1
+        else:
+            summary["unready_count"] += 1
+        row["eligibility"]["state"] = status
         row["eligibility"]["bytecode_mapping_status"] = site["mapping_status"]
         row["eligibility"]["may_dispatch_healthy_seed"] = status == "ready_for_healthy_seed"
-        row["eligibility"]["mapping_gaps"] = site["gaps"]
+        if status != "ready_for_healthy_seed" or exact_guard_requires_fault or baseline_exception_expected:
+            row["eligibility"]["may_promote_fault_campaign"] = False
+        else:
+            row["eligibility"].pop("may_promote_fault_campaign", None)
+        row["eligibility"]["mapping_gaps"] = gaps
         summary["cases"].append({"case_id": row["case_id"], "status": status,
                                  "site_mapping": site})
     write_json(HERE / "mapping_audit.json", summary)

@@ -3,10 +3,8 @@
   "description": "Static inventory only; no Mallory test execution is claimed.",
   "count": 102,
   "eligibility_counts": {
-    "no_mapped_cluster_test": 2,
-    "ready_for_healthy_seed": 95,
-    "source_infeasible_healthy_guard": 3,
-    "workload_oracle_unfit": 1,
+    "original_junit_skipped": 4,
+    "ready_for_healthy_seed": 97,
     "workload_target_overload_mismatch": 1
   },
   "cases": [
@@ -4183,7 +4181,8 @@
         "may_dispatch_healthy_seed": false,
         "mapping_gaps": [
           "selected_cluster_test_executes_six_argument_token_overload_not_four_argument_target"
-        ]
+        ],
+        "may_promote_fault_campaign": false
       },
       "build": {
         "tool": "maven",
@@ -8123,7 +8122,10 @@
             "cluster_fixture_markers_in_test_source": [
               "configureCluster("
             ],
-            "resolution": "test_method_found"
+            "resolution": "test_method_found",
+            "inherited_awaits_fix_sources": [
+              "solr/core/src/test/org/apache/solr/update/processor/RoutedAliasUpdateProcessorTest.java"
+            ]
           }
         ],
         "selected_selector": "org.apache.solr.update.processor.TimeRoutedAliasUpdateProcessorTest#test",
@@ -8131,6 +8133,10 @@
         "test_method": "test",
         "test_source_path": "solr/core/src/test/org/apache/solr/update/processor/TimeRoutedAliasUpdateProcessorTest.java",
         "parameter_variant_note": null,
+        "opt_in_healthy_failure": {
+          "evidence": "Mallory/adapters/solr/graphchecker_port/solr40_original_test_failure.txt",
+          "reason": "With tests.awaitsfix enabled, inherited createConfigSet fails at trusted baseConfigSet setup before a routed document ADD can reach the target."
+        },
         "source_reachability_audit": {
           "healthy_guard_reachability": "likely_healthy_guard",
           "source_evidence": "TimeRoutedAliasUpdateProcessorTest.java:110-139; MaintainRoutedAliasCmd.java:108-121",
@@ -8139,13 +8145,16 @@
         }
       },
       "eligibility": {
-        "state": "ready_for_healthy_seed",
+        "state": "original_junit_skipped",
         "may_attempt_seed": true,
         "cluster_and_target_reach_verified_for_mallory": false,
         "historical_status_is_not_eligibility": true,
         "bytecode_mapping_status": "unique_compiled_site",
-        "may_dispatch_healthy_seed": true,
-        "mapping_gaps": []
+        "may_dispatch_healthy_seed": false,
+        "mapping_gaps": [
+          "selected_junit_inherits_awaits_fix"
+        ],
+        "may_promote_fault_campaign": false
       },
       "build": {
         "tool": "direct_junit",
@@ -8238,7 +8247,10 @@
             "cluster_fixture_markers_in_test_source": [
               "configureCluster("
             ],
-            "resolution": "test_method_found"
+            "resolution": "test_method_found",
+            "inherited_awaits_fix_sources": [
+              "solr/core/src/test/org/apache/solr/update/processor/RoutedAliasUpdateProcessorTest.java"
+            ]
           }
         ],
         "selected_selector": "org.apache.solr.update.processor.TimeRoutedAliasUpdateProcessorTest#testPreemptiveCreation",
@@ -8246,6 +8258,10 @@
         "test_method": "testPreemptiveCreation",
         "test_source_path": "solr/core/src/test/org/apache/solr/update/processor/TimeRoutedAliasUpdateProcessorTest.java",
         "parameter_variant_note": null,
+        "opt_in_healthy_failure": {
+          "evidence": "Mallory/adapters/solr/graphchecker_port/solr40_original_test_failure.txt",
+          "reason": "With tests.awaitsfix enabled, inherited createConfigSet fails at trusted baseConfigSet setup before a routed document ADD can reach the target."
+        },
         "source_reachability_audit": {
           "healthy_guard_reachability": "likely_healthy_guard",
           "source_evidence": "TimeRoutedAliasUpdateProcessorTest.java:284-302; RoutedAlias.java:343-354",
@@ -8254,13 +8270,16 @@
         }
       },
       "eligibility": {
-        "state": "ready_for_healthy_seed",
+        "state": "original_junit_skipped",
         "may_attempt_seed": true,
         "cluster_and_target_reach_verified_for_mallory": false,
         "historical_status_is_not_eligibility": true,
         "bytecode_mapping_status": "unique_compiled_site",
-        "may_dispatch_healthy_seed": true,
-        "mapping_gaps": []
+        "may_dispatch_healthy_seed": false,
+        "mapping_gaps": [
+          "selected_junit_inherits_awaits_fix"
+        ],
+        "may_promote_fault_campaign": false
       },
       "build": {
         "tool": "direct_junit",
@@ -8486,15 +8505,15 @@
         }
       },
       "eligibility": {
-        "state": "source_infeasible_healthy_guard",
+        "state": "ready_for_healthy_seed",
         "may_attempt_seed": true,
         "cluster_and_target_reach_verified_for_mallory": false,
         "historical_status_is_not_eligibility": true,
         "bytecode_mapping_status": "unique_compiled_site",
-        "may_dispatch_healthy_seed": false,
-        "mapping_gaps": [
-          "selected_inner_guard_requires_enclosing_throw_path"
-        ]
+        "may_dispatch_healthy_seed": true,
+        "mapping_gaps": [],
+        "healthy_exact_guard_reachability": "requires_fault_to_reach_exact_guard",
+        "may_promote_fault_campaign": false
       },
       "build": {
         "tool": "direct_junit",
@@ -8604,15 +8623,15 @@
         }
       },
       "eligibility": {
-        "state": "source_infeasible_healthy_guard",
+        "state": "ready_for_healthy_seed",
         "may_attempt_seed": true,
         "cluster_and_target_reach_verified_for_mallory": false,
         "historical_status_is_not_eligibility": true,
         "bytecode_mapping_status": "unique_compiled_site",
-        "may_dispatch_healthy_seed": false,
-        "mapping_gaps": [
-          "selected_inner_guard_requires_enclosing_throw_path"
-        ]
+        "may_dispatch_healthy_seed": true,
+        "mapping_gaps": [],
+        "healthy_exact_guard_reachability": "requires_fault_to_reach_exact_guard",
+        "may_promote_fault_campaign": false
       },
       "build": {
         "tool": "direct_junit",
@@ -9307,15 +9326,15 @@
         }
       },
       "eligibility": {
-        "state": "source_infeasible_healthy_guard",
+        "state": "ready_for_healthy_seed",
         "may_attempt_seed": true,
         "cluster_and_target_reach_verified_for_mallory": false,
         "historical_status_is_not_eligibility": true,
         "bytecode_mapping_status": "unique_compiled_site",
-        "may_dispatch_healthy_seed": false,
-        "mapping_gaps": [
-          "selected_inner_guard_requires_enclosing_throw_path"
-        ]
+        "may_dispatch_healthy_seed": true,
+        "mapping_gaps": [],
+        "healthy_exact_guard_reachability": "requires_fault_to_reach_exact_guard",
+        "may_promote_fault_campaign": false
       },
       "build": {
         "tool": "direct_junit",
@@ -9758,7 +9777,10 @@
             "cluster_fixture_markers_in_test_source": [
               "configureCluster("
             ],
-            "resolution": "test_method_found"
+            "resolution": "test_method_found",
+            "inherited_awaits_fix_sources": [
+              "solr/core/src/test/org/apache/solr/update/processor/RoutedAliasUpdateProcessorTest.java"
+            ]
           }
         ],
         "selected_selector": "org.apache.solr.update.processor.TimeRoutedAliasUpdateProcessorTest#test",
@@ -9766,6 +9788,10 @@
         "test_method": "test",
         "test_source_path": "solr/core/src/test/org/apache/solr/update/processor/TimeRoutedAliasUpdateProcessorTest.java",
         "parameter_variant_note": null,
+        "opt_in_healthy_failure": {
+          "evidence": "Mallory/adapters/solr/graphchecker_port/solr40_original_test_failure.txt",
+          "reason": "With tests.awaitsfix enabled, inherited createConfigSet fails at trusted baseConfigSet setup before a routed document ADD can reach the target."
+        },
         "source_reachability_audit": {
           "healthy_guard_reachability": "likely_healthy_guard",
           "source_evidence": "TimeRoutedAliasUpdateProcessorTest.java:110-139,175-176; RoutedAliasUpdateProcessor.java:193-201,243-249",
@@ -9774,13 +9800,16 @@
         }
       },
       "eligibility": {
-        "state": "ready_for_healthy_seed",
+        "state": "original_junit_skipped",
         "may_attempt_seed": true,
         "cluster_and_target_reach_verified_for_mallory": false,
         "historical_status_is_not_eligibility": true,
         "bytecode_mapping_status": "unique_compiled_site",
-        "may_dispatch_healthy_seed": true,
-        "mapping_gaps": []
+        "may_dispatch_healthy_seed": false,
+        "mapping_gaps": [
+          "selected_junit_inherits_awaits_fix"
+        ],
+        "may_promote_fault_campaign": false
       },
       "build": {
         "tool": "direct_junit",
@@ -9873,7 +9902,10 @@
             "cluster_fixture_markers_in_test_source": [
               "configureCluster("
             ],
-            "resolution": "test_method_found"
+            "resolution": "test_method_found",
+            "inherited_awaits_fix_sources": [
+              "solr/core/src/test/org/apache/solr/update/processor/RoutedAliasUpdateProcessorTest.java"
+            ]
           }
         ],
         "selected_selector": "org.apache.solr.update.processor.TimeRoutedAliasUpdateProcessorTest#test",
@@ -9881,6 +9913,10 @@
         "test_method": "test",
         "test_source_path": "solr/core/src/test/org/apache/solr/update/processor/TimeRoutedAliasUpdateProcessorTest.java",
         "parameter_variant_note": null,
+        "opt_in_healthy_failure": {
+          "evidence": "Mallory/adapters/solr/graphchecker_port/solr40_original_test_failure.txt",
+          "reason": "With tests.awaitsfix enabled, inherited createConfigSet fails at trusted baseConfigSet setup before a routed document ADD can reach the target."
+        },
         "source_reachability_audit": {
           "healthy_guard_reachability": "likely_healthy_guard",
           "source_evidence": "TimeRoutedAliasUpdateProcessorTest.java:110-139; RoutedAliasUpdateProcessor.java:98-123,129-135",
@@ -9889,13 +9925,16 @@
         }
       },
       "eligibility": {
-        "state": "ready_for_healthy_seed",
+        "state": "original_junit_skipped",
         "may_attempt_seed": true,
         "cluster_and_target_reach_verified_for_mallory": false,
         "historical_status_is_not_eligibility": true,
         "bytecode_mapping_status": "unique_compiled_site",
-        "may_dispatch_healthy_seed": true,
-        "mapping_gaps": []
+        "may_dispatch_healthy_seed": false,
+        "mapping_gaps": [
+          "selected_junit_inherits_awaits_fix"
+        ],
+        "may_promote_fault_campaign": false
       },
       "build": {
         "tool": "direct_junit",
@@ -10795,33 +10834,67 @@
         }
       },
       "workload": {
-        "selector_source": "selection_proposed_test",
-        "recorded_selector": null,
+        "selector_source": "source_inspection_candidate",
+        "recorded_selector": "ReadOnlyModeTest#testMultiTransaction",
         "recorded_selector_status": null,
         "healthy_pilot_attestation": null,
-        "mapping_evidence": null,
+        "mapping_evidence": "The quorum JUnit enables local sessions, enters read-only mode and calls getData. ReadOnlyZooKeeperServer sends reads through PrepRequestProcessor, which calls LearnerSessionTracker.checkSession. Exact B2 reach remains unverified.",
         "source_oracle_warning": null,
         "alternate_test_candidates": [],
         "alternate_mapping_evidence": null,
-        "candidates": [],
-        "selected_selector": null,
-        "test_class": null,
-        "test_method": null,
-        "test_source_path": null,
+        "candidates": [
+          {
+            "raw": "ReadOnlyModeTest#testMultiTransaction",
+            "simple_class": "ReadOnlyModeTest",
+            "method": "testMultiTransaction",
+            "parameter_variant": null,
+            "class": "org.apache.zookeeper.test.ReadOnlyModeTest",
+            "selector": "org.apache.zookeeper.test.ReadOnlyModeTest#testMultiTransaction",
+            "source_path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/ReadOnlyModeTest.java",
+            "source_sha256": "14eac3d1debfb52d4e79d890c74265c50a12c860914e79bb2462d4e04ddfe57e",
+            "method_line": 71,
+            "has_junit_annotation": true,
+            "test_like": true,
+            "cluster_fixture_markers_in_test_source": [
+              "QuorumBase",
+              "QuorumUtil"
+            ],
+            "resolution": "test_method_found"
+          }
+        ],
+        "selected_selector": "org.apache.zookeeper.test.ReadOnlyModeTest#testMultiTransaction",
+        "test_class": "org.apache.zookeeper.test.ReadOnlyModeTest",
+        "test_method": "testMultiTransaction",
+        "test_source_path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/ReadOnlyModeTest.java",
         "parameter_variant_note": null
       },
       "eligibility": {
-        "state": "no_mapped_cluster_test",
-        "may_attempt_seed": false,
+        "state": "ready_for_healthy_seed",
+        "may_attempt_seed": true,
         "cluster_and_target_reach_verified_for_mallory": false,
         "historical_status_is_not_eligibility": true,
         "bytecode_mapping_status": "unique_compiled_site",
-        "may_dispatch_healthy_seed": false,
-        "mapping_gaps": [
-          "no_source_mapped_cluster_test"
-        ]
+        "may_dispatch_healthy_seed": true,
+        "mapping_gaps": []
       },
-      "build": null,
+      "build": {
+        "tool": "maven",
+        "cwd": "/users/ZhenyuLi/.mallory-worktrees/zookeeper",
+        "module": "zookeeper-server",
+        "cwd_relative_to_source_root": ".",
+        "argv": [
+          "mvn",
+          "-pl",
+          "zookeeper-server",
+          "-am",
+          "-Dtest=ReadOnlyModeTest#testMultiTransaction",
+          "-Dsurefire.failIfNoSpecifiedTests=false",
+          "test"
+        ],
+        "agent_arg_property": "mallory.agent.arg",
+        "tool_available_on_inventory_host": true,
+        "validated_by_execution": false
+      },
       "provenance": {
         "selection_file": "data/crashfuzz/selection102.json",
         "historical_result_file": "data/crashfuzz/checklist102.json",
@@ -10865,33 +10938,67 @@
         }
       },
       "workload": {
-        "selector_source": "selection_proposed_test",
-        "recorded_selector": null,
+        "selector_source": "source_inspection_candidate",
+        "recorded_selector": "ReadOnlyModeTest#testSessionEstablishment",
         "recorded_selector_status": null,
         "healthy_pilot_attestation": null,
-        "mapping_evidence": null,
+        "mapping_evidence": "The quorum JUnit creates a local session on a read-only peer. ReadOnlyRequestProcessor admits local createSession; PrepRequestProcessor calls ZooKeeperServer.setOwner, which delegates to LearnerSessionTracker.setOwner. Exact B2 reach remains unverified.",
         "source_oracle_warning": null,
         "alternate_test_candidates": [],
         "alternate_mapping_evidence": null,
-        "candidates": [],
-        "selected_selector": null,
-        "test_class": null,
-        "test_method": null,
-        "test_source_path": null,
+        "candidates": [
+          {
+            "raw": "ReadOnlyModeTest#testSessionEstablishment",
+            "simple_class": "ReadOnlyModeTest",
+            "method": "testSessionEstablishment",
+            "parameter_variant": null,
+            "class": "org.apache.zookeeper.test.ReadOnlyModeTest",
+            "selector": "org.apache.zookeeper.test.ReadOnlyModeTest#testSessionEstablishment",
+            "source_path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/ReadOnlyModeTest.java",
+            "source_sha256": "14eac3d1debfb52d4e79d890c74265c50a12c860914e79bb2462d4e04ddfe57e",
+            "method_line": 213,
+            "has_junit_annotation": true,
+            "test_like": true,
+            "cluster_fixture_markers_in_test_source": [
+              "QuorumBase",
+              "QuorumUtil"
+            ],
+            "resolution": "test_method_found"
+          }
+        ],
+        "selected_selector": "org.apache.zookeeper.test.ReadOnlyModeTest#testSessionEstablishment",
+        "test_class": "org.apache.zookeeper.test.ReadOnlyModeTest",
+        "test_method": "testSessionEstablishment",
+        "test_source_path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/ReadOnlyModeTest.java",
         "parameter_variant_note": null
       },
       "eligibility": {
-        "state": "no_mapped_cluster_test",
-        "may_attempt_seed": false,
+        "state": "ready_for_healthy_seed",
+        "may_attempt_seed": true,
         "cluster_and_target_reach_verified_for_mallory": false,
         "historical_status_is_not_eligibility": true,
         "bytecode_mapping_status": "unique_compiled_site",
-        "may_dispatch_healthy_seed": false,
-        "mapping_gaps": [
-          "no_source_mapped_cluster_test"
-        ]
+        "may_dispatch_healthy_seed": true,
+        "mapping_gaps": []
       },
-      "build": null,
+      "build": {
+        "tool": "maven",
+        "cwd": "/users/ZhenyuLi/.mallory-worktrees/zookeeper",
+        "module": "zookeeper-server",
+        "cwd_relative_to_source_root": ".",
+        "argv": [
+          "mvn",
+          "-pl",
+          "zookeeper-server",
+          "-am",
+          "-Dtest=ReadOnlyModeTest#testSessionEstablishment",
+          "-Dsurefire.failIfNoSpecifiedTests=false",
+          "test"
+        ],
+        "agent_arg_property": "mallory.agent.arg",
+        "tool_available_on_inventory_host": true,
+        "validated_by_execution": false
+      },
       "provenance": {
         "selection_file": "data/crashfuzz/selection102.json",
         "historical_result_file": "data/crashfuzz/checklist102.json",
@@ -11307,18 +11414,23 @@
         "test_class": "org.apache.zookeeper.test.ReadOnlyModeTest",
         "test_method": "testGlobalSessionInRO",
         "test_source_path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/ReadOnlyModeTest.java",
-        "parameter_variant_note": null
+        "parameter_variant_note": null,
+        "expected_baseline_target_exception": {
+          "source_test": "zookeeper-server/src/test/java/org/apache/zookeeper/test/ReadOnlyModeTest.java:247-280",
+          "source_target": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/ReadOnlyZooKeeperServer.java:122-127",
+          "reason": "The JUnit deliberately reconnects a global session in read-only mode and expects rejection."
+        }
       },
       "eligibility": {
-        "state": "workload_oracle_unfit",
+        "state": "ready_for_healthy_seed",
         "may_attempt_seed": true,
         "cluster_and_target_reach_verified_for_mallory": false,
         "historical_status_is_not_eligibility": true,
         "bytecode_mapping_status": "unique_compiled_site",
-        "may_dispatch_healthy_seed": false,
-        "mapping_gaps": [
-          "selected_cluster_test_intentionally_exercises_target_rejection"
-        ]
+        "may_dispatch_healthy_seed": true,
+        "mapping_gaps": [],
+        "oracle_policy": "baseline_differential_required",
+        "may_promote_fault_campaign": false
       },
       "build": {
         "tool": "maven",
@@ -11467,7 +11579,7 @@
       },
       "workload": {
         "selector_source": "legacy_executed_test",
-        "recorded_selector": "TestBalancerWithEncryptedTransfer#testEncryptedBalancer0 (unchanged site-level); adapted integrationTest/oneNodeTest (known-bug differential)",
+        "recorded_selector": "org.apache.hadoop.hdfs.server.balancer.TestBalancerWithEncryptedTransfer#testEncryptedBalancer0",
         "recorded_selector_status": null,
         "healthy_pilot_attestation": null,
         "mapping_evidence": null,
@@ -11476,7 +11588,7 @@
         "alternate_mapping_evidence": null,
         "candidates": [
           {
-            "raw": "TestBalancerWithEncryptedTransfer#testEncryptedBalancer0 (unchanged site-level)",
+            "raw": "org.apache.hadoop.hdfs.server.balancer.TestBalancerWithEncryptedTransfer#testEncryptedBalancer0",
             "simple_class": "TestBalancerWithEncryptedTransfer",
             "method": "testEncryptedBalancer0",
             "parameter_variant": null,
@@ -11535,7 +11647,7 @@
         "source_file_exists": true,
         "historical_seed_seconds": null,
         "historical_crashfuzz_status": "quality_complete",
-        "historical_crashfuzz_test": "TestBalancerWithEncryptedTransfer#testEncryptedBalancer0 (unchanged site-level); adapted integrationTest/oneNodeTest (known-bug differential)",
+        "historical_crashfuzz_test": "org.apache.hadoop.hdfs.server.balancer.TestBalancerWithEncryptedTransfer#testEncryptedBalancer0",
         "historical_exclusion_reason": null
       }
     }
