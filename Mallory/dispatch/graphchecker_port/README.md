@@ -30,10 +30,12 @@ downloadable HBase 2.4.8 and 3.0.0 binary distributions (856 MiB combined),
 its regenerable Ivy cache (211 MiB), and three superseded node2 SOLR-40
 `state.json.tmp.<pid>` files (214 MiB combined; their PIDs were absent and
 the final state file was newer). No active source, data, evidence, result,
-checkpoint, or current immutable snapshot was removed. Node2 remains below
-the default 2 GiB durable launch floor. Its large remaining directories are
-principally prior experiment evidence, so they need an explicit offload or
-compressed-output plan before a full campaign.
+checkpoint, or current immutable snapshot was removed. Node2's root disk
+remains below the default 2 GiB durable launch floor. All three nodes also
+mount the writable project filesystem at `/proj/silentfailure-PG0` (about
+61 GiB free on 2026-10-13). A dedicated user-owned `state_root` there meets
+the durable launch floor without deleting prior evidence; transient scratch
+stays in `/dev/shm`.
 
 ## Planned isolation
 
@@ -119,8 +121,9 @@ data without a checkpoint blocks the lane. For a run, it appends full
 `launcher.stdout.log` and `launcher.stderr.log` and atomically writes
 `dispatch.json` with cumulative launch-attempt elapsed time and evidence
 paths. It never removes old
-results. The default resource floors are 2 GiB free on the durable disk and
-6 GiB free on `/dev/shm`; node2 currently fails the durable floor. The worker
+results. The default resource floors are 2 GiB free on the filesystem
+containing `state_root` and 6 GiB free on `/dev/shm`; node2's root filesystem
+fails the durable floor, while the shared project mount passes it. The worker
 checks the exact Java executable named in each config and rejects non-Java-8
 versions. Before each run it rejects selected original/JUnit classes with
 classfile major greater than 52. The core checks generated woven and adapter
