@@ -3,7 +3,9 @@
 This is a read-only audit of the node1 v3 campaign at
 `/proj/silentfailure-PG0/ZhenyuLi/mallory-hbase01-v3`. Its runtime, weaver,
 scope, config, core and checkpoint remain pinned. Measurements below use the
-13 complete trial receipts r0000–r0012; the campaign is still running.
+13 complete trial receipts r0000–r0012, sampled while the campaign was
+running. The campaign later reached its 1800-second trial budget with 39
+fault trials; the timing statistics below remain an early-run sample.
 
 | Stage | Median seconds | Measurement |
 | --- | ---: | --- |
