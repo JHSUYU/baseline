@@ -73,7 +73,9 @@ class NativeCampaignFixtureTest(unittest.TestCase):
                        check=True, timeout=30, capture_output=True)
 
     def _executor(self, *, emit_door: bool, applied_identity: str | None = None,
-                  throw: bool = False, mixed_target: bool = False):
+                  throw: bool = False, mixed_target: bool = False,
+                  cross_occurrence: bool = False, post_target: bool = False,
+                  omit_check: bool = False):
         def execute(config, admitted, trial, faults):
             iteration = trial / "iteration-native"
             self._generate(iteration, mixed_target=mixed_target)
@@ -82,25 +84,46 @@ class NativeCampaignFixtureTest(unittest.TestCase):
                     iteration, config["target_site"], trial / "peek.json",
                     static_scope_map=self.seed / "static_scope_map.jsonl",
                     engine_jar=core.JAR)
-                writer = next(item for item in summary["closureMembers"]
-                              if item["regionId"] == "R.writer")
                 target = summary["targetOccurrenceIds"][0]
+                target_node = summary["perTargetOccurrences"][0]["targetNodeName"]
+                source = (next(item for item in summary["closureMembers"]
+                               if item["regionId"] == "R.writer")["occurrenceId"]
+                          if cross_occurrence else target)
                 door = {"kind": "FAULT_DOOR", "seq": 1,
-                        "siteId": "RPC#getKeys", "node": "nn0",
+                        "siteId": "RPC#getKeys", "node": target_node,
                         "actorEpochOrdinal": 0,
-                        "occurrenceId": writer["occurrenceId"], "ordinal": 1,
+                        "occurrenceId": source, "ordinal": 1,
                         "exceptionClass": "java.io.IOException"}
-                rows = [door]
+                check = {"kind": "TARGET_CHECK", "seq": 3 if faults else 2,
+                         "siteId": "Keys#check#u3",
+                         "targetAnchorSiteId": config["target_site"],
+                         "node": target_node, "actorEpochOrdinal": 0,
+                         "occurrenceId": target}
+                rows = []
                 if faults:
-                    applied = {**door, "kind": "FAULT_APPLIED", "seq": 2,
+                    if post_target and not omit_check:
+                        rows.append({**check, "seq": 1})
+                    if post_target:
+                        door["seq"] = 2
+                    rows.append(door)
+                    applied = {**door, "kind": "FAULT_APPLIED",
+                               "seq": 3 if post_target else 2,
                                "occurrenceId": (applied_identity or
-                                                writer["occurrenceId"])}
+                                                source)}
                     rows.append(applied)
+                    if not post_target and not omit_check:
+                        rows.append(check)
                     if throw:
-                        rows.append({"kind": "TARGET_THROW", "seq": 3,
+                        rows.append({"kind": "TARGET_THROW",
+                                     "seq": 4 if post_target or not omit_check
+                                     else 3,
                                      "siteId": "Keys#throw#u4",
                                      "exceptionClass": "java.io.IOException",
                                      "occurrenceId": target})
+                else:
+                    rows.append(door)
+                    if not omit_check:
+                        rows.append(check)
                 (iteration / "fault-events.jsonl").write_text(
                     "".join(json.dumps(row) + "\n" for row in rows))
             return {"return_code": 0, "timed_out": False,
@@ -132,10 +155,50 @@ class NativeCampaignFixtureTest(unittest.TestCase):
         faulted = core._load(self.root / "campaign/trials/r0001/result.json")
         self.assertTrue(faulted["strict_injection"])
         self.assertTrue(faulted["fault_in_target_closure"])
+        self.assertTrue(faulted["target_temporal_admitted"])
+        self.assertEqual("same_occurrence_before_check",
+                         faulted["target_temporal_reason"])
         self.assertTrue(faulted["native_target_retained"])
         self.assertTrue(faulted["target_exception_triggered"])
         self.assertEqual(0, faulted["native_delta"]["newObservedClosureEdges"])
         self.assertTrue((self.root / "campaign/summary.json").is_file())
+
+    def test_post_target_fault_in_same_region_is_not_candidate(self) -> None:
+        self._run(self._executor(emit_door=True, throw=True,
+                                 post_target=True))
+        faulted = core._load(self.root / "campaign/trials/r0001/result.json")
+        self.assertTrue(faulted["fault_in_target_closure"])
+        self.assertFalse(faulted["target_temporal_admitted"])
+        self.assertEqual("post_target_fault", faulted["target_temporal_reason"])
+        self.assertTrue(faulted["target_exception_triggered"])
+        self.assertEqual("needs_causal_review", faulted["status"])
+
+    def test_cross_occurrence_closure_member_requires_order_proof(self) -> None:
+        self._run(self._executor(emit_door=True, throw=True,
+                                 cross_occurrence=True))
+        faulted = core._load(self.root / "campaign/trials/r0001/result.json")
+        self.assertTrue(faulted["fault_in_target_closure"])
+        self.assertFalse(faulted["target_temporal_admitted"])
+        self.assertEqual("cross_occurrence_order_unproved",
+                         faulted["target_temporal_reason"])
+        self.assertEqual("needs_causal_review", faulted["status"])
+
+    def test_cross_occurrence_without_throw_still_needs_causal_review(self) -> None:
+        self._run(self._executor(emit_door=True, cross_occurrence=True))
+        faulted = core._load(self.root / "campaign/trials/r0001/result.json")
+        self.assertFalse(faulted["target_exception_triggered"])
+        self.assertEqual("cross_occurrence_order_unproved",
+                         faulted["target_temporal_reason"])
+        self.assertEqual("needs_causal_review", faulted["status"])
+
+    def test_missing_target_check_receipt_fails_closed(self) -> None:
+        self._run(self._executor(emit_door=True, throw=True,
+                                 omit_check=True))
+        faulted = core._load(self.root / "campaign/trials/r0001/result.json")
+        self.assertFalse(faulted["target_temporal_admitted"])
+        self.assertEqual("target_check_not_recorded",
+                         faulted["target_temporal_reason"])
+        self.assertEqual("needs_causal_review", faulted["status"])
 
     def test_mixed_reach_keeps_reached_target_without_unreached_union(self) -> None:
         state = self._run(self._executor(emit_door=True, throw=True,

@@ -91,8 +91,16 @@ exception is reported by a `TARGET_THROW` receipt with exact `siteId`,
 `exceptionClass`, and target `occurrenceId`. An exit code, assertion failure,
 or GraphChecker `observedFatal` flag is not a target exception. The driver
 requires the entire planned fault sequence to match applied receipts in
-order, the native target to remain reached, and the last fault occurrence to
-be in the trial's target closure before labeling a trial `candidate`.
+order and the native target to remain reached. To label a trial `candidate`,
+the last applied fault must precede an exact `TARGET_CHECK` receipt for a
+reached target in the same occurrence and actor epoch, and that occurrence
+must later produce the exact `TARGET_THROW`. All three receipts use one
+monotone event stream. A fault in a different occurrence of the target's
+closure needs separate causal and endpoint-order proof; closure membership
+alone is not enough. Observed WIRE and STATE edges identify their endpoints,
+but their native VM event IDs cannot currently order a fault receipt against
+the producer endpoint. Such trials remain `needs_causal_review`. The native
+target row's VM event ID is not compared with the fault receipt sequence.
 
 ## Checkpoints and status
 

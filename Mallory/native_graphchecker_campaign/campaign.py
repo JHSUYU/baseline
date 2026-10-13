@@ -280,7 +280,7 @@ def _rows(path: Path) -> list[dict[str, Any]]:
     for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
         row = json.loads(line)
         if not isinstance(row, dict) or row.get("kind") not in (
-                "FAULT_DOOR", "FAULT_APPLIED", "TARGET_THROW"):
+                "FAULT_DOOR", "FAULT_APPLIED", "TARGET_CHECK", "TARGET_THROW"):
             raise ValueError(f"invalid native fault receipt row {number}")
         seq = row.get("seq")
         if not isinstance(seq, int) or isinstance(seq, bool) or seq <= previous:
@@ -332,6 +332,69 @@ def _exact_throws(rows: list[dict[str, Any]], summary: dict[str, Any],
             row.get("siteId") == target["siteId"] and
             row.get("exceptionClass") == target["exceptionClass"] and
             row.get("occurrenceId") in targets and row["seq"] > last_fault_seq]
+
+
+def _temporal_target(rows: list[dict[str, Any]], summary: dict[str, Any],
+                     target_site: str) -> tuple[bool, str, dict[str, Any] | None]:
+    """Prove the final fault precedes a reached check in one exact occurrence.
+
+    The fault receipt sequence and native TargetRow VM event ID are different
+    clocks.  Only FAULT_APPLIED and TARGET_CHECK in this receipt stream can be
+    compared.  A member of another occurrence's closure has no demonstrated
+    fault-to-edge ordering, even when the closure contains an observed edge.
+    """
+    applied = [row for row in rows if row["kind"] == "FAULT_APPLIED"]
+    if not applied:
+        return False, "no_applied_fault", None
+    fault = applied[-1]
+    fault_occurrence = fault["occurrenceId"]
+    inside = False
+    cross_occurrence = False
+    saw_same_check = False
+    for one in summary["perTargetOccurrences"]:
+        target_occurrence = one["targetOccurrenceId"]
+        closure = {item["occurrenceId"] for item in one["closureMembers"]}
+        if fault_occurrence not in closure:
+            continue
+        inside = True
+        if fault_occurrence != target_occurrence:
+            cross_occurrence = True
+            continue
+        reached = any(row.get("occurrenceId") == target_occurrence and
+                      row.get("siteId") == target_site and
+                      row.get("reachedAnchor") is True
+                      for row in one["targetRows"])
+        if not reached or fault.get("node") != one.get("targetNodeName"):
+            continue
+        for check in rows:
+            if (check["kind"] != "TARGET_CHECK" or
+                    check.get("targetAnchorSiteId") != target_site or
+                    check.get("occurrenceId") != target_occurrence or
+                    check.get("node") != fault.get("node") or
+                    not isinstance(check.get("actorEpochOrdinal"), int) or
+                    isinstance(check["actorEpochOrdinal"], bool) or
+                    check["actorEpochOrdinal"] < 0 or
+                    check.get("actorEpochOrdinal") !=
+                    fault.get("actorEpochOrdinal") or
+                    not isinstance(check.get("siteId"), str) or
+                    not check["siteId"] or
+                    not (target_site == check["siteId"] or
+                         target_site.startswith(check["siteId"] + "#"))):
+                continue
+            saw_same_check = True
+            if check["seq"] > fault["seq"]:
+                return True, "same_occurrence_before_check", {
+                    "faultSeq": fault["seq"], "checkSeq": check["seq"],
+                    "targetOccurrenceId": target_occurrence,
+                    "targetAnchorSiteId": target_site,
+                }
+    if saw_same_check:
+        return False, "post_target_fault", None
+    if cross_occurrence:
+        return False, "cross_occurrence_order_unproved", None
+    if inside:
+        return False, "target_check_not_recorded", None
+    return False, "fault_outside_exact_target_closure", None
 
 
 def _doors(rows: list[dict[str, Any]], summary: dict[str, Any],
@@ -478,6 +541,10 @@ def _run_trial(config: dict[str, Any], admitted: dict[str, Any],
     result["junit_passed"] = execution["return_code"] == 0 and not execution["timed_out"]
     result["target_exception_triggered"] = False
     result["native_target_retained"] = False
+    result["fault_in_target_closure"] = False
+    result["target_temporal_admitted"] = False
+    result["target_temporal_reason"] = "no_applied_fault"
+    result["target_temporal_evidence"] = None
     result["eligible_doors"] = []
     try:
         events = _rows(iteration / "fault-events.jsonl")
@@ -541,11 +608,29 @@ def _run_trial(config: dict[str, Any], admitted: dict[str, Any],
                                 "closureMembers"]}
                             result["fault_in_target_closure"] = bool(
                                 applied and applied[-1]["occurrenceId"] in closure)
-                        if faults and not result["fault_in_target_closure"]:
-                            result["status"] = ("needs_causal_review" if thrown
-                                                else "unrelated_target")
+                            admitted, reason, evidence = _temporal_target(
+                                events, summary, config["target_site"])
+                            result["target_temporal_admitted"] = admitted
+                            result["target_temporal_reason"] = reason
+                            result["target_temporal_evidence"] = evidence
+                        linked_throw = bool(thrown and result[
+                            "target_temporal_evidence"] and any(
+                                row["occurrenceId"] == result[
+                                    "target_temporal_evidence"]["targetOccurrenceId"]
+                                and row["seq"] > result[
+                                    "target_temporal_evidence"]["checkSeq"]
+                                for row in thrown))
+                        if faults and not result["target_temporal_admitted"]:
+                            result["status"] = (
+                                "needs_causal_review" if thrown or result[
+                                    "target_temporal_reason"] in (
+                                        "cross_occurrence_order_unproved",
+                                        "target_check_not_recorded")
+                                else "unrelated_target")
+                        elif faults and thrown and not linked_throw:
+                            result["status"] = "needs_causal_review"
                         else:
-                            result["status"] = ("candidate" if thrown else
+                            result["status"] = ("candidate" if linked_throw else
                                                 "healthy_seed" if not faults
                                                 else "checked")
         except (ValueError, FileNotFoundError, subprocess.SubprocessError,
