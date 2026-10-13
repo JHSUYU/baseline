@@ -185,6 +185,21 @@ class CoverageIoTest(unittest.TestCase):
         self.assertNotEqual(stable_occurrence(first),
                             stable_occurrence(second.replace('handler 0', 'handler 1')))
 
+    def test_solr_thread_name_embedded_address_keeps_replayable_identity(self):
+        site = '/<example.ZkDistribStateManager: void read()>#u8'
+        first = ('local/OverseerThreadFactory-84-thread-2-processing-'
+                 'n:127.0.0.1:35129_solr' + site)
+        second = ('local/OverseerThreadFactory-84-thread-2-processing-'
+                  'n:127.0.0.1:34709_solr' + site)
+        self.assertEqual(stable_occurrence(first), stable_occurrence(second))
+        self.assertIn('n:127.0.0.1:port_solr', stable_occurrence(first))
+        auto_first = ('local/OverseerAutoScalingTriggerThread-72127974226984973-'
+                      '127.0.0.1:35129_solr-n_0000000000' + site)
+        auto_second = ('local/OverseerAutoScalingTriggerThread-72127977808920589-'
+                       '127.0.0.1:34709_solr-n_0000000000' + site)
+        self.assertEqual(stable_occurrence(auto_first),
+                         stable_occurrence(auto_second))
+
     def test_soot_controlled_throw_uses_line_not_unit_ordinal(self):
         guard = TARGET + '#u4'
         selection = {'target_check_line': 20, 'target_selected_line': 23,

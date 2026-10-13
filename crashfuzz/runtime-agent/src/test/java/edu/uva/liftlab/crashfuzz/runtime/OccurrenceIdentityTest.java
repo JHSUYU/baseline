@@ -65,4 +65,21 @@ public class OccurrenceIdentityTest {
         assertNotEquals(OccurrenceIdentity.stable(first),
                 OccurrenceIdentity.stable(second.replace("handler 0", "handler 1")));
     }
+
+    @Test
+    public void solrThreadNameEmbeddedAddressDoesNotBreakReplay() {
+        String site = "/<example.ZkDistribStateManager: void read()>#u8";
+        String first = "local/OverseerThreadFactory-84-thread-2-processing-"
+                + "n:127.0.0.1:35129_solr" + site;
+        String second = "local/OverseerThreadFactory-84-thread-2-processing-"
+                + "n:127.0.0.1:34709_solr" + site;
+        assertEquals(OccurrenceIdentity.stable(first), OccurrenceIdentity.stable(second));
+        org.junit.Assert.assertTrue(OccurrenceIdentity.stable(first)
+                .contains("n:127.0.0.1:port_solr"));
+        String autoFirst = "local/OverseerAutoScalingTriggerThread-72127974226984973-"
+                + "127.0.0.1:35129_solr-n_0000000000" + site;
+        String autoSecond = "local/OverseerAutoScalingTriggerThread-72127977808920589-"
+                + "127.0.0.1:34709_solr-n_0000000000" + site;
+        assertEquals(OccurrenceIdentity.stable(autoFirst), OccurrenceIdentity.stable(autoSecond));
+    }
 }

@@ -492,8 +492,10 @@ def stable_occurrence(address: str) -> str:
     actor = re.sub(r"(?i)\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b", "uuid", actor)
     actor = re.sub(r"\bBP-[0-9]+-[^\s:]+-[0-9]+\b", "BP-instance", actor)
     actor = re.sub(r"\bblk_[0-9]+_[0-9]+\b", "blk-instance", actor)
+    actor = re.sub(r"\b([A-Za-z][A-Za-z0-9]*Thread)-[0-9]{10,}\b",
+                   r"\1-instance", actor)
     actor = re.sub(
-        r"(?i)(\b(?:[a-z][a-z0-9_.-]*|(?:[0-9]{1,3}\.){3}[0-9]{1,3})):[0-9]{2,5}\b",
+        r"(?i)(\b(?:[a-z][a-z0-9_.-]*|(?:[0-9]{1,3}\.){3}[0-9]{1,3})):[0-9]{2,5}(?![0-9.])",
         r"\1:port", actor)
     actor = re.sub(r"(\[[0-9a-fA-F:]+\]):[0-9]{2,5}\b", r"\1:port", actor)
     actor = re.sub(r"(?i)\b(localhost|127\.0\.0\.1)/[0-9]{2,5}\b",
