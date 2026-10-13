@@ -108,6 +108,11 @@ def _validate_config(config: dict[str, Any]) -> None:
             isinstance(recording["max_jobs"], bool) or
             recording["max_jobs"] <= 0):
         raise ValueError("native campaign requires positive original schedule max_jobs")
+    if any(not isinstance(recording.get(key, []), list) or
+           not all(isinstance(arg, str) and arg.startswith("-D")
+                   for arg in recording.get(key, []))
+           for key in ("recorder_jvm_args", "scheduler_jvm_args")):
+        raise ValueError("recording JVM arguments must be JVM properties")
     if (recording.get("target_occurrence") is not None and
             (not isinstance(recording["target_occurrence"], str) or
              not recording["target_occurrence"])):
@@ -224,7 +229,8 @@ def _verify_recording_plan(config: dict[str, Any], weave: dict[str, Any]) -> dic
         _scheduler_source()
         classpath = f"{JAR}:{DEPENDENCIES.read_text(encoding='utf-8').strip()}"
         target = ",".join((str(graph), str(scope), str(skeletons), str(output)))
-        command = [str(Path(weave["java"]).resolve(strict=True)), "-cp",
+        command = [str(Path(weave["java"]).resolve(strict=True)),
+                   *rec.get("recorder_jvm_args", []), "-cp",
                    classpath,
                    "edu.uva.liftlab.graphchecker.runtime.CausynthTraceRecorder",
                    "--trace-dir", str(trace), "--test", rec["test_id"],
@@ -236,7 +242,8 @@ def _verify_recording_plan(config: dict[str, Any], weave: dict[str, Any]) -> dic
         region_plan = output / "concolic_region_plan.jsonl"
         if not region_plan.is_file():
             raise ValueError("original recorder produced no region plan")
-        scheduler = [str(Path(weave["java"]).resolve(strict=True)), "-cp",
+        scheduler = [str(Path(weave["java"]).resolve(strict=True)),
+                     *rec.get("scheduler_jvm_args", []), "-cp",
                      classpath,
                      "edu.uva.liftlab.graphchecker.plan.ConcolicScheduler",
                      "--region-plan", str(region_plan),
