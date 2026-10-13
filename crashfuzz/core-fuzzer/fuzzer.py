@@ -745,6 +745,27 @@ def confirmed_fault_nodes(sequence: list[dict[str, Any]]) -> tuple[str, ...]:
     return tuple(sorted(nodes))
 
 
+def reply_fanout_degree(sequence: list[dict[str, Any]]) -> int:
+    """Count nodes receiving the same observed nonempty RPC reply shape.
+
+    A command-like reply can update several nodes independently. Losing it
+    on just one node may leave the other nodes able to repair the operation.
+    Require runtime node identity and a matching callsite/response shape so
+    unrelated replies do not form a synthetic fanout group.
+    """
+    groups: dict[tuple[str, str], set[str]] = {}
+    for point in sequence:
+        if not object_array_response(point):
+            continue
+        actor = point["occurrence"].rsplit("/<", 1)[0]
+        if "|" not in actor:
+            continue
+        node = actor.rsplit("|", 1)[1]
+        key = (point["siteId"], point["responseShape"])
+        groups.setdefault(key, set()).add(node)
+    return max((len(nodes) for nodes in groups.values()), default=0)
+
+
 def identity_priority(point: dict[str, Any]) -> int:
     """Favor replayable observed actors without weakening exact matching."""
     occurrence = point.get("occurrence", "")
@@ -924,6 +945,19 @@ def choose_next_sequence(state: dict[str, Any],
     before other observed fault sites have been tested.
     """
     previous = list(completed_sequences(state))
+    # A nonempty response observed on several nodes may carry the same state
+    # update to each. Give its multi-node loss a bounded share of trials,
+    # favoring the widest observed fanout without naming a protocol or site.
+    if (state.get("reply_fanout_diversity_version", 0) >= 1 and
+            len(previous) % 10 == 3):
+        fanout = [(index, item, reply_fanout_degree(item["sequence"]))
+                  for index, item in enumerate(state["queue"])]
+        fanout = [entry for entry in fanout if entry[2] >= 2]
+        if fanout:
+            return min(fanout, key=lambda entry: (
+                -entry[2], len(entry[1]["sequence"]),
+                -entry[1].get("target_proximity", 0),
+                -entry[1]["priority"], entry[1]["created"], entry[0]))[0]
     # A successful RPC may carry a state-changing command. Reserve a bounded
     # share for observed object-array response variants, without naming any
     # system, command class, or fault callsite in the selector.
@@ -1830,6 +1864,7 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
             state.setdefault("same_actor_followup_version", 1)
             state.setdefault("cross_actor_diversity_version", 1)
             state.setdefault("response_shape_diversity_version", 1)
+            state.setdefault("reply_fanout_diversity_version", 1)
             if state.get("fault_family_version", 0) < 2:
                 observed = state.get("seed", {}).get("feedback", {}).get(
                     "points", []) if state.get("seed") else []
@@ -1918,6 +1953,7 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
                      "same_actor_followup_version": 1,
                     "cross_actor_diversity_version": 1,
                     "response_shape_diversity_version": 1,
+                    "reply_fanout_diversity_version": 1,
                      "site_diversity_version": 2,
                      "typed_zookeeper_fault_version": 1,
                      "seed_runtime_seconds": 0.0,

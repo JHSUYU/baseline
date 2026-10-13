@@ -10,6 +10,7 @@ from fuzzer import (archive_trial_attempts, budget_has_room, campaign,
                     choose_next_sequence, enqueue, fault_family, fault_point_for_io,
                     fault_variants_for_io, fingerprint,
                     in_io_scope, point_from_event,
+                    reply_fanout_degree,
                     rows, static_reason_priority, strict_applied_prefix,
                     strict_injection,
                     retry_lost_target,
@@ -487,6 +488,26 @@ class CoverageIoTest(unittest.TestCase):
                  'response_shape_diversity_version': 1}
         self.assertEqual(choose_next_sequence(state), 1)
         state['response_shape_diversity_version'] = 0
+        self.assertEqual(choose_next_sequence(state), 0)
+
+    def test_fanout_slot_selects_multi_node_observed_reply_loss(self):
+        reply = {**A, 'phase': 'after',
+                 'responseShape': 'example.Reply|commands=[example.Update]'}
+        one = {**reply, 'occurrence': 'local/heartbeat|node1/<example.Transport: void receive()>#u2'}
+        two = {**reply, 'occurrence': 'local/heartbeat|node2/<example.Transport: void receive()>#u2'}
+        three = {**reply, 'occurrence': 'local/heartbeat|node3/<example.Transport: void receive()>#u2'}
+        pair = [one, two]
+        triple = [one, two, three]
+        self.assertEqual(reply_fanout_degree(pair), 2)
+        self.assertEqual(reply_fanout_degree(triple), 3)
+        self.assertEqual(reply_fanout_degree([
+            one, {**two, 'responseShape': 'example.Reply|commands=[example.Other]'}]), 1)
+        state = {'completed': [{'sequence': [B]}] * 3,
+                 'queue': [{'sequence': pair, 'priority': 1000, 'created': 1},
+                           {'sequence': triple, 'priority': 1, 'created': 2}],
+                 'reply_fanout_diversity_version': 1}
+        self.assertEqual(choose_next_sequence(state), 1)
+        state['reply_fanout_diversity_version'] = 0
         self.assertEqual(choose_next_sequence(state), 0)
 
     def test_temporal_diversity_explores_later_occurrences_of_a_site(self):
