@@ -40,10 +40,10 @@
     {
       "case_id": "ZOOKEEPER-07",
       "state": "budget_finished_preliminary",
-      "reason": "The frozen v3 budget finished 64 fault trials in 460.840 cumulative JUnit seconds: 62 strict injections, 48 post-fault target reaches, 43 injection-specific target reaches, and zero target throws. A strict registerWithLeader fault reaches the retry target through a paired same-peer, same-thread PROGRAM_ORDER edge in r0001; r0011 has four strict faults in the target closure. Only 16 distinct fault sites were injected. The verified FileReader(File) read-side door was strictly injected once without retaining the target, while the selected and observed BufferedReader.readLine door was never injected. A separate generic-scheduler v4 run is needed before high-quality review.",
-      "config_sha256": "1a4091e1876c2d630105f77a8fb0930b419d7e01e9e21ec55e496347d57000a7",
+      "reason": "The frozen v4 campaign completed 192 fault trials in 1637.564 cumulative JUnit seconds: 169 strict injections, 130 post-fault target reaches, 107 injection-specific target reaches, and zero target throws. All trial artifacts passed read-only verification. The earlier v3 causal audit found a same-peer retry edge, but v4 still used the custom graph rather than the required source-built original GraphChecker session and closure. It is a preliminary budget result pending a recording-derived native target task and final run.",
+      "config_sha256": "a1ea04e966e287803f3af055c14725b4234ef0d365df177fdcb7d7459ec785b6",
       "receipt_status": "complete_trial_budget",
-      "completed_fault_trials": 64,
+      "completed_fault_trials": 192,
       "evidence_paths": [
         "data/mallory/graphchecker_port/evidence/ZOOKEEPER-07-snapshots.json",
         "data/mallory/graphchecker_port/evidence/ZOOKEEPER-07-v1/summary.json",
@@ -74,7 +74,11 @@
         "/proj/silentfailure-PG0/ZhenyuLi/Mallory/ZOOKEEPER-07-20261013-v2/campaign/trials/r0032/result.json",
         "/proj/silentfailure-PG0/ZhenyuLi/Mallory/ZOOKEEPER-07-20261013-v2/config/scope/weave_manifest.json",
         "/proj/silentfailure-PG0/ZhenyuLi/Mallory/ZOOKEEPER-07-20261013-v3/campaign/summary.json",
-        "/proj/silentfailure-PG0/ZhenyuLi/Mallory/ZOOKEEPER-07-20261013-v3/campaign/checkpoint.json"
+        "/proj/silentfailure-PG0/ZhenyuLi/Mallory/ZOOKEEPER-07-20261013-v3/campaign/checkpoint.json",
+        "data/mallory/graphchecker_port/imports/ZOOKEEPER-07/a1ea04e966e28780-38d71f7a5d1d/import-receipt.json",
+        "data/mallory/graphchecker_port/imports/ZOOKEEPER-07/a1ea04e966e28780-38d71f7a5d1d/config.json",
+        "data/mallory/graphchecker_port/imports/ZOOKEEPER-07/a1ea04e966e28780-38d71f7a5d1d/checkpoint.json",
+        "data/mallory/graphchecker_port/imports/ZOOKEEPER-07/a1ea04e966e28780-38d71f7a5d1d/summary.json"
       ]
     },
     {
@@ -89,6 +93,48 @@
         "data/mallory/graphchecker_port/imports/ZOOKEEPER-11/5cf135436bab9868-c25293dfccba/config.json",
         "data/mallory/graphchecker_port/imports/ZOOKEEPER-11/5cf135436bab9868-c25293dfccba/checkpoint.json",
         "data/mallory/graphchecker_port/imports/ZOOKEEPER-11/5cf135436bab9868-c25293dfccba/summary.json"
+      ]
+    },
+    {
+      "case_id": "HDFS-32",
+      "state": "budget_finished_preliminary",
+      "reason": "The frozen v2 campaign reached its 1800-second budget after 47 fault trials (1813.477 cumulative JUnit seconds): 45 strict injections, 25 post-fault target reaches, no injection-specific target reaches, and no target throws. Every trial archive passed read-only verification. The run predates the required source-built original GraphChecker session/closure feedback, and its injected faults did not establish a causal path to the DataNode.deleteBlockPool target; this is a preliminary budget result, not a completed check.",
+      "config_sha256": "49edf7055d5e4fd543d9e4814c2ec81f3a99453bc99f6ac96d5da843eaad5253",
+      "receipt_status": "complete_time_budget",
+      "completed_fault_trials": 47,
+      "evidence_paths": [
+        "data/mallory/graphchecker_port/imports/HDFS-32/49edf7055d5e4fd5-d9373a7b348a/import-receipt.json",
+        "data/mallory/graphchecker_port/imports/HDFS-32/49edf7055d5e4fd5-d9373a7b348a/config.json",
+        "data/mallory/graphchecker_port/imports/HDFS-32/49edf7055d5e4fd5-d9373a7b348a/checkpoint.json",
+        "data/mallory/graphchecker_port/imports/HDFS-32/49edf7055d5e4fd5-d9373a7b348a/summary.json"
+      ]
+    },
+    {
+      "case_id": "ZOOKEEPER-12",
+      "state": "budget_finished_preliminary",
+      "reason": "The frozen v1 campaign reached its 1800-second budget after 50 fault trials (1814.315 cumulative JUnit seconds): 45 strict injections, 32 post-fault target reaches, 20 injection-specific target reaches, and zero target throws. Every trial archive passed read-only verification. The run used the earlier custom graph and lacks the complete file writer/version handoff and source-built original GraphChecker closure required for a final result.",
+      "config_sha256": "1ece044050784506287145ae5dcb260839887839ff0408310726f56250b1ab11",
+      "receipt_status": "complete_time_budget",
+      "completed_fault_trials": 50,
+      "evidence_paths": [
+        "data/mallory/graphchecker_port/imports/ZOOKEEPER-12/1ece044050784506-57f322bad2ac/import-receipt.json",
+        "data/mallory/graphchecker_port/imports/ZOOKEEPER-12/1ece044050784506-57f322bad2ac/config.json",
+        "data/mallory/graphchecker_port/imports/ZOOKEEPER-12/1ece044050784506-57f322bad2ac/checkpoint.json",
+        "data/mallory/graphchecker_port/imports/ZOOKEEPER-12/1ece044050784506-57f322bad2ac/summary.json"
+      ]
+    },
+    {
+      "case_id": "HBASE-01",
+      "state": "budget_finished_preliminary",
+      "reason": "The frozen v3 campaign reached its 1800-second budget after 39 fault trials (1824.042 cumulative JUnit seconds): 35 strict injections, 29 post-fault target reaches, 23 injection-specific target reaches, and zero target throws. All 39 trial archives passed read-only verification. The target's ClusterStatusListener.deadServers state read still lacks an exact writer/version handoff in this frozen graph, and the campaign predates the required source-built original GraphChecker session/closure feedback. This is a preliminary budget result, not a final causal review.",
+      "config_sha256": "62bde06d5685c7fabf6e30255036caf6195cfe6a439d3b91c43b6433935f8739",
+      "receipt_status": "complete_time_budget",
+      "completed_fault_trials": 39,
+      "evidence_paths": [
+        "data/mallory/graphchecker_port/imports/HBASE-01/62bde06d5685c7fa-979741e2d974/import-receipt.json",
+        "data/mallory/graphchecker_port/imports/HBASE-01/62bde06d5685c7fa-979741e2d974/config.json",
+        "data/mallory/graphchecker_port/imports/HBASE-01/62bde06d5685c7fa-979741e2d974/checkpoint.json",
+        "data/mallory/graphchecker_port/imports/HBASE-01/62bde06d5685c7fa-979741e2d974/summary.json"
       ]
     }
   ]
