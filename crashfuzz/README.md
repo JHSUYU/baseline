@@ -50,6 +50,9 @@ thread names and temporary cluster ports, including HBase's
 `Listener at localhost/port` form, are normalized across JUnit runs;
 the I/O site, actor class, and hit ordinal remain part of the match. Repeated
 observations with the same normalized address also carry an occurrence ordinal.
+For embedded SolrCloud tests, target-check events also record the serving
+node when the request exposes its core container. This lets trial reviews
+compare a watch fault's node with the node that executed the check.
 When one is available, the scheduler reserves one trial in six for a later
 observed invocation of a selected I/O callsite. It groups these invocations
 by callsite, phase, and a coarse ordinal bucket so repeated early faults do

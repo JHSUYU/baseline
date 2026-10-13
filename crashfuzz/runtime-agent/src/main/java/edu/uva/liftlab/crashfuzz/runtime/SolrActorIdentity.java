@@ -60,6 +60,33 @@ final class SolrActorIdentity {
         return fromContext(thread, replica, core, siteId);
     }
 
+    static ActorIdentity.Resolution targetCheckNode(String siteId) {
+        if (!siteId.startsWith("<org.apache.solr.")) {
+            return ActorIdentity.Resolution.NOT_APPLICABLE;
+        }
+        try {
+            ClassLoader loader = Thread.currentThread().getContextClassLoader();
+            if (loader == null) loader = SolrActorIdentity.class.getClassLoader();
+            Class<?> type = Class.forName("org.apache.solr.request.SolrRequestInfo", false, loader);
+            Object info = type.getMethod("getRequestInfo").invoke(null);
+            if (info == null) return ActorIdentity.Resolution.NOT_APPLICABLE;
+            Object request = info.getClass().getMethod("getReq").invoke(info);
+            if (request == null) return ActorIdentity.Resolution.NOT_APPLICABLE;
+            Object core = request.getClass().getMethod("getCore").invoke(request);
+            if (core == null) return ActorIdentity.Resolution.NOT_APPLICABLE;
+            Object container = core.getClass().getMethod("getCoreContainer").invoke(core);
+            if (container == null) return ActorIdentity.Resolution.NOT_APPLICABLE;
+            Object home = container.getClass().getMethod("getSolrHome").invoke(container);
+            if (!(home instanceof String)) return ActorIdentity.Resolution.NOT_APPLICABLE;
+            Matcher match = EMBEDDED_NODE.matcher((String) home);
+            if (!match.find()) return ActorIdentity.Resolution.NOT_APPLICABLE;
+            return new ActorIdentity.Resolution("solr:watch:node" + match.group(1),
+                    false, null);
+        } catch (ReflectiveOperationException | RuntimeException ignored) {
+            return ActorIdentity.Resolution.NOT_APPLICABLE;
+        }
+    }
+
     private static Object readerFor(Object owner) {
         if (owner == null) return null;
         String name = owner.getClass().getName();

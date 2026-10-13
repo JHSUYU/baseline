@@ -223,6 +223,10 @@ public final class SelectionProbe {
                 row.addProperty("siteId", siteId);
                 row.addProperty("method", siteId.split("#", 2)[0]);
                 row.addProperty("callId", calls.isEmpty() ? 0 : calls.peek());
+                ActorIdentity.Resolution node = SolrActorIdentity.targetCheckNode(siteId);
+                if (node.applies() && !node.gap) {
+                    row.addProperty("logicalNodeId", node.logicalNodeId);
+                }
                 write(row, false);
             } catch (IOException error) {
                 throw new IllegalStateException("cannot record target check", error);

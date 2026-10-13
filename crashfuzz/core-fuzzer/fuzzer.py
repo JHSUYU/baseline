@@ -464,6 +464,9 @@ def trace_feedback(path: Path, target: dict[str, Any],
         "target_outcomes": target_outcomes,
         "target_outcomes_after_fault": target_outcomes_after_fault,
         "target_check_seqs": [e.get("seq", -1) for e in check_rows],
+        "target_check_nodes": [
+            {"seq": e.get("seq", -1), "logicalNodeId": e["logicalNodeId"]}
+            for e in check_rows if e.get("logicalNodeId")],
         "target_guard_seen": target_guard_seen,
         "target_guard_after_fault": target_guard_after_fault,
         "target_exception": target_exception,

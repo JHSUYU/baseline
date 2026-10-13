@@ -134,6 +134,21 @@ def fixture(root, *, mode='normal', max_trials=2, max_faults=2):
 
 
 class CoverageIoTest(unittest.TestCase):
+    def test_target_feedback_keeps_serving_node_when_recorded(self):
+        with tempfile.TemporaryDirectory() as directory:
+            trace = Path(directory) / 'trace.jsonl'
+            jsonl(trace, [
+                {'schemaVersion': 3, 'event': 'METHOD_ENTER', 'seq': 1,
+                 'method': TARGET, 'callId': 10},
+                {'schemaVersion': 3, 'event': 'CHECK_REACHED', 'seq': 2,
+                 'method': TARGET, 'siteId': SITE, 'callId': 10,
+                 'logicalNodeId': 'solr:watch:node2'}])
+            feedback = trace_feedback(trace, {'method': TARGET,
+                    'site_id': SITE, 'check_events': ['CHECK_REACHED'],
+                    'exception_type': 'example.TargetException'})
+            self.assertEqual(feedback['target_check_nodes'], [
+                {'seq': 2, 'logicalNodeId': 'solr:watch:node2'}])
+
     def test_post_call_phase_has_distinct_replay_identity(self):
         before = point_from_event(marker(A, 'FAULT_POINT_OBSERVED', 1,
                                          phase='before'))

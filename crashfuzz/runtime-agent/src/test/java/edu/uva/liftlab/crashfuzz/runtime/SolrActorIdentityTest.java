@@ -3,6 +3,7 @@ package edu.uva.liftlab.crashfuzz.runtime;
 import org.junit.Test;
 import org.apache.solr.cloud.ZkController;
 import org.apache.solr.common.cloud.ZkStateReader;
+import org.apache.solr.request.SolrRequestInfo;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -78,5 +79,25 @@ public class SolrActorIdentityTest {
                 new ZkStateReader().new AliasesManager(), watchSite,
                 "zkCallback-64-thread-1");
         assertTrue(gap.gap);
+    }
+
+    @Test
+    public void targetCheckUsesTheServingEmbeddedNode() {
+        try {
+            SolrRequestInfo.setCurrent("/tmp/solr-test/node3");
+            ActorIdentity.Resolution node = SolrActorIdentity.targetCheckNode(
+                    "<org.apache.solr.update.processor.RoutedAliasUpdateProcessor: "
+                            + "java.util.Map getAliasProps()>#u10");
+            assertEquals("solr:watch:node3", node.logicalNodeId);
+            SolrRequestInfo.setCurrent("/tmp/solr-test/node4/");
+            assertEquals("solr:watch:node4", SolrActorIdentity.targetCheckNode(
+                    "<org.apache.solr.update.processor.RoutedAliasUpdateProcessor: "
+                            + "java.util.Map getAliasProps()>#u10").logicalNodeId);
+        } finally {
+            SolrRequestInfo.setCurrent(null);
+        }
+        assertFalse(SolrActorIdentity.targetCheckNode(
+                "<org.apache.solr.update.processor.RoutedAliasUpdateProcessor: "
+                        + "java.util.Map getAliasProps()>#u10").applies());
     }
 }
