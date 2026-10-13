@@ -62,3 +62,15 @@ an unproven parent scope. This smoke proves protocol identity and original
 JUnit execution only. It has no HDFS-30 target weave, target attribution, or
 target closure. Rebuild and rerun with the final payload-aware engine and
 matching exact classpath before accepting a static scope or fault campaign.
+
+`payload-smoke-receipt.json` records a second unchanged-JUnit diagnostic
+using a pinned original-engine JAR with only `MessageDoors.class` replaced.
+It passes 1/1, pairs all 152 SEND/RECEIVE identities, and has no payload API
+gap. The same block-recovery Daemon parent gap remains. The seven-argument
+compatibility door preserves WIRE_FLOW values already staged by GraphChecker;
+a focused runtime test carries a staged handle across the outbound/inbound
+pair. This does not prove the HDFS key-ID source-to-sink mapping, since the
+JUnit has not yet run the accepted static target/port weave. The vendored
+engine does not yet implement the later CODEC_PORT walker: when a transport
+declares that codec, the compatibility door emits a blocking gap instead of
+claiming its payload leaves were propagated.

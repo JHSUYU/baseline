@@ -1,9 +1,15 @@
 package edu.uva.liftlab.graphchecker.runtime;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import edu.uva.liftlab.graphchecker.contract.Endpoint;
 import edu.uva.liftlab.graphchecker.contract.GapClass;
 import edu.uva.liftlab.graphchecker.contract.GapKind;
 
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -124,6 +130,72 @@ public final class MessageDoors {
     }
 
     /**
+     * A transport's payload-bearing form of {@link #outbound(String, String,
+     * String, String, Object, Object)}.  Declared WIRE_FLOW ports have already
+     * staged their values in {@link SymbolicMessageEnvelope}; their exact
+     * export handles travel with this message, independently of the Java
+     * payload object.  The vendored engine does not implement GraphChecker's
+     * later CODEC_PORT walker.  A transport which declares such a codec is
+     * therefore named as a blocking gap instead of silently losing its
+     * payload values.  With no codec declaration this has the same payload
+     * semantics as the upstream seven-argument door.
+     */
+    public static Outbound outbound(String transport, String correlationId,
+                                    String attemptId, String half,
+                                    Object localOwner, Object scope,
+                                    Object payload) {
+        return outbound(transport, correlationId, attemptId, half,
+                localOwner, scope, "");
+    }
+
+    /** A payload an adapter could not read is an explicit observation gap. */
+    public static void payloadUnread(String transport, String detail) {
+        RowRuntime.gap(GapKind.UNSTATED_VALUE, GapClass.DIAGNOSTIC,
+                Text.safe(transport), "a door's payload could not be read,"
+                        + " so the message carries none of its codec"
+                        + " values: " + Text.safe(detail));
+    }
+
+    /**
+     * A configured codec is an authority separate from WIRE_FLOW.  Inspect
+     * only the transport declaration; an unreadable declaration is treated
+     * as requested so the run fails closed.  No declaration means the
+     * upstream CodecRuntime also walks no payload.
+     */
+    private static boolean codecRequested(String transport, String half) {
+        String named = System.getProperty("causynth.wire.declarations");
+        if (named == null || named.trim().isEmpty()) {
+            named = System.getenv("CAUSYNTH_WIRE_DECLARATIONS");
+        }
+        if (named == null || named.trim().isEmpty()) return false;
+        try {
+            boolean requested = false;
+            for (String line : Files.readAllLines(Paths.get(named.trim()),
+                    StandardCharsets.UTF_8)) {
+                if (line.trim().isEmpty()) continue;
+                JsonElement parsed = JsonParser.parseString(line);
+                if (!parsed.isJsonObject()) return true;
+                JsonObject row = parsed.getAsJsonObject();
+                JsonElement kind = row.get("kind");
+                if (kind == null || !kind.isJsonPrimitive()) return true;
+                if (!"TRANSPORT".equals(kind.getAsString())) continue;
+                JsonElement name = row.get("transport");
+                if (name == null || !name.isJsonPrimitive()) return true;
+                if (!Text.safe(transport).equals(name.getAsString())) continue;
+                JsonElement codec = row.get(REQUEST.equals(half)
+                        ? "request" : "response");
+                if (codec != null && !codec.isJsonNull()) {
+                    if (!codec.isJsonPrimitive()) return true;
+                    requested |= !codec.getAsString().isEmpty();
+                }
+            }
+            return requested;
+        } catch (Exception unreadable) {
+            return true;
+        }
+    }
+
+    /**
      * One request leaves naming the operation it asks for ({@code verb}, a
      * constant its door reads off the request: a Hadoop RPC's protocol and
      * method), so its producer endpoint and its SEND are that operation's
@@ -144,6 +216,13 @@ public final class MessageDoors {
                                      String attemptId, String half,
                                      Object localOwner, Object scope,
                                      String verb) {
+        if (codecRequested(transport, half)) {
+            RowRuntime.gap(GapKind.DECLARATION_MISSING, GapClass.BLOCKING,
+                    Text.safe(transport), "payload CODEC_PORT semantics are"
+                            + " unavailable in this original-engine port;"
+                            + " WIRE_FLOW values still travel, but the"
+                            + " declared codec's payload leaves do not");
+        }
         String trace = CausynthTraceRecorder.outboundExchange(transport,
                 correlationId, attemptId, half, localOwner, scope,
                 Text.safe(verb));
