@@ -1,59 +1,75 @@
 {
-  "schema_version": 2,
   "cases": {
-    "SOLR-36": {
-      "replacement_campaign": "identity-v3",
+    "HBASE-16": {
       "replacement_budget_trials": 80,
-      "selection_digest": "611334aacea7d8595a6867f4b587adc7c498ff6eec5a234e42e0d5f56b6a24da",
+      "replacement_campaign": "identity-v2",
       "retired_campaigns": [
         {
-          "campaign": "nightly",
-          "elapsed_seconds": 11693.061,
-          "completed_trials": 54,
-          "strict_injections": 5,
+          "audit_path": "node1:/users/ZhenyuLi/static-rerun/results/HBASE-16/identity-v2-migration/prior-audit.json",
           "budget_trials": 80,
-          "interrupted_active_trial": 55,
+          "campaign": "original",
+          "completed_trials": 44,
+          "elapsed_seconds": 5333.328,
+          "reason": "An ephemeral HBase RpcServer listener port differed between seed and replay, preventing otherwise equivalent I/O from matching.",
+          "strict_injections": 0
+        }
+      ],
+      "selection_digest": "fcb5fcff67eaccd0716903b2e80bde6e5f10f10411998ca1fd7ec00ae194bba3"
+    },
+    "SOLR-36": {
+      "replacement_budget_trials": 80,
+      "replacement_campaign": "identity-v3",
+      "retired_campaigns": [
+        {
           "audit_path": "node2:/users/ZhenyuLi/static-rerun/results/SOLR-36/identity-v2-migration/poststop-audit.json",
-          "reason": "Volatile Jetty thread identity prevented stable replay."
+          "budget_trials": 80,
+          "campaign": "nightly",
+          "completed_trials": 54,
+          "elapsed_seconds": 11693.061,
+          "interrupted_active_trial": 55,
+          "reason": "Volatile Jetty thread identity prevented stable replay.",
+          "strict_injections": 5
         },
         {
-          "campaign": "identity-v2",
-          "elapsed_seconds": 341.378,
-          "completed_trials": 2,
-          "strict_injections": 1,
-          "budget_trials": 80,
-          "interrupted_active_trial": 3,
           "audit_path": "node2:/users/ZhenyuLi/static-rerun/results/SOLR-36/identity-v3-migration/poststop-audit.json",
-          "reason": "The stale node2 fuzzer selected an I/O event with identityGap=true."
+          "budget_trials": 80,
+          "campaign": "identity-v2",
+          "completed_trials": 2,
+          "elapsed_seconds": 341.378,
+          "interrupted_active_trial": 3,
+          "reason": "The stale node2 fuzzer selected an I/O event with identityGap=true.",
+          "strict_injections": 1
         }
-      ]
+      ],
+      "selection_digest": "611334aacea7d8595a6867f4b587adc7c498ff6eec5a234e42e0d5f56b6a24da"
     },
     "SOLR-37": {
-      "replacement_campaign": "identity-v3",
       "replacement_budget_trials": 80,
-      "selection_digest": "611334aacea7d8595a6867f4b587adc7c498ff6eec5a234e42e0d5f56b6a24da",
+      "replacement_campaign": "identity-v3",
       "retired_campaigns": [
         {
-          "campaign": "nightly",
-          "elapsed_seconds": 11730.397,
-          "completed_trials": 54,
-          "strict_injections": 5,
-          "budget_trials": 80,
-          "interrupted_active_trial": 55,
           "audit_path": "node2:/users/ZhenyuLi/static-rerun/results/SOLR-37/identity-v2-migration/poststop-audit.json",
-          "reason": "Volatile Jetty thread identity prevented stable replay."
+          "budget_trials": 80,
+          "campaign": "nightly",
+          "completed_trials": 54,
+          "elapsed_seconds": 11730.397,
+          "interrupted_active_trial": 55,
+          "reason": "Volatile Jetty thread identity prevented stable replay.",
+          "strict_injections": 5
         },
         {
-          "campaign": "identity-v2",
-          "elapsed_seconds": 333.843,
-          "completed_trials": 2,
-          "strict_injections": 1,
-          "budget_trials": 80,
-          "interrupted_active_trial": 3,
           "audit_path": "node2:/users/ZhenyuLi/static-rerun/results/SOLR-37/identity-v3-migration/poststop-audit.json",
-          "reason": "The stale node2 fuzzer selected an I/O event with identityGap=true."
+          "budget_trials": 80,
+          "campaign": "identity-v2",
+          "completed_trials": 2,
+          "elapsed_seconds": 333.843,
+          "interrupted_active_trial": 3,
+          "reason": "The stale node2 fuzzer selected an I/O event with identityGap=true.",
+          "strict_injections": 1
         }
-      ]
+      ],
+      "selection_digest": "611334aacea7d8595a6867f4b587adc7c498ff6eec5a234e42e0d5f56b6a24da"
     }
-  }
+  },
+  "schema_version": 2
 }
