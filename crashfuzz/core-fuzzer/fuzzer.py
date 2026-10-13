@@ -612,6 +612,18 @@ def exact_temporal_site_key(point: dict[str, Any]) -> tuple[str, str, int]:
             point.get("hitOrdinal", 1))
 
 
+def repeated_reply_loss(sequence: list[dict[str, Any]]) -> bool:
+    """Two later replies lost by the same actor at one observed callsite."""
+    if len(sequence) < 2:
+        return False
+    first, second = sequence[-2:]
+    return (first.get("phase") == second.get("phase") == "after" and
+            first["siteId"] == second["siteId"] and
+            first["occurrence"].rsplit("/<", 1)[0] ==
+            second["occurrence"].rsplit("/<", 1)[0] and
+            second.get("hitOrdinal", 0) > first.get("hitOrdinal", 0))
+
+
 def identity_priority(point: dict[str, Any]) -> int:
     """Favor replayable observed actors without weakening exact matching."""
     occurrence = point.get("occurrence", "")
@@ -789,6 +801,19 @@ def choose_next_sequence(state: dict[str, Any],
     before other observed fault sites have been tested.
     """
     previous = list(completed_sequences(state))
+    # A lost reply can be repaired by the next RPC. Reserve a bounded share
+    # for losing a second observed reply from the same actor and callsite.
+    if (state.get("repeated_reply_loss_version", 0) >= 1 and
+            len(previous) % 7 == 6):
+        repeated = [(index, item) for index, item in enumerate(state["queue"])
+                    if repeated_reply_loss(item["sequence"])]
+        if repeated:
+            return min(repeated, key=lambda entry: (
+                entry[1]["sequence"][-1]["hitOrdinal"] -
+                entry[1]["sequence"][-2]["hitOrdinal"],
+                -entry[1]["sequence"][-2]["hitOrdinal"],
+                -entry[1].get("target_proximity", 0),
+                -entry[1]["priority"], entry[1]["created"], entry[0]))[0]
     # A short JUnit can perform several protocol steps in one logarithmic
     # occurrence bucket. Periodically sample another exact invocation of a
     # repeated site after the coarse buckets have been represented.
@@ -1567,6 +1592,7 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
             state.setdefault("temporal_diversity_version", 1)
             state.setdefault("late_occurrence_diversity_version", 1)
             state.setdefault("exact_late_occurrence_version", 1)
+            state.setdefault("repeated_reply_loss_version", 1)
             if state.get("fault_family_version", 0) < 2:
                 observed = state.get("seed", {}).get("feedback", {}).get(
                     "points", []) if state.get("seed") else []
@@ -1650,6 +1676,7 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
                      "temporal_diversity_version": 2,
                      "late_occurrence_diversity_version": 1,
                      "exact_late_occurrence_version": 1,
+                     "repeated_reply_loss_version": 1,
                      "site_diversity_version": 2,
                      "typed_zookeeper_fault_version": 1,
                      "seed_runtime_seconds": 0.0,

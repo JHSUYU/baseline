@@ -479,6 +479,19 @@ class CoverageIoTest(unittest.TestCase):
                  'late_occurrence_diversity_version': 1}
         self.assertEqual(choose_next_sequence(state), 1)
 
+    def test_bounded_slot_tries_two_lost_replies_on_same_actor(self):
+        first = {**A, 'phase': 'after', 'hitOrdinal': 5}
+        next_reply = {**A, 'phase': 'after', 'hitOrdinal': 6}
+        other_actor = {**next_reply, 'occurrence': 'node/another/io-1'}
+        state = {'completed': [{'sequence': [B]}] * 6,
+                 'queue': [{'sequence': [B], 'priority': 1000, 'created': 1},
+                           {'sequence': [first, other_actor],
+                            'priority': 1000, 'created': 2},
+                           {'sequence': [first, next_reply],
+                            'priority': 20, 'created': 3}],
+                 'repeated_reply_loss_version': 1}
+        self.assertEqual(choose_next_sequence(state), 2)
+
     def test_target_near_slot_keeps_a_precheck_fault_in_budget(self):
         state = {'completed': [{'sequence': [A]}] * 4,
                  'queue': [{'sequence': [B], 'priority': 1000,

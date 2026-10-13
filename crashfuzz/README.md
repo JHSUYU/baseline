@@ -62,6 +62,9 @@ from a short JUnit fall in the same coarse bucket.
 The scheduler counts callsite and phase together for site diversity: a trial
 that fails a request before the RPC does not exhaust the distinct reply-loss
 experiment after that RPC has completed.
+One trial in seven is reserved for two observed lost replies from the same
+actor and callsite when such a sequence exists, because the next successful
+RPC can otherwise repair the first failure before the target check.
 The healthy trace also identifies I/O observed shortly before a target check.
 One trial in five is reserved for these near-check I/O observations when any
 remain; other trials continue to explore the broader Soot-selected scope.
