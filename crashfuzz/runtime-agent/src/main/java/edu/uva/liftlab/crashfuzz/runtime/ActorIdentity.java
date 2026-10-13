@@ -57,7 +57,7 @@ final class ActorIdentity {
 
     static Resolution resolve(Object owner, String siteId, String thread) {
         Resolution hdfs = resolve(owner);
-        return hdfs.applies() ? hdfs : SolrActorIdentity.resolve(siteId, thread);
+        return hdfs.applies() ? hdfs : SolrActorIdentity.resolve(owner, siteId, thread);
     }
 
     private static String dataNodeField(Class<?> type) {

@@ -24,6 +24,7 @@ import java.security.ProtectionDomain;
 import java.security.MessageDigest;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -189,13 +190,17 @@ public final class SelectionAgent {
     }
 
     private static final class Transformer implements ClassFileTransformer {
+        private static final String SOLR_CONTROLLER = "org/apache/solr/cloud/ZkController";
         final Map<String, Map<String, MethodPlan>> classes;
         Transformer(Map<String, Map<String, MethodPlan>> classes) { this.classes = classes; }
 
         @Override public byte[] transform(ClassLoader loader, String className,
                 Class<?> redefining, ProtectionDomain domain, byte[] original) {
-            Map<String, MethodPlan> methods = classes.get(className);
-            if (methods == null) return null;
+            Map<String, MethodPlan> selected = classes.get(className);
+            boolean solrController = SOLR_CONTROLLER.equals(className);
+            if (selected == null && !solrController) return null;
+            final Map<String, MethodPlan> methods = selected == null
+                    ? Collections.emptyMap() : selected;
             try {
                 WeaveStats stats = new WeaveStats();
                 int expectedIo = 0;
@@ -214,20 +219,42 @@ public final class SelectionAgent {
                                 descriptor, signature, exceptions);
                         MethodPlan plan = methods.get(methodKey(name, descriptor));
                         if (plan != null && originalVisitor != null) stats.methods++;
-                        return plan == null || originalVisitor == null ? originalVisitor
+                        if (originalVisitor == null) return null;
+                        MethodVisitor visitor = plan == null ? originalVisitor
                                 : new SelectedMethod(originalVisitor, access, name,
                                         descriptor, plan, stats);
+                        return solrController && "<init>".equals(name)
+                                ? new SolrControllerConstructor(visitor, access, name, descriptor)
+                                : visitor;
                     }
                 }, ClassReader.EXPAND_FRAMES);
                 byte[] rewritten = writer.toByteArray();
-                SelectionProbe.weaveClass(className, methods.size(), stats.methods,
-                        expectedIo, stats.io, expectedBranches, stats.branches);
+                if (!methods.isEmpty()) {
+                    SelectionProbe.weaveClass(className, methods.size(), stats.methods,
+                            expectedIo, stats.io, expectedBranches, stats.branches);
+                }
                 return rewritten;
             } catch (Throwable error) {
                 System.err.println("CrashFuzz selection weave failed for " + className
                         + ": " + error);
                 error.printStackTrace(System.err);
                 throw new IllegalStateException("static selection weave failed", error);
+            }
+        }
+    }
+
+    /** Constructor return runs after the ZkStateReader field has been initialized. */
+    private static final class SolrControllerConstructor extends AdviceAdapter {
+        SolrControllerConstructor(MethodVisitor delegate, int access, String name,
+                                  String descriptor) {
+            super(Opcodes.ASM9, delegate, access, name, descriptor);
+        }
+
+        @Override protected void onMethodExit(int opcode) {
+            if (opcode == RETURN) {
+                mv.visitVarInsn(ALOAD, 0);
+                mv.visitMethodInsn(INVOKESTATIC, PROBE, "registerSolrController",
+                        "(Ljava/lang/Object;)V", false);
             }
         }
     }

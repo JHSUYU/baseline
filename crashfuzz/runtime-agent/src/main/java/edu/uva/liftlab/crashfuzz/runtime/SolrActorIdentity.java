@@ -1,6 +1,9 @@
 package edu.uva.liftlab.crashfuzz.runtime;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.IdentityHashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -10,13 +13,41 @@ final class SolrActorIdentity {
     private static final Pattern CORE = Pattern.compile("(?:^|\\s)x:([A-Za-z0-9_.-]+)");
     private static final Pattern VOLATILE_THREAD = Pattern.compile(
             "^(?:qtp[0-9]+-[0-9]+|updateExecutor-[0-9]+-thread-[0-9]+.*|"
-                    + "closeThreadPool-[0-9]+-thread-[0-9]+|TEST-.*seed.*)$");
+                    + "closeThreadPool-[0-9]+-thread-[0-9]+|zkCallback-[0-9]+-thread-[0-9]+|"
+                    + "TEST-.*seed.*)$");
+    private static final Pattern EMBEDDED_NODE = Pattern.compile(
+            "(?:^|[/\\\\])node([0-9]+)[/\\\\]*$");
+    private static final Map<Object, ActorIdentity.Resolution> READERS = new IdentityHashMap<>();
 
     private SolrActorIdentity() {}
 
-    static ActorIdentity.Resolution resolve(String siteId, String thread) {
+    static void registerController(Object controller) {
+        Object container = field(controller, "cc");
+        Object reader = field(controller, "zkStateReader");
+        if (container == null || reader == null) return;
+        try {
+            Object home = container.getClass().getMethod("getSolrHome").invoke(container);
+            if (!(home instanceof String)) return;
+            Matcher match = EMBEDDED_NODE.matcher((String) home);
+            if (!match.find()) return;
+            ActorIdentity.Resolution node = new ActorIdentity.Resolution(
+                    "solr:watch:node" + match.group(1), false, null);
+            synchronized (READERS) { READERS.put(reader, node); }
+        } catch (ReflectiveOperationException | RuntimeException ignored) {
+            // A production Solr home need not have a stable embedded-node slot.
+        }
+    }
+
+    static ActorIdentity.Resolution resolve(Object owner, String siteId, String thread) {
         if (!siteId.startsWith("<org.apache.solr.")) {
             return ActorIdentity.Resolution.NOT_APPLICABLE;
+        }
+        Object reader = readerFor(owner);
+        if (reader != null) {
+            synchronized (READERS) {
+                ActorIdentity.Resolution node = READERS.get(reader);
+                if (node != null) return node;
+            }
         }
         if (!VOLATILE_THREAD.matcher(thread).matches()) {
             return ActorIdentity.Resolution.NOT_APPLICABLE;
@@ -27,6 +58,32 @@ final class SolrActorIdentity {
             core = requestCore();
         }
         return fromContext(thread, replica, core, siteId);
+    }
+
+    private static Object readerFor(Object owner) {
+        if (owner == null) return null;
+        String name = owner.getClass().getName();
+        if ("org.apache.solr.common.cloud.ZkStateReader".equals(name)) return owner;
+        if (name.startsWith("org.apache.solr.common.cloud.ZkStateReader$")) {
+            return field(owner, "this$0");
+        }
+        return null;
+    }
+
+    private static Object field(Object owner, String name) {
+        if (owner == null) return null;
+        for (Class<?> type = owner.getClass(); type != null; type = type.getSuperclass()) {
+            try {
+                Field field = type.getDeclaredField(name);
+                field.setAccessible(true);
+                return field.get(owner);
+            } catch (NoSuchFieldException ignored) {
+                // The runtime class can be an instrumented subclass.
+            } catch (ReflectiveOperationException | RuntimeException error) {
+                return null;
+            }
+        }
+        return null;
     }
 
     static ActorIdentity.Resolution fromContext(String thread, String replica,

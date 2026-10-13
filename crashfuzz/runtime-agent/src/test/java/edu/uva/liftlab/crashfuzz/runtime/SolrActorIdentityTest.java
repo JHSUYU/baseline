@@ -1,6 +1,8 @@
 package edu.uva.liftlab.crashfuzz.runtime;
 
 import org.junit.Test;
+import org.apache.solr.cloud.ZkController;
+import org.apache.solr.common.cloud.ZkStateReader;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -42,5 +44,39 @@ public class SolrActorIdentityTest {
                 "qtp1034174401-263", null, null, SITE);
         assertTrue(gap.gap);
         assertEquals("solr:unresolved:" + SITE, gap.logicalNodeId);
+    }
+
+    @Test
+    public void aliasWatchKeepsDistinctNodeIdentityAcrossCallbackPoolNumbers() {
+        ZkStateReader firstReader = new ZkStateReader();
+        ZkStateReader secondReader = new ZkStateReader();
+        SolrActorIdentity.registerController(new ZkController(
+                "/tmp/junit-111/tempDir-001/node1", firstReader));
+        SolrActorIdentity.registerController(new ZkController(
+                "/tmp/junit-222/tempDir-001/node2/", secondReader));
+        String watchSite = "<org.apache.solr.common.cloud.ZkStateReader$AliasesManager: "
+                + "void process()>#u13";
+        ActorIdentity.Resolution first = SolrActorIdentity.resolve(
+                firstReader.new AliasesManager(), watchSite, "zkCallback-65-thread-2");
+        ActorIdentity.Resolution same = SolrActorIdentity.resolve(
+                firstReader.new AliasesManager(), watchSite, "zkCallback-93-thread-1");
+        ActorIdentity.Resolution second = SolrActorIdentity.resolve(
+                secondReader.new AliasesManager(), watchSite, "zkCallback-65-thread-2");
+        assertEquals("solr:watch:node1", first.logicalNodeId);
+        assertEquals(first.logicalNodeId, same.logicalNodeId);
+        assertEquals("solr:watch:node2", second.logicalNodeId);
+        assertNotEquals(first.logicalNodeId, second.logicalNodeId);
+        assertFalse(first.gap);
+        assertFalse(second.gap);
+    }
+
+    @Test
+    public void unknownCallbackNodeCannotMatchAnotherNode() {
+        String watchSite = "<org.apache.solr.common.cloud.ZkStateReader$AliasesManager: "
+                + "void process()>#u13";
+        ActorIdentity.Resolution gap = SolrActorIdentity.resolve(
+                new ZkStateReader().new AliasesManager(), watchSite,
+                "zkCallback-64-thread-1");
+        assertTrue(gap.gap);
     }
 }

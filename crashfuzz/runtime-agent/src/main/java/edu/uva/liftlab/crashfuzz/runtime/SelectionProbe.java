@@ -95,6 +95,11 @@ public final class SelectionProbe {
 
     private SelectionProbe() {}
 
+    /** Associate Solr's watch owner with its embedded cluster node. */
+    public static void registerSolrController(Object controller) {
+        SolrActorIdentity.registerController(controller);
+    }
+
     private static JsonObject event(String kind) {
         JsonObject row = new JsonObject();
         row.addProperty("schemaVersion", 3);

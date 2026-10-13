@@ -26,7 +26,9 @@ observes the nearest controlling branch of that same typed throw. This keeps
 target reach and the exception oracle tied to the selected check without a
 handwritten branch ID.
 
-The ASM Java agent in `runtime-agent/` instruments only the selected sites.
+The ASM Java agent in `runtime-agent/` records only the selected I/O,
+coverage, and check sites. It also registers embedded-cluster node identity
+when a Solr controller finishes constructing.
 A healthy run records the I/O points and code paths that actually execute.
 The Solr runner enables nightly mode when the selected JUnit source uses
 `@Nightly`; the JUnit launcher rejects assumption-skipped methods so a skipped
@@ -60,6 +62,12 @@ slot from `dfs.datanode.data.dir` to the runtime address. If that slot cannot
 be resolved, the trace records `ACTOR_IDENTITY_GAP` and the fuzzer does not
 queue that observation as a fault point. This prevents a fault intended for
 one DataNode from matching another DataNode with a similar thread name.
+For embedded SolrCloud tests, the agent associates each `ZkStateReader` with
+the stable `nodeN` slot in its controller's Solr home. Alias watch callbacks
+then retain a distinct node identity even when the `zkCallback` thread pool
+number changes between JUnit runs. A callback without a resolved node slot
+is recorded as an identity gap and cannot receive a fault selected for a
+different Solr node.
 ZooKeeper calls can receive a
 `ConnectionLossException`; other selected calls receive an `IOException`.
 An observed target exception is a candidate for replay and source review.
