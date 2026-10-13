@@ -1,0 +1,7 @@
+# HBASE-30 fresh campaign attempt archive
+
+The isolated unchanged-JUnit fresh selection campaign continues at `node1:/users/ZhenyuLi/static-rerun/results-freshthrow/HBASE-30/campaign-freshthrow-v1/HBASE-30/`. When node1 free space fell to about 2.5 GiB, only the `attempt-*` subdirectories of **completed trials 1–50** were compressed. The active trial, last five completed trials, `state.json`, campaign result/config, every trial's root `result.json`, and `fault-trial.json` stayed in place.
+
+For each trial directory, `attempts.tar.zst` holds the original attempt subdirectories. `attempts.archive-receipt.json` records the archive SHA-256, original and compressed byte totals, and SHA-256 plus byte size for every archived file. The archive was extracted to a temporary directory and every extracted file was compared against its original before the original attempt directory was removed. There are 50 receipts, and their original-minus-compressed byte totals sum to **629,306,606 bytes**. Node1 free space returned to approximately 3.1 GiB. The worker advanced from trial 58 to 59 during this operation, and its checkpoint remained intact.
+
+To inspect a past attempt, run `tar -I zstd -xf attempts.tar.zst -C <trial-directory>` for that trial, then compare the restored files to its receipt. The archive tool is local to node1 at `/tmp/archive_hbase30_attempts.py`; it is not part of the shared fuzz implementation. No original102 result or separate HDFS/Solr campaign was changed.
