@@ -166,12 +166,28 @@ response; its one exact target throw occurred on `data3`. Neither trial is
 a bug detection. The campaign checkpoint and per-trial evidence remain under
 `campaign-response-shape-v1/HDFS-17967-MIRROR`.
 
+The response-shape pilot completed its first 40 trials in 1,590.984 seconds
+of wall time: 26 reproduced the healthy run's one expected target exception,
+five did not reach the target, five did not fully match the requested fault
+sequence, and four completed checks without a differential target exception.
+No trial exceeded the healthy baseline of one exact target throw. The same
+checkpoint has been resumed with a 120-trial base budget, an 80-trial
+target-retained minimum, and a 160-trial cap; the first 40 trials are not
+rerun. The separate runtime-identity pilot completed 80 trials with no
+differential target exception (45 baseline recurrences, 14 lost target, ten
+unmatched, and eleven checked). Its maximum exact target count was one.
+
 To keep the three active HDFS runs within disk capacity, completed attempts
 from the first 250 trials of `campaign-control-branch` were checksum-verified
 on node1 before their local attempt directories were removed. Their final
 `result.json` files, fault plans, and live checkpoint remain on node0. The
 archive receipt is `.archive-attempts-0001-0250.json` in that campaign
 directory.
+The next 70 completed control-branch trials were verified and archived under
+`.archive-attempts-0251-0320.json`. Completed attempt logs from the terminal
+runtime-identity pilot were similarly verified and archived under
+`.archive-attempts-0001-0080.json` in its campaign directory. Final results,
+fault plans, and checkpoints remain on node0.
 
 Evidence roots: `static-rerun/original-known/HDFS-54`, `HDFS-55`,
 `HDFS-11-balancer`, and `HDFS-17967-mirror` on node0, and
