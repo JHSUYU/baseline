@@ -57,6 +57,12 @@ class PrepareCaseTest(unittest.TestCase):
             self.assertEqual(config["target"]["check_site_id"], branch)
             self.assertEqual(config["target"]["throw_site_id"], throw)
             self.assertEqual(config["junit"]["method"], "testOriginal")
+            scoped_guard = prepare_case.target_input(row, template, check_line=11)
+            self.assertEqual(scoped_guard["target"]["check_line"], 11)
+            prepare_case.campaign_config(row, scoped_guard, scope_dir, campaign)
+            scoped_guard["target"]["check_line"] = 10
+            with self.assertRaisesRegex(ValueError, "selected guard line"):
+                prepare_case.campaign_config(row, scoped_guard, scope_dir, campaign)
             manifest["targets"][1]["line"] = 13
             (scope_dir / "weave_manifest.json").write_text(json.dumps(manifest))
             with self.assertRaisesRegex(ValueError, "inventory source line"):
