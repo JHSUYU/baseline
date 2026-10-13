@@ -217,7 +217,7 @@ public final class MessageDoors {
                                      Object localOwner, Object scope,
                                      String verb) {
         if (codecRequested(transport, half)) {
-            RowRuntime.gap(GapKind.DECLARATION_MISSING, GapClass.BLOCKING,
+            RowRuntime.gap(GapKind.UNSTATED_VALUE, GapClass.BLOCKING,
                     Text.safe(transport), "payload CODEC_PORT semantics are"
                             + " unavailable in this original-engine port;"
                             + " WIRE_FLOW values still travel, but the"
