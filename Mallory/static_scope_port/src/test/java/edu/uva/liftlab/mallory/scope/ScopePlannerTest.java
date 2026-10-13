@@ -3,7 +3,12 @@ package edu.uva.liftlab.mallory.scope;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import edu.uva.liftlab.graphchecker.MalloryLambdaClassNames;
 import org.junit.Test;
+import soot.PackManager;
+import soot.Scene;
+import soot.SootClass;
+import soot.options.Options;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -11,6 +16,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertTrue;
 
 public class ScopePlannerTest {
@@ -424,6 +430,75 @@ public class ScopePlannerTest {
                     && vmSite.contains(" call()")) lambdaCalls.add(vmSite);
         }
         assertEquals(1, lambdaCalls.size());
+    }
+
+    @Test
+    public void staticScopeAndGraphCheckerWeaveUseIdenticalLambdaClassNames() throws Exception {
+        assertArrayEquals("The static planner must use the exact migrated GraphChecker factory",
+                Files.readAllBytes(Paths.get("original_engine/vendor/src/main/java/edu/uva/"
+                        + "liftlab/graphchecker/LambdaClassNames.java")),
+                Files.readAllBytes(Paths.get("src/main/java/edu/uva/liftlab/graphchecker/"
+                        + "LambdaClassNames.java")));
+        String source = new String(Files.readAllBytes(Paths.get(
+                "src/test/java/edu/uva/liftlab/mallory/scope/ScopeFixture.java")),
+                StandardCharsets.UTF_8);
+        int targetLine = 1;
+        for (String text : source.split("\n", -1)) {
+            if (text.contains("LAMBDA_TARGET")) break;
+            targetLine++;
+        }
+        JsonObject config = new JsonObject();
+        JsonObject target = new JsonObject();
+        target.addProperty("class", ScopeFixture.class.getName());
+        target.addProperty("method", "checkLambdaCallable");
+        target.addProperty("line", targetLine);
+        target.addProperty("exception", "IOException");
+        config.add("target", target);
+        JsonObject analysis = new JsonObject();
+        JsonArray paths = new JsonArray();
+        paths.add("target/test-classes");
+        analysis.add("process_dirs", paths);
+        analysis.add("classpath", paths.deepCopy());
+        config.add("analysis", analysis);
+
+        JsonObject staticScope = ScopePlanner.analyze(config);
+        java.util.Set<String> staticLambdaNames = lambdaNames(staticScope);
+        assertTrue(staticLambdaNames.toString(), !staticLambdaNames.isEmpty());
+
+        // A separate Soot scene models GraphCheckerMain's production weave:
+        // classes are loaded first, then the original content-stable factory
+        // is installed before runPacks materializes any lambda body.
+        soot.G.reset();
+        Options.v().set_prepend_classpath(true);
+        Options.v().set_allow_phantom_refs(true);
+        Options.v().set_whole_program(false);
+        Options.v().set_output_format(Options.output_format_none);
+        Options.v().set_process_dir(java.util.Collections.singletonList("target/test-classes"));
+        Options.v().set_soot_classpath("target/test-classes");
+        Scene.v().loadNecessaryClasses();
+        MalloryLambdaClassNames.install();
+        PackManager.v().runPacks();
+        java.util.Set<String> weaveLambdaNames = new java.util.HashSet<>();
+        for (SootClass clazz : Scene.v().getClasses()) {
+            if (clazz.getName().contains("ScopeFixture$lambda_checkLambdaCallable_")) {
+                weaveLambdaNames.add(clazz.getName());
+            }
+        }
+        assertTrue(weaveLambdaNames.toString(), weaveLambdaNames.containsAll(staticLambdaNames));
+    }
+
+    private static java.util.Set<String> lambdaNames(JsonObject scope) {
+        java.util.Set<String> names = new java.util.HashSet<>();
+        for (JsonElement entry : scope.getAsJsonArray("scopeSites")) {
+            String vmSite = entry.getAsJsonObject().get("vmSite").getAsString();
+            int start = vmSite.indexOf('<');
+            int end = vmSite.indexOf(':', start + 1);
+            if (start >= 0 && end > start) {
+                String owner = vmSite.substring(start + 1, end);
+                if (owner.contains("ScopeFixture$lambda_checkLambdaCallable_")) names.add(owner);
+            }
+        }
+        return names;
     }
 
     private static boolean hasMethod(JsonObject result, String signatureSuffix) {

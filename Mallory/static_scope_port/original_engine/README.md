@@ -13,19 +13,27 @@ sites into a JUnit weave manifest.
 ## Provenance
 
 The source baseline is GraphChecker revision
-`c4a90033c654737206466ed36ce837c5b3c12457`. The 227 files under
+`c4a90033c654737206466ed36ce837c5b3c12457`. The 230 files under
 `vendor/src/main/java` are the compiler-transitive Java source closure of
 `MalloryOriginalSeedBridge`, `SeedBackwardStaticAnalyzer`, and the original
-post-run `Corpus`, `Branches`, and `ClosurePlanner`. The selection was obtained
+post-run `Corpus`, `Branches`, `ClosurePlanner`, and `ConcolicScheduler`. The selection was obtained
 by compiling those entry sources with GraphChecker's source tree on
 `javac -sourcepath` and **without** a GraphChecker JAR. Per-file upstream
 and copied SHA-256 digests are in `UPSTREAM_SOURCES.json`. The only modified
-Java file is `SeedBackwardStaticAnalyzer`: it names its own class rather than
+Java files are `SeedBackwardStaticAnalyzer` and `ConcolicScheduler`. The former
+names its own class rather than
 `CausynthPipeline` as the SLF4J logger category, and upgrades a discovered
 protobuf message from Soot `HIERARCHY` to `SIGNATURES` before enumerating its
 getters. If that upgrade fails, it emits a blocking communication gap instead
 of silently omitting a possible RPC message. This keeps the planner's
 `whole_program(false)` Jimple identity stable.
+`ConcolicScheduler.fatalDecider` adapts to the ported `StaticScopeMap`'s
+list-valued guard deciders: it accepts one exact decider and rejects ambiguous
+lists explicitly. No guard is selected arbitrarily.
+The original `runtime.Listings` and `runtime.Randoms` are copied byte for
+byte as well: `CausynthPipeline` rewrites application calls to these helpers
+in REGION_STATE weave, so the woven original JUnit needs both classes at run
+time. Their exact upstream hashes are recorded in `UPSTREAM_SOURCES.json`.
 `src/main/resources/edu/uva/liftlab/graphchecker/library-catalog.jsonl` is
 copied unmodified from the same revision. No root-level license file was
 present in the source GraphChecker tree at the time of migration; no license

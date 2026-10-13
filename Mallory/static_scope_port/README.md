@@ -47,6 +47,15 @@ ordered dependency classpath passed to `WeaveMain`; Soot unit indices may
 change when resolution context differs. The manifest carries its SHA-256,
 which the weaver checks before changing bytecode.
 
+Before any Jimple body is materialized, the planner installs GraphChecker's
+original content-derived Soot lambda factory. The source is copied byte for
+byte from `original_engine/vendor/src/main/java/edu/uva/liftlab/graphchecker/LambdaClassNames.java`
+(SHA-256 `dda375c85351ed2c8f48ed67c33c02109e5b4dccec335280dfaf720aeb9641d8`);
+`MalloryLambdaClassNames` is only a public call bridge. This gives synthetic
+lambda methods the same names in static region skeletons and the original
+GraphChecker weave. The regression test checks the exact source copy and
+compares lambda names across independent Soot scenes.
+
 Outputs:
 
 * `static_scope_map.jsonl`: `STATIC_SCOPE_SITE` rows, one per selected

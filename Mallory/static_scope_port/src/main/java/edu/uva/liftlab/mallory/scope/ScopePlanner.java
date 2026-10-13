@@ -1,6 +1,7 @@
 package edu.uva.liftlab.mallory.scope;
 
 import edu.uva.liftlab.mallory.graphcheckerstatic.GraphCheckerRegionPlanner;
+import edu.uva.liftlab.graphchecker.MalloryLambdaClassNames;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -220,6 +221,10 @@ public final class ScopePlanner {
         Options.v().set_process_dir(dirs);
         Options.v().set_soot_classpath(String.join(File.pathSeparator, classpath));
         Scene.v().loadNecessaryClasses();
+        // The original GraphChecker installs this factory after class loading
+        // and before the first body is materialized.  Static region/site IDs
+        // must use the same content-derived names as its weaver.
+        MalloryLambdaClassNames.install();
         PackManager.v().getPack("jtp").add(new Transform("jtp.malloryStaticCapture",
                 new BodyTransformer() {
                     @Override protected void internalTransform(Body body, String phase,
