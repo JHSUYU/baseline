@@ -64,7 +64,7 @@ def test_spec(row: dict) -> tuple[str, str]:
     return clazz, method
 
 
-def exception_type(row: dict) -> str:
+def exception_type(row: dict) -> str | None:
     code = row.get('check_code', '')
     source = (SOURCE_ROOT / SOURCE_DIR[family(row['system'])] /
               row['exact_check_location']['file'])
@@ -133,7 +133,11 @@ def exception_type(row: dict) -> str:
         return 'java.lang.IllegalArgumentException'
     if re.search(r'\bassert\s+', code):
         return 'java.lang.AssertionError'
-    raise ValueError('target exception type requires source review')
+    # Some coordination checks are state guards rather than throw sites.
+    # They still supply reachability and coverage feedback; the generic
+    # target-exception oracle is disabled for them until a throw is observed
+    # at the selected check itself.
+    return None
 
 
 def run_logged(argv: list[str], path: Path) -> int:
@@ -241,7 +245,9 @@ def _run_case_unlocked(row: dict, result_root: Path, max_trials: int,
     started = time.monotonic()
     try:
         clazz, method = test_spec(row)
-        target = location['site_id'].split('#u', 1)[0]
+        # Selection catalogs may identify the check by a Soot unit (#u) or
+        # by an exact source line (#L). Both belong to the same method.
+        target = location['site_id'].split('#', 1)[0]
         exc_type = exception_type(row)
         pinned = None if refresh_selection else live_selection_artifact(base, cid, target)
         selection = prepare({'target': {'method': target},
@@ -431,6 +437,8 @@ def main() -> int:
     parser.add_argument('--checklist', type=Path, required=True)
     parser.add_argument('--result-root', type=Path, required=True)
     parser.add_argument('--case-id', action='append')
+    parser.add_argument('--include-added-checks', action='store_true',
+                        help='also run the two separately listed known-issue checks')
     parser.add_argument('--exclude-case', action='append', default=[])
     parser.add_argument('--shard-index', type=int, default=0)
     parser.add_argument('--shard-count', type=int, default=1)
@@ -444,8 +452,11 @@ def main() -> int:
     if args.shard_count < 1 or not 0 <= args.shard_index < args.shard_count:
         parser.error('shard-index must be in [0, shard-count)')
     rows = json.loads(args.checklist.read_text())['rows']
+    allowed_groups = {'original_102'}
+    if args.include_added_checks:
+        allowed_groups.add('added_known_issue_check')
     system_rows = [row for row in rows
-                   if row.get('selection_group') == 'original_102'
+                   if row.get('selection_group') in allowed_groups
                    and family(row['system']) == args.system]
     selected = [row for index, row in enumerate(system_rows)
                 if index % args.shard_count == args.shard_index

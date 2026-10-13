@@ -93,8 +93,8 @@ def main():
     previous.update({
         "status": ("quality_complete_known_HDFS-17899" if pair else
                    "exact_fuzz_budget_complete_synthetic_control"),
-        "bug_mark": ("known_HDFS-17899_reproduced" if pair else
-                     "known_HDFS-17899_synthetic_control"),
+        "bug_mark": "none",
+        "unchanged_junit_generic_fuzz_detected_known_bug": False,
         "new_bug": False,
         "coverage_gain": {
             "probes": len(admitted_coverage["probes"] - healthy_coverage["probes"]),

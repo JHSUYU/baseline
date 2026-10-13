@@ -176,8 +176,10 @@ def main():
             old[explicit_key] = old.pop(original_key)
     old.setdefault("stateful_control_fault_policy", old["fault_policy"])
     old.update({
-        "status": "quality_complete", "classification": "known_HDFS-17899_reproduced",
-        "known_bug": True, "bug_mark": "known_HDFS-17899_reproduced",
+        "status": "quality_complete",
+        "classification": "known_bug_reproduced_only_in_adapted_control",
+        "known_bug": True, "bug_mark": "none",
+        "unchanged_junit_generic_fuzz_detected_known_bug": False,
         "new_bug": False,
         "fault_policy": qualification["fault_model"],
         "detection_qualification": "campaign/dn-wire/qualification.json",

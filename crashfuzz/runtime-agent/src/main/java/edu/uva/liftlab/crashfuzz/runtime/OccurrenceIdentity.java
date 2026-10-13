@@ -20,7 +20,8 @@ final class OccurrenceIdentity {
                 .replaceAll("(?i)(\\b(?:[a-z][a-z0-9_.-]*|(?:[0-9]{1,3}\\.){3}[0-9]{1,3})):[0-9]{2,5}\\b", "$1:port")
                 .replaceAll("(\\[[0-9a-fA-F:]+\\]):[0-9]{2,5}\\b", "$1:port")
                 .replaceAll("(?i)\\b(localhost|127\\.0\\.0\\.1)/[0-9]{2,5}\\b", "$1/port")
-                .replaceAll("\\bport=[0-9]{2,5}\\b", "port=port");
+                .replaceAll("\\bport=[0-9]{2,5}\\b", "port=port")
+                .replaceAll("\\bport\\s+[0-9]{2,5}\\b", "port port");
         return address.substring(0, nodeEnd + 1) + actor
                 + address.substring(siteStart);
     }

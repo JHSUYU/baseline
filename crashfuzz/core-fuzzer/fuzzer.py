@@ -396,6 +396,8 @@ def trace_feedback(path: Path, target: dict[str, Any],
     expected = target["exception_type"]
 
     def expected_type_seen(thrown: dict[str, Any]) -> bool:
+        if expected is None:
+            return False
         if thrown.get("runtimeType") == expected:
             return True
         if throw_event != "CALL_SITE_THROW":
@@ -497,6 +499,7 @@ def stable_occurrence(address: str) -> str:
     actor = re.sub(r"(?i)\b(localhost|127\.0\.0\.1)/[0-9]{2,5}\b",
                    r"\1/port", actor)
     actor = re.sub(r"\bport=[0-9]{2,5}\b", "port=port", actor)
+    actor = re.sub(r"\bport\s+[0-9]{2,5}\b", "port port", actor)
     return address[:node_end + 1] + actor + address[site_start:]
 
 
@@ -1054,8 +1057,11 @@ def validate(config: dict[str, Any]) -> None:
     if missing:
         raise ValueError(f"missing config keys: {sorted(missing)}")
     target = config["target"]
-    if not target.get("method") or not target.get("exception_type"):
-        raise ValueError("target requires exact method and exception_type")
+    if not target.get("method") or "exception_type" not in target:
+        raise ValueError("target requires exact method and exception_type field")
+    if target["exception_type"] is not None and not isinstance(
+            target["exception_type"], str):
+        raise ValueError("target.exception_type must be an exact class or null")
     if target.get("throw_site_id"):
         throw_method = target["throw_site_id"].split("#u", 1)[0]
         if target.get("throw_method") and target["throw_method"] != throw_method:

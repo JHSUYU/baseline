@@ -49,9 +49,10 @@ def main():
     result = {
         "case_id": "HDFS-54", "bug_id": "HDFS-17897", "known_bug": True,
         "new_bug": False, "classification": (
-            "known_bug_reproduced_at_selected_check" if confirmed else "inconclusive"),
+            "known_bug_reproduced_only_in_adapted_control" if confirmed else "inconclusive"),
         "status": "quality_complete" if confirmed else "inconclusive",
-        "bug_mark": "known_HDFS-17897_reproduced" if confirmed else "none",
+        "bug_mark": "none",
+        "unchanged_junit_generic_fuzz_detected_known_bug": False,
         "source_version": "Hadoop 3.4.3", "graph_used": False,
         "target_site": "FileChecksumHelper$StripedFileNonStripedChecksumComputer.checksumBlocks#L629",
         "source_path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/FileChecksumHelper.java",

@@ -55,4 +55,14 @@ public class OccurrenceIdentityTest {
         assertNotEquals(OccurrenceIdentity.stable(first),
                 OccurrenceIdentity.stable(second.replace("Listener", "Worker")));
     }
+
+    @Test
+    public void hdfsRpcHandlerSpacePortDoesNotBreakReplay() {
+        String site = "/<example.RpcInvoker: void call()>#u38";
+        String first = "local/IPC Server handler 0 on default port 39831" + site;
+        String second = "local/IPC Server handler 0 on default port 36653" + site;
+        assertEquals(OccurrenceIdentity.stable(first), OccurrenceIdentity.stable(second));
+        assertNotEquals(OccurrenceIdentity.stable(first),
+                OccurrenceIdentity.stable(second.replace("handler 0", "handler 1")));
+    }
 }

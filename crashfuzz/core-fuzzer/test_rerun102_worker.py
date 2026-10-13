@@ -48,6 +48,12 @@ class ExceptionResolutionTest(unittest.TestCase):
         self.assertEqual(self.resolve(source, 'throw new InvalidToken("missing");', 5),
                          'org.apache.hadoop.security.token.SecretManager$InvalidToken')
 
+    def test_nonthrowing_state_guard_has_no_direct_exception_oracle(self):
+        source = ('package example;\nclass Target { boolean check() {\n'
+                  'if (key == null) key = refresh();\nreturn key != null;\n}}\n')
+        self.assertIsNone(self.resolve(source,
+                                       'if (key == null) key = refresh();', 3))
+
     def test_unfinished_case_pins_its_static_selection(self):
         with tempfile.TemporaryDirectory() as directory:
             base = Path(directory)

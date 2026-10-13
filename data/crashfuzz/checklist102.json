@@ -374125,14 +374125,14 @@
         "workload": "case-local XOR-2-1 striped adaptation of TestEncryptedTransfer#testFileChecksumWithInvalidEncryptionKey"
       },
       "bug_id": "HDFS-17897",
-      "bug_mark": "known_HDFS-17897_reproduced",
+      "bug_mark": "none",
       "campaign_wall_elapsed_seconds": 8419.0,
       "campaign_wall_end_utc": "2026-10-07T04:54:19Z",
       "campaign_wall_start_utc": "2026-10-07T02:34:00Z",
       "case_id": "HDFS-54",
       "check_code": "if (!checksumBlockGroup(blockGroup)) {\n  throw new PathIOException(getSrc(), \"Fail to get block checksum for \" + locatedBlock);\n}",
       "checkpoint": "campaign-state.json",
-      "classification": "known_bug_reproduced_at_selected_check",
+      "classification": "known_bug_reproduced_only_in_adapted_control",
       "cluster_test": "org.apache.hadoop.hdfs.TestFileChecksum#testStripedAndReplicatedFileChecksum2[0]",
       "coverage_gain": 1349,
       "coverage_gain_unit": "distinct production JaCoCo probe-token union of original JUnit healthy and 80 fault runs minus healthy tokens",
@@ -374626,14 +374626,16 @@
       "target_site": "FileChecksumHelper$StripedFileNonStripedChecksumComputer.checksumBlocks#L629",
       "trial_count": 81,
       "trial_ledger": "trial-ledger.csv",
+      "unchanged_junit_generic_fuzz_detected_known_bug": false,
       "workload_change": "none; original released TestFileChecksum JUnit"
     },
     {
-      "bug_mark": "known_HDFS-17899_reproduced",
+      "adapted_cluster_test": "adapted integrationTest/oneNodeTest (known-bug differential)",
+      "bug_mark": "none",
       "case_id": "HDFS-55",
       "check_code": "if (encryptionKey == null || encryptionKey.expiryDate < timer.now()) {\n  encryptionKey = blockTokenSecretManager.generateDataEncryptionKey();\n}",
-      "classification": "known_HDFS-17899_reproduced",
-      "cluster_test": "TestBalancerWithEncryptedTransfer#testEncryptedBalancer0 (unchanged site-level); adapted integrationTest/oneNodeTest (known-bug differential)",
+      "classification": "known_bug_reproduced_only_in_adapted_control",
+      "cluster_test": "org.apache.hadoop.hdfs.server.balancer.TestBalancerWithEncryptedTransfer#testEncryptedBalancer0",
       "coverage_gain": {
         "branch_count_slots": 126,
         "probes": 278,
@@ -374897,6 +374899,7 @@
       "target_reached": true,
       "trial_count_provenance": "Counts original-version initial synthetic control, 31 exact-plan trials, 12 runtime-prefix trials, and two persistent DN-wire original/replay trials. Fixed replays and earlier DN-wire calibrations are separately recorded.",
       "unchanged_junit_direct_known_bug_reproduction": false,
+      "unchanged_junit_generic_fuzz_detected_known_bug": false,
       "workload_evidence_layers": {
         "adapted_known_bug_differential": {
           "fault_trials": 2,

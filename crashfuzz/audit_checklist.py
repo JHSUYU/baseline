@@ -20,8 +20,8 @@ HERE = Path(__file__).resolve().parent
 DATA = HERE.parent / "data" / "crashfuzz"
 TERMINAL = checklist.TERMINAL
 KNOWN_ISSUES = {
-    "HDFS-54": "known_HDFS-17897_reproduced",
-    "HDFS-55": "known_HDFS-17899_reproduced",
+    "HDFS-54": "none",
+    "HDFS-55": "none",
 }
 
 
@@ -130,7 +130,8 @@ def audit(require_terminal: bool) -> list[str]:
         if case_id in KNOWN_ISSUES:
             if (result.get("bug_mark") != KNOWN_ISSUES[case_id] or
                     result.get("known_bug") is not True or
-                    result.get("new_bug") is not False):
+                    result.get("new_bug") is not False or
+                    result.get("unchanged_junit_generic_fuzz_detected_known_bug") is not False):
                 errors.append(f"{case_id}: known-issue result is not classified")
         if result.get("new_bug") is True and result.get("bug_mark") in (None, "none"):
             errors.append(f"{case_id}: new-bug claim lacks a bug mark")

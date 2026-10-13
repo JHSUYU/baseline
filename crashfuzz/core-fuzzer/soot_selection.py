@@ -101,6 +101,9 @@ def prepare(config: dict[str, Any], case_dir: Path) -> dict[str, Any] | None:
     analysis = spec.get("analysis")
     if not isinstance(analysis, dict):
         raise ValueError("static_selection needs artifact or analysis object")
+    if ("post_call_rpc_enabled" in analysis and
+            not isinstance(analysis["post_call_rpc_enabled"], bool)):
+        raise ValueError("static_selection.analysis.post_call_rpc_enabled must be boolean")
     process_dirs = analysis.get("process_dirs")
     if not isinstance(process_dirs, list) or not process_dirs:
         raise ValueError("static_selection.analysis.process_dirs is required")
@@ -152,6 +155,8 @@ def prepare(config: dict[str, Any], case_dir: Path) -> dict[str, Any] | None:
                         MAIN, str(input_path), str(output_path)], check=True)
         result = json.loads(output_path.read_text())
     _validate_selection(result, target)
+    if normalized.get("post_call_rpc_enabled", False):
+        result["post_call_rpc_enabled"] = True
     if len(result["coverage_methods"]) > normalized.get("max_methods", 400):
         raise ValueError("Soot selection exceeds its method budget")
     result["input_digest"] = input_digest

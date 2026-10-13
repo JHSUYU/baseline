@@ -282,7 +282,8 @@ def markdown(items: list[dict]) -> str:
         f"# Unit-test cluster fuzz checklist ({len(items)} checks)", "",
         "The original random selection contains 102 checks. Two HDFS known-issue "
         "coordination checks were added as HDFS-54 and HDFS-55; their separate "
-        "cohort is shown in the table. Known bug reproduction is not a new finding.", "",
+        "cohort is shown in the table. Their known-bug reproductions used separate "
+        "adapted controls and are not generic-fuzz detections.", "",
         "This is the new campaign. Legacy Docker trials and trials that load "
         "GraphChecker runtime or region-woven classes are not counted.", "",
         "Check location shows the first source line of the check-code excerpt, "

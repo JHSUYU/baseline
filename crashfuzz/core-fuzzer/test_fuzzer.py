@@ -177,6 +177,14 @@ class CoverageIoTest(unittest.TestCase):
         self.assertNotEqual(stable_occurrence(first),
                             stable_occurrence(second.replace('Listener', 'Worker')))
 
+    def test_hdfs_rpc_handler_space_port_keeps_replayable_identity(self):
+        site = '/<example.RpcInvoker: void call()>#u38'
+        first = 'local/IPC Server handler 0 on default port 39831' + site
+        second = 'local/IPC Server handler 0 on default port 36653' + site
+        self.assertEqual(stable_occurrence(first), stable_occurrence(second))
+        self.assertNotEqual(stable_occurrence(first),
+                            stable_occurrence(second.replace('handler 0', 'handler 1')))
+
     def test_soot_controlled_throw_uses_line_not_unit_ordinal(self):
         guard = TARGET + '#u4'
         selection = {'target_check_line': 20, 'target_selected_line': 23,
@@ -221,6 +229,26 @@ class CoverageIoTest(unittest.TestCase):
             self.assertEqual(feedback['target_exception_count'], 1)
             target['explicit_throw_lines'] = [24]
             self.assertFalse(trace_feedback(path, target)['oracle'])
+
+    def test_nonthrowing_target_check_retains_reach_without_exception_oracle(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'trace.jsonl'
+            target = {'method': TARGET, 'site_id': SITE,
+                      'check_events': ['CHECK_REACHED'],
+                      'exception_type': None}
+            jsonl(path, [
+                {'event': 'METHOD_ENTER', 'seq': 1,
+                 'method': TARGET, 'callId': 7},
+                marker(A, 'FAULT_APPLIED', 2, faultId=fingerprint(A)),
+                {'event': 'CHECK_REACHED', 'seq': 3, 'method': TARGET,
+                 'siteId': SITE, 'callId': 7},
+                {'event': 'METHOD_EXIT_THROW', 'seq': 4,
+                 'method': TARGET, 'callId': 7},
+            ])
+            feedback = trace_feedback(path, target)
+            self.assertTrue(feedback['target_reached_after_fault'])
+            self.assertFalse(feedback['oracle'])
+            self.assertEqual(feedback['target_exception_count'], 0)
 
     def test_occurrence_ordinal_distinguishes_repeated_actor_site_events(self):
         first = marker(A, 'FAULT_POINT_OBSERVED', 1, occurrenceOrdinal=1)

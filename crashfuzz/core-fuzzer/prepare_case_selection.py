@@ -40,7 +40,8 @@ def analysis_for(system: str) -> dict:
         raise FileNotFoundError(f'missing distribution jars for {system}: {jars}')
     return {'process_dirs': [str(jar) for jar in jars], 'classpath': [],
             'rpc_mapping_files': [str(path) for path in mappings],
-            'max_methods': 400}
+            'max_methods': 400,
+            'post_call_rpc_enabled': True}
 
 
 def main() -> None:
@@ -55,7 +56,7 @@ def main() -> None:
                 and item.get('selection_group') == 'original_102'), None)
     if row is None:
         raise ValueError(f'case not in original 102: {args.case_id}')
-    target = row['exact_check_location']['site_id'].split('#u', 1)[0]
+    target = row['exact_check_location']['site_id'].split('#', 1)[0]
     selection = prepare({'target': {'method': target}, 'static_selection':
                          {'analysis': analysis_for(row['system'])}},
                         args.output_root / args.case_id)
