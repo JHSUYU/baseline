@@ -88,6 +88,45 @@ class LiveTrialSummaryTest(unittest.TestCase):
         self.assertEqual(new['fault_trials'], 3)
         self.assertEqual(new['strict_injections'], 2)
 
+    def test_terminal_replacement_elapsed_is_not_counted_twice(self):
+        migration = {'HBASE-13': {
+            'replacement_campaign': 'identity-v2',
+            'retired_campaigns': [{
+                'campaign': 'original', 'elapsed_seconds': 6195.297,
+                'completed_trials': 63, 'strict_injections': 2,
+                'budget_trials': 80, 'audit_path': 'node1:/prior-audit.json'}]}}
+        row = {'case_id': 'HBASE-13',
+               'campaign_result': '/campaign-identity-v2/HBASE-13/result.json',
+               'total_elapsed_seconds': 10531.819,
+               'active_runtime_seconds': 4235.102,
+               'fault_trials': 80}
+        apply_campaign_migration(row, migration)
+        self.assertEqual(row['prior_campaign_elapsed_seconds'], 6195.297)
+        self.assertEqual(row['current_campaign_elapsed_seconds'], 4336.522)
+        self.assertEqual(row['total_elapsed_seconds'], 10531.819)
+        self.assertEqual(row['prior_campaign_fault_trials'], 63)
+        self.assertEqual(row['current_campaign_fault_trials'], 80)
+
+    def test_terminal_replacement_with_no_inherited_summary_elapsed(self):
+        migration = {'SOLR-36': {
+            'replacement_campaign': 'identity-v3',
+            'retired_campaigns': [{
+                'campaign': 'nightly', 'elapsed_seconds': 11693.061,
+                'completed_trials': 54, 'strict_injections': 5,
+                'budget_trials': 80, 'audit_path': 'node2:/nightly.json'}, {
+                'campaign': 'identity-v2', 'elapsed_seconds': 341.378,
+                'completed_trials': 2, 'strict_injections': 1,
+                'budget_trials': 80, 'audit_path': 'node2:/v2.json'}]}}
+        row = {'case_id': 'SOLR-36',
+               'campaign_result': '/campaign-identity-v3/SOLR-36/result.json',
+               'total_elapsed_seconds': 3710.0,
+               'active_runtime_seconds': 3600.0,
+               'fault_trials': 80}
+        apply_campaign_migration(row, migration)
+        self.assertEqual(row['prior_campaign_elapsed_seconds'], 12034.439)
+        self.assertEqual(row['current_campaign_elapsed_seconds'], 3710.0)
+        self.assertEqual(row['total_elapsed_seconds'], 15744.439)
+
     def test_live_summary_reads_expanded_selection_campaign(self):
         with tempfile.TemporaryDirectory() as directory:
             base = Path(directory)

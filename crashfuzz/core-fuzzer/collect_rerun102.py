@@ -70,10 +70,17 @@ def apply_campaign_migration(value: dict, migrations: dict[str, dict]) -> None:
     paths = (value.get('healthy_manifest') or '', value.get('campaign_result') or '')
     if not any(replacement in path for path in paths):
         return
-    current = max(float(value.get('total_elapsed_seconds') or 0),
-                  float(value.get('active_runtime_seconds') or 0))
     retired = migration['retired_campaigns']
     prior = sum(float(item['elapsed_seconds']) for item in retired)
+    # A terminal worker inherits the previous summary's elapsed time only
+    # when that summary had a value. HBase's retired summaries were terminal;
+    # the interrupted Solr summaries had no elapsed value. Compare the
+    # reported wall time with the replacement checkpoint to distinguish the
+    # two cases, while using the checkpoint as the lower bound during a run.
+    reported = float(value.get('total_elapsed_seconds') or 0)
+    active = float(value.get('active_runtime_seconds') or 0)
+    cumulative = prior > 0 and reported >= prior + active - 0.001
+    current = max(reported - prior if cumulative else reported, active)
     value['prior_campaign_elapsed_seconds'] = round(prior, 3)
     value['prior_campaign_fault_trials'] = sum(
         int(item['completed_trials']) for item in retired)
