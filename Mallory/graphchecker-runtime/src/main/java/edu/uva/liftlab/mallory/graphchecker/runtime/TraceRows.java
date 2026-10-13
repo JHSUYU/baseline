@@ -127,13 +127,16 @@ final class TraceRows {
         }
         Context context = CURRENT.get();
         long token = ++context.nextToken;
-        context.saved.push(new Saved(token, context.source, context.cause,
+        Saved saved = new Saved(token, context.source, context.cause,
                 new ArrayList<>(context.frames), new ArrayDeque<>(context.regions),
                 new ArrayDeque<>(context.calls), copyFrameCounts(context.frameCounts),
                 new ArrayDeque<>(context.regionSources),
-                new ArrayDeque<>(context.activations)));
+                new ArrayDeque<>(context.activations));
+        context.saved.push(saved);
         context.source = source;
-        if (ownRoot || context.cause == null) {
+        boolean newRoot = ownRoot || context.cause == null;
+        saved.enteredRoot = newRoot;
+        if (newRoot) {
             Role role = Role.of(source.role());
             String family = api == null || api.isEmpty() ? "request" : api;
             String key = source.key() + "\n" + role.name() + "\n" + family;
@@ -146,8 +149,10 @@ final class TraceRows {
             context.activations.clear();
             context.calls.clear();
         }
-        row("SCOPE_ENTER", roleOccurrence(context),
-                fields("api", api, "sourceKey", source.key()));
+        saved.enteredOccurrence = roleOccurrence(context);
+        row("SCOPE_ENTER", saved.enteredOccurrence,
+                fields("api", api, "sourceKey", source.key(),
+                        "token", token, "newRoot", newRoot));
         return token;
     }
 
@@ -158,8 +163,9 @@ final class TraceRows {
             gap("SCOPE_UNBALANCED", String.valueOf(token), "request scope exit");
             return;
         }
-        row("SCOPE_EXIT", null, fields("token", token));
         Saved saved = context.saved.pop();
+        row("SCOPE_EXIT", saved.enteredOccurrence,
+                fields("token", token, "newRoot", saved.enteredRoot));
         context.source = saved.source;
         context.cause = saved.cause;
         context.restoreFrames(saved.frames, saved.frameCounts);
@@ -569,6 +575,8 @@ final class TraceRows {
 
     private static final class Saved {
         final long token;
+        OccurrenceAddress enteredOccurrence;
+        boolean enteredRoot;
         final SourceRef source;
         final CausalContext cause;
         final List<Frame> frames;
@@ -594,10 +602,13 @@ final class TraceRows {
         }
 
         Saved copy() {
-            return new Saved(token, source, cause, new ArrayList<>(frames),
+            Saved result = new Saved(token, source, cause, new ArrayList<>(frames),
                     new ArrayDeque<>(regions), new ArrayDeque<>(calls),
                     copyFrameCounts(frameCounts), new ArrayDeque<>(regionSources),
                     new ArrayDeque<>(activations));
+            result.enteredOccurrence = enteredOccurrence;
+            result.enteredRoot = enteredRoot;
+            return result;
         }
     }
 

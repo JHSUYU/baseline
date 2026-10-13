@@ -171,7 +171,12 @@ raw target activity. A fault occurrence on the check's exact closure, before
 its target-relative cutoff, satisfies `injection_specific_target_reached`;
 an automatic bug candidate additionally requires the fault on the exact
 throw event's own closure. An exact target throw outside that throw closure
-remains `needs_causal_review`. New scheduler checkpoints reserve periodic exploration for static
+remains `needs_causal_review`.
+When a closure uses a `PROGRAM_ORDER` edge between completed root scopes,
+the edge proves same-thread happens-before; a candidate still needs replay
+and source review to establish that the earlier fault caused a retry or state
+change relevant to the throw. New scheduler checkpoints reserve periodic
+exploration for static
 MAY and selected scope doors, and favor less attempted last fault sites within
 each tier. Old checkpoints retain their pinned scheduler version. A plan whose selected I/O disappears may be retried
 twice, with every unmatched attempt counted against the fault-trial and time

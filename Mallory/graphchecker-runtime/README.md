@@ -28,6 +28,14 @@ are never reported as observed causal edges or coverage novelty.
 cutoff for each attributed `TARGET_THROW`, so a fault linked to a check in one
 request cannot be credited for a throw in another request.
 
+Two completed root scopes on the same concrete JVM thread and registered
+source, using the same API, have a `PROGRAM_ORDER` edge when the first scope's
+matching exit precedes the second entry. The entry and exit carry the same
+occurrence and token; missing or mismatched exits create a gap instead of an
+edge. This is observed happens-before, useful for fault-induced retries across
+separate request occurrences. It does not prove that the earlier operation's
+data was read by the later one; source review remains required for a bug claim.
+
 The graph reader accepts plain JSONL and `.gz` archives, streams large traces
 without loading the whole file, and keeps coverage rows as site/sequence pairs.
 Call and region child counters live only as long as their parent frame, so a

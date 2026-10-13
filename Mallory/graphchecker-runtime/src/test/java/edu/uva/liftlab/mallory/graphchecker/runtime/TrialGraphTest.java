@@ -149,6 +149,34 @@ public class TrialGraphTest {
                 .has("request-a"));
     }
 
+    @Test public void completedSameThreadRootScopesHaveProgramOrder() throws Exception {
+        JsonObject first = row("kind", "SCOPE_ENTER", "occurrenceId", "root-a",
+                "regionId", "ROLE.SERVER", "node", "peer#epoch1", "threadKey", "88",
+                "sourceKey", "peer-source", "api", "REGISTER", "token", 1,
+                "newRoot", "true", "seq", 1);
+        JsonObject exit = row("kind", "SCOPE_EXIT", "occurrenceId", "root-a",
+                "node", "peer#epoch1", "threadKey", "88", "token", 1,
+                "newRoot", "true", "seq", 4);
+        JsonObject second = row("kind", "SCOPE_ENTER", "occurrenceId", "root-b",
+                "regionId", "ROLE.SERVER", "node", "peer#epoch1", "threadKey", "88",
+                "sourceKey", "peer-source", "api", "REGISTER", "token", 2,
+                "newRoot", "true", "seq", 5);
+        JsonObject target = row("kind", "TARGET_CHECK", "occurrenceId", "root-b",
+                "siteId", "check", "node", "peer#epoch1", "seq", 6);
+        TrialGraph ordered = graph(first, exit, second, target);
+        assertTrue(ordered.closure("check").contains("root-a"));
+        assertEquals(1, ordered.feedback("check", null).get("closureEdges").getAsInt());
+
+        TrialGraph noExit = graph(first, second, target);
+        assertFalse(noExit.closure("check").contains("root-a"));
+        JsonObject otherThread = row("kind", "SCOPE_ENTER", "occurrenceId", "root-b",
+                "regionId", "ROLE.SERVER", "node", "peer#epoch1", "threadKey", "89",
+                "sourceKey", "peer-source", "api", "REGISTER", "token", 2,
+                "newRoot", "true", "seq", 5);
+        assertFalse(graph(first, exit, otherThread, target).closure("check")
+                .contains("root-a"));
+    }
+
     @Test public void staticMayDoorDoesNotBecomeObservedClosure() throws Exception {
         TrialGraph trial = graph(
                 row("kind", "ACTIVATION", "occurrenceId", "target-occ",

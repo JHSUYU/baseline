@@ -76,10 +76,22 @@ public final class TrialGraph {
         Map<String, List<JsonObject>> exports = new HashMap<>();
         Map<String, List<JsonObject>> writes = new HashMap<>();
         Map<String, List<JsonObject>> reads = new HashMap<>();
+        Map<String, List<JsonObject>> rootEntries = new LinkedHashMap<>();
+        Map<String, List<JsonObject>> rootExits = new HashMap<>();
         eachRow(trace, true, row -> {
             String kind = value(row, "kind");
             if ("ACTIVATION".equals(kind) || "SCOPE_ENTER".equals(kind)
                     || "TASK_CLAIM".equals(kind) || "SOURCE_SWITCH".equals(kind)) node(row);
+            if ("SCOPE_ENTER".equals(kind) && "true".equals(value(row, "newRoot"))) {
+                String key = scopeOrderKey(row);
+                if (key.isEmpty()) gap("PROGRAM_ORDER_SOURCE_MISSING");
+                else rootEntries.computeIfAbsent(key, unused -> new ArrayList<>()).add(row);
+            }
+            if ("SCOPE_EXIT".equals(kind) && "true".equals(value(row, "newRoot"))) {
+                String id = value(row, "occurrenceId");
+                if (!id.isEmpty()) rootExits.computeIfAbsent(id,
+                        unused -> new ArrayList<>()).add(row);
+            }
             if ("TARGET_CHECK".equals(kind) || "TARGET_THROW".equals(kind)) {
                 targets.add(row);
                 node(row);
@@ -253,6 +265,55 @@ public final class TrialGraph {
             returned.addProperty("consumerSeq", when);
             edges.put(value(returned, "edgeId"), returned);
         });
+        for (List<JsonObject> entries : rootEntries.values()) {
+            JsonObject previous = null;
+            for (JsonObject current : entries) {
+                if (previous != null) {
+                    List<JsonObject> exits = rootExits.getOrDefault(
+                            value(previous, "occurrenceId"), Collections.emptyList());
+                    if (exits.size() == 1 &&
+                            same(exits.get(0), previous, "node", "threadKey", "token",
+                                    "occurrenceId") &&
+                            number(previous, "seq") < number(exits.get(0), "seq") &&
+                            number(exits.get(0), "seq") < number(current, "seq")) {
+                        JsonObject order = new JsonObject();
+                        order.addProperty("kind", "EDGE");
+                        order.addProperty("edge", "PROGRAM_ORDER");
+                        order.addProperty("edgeId", digest("PROGRAM_ORDER" +
+                                value(previous, "occurrenceId") +
+                                value(current, "occurrenceId") +
+                                number(exits.get(0), "seq")));
+                        order.addProperty("producerOccurrenceId",
+                                value(previous, "occurrenceId"));
+                        order.addProperty("consumerOccurrenceId",
+                                value(current, "occurrenceId"));
+                        order.addProperty("producerEndpointId",
+                                value(previous, "occurrenceId") + ":scope-exit");
+                        order.addProperty("consumerEndpointId",
+                                value(current, "occurrenceId") + ":scope-entry");
+                        order.addProperty("port", value(current, "api"));
+                        order.addProperty("producerSeq", number(exits.get(0), "seq"));
+                        order.addProperty("consumerSeq", number(current, "seq"));
+                        edges.put(value(order, "edgeId"), order);
+                    } else {
+                        gap("PROGRAM_ORDER_EXIT_UNPROVEN");
+                    }
+                }
+                previous = current;
+            }
+        }
+    }
+
+    private static String scopeOrderKey(JsonObject row) {
+        String node = value(row, "node");
+        String thread = value(row, "threadKey");
+        String source = value(row, "sourceKey");
+        String api = value(row, "api");
+        String id = value(row, "occurrenceId");
+        String token = value(row, "token");
+        return node.isEmpty() || thread.isEmpty() || source.isEmpty() ||
+                api.isEmpty() || id.isEmpty() || token.isEmpty() ? "" :
+                node + "\n" + thread + "\n" + source + "\n" + api;
     }
 
     private static final class CoverageEvent {
