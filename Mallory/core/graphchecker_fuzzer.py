@@ -27,7 +27,7 @@ REPLAY_FIELD = "replayOccurrenceId"
 TIER_WEIGHT = {"observed_closure": 100, "static_may_observed": 55,
                "selected_scope_observed": 35, "outside_closure": 15,
                "after_target": -100}
-SCHEDULER_VERSION = 2
+SCHEDULER_VERSION = 3
 MAX_QUEUE = 5000
 MAX_UNMATCHED_RETRIES = 2
 
@@ -65,6 +65,14 @@ def _plan_key(faults: list[dict[str, Any]]) -> str:
                           .encode("utf-8")).hexdigest()
 
 
+def _actor_site_key(fault: dict[str, Any]) -> str:
+    """Group retries by logical node and site, independent of reboot epoch."""
+    node = fault["node"]
+    base, marker, epoch = node.rpartition("#epoch")
+    logical_node = base if marker and epoch.isdigit() else node
+    return json.dumps([logical_node, fault["siteId"]], separators=(",", ":"))
+
+
 def _live_process(trial: Path) -> bool:
     receipt = trial / "process.json"
     if not receipt.is_file():
@@ -86,8 +94,43 @@ def _score(item: dict[str, Any], completed: int) -> float:
             4 * len(item["faults"]) + min(30, completed - item["enqueued_at"]))
 
 
+def _retention_score(item: dict[str, Any], completed: int,
+                     state: dict[str, Any]) -> float:
+    """Bounded feedback; repeated target loss lowers priority, never eligibility."""
+    actor_site = _actor_site_key(item["faults"][-1])
+    history = state.get("site_target_retention", {}).get(actor_site, {})
+    preserved = int(history.get("preserved", 0))
+    lost = int(history.get("lost", 0))
+    productive = int(history.get("productive", 0))
+    attempts = int(state.get("last_fault_actor_site_attempts", {}).get(
+        actor_site, 0))
+    parent_delta = int(item.get("parent_graph_delta", 0))
+    parent_bonus = (24 if parent_delta > 0 else 8) if item.get(
+        "parent_target_retained") else 0
+    return (_score(item, completed) + parent_bonus + min(20, 5 * preserved)
+            + min(15, 5 * productive)
+            - min(40, 10 * max(0, lost - preserved))
+            - min(18, 3 * attempts))
+
+
 def _pick(queue: list[dict[str, Any]], completed: int,
           state: dict[str, Any] | None = None) -> dict[str, Any]:
+    if state is not None and state.get("scheduler_version", 1) >= 3:
+        # Static MAY and selected scope have periodic slots; one of eighteen
+        # is reserved for outside closure when that queue is nonempty.
+        outside = [item for item in queue if item["tier"] == "outside_closure"]
+        requested = ("outside_closure" if completed % 18 == 17 and outside else
+                     {2: "static_may_observed", 5: "selected_scope_observed"}.get(
+                         completed % 6))
+        candidates = ([item for item in queue if item["tier"] == requested]
+                      if requested else [])
+        if not candidates:
+            candidates = queue
+        selected = max(candidates, key=lambda item: (
+            _retention_score(item, completed, state),
+            -item["enqueued_at"], item["key"]))
+        queue.remove(selected)
+        return selected
     if state is not None and state.get("scheduler_version", 1) >= 2:
         # Two periodic slots reach observed static candidates even while
         # exact-closure plans are abundant. Neither tier implies causality.
@@ -178,9 +221,14 @@ def _enqueue(state: dict[str, Any], result: dict[str, Any],
         if key in seen:
             continue
         seen.add(key)
-        state["queue"].append({"key": key, "faults": faults, "tier": tier,
-                               "novelty": _novelty(result),
-                               "enqueued_at": state["completed_fault_trials"]})
+        item = {"key": key, "faults": faults, "tier": tier,
+                "novelty": _novelty(result),
+                "enqueued_at": state["completed_fault_trials"]}
+        if state.get("scheduler_version", 1) >= 3:
+            item["parent_target_retained"] = bool(
+                prefix and evidence.get("injection_specific_target_reached"))
+            item["parent_graph_delta"] = _novelty(result) if prefix else 0
+        state["queue"].append(item)
         added += 1
     state["seen_plan_keys"] = sorted(seen)
     return added
@@ -193,6 +241,8 @@ def _new_state(config: dict[str, Any], budget: dict[str, int]) -> dict[str, Any]
             if isinstance(config.get("target"), dict) else [],
             "scheduler_version": SCHEDULER_VERSION,
             "last_fault_site_attempts": {}, "last_fault_site_strict": {},
+            "last_fault_actor_site_attempts": {},
+            "site_target_retention": {},
             "target_site_rows": config.get("target_site_rows", []),
             "status": "running", "terminal": False,
             "started_at": _now(), "updated_at": _now(),
@@ -225,6 +275,11 @@ def _accept_result(state: dict[str, Any], name: str,
         raise ValueError("checkpoint active trial disagrees with result")
     record = _trial_record(name, result)
     record["unmatched_retry"] = active.get("unmatched_retry", 0)
+    if active["index"] > 0:
+        record["selection_tier"] = active.get("selection_tier")
+        record["selection_score"] = active.get("selection_score")
+        record["parent_target_retained"] = active.get("parent_target_retained", False)
+        record["parent_graph_delta"] = active.get("parent_graph_delta", 0)
     state["trial_elapsed_seconds"] = round(
         state["trial_elapsed_seconds"] + result["elapsed_seconds"], 3)
     if active["index"] == 0:
@@ -248,6 +303,16 @@ def _accept_result(state: dict[str, Any], name: str,
             site = active["faults"][-1]["siteId"]
             counts = state.setdefault("last_fault_site_strict", {})
             counts[site] = int(counts.get(site, 0)) + 1
+            if state.get("scheduler_version", 1) >= 3:
+                actor_site = _actor_site_key(active["faults"][-1])
+                history = state.setdefault("site_target_retention", {}).setdefault(
+                    actor_site, {"preserved": 0, "lost": 0, "productive": 0})
+                if evidence.get("injection_specific_target_reached"):
+                    history["preserved"] += 1
+                    if _novelty(result) > 0:
+                        history["productive"] += 1
+                else:
+                    history["lost"] += 1
         if result["status"] == "unmatched" and active["faults"]:
             # The planned I/O may disappear under scheduling nondeterminism.
             # Give this exact plan at most two more chances; each attempt still
@@ -349,6 +414,9 @@ def _finish(state: dict[str, Any], root: Path) -> dict[str, Any]:
                    "scheduler_version": state.get("scheduler_version", 1),
                    "last_fault_site_attempts": state.get("last_fault_site_attempts", {}),
                    "last_fault_site_strict": state.get("last_fault_site_strict", {}),
+                   "last_fault_actor_site_attempts": state.get(
+                       "last_fault_actor_site_attempts", {}),
+                   "site_target_retention": state.get("site_target_retention", {}),
                    "completed_fault_trials": state["completed_fault_trials"],
                    "trial_elapsed_seconds": state["trial_elapsed_seconds"],
                    "healthy": state["healthy"],
@@ -412,16 +480,27 @@ def run_campaign(config_path: Path, root: Path) -> dict[str, Any]:
                     not state["queue"]):
                 break
             selected = _pick(state["queue"], state["completed_fault_trials"], state)
+            selected_score = (
+                _retention_score(selected, state["completed_fault_trials"], state)
+                if state.get("scheduler_version", 1) >= 3 else
+                _score(selected, state["completed_fault_trials"]))
             index = state["next_trial_index"]
             state["next_trial_index"] += 1
             if state.get("scheduler_version", 1) >= 2:
                 site = selected["faults"][-1]["siteId"]
                 counts = state.setdefault("last_fault_site_attempts", {})
                 counts[site] = int(counts.get(site, 0)) + 1
+                if state.get("scheduler_version", 1) >= 3:
+                    actor_site = _actor_site_key(selected["faults"][-1])
+                    actor_counts = state.setdefault("last_fault_actor_site_attempts", {})
+                    actor_counts[actor_site] = int(actor_counts.get(actor_site, 0)) + 1
             state["active"] = {"index": index, "name": f"r{index:04d}",
                                "faults": selected["faults"],
                                "selection_tier": selected["tier"],
-                               "selection_score": _score(selected, state["completed_fault_trials"]),
+                               "selection_score": selected_score,
+                               "parent_target_retained": selected.get(
+                                   "parent_target_retained", False),
+                               "parent_graph_delta": selected.get("parent_graph_delta", 0),
                                "unmatched_retry": selected.get("unmatched_retry", 0)}
             _write_json(checkpoint, state)
             _resume_active(state, root, config, prepared)

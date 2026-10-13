@@ -10,7 +10,8 @@ from unittest.mock import patch
 
 from Mallory.core.graphchecker_campaign import _archive_jsonl
 from Mallory.core.graphchecker_fuzzer import (_accept_result, _enqueue, _finish,
-                                             _plan_key,
+                                             _actor_site_key, _plan_key,
+                                             _retention_score,
                                              _new_state, _pick, _resume_active,
                                              run_campaign)
 
@@ -60,6 +61,8 @@ class GraphCheckerFuzzerTest(unittest.TestCase):
         self.assertEqual(1, _enqueue(state, self.result([first], doors), [first]))
         self.assertEqual(3, state["queue"][0]["faults"][-1]["ordinal"])
         self.assertEqual(2, len(state["queue"][0]["faults"]))
+        self.assertTrue(state["queue"][0]["parent_target_retained"])
+        self.assertGreater(state["queue"][0]["parent_graph_delta"], 0)
 
     def test_enqueue_preserves_stable_replay_selector(self):
         state = _new_state(self.config(), self.budget())
@@ -99,6 +102,7 @@ class GraphCheckerFuzzerTest(unittest.TestCase):
 
     def test_v2_periodic_selected_scope_quota_and_site_fairness(self):
         state = _new_state(self.config(), self.budget())
+        state["scheduler_version"] = 2
         doors = [self.door(1, 1, site="closure-a"),
                  self.door(2, 2, site="closure-b"),
                  self.door(3, 3, "static_may_observed", "may"),
@@ -111,6 +115,83 @@ class GraphCheckerFuzzerTest(unittest.TestCase):
                          _pick(state["queue"], 2, state)["tier"])
         self.assertEqual("selected_scope_observed",
                          _pick(state["queue"], 5, state)["tier"])
+
+    def test_v3_repeated_target_loss_downweights_but_keeps_site(self):
+        state = _new_state(self.config(), self.budget())
+        doors = [self.door(1, 1, site="lost-site"),
+                 self.door(2, 2, site="fresh-site")]
+        _enqueue(state, self.result([], doors), [])
+        state["site_target_retention"][_actor_site_key(doors[0])] = {
+            "preserved": 0, "lost": 5, "productive": 0}
+        self.assertEqual("fresh-site", _pick(state["queue"], 0, state)[
+            "faults"][-1]["siteId"])
+        self.assertEqual("lost-site", _pick(state["queue"], 1, state)[
+            "faults"][-1]["siteId"])
+
+    def test_v3_productive_parent_and_external_quota(self):
+        state = _new_state(self.config(), self.budget())
+        doors = [self.door(1, 1, site="closure-a"),
+                 self.door(2, 2, site="closure-b"),
+                 self.door(3, 3, "selected_scope_observed", "scope")]
+        _enqueue(state, self.result([], doors), [])
+        for item in state["queue"]:
+            if item["faults"][-1]["siteId"] == "closure-b":
+                item["parent_target_retained"] = True
+                item["parent_graph_delta"] = 8
+        self.assertEqual("closure-b", _pick(state["queue"], 0, state)[
+            "faults"][-1]["siteId"])
+        self.assertEqual("selected_scope_observed",
+                         _pick(state["queue"], 5, state)["tier"])
+
+    def test_v3_outside_closure_gets_sparse_fixed_slot(self):
+        state = _new_state(self.config(), self.budget())
+        _enqueue(state, self.result([], [
+            self.door(1, 1, site="closure"),
+            self.door(2, 2, "outside_closure", "outside")]), [])
+        self.assertEqual("outside_closure", _pick(state["queue"], 17, state)[
+            "tier"])
+
+    def test_v3_target_loss_does_not_penalize_another_logical_node(self):
+        state = _new_state(self.config(), self.budget())
+        nn = self.door(1, 1, site="shared-site")
+        dn = {**self.door(2, 2, site="shared-site"), "node": "dn-1#epoch0"}
+        self.assertEqual(_actor_site_key(nn), _actor_site_key({
+            **nn, "node": "nn-1#epoch3"}))
+        _enqueue(state, self.result([], [nn, dn]), [])
+        state["site_target_retention"][_actor_site_key(nn)] = {
+            "preserved": 0, "lost": 5, "productive": 0}
+        self.assertEqual("dn-1#epoch0", _pick(state["queue"], 0, state)[
+            "faults"][-1]["node"])
+
+    def test_v3_retention_history_counts_only_strict_faults(self):
+        state = _new_state(self.config(), self.budget())
+        fault = {key: self.door(1, 1)[key] for key in
+                 ("siteId", "node", "occurrenceId", "ordinal", "exceptionClass")}
+        state["active"] = {"index": 1, "name": "r0001", "faults": [fault]}
+        lost = self.result([fault])
+        lost["evidence"]["injection_specific_target_reached"] = False
+        _accept_result(state, "r0001", lost)
+        actor_site = _actor_site_key(fault)
+        self.assertEqual({"preserved": 0, "lost": 1, "productive": 0},
+                         state["site_target_retention"][actor_site])
+        state["active"] = {"index": 2, "name": "r0002", "faults": [fault]}
+        _accept_result(state, "r0002", self.result([fault]))
+        self.assertEqual({"preserved": 1, "lost": 1, "productive": 1},
+                         state["site_target_retention"][actor_site])
+        state["active"] = {"index": 3, "name": "r0003", "faults": [fault]}
+        unmatched = self.result([fault])
+        unmatched["status"] = "unmatched"
+        unmatched["evidence"]["strict_injection"] = False
+        unmatched["evidence"]["injection_specific_target_reached"] = False
+        _accept_result(state, "r0003", unmatched)
+        self.assertEqual({"preserved": 1, "lost": 1, "productive": 1},
+                         state["site_target_retention"][actor_site])
+        item = {"tier": "observed_closure", "novelty": 0,
+                "faults": [fault], "enqueued_at": 0}
+        bad = {**state, "site_target_retention": {actor_site: {
+            "preserved": 0, "lost": 5, "productive": 0}}}
+        self.assertGreater(_retention_score(item, 2, state),
+                           _retention_score(item, 2, bad))
 
     def test_v1_checkpoint_keeps_old_outside_tier(self):
         state = _new_state(self.config(), self.budget())

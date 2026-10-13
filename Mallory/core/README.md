@@ -186,10 +186,12 @@ remains `needs_causal_review`.
 When a closure uses a `PROGRAM_ORDER` edge between completed root scopes,
 the edge proves same-thread happens-before; a candidate still needs replay
 and source review to establish that the earlier fault caused a retry or state
-change relevant to the throw. New scheduler checkpoints reserve periodic
-exploration for static
-MAY and selected scope doors, and favor less attempted last fault sites within
-each tier. Old checkpoints retain their pinned scheduler version. A plan whose selected I/O disappears may be retried
+change relevant to the throw. Scheduler v3 uses each trial's closure node,
+edge, and coverage delta as feedback. It rewards fault prefixes that retain
+the target, downweights repeated target loss for the same logical node and
+I/O site, and keeps periodic static MAY, selected scope, and sparse outside
+closure exploration. No fault site is removed solely for losing the target.
+Older checkpoints retain their pinned scheduler version. A plan whose selected I/O disappears may be retried
 twice, with every unmatched attempt counted against the fault-trial and time
 budgets. The time budget counts actual JUnit trial runtime.
 
