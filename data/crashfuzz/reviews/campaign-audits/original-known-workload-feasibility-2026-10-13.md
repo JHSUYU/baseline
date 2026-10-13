@@ -242,6 +242,12 @@ the baseline event. The generic chain priority now caps its depth reward at
 four same-node replies and prefers fewer total faults at that depth. The
 campaign resumed again from 113 completed trials in tmux
 `crashfuzz-hdfs-reply-chain-v5`, retaining trial 114's active checkpoint.
+With the bounded ranking, the next reply-chain slot selected trial 126:
+five faults, including four nonempty replies of one node through hit ordinal
+11. All five selectors matched and applied in its first unchanged-JUnit run
+(47.921 seconds). The exact target throw count remained one, equal to the
+healthy baseline. This validates the shorter-chain selection and replay but
+does not detect an HDFS bug.
 
 To keep the three active HDFS runs within disk capacity, completed attempts
 from the first 250 trials of `campaign-control-branch` were checksum-verified
