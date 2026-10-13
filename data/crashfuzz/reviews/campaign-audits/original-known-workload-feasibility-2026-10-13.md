@@ -315,8 +315,28 @@ node1, including bounded retries: 543 control and 223 response-shape logs.
 The exact missing-key message occurred in 480 and 205 logs respectively.
 For all 685 such logs, the same missing key ID appears later in
 `DataStreamer.continueRetryingOrThrow`, where the client fetches a new key
-and retries. This rules out treating a single same-count throw in these
-attempts as evidence of a distinct mirror or DataTransfer failure.
+and retries. **Successful retry does not disqualify a fault-induced throw.**
+The reason these specific single throws do not establish fault causation is
+the unchanged JUnit's earlier `clearAllKeysForTesting()` and wait until
+*every* DataNode lacks the client's cached key ID (`TestEncryptedTransfer.java:
+400-422`). The target in the examined RPC-fault trials is the first
+client-initiated SASL handshake after that wait, the same path that throws in
+the healthy run.
+
+For timing transparency, response-shape trial 7 applied two `IOException`
+faults to `data7`'s heartbeat replies, including one carrying a
+`KeyUpdateCommand`; the sole exact target throw was on `data3` at
+2026-10-13 05:32:58.942 UTC, **234.281 seconds (3m54.281s)** after this
+campaign started. Trial 35 applied four consecutive heartbeat-reply
+`IOException` faults on `data1`, three of them discarding key-update
+commands. The sole exact target throw was on `data1` at
+2026-10-13 05:52:05.023 UTC, **1,380.362 seconds (23m00.362s)** after this
+campaign started. The latter has fault/target node identity alignment, but
+its trace shows a client `DataStreamer` SASL call immediately before the
+throw, after the JUnit's all-node key-invalid wait. Both are temporal
+co-occurrences, not demonstrated RPC-caused detections. The reported elapsed
+times include the campaign's prior trials and exclude only work in other
+independent campaigns.
 
 To keep the three active HDFS runs within disk capacity, completed attempts
 from the first 250 trials of `campaign-control-branch` were checksum-verified

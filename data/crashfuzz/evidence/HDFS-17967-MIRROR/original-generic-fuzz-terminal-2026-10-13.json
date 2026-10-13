@@ -7,7 +7,7 @@
   "target": "BlockTokenSecretManager.retrieveDataEncryptionKey at allKeys.get(keyId)",
   "target_source": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java:555",
   "healthy_exact_target_throw_count": 1,
-  "qualification": "A fault-induced exact throw must be distinguishable from the original JUnit expected stale-client-key rejection, by an additional throw or independent path evidence. A JUnit assertion failure alone does not qualify.",
+  "qualification": "A fault-induced exact throw counts even if DFSClient later clears its key and retries successfully. It must still be distinguishable from the original JUnit's deliberate stale-client-key rejection, by an additional throw or independent causal path evidence. A JUnit assertion failure alone does not qualify.",
   "campaigns": [
     {
       "name": "control",
@@ -60,7 +60,29 @@
   ],
   "additional_target_exception_detected": false,
   "time_to_detection_seconds": null,
-  "excluded_reason": "The original JUnit intentionally triggers one receiver-side InvalidEncryptionKeyException from a stale client key, then clears the cached key and retries. Across 766 archived attempt logs, all 685 logs containing the exact missing-key message show the same key ID in a later client-retry log.",
+  "excluded_reason": "The original JUnit obtains and retains a client encryption key, clears server keys, waits until every DataNode lacks that key ID, then starts pipeline recovery. Thus its first client handshake is expected to throw the exact missing-key exception without injected faults. The audited RPC-fault trials show one client-initiated handshake throw after this wait, followed by key refresh. Successful retry is not the exclusion criterion; the deliberate preexisting stale key is. No second or independently attributable exact throw was observed.",
+  "rpc_fault_target_cooccurrences_not_detections": [
+    {
+      "campaign": "response_shape",
+      "trial": 7,
+      "faults": "Two java.io.IOException injections at data7 sendHeartBeat replies; the first reply carried KeyUpdateCommand.",
+      "exact_throw_node": "hdfs:dn:data3",
+      "nearest_error_log_timestamp_utc": "2026-10-13T05:32:58.942Z",
+      "seconds_from_this_campaign_started_to_error_log": 234.281,
+      "seconds_from_this_campaign_started_to_trial_completion": 237.86,
+      "why_not_attributed": "The target was on a different DataNode, after the JUnit verified its original cached client key was absent on all DataNodes."
+    },
+    {
+      "campaign": "response_shape",
+      "trial": 35,
+      "faults": "Four consecutive java.io.IOException injections at data1 sendHeartBeat replies, three carrying KeyUpdateCommand.",
+      "exact_throw_node": "hdfs:dn:data1",
+      "nearest_error_log_timestamp_utc": "2026-10-13T05:52:05.023Z",
+      "seconds_from_this_campaign_started_to_error_log": 1380.362,
+      "seconds_from_this_campaign_started_to_trial_completion": 1384.456,
+      "why_not_attributed": "Despite matching the faulted node, this was the first client DataStreamer SASL handshake after the JUnit waited for all DataNodes to lose its deliberately stale cached key; only one exact throw occurred."
+    }
+  ],
   "raw_attempt_log_audit": {
     "archive_host": "node1",
     "control_attempt_logs": 543,
