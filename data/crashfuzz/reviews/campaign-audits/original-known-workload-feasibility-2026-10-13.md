@@ -98,6 +98,13 @@ The running 450-trial campaign retains its original agent and checkpoint so
 its results are comparable. The validation trace is under
 `static-rerun/original-known/HDFS-17967-mirror/identity-healthy-validation`.
 
+I also audited the 249 saved trials that had exactly one target throw through
+trial 271. Every corresponding JUnit log contained
+`DataStreamer.continueRetryingOrThrow` reporting that it would fetch a new
+encryption key and retry, as in the healthy run. Runs where the current key
+advanced further still followed this expected client recovery path. None
+shows a distinct mirror or DataTransfer key mismatch at the target check.
+
 Evidence roots: `static-rerun/original-known/HDFS-54`, `HDFS-55`,
 `HDFS-11-balancer`, and `HDFS-17967-mirror` on node0, and
 `static-rerun/original-known/SOLR-40` on node2.
