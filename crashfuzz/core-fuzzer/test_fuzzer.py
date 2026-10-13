@@ -218,6 +218,24 @@ class CoverageIoTest(unittest.TestCase):
                   'exception_type': 'example.TargetException'}
         self.assertEqual(selected_target_throw_lines(selection, target), [23])
 
+    def test_soot_exact_throw_line_disambiguates_adjacent_checks(self):
+        guard = TARGET + '#u4'
+        selection = {'target_check_line': 20, 'target_selected_line': 23,
+                     'branches': [{'method': TARGET, 'line': 20,
+                                   'site_id': guard}],
+                     'target_throw_sites': [
+                         {'method': TARGET, 'line': 23,
+                          'soot_site_id': TARGET + '#u11',
+                          'thrown_type': 'example.TargetException',
+                          'controlled_by': [guard]},
+                         {'method': TARGET, 'line': 30,
+                          'soot_site_id': TARGET + '#u22',
+                          'thrown_type': 'example.TargetException',
+                          'controlled_by': [guard]}]}
+        target = {'method': TARGET, 'site_id': TARGET + '#u11',
+                  'exception_type': 'example.TargetException'}
+        self.assertEqual(selected_target_throw_lines(selection, target), [23])
+
     def test_selected_explicit_throw_counts_even_if_caught_in_method(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / 'trace.jsonl'

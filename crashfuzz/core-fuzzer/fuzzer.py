@@ -612,14 +612,20 @@ def selected_target_throw_lines(selection: dict[str, Any],
     selected_line = selection.get("target_selected_line")
     guard_ids = {row.get("site_id") for row in selection.get("branches", [])
                  if row.get("method") == method and row.get("line") == check_line}
+    typed_sites = [site for site in selection.get("target_throw_sites", [])
+                   if site.get("method") == method and
+                   site.get("thrown_type") == target["exception_type"] and
+                   isinstance(site.get("line"), int) and site["line"] > 0]
+    # A branch can also control later throws when one of its paths terminates
+    # early. The checklist's exact throw line resolves adjacent checks of the
+    # same type in a method before using the broader control relation.
+    exact_lines = {site["line"] for site in typed_sites
+                   if site["line"] == selected_line}
+    if exact_lines:
+        return sorted(exact_lines)
     lines: set[int] = set()
-    for site in selection.get("target_throw_sites", []):
-        if (site.get("method") != method or
-                site.get("thrown_type") != target["exception_type"]):
-            continue
+    for site in typed_sites:
         line = site.get("line")
-        if not isinstance(line, int) or line < 1:
-            continue
         controlled = set(site.get("controlled_by", []))
         if (guard_ids & controlled or
                 site.get("soot_site_id") == target.get("site_id") or
