@@ -21,6 +21,17 @@ generic-fuzz detections.
 | HDFS mirror response shape | 160 | None; every exact throw follows the expected client retry | Not detected | 8,253.492 s |
 | SOLR-40 | 240 | One reproducible strict applied-prefix candidate; full two-fault plan unmatched | 2,102.391 s | 21,291.531 s |
 
+For the HDFS key-missing target, the first exact throw in a faulted run is
+enough to start a detection timer **when the unchanged healthy JUnit has no
+such throw**. A caught exception still counts. If the healthy JUnit already
+causes one, occurrence after a fault is insufficient by itself; the trace
+must distinguish a newly induced path from the expected client recovery.
+The unchanged Balancer JUnit met the zero-throw healthy condition, but none
+of its 80 faulted trials reached an exact target throw. The pipeline-recovery
+JUnit had one healthy throw; all observed faulted-run throws followed that
+same client key-refresh path. Consequently neither HDFS workload has a
+qualifying first-trigger time under this rule.
+
 The original HDFS-17897 JUnit choices each cover only one half of the required
 encrypted striped-checksum path. The encrypted pipeline-recovery JUnit is the
 strongest unchanged workload for the DataNode mirror and transfer paths because
