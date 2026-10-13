@@ -276,16 +276,25 @@ def _rows(path: Path) -> list[dict[str, Any]]:
     if not path.is_file():
         return []
     rows: list[dict[str, Any]] = []
-    previous = -1
+    previous_by_actor: dict[tuple[str, int], int] = {}
     for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
         row = json.loads(line)
         if not isinstance(row, dict) or row.get("kind") not in (
-                "FAULT_DOOR", "FAULT_APPLIED", "TARGET_CHECK", "TARGET_THROW"):
+                "FAULT_DOOR", "FAULT_APPLIED", "TARGET_CHECK", "TARGET_THROW",
+                "ENDPOINT_EXPORT", "ENDPOINT_ATTACH"):
             raise ValueError(f"invalid native fault receipt row {number}")
         seq = row.get("seq")
-        if not isinstance(seq, int) or isinstance(seq, bool) or seq <= previous:
+        node = row.get("node")
+        epoch = row.get("actorEpochOrdinal")
+        if (not isinstance(seq, int) or isinstance(seq, bool) or seq <= 0 or
+                not isinstance(node, str) or not node or
+                not isinstance(epoch, int) or isinstance(epoch, bool) or
+                epoch < 0):
+            raise ValueError(f"invalid native fault receipt actor/seq {number}")
+        actor = (node, epoch)
+        if seq <= previous_by_actor.get(actor, -1):
             raise ValueError(f"nonmonotone native fault receipt seq {number}")
-        previous = seq
+        previous_by_actor[actor] = seq
         rows.append(row)
     return rows
 
@@ -328,20 +337,119 @@ def _exact_throws(rows: list[dict[str, Any]], summary: dict[str, Any],
     if last_fault_seq is None:
         return []
     targets = set(summary["targetOccurrenceIds"])
+    # The fault and target may run in different processes. Their local
+    # receipt sequences cannot be compared here; candidate admission later
+    # requires the throw after TARGET_CHECK on the target actor itself.
     return [row for row in rows if row["kind"] == "TARGET_THROW" and
             row.get("siteId") == target["siteId"] and
             row.get("exceptionClass") == target["exceptionClass"] and
-            row.get("occurrenceId") in targets and row["seq"] > last_fault_seq]
+            row.get("occurrenceId") in targets]
+
+
+def _wire_path(fault: dict[str, Any], check: dict[str, Any],
+               plan: dict[str, Any], rows: list[dict[str, Any]]
+               ) -> list[dict[str, Any]] | None:
+    """Prove a WIRE path with exact endpoints and only local receipt order."""
+    members = {item["occurrenceId"]: item for item in plan["closureMembers"]}
+    session = plan["sessionId"]
+
+    def actor(row: dict[str, Any], occurrence: str) -> bool:
+        member = members.get(occurrence)
+        epoch = row.get("actorEpochOrdinal")
+        return (member is not None and row.get("occurrenceId") == occurrence and
+                isinstance(row.get("node"), str) and row["node"] and
+                isinstance(epoch, int) and not isinstance(epoch, bool) and
+                epoch >= 0 and member.get("node") ==
+                f"{row['node']}#epoch{epoch}")
+
+    if not actor(fault, fault["occurrenceId"]) or not actor(
+            check, plan["targetOccurrenceId"]):
+        return None
+
+    adjacency: dict[str, list[tuple[dict[str, Any], dict[str, Any],
+                                    dict[str, Any]]]] = {}
+    for edge in plan["observedEdgesWithinClosure"]:
+        if edge.get("type") != "WIRE":
+            continue
+        source = edge.get("producerOccurrenceId")
+        destination = edge.get("consumerOccurrenceId")
+        evidence = edge.get("evidence")
+        if (not isinstance(source, str) or not isinstance(destination, str) or
+                not isinstance(evidence, dict)):
+            continue
+        producer = evidence.get("producerEndpointId")
+        consumer = evidence.get("consumerEndpointId")
+        export_vm = evidence.get("exportSeq")
+        attach_vm = evidence.get("attachSeq")
+        if (not isinstance(producer, str) or not producer or
+                not isinstance(consumer, str) or not consumer or
+                not isinstance(export_vm, int) or isinstance(export_vm, bool) or
+                not isinstance(attach_vm, int) or isinstance(attach_vm, bool)):
+            continue
+        exports = [row for row in rows if row["kind"] == "ENDPOINT_EXPORT" and
+                   row.get("sessionId") == session and
+                   row.get("endpointId") == producer and
+                   isinstance(row.get("nativeVmEventId"), int) and
+                   not isinstance(row["nativeVmEventId"], bool) and
+                   row.get("nativeVmEventId") == export_vm and
+                   actor(row, source)]
+        attaches = [row for row in rows if row["kind"] == "ENDPOINT_ATTACH" and
+                    row.get("sessionId") == session and
+                    row.get("endpointId") == consumer and
+                    row.get("producerEndpointId") == producer and
+                    isinstance(row.get("nativeVmEventId"), int) and
+                    not isinstance(row["nativeVmEventId"], bool) and
+                    row.get("nativeVmEventId") == attach_vm and
+                    actor(row, destination)]
+        if len(exports) != 1 or len(attaches) != 1:
+            continue
+        adjacency.setdefault(source, []).append((edge, exports[0], attaches[0]))
+
+    def walk(occurrence: str, previous: dict[str, Any], seen: set[str],
+             path: list[dict[str, Any]]) -> list[dict[str, Any]] | None:
+        if occurrence == plan["targetOccurrenceId"]:
+            if (previous["seq"] < check["seq"] and
+                    (previous.get("node"), previous.get("actorEpochOrdinal")) ==
+                    (check.get("node"), check.get("actorEpochOrdinal"))):
+                return path
+            return None
+        for edge, export, attach in adjacency.get(occurrence, []):
+            next_occurrence = edge["consumerOccurrenceId"]
+            if (next_occurrence in seen or export["seq"] <= previous["seq"] or
+                    (previous.get("node"), previous.get("actorEpochOrdinal")) !=
+                    (export.get("node"), export.get("actorEpochOrdinal"))):
+                continue
+            item = {"type": "WIRE", "sessionId": session,
+                    "producerOccurrenceId": occurrence,
+                    "consumerOccurrenceId": next_occurrence,
+                    "producerEndpointId": edge["evidence"]["producerEndpointId"],
+                    "consumerEndpointId": edge["evidence"]["consumerEndpointId"],
+                    "pairedBy": edge["evidence"].get("pairedBy"),
+                    "correlationId": edge["evidence"].get("correlationId"),
+                    "producerNode": export["node"],
+                    "producerActorEpochOrdinal": export["actorEpochOrdinal"],
+                    "consumerNode": attach["node"],
+                    "consumerActorEpochOrdinal": attach["actorEpochOrdinal"],
+                    "exportSeq": export["seq"], "attachSeq": attach["seq"],
+                    "exportNativeVmEventId": export["nativeVmEventId"],
+                    "attachNativeVmEventId": attach["nativeVmEventId"]}
+            found = walk(next_occurrence, attach, seen | {next_occurrence},
+                         path + [item])
+            if found is not None:
+                return found
+        return None
+
+    return walk(fault["occurrenceId"], fault, {fault["occurrenceId"]}, [])
 
 
 def _temporal_target(rows: list[dict[str, Any]], summary: dict[str, Any],
                      target_site: str) -> tuple[bool, str, dict[str, Any] | None]:
-    """Prove the final fault precedes a reached check in one exact occurrence.
+    """Prove the final fault precedes a reached check in its causal closure.
 
     The fault receipt sequence and native TargetRow VM event ID are different
-    clocks.  Only FAULT_APPLIED and TARGET_CHECK in this receipt stream can be
-    compared.  A member of another occurrence's closure has no demonstrated
-    fault-to-edge ordering, even when the closure contains an observed edge.
+    clocks. Receipt order is compared only within an exact actor. A directed
+    cross-occurrence WIRE path also needs paired original endpoints and
+    locally ordered endpoint receipts at each hop.
     """
     applied = [row for row in rows if row["kind"] == "FAULT_APPLIED"]
     if not applied:
@@ -359,27 +467,37 @@ def _temporal_target(rows: list[dict[str, Any]], summary: dict[str, Any],
         inside = True
         if fault_occurrence != target_occurrence:
             cross_occurrence = True
-            continue
         reached = any(row.get("occurrenceId") == target_occurrence and
                       row.get("siteId") == target_site and
                       row.get("reachedAnchor") is True
                       for row in one["targetRows"])
-        if not reached or fault.get("node") != one.get("targetNodeName"):
+        if not reached:
             continue
         for check in rows:
             if (check["kind"] != "TARGET_CHECK" or
                     check.get("targetAnchorSiteId") != target_site or
                     check.get("occurrenceId") != target_occurrence or
-                    check.get("node") != fault.get("node") or
+                    check.get("node") != one.get("targetNodeName") or
                     not isinstance(check.get("actorEpochOrdinal"), int) or
                     isinstance(check["actorEpochOrdinal"], bool) or
                     check["actorEpochOrdinal"] < 0 or
-                    check.get("actorEpochOrdinal") !=
-                    fault.get("actorEpochOrdinal") or
                     not isinstance(check.get("siteId"), str) or
                     not check["siteId"] or
                     not (target_site == check["siteId"] or
                          target_site.startswith(check["siteId"] + "#"))):
+                continue
+            if fault_occurrence != target_occurrence:
+                path = _wire_path(fault, check, one, rows)
+                if path is not None:
+                    return True, "wire_path_before_check", {
+                        "faultSeq": fault["seq"], "checkSeq": check["seq"],
+                        "targetOccurrenceId": target_occurrence,
+                        "targetAnchorSiteId": target_site, "wirePath": path,
+                    }
+                continue
+            if (fault.get("node") != check.get("node") or
+                    fault.get("actorEpochOrdinal") !=
+                    check.get("actorEpochOrdinal")):
                 continue
             saw_same_check = True
             if check["seq"] > fault["seq"]:
@@ -398,12 +516,17 @@ def _temporal_target(rows: list[dict[str, Any]], summary: dict[str, Any],
 
 
 def _doors(rows: list[dict[str, Any]], summary: dict[str, Any],
-           after_seq: int | None = None) -> list[dict[str, Any]]:
+           after_fault: dict[str, Any] | None = None) -> list[dict[str, Any]]:
     closure = {item["occurrenceId"] for item in summary["closureMembers"]}
     found = []
     for row in rows:
-        if row["kind"] != "FAULT_DOOR" or (after_seq is not None and
-                                             row["seq"] <= after_seq):
+        if row["kind"] != "FAULT_DOOR":
+            continue
+        if (after_fault is not None and
+                (row.get("node"), row.get("actorEpochOrdinal")) ==
+                (after_fault.get("node"),
+                 after_fault.get("actorEpochOrdinal")) and
+                row["seq"] <= after_fault["seq"]):
             continue
         try:
             identity = _fault_identity(row, applied=True)
@@ -476,6 +599,11 @@ def _novelty(state: dict[str, Any], feedback: dict[str, Any]) -> int:
     return min(60, score)
 
 
+def _trial_jvm_args(runner: dict[str, Any], workdir: Path) -> list[str]:
+    return [arg.replace("{trial_workdir}", str(workdir))
+            for arg in runner.get("jvm_args", [])]
+
+
 def _execute_junit(config: dict[str, Any], admitted: dict[str, Any],
                    trial: Path, faults: list[dict[str, Any]]) -> dict[str, Any]:
     """Run the same unchanged JUnit method in a fresh Zero VM."""
@@ -485,6 +613,9 @@ def _execute_junit(config: dict[str, Any], admitted: dict[str, Any],
     _atomic(iteration / "fault-plan.json", {"faults": faults})
     weave = admitted["weave_config"]
     runner = config["runner"]
+    # JUnit cluster data directories must be fresh for every replay. The
+    # caller can opt into this path in JVM properties without changing tests.
+    jvm_args = _trial_jvm_args(runner, workdir)
     cp = os.pathsep.join((
         str(Path(weave["output_classes"]).resolve(strict=True)),
         *(str(Path(item).resolve(strict=True)) for item in runner["classpath"]),
@@ -494,7 +625,7 @@ def _execute_junit(config: dict[str, Any], admitted: dict[str, Any],
             f"-Dcausynth.concolic.task.plan={Path(weave['task_plan']).resolve(strict=True)}",
             f"-Dcausynth.concolic.task.id={weave['task_id']}",
             f"-Dcausynth.concolic.results={iteration / 'vm-result.json'}",
-            *runner.get("jvm_args", []), "-cp", cp, runner["main_class"],
+            *jvm_args, "-cp", cp, runner["main_class"],
             config["junit"]["class"], config["junit"]["method"]]
     env = os.environ.copy()
     env.update({"CAUSYNTH_STATIC_SCOPE_MAP": str(Path(config["recording"][
@@ -596,14 +727,15 @@ def _run_trial(config: dict[str, Any], admitted: dict[str, Any],
                         else:
                             result["native_delta"] = feedback
                     if result.get("status") != "target_lost":
-                        result["eligible_doors"] = _doors(events, summary, last_fault)
+                        applied = [row for row in events if row["kind"] ==
+                                   "FAULT_APPLIED"]
+                        result["eligible_doors"] = _doors(
+                            events, summary, applied[-1] if applied else None)
                         thrown = _exact_throws(events, summary,
                                                config["target_throw"], last_fault)
                         result["target_exception_triggered"] = bool(thrown)
                         result["target_throw_rows"] = thrown
                         if faults:
-                            applied = [row for row in events if row["kind"] ==
-                                       "FAULT_APPLIED"]
                             closure = {row["occurrenceId"] for row in summary[
                                 "closureMembers"]}
                             result["fault_in_target_closure"] = bool(
@@ -617,8 +749,18 @@ def _run_trial(config: dict[str, Any], admitted: dict[str, Any],
                             "target_temporal_evidence"] and any(
                                 row["occurrenceId"] == result[
                                     "target_temporal_evidence"]["targetOccurrenceId"]
-                                and row["seq"] > result[
-                                    "target_temporal_evidence"]["checkSeq"]
+                                and any(
+                                    check["kind"] == "TARGET_CHECK" and
+                                    check.get("occurrenceId") == row["occurrenceId"] and
+                                    check.get("targetAnchorSiteId") == config[
+                                        "target_site"] and
+                                    check["seq"] == result[
+                                        "target_temporal_evidence"]["checkSeq"] and
+                                    check.get("node") == row.get("node") and
+                                    check.get("actorEpochOrdinal") == row.get(
+                                        "actorEpochOrdinal") and
+                                    row["seq"] > check["seq"]
+                                    for check in events)
                                 for row in thrown))
                         if faults and not result["target_temporal_admitted"]:
                             result["status"] = (

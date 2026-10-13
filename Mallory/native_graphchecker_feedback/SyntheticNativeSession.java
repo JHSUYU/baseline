@@ -40,6 +40,8 @@ public final class SyntheticNativeSession {
         boolean secondTargetUnreached = Arrays.asList(args).contains(
                 "--second-target-unreached");
         boolean targetUnreached = Arrays.asList(args).contains("--unreached-target");
+        boolean directTargetWire = Arrays.asList(args).contains(
+                "--direct-target-wire");
         SessionDir dir = SessionDir.of(iteration, "seed").create();
         OccurrenceAddress sender = OccurrenceAddress.of(NodeId.of("nn", 0),
                 "R.sender", CausalContext.of(Role.of("SERVER"), "send", 1),
@@ -55,6 +57,8 @@ public final class SyntheticNativeSession {
                 "R.target", CausalContext.of(Role.of("SERVER"), "check", 1),
                 ExecutionIndex.empty());
         Endpoint in = Endpoint.of(writer, "RPC.PORT", ExecutionIndex.empty(), 0);
+        Endpoint directIn = Endpoint.of(target, "RPC.DIRECT",
+                ExecutionIndex.empty(), 0);
         Endpoint stateOut = Endpoint.of(writer, "STATE.write",
                 ExecutionIndex.empty(), 0);
         Endpoint stateIn = Endpoint.of(target, "STATE.read",
@@ -74,10 +78,15 @@ public final class SyntheticNativeSession {
         RowCodec.writeAll(dir.exports(), Collections.singletonList(
                 ExportRow.of("seed", 1L, out, "value-1", "I", 11L, "1")),
                 RowCodec::writeExport);
-        RowCodec.writeAll(dir.attaches(), Collections.singletonList(
-                AttachRow.of("seed", 2L, in, "M_HANDOFF", "I", "1", false,
-                        null, out, "rpc-1", AttachRow.HANDLE)),
-                RowCodec::writeAttach);
+        java.util.List<AttachRow> attaches = new java.util.ArrayList<>(
+                Collections.singletonList(AttachRow.of("seed", 2L, in,
+                        "M_HANDOFF", "I", "1", false, null, out, "rpc-1",
+                        AttachRow.HANDLE)));
+        if (directTargetWire) {
+            attaches.add(AttachRow.of("seed", 6L, directIn, "M_DIRECT", "I",
+                    "1", false, null, out, "rpc-direct", AttachRow.HANDLE));
+        }
+        RowCodec.writeAll(dir.attaches(), attaches, RowCodec::writeAttach);
         RowCodec.writeAll(dir.writes(), Collections.singletonList(
                 WriteRow.of("seed", 3L, stateOut, location, 5L,
                         "expr-handoff", "I")), RowCodec::writeWrite);

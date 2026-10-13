@@ -17,6 +17,114 @@ from Mallory.native_graphchecker_feedback.feedback import (
 from Mallory.native_graphchecker_campaign import campaign as core
 
 
+class WireTemporalProofTest(unittest.TestCase):
+    """Two exact actors; VM event IDs and receipt order are separate clocks."""
+
+    def setUp(self) -> None:
+        self.target = "Keys#check#u3#1"
+        self.summary = {"perTargetOccurrences": [{
+            "sessionId": "seed", "targetOccurrenceId": "target-occ",
+            "targetNodeName": "dn", "targetRows": [{
+                "occurrenceId": "target-occ", "siteId": self.target,
+                "reachedAnchor": True}],
+            "closureMembers": [
+                {"occurrenceId": "source-occ", "node": "nn#epoch0"},
+                {"occurrenceId": "target-occ", "node": "dn#epoch0"}],
+            "observedEdgesWithinClosure": [{
+                "type": "WIRE", "producerOccurrenceId": "source-occ",
+                "consumerOccurrenceId": "target-occ", "evidence": {
+                    "producerEndpointId": "producer-exact",
+                    "consumerEndpointId": "consumer-exact",
+                    "exportSeq": 71, "attachSeq": 4}}]}]}
+        self.events = [
+            {"kind": "FAULT_APPLIED", "seq": 8,
+             "occurrenceId": "source-occ", "node": "nn",
+             "actorEpochOrdinal": 0},
+            {"kind": "ENDPOINT_EXPORT", "seq": 9,
+             "sessionId": "seed", "endpointId": "producer-exact",
+             "nativeVmEventId": 71, "occurrenceId": "source-occ",
+             "node": "nn", "actorEpochOrdinal": 0},
+            {"kind": "ENDPOINT_ATTACH", "seq": 2,
+             "sessionId": "seed", "endpointId": "consumer-exact",
+             "producerEndpointId": "producer-exact", "nativeVmEventId": 4,
+             "occurrenceId": "target-occ", "node": "dn",
+             "actorEpochOrdinal": 0},
+            {"kind": "TARGET_CHECK", "seq": 3,
+             "siteId": "Keys#check#u3", "targetAnchorSiteId": self.target,
+             "occurrenceId": "target-occ", "node": "dn",
+             "actorEpochOrdinal": 0},
+        ]
+
+    def test_trial_jvm_args_use_fresh_workdir(self) -> None:
+        args = core._trial_jvm_args({"jvm_args": [
+            "-Djava.io.tmpdir={trial_workdir}",
+            "-Dbuild.test.dir={trial_workdir}", "-Xmx1g"]},
+            Path("/tmp/native-r0001/workdir"))
+        self.assertEqual([
+            "-Djava.io.tmpdir=/tmp/native-r0001/workdir",
+            "-Dbuild.test.dir=/tmp/native-r0001/workdir", "-Xmx1g"], args)
+
+    def test_receipt_parser_checks_each_actor_clock_separately(self) -> None:
+        with tempfile.TemporaryDirectory() as root:
+            path = Path(root) / "events.jsonl"
+            path.write_text("".join(json.dumps(row) + "\n"
+                                    for row in self.events))
+            self.assertEqual(self.events, core._rows(path))
+            duplicate = [dict(row) for row in self.events]
+            duplicate[1]["seq"] = duplicate[0]["seq"]
+            path.write_text("".join(json.dumps(row) + "\n"
+                                    for row in duplicate))
+            with self.assertRaisesRegex(ValueError, "nonmonotone"):
+                core._rows(path)
+
+    def test_queue_door_filter_does_not_compare_actor_clocks(self) -> None:
+        door = {"kind": "FAULT_DOOR", "seq": 1,
+                "siteId": "RPC#dn", "node": "dn", "actorEpochOrdinal": 0,
+                "occurrenceId": "target-occ", "ordinal": 1,
+                "exceptionClass": "java.io.IOException"}
+        summary = {"closureMembers": self.summary["perTargetOccurrences"][0][
+            "closureMembers"]}
+        self.assertEqual(1, len(core._doors([door], summary, self.events[0])))
+
+    def test_directed_wire_path_admits_with_local_actor_order(self) -> None:
+        admitted, reason, proof = core._temporal_target(
+            self.events, self.summary, self.target)
+        self.assertTrue(admitted)
+        self.assertEqual("wire_path_before_check", reason)
+        self.assertEqual("producer-exact", proof["wirePath"][0][
+            "producerEndpointId"])
+        self.assertEqual("consumer-exact", proof["wirePath"][0][
+            "consumerEndpointId"])
+        # The consumer's local seq is lower than the producer's local seq.
+        self.assertLess(proof["wirePath"][0]["attachSeq"], proof["faultSeq"])
+
+    def test_reversed_local_order_refuses(self) -> None:
+        for index, sequence in ((1, 7), (2, 3), (3, 2)):
+            with self.subTest(index=index):
+                events = [dict(row) for row in self.events]
+                events[index]["seq"] = sequence
+                admitted, reason, proof = core._temporal_target(
+                    events, self.summary, self.target)
+                self.assertFalse(admitted)
+                self.assertEqual("cross_occurrence_order_unproved", reason)
+                self.assertIsNone(proof)
+
+    def test_mismatched_original_endpoint_or_actor_refuses(self) -> None:
+        for index, key, value in ((1, "endpointId", "other-export"),
+                                  (2, "nativeVmEventId", 5),
+                                  (2, "producerEndpointId", "other-producer"),
+                                  (2, "sessionId", "other-session"),
+                                  (2, "node", "nn")):
+            with self.subTest(index=index, field=key):
+                events = [dict(row) for row in self.events]
+                events[index][key] = value
+                admitted, reason, proof = core._temporal_target(
+                    events, self.summary, self.target)
+                self.assertFalse(admitted)
+                self.assertEqual("cross_occurrence_order_unproved", reason)
+                self.assertIsNone(proof)
+
+
 class NativeCampaignFixtureTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
@@ -65,11 +173,13 @@ class NativeCampaignFixtureTest(unittest.TestCase):
                          "zero_vm_sha256": "fixture-zero",
                          "runner_classpath_artifacts": []}
 
-    def _generate(self, iteration: Path, *, mixed_target: bool = False) -> None:
+    def _generate(self, iteration: Path, *, mixed_target: bool = False,
+                  direct_wire: bool = False) -> None:
         subprocess.run(["java", "-cp", self.classpath,
                         "edu.uva.liftlab.mallory.nativefeedback.SyntheticNativeSession",
                         str(iteration), *(["--second-target-unreached"]
-                                         if mixed_target else [])],
+                                         if mixed_target else []),
+                        *(["--direct-target-wire"] if direct_wire else [])],
                        check=True, timeout=30, capture_output=True)
 
     def _executor(self, *, emit_door: bool, applied_identity: str | None = None,
@@ -119,13 +229,76 @@ class NativeCampaignFixtureTest(unittest.TestCase):
                                      else 3,
                                      "siteId": "Keys#throw#u4",
                                      "exceptionClass": "java.io.IOException",
-                                     "occurrenceId": target})
+                                     "occurrenceId": target, "node": target_node,
+                                     "actorEpochOrdinal": 0})
                 else:
                     rows.append(door)
                     if not omit_check:
                         rows.append(check)
                 (iteration / "fault-events.jsonl").write_text(
                     "".join(json.dumps(row) + "\n" for row in rows))
+            return {"return_code": 0, "timed_out": False,
+                    "elapsed_seconds": 0.01}
+        return execute
+
+    def _wire_executor(self, *, reversed_attach: bool = False):
+        def execute(config, admitted, trial, faults):
+            iteration = trial / "iteration-native"
+            self._generate(iteration, direct_wire=True)
+            summary = summarize_target_set(
+                iteration, config["target_site"], trial / "peek.json",
+                static_scope_map=self.seed / "static_scope_map.jsonl",
+                engine_jar=core.JAR)
+            one = summary["perTargetOccurrences"][0]
+            target = one["targetOccurrenceId"]
+            edge = next(item for item in one["observedEdgesWithinClosure"]
+                        if item["type"] == "WIRE" and
+                        item["consumerOccurrenceId"] == target and
+                        item["producerOccurrenceId"] != target)
+            source = edge["producerOccurrenceId"]
+            evidence = edge["evidence"]
+            door = {"kind": "FAULT_DOOR", "seq": 1,
+                    "siteId": "RPC#getKeys", "node": "nn",
+                    "actorEpochOrdinal": 0, "occurrenceId": source,
+                    "ordinal": 1, "exceptionClass": "java.io.IOException"}
+            check = {"kind": "TARGET_CHECK", "seq": 5,
+                     "siteId": "Keys#check#u3",
+                     "targetAnchorSiteId": config["target_site"],
+                     "node": "dn", "actorEpochOrdinal": 0,
+                     "occurrenceId": target}
+            rows = [door]
+            if faults:
+                rows.extend([
+                    {**door, "kind": "FAULT_APPLIED", "seq": 2},
+                    {"kind": "ENDPOINT_EXPORT", "seq": 3,
+                     "sessionId": one["sessionId"],
+                     "endpointId": evidence["producerEndpointId"],
+                     "nativeVmEventId": evidence["exportSeq"],
+                     "node": "nn", "actorEpochOrdinal": 0,
+                     "occurrenceId": source},
+                ])
+                if reversed_attach:
+                    rows.append(check)
+                rows.append({"kind": "ENDPOINT_ATTACH",
+                             "seq": 6 if reversed_attach else 4,
+                             "sessionId": one["sessionId"],
+                             "endpointId": evidence["consumerEndpointId"],
+                             "producerEndpointId": evidence["producerEndpointId"],
+                             "nativeVmEventId": evidence["attachSeq"],
+                             "node": "dn", "actorEpochOrdinal": 0,
+                             "occurrenceId": target})
+                if not reversed_attach:
+                    rows.append(check)
+                rows.append({"kind": "TARGET_THROW",
+                             "seq": 7 if reversed_attach else 6,
+                             "siteId": config["target_throw"]["siteId"],
+                             "exceptionClass": "java.io.IOException",
+                             "node": "dn", "actorEpochOrdinal": 0,
+                             "occurrenceId": target})
+            else:
+                rows.append({**check, "seq": 2})
+            (iteration / "fault-events.jsonl").write_text(
+                "".join(json.dumps(row) + "\n" for row in rows))
             return {"return_code": 0, "timed_out": False,
                     "elapsed_seconds": 0.01}
         return execute
@@ -190,6 +363,22 @@ class NativeCampaignFixtureTest(unittest.TestCase):
         self.assertEqual("cross_occurrence_order_unproved",
                          faulted["target_temporal_reason"])
         self.assertEqual("needs_causal_review", faulted["status"])
+
+    def test_original_wire_edge_admits_two_actor_candidate(self) -> None:
+        self._run(self._wire_executor())
+        result = core._load(self.root / "campaign/trials/r0001/result.json")
+        self.assertEqual("candidate", result["status"])
+        self.assertTrue(result["target_temporal_admitted"])
+        self.assertEqual("wire_path_before_check", result["target_temporal_reason"])
+        self.assertEqual(1, len(result["target_temporal_evidence"]["wirePath"]))
+
+    def test_original_wire_edge_rejects_post_check_attach(self) -> None:
+        self._run(self._wire_executor(reversed_attach=True))
+        result = core._load(self.root / "campaign/trials/r0001/result.json")
+        self.assertFalse(result["target_temporal_admitted"])
+        self.assertEqual("cross_occurrence_order_unproved",
+                         result["target_temporal_reason"])
+        self.assertEqual("needs_causal_review", result["status"])
 
     def test_missing_target_check_receipt_fails_closed(self) -> None:
         self._run(self._executor(emit_door=True, throw=True,

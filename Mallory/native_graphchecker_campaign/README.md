@@ -78,6 +78,9 @@ the following shape (paths are absolute in an actual campaign):
 `recording.target_occurrence` is optional only when the original recorder and
 scheduler can select the recorded occurrence without ambiguity. The selected
 task ID comes from the pinned weave configuration, never from a refusal log.
+In `runner.jvm_args`, `{trial_workdir}` expands to that trial's fresh work
+directory, for example with `-Djava.io.tmpdir={trial_workdir}` and
+`-Dbuild.test.dir={trial_workdir}` for JUnit cluster data.
 
 The fault adapter is a separate contract. It reads `MALLORY_NATIVE_FAULT_PLAN`
 and writes monotone JSONL events to `MALLORY_NATIVE_FAULT_EVENTS`. A plan item
@@ -93,14 +96,16 @@ or GraphChecker `observedFatal` flag is not a target exception. The driver
 requires the entire planned fault sequence to match applied receipts in
 order and the native target to remain reached. To label a trial `candidate`,
 the last applied fault must precede an exact `TARGET_CHECK` receipt for a
-reached target in the same occurrence and actor epoch, and that occurrence
-must later produce the exact `TARGET_THROW`. All three receipts use one
-monotone event stream. A fault in a different occurrence of the target's
-closure needs separate causal and endpoint-order proof; closure membership
-alone is not enough. Observed WIRE and STATE edges identify their endpoints,
-but their native VM event IDs cannot currently order a fault receipt against
-the producer endpoint. Such trials remain `needs_causal_review`. The native
-target row's VM event ID is not compared with the fault receipt sequence.
+reached target in the same occurrence and actor epoch, or have a directed
+path of original GraphChecker WIRE edges to the target. Each WIRE hop requires
+accepted `ENDPOINT_EXPORT` and `ENDPOINT_ATTACH` receipts whose session,
+endpoint, occurrence, actor, and VM event IDs match the original rows. The
+fault precedes the export on its actor; each attach precedes the next export
+or target check on that actor. The exact `TARGET_THROW` follows the check on
+the target actor. Temporal admission compares receipt sequences only within
+one actor, never across processes. Closure membership, an unpaired endpoint, or an observed
+STATE edge alone cannot prove this order; those trials remain
+`needs_causal_review`.
 
 ## Checkpoints and status
 
