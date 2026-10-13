@@ -20,6 +20,15 @@ the `force` argument. Requests and responses pair by the actual Hadoop
 `clientId`, `callId`, and `retryCount`. No edge is inferred from timing or a
 socket address.
 
+For QJM mini clusters, the same adapter registers all `MiniJournalCluster`
+JournalNodes after successful startup and their underlying Hadoop IPC servers
+as source aliases. `restartJournalNode(i)` advances `jn{i}` to a new epoch.
+Every `IPCLoggerChannel` submission to its single-thread or parallel
+`ListeningExecutorService` carries the submitting request scope into the
+worker; the ordinary IPC hook then exports requests only after transport
+handoff and attaches them at the exact JournalNode server. These are generic
+QJM and IPC boundaries, independent of a target check or selected fault site.
+
 The original Hadoop IPC path has two stages. `Client$Connection.sendRpcRequest`
 offers a `Pair<Call,ResponseBuffer>` to a `SynchronousQueue`, then
 `RpcRequestSender` dequeues the pair and calls `IpcStreams.sendRequest`.
@@ -46,7 +55,8 @@ Mallory/adapters/hdfs/graphchecker_port/install.sh \
 ```
 
 The output path must not exist. `JAVASSIST_JAR`, `ASM_JAR`, and
-`COMMONS_LANG_JAR` can override the script's Maven-cache defaults. The
+`COMMONS_LANG_JAR` and `HADOOP_GUAVA_JAR` can override the script's
+Maven-cache defaults. The
 overlay contains patched Hadoop classes, the bridge, and a SHA-256 manifest.
 Put the overlay **before** the original Hadoop jars/classes in the workload
 JVM's classpath; otherwise the JVM will load unpatched classes. The selected
@@ -88,6 +98,27 @@ Mallory/adapters/hdfs/graphchecker_port/check_restart_junit.sh \
   /path/to/hadoop-3.4.3 \
   /tmp/mallory-hdfs-restart-trace.jsonl
 ```
+
+For JournalNode registration, request/response identity, and restart epochs,
+run two unmodified QJM JUnit methods with the same overlay:
+
+```bash
+Mallory/adapters/hdfs/graphchecker_port/check_qjm_junit.sh \
+  /tmp/mallory-hdfs-graph-overlay \
+  Mallory/graphchecker-runtime/target/mallory-graphchecker-runtime-1.0-SNAPSHOT.jar \
+  /users/ZhenyuLi/.mallory-worktrees/hdfs \
+  /tmp/mallory-hdfs-qjm-proof
+```
+
+The check requires every request and response `ATTACH` to have an earlier
+`EXPORT` with the same transported Hadoop IPC correlation and attempt, and
+requires all three JournalNode identities before and after restart. In the
+focused 2026-10-13 run, both original methods passed. `testSingleWriter`
+had 36 exact request attachments, 36 response attachments, and zero gaps;
+`testSelectViaRpcAfterJNRestart` had 42 of each, including `jn0` through
+`jn2` at both epoch 0 and epoch 1, and zero gaps. This is a protocol-only
+healthy gate; a candidate check still needs its generated static scope,
+weave, target reach, and fault trials.
 
 For this workspace, `/path/to/hadoop-3.4.3` is
 `/users/ZhenyuLi/.mallory-worktrees/hdfs`. Both scripts use the existing

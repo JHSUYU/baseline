@@ -26,8 +26,9 @@ javassist_jar=${JAVASSIST_JAR:-$HOME/.m2/repository/org/javassist/javassist/3.25
 asm_jar=${ASM_JAR:-$HOME/.m2/repository/org/ow2/asm/asm/9.8/asm-9.8.jar}
 commons_lang_jar=${COMMONS_LANG_JAR:-$HOME/.m2/repository/org/apache/commons/commons-lang3/3.9/commons-lang3-3.9.jar}
 hadoop_protobuf_jar=${HADOOP_PROTOBUF_JAR:-$HOME/.m2/repository/org/apache/hadoop/thirdparty/hadoop-shaded-protobuf_3_25/1.5.0/hadoop-shaded-protobuf_3_25-1.5.0.jar}
+hadoop_guava_jar=${HADOOP_GUAVA_JAR:-$HOME/.m2/repository/org/apache/hadoop/thirdparty/hadoop-shaded-guava/1.5.0/hadoop-shaded-guava-1.5.0.jar}
 junit_jar=${JUNIT_JAR:-$HOME/.m2/repository/junit/junit/4.13.2/junit-4.13.2.jar}
-for archive in "$javassist_jar" "$asm_jar" "$commons_lang_jar" "$hadoop_protobuf_jar" "$junit_jar"; do
+for archive in "$javassist_jar" "$asm_jar" "$commons_lang_jar" "$hadoop_protobuf_jar" "$hadoop_guava_jar" "$junit_jar"; do
   [[ -f $archive ]] || { echo "missing build dependency: $archive" >&2; exit 2; }
 done
 
@@ -46,7 +47,7 @@ source_paths=(
   "$port_dir/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/graphchecker/Reframe.java"
   "$port_dir/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/graphchecker/RunOriginalJUnit.java"
 )
-compile_cp="$runtime_jar:$common_jar:$hdfs_jar:$hdfs_tests_jar:$javassist_jar:$asm_jar:$commons_lang_jar:$hadoop_protobuf_jar:$junit_jar"
+compile_cp="$runtime_jar:$common_jar:$hdfs_jar:$hdfs_tests_jar:$javassist_jar:$asm_jar:$commons_lang_jar:$hadoop_protobuf_jar:$hadoop_guava_jar:$junit_jar"
 "$java_home/bin/javac" -source 8 -target 8 -cp "$compile_cp" -d "$tools_dir" "${source_paths[@]}"
 cp -a "$tools_dir/org" "$classes_dir/"
 mkdir -p "$classes_dir/edu/uva/liftlab/mallory/adapters/hdfs/graphchecker"
@@ -60,6 +61,9 @@ patch_cp="$tools_dir:$compile_cp"
 
 for class_file in \
   'org/apache/hadoop/hdfs/MiniDFSCluster.class' \
+  'org/apache/hadoop/hdfs/qjournal/MiniJournalCluster.class' \
+  'org/apache/hadoop/hdfs/qjournal/MiniJournalCluster$Builder.class' \
+  'org/apache/hadoop/hdfs/qjournal/client/IPCLoggerChannel.class' \
   'org/apache/hadoop/hdfs/server/datanode/DataNode.class' \
   'org/apache/hadoop/hdfs/server/datanode/BPServiceActor.class' \
   'org/apache/hadoop/hdfs/tools/DFSAdmin.class' \
@@ -86,9 +90,9 @@ done
 
 {
   echo 'Mallory HDFS GraphChecker IPC overlay v1'
-  echo 'Original JUnit selector: org.apache.hadoop.hdfs.server.datanode.TestDeleteBlockPool#testDfsAdminDeleteBlockPool'
+  echo 'Generic MiniDFSCluster and MiniJournalCluster source and Hadoop IPC hooks'
   sha256sum "$runtime_jar" "$common_jar" "$hdfs_jar" "$hdfs_tests_jar" \
-    "$javassist_jar" "$asm_jar" "$commons_lang_jar" "$hadoop_protobuf_jar" "$junit_jar"
+    "$javassist_jar" "$asm_jar" "$commons_lang_jar" "$hadoop_protobuf_jar" "$hadoop_guava_jar" "$junit_jar"
   (cd "$classes_dir" && find . -type f -name '*.class' -print0 \
     | sort -z | xargs -0 sha256sum)
 } > "$classes_dir/MALLORY_HDFS_GRAPH_PORT_MANIFEST.sha256"

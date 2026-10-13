@@ -83,6 +83,57 @@ public final class PatchEmbeddedIpc {
     cluster.writeFile(args[0]);
     cluster.detach();
 
+    CtClass journalBuilder = pool.get(
+        "org.apache.hadoop.hdfs.qjournal.MiniJournalCluster$Builder");
+    journalBuilder.getDeclaredMethod("build", new CtClass[0])
+        .insertAfter("if ($_ != null) " + BRIDGE
+            + ".registerJournalCluster($_);");
+    journalBuilder.writeFile(args[0]);
+    journalBuilder.detach();
+
+    CtClass journalCluster = pool.get(
+        "org.apache.hadoop.hdfs.qjournal.MiniJournalCluster");
+    journalCluster.getDeclaredMethod("start", new CtClass[0])
+        .insertAfter(BRIDGE + ".registerJournalCluster(this);");
+    journalCluster.getDeclaredMethod("restartJournalNode",
+        new CtClass[] {CtClass.intType})
+        .insertAfter(BRIDGE + ".registerJournalRestart(this, $1);");
+    journalCluster.writeFile(args[0]);
+    journalCluster.detach();
+
+    CtClass loggerChannel = pool.get(
+        "org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel");
+    final int[] submittedCallables = {0};
+    final int[] submittedRunnables = {0};
+    for (CtMethod method : loggerChannel.getDeclaredMethods()) {
+      method.instrument(new ExprEditor() {
+        @Override public void edit(MethodCall call) throws CannotCompileException {
+          if (!call.getClassName().equals(
+                  "org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListeningExecutorService")
+              || !call.getMethodName().equals("submit")) return;
+          String signature = call.getSignature();
+          if (signature.startsWith("(Ljava/util/concurrent/Callable;)")) {
+            call.replace("{ $_ = $proceed(" + BRIDGE
+                + ".wrapJournalCallable($1)); }");
+            submittedCallables[0]++;
+          } else if (signature.startsWith("(Ljava/lang/Runnable;)")) {
+            call.replace("{ $_ = $proceed(" + BRIDGE
+                + ".wrapJournalRunnable($1)); }");
+            submittedRunnables[0]++;
+          } else {
+            throw new CannotCompileException(
+                "unsupported IPCLoggerChannel executor submit " + signature);
+          }
+        }
+      });
+    }
+    if (submittedCallables[0] == 0 || submittedRunnables[0] == 0) {
+      throw new IllegalStateException("QJM executor handoff changed: callable="
+          + submittedCallables[0] + ", runnable=" + submittedRunnables[0]);
+    }
+    loggerChannel.writeFile(args[0]);
+    loggerChannel.detach();
+
     CtClass dataNode = pool.get(
         "org.apache.hadoop.hdfs.server.datanode.DataNode");
     CtMethod startDataNode = dataNode.getDeclaredMethod("startDataNode");

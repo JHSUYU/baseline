@@ -12,6 +12,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -46,6 +47,8 @@ public final class MalloryEmbeddedIpcBridge {
       Collections.synchronizedMap(new IdentityHashMap<Object, Boolean>());
   private static final Map<Object, String> NODE_IDS =
       Collections.synchronizedMap(new IdentityHashMap<Object, String>());
+  private static final Map<Object, Object> JOURNAL_IPC_SERVERS =
+      Collections.synchronizedMap(new IdentityHashMap<Object, Object>());
   private static final ConcurrentHashMap<String, Object> ACTORS =
       new ConcurrentHashMap<String, Object>();
   private static final ConcurrentHashMap<String, Long> EPOCHS =
@@ -85,6 +88,56 @@ public final class MalloryEmbeddedIpcBridge {
     } catch (ReflectiveOperationException failure) {
       throw new IllegalStateException("MiniDFSCluster source registration failed", failure);
     }
+  }
+
+  /** Bind every embedded JournalNode to the Hadoop IPC server that serves it. */
+  public static void registerJournalCluster(Object cluster) {
+    try {
+      int count = ((Number) invoke(cluster, "getNumNodes")).intValue();
+      for (int index = 0; index < count; index++) {
+        Object node = invoke(cluster, "getJournalNode", int.class, index);
+        if (node != null) registerJournalNodeAt(node, index, false);
+      }
+    } catch (ReflectiveOperationException failure) {
+      throw new IllegalStateException("MiniJournalCluster source registration failed", failure);
+    }
+  }
+
+  /** Called after restartJournalNode succeeds, including a same-object restart. */
+  public static void registerJournalRestart(Object cluster, int index) {
+    try {
+      Object node = invoke(cluster, "getJournalNode", int.class, index);
+      if (node == null) throw new IllegalStateException("restarted JournalNode is null");
+      registerJournalNodeAt(node, index, true);
+    } catch (ReflectiveOperationException failure) {
+      throw new IllegalStateException("JournalNode restart registration failed", failure);
+    }
+  }
+
+  /** Carry the submitting request across QJM's per-JournalNode executor. */
+  public static <T> Callable<T> wrapJournalCallable(final Callable<T> task) {
+    final Object scope = MessageDoors.captureScope();
+    return new Callable<T>() {
+      @Override public T call() throws Exception {
+        long carried = MessageDoors.enterCarriedScope(scope, "CLIENT",
+            "IPCLoggerChannel.submit(Callable)");
+        try { return task.call(); }
+        finally { MessageDoors.exitCarriedScope(carried); }
+      }
+    };
+  }
+
+  /** Also carry the scope through QJM's Runnable executor handoffs. */
+  public static Runnable wrapJournalRunnable(final Runnable task) {
+    final Object scope = MessageDoors.captureScope();
+    return new Runnable() {
+      @Override public void run() {
+        long carried = MessageDoors.enterCarriedScope(scope, "CLIENT",
+            "IPCLoggerChannel.submit(Runnable)");
+        try { task.run(); }
+        finally { MessageDoors.exitCarriedScope(carried); }
+      }
+    };
   }
 
   /** Run immediately after NameNode.createNameNode returns, before DNs start. */
@@ -207,6 +260,36 @@ public final class MalloryEmbeddedIpcBridge {
     for (String member : new String[] {
         "clientRpcServer", "serviceRpcServer", "lifelineRpcServer"}) {
       alias(field(rpc, member), node);
+    }
+  }
+
+  private static void registerJournalNodeAt(Object node, int index,
+                                            boolean explicitRestart)
+      throws ReflectiveOperationException {
+    Object rpc = invoke(node, "getRpcServer");
+    Object server = field(rpc, "server");
+    if (rpc == null || server == null) {
+      throw new IllegalStateException("JournalNode has no live IPC server");
+    }
+    String id = "jn" + index;
+    synchronized (REGISTERED) {
+      String previousId = NODE_IDS.get(node);
+      if (previousId != null && !previousId.equals(id)) {
+        throw new IllegalStateException("JournalNode index changed: " + previousId);
+      }
+      Object previousServer = JOURNAL_IPC_SERVERS.get(node);
+      if (previousServer == null) {
+        if (!register(node, "HDFS", "JOURNALNODE", id)) {
+          throw new IllegalStateException("JournalNode source already registered");
+        }
+      } else if (explicitRestart || previousServer != server) {
+        long epoch = EPOCHS.get(id) + 1L;
+        MessageDoors.restartSource(node, "HDFS", "JOURNALNODE", id, epoch);
+        EPOCHS.put(id, epoch);
+      }
+      JOURNAL_IPC_SERVERS.put(node, server);
+      alias(rpc, node);
+      alias(server, node);
     }
   }
 

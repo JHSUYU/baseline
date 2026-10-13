@@ -34,6 +34,7 @@ patched_classes=(
   org/apache/hadoop/hdfs/server/datanode/DataNode.class
   org/apache/hadoop/hdfs/server/datanode/BPServiceActor.class
   org/apache/hadoop/hdfs/tools/DFSAdmin.class
+  org/apache/hadoop/hdfs/qjournal/client/IPCLoggerChannel.class
 )
 if [[ $common_scope != none ]]; then
   patched_classes+=(
@@ -46,6 +47,14 @@ if [[ $common_scope != none ]]; then
 fi
 for rel in "${patched_classes[@]}"; do
   [[ -s $overlay/$rel ]] || { echo "missing patched class: $overlay/$rel" >&2; exit 2; }
+done
+protocol_test_classes=(
+  org/apache/hadoop/hdfs/MiniDFSCluster.class
+  org/apache/hadoop/hdfs/qjournal/MiniJournalCluster.class
+  'org/apache/hadoop/hdfs/qjournal/MiniJournalCluster$Builder.class'
+)
+for rel in "${protocol_test_classes[@]}"; do
+  [[ -s $overlay/$rel ]] || { echo "missing cluster protocol hook: $overlay/$rel" >&2; exit 2; }
 done
 cp -a "$source_classes" "$output"
 cp -a "$client_classes/." "$output/"
@@ -66,6 +75,7 @@ done
     none) echo 'HDFS main and HDFS client application classes; Hadoop common remains a classpath dependency and IPC runtime overlay' ;;
   esac
   (cd "$output" && sha256sum "${patched_classes[@]}")
+  (cd "$overlay" && sha256sum "${protocol_test_classes[@]}")
 } > "$output/MALLORY_HDFS_STATIC_INPUT_MANIFEST.sha256"
 (cd "$output" && find . -type f -name '*.class' -print0 | LC_ALL=C sort -z |
   xargs -0 sha256sum) > "$output/MALLORY_HDFS_CLASS_BYTES.sha256"
