@@ -208,6 +208,15 @@ response-shape, and 110 runtime-identity attempt traces. None has more than
 the healthy run's one exact line-555 `InvalidEncryptionKeyException` throw.
 Every such throw in those archives came from a `DataXceiver` thread, with
 none observed on a `DataNode.DataTransfer` worker.
+Global event order alone does not attribute a later receiver throw to an
+earlier transfer worker. In all eight response-shape and eleven
+runtime-identity archived attempts where the exact throw followed a
+`DataNode.DataTransfer.run` SASL I/O, a separate client-thread
+`SaslDataTransferClient` I/O occurred between them. In a representative
+response-shape attempt (trial 79), the transfer worker's SASL call returned
+at trace seq 919; the client started its SASL call at 1015, then the receiver
+threw at 1022. These are consistent with the JUnit's expected client retry,
+not evidence of a new DataNode transfer failure.
 Control-branch trial 360, for instance, has two attempt traces with one
 throw each; adding them would create a false positive.
 At the actual `DataNode.DataTransfer.run` SASL I/O point, the runtime trace
