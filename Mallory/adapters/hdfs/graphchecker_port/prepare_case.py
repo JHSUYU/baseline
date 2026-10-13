@@ -163,7 +163,7 @@ def campaign_config(args: argparse.Namespace) -> None:
         "runner": {"main_class":
                    "edu.uva.liftlab.mallory.adapters.hdfs.graphchecker.RunOriginalJUnit",
                    "args": ["{class}", "{method}"],
-                   "jvm_args": ["-Xmx4g", "-Dhadoop.log.dir={trial_cwd}/logs",
+                   "jvm_args": ["-Xmx4g", "-ea", "-Dhadoop.log.dir={trial_cwd}/logs",
                                 "-Dtest.build.data={trial_cwd}/test-data"]},
         "trial_cwd_template": str(template.resolve()),
         "budget": {"fault_trials": args.fault_trials,
