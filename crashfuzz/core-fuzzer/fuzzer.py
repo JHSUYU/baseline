@@ -443,6 +443,19 @@ def trace_feedback(path: Path, target: dict[str, Any],
                               if required_throw_site else True)
                 if guard_after and site_after:
                     target_guard_after_fault = True
+                # An exact bytecode throw is itself proof that the selected
+                # check ran. A separate CHECK_REACHED hook may be absent or
+                # name a different unit in this invocation; that must not
+                # discard the observed target exception.
+                if (throw_event == "EXPLICIT_THROW" and fatal_in_call and
+                        (target.get("explicit_throw_site_id") or
+                         explicit_throw_lines)):
+                    target_reached = True
+                    target_reached_after_fault = True
+                    target_site_seen = True
+                    target_site_after_fault = True
+                    target_guard_seen = True
+                    target_guard_after_fault = True
     # If an exact target site is declared, a method-level throw alone is
     # insufficient: it could simply propagate an unrelated nested failure.
     oracle = bool(target_after_fault and target_reached and

@@ -323,6 +323,30 @@ class CoverageIoTest(unittest.TestCase):
             target['explicit_throw_lines'] = [24]
             self.assertFalse(trace_feedback(path, target)['oracle'])
 
+    def test_exact_explicit_throw_reaches_target_without_check_hook(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'trace.jsonl'
+            target = {'method': TARGET, 'site_id': SITE,
+                      'check_events': ['CHECK_REACHED'],
+                      'throw_event': 'EXPLICIT_THROW',
+                      'explicit_throw_lines': [23],
+                      'exception_type': 'example.TargetException'}
+            jsonl(path, [
+                {'event': 'METHOD_ENTER', 'seq': 1,
+                 'method': TARGET, 'callId': 7},
+                marker(A, 'FAULT_APPLIED', 2, faultId=fingerprint(A)),
+                {'event': 'EXPLICIT_THROW', 'seq': 3, 'method': TARGET,
+                 'siteId': TARGET + '#bytecode:throw:23:0',
+                 'sourceLine': 23, 'callId': 7,
+                 'runtimeType': 'example.TargetException'},
+            ])
+            feedback = trace_feedback(path, target)
+            self.assertTrue(feedback['target_reached_after_fault'])
+            self.assertTrue(feedback['target_guard_after_fault'])
+            self.assertTrue(feedback['oracle'])
+            target['explicit_throw_lines'] = [24]
+            self.assertFalse(trace_feedback(path, target)['oracle'])
+
     def test_nonthrowing_target_check_retains_reach_without_exception_oracle(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / 'trace.jsonl'
