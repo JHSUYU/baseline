@@ -532,6 +532,15 @@ def strict_injection(result: dict[str, Any],
             result.get("applied_fault_ids") == expected)
 
 
+def retry_lost_target(result: dict[str, Any], sequence: list[dict[str, Any]],
+                      attempt: int, max_retries: int) -> bool:
+    """Retry a matched multi-fault plan whose last fault passed the check."""
+    return (len(sequence) > 1 and attempt <= max_retries and
+            strict_injection(result, sequence) and
+            result.get("target_reached", False) and
+            not result.get("target_reached_after_fault", False))
+
+
 def enqueue(state: dict[str, Any], sequence: list[dict[str, Any]],
             priority: int = 0, target_proximity: int = 0) -> None:
     name = sequence_id(sequence)
@@ -1168,6 +1177,15 @@ def process_trial(config: dict[str, Any], state: dict[str, Any],
         atomic_json(case_dir / "state.json", state)
         process_trial(config, state, case_dir, active)
         return
+    if (not result_file.is_file() and
+            retry_lost_target(result, active["sequence"],
+                              active.get("attempt", 0),
+                              config["budget"].get("max_lost_target_retries", 1))):
+        # Asynchronous callbacks can put the last fault after the check on
+        # one run and before it on another. Keep retries strictly bounded.
+        atomic_json(case_dir / "state.json", state)
+        process_trial(config, state, case_dir, active)
+        return
     result["selector_matched"] = selector_matched
     result["strict_injection"] = selector_matched
     baseline_fatal_count = state["seed"]["feedback"].get(
@@ -1392,6 +1410,9 @@ def validate(config: dict[str, Any]) -> None:
     if (not isinstance(budget.get("max_unmatched_retries", 1), int) or
             budget.get("max_unmatched_retries", 1) < 0):
         raise ValueError("max_unmatched_retries must be nonnegative")
+    if (not isinstance(budget.get("max_lost_target_retries", 1), int) or
+            budget.get("max_lost_target_retries", 1) < 0):
+        raise ValueError("max_lost_target_retries must be nonnegative")
     workspaces = config["workspaces"]
     required = ("system_test", "temp")
     for name in required:

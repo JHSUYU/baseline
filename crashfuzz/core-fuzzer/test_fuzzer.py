@@ -11,6 +11,7 @@ from fuzzer import (archive_trial_attempts, budget_has_room, campaign,
                     fault_variants_for_io, fingerprint,
                     in_io_scope, point_from_event,
                     rows, static_reason_priority, strict_injection,
+                    retry_lost_target,
                     target_proximity_score,
                     trace_feedback, stable_occurrence,
                     selected_target_control_branches,
@@ -906,6 +907,18 @@ class CoverageIoTest(unittest.TestCase):
             validate(config)
             self.assertEqual(config['budget']['max_trials'], 80)
             self.assertEqual(config['budget']['max_faults'], 8)
+
+    def test_matched_multi_fault_plan_retries_when_check_precedes_last_fault(self):
+        applied = {'matched_count': 2, 'applied_count': 2,
+                   'applied_points': [A, B],
+                   'applied_fault_ids': [fingerprint(A), fingerprint(B)],
+                   'target_reached': True,
+                   'target_reached_after_fault': False}
+        self.assertTrue(retry_lost_target(applied, [A, B], 1, 2))
+        self.assertFalse(retry_lost_target(applied, [A, B], 3, 2))
+        self.assertFalse(retry_lost_target(applied, [A], 1, 2))
+        self.assertFalse(retry_lost_target(
+            {**applied, 'target_reached_after_fault': True}, [A, B], 1, 2))
 
     def test_exact_selector_and_target_check_after_final_fault(self):
         point = dict(A)

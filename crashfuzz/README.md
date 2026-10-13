@@ -70,6 +70,9 @@ available, so overlapping fault effects get a bounded share of the budget.
 One trial in nine selects a later, different I/O from the same runtime actor
 after an earlier fault, to test whether a subsequent read or RPC repairs the
 state before the target check.
+If every fault in a multi-fault plan matches but the final fault lands after
+the target check, the runner retries that exact plan a bounded number of times
+to account for callback and request-routing order in the original JUnit.
 The healthy trace also identifies I/O observed shortly before a target check.
 One trial in five is reserved for these near-check I/O observations when any
 remain; other trials continue to explore the broader Soot-selected scope.
