@@ -15,6 +15,8 @@ import soot.Value;
 import soot.VoidType;
 import soot.Type;
 import soot.jimple.IdentityStmt;
+import soot.jimple.AssignStmt;
+import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.InvokeExpr;
 import soot.jimple.Jimple;
 import soot.jimple.ReturnStmt;
@@ -33,6 +35,10 @@ public final class ZooKeeperWeave {
             "edu.uva.liftlab.mallory.graphchecker.runtime.ZooKeeperTraceBridge";
     private static final String FILE_BRIDGE =
             "edu.uva.liftlab.mallory.graphchecker.runtime.PersistentFileTraceBridge";
+    private static final String CLIENT_BRIDGE =
+            "edu.uva.liftlab.mallory.graphchecker.runtime.ZooKeeperClientTraceBridge";
+    private static final String PROPOSAL_BRIDGE =
+            "edu.uva.liftlab.mallory.graphchecker.runtime.ZooKeeperProposalTraceBridge";
 
     private ZooKeeperWeave() {
     }
@@ -110,6 +116,8 @@ public final class ZooKeeperWeave {
         int epochWrites = beforeSuccessfulEpochReturns(peer,
                 "writeLongToFile", true, epochWriteHook);
         int directWrites = afterSuccessfulFileUtilsWrites();
+        int clientProtocol = clientProtocolHooks();
+        int proposalProtocol = proposalProtocolHooks();
         if (peerEntries != 1 || peerExits == 0 || peerFailures != 1
                 || followers != 1 || leaders != 1
                 || leaderPrepared != 1 || writes != 1 || reads != 1
@@ -129,6 +137,10 @@ public final class ZooKeeperWeave {
                     + ", epoch file reads/writes=" + epochReads + "/"
                     + epochWrites);
         }
+        if (clientProtocol != 8) throw new IllegalStateException(
+                "ZOOKEEPER_CLIENT_PROTOCOL_SITE_MISSING: " + clientProtocol + "/8");
+        if (proposalProtocol != 6) throw new IllegalStateException(
+                "ZOOKEEPER_PROPOSAL_PROTOCOL_SITE_MISSING: " + proposalProtocol + "/6");
         // A missing direct FileUtils call is legal for workloads that never
         // use that helper; the epoch method hooks above are mandatory.
     }
@@ -189,7 +201,12 @@ public final class ZooKeeperWeave {
         if (target.is("Follower", "followLeader")
                 || target.is("Learner", "registerWithLeader")) return;
         if (!target.is("Leader", "waitForEpochAck")
-                && !target.is("QuorumPeer", "loadDataBase")) {
+                && !target.is("QuorumPeer", "loadDataBase")
+                && !"org.apache.zookeeper.server.ZooKeeperServer".equals(target.clazz)
+                && !target.clazz.endsWith("SessionTrackerImpl")
+                && !target.clazz.endsWith("LearnerSessionTracker")
+                && !target.clazz.endsWith("ReadOnlyZooKeeperServer")
+                && !target.clazz.endsWith("ObserverMaster")) {
             throw new IllegalArgumentException("ZooKeeper target source binding "
                     + "has no verified peer scope: " + target.clazz + "#"
                     + target.method + target.descriptor);
@@ -217,7 +234,7 @@ public final class ZooKeeperWeave {
         SootMethod selected = null;
         for (SootMethod method : type.getMethods()) {
             if (!methodName.equals(method.getName())
-                    || method.getParameterCount() != 0 || !method.isConcrete()) continue;
+                    || !method.isConcrete()) continue;
             if (selected != null) throw new IllegalArgumentException(
                     "ambiguous selected JUnit method: " + clazz + "#" + methodName);
             selected = method;
@@ -408,6 +425,251 @@ public final class ZooKeeperWeave {
 
     private static SootMethodRef fileBridge(String method, int arguments) {
         return bridge(FILE_BRIDGE, method, arguments);
+    }
+
+    private static SootMethodRef clientBridge(String method, int arguments) {
+        return bridge(CLIENT_BRIDGE, method, arguments);
+    }
+
+    private static SootMethodRef proposalBridge(String method, int arguments) {
+        return bridge(PROPOSAL_BRIDGE, method, arguments);
+    }
+
+    /** Exact proposal/commit transport plus observer's concrete FIFO item. */
+    private static int proposalProtocolHooks() {
+        SootClass handler = application(PREFIX + "LearnerHandler");
+        SootClass learner = application(PREFIX + "Learner");
+        SootClass follower = application(PREFIX + "Follower");
+        SootClass observer = application(PREFIX + "ObserverMaster");
+        if (handler == null || learner == null || follower == null
+                || observer == null) return 0;
+        int writes = afterCall(handler, "sendPackets", 368, "writeRecord",
+                proposalBridge("buffered", 2));
+        int flushes = afterNoArgCall(handler, "sendPackets", "flush",
+                proposalBridge("flushed", 1));
+        int reads = afterCall(learner, "readPacket", 228, "readRecord",
+                proposalBridge("learnerRead", 2));
+        int exits = beforeReturns(follower, "processPacket",
+                proposalBridge("followerPacketProcessed", 0));
+        int failures = afterUncaught(follower, "processPacket", 1,
+                proposalBridge("followerPacketProcessed", 0));
+        int queued = afterCall(observer, "proposalReceived", 356, "add",
+                proposalBridge("proposalQueued", 2));
+        int peeked = afterObserverPeek(observer,
+                proposalBridge("proposalPeeked", 2));
+        int removed = afterObserverRemove(observer,
+                proposalBridge("proposalRemoved", 1));
+        if (writes != 1 || flushes != 1 || reads != 1 || exits == 0
+                || failures != 1 || queued != 1 || peeked != 1
+                || removed != 1) {
+            throw new IllegalStateException("ZOOKEEPER_PROPOSAL_PROTOCOL_SITE_MISSING: "
+                    + writes + "/" + flushes + "/" + reads + "/"
+                    + exits + "/" + failures + "/" + queued + "/" + peeked
+                    + "/" + removed);
+        }
+        return 6;
+    }
+
+    private static int afterNoArgCall(SootClass type, String methodName,
+                                      String calledName, SootMethodRef hook) {
+        int found = 0;
+        for (SootMethod method : type.getMethods()) {
+            if (!methodName.equals(method.getName()) || !method.isConcrete()) continue;
+            Body body = method.retrieveActiveBody();
+            for (Iterator<Unit> units = body.getUnits().snapshotIterator(); units.hasNext();) {
+                Unit unit = units.next();
+                if (!(unit instanceof Stmt)) continue;
+                Stmt stmt = (Stmt) unit;
+                if (!stmt.containsInvokeExpr() || !calledName.equals(
+                        stmt.getInvokeExpr().getMethodRef().name())) continue;
+                body.getUnits().insertAfter(Jimple.v().newInvokeStmt(
+                        Jimple.v().newStaticInvokeExpr(hook, body.getThisLocal())), unit);
+                found++;
+            }
+        }
+        return found;
+    }
+
+    private static int afterObserverPeek(SootClass type, SootMethodRef hook) {
+        int found = 0;
+        for (SootMethod method : type.getMethods()) {
+            if (!"removeProposedPacket".equals(method.getName())
+                    || !method.isConcrete()) continue;
+            Body body = method.retrieveActiveBody();
+            for (Iterator<Unit> units = body.getUnits().snapshotIterator(); units.hasNext();) {
+                Unit unit = units.next();
+                if (!(unit instanceof AssignStmt)) continue;
+                AssignStmt stmt = (AssignStmt) unit;
+                if (!stmt.containsInvokeExpr() || !"peek".equals(
+                        stmt.getInvokeExpr().getMethodRef().name())) continue;
+                body.getUnits().insertAfter(Jimple.v().newInvokeStmt(
+                        Jimple.v().newStaticInvokeExpr(hook,
+                                body.getThisLocal(), stmt.getLeftOp())), unit);
+                found++;
+            }
+        }
+        return found;
+    }
+
+    private static int afterObserverRemove(SootClass type, SootMethodRef hook) {
+        int found = 0;
+        for (SootMethod method : type.getMethods()) {
+            if (!"removeProposedPacket".equals(method.getName())
+                    || !method.isConcrete()) continue;
+            Body body = method.retrieveActiveBody();
+            Value peeked = null;
+            for (Iterator<Unit> units = body.getUnits().snapshotIterator(); units.hasNext();) {
+                Unit unit = units.next();
+                if (!(unit instanceof Stmt)) continue;
+                Stmt stmt = (Stmt) unit;
+                if (!stmt.containsInvokeExpr()) continue;
+                if ("peek".equals(stmt.getInvokeExpr().getMethodRef().name())
+                        && stmt instanceof AssignStmt) {
+                    peeked = ((AssignStmt) stmt).getLeftOp();
+                } else if ("remove".equals(stmt.getInvokeExpr().getMethodRef().name())
+                        && peeked != null) {
+                    body.getUnits().insertAfter(Jimple.v().newInvokeStmt(
+                            Jimple.v().newStaticInvokeExpr(hook, peeked)), unit);
+                    found++;
+                }
+            }
+        }
+        return found;
+    }
+
+    /** Hook complete NIO frames and installed session trackers, system-wide. */
+    private static int clientProtocolHooks() {
+        SootClass client = application("org.apache.zookeeper.ClientCnxnSocketNIO");
+        SootClass server = application("org.apache.zookeeper.server.NIOServerCnxn");
+        if (client == null || server == null) return 0;
+        int prepared = afterInstanceCall(client, "doIO", "createBB",
+                clientBridge("clientPrepared", 2), true);
+        prepared += afterInstanceCall(client, "sendPacket", "createBB",
+                clientBridge("clientPrepared", 2), true);
+        int completed = afterInstanceCall(client, "doIO",
+                "removeFirstOccurrence", clientBridge("clientSent", 2), false);
+        completed += afterSocketWrite(client, "sendPacket",
+                clientBridge("clientSent", 2));
+        int received = beforeServerDispatch(server, "readConnectRequest",
+                "processConnectRequest", clientBridge("serverRead", 2));
+        received += beforeServerDispatch(server, "readRequest",
+                "processPacket", clientBridge("serverRead", 2));
+        int exits = beforeReturns(server, "readConnectRequest",
+                clientBridge("serverReadExited", 0));
+        exits += beforeReturns(server, "readRequest",
+                clientBridge("serverReadExited", 0));
+        int failures = afterUncaught(server, "readConnectRequest", 0,
+                clientBridge("serverReadExited", 0));
+        failures += afterUncaught(server, "readRequest", 0,
+                clientBridge("serverReadExited", 0));
+        int trackers = 0;
+        for (String owner : new String[] {
+                "org.apache.zookeeper.server.ZooKeeperServer",
+                PREFIX + "LeaderZooKeeperServer",
+                PREFIX + "LearnerZooKeeperServer",
+                PREFIX + "ReadOnlyZooKeeperServer"}) {
+            trackers += beforeReturnsWithOwner(application(owner),
+                    "createSessionTracker", clientBridge("serverTrackerCreated", 1));
+        }
+        if (prepared != 2 || completed != 2 || received != 2 || exits != 2
+                || failures != 2 || trackers != 4) {
+            throw new IllegalStateException("ZOOKEEPER_CLIENT_PROTOCOL_SITE_MISSING: "
+                    + "prepared/completed/received/exit/failure/tracker="
+                    + prepared + "/" + completed + "/" + received + "/"
+                    + exits + "/" + failures + "/" + trackers);
+        }
+        return 8;
+    }
+
+    private static int afterInstanceCall(SootClass type, String methodName,
+                                         String calledName, SootMethodRef hook,
+                                         boolean useBase) {
+        int found = 0;
+        for (SootMethod method : type.getMethods()) {
+            if (!methodName.equals(method.getName()) || !method.isConcrete()) continue;
+            Body body = method.retrieveActiveBody();
+            for (Iterator<Unit> units = body.getUnits().snapshotIterator(); units.hasNext();) {
+                Unit unit = units.next();
+                if (!(unit instanceof Stmt)) continue;
+                Stmt stmt = (Stmt) unit;
+                if (!stmt.containsInvokeExpr()) continue;
+                InvokeExpr call = stmt.getInvokeExpr();
+                if (!calledName.equals(call.getMethodRef().name())) continue;
+                if (!(call instanceof InstanceInvokeExpr)) continue;
+                Value packet = useBase ? ((InstanceInvokeExpr) call).getBase()
+                        : call.getArg(0);
+                body.getUnits().insertAfter(Jimple.v().newInvokeStmt(
+                        Jimple.v().newStaticInvokeExpr(hook,
+                                body.getThisLocal(), packet)), unit);
+                found++;
+            }
+        }
+        return found;
+    }
+
+    private static int afterSocketWrite(SootClass type, String methodName,
+                                        SootMethodRef hook) {
+        int found = 0;
+        for (SootMethod method : type.getMethods()) {
+            if (!methodName.equals(method.getName()) || method.getParameterCount() != 1
+                    || !method.isConcrete()) continue;
+            Body body = method.retrieveActiveBody();
+            for (Iterator<Unit> units = body.getUnits().snapshotIterator(); units.hasNext();) {
+                Unit unit = units.next();
+                if (!(unit instanceof Stmt)) continue;
+                Stmt stmt = (Stmt) unit;
+                if (!stmt.containsInvokeExpr() || !"write".equals(
+                        stmt.getInvokeExpr().getMethodRef().name())) continue;
+                body.getUnits().insertAfter(Jimple.v().newInvokeStmt(
+                        Jimple.v().newStaticInvokeExpr(hook,
+                                body.getThisLocal(), body.getParameterLocal(0))), unit);
+                found++;
+            }
+        }
+        return found;
+    }
+
+    private static int beforeServerDispatch(SootClass type, String methodName,
+                                            String calledName, SootMethodRef hook) {
+        int found = 0;
+        for (SootMethod method : type.getMethods()) {
+            if (!methodName.equals(method.getName()) || !method.isConcrete()) continue;
+            Body body = method.retrieveActiveBody();
+            for (Iterator<Unit> units = body.getUnits().snapshotIterator(); units.hasNext();) {
+                Unit unit = units.next();
+                if (!(unit instanceof Stmt)) continue;
+                Stmt stmt = (Stmt) unit;
+                if (!stmt.containsInvokeExpr()) continue;
+                InvokeExpr call = stmt.getInvokeExpr();
+                if (!calledName.equals(call.getMethodRef().name())
+                        || call.getArgCount() != 2) continue;
+                body.getUnits().insertBefore(Jimple.v().newInvokeStmt(
+                        Jimple.v().newStaticInvokeExpr(hook,
+                                body.getThisLocal(), call.getArg(1))), unit);
+                found++;
+            }
+        }
+        return found;
+    }
+
+    private static int beforeReturnsWithOwner(SootClass type, String methodName,
+                                               SootMethodRef hook) {
+        if (type == null) return 0;
+        int found = 0;
+        for (SootMethod method : type.getMethods()) {
+            if (!methodName.equals(method.getName()) || method.getParameterCount() != 0
+                    || !method.isConcrete()) continue;
+            Body body = method.retrieveActiveBody();
+            for (Iterator<Unit> units = body.getUnits().snapshotIterator(); units.hasNext();) {
+                Unit unit = units.next();
+                if (!(unit instanceof ReturnVoidStmt)) continue;
+                body.getUnits().insertBefore(Jimple.v().newInvokeStmt(
+                        Jimple.v().newStaticInvokeExpr(hook,
+                                body.getThisLocal())), unit);
+                found++;
+            }
+        }
+        return found;
     }
 
     private static SootMethodRef bridge(String className, String method,

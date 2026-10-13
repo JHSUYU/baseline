@@ -152,11 +152,19 @@ public final class ZooKeeperTraceBridge {
             peer = field(actor, "self");
         }
         if (peer == null) {
+            // Session trackers have no self field. Their owner is established
+            // only after the real ZooKeeperServer installs the tracker.
+            peer = ZooKeeperClientTraceBridge.ownerForTarget(actor);
+        }
+        if (peer == null) {
             gap("selected-target-peer-unresolved", scope
-                    + " has no verified QuorumPeer owner");
+                    + " has no verified installed server owner");
             return;
         }
-        registerPeer(peer);
+        if (peer.getClass().getName().equals(
+                "org.apache.zookeeper.server.quorum.QuorumPeer")) {
+            registerPeer(peer);
+        }
         if (actor != peer) MessageDoors.registerSourceAlias(actor, peer);
         // A Leader target may execute while its ACKEPOCH inbound context is
         // active; a QuorumPeer target may execute inside PEER_START. Keep

@@ -20,11 +20,19 @@ from verify_source import verify
 # These are source check-line anchors, not injection sites. The exact THROW
 # line, method and original JUnit selector come from cases/inventory.json.
 CHECK_LINES = {
+    "ZOOKEEPER-01": 316,
+    "ZOOKEEPER-02": 322,
+    "ZOOKEEPER-03": 329,
+    "ZOOKEEPER-04": 1431,
     "ZOOKEEPER-05": 98,
     "ZOOKEEPER-06": 1471,
     "ZOOKEEPER-07": 515,
+    "ZOOKEEPER-08": 173,
+    "ZOOKEEPER-09": 190,
+    "ZOOKEEPER-10": 365,
     "ZOOKEEPER-11": 1169,
     "ZOOKEEPER-12": 1193,
+    "ZOOKEEPER-13": 123,
 }
 
 
@@ -32,7 +40,7 @@ def case_spec(case_id: str, source: Path) -> tuple[dict, str, str, str, str]:
     inventory = json.loads((BASE / "Mallory/cases/inventory.json").read_text())
     matches = [item for item in inventory["cases"] if item["case_id"] == case_id]
     if len(matches) != 1 or case_id not in CHECK_LINES:
-        raise ValueError(f"unsupported ZooKeeper quorum/epoch case: {case_id}")
+        raise ValueError(f"unsupported ZooKeeper original JUnit case: {case_id}")
     item = matches[0]
     target = item["target"]
     selector = item["workload"].get("selected_selector")
@@ -179,7 +187,11 @@ def main() -> None:
                      # the active request owner instead of claiming `this`.
                      "source_owner_classes": [
                          r"org\.apache\.zookeeper\.server\.quorum\."
-                         r"(?:QuorumPeer|Learner|Follower|Leader|LearnerHandler)"]},
+                         r"(?:QuorumPeer|Learner|Follower|Leader|LearnerHandler|"
+                         r"ObserverMaster|LearnerSessionTracker|ReadOnlyZooKeeperServer|"
+                         r"FollowerZooKeeperServer|LeaderZooKeeperServer)",
+                         r"org\.apache\.zookeeper\.server\."
+                         r"(?:ZooKeeperServer|SessionTrackerImpl)"]},
     }
     input_path = scratch / "scope-input.json"
     input_path.write_text(json.dumps(scope_input, indent=2) + "\n", encoding="utf-8")

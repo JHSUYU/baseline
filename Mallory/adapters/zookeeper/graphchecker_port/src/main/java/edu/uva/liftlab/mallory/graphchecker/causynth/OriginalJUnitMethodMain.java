@@ -2,6 +2,7 @@ package edu.uva.liftlab.mallory.graphchecker.causynth;
 
 import edu.uva.liftlab.mallory.graphchecker.runtime.MessageDoors;
 import java.io.PrintWriter;
+import java.lang.reflect.Method;
 import org.junit.platform.engine.discovery.DiscoverySelectors;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
@@ -20,8 +21,18 @@ public final class OriginalJUnitMethodMain {
             throw new IllegalArgumentException("usage: OriginalJUnitMethodMain "
                     + "<test-class> <test-method>");
         }
+        Method selected = null;
+        Class<?> testClass = Class.forName(args[0]);
+        for (Method method : testClass.getDeclaredMethods()) {
+            if (!args[1].equals(method.getName())) continue;
+            if (selected != null) throw new IllegalArgumentException(
+                    "ambiguous original JUnit method: " + args[0] + "#" + args[1]);
+            selected = method;
+        }
+        if (selected == null) throw new IllegalArgumentException(
+                "missing original JUnit method: " + args[0] + "#" + args[1]);
         LauncherDiscoveryRequest request = LauncherDiscoveryRequestBuilder.request()
-                .selectors(DiscoverySelectors.selectMethod(args[0], args[1]))
+                .selectors(DiscoverySelectors.selectMethod(testClass, selected))
                 .build();
         Launcher launcher = LauncherFactory.create();
         SummaryGeneratingListener listener = new SummaryGeneratingListener();
@@ -37,7 +48,11 @@ public final class OriginalJUnitMethodMain {
         System.out.println("Original JUnit: tests=" + summary.getTestsSucceededCount()
                 + " failures=" + summary.getTestsFailedCount()
                 + " skipped=" + summary.getTestsSkippedCount());
-        if (summary.getTestsSucceededCount() != 1 || summary.getTestsFailedCount() != 0) {
+        // A selected original @ParameterizedTest may expand into multiple
+        // invocations. Every invocation must pass; the source is unchanged.
+        if (summary.getTestsSucceededCount() < 1
+                || summary.getTestsFailedCount() != 0
+                || summary.getTestsSkippedCount() != 0) {
             System.exit(1);
         }
         // MiniCluster may leave non-daemon cleanup threads alive.  Surefire

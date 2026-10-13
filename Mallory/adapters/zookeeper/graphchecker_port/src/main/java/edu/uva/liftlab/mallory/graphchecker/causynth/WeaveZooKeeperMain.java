@@ -63,6 +63,12 @@ public final class WeaveZooKeeperMain {
         Scene.v().addBasicClass(
                 "edu.uva.liftlab.mallory.graphchecker.runtime.PersistentFileTraceBridge",
                 SootClass.SIGNATURES);
+        Scene.v().addBasicClass(
+                "edu.uva.liftlab.mallory.graphchecker.runtime.ZooKeeperClientTraceBridge",
+                SootClass.SIGNATURES);
+        Scene.v().addBasicClass(
+                "edu.uva.liftlab.mallory.graphchecker.runtime.ZooKeeperProposalTraceBridge",
+                SootClass.SIGNATURES);
         Scene.v().loadNecessaryClasses();
         ZooKeeperWeave.apply();
         ZooKeeperWeave.applyRuntimeTargetScope(target);

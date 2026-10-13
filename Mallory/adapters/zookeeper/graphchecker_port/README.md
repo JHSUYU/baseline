@@ -27,6 +27,19 @@ checkout at run time. The original workload remains the cluster JUnit test.
   writes verify its complete decimal content. An exception produces no
   successful version. The version is shared across peer restarts in the same
   JVM, while paths keep distinct peers' files separate.
+- `ZooKeeperClientTraceBridge` pairs complete framed NIO client CONNECT and
+  REQUEST writes with the exact frame consumed by `NIOServerCnxn`. It uses
+  the connected IP and port pair, FIFO position, and SHA-256 of the full
+  payload. The send becomes causal only after the full socket write returns;
+  a missing or mismatched frame produces a gap. Once a server installs its
+  session tracker, the bridge aliases that concrete tracker to its actual
+  server or quorum peer for selected target scopes.
+- `ZooKeeperProposalTraceBridge` pairs leader PROPOSAL and COMMIT packets
+  with the learner's deserialized packet after a successful flush, using the
+  socket direction, packet type, zxid, and payload digest. It also versions
+  the exact packet object stored in and fetched from the `ObserverMaster`
+  proposal queue, so the queue read can precede the selected mismatch check.
+  A zxid match by itself is never promoted to a causal edge.
 
 The GraphChecker-style runtime recorder and the Soot caller that invokes
 `ZooKeeperWeave.apply()` must be included in the Mallory JUnit pipeline.
@@ -65,7 +78,9 @@ change with scheduling; they are an observed run, not fixed assertions.
 
 ## Original-JUnit campaigns for quorum and epoch checks
 
-`prepare_zk_campaign.py --case-id` supports ZOOKEEPER-05/06/07/11/12. It
+`prepare_zk_campaign.py --case-id` has source check-line anchors for
+ZOOKEEPER-01 through 13. Each check still needs a target-specific healthy
+run to validate its original JUnit selector and source owner. It
 reads each target method, throw line and unchanged JUnit selector from the
 102-check inventory, verifies the pinned source hash, and asks the static
 planner to find the matching check branch. The planner discovers candidate
@@ -173,17 +188,32 @@ same six WIRE edges. No target throw occurred. A separate ZOOKEEPER-07
 healthy pilot still reached its check twice and retained two WIRE edges.
 These pilots do not replace the first ZOOKEEPER-05 campaign receipt.
 
+Two more unchanged JUnit pilots exercise the new protocol hooks. With
+`ConnectionMetricsTest#testRevalidateCount`, the ZOOKEEPER-04
+`ZooKeeperServer.processConnectRequest` check was reached and its backward
+closure contained exact NIO client-to-server WIRE edges. A single generic
+fault trial strictly injected but lost the target. With both parameterized
+variants of `ObserverMasterTest#testObserver(boolean)`, the ZOOKEEPER-10
+`ObserverMaster.removeProposedPacket` check was reached; its closure included
+two exact PROPOSAL WIRE edges and two exact proposal-queue STATE edges. A
+single generic fault trial again lost the target. These are integration
+pilots, not completed per-case fuzz results. The Observer workload uses a
+test `PortForwarder`; twelve client frames had different client-side and
+server-side TCP endpoints and were explicitly reported as
+`CLIENT_FRAME_NO_EXACT_SEND` gaps. They were not joined across the forwarder.
+
 ## Boundaries to extend before using all ZooKeeper checks
 
-This port's existing GraphChecker quorum bridge covers LEADERINFO and
-ACKEPOCH in one-JVM MiniClusters. `applyRuntimeTargetScope()` reads the exact
+This port's GraphChecker quorum bridge covers LEADERINFO and ACKEPOCH;
+the new client and Observer bridges cover framed NIO CONNECT/REQUEST and
+PROPOSAL/COMMIT in one-JVM MiniClusters. `applyRuntimeTargetScope()` reads the exact
 selected target method from the generated static manifest. The same bridge
-can prepare ZOOKEEPER-05/06/07/11/12 with their original JUnit selectors;
+can prepare the inventory's ZooKeeper checks with their original JUnit selectors;
 each still needs its own healthy trace and fault campaign before it is marked
-complete. ZooKeeper client CONNECT/REQUEST handling,
-follower-to-leader request packets, observer traffic and
-`SessionTrackerImpl` ownership still need protocol adapters before their
-checks can claim an observed end-to-end causal path. In a multi-JVM cluster,
+complete. The current client receipt is specific to `ClientCnxnSocketNIO` and
+`NIOServerCnxn`; Netty client traffic, follower-to-leader request packets,
+and observer paths beyond PROPOSAL/COMMIT still need their own verified hooks.
+In a multi-JVM cluster,
 the in-process socket FIFO map would have to be replaced by an actual
 protocol-carried trace header. Existing Mallory adapters identify useful
 production call sites, but their Probe string correlations are not used here.
