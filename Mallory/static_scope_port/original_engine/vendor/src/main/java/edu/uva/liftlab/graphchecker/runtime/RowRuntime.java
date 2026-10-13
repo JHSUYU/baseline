@@ -83,6 +83,19 @@ public final class RowRuntime {
     }
     private static volatile SessionPublisher publisher;
     private static volatile String sessionId = "";
+    private static volatile EndpointObserver endpointObserver;
+
+    /** Optional consumer of endpoints that were published to this session. */
+    public interface EndpointObserver {
+        void afterExport(String sessionId, Endpoint endpoint, long vmEventId);
+        void afterAttach(String sessionId, Endpoint endpoint, Endpoint producer,
+                         long vmEventId);
+    }
+
+    /** Registers an opt-in observer; the ordinary row stream is unchanged. */
+    public static void setEndpointObserver(EndpointObserver observer) {
+        endpointObserver = observer;
+    }
 
     private RowRuntime() {
     }
@@ -291,6 +304,14 @@ public final class RowRuntime {
                 session.export(ExportRow.of(sessionId(), sequence(seq),
                         endpoint, ref, type, handle,
                         Text.safe(recordedValue)));
+                EndpointObserver observer = endpointObserver;
+                if (observer != null) {
+                    try {
+                        observer.afterExport(sessionId(), endpoint, sequence(seq));
+                    } catch (RuntimeException | LinkageError ignored) {
+                        // Optional feedback must not change workload behavior.
+                    }
+                }
             }
         }
         return endpoint;
@@ -344,6 +365,15 @@ public final class RowRuntime {
                         Text.safe(arrival), answered,
                         answered ? Text.safe(answeredValue) : null, producer,
                         Text.safe(correlationId), pairing.key()));
+                EndpointObserver observer = endpointObserver;
+                if (observer != null) {
+                    try {
+                        observer.afterAttach(sessionId(), endpoint, producer,
+                                sequence(seq));
+                    } catch (RuntimeException | LinkageError ignored) {
+                        // Optional feedback must not change workload behavior.
+                    }
+                }
             }
             if (producer == null) {
                 session.gap(GapRow.of(sessionId(), GapKind.LINEAGE_LOST,
