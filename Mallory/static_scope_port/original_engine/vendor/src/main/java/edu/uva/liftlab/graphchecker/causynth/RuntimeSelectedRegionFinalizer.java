@@ -1826,11 +1826,16 @@ public final class RuntimeSelectedRegionFinalizer {
             List<String> foldedRegionIds,
             Function<StaticProgram.RegionRow, Collection<T>> catalog) {
         List<T> union = new ArrayList<>(catalog.apply(skeleton));
+        // Preserve every item (including duplicates) from the owning region,
+        // then append the first occurrence of each item in folded regions.
+        // The former List.contains scan compared every new item with the
+        // entire growing catalog and is quadratic for a recorded MiniCluster.
+        Set<T> seen = new LinkedHashSet<>(union);
         for (String folded : foldedRegionIds) {
             StaticProgram.RegionRow row = program.skeletons.get(folded);
             if (row == null) continue;
             for (T item : catalog.apply(row)) {
-                if (!union.contains(item)) union.add(item);
+                if (seen.add(item)) union.add(item);
             }
         }
         return union;

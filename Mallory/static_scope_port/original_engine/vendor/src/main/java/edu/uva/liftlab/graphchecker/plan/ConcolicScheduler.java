@@ -1215,7 +1215,7 @@ public final class ConcolicScheduler {
                     != StaticSymbolicSourceDeclaration.SCHEMA_VERSION
                     || !StaticSymbolicSourceDeclaration.KIND.equals(
                     optionalString(row, "kind"))
-                    || !StaticSymbolicSourceDeclaration.AUTHORITY.equals(
+                    || !StaticSymbolicSourceDeclaration.authority(
                     optionalString(row, "authority"))
                     || sourceId.isEmpty() || field.isEmpty()) {
                 throw new IOException("malformed static symbolic source "
