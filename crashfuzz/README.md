@@ -67,6 +67,9 @@ actor and callsite when such a sequence exists, because the next successful
 RPC can otherwise repair the first failure before the target check.
 One trial in eight selects an observed three-or-more-fault descendant when
 available, so overlapping fault effects get a bounded share of the budget.
+One trial in nine selects a later, different I/O from the same runtime actor
+after an earlier fault, to test whether a subsequent read or RPC repairs the
+state before the target check.
 The healthy trace also identifies I/O observed shortly before a target check.
 One trial in five is reserved for these near-check I/O observations when any
 remain; other trials continue to explore the broader Soot-selected scope.

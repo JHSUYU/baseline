@@ -514,6 +514,32 @@ class CoverageIoTest(unittest.TestCase):
                  'deep_sequence_version': 1}
         self.assertEqual(choose_next_sequence(state), 1)
 
+    def test_followup_slot_interrupts_repair_io_on_same_actor(self):
+        watch = {**A, 'occurrence': 'node2/watch/<example.Watch: void run()>#u1'}
+        repair = {**B, 'occurrence': 'node2/watch/<example.Repair: void run()>#u2'}
+        other = {**B, 'occurrence': 'node3/watch/<example.Repair: void run()>#u2'}
+        state = {'completed': [{'sequence': [A]}] * 8,
+                 'queue': [{'sequence': [watch, other], 'priority': 500,
+                            'created': 1},
+                           {'sequence': [watch, repair], 'priority': 50,
+                            'target_proximity': 80, 'created': 2}],
+                 'same_actor_followup_version': 1}
+        self.assertEqual(choose_next_sequence(state), 1)
+
+    def test_followup_slot_prefers_same_component_on_less_tried_root(self):
+        watch = {**A, 'siteId': '<example.Watch: void process()>#u1',
+                 'occurrence': 'node2/watch/<example.Watch: void process()>#u1'}
+        distant = {**B, 'occurrence': 'node2/watch/<example.Recovery: void read()>#u3'}
+        local = {**B, 'siteId': '<example.Watch: void update()>#u2',
+                 'occurrence': 'node2/watch/<example.Watch: void update()>#u2'}
+        state = {'completed': [{'sequence': [A]}] * 8,
+                 'queue': [{'sequence': [watch, distant], 'priority': 500,
+                            'target_proximity': 80, 'created': 1},
+                           {'sequence': [watch, local], 'priority': 50,
+                            'target_proximity': 80, 'created': 2}],
+                 'same_actor_followup_version': 1}
+        self.assertEqual(choose_next_sequence(state), 1)
+
     def test_target_near_slot_keeps_a_precheck_fault_in_budget(self):
         state = {'completed': [{'sequence': [A]}] * 4,
                  'queue': [{'sequence': [B], 'priority': 1000,

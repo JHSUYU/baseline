@@ -641,6 +641,16 @@ def consecutive_reply_streak(sequence: list[dict[str, Any]]) -> int:
             else 0)
 
 
+def same_actor_followup(sequence: list[dict[str, Any]]) -> bool:
+    """The next fault interrupts a different I/O used by the same actor."""
+    if len(sequence) < 2:
+        return False
+    first, second = sequence[-2:]
+    return (first["siteId"] != second["siteId"] and
+            first["occurrence"].rsplit("/<", 1)[0] ==
+            second["occurrence"].rsplit("/<", 1)[0])
+
+
 def identity_priority(point: dict[str, Any]) -> int:
     """Favor replayable observed actors without weakening exact matching."""
     occurrence = point.get("occurrence", "")
@@ -831,6 +841,26 @@ def choose_next_sequence(state: dict[str, Any],
                 -entry[1]["sequence"][-2]["hitOrdinal"],
                 -entry[1].get("target_proximity", 0),
                 -entry[1]["priority"], entry[1]["created"], entry[0]))[0]
+    # An actor may repair a failed watch, RPC, or file read through a
+    # different I/O call. Try one observed same-actor follow-up periodically.
+    if (state.get("same_actor_followup_version", 0) >= 1 and
+            len(previous) % 9 == 8):
+        followups = [(index, item)
+                     for index, item in enumerate(state["queue"])
+                     if same_actor_followup(item["sequence"])]
+        if followups:
+            tried_roots: dict[Any, int] = {}
+            for sequence in previous:
+                root = temporal_diversity_key(sequence[0])
+                tried_roots[root] = tried_roots.get(root, 0) + 1
+            return min(followups, key=lambda entry: (
+                tried_roots.get(temporal_diversity_key(
+                    entry[1]["sequence"][0]), 0),
+                -entry[1].get("target_proximity", 0),
+                -(entry[1]["sequence"][-2]["siteId"].split(":", 1)[0] ==
+                  entry[1]["sequence"][-1]["siteId"].split(":", 1)[0]),
+                -entry[1]["priority"], len(entry[1]["sequence"]),
+                entry[1]["created"], entry[0]))[0]
     # Exception effects can overlap across several actors. Give retained
     # three-or-more-fault descendants a bounded share of the budget instead
     # of letting their numerous one/two-fault siblings fill the campaign.
@@ -1624,6 +1654,7 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
             state.setdefault("exact_late_occurrence_version", 1)
             state.setdefault("repeated_reply_loss_version", 1)
             state.setdefault("deep_sequence_version", 1)
+            state.setdefault("same_actor_followup_version", 1)
             if state.get("fault_family_version", 0) < 2:
                 observed = state.get("seed", {}).get("feedback", {}).get(
                     "points", []) if state.get("seed") else []
@@ -1709,6 +1740,7 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
                      "exact_late_occurrence_version": 1,
                      "repeated_reply_loss_version": 1,
                      "deep_sequence_version": 1,
+                     "same_actor_followup_version": 1,
                      "site_diversity_version": 2,
                      "typed_zookeeper_fault_version": 1,
                      "seed_runtime_seconds": 0.0,
