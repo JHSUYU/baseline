@@ -11,7 +11,8 @@ from unittest.mock import patch
 from Mallory.core.graphchecker_campaign import (_archive_jsonl, _check_woven_major,
                                                 _door_types, _runner, _tree_sha256,
                                                 _trial_arg,
-                                                _runner_class_sha256, load_config, load_trace,
+                                                _runner_class_sha256, _verify_prepared,
+                                                load_config, load_trace, prepare,
                                                 scan_window_trace, summarize_evidence,
                                                 validate_plan, verify_trial_artifacts)
 from Mallory.core.graphchecker_trial import analyze_trial
@@ -289,6 +290,85 @@ class GraphCheckerCampaignTest(unittest.TestCase):
                 _check_woven_major(clazz, 8, 52)
             clazz.write_bytes(b"\xca\xfe\xba\xbe\x00\x00\x00\x34")
             self.assertEqual(52, _check_woven_major(clazz, 8, 52))
+
+    def test_weaver_receives_exact_planner_dependency_classpath_order(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            original = root / "original"
+            tool = root / "tool"
+            test = root / "test"
+            for directory in (original, tool, test):
+                directory.mkdir()
+            clazz = original / "fixture" / "Target.class"
+            clazz.parent.mkdir()
+            clazz.write_bytes(b"\xca\xfe\xba\xbe\x00\x00\x00\x34")
+            junit = test / "fixture" / "Test.class"
+            junit.parent.mkdir()
+            junit.write_bytes(clazz.read_bytes())
+            runner = (tool / "edu" / "uva" / "liftlab" / "mallory" /
+                      "graphchecker" / "weave" / "JUnitTrialMain.class")
+            runner.parent.mkdir(parents=True)
+            runner.write_bytes(clazz.read_bytes())
+            dep1, dep2 = root / "dep1.jar", root / "dep2.jar"
+            dep1.write_bytes(b"first")
+            dep2.write_bytes(b"second")
+            dependencies = [str(dep1), str(dep2)]
+            from hashlib import sha256
+            import os
+            cp_hash = sha256(os.pathsep.join(dependencies).encode()).hexdigest()
+            manifest = {"schemaVersion": 1, "faultController": "NONE",
+                        "sootDependencyClasspathSha256": cp_hash,
+                        "targets": [{"clazz": "fixture.Target", "method": "run",
+                                     "kind": "THROW", "siteId": "throw",
+                                     "exceptionClass": "java.io.IOException"}],
+                        "doors": []}
+            (root / "manifest.json").write_text(json.dumps(manifest))
+            (root / "scope.jsonl").write_text("{}\n")
+            (root / "graph.jar").write_bytes(b"graph")
+            raw = {"schema_version": 1, "case_id": "CP-ORDER",
+                   "junit": {"class": "fixture.Test", "method": "test"},
+                   "target": {"throw_site_id": "throw",
+                              "exception_class": "java.io.IOException"},
+                   "weave_manifest": str(root / "manifest.json"),
+                   "static_scope_map": str(root / "scope.jsonl"),
+                   "original_classes": str(original),
+                   "tool_classpath": [str(tool)],
+                   "test_classpath": [str(test)],
+                   "soot_dependency_classpath": dependencies,
+                   "graph_jar": str(root / "graph.jar"), "cwd": str(root)}
+            config_path = root / "config.json"
+            config_path.write_text(json.dumps(raw))
+            config = load_config(config_path)
+            raw["soot_dependency_classpath"] = dependencies[::-1]
+            config_path.write_text(json.dumps(raw))
+            with self.assertRaisesRegex(ValueError, "ordered Soot dependency classpath"):
+                load_config(config_path)
+            raw["soot_dependency_classpath"] = dependencies
+            config_path.write_text(json.dumps(raw))
+            config = load_config(config_path)
+            (root / "manifest.json").write_text(json.dumps({
+                key: value for key, value in manifest.items()
+                if key != "sootDependencyClasspathSha256"}))
+            with self.assertRaisesRegex(ValueError, "ordered Soot dependency classpath"):
+                load_config(config_path)
+            (root / "manifest.json").write_text(json.dumps(manifest))
+            config = load_config(config_path)
+            launched = []
+
+            def fake_weave(argv, **_):
+                launched.append(argv)
+                woven = Path(argv[-2]) / "fixture" / "Target.class"
+                woven.parent.mkdir(parents=True)
+                woven.write_bytes(clazz.read_bytes())
+
+            with patch("Mallory.core.graphchecker_campaign.subprocess.run",
+                       side_effect=fake_weave):
+                prepared = prepare(config, root / "prepared")
+            self.assertEqual(os.pathsep.join(dependencies), launched[0][-1])
+            self.assertEqual([str(original), *dependencies, str(test), str(tool)],
+                             json.loads((prepared / "weave-receipt.json").read_text())[
+                                 "runtime_classpath"])
+            self.assertEqual([prepared / "woven"], _verify_prepared(config, prepared))
 
 
 if __name__ == "__main__":

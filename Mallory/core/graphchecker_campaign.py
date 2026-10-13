@@ -250,10 +250,45 @@ def _paths(value: Any, base: Path, name: str) -> list[Path]:
     return result
 
 
-def _runner_class_sha256(class_name: str, classpath: list[Path]) -> str:
+def _classpath_sha256(entries: list[Any]) -> str:
+    return hashlib.sha256(os.pathsep.join(map(str, entries)).encode("utf-8")).hexdigest()
+
+
+def _exact_classpath(value: Any) -> list[str]:
+    """Keep Soot's exact path spelling and order, including symlinks."""
+    if not isinstance(value, list) or not value:
+        raise ValueError("soot_dependency_classpath needs the ordered analysis.classpath list")
+    result = []
+    for item in value:
+        if not isinstance(item, str) or not item:
+            raise ValueError("Soot dependency classpath needs absolute path entries")
+        for part in item.split(os.pathsep):
+            path = Path(part)
+            if not part or not path.is_absolute():
+                raise ValueError("Soot dependency classpath needs absolute path entries")
+            if not path.exists():
+                raise FileNotFoundError(f"Soot dependency classpath entry missing: {path}")
+        result.append(item)
+    return result
+
+
+def _runtime_classpath(config: dict[str, Any]) -> list[Path | str]:
+    if config["explicit_soot_dependency_classpath"]:
+        # Match the planner's process_dirs before its ordered dependency CP.
+        # The generic weaver/runner jars are appended only after application
+        # and test dependencies, so they cannot silently shadow source types.
+        return [*config["original_class_dirs"],
+                *config["soot_dependency_classpath"],
+                *config["test_classpath"], *config["tool_classpath"]]
+    return [*config["tool_classpath"], *config["original_class_dirs"],
+            *config["test_classpath"]]
+
+
+def _runner_class_sha256(class_name: str, classpath: list[Path | str]) -> str:
     """Pin the first runner class found in effective classpath order."""
     resource = class_name.replace(".", "/") + ".class"
-    for entry in classpath:
+    for item in classpath:
+        entry = Path(item)
         if entry.is_dir():
             candidate = entry / resource
             if candidate.is_file():
@@ -440,6 +475,19 @@ def load_config(path: Path) -> dict[str, Any]:
                            directory=True)]
     tool_cp = _paths(raw.get("tool_classpath"), base, "tool_classpath")
     test_cp = _paths(raw.get("test_classpath"), base, "test_classpath")
+    explicit_soot_cp = "soot_dependency_classpath" in raw
+    soot_cp = (_exact_classpath(raw["soot_dependency_classpath"])
+               if explicit_soot_cp else
+               [*tool_cp, *originals, *test_cp])
+    soot_cp_sha256 = _classpath_sha256(soot_cp)
+    declared_soot_cp_sha256 = manifest.get("sootDependencyClasspathSha256")
+    if explicit_soot_cp and (not isinstance(declared_soot_cp_sha256, str) or
+                             declared_soot_cp_sha256 != soot_cp_sha256):
+        raise ValueError("ordered Soot dependency classpath differs from static "
+                         "weave manifest; supply analysis.classpath as "
+                         "soot_dependency_classpath without reordering")
+    runtime_cp = ([*originals, *soot_cp, *test_cp, *tool_cp]
+                  if explicit_soot_cp else [*tool_cp, *originals, *test_cp])
     graph_jar = _path(raw.get("graph_jar"), base, "graph_jar")
     cwd = _path(raw.get("cwd"), base, "cwd", directory=True)
     java = raw.get("java", "java")
@@ -447,11 +495,10 @@ def load_config(path: Path) -> dict[str, Any]:
         raise ValueError("java must be an executable name or existing path")
     java_feature = _java_feature_version(java)
     runner = _runner(raw.get("runner"), junit)
-    _runner_class_sha256(runner["main_class"], [*tool_cp, *originals, *test_cp])
+    _runner_class_sha256(runner["main_class"], runtime_cp)
     post_weave = _post_weave(raw.get("post_weave"))
     if post_weave is not None:
-        _runner_class_sha256(post_weave["main_class"],
-                             [*tool_cp, *originals, *test_cp])
+        _runner_class_sha256(post_weave["main_class"], runtime_cp)
     trial_cwd_template = (_path(raw["trial_cwd_template"], base,
                                 "trial_cwd_template", directory=True)
                           if "trial_cwd_template" in raw else None)
@@ -464,6 +511,9 @@ def load_config(path: Path) -> dict[str, Any]:
             "weave_manifest": manifest_path, "static_scope_map": static_map,
             "original_class_dirs": originals, "tool_classpath": tool_cp,
             "test_classpath": test_cp, "graph_jar": graph_jar,
+            "soot_dependency_classpath": soot_cp,
+            "soot_dependency_classpath_sha256": soot_cp_sha256,
+            "explicit_soot_dependency_classpath": explicit_soot_cp,
             "cwd": cwd, "java": java, "java_feature_version": java_feature,
             "runner": runner,
             "post_weave": post_weave,
@@ -508,12 +558,14 @@ def prepare(config: dict[str, Any], output: Path) -> Path:
     effective_manifest = output / "weave-manifest.json"
     _write_json(effective_manifest, manifest)
     woven = output / "woven"
-    cp = os.pathsep.join(map(str, [*config["tool_classpath"],
-                                    *config["original_class_dirs"],
-                                    *config["test_classpath"]]))
-    argv = [config["java"], "-cp", cp,
+    dependency_cp = os.pathsep.join(map(str, config["soot_dependency_classpath"]))
+    launch_cp = os.pathsep.join(map(str, [*config["tool_classpath"],
+                                           *config["soot_dependency_classpath"],
+                                           *config["original_class_dirs"],
+                                           *config["test_classpath"]]))
+    argv = [config["java"], "-cp", launch_cp,
             "edu.uva.liftlab.mallory.graphchecker.weave.WeaveMain",
-            str(effective_manifest), str(stage), str(woven), cp]
+            str(effective_manifest), str(stage), str(woven), dependency_cp]
     with (output / "weave.stdout.log").open("wb") as stdout, (
             output / "weave.stderr.log").open("wb") as stderr:
         subprocess.run(argv, cwd=config["cwd"], check=True, timeout=1800,
@@ -533,9 +585,7 @@ def prepare(config: dict[str, Any], output: Path) -> Path:
     post_main_sha256: str | None = None
     if post is not None:
         final = output / "woven-post"
-        post_cp = os.pathsep.join(map(str, [woven, *config["tool_classpath"],
-                                            *config["original_class_dirs"],
-                                            *config["test_classpath"]]))
+        post_cp = os.pathsep.join(map(str, [woven, *_runtime_classpath(config)]))
         substitutions = {"{generic_woven}": str(woven),
                          "{final_woven}": str(final),
                          "{classpath}": post_cp}
@@ -543,9 +593,7 @@ def prepare(config: dict[str, Any], output: Path) -> Path:
                      post["main_class"],
                      *(substitutions.get(item, item) for item in post["args"])]
         post_main_sha256 = _runner_class_sha256(
-            post["main_class"], [*config["tool_classpath"],
-                                 *config["original_class_dirs"],
-                                 *config["test_classpath"]])
+            post["main_class"], _runtime_classpath(config))
         with (output / "post-weave.stdout.log").open("wb") as stdout, (
                 output / "post-weave.stderr.log").open("wb") as stderr:
             subprocess.run(post_argv, cwd=config["cwd"], check=True,
@@ -567,15 +615,14 @@ def prepare(config: dict[str, Any], output: Path) -> Path:
         "effective_manifest_sha256": _sha256(effective_manifest),
         "static_scope_map_sha256": _sha256(config["static_scope_map"]),
         "graph_jar_sha256": _sha256(config["graph_jar"]),
+        "soot_dependency_classpath_sha256": config["soot_dependency_classpath_sha256"],
+        "soot_dependency_classpath": list(map(str, config["soot_dependency_classpath"])),
+        "runtime_classpath": list(map(str, _runtime_classpath(config))),
         "java_feature_version": config["java_feature_version"],
         "runner_class_sha256": _runner_class_sha256(
-            config["runner"]["main_class"],
-            [*config["tool_classpath"], *config["original_class_dirs"],
-             *config["test_classpath"]]),
+            config["runner"]["main_class"], _runtime_classpath(config)),
         "junit_class_sha256": _runner_class_sha256(
-            config["junit"]["class"],
-            [*config["tool_classpath"], *config["original_class_dirs"],
-             *config["test_classpath"]]),
+            config["junit"]["class"], _runtime_classpath(config)),
         "original_class_sha256": original_hashes,
         "original_class_major": original_majors,
         "woven_class_sha256": woven_hashes,
@@ -594,16 +641,21 @@ def _verify_prepared(config: dict[str, Any], prepared: Path) -> list[Path]:
             receipt.get("source_manifest_sha256") != _sha256(config["weave_manifest"]) or
             receipt.get("static_scope_map_sha256") != _sha256(config["static_scope_map"]) or
             receipt.get("graph_jar_sha256") != _sha256(config["graph_jar"]) or
+            receipt.get("soot_dependency_classpath_sha256",
+                        config["soot_dependency_classpath_sha256"]) !=
+            config["soot_dependency_classpath_sha256"] or
+            (receipt.get("soot_dependency_classpath") is not None and
+             receipt["soot_dependency_classpath"] !=
+             list(map(str, config["soot_dependency_classpath"]))) or
+            (receipt.get("runtime_classpath") is not None and
+             receipt["runtime_classpath"] !=
+             list(map(str, _runtime_classpath(config)))) or
             receipt.get("java_feature_version", config["java_feature_version"]) !=
             config["java_feature_version"] or
             receipt.get("runner_class_sha256") != _runner_class_sha256(
-                config["runner"]["main_class"],
-                [*config["tool_classpath"], *config["original_class_dirs"],
-                 *config["test_classpath"]]) or
+                config["runner"]["main_class"], _runtime_classpath(config)) or
             receipt.get("junit_class_sha256") != _runner_class_sha256(
-                config["junit"]["class"],
-                [*config["tool_classpath"], *config["original_class_dirs"],
-                 *config["test_classpath"]]) or
+                config["junit"]["class"], _runtime_classpath(config)) or
             receipt.get("effective_manifest_sha256") != _sha256(
                 prepared / "weave-manifest.json") or
             receipt.get("trial_cwd_template_sha256") != config["trial_cwd_template_sha256"] or
@@ -640,9 +692,7 @@ def _verify_prepared(config: dict[str, Any], prepared: Path) -> list[Path]:
         return [prepared / "woven"]
     if not isinstance(post_hashes, dict) or not post_hashes or (
             receipt.get("post_weave_main_sha256") != _runner_class_sha256(
-                post["main_class"], [*config["tool_classpath"],
-                                     *config["original_class_dirs"],
-                                     *config["test_classpath"]])):
+                post["main_class"], _runtime_classpath(config))):
         raise ValueError("post-weave adapter or receipt changed")
     final = prepared / "woven-post"
     found = {path.relative_to(final).as_posix(): _sha256(path)
@@ -929,9 +979,7 @@ def run_trial(config: dict[str, Any], prepared: Path, trial: Path,
         env.pop(name, None)
     if "-javaagent:" in env.get("JAVA_TOOL_OPTIONS", ""):
         raise ValueError("JAVA_TOOL_OPTIONS contains a legacy Java agent")
-    cp = os.pathsep.join(map(str, [*woven, *config["tool_classpath"],
-                                    *config["original_class_dirs"],
-                                    *config["test_classpath"]]))
+    cp = os.pathsep.join(map(str, [*woven, *_runtime_classpath(config)]))
     runner = config["runner"]
     argv = [config["java"], *(_trial_arg(arg, trial, workdir)
                                for arg in runner["jvm_args"]), "-cp", cp,

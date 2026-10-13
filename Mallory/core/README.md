@@ -30,6 +30,7 @@ placeholders:
   "static_scope_map": "/absolute/static-output/static_scope_map.jsonl",
   "original_class_dirs": ["/absolute/original/module-a/classes", "/absolute/original/module-b/test-classes"],
   "tool_classpath": ["/absolute/weaver/classes", "/absolute/weaver/dependencies.jar"],
+  "soot_dependency_classpath": ["/exact/first/dependency.jar", "/exact/second/dependency.jar"],
   "test_classpath": ["/absolute/original/compiled/test-classes", "/absolute/original/test-dependencies.jar"],
   "graph_jar": "/absolute/mallory-graphchecker-runtime-all.jar"
 }
@@ -67,10 +68,20 @@ adapter class are pinned in the weave receipt. Trial classpath places the
 final adapter output before the generic weave output. Its static scope and
 fault controller still come from the same Soot manifest.
 
+`soot_dependency_classpath` must copy the exact ordered `analysis.classpath`
+strings from the static planner input that produced this manifest. The core
+checks the manifest's classpath SHA-256 before weaving and passes that same
+string as WeaveMain's dependency classpath. Runtime precedence is woven
+classes, original process directories, ordered Soot dependencies, test
+classpath, then tool classpath. A classpath mismatch stops preparation; it
+cannot be repaired by silently reordering jars.
+
 For a target that is itself a selected `THROW`, omit `check_site_id`. Both
 target site IDs must resolve to unique sites in the static weave manifest;
-the throw site must declare the same exception class. The current preparation
-step stages selected class files from the ordered `original_class_dirs` into
+the throw site must declare the same exception class. A named `THROW` is
+required even when the healthy anchor is a branch: a branch-only manifest
+cannot yield an exact target-exception oracle. Preparation stages selected
+class files from the ordered `original_class_dirs` into
 an isolated weave input, then pins each source file hash. The singular
 `original_classes` key is accepted for one-directory builds. Source aliases
 and RPC/state carriers remain
