@@ -26,6 +26,21 @@ separately and unions only the resulting feedback for scheduling. It never
 asserts an edge between distinct target occurrences. `observedFatal` is only
 the GraphChecker target branch metadata; a target exception still needs an
 exact runtime throw receipt and the campaign oracle.
+Only occurrences with a recorded `reachedAnchor=true` enter the target set.
+Unreached target rows are preserved in `unreachedTargetRows` but cannot add
+closure members or satisfy the oracle. A run with one reached and one
+unreached occurrence retains the reached target.
+
+Target-set mode makes one Java invocation per trial. It reads the native
+`SessionReader` target list and builds one original `Corpus`, then calls the
+original `Branches` and `ClosurePlanner` independently for each selected exact
+target. The original `Corpus.read` currently performs its own `SessionReader`
+read, so there are two full session reads per trial, independent of the number
+of target occurrences. The campaign calls this mode directly; it does not
+start a separate target-listing JVM first. In three runs of a two-target
+synthetic session, median wall time was 1.821 s for the previous listing plus
+two exact analyses and 0.668 s for the single-invocation mode on this host.
+This is a small-fixture timing, not a real-system throughput claim.
 
 Use from Python after building `Mallory/static_scope_port/original_engine`:
 
@@ -67,10 +82,16 @@ Runtime fault matching must still use the exact event identity within its
 own run.
 
 For reproducible runs, pass `engine_jar=Path("/path/to/pinned-engine.jar")` to
-both calls. The bridge records the exact engine, static map, bridge source,
-and native session digests in the saved JSON and rejects changed inputs during extraction. It
+both calls. The bridge records the exact engine, static map, static map plus
+neighboring region skeleton, bridge source, and native session digests in the
+saved JSON and rejects changed inputs during extraction. It
 also verifies that `SessionReader`, `Corpus`, `Branches`, `ClosurePlanner`, and
 `StaticScopeMap` were loaded from that one selected source-built JAR.
+Original native session row files use the GraphChecker JSONL layout. The
+static scope map and neighboring region skeleton may be plain JSONL or gzip;
+both forms are covered by the target-set tests. The
+`staticScopeMapSha256` field hashes only the map; `staticScopeBundleSha256`
+also hashes the skeleton file GraphChecker reads.
 
 `NativeFeedbackMain` currently emits only **observed** edge families. The
 original `ClosurePlanner` can admit static candidate writers/producers that
@@ -101,7 +122,7 @@ ZooKeeper adapters currently publish complete physical transport pairings.
 
 Current compatibility limits: sessions must be single-session iterations;
 the source-built original engine must include its post-run `explore` sources;
-this module does not inject faults or change active campaigns. It does not
+this module does not inject faults. It does not
 infer program order from `threadKey` because activation rows do not state an
 order. Native sessions that record no standalone `ReadRow` produce no `STATE`
 edge even if the VM expression log has a guarded `ReadFromExpression`; the

@@ -11,7 +11,8 @@ from pathlib import Path
 from unittest.mock import patch
 
 from Mallory.native_graphchecker_feedback.feedback import (
-    HERE as FEEDBACK_DIR, _classpath, build, summarize_target_set,
+    HERE as FEEDBACK_DIR, NoNativeTargetError, _classpath, build,
+    summarize_target_set,
 )
 from Mallory.native_graphchecker_campaign import campaign as core
 
@@ -64,16 +65,18 @@ class NativeCampaignFixtureTest(unittest.TestCase):
                          "zero_vm_sha256": "fixture-zero",
                          "runner_classpath_artifacts": []}
 
-    def _generate(self, iteration: Path) -> None:
+    def _generate(self, iteration: Path, *, mixed_target: bool = False) -> None:
         subprocess.run(["java", "-cp", self.classpath,
                         "edu.uva.liftlab.mallory.nativefeedback.SyntheticNativeSession",
-                        str(iteration)], check=True, timeout=30, capture_output=True)
+                        str(iteration), *(["--second-target-unreached"]
+                                         if mixed_target else [])],
+                       check=True, timeout=30, capture_output=True)
 
     def _executor(self, *, emit_door: bool, applied_identity: str | None = None,
-                  throw: bool = False):
+                  throw: bool = False, mixed_target: bool = False):
         def execute(config, admitted, trial, faults):
             iteration = trial / "iteration-native"
-            self._generate(iteration)
+            self._generate(iteration, mixed_target=mixed_target)
             if emit_door:
                 summary = summarize_target_set(
                     iteration, config["target_site"], trial / "peek.json",
@@ -134,6 +137,19 @@ class NativeCampaignFixtureTest(unittest.TestCase):
         self.assertEqual(0, faulted["native_delta"]["newObservedClosureEdges"])
         self.assertTrue((self.root / "campaign/summary.json").is_file())
 
+    def test_mixed_reach_keeps_reached_target_without_unreached_union(self) -> None:
+        state = self._run(self._executor(emit_door=True, throw=True,
+                                         mixed_target=True))
+        self.assertEqual("complete_trial_budget", state["status"])
+        faulted = core._load(self.root / "campaign/trials/r0001/result.json")
+        summary = core._load(self.root / "campaign/trials/r0001/native-summary.json")
+        self.assertEqual("candidate", faulted["status"])
+        self.assertTrue(faulted["native_target_retained"])
+        self.assertEqual(1, len(summary["perTargetOccurrences"]))
+        self.assertEqual(1, len(summary["unreachedTargetRows"]))
+        self.assertNotIn(summary["unreachedTargetRows"][0]["occurrenceId"],
+                         summary["targetOccurrenceIds"])
+
     def test_cross_run_selector_binds_fresh_exact_occurrence(self) -> None:
         planned = [{"siteId": "RPC#getKeys", "node": "nn0",
                     "actorEpochOrdinal": 1, "ordinal": 2,
@@ -162,15 +178,17 @@ class NativeCampaignFixtureTest(unittest.TestCase):
         self.assertEqual([], state["queue"])
 
     def test_fault_trial_without_target_is_discarded_even_with_throw_receipt(self) -> None:
-        native_targets = core.list_native_targets
+        native_summary = core.summarize_target_set
         seen = 0
 
-        def targets(*args, **kwargs):
+        def target_set(*args, **kwargs):
             nonlocal seen
             seen += 1
-            return native_targets(*args, **kwargs) if seen == 1 else []
+            if seen == 1:
+                return native_summary(*args, **kwargs)
+            raise NoNativeTargetError("no native target occurrence matches site/actor selection")
 
-        with patch.object(core, "list_native_targets", side_effect=targets):
+        with patch.object(core, "summarize_target_set", side_effect=target_set):
             state = self._run(self._executor(emit_door=True, throw=True))
         faulted = core._load(self.root / "campaign/trials/r0001/result.json")
         self.assertEqual("target_lost", faulted["status"])

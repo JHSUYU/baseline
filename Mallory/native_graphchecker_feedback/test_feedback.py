@@ -3,16 +3,18 @@
 from __future__ import annotations
 
 import copy
+import gzip
 import json
 import os
 from pathlib import Path
 import tempfile
 import unittest
 import subprocess
+from unittest.mock import patch
 
 from Mallory.native_graphchecker_feedback.feedback import (
-    ENGINE, HERE, _classpath, build, delta, list_native_targets, summarize,
-    summarize_target_set,
+    ENGINE, HERE, NoNativeTargetError, _classpath, _scope_digest, build, delta,
+    list_native_targets, summarize, summarize_target_set,
 )
 
 
@@ -223,6 +225,140 @@ class NativeTypedEdgeIntegrationTest(unittest.TestCase):
         self.assertTrue(feedback["targetSetMode"])
         self.assertEqual(1, feedback["newClosureNodes"])
         self.assertEqual(2, len(feedback["trialTargetOccurrenceIds"]))
+        missing_pin = copy.deepcopy(trial)
+        missing_pin.pop("staticScopeBundleSha256")
+        with self.assertRaisesRegex(ValueError, "staticScopeBundleSha256"):
+            delta(healthy, missing_pin)
+
+    def test_one_pass_target_set_equals_separate_exact_plans(self) -> None:
+        engine_jar = (Path(os.environ["GC_NATIVE_ENGINE_JAR"])
+                      if os.environ.get("GC_NATIVE_ENGINE_JAR") else None)
+        classes = build(engine_jar=engine_jar)
+        classpath = f"{classes}:{_classpath(engine_jar)}"
+        subprocess.run(["javac", "-cp", classpath, "-d", str(classes),
+                        str(HERE / "SyntheticNativeSession.java")], check=True,
+                       timeout=120, capture_output=True)
+        with tempfile.TemporaryDirectory() as scratch:
+            root = Path(scratch)
+            pair = root / "pair"
+            subprocess.run(["java", "-cp", classpath,
+                            "edu.uva.liftlab.mallory.nativefeedback.SyntheticNativeSession",
+                            str(pair), "--second-target"], check=True,
+                           timeout=30, capture_output=True)
+            targets = list_native_targets(pair, "Keys#check#u3",
+                                          engine_jar=engine_jar)
+            with patch("Mallory.native_graphchecker_feedback.feedback.subprocess.run",
+                       wraps=subprocess.run) as invoked:
+                combined = summarize_target_set(
+                    pair, "Keys#check#u3", root / "combined.json",
+                    static_scope_map=pair / "static_scope_map.jsonl",
+                    engine_jar=engine_jar)
+            java_calls = [call.args[0] for call in invoked.call_args_list
+                          if call.args and isinstance(call.args[0], list)
+                          and "edu.uva.liftlab.mallory.nativefeedback.NativeFeedbackMain"
+                          in call.args[0]]
+            self.assertEqual(1, len(java_calls))
+            self.assertIn("--target-set", java_calls[0])
+            for target in targets:
+                separate = summarize(
+                    pair, "Keys#check#u3", root / (target["nodeName"] + ".json"),
+                    exact_occurrence_id=target["occurrenceId"],
+                    static_scope_map=pair / "static_scope_map.jsonl",
+                    engine_jar=engine_jar)
+                from_set = next(item for item in combined["perTargetOccurrences"]
+                                if item["targetOccurrenceId"] == target["occurrenceId"])
+                self.assertEqual(separate, from_set)
+            filtered = summarize_target_set(
+                pair, "Keys#check#u3", root / "filtered.json",
+                static_scope_map=pair / "static_scope_map.jsonl",
+                actor_names={"dn2"}, engine_jar=engine_jar)
+            self.assertEqual(1, len(filtered["perTargetOccurrences"]))
+            self.assertEqual("dn2", filtered["perTargetOccurrences"][0]["targetNodeName"])
+            with self.assertRaises(NoNativeTargetError):
+                summarize_target_set(
+                    pair, "Keys#check#u3", root / "absent.json",
+                    static_scope_map=pair / "static_scope_map.jsonl",
+                    actor_names={"missing"}, engine_jar=engine_jar)
+
+    def test_mixed_target_reach_keeps_only_reached_closure(self) -> None:
+        engine_jar = (Path(os.environ["GC_NATIVE_ENGINE_JAR"])
+                      if os.environ.get("GC_NATIVE_ENGINE_JAR") else None)
+        classes = build(engine_jar=engine_jar)
+        classpath = f"{classes}:{_classpath(engine_jar)}"
+        subprocess.run(["javac", "-cp", classpath, "-d", str(classes),
+                        str(HERE / "SyntheticNativeSession.java")], check=True,
+                       timeout=120, capture_output=True)
+        with tempfile.TemporaryDirectory() as scratch:
+            root = Path(scratch)
+            pair = root / "mixed"
+            subprocess.run(["java", "-cp", classpath,
+                            "edu.uva.liftlab.mallory.nativefeedback.SyntheticNativeSession",
+                            str(pair), "--second-target-unreached"], check=True,
+                           timeout=30, capture_output=True)
+            result = summarize_target_set(
+                pair, "Keys#check#u3", root / "mixed.json",
+                static_scope_map=pair / "static_scope_map.jsonl",
+                engine_jar=engine_jar)
+            self.assertEqual(1, len(result["perTargetOccurrences"]))
+            self.assertEqual("dn", result["perTargetOccurrences"][0]["targetNodeName"])
+            self.assertEqual(1, len(result["unreachedTargetRows"]))
+            self.assertNotIn(result["unreachedTargetRows"][0]["occurrenceId"],
+                             result["targetOccurrenceIds"])
+            with self.assertRaises(NoNativeTargetError) as excluded:
+                summarize_target_set(
+                    pair, "Keys#check#u3", root / "excluded.json",
+                    static_scope_map=pair / "static_scope_map.jsonl",
+                    actor_names={"dn2"}, engine_jar=engine_jar)
+            self.assertTrue(excluded.exception.site_target_rows_seen)
+            alone = root / "alone"
+            subprocess.run(["java", "-cp", classpath,
+                            "edu.uva.liftlab.mallory.nativefeedback.SyntheticNativeSession",
+                            str(alone), "--unreached-target"], check=True,
+                           timeout=30, capture_output=True)
+            with self.assertRaises(NoNativeTargetError) as no_reach:
+                summarize_target_set(
+                    alone, "Keys#check#u3", root / "alone.json",
+                    static_scope_map=alone / "static_scope_map.jsonl",
+                    engine_jar=engine_jar)
+            self.assertTrue(no_reach.exception.site_target_rows_seen)
+
+    def test_gzipped_static_scope_preserves_plain_native_session_feedback(self) -> None:
+        engine_jar = (Path(os.environ["GC_NATIVE_ENGINE_JAR"])
+                      if os.environ.get("GC_NATIVE_ENGINE_JAR") else None)
+        classes = build(engine_jar=engine_jar)
+        classpath = f"{classes}:{_classpath(engine_jar)}"
+        subprocess.run(["javac", "-cp", classpath, "-d", str(classes),
+                        str(HERE / "SyntheticNativeSession.java")], check=True,
+                       timeout=120, capture_output=True)
+        with tempfile.TemporaryDirectory() as scratch:
+            root = Path(scratch)
+            pair = root / "pair"
+            subprocess.run(["java", "-cp", classpath,
+                            "edu.uva.liftlab.mallory.nativefeedback.SyntheticNativeSession",
+                            str(pair), "--second-target"], check=True,
+                           timeout=30, capture_output=True)
+            plain = pair / "static_scope_map.jsonl"
+            zipped = pair / "static_scope_map.jsonl.gz"
+            with gzip.open(zipped, "wb") as stream:
+                stream.write(plain.read_bytes())
+            skeleton = pair / "region_skeletons.jsonl.gz"
+            with gzip.open(skeleton, "wb") as stream:
+                stream.write(b'{"regionId":"R.target","methods":[]}\n')
+            first_scope_digest = _scope_digest(plain)
+            baseline = summarize_target_set(
+                pair, "Keys#check#u3", root / "plain.json",
+                static_scope_map=plain, engine_jar=engine_jar)
+            compressed = summarize_target_set(
+                pair, "Keys#check#u3", root / "gzip.json",
+                static_scope_map=zipped, engine_jar=engine_jar)
+            for name in ("closureMembers", "observedEdgesWithinClosure",
+                         "branchCoverage", "targetOccurrenceIds", "targetRows"):
+                self.assertEqual(baseline[name], compressed[name])
+            self.assertNotEqual(baseline["staticScopeMapSha256"],
+                                compressed["staticScopeMapSha256"])
+            with gzip.open(skeleton, "wb") as stream:
+                stream.write(b'{"regionId":"R.target","methods":["changed"]}\n')
+            self.assertNotEqual(first_scope_digest, _scope_digest(plain))
 
 
 if __name__ == "__main__":

@@ -121,9 +121,16 @@ public final class NativeFeedbackMain {
                 "subject", item.subject(), "detail", item.detail());
     }
 
-    private static Map<String, Object> analyze(Path iteration, Path scopePath,
-                                                String site, String expected,
-                                                int maxTasks) throws Exception {
+    private static Map<String, Object> targetEvidence(TargetRow target) {
+        return row("seq", target.seq(), "siteId", target.anchorSiteId(),
+                "occurrenceId", target.occurrence().id(),
+                "occurrence", target.occurrence().render(),
+                "reachedAnchor", target.reachedAnchor(),
+                "observedFatal", target.observedFatal(),
+                "phiTerm", target.phiTerm());
+    }
+
+    private static SessionReader readSession(Path iteration) throws Exception {
         List<SessionReader> sessions = SessionReader.readAll(iteration,
                 Collections.<SessionReader>emptyList());
         if (sessions.size() != 1) {
@@ -135,6 +142,13 @@ public final class NativeFeedbackMain {
             throw new IllegalArgumentException("incomplete native session: "
                     + session.incomplete());
         }
+        return session;
+    }
+
+    private static Map<String, Object> analyze(SessionReader session,
+                                                Corpus corpus, StaticScopeMap scope,
+                                                String site, String expected,
+                                                int maxTasks) throws Exception {
         Set<OccurrenceAddress> matching = new LinkedHashSet<>();
         List<Map<String, Object>> targetRows = new ArrayList<>();
         for (TargetRow target : session.targets()) {
@@ -143,24 +157,16 @@ public final class NativeFeedbackMain {
                 continue;
             }
             matching.add(target.occurrence());
-            targetRows.add(row("seq", target.seq(), "siteId", target.anchorSiteId(),
-                    "occurrenceId", target.occurrence().id(),
-                    "occurrence", target.occurrence().render(),
-                    "reachedAnchor", target.reachedAnchor(),
-                    "observedFatal", target.observedFatal(),
-                    "phiTerm", target.phiTerm()));
+            targetRows.add(targetEvidence(target));
         }
         if (matching.size() != 1) {
             throw new IllegalArgumentException("target site/occurrence must resolve to exactly one "
                     + "native occurrence; found " + matching.size());
         }
         OccurrenceAddress anchor = matching.iterator().next();
-        Corpus corpus = Corpus.read(iteration, null);
         List<GapRow> branchGaps = new ArrayList<>();
         Branches branches = Branches.of(corpus,
                 Collections.singletonList(anchor), branchGaps);
-        StaticScopeMap scope = scopePath == null ? StaticScopeMap.empty()
-                : StaticScopeMap.read(scopePath);
         ClosurePlanner.Plan plan = ClosurePlanner.plan(corpus, anchor,
                 maxTasks, scope, branches);
         Set<String> closure = new LinkedHashSet<>();
@@ -307,6 +313,16 @@ public final class NativeFeedbackMain {
                 "scopeMapStated", scope.stated());
     }
 
+    private static Map<String, Object> analyze(Path iteration, Path scopePath,
+                                                String site, String expected,
+                                                int maxTasks) throws Exception {
+        SessionReader session = readSession(iteration);
+        Corpus corpus = Corpus.read(iteration, null);
+        StaticScopeMap scope = scopePath == null ? StaticScopeMap.empty()
+                : StaticScopeMap.read(scopePath);
+        return analyze(session, corpus, scope, site, expected, maxTasks);
+    }
+
     private static void write(Path output, Object result) throws Exception {
         if (output.toAbsolutePath().getParent() != null) {
             Files.createDirectories(output.toAbsolutePath().getParent());
@@ -317,14 +333,13 @@ public final class NativeFeedbackMain {
 
     private static List<Map<String, Object>> listTargets(Path iteration,
                                                           String site) throws Exception {
-        List<SessionReader> sessions = SessionReader.readAll(iteration,
-                Collections.<SessionReader>emptyList());
-        if (sessions.size() != 1 || sessions.get(0).manifest() == null
-                || !sessions.get(0).incomplete().isEmpty()) {
-            throw new IllegalArgumentException("list-targets needs one complete native session");
-        }
+        return listTargets(readSession(iteration), site);
+    }
+
+    private static List<Map<String, Object>> listTargets(SessionReader session,
+                                                          String site) {
         Map<String, Map<String, Object>> found = new LinkedHashMap<>();
-        for (TargetRow target : sessions.get(0).targets()) {
+        for (TargetRow target : session.targets()) {
             if (!site.equals(target.anchorSiteId())) continue;
             OccurrenceAddress occurrence = target.occurrence();
             found.putIfAbsent(occurrence.id(), row(
@@ -340,7 +355,94 @@ public final class NativeFeedbackMain {
         return result;
     }
 
+    private static Map<String, Object> analyzeTargetSet(Path iteration,
+            Path scopePath, String site, int maxTasks, Path actorsPath)
+            throws Exception {
+        SessionReader session = readSession(iteration);
+        List<Map<String, Object>> listed = listTargets(session, site);
+        Set<String> reached = new LinkedHashSet<>();
+        List<Map<String, Object>> unreachedRows = new ArrayList<>();
+        for (TargetRow target : session.targets()) {
+            if (!site.equals(target.anchorSiteId())) continue;
+            if (target.reachedAnchor()) {
+                reached.add(target.occurrence().id());
+            } else {
+                unreachedRows.add(targetEvidence(target));
+            }
+        }
+        Set<String> actors = null;
+        if (actorsPath != null) {
+            String[] names = JSON.fromJson(new String(Files.readAllBytes(actorsPath),
+                    StandardCharsets.UTF_8), String[].class);
+            if (names == null) throw new IllegalArgumentException("actor names must be an array");
+            actors = new LinkedHashSet<>();
+            for (String name : names) {
+                if (name == null || name.isEmpty()) {
+                    throw new IllegalArgumentException("actor name is empty");
+                }
+                actors.add(name);
+            }
+        }
+        List<Map<String, Object>> selected = new ArrayList<>();
+        boolean actorRowsSeen = false;
+        Set<String> actorOccurrenceIds = new HashSet<>();
+        for (Map<String, Object> item : listed) {
+            if (actors != null && !actors.contains(item.get("nodeName"))) continue;
+            actorRowsSeen = true;
+            actorOccurrenceIds.add((String) item.get("occurrenceId"));
+            if (reached.contains(item.get("occurrenceId"))) {
+                selected.add(item);
+            }
+        }
+        if (actors != null) {
+            List<Map<String, Object>> actorRows = new ArrayList<>();
+            for (Map<String, Object> target : unreachedRows) {
+                if (actorOccurrenceIds.contains(target.get("occurrenceId"))) {
+                    actorRows.add(target);
+                }
+            }
+            unreachedRows = actorRows;
+        }
+        if (selected.isEmpty()) {
+            return row("schemaVersion", 1, "targetSiteId", site,
+                    "targets", selected, "perTargetOccurrences",
+                    Collections.emptyList(), "siteTargetRowsSeen", actorRowsSeen,
+                    "unreachedTargetRows", unreachedRows);
+        }
+        Corpus corpus = Corpus.read(iteration, null);
+        StaticScopeMap scope = scopePath == null ? StaticScopeMap.empty()
+                : StaticScopeMap.read(scopePath);
+        List<Map<String, Object>> plans = new ArrayList<>();
+        for (Map<String, Object> item : selected) {
+            Map<String, Object> plan = analyze(session, corpus, scope, site,
+                    (String) item.get("occurrenceId"), maxTasks);
+            if (!item.get("targetFamily").equals(plan.get("targetFamily"))) {
+                throw new IllegalStateException("native target family changed during analysis");
+            }
+            plans.add(plan);
+        }
+        return row("schemaVersion", 1, "targetSiteId", site,
+                "targets", selected, "perTargetOccurrences", plans,
+                "siteTargetRowsSeen", actorRowsSeen,
+                "unreachedTargetRows", unreachedRows);
+    }
+
     public static void main(String[] args) throws Exception {
+        if (args.length == 7 && "--target-set".equals(args[0])) {
+            requireSourceBuiltOriginalClasses();
+            Path scope = "-".equals(args[2]) ? null : Paths.get(args[2]);
+            if (scope != null && !Files.isRegularFile(scope)) {
+                throw new IllegalArgumentException("scope map missing: " + scope);
+            }
+            int maxTasks = Integer.parseInt(args[4]);
+            if (maxTasks <= 0) {
+                throw new IllegalArgumentException("MAX_TASKS must be positive");
+            }
+            Path actors = "-".equals(args[5]) ? null : Paths.get(args[5]);
+            write(Paths.get(args[6]), analyzeTargetSet(Paths.get(args[1]),
+                    scope, args[3], maxTasks, actors));
+            return;
+        }
         if (args.length == 4 && "--list-targets".equals(args[0])) {
             requireSourceBuiltOriginalClasses();
             write(Paths.get(args[3]), row("schemaVersion", 1,

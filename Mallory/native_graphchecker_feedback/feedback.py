@@ -22,6 +22,14 @@ ENGINE = HERE.parent / "static_scope_port" / "original_engine"
 JAVA_CLASS = "edu.uva.liftlab.mallory.nativefeedback.NativeFeedbackMain"
 
 
+class NoNativeTargetError(ValueError):
+    """A complete native trial has no target at the requested site and actors."""
+
+    def __init__(self, message: str, *, site_target_rows_seen: bool = False) -> None:
+        super().__init__(message)
+        self.site_target_rows_seen = site_target_rows_seen
+
+
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as stream:
@@ -41,6 +49,20 @@ def _session_digest(iteration: Path) -> str:
             continue
         digest.update(path.name.encode("utf-8") + b"\0")
         digest.update(bytes.fromhex(_sha256(path)))
+    return digest.hexdigest()
+
+
+def _scope_digest(scope: Path) -> str:
+    """Pin the map and the neighboring skeleton GraphChecker actually reads."""
+    digest = hashlib.sha256()
+    digest.update(scope.name.encode("utf-8") + b"\0")
+    digest.update(bytes.fromhex(_sha256(scope)))
+    for name in ("region_skeletons.jsonl", "region_skeletons.jsonl.gz"):
+        sidecar = scope.parent / name
+        if sidecar.is_file():
+            digest.update(name.encode("utf-8") + b"\0")
+            digest.update(bytes.fromhex(_sha256(sidecar)))
+            break
     return digest.hexdigest()
 
 
@@ -99,6 +121,7 @@ def summarize(iteration: Path, target_site: str, output: Path, *,
     jar_sha = _sha256(selected_jar)
     session_sha = _session_digest(iteration)
     scope_sha = _sha256(static_scope_map) if static_scope_map else ""
+    bundle_sha = _scope_digest(static_scope_map) if static_scope_map else ""
     bridge_sha = _sha256(HERE / "NativeFeedbackMain.java")
     classes = build(engine_jar=selected_jar)
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -118,7 +141,7 @@ def summarize(iteration: Path, target_site: str, output: Path, *,
         raise ValueError("GraphChecker engine JAR changed during native analysis")
     if _session_digest(iteration) != session_sha:
         raise ValueError("native session changed during analysis")
-    if static_scope_map and _sha256(static_scope_map) != scope_sha:
+    if static_scope_map and _scope_digest(static_scope_map) != bundle_sha:
         raise ValueError("static scope map changed during native analysis")
     if value.get("schemaVersion") != 1 or value.get("targetSiteId") != target_site:
         raise ValueError("native session extractor returned a different target")
@@ -128,6 +151,7 @@ def summarize(iteration: Path, target_site: str, output: Path, *,
     value["engineJarSha256"] = jar_sha
     value["nativeSessionSha256"] = session_sha
     value["staticScopeMapSha256"] = scope_sha
+    value["staticScopeBundleSha256"] = bundle_sha
     value["bridgeSourceSha256"] = bridge_sha
     value["maxTasks"] = max_tasks
     _write_atomic_json(output, value)
@@ -187,28 +211,92 @@ def summarize_target_set(iteration: Path, target_site: str, output: Path, *,
     ``perTargetOccurrences``. The union is only a scheduling score; it is not
     an assertion that one occurrence caused another.
     """
+    if not target_site:
+        raise ValueError("target_site must be a GraphChecker anchorSiteId")
+    if max_tasks <= 0:
+        raise ValueError("max_tasks must be positive")
     if not static_scope_map.is_file():
         raise FileNotFoundError(static_scope_map)
-    before = _session_digest(iteration)
-    listed = list_native_targets(iteration, target_site, engine_jar=engine_jar)
-    selected = [item for item in listed if actor_names is None
-                or item["nodeName"] in actor_names]
+    if actor_names is not None and (not isinstance(actor_names, set) or
+                                    not all(isinstance(name, str) and name
+                                            for name in actor_names)):
+        raise ValueError("actor_names must contain nonempty node names")
+    selected_jar = _engine_jar(engine_jar)
+    jar_sha = _sha256(selected_jar)
+    session_sha = _session_digest(iteration)
+    scope_sha = _sha256(static_scope_map)
+    bundle_sha = _scope_digest(static_scope_map)
+    bridge_sha = _sha256(HERE / "NativeFeedbackMain.java")
+    classes = build(engine_jar=selected_jar)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix=".native-target-set-",
+                                     dir=output.parent) as scratch:
+        raw_output = Path(scratch) / "summary.json"
+        actors_path = Path(scratch) / "actors.json"
+        if actor_names is not None:
+            actors_path.write_text(json.dumps(sorted(actor_names)), encoding="utf-8")
+        command = ["java", "-Xmx4g",
+                   f"-Dmallory.native.expectedEngineJar={selected_jar}",
+                   "-cp", f"{classes}:{_classpath(selected_jar)}", JAVA_CLASS,
+                   "--target-set", str(iteration), str(static_scope_map),
+                   target_site, str(max_tasks),
+                   str(actors_path) if actor_names is not None else "-",
+                   str(raw_output)]
+        subprocess.run(command, check=True, timeout=1800,
+                       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        extracted = json.loads(raw_output.read_text(encoding="utf-8"))
+    if _sha256(selected_jar) != jar_sha:
+        raise ValueError("GraphChecker engine JAR changed during native analysis")
+    if _session_digest(iteration) != session_sha:
+        raise ValueError("native session changed during analysis")
+    if _scope_digest(static_scope_map) != bundle_sha:
+        raise ValueError("static scope map changed during native analysis")
+    if extracted.get("schemaVersion") != 1 or extracted.get("targetSiteId") != target_site:
+        raise ValueError("native target-set extractor returned a different target")
+    selected = extracted.get("targets")
+    per_target = extracted.get("perTargetOccurrences")
+    site_rows_seen = extracted.get("siteTargetRowsSeen")
+    unreached_rows = extracted.get("unreachedTargetRows")
+    if not isinstance(selected, list) or not isinstance(per_target, list):
+        raise ValueError("native target-set extractor returned invalid occurrence lists")
+    if not isinstance(site_rows_seen, bool) or not isinstance(unreached_rows, list):
+        raise ValueError("native target-set extractor omitted reach evidence")
+    if len(selected) != len(per_target) or len({
+            item.get("occurrenceId") for item in selected if isinstance(item, dict)
+    }) != len(selected):
+        raise ValueError("native target-set extractor conflated occurrences")
     if not selected:
-        raise ValueError("no native target occurrence matches site/actor selection")
-    per_target: list[dict[str, Any]] = []
-    with tempfile.TemporaryDirectory(prefix="mallory-native-target-set-") as scratch:
-        for index, item in enumerate(selected):
-            one = summarize(iteration, target_site,
-                            Path(scratch) / f"target-{index}.json",
-                            exact_occurrence_id=item["occurrenceId"],
-                            static_scope_map=static_scope_map,
-                            max_tasks=max_tasks, engine_jar=engine_jar)
-            if one["targetFamily"] != item["targetFamily"]:
-                raise ValueError("native target family changed during extraction")
-            per_target.append(one)
-    if _session_digest(iteration) != before:
-        raise ValueError("native target set changed during analysis")
-    for key in ("engineJarSha256", "staticScopeMapSha256", "bridgeSourceSha256",
+        raise NoNativeTargetError("no reached native target occurrence matches site/actor selection",
+                                  site_target_rows_seen=site_rows_seen)
+    for item, one in zip(selected, per_target):
+        if (not isinstance(item, dict) or not isinstance(one, dict) or
+                not isinstance(item.get("occurrenceId"), str) or
+                not item["occurrenceId"] or
+                not isinstance(item.get("nodeName"), str) or
+                one.get("targetOccurrenceId") != item["occurrenceId"] or
+                one.get("targetFamily") != item.get("targetFamily") or
+                one.get("targetSiteId") != target_site or
+                (actor_names is not None and item["nodeName"] not in actor_names)):
+            raise ValueError("native target occurrence changed during extraction")
+        rows = one.get("targetRows")
+        members = one.get("closureMembers")
+        if not isinstance(rows, list) or not any(
+                row.get("occurrenceId") == item["occurrenceId"]
+                and row.get("reachedAnchor") is True
+                for row in rows if isinstance(row, dict)):
+            raise ValueError("native target plan lacks exact reached target row")
+        if not isinstance(members, list) or not any(
+                row.get("occurrenceId") == item["occurrenceId"]
+                for row in members if isinstance(row, dict)):
+            raise ValueError("native closure omitted exact target occurrence")
+        one["engineJarSha256"] = jar_sha
+        one["nativeSessionSha256"] = session_sha
+        one["staticScopeMapSha256"] = scope_sha
+        one["staticScopeBundleSha256"] = bundle_sha
+        one["bridgeSourceSha256"] = bridge_sha
+        one["maxTasks"] = max_tasks
+    for key in ("engineJarSha256", "staticScopeMapSha256",
+                "staticScopeBundleSha256", "bridgeSourceSha256",
                 "maxTasks", "method", "targetSiteId", "nativeSessionSha256"):
         if len({json.dumps(item[key], sort_keys=True) for item in per_target}) != 1:
             raise ValueError(f"native target set has mixed {key}")
@@ -238,6 +326,7 @@ def summarize_target_set(iteration: Path, target_site: str, output: Path, *,
         "targetRegionIds": sorted({one["targetRegionId"] for one in per_target}),
         "targetOccurrenceIds": sorted(one["targetOccurrenceId"] for one in per_target),
         "targetRows": rows,
+        "unreachedTargetRows": unreached_rows,
         "perTargetOccurrences": per_target,
         "closureMembers": sorted(members.values(), key=lambda row: row["occurrenceId"]),
         "observedEdgesWithinClosure": list(edges.values()),
@@ -246,6 +335,7 @@ def summarize_target_set(iteration: Path, target_site: str, output: Path, *,
         "truncated": sorted(truncated),
         "engineJarSha256": first["engineJarSha256"],
         "staticScopeMapSha256": first["staticScopeMapSha256"],
+        "staticScopeBundleSha256": first["staticScopeBundleSha256"],
         "bridgeSourceSha256": first["bridgeSourceSha256"],
         "nativeSessionSha256": first["nativeSessionSha256"],
         "maxTasks": max_tasks,
@@ -296,12 +386,18 @@ def delta(healthy: dict[str, Any], trial: dict[str, Any]) -> dict[str, Any]:
     a trial without the target is rejected.
     """
     for key in ("schemaVersion", "method", "targetSiteId", "targetSetMode",
-                "engineJarSha256", "staticScopeMapSha256", "bridgeSourceSha256",
+                "engineJarSha256", "staticScopeMapSha256",
+                "staticScopeBundleSha256", "bridgeSourceSha256",
                 "maxTasks"):
         if healthy.get(key) != trial.get(key):
             raise ValueError(f"incompatible native feedback: {key}")
     target_set = healthy.get("targetSetMode") is True
     if target_set:
+        if (not isinstance(healthy.get("staticScopeBundleSha256"), str)
+                or not healthy["staticScopeBundleSha256"]
+                or not isinstance(trial.get("staticScopeBundleSha256"), str)
+                or not trial["staticScopeBundleSha256"]):
+            raise ValueError("target-set feedback lacks pinned static scope bundle")
         if not set(healthy.get("targetRegionIds", [])) & set(
                 trial.get("targetRegionIds", [])):
             raise ValueError("fault trial lost every healthy target region")
@@ -337,6 +433,7 @@ def delta(healthy: dict[str, Any], trial: dict[str, Any]) -> dict[str, Any]:
             for item in separate:
                 anchor = item["targetOccurrenceId"]
                 if not any(row.get("occurrenceId") == anchor
+                           and row.get("reachedAnchor") is True
                            for row in item.get("targetRows", [])
                            if isinstance(row, dict)) or not any(
                         row.get("occurrenceId") == anchor

@@ -35,7 +35,11 @@ public final class SyntheticNativeSession {
         Path iteration = Paths.get(args[0]);
         boolean omitHandoffExpression = Arrays.asList(args).contains(
                 "--missing-handoff-expression");
-        boolean secondTarget = Arrays.asList(args).contains("--second-target");
+        boolean secondTarget = Arrays.asList(args).contains("--second-target")
+                || Arrays.asList(args).contains("--second-target-unreached");
+        boolean secondTargetUnreached = Arrays.asList(args).contains(
+                "--second-target-unreached");
+        boolean targetUnreached = Arrays.asList(args).contains("--unreached-target");
         SessionDir dir = SessionDir.of(iteration, "seed").create();
         OccurrenceAddress sender = OccurrenceAddress.of(NodeId.of("nn", 0),
                 "R.sender", CausalContext.of(Role.of("SERVER"), "send", 1),
@@ -82,10 +86,11 @@ public final class SyntheticNativeSession {
                 RowCodec::writeRead);
         java.util.List<TargetRow> targets = new java.util.ArrayList<>(
                 Collections.singletonList(TargetRow.of("seed", 5L, target,
-                        "Keys#check#u3", "(= M_READ 0)", false, true)));
+                        "Keys#check#u3", "(= M_READ 0)", false,
+                        !targetUnreached)));
         if (secondTarget) {
             targets.add(TargetRow.of("seed", 6L, targetTwo, "Keys#check#u3",
-                    "(= 1 0)", false, true));
+                    "(= 1 0)", false, !secondTargetUnreached));
         }
         RowCodec.writeAll(dir.targets(), targets, RowCodec::writeTarget);
         JsonObject constant = new JsonObject();

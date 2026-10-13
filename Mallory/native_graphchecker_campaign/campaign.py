@@ -24,7 +24,7 @@ from Mallory.instrumentation.graphchecker_port.native_original_weave import (
     ENGINE, JAR, DEPENDENCIES, dependency_digests, verify_existing,
 )
 from Mallory.native_graphchecker_feedback import delta, summarize_target_set
-from Mallory.native_graphchecker_feedback.feedback import list_native_targets
+from Mallory.native_graphchecker_feedback.feedback import NoNativeTargetError
 
 SCHEMA = 1
 FAULT_FIELDS = ("siteId", "node", "actorEpochOrdinal", "occurrenceId",
@@ -493,22 +493,23 @@ def _run_trial(config: dict[str, Any], admitted: dict[str, Any],
     else:
         try:
             selected_actors = set(config.get("target_actor_names", [])) or None
-            targets = list_native_targets(iteration, config["target_site"],
-                                          engine_jar=JAR)
-            if not targets or (selected_actors and not any(
-                    item["nodeName"] in selected_actors for item in targets)):
-                result["status"] = ("blocked_healthy_target" if not faults
-                                    else "target_lost")
-            else:
+            try:
                 summary = summarize_target_set(
                     iteration, config["target_site"], trial / "native-summary.json",
                     static_scope_map=Path(config["recording"]["static_scope_map"]),
                     actor_names=selected_actors, engine_jar=JAR)
+            except NoNativeTargetError as missing:
+                result["status"] = (("blocked_healthy_target_attribution"
+                                     if missing.site_target_rows_seen
+                                     else "blocked_healthy_target")
+                                    if not faults else "target_lost")
+            else:
                 result["native_session_sha256"] = summary["nativeSessionSha256"]
                 result["native_target_occurrence_ids"] = summary[
                     "targetOccurrenceIds"]
-                reached = bool(summary["targetRows"]) and all(
-                    row.get("reachedAnchor") is True for row in summary["targetRows"])
+                reached = bool(summary["perTargetOccurrences"]) and all(
+                    any(row.get("reachedAnchor") is True for row in one["targetRows"])
+                    for one in summary["perTargetOccurrences"])
                 if not reached:
                     result["status"] = ("blocked_healthy_target_attribution"
                                         if not faults else "target_lost")
