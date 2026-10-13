@@ -34,6 +34,11 @@ class ImportCaseTest(unittest.TestCase):
         result = {"backend": "graphchecker_native", "case_id": "HBASE-01",
                   "status": "checked", "fault_plan": [{"siteId": "io"}],
                   "elapsed_seconds": 2.25, "target_exception_triggered": False,
+                  "target_exception_candidate": False, "junit_passed": True,
+                  "evidence": {"strict_injection": True,
+                               "post_fault_target_reached": True,
+                               "injection_specific_target_reached": True,
+                               "observed_check_sites": ["check"]},
                   "raw_trace_sha256": evidence_sha, "trace_sha256": evidence_sha,
                   "graph_sha256": evidence_sha}
         _write(trial / "result.json", result)
@@ -41,6 +46,8 @@ class ImportCaseTest(unittest.TestCase):
                   "status": "checked", "faults": result["fault_plan"],
                   "elapsed_seconds": 2.25, "strict_injection": True,
                   "post_fault_target_reached": True,
+                  "injection_specific_target_reached": True,
+                  "observed_check_sites": ["check"], "junit_passed": True,
                   "target_exception_triggered": False,
                   "target_exception_candidate": False}
         checkpoint = {"schema_version": 1, "case_id": "HBASE-01",
@@ -114,6 +121,19 @@ class ImportCaseTest(unittest.TestCase):
             (selected / "summary.json").write_text("{}\n", encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "bytes changed"):
                 load_import_index(data / "import-index.json")
+
+    def test_checkpoint_cannot_claim_strict_injection_absent_from_result(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            config, campaign = self.make_campaign(root / "source", "test")
+            checkpoint = json.loads((campaign / "checkpoint.json").read_text())
+            checkpoint["trials"][0]["strict_injection"] = False
+            _write(campaign / "checkpoint.json", checkpoint)
+            summary = json.loads((campaign / "summary.json").read_text())
+            summary["strict_trials"] = 0
+            _write(campaign / "summary.json", summary)
+            with self.assertRaisesRegex(ValueError, "feedback differs"):
+                import_case("HBASE-01", config, campaign, root / "data")
 
 
 if __name__ == "__main__":

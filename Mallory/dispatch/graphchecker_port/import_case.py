@@ -45,6 +45,16 @@ def _trial_result(campaign: Path, case_id: str, record: dict[str, Any]) -> Path:
             or result.get("target_exception_triggered") is not
             record.get("target_exception_triggered")):
         raise ValueError(f"native trial record differs from result: {name}")
+    evidence = result.get("evidence")
+    if not isinstance(evidence, dict) or any(
+            record.get(field) != evidence.get(field)
+            for field in ("strict_injection", "post_fault_target_reached",
+                          "injection_specific_target_reached", "observed_check_sites")
+            if field in record) or any(
+                record.get(field) != result.get(field)
+                for field in ("target_exception_candidate", "junit_passed")
+                if field in record):
+        raise ValueError(f"native trial feedback differs from checkpoint: {name}")
     if abs(float(result.get("elapsed_seconds", -1)) -
            float(record.get("elapsed_seconds", -2))) > 0.001:
         raise ValueError(f"native trial elapsed time differs: {name}")
