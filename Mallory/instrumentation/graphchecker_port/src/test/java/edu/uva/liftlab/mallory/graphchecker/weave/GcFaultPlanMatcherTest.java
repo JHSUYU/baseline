@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import edu.uva.liftlab.mallory.graphchecker.runtime.MessageDoors;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,6 +18,11 @@ import static org.junit.Assert.assertTrue;
 /** A replay selector must survive an exact occurrence change without losing actor identity. */
 public final class GcFaultPlanMatcherTest {
     @Test public void replaySelectorMatchesOnlyItsActorAndLineage() throws Exception {
+        Field singleton = GcFaultPlan.class.getDeclaredField("current");
+        singleton.setAccessible(true);
+        Object previousMatcher = singleton.get(null);
+        String previousPlan = System.getProperty("mallory.gc.fault.plan");
+        String previousTrace = System.getProperty("mallory.graphchecker.trace.file");
         Path work = Files.createTempDirectory("mallory-gc-matcher-");
         System.setProperty("mallory.graphchecker.trace.file", work.resolve("trace.jsonl").toString());
         Object intendedOwner = new Object();
@@ -25,6 +31,7 @@ public final class GcFaultPlanMatcherTest {
         MessageDoors.registerNode(otherOwner, "TEST", "CLIENT", "other");
         MessageDoors.startRecording();
         try {
+            singleton.set(null, null);
             long intendedRequest = MessageDoors.beginRequest(intendedOwner, "request-a");
             MessageDoors.FaultDoorHit intended;
             try {
@@ -72,8 +79,11 @@ public final class GcFaultPlanMatcherTest {
             assertTrue(matcher.consume(intended, IOException.class.getName()) instanceof IOException);
         } finally {
             MessageDoors.stopRecording();
-            System.clearProperty("mallory.gc.fault.plan");
-            System.clearProperty("mallory.graphchecker.trace.file");
+            singleton.set(null, previousMatcher);
+            if (previousPlan == null) System.clearProperty("mallory.gc.fault.plan");
+            else System.setProperty("mallory.gc.fault.plan", previousPlan);
+            if (previousTrace == null) System.clearProperty("mallory.graphchecker.trace.file");
+            else System.setProperty("mallory.graphchecker.trace.file", previousTrace);
         }
     }
 }
