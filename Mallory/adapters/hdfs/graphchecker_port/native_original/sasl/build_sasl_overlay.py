@@ -41,6 +41,8 @@ def main():
         path = client / "org/apache/hadoop/hdfs/protocol/datatransfer/sasl" / (name + ".class")
         if not path.is_file():
             parser.error("missing original HDFS client class " + name)
+    if not (client / "org/apache/hadoop/hdfs/DataStreamer.class").is_file():
+        parser.error("missing original HDFS DataStreamer class")
     cp_text = cp_file.read_text().strip()
     if not cp_text:
         parser.error("empty exact ordered classpath")
@@ -70,12 +72,13 @@ def main():
             "org/apache/hadoop/hdfs/protocol/datatransfer/sasl/SaslDataTransferClient.class",
             "org/apache/hadoop/hdfs/protocol/datatransfer/sasl/SaslDataTransferServer.class",
             "org/apache/hadoop/hdfs/protocol/datatransfer/sasl/NativeHdfsSaslDoors.class",
+            "org/apache/hadoop/hdfs/DataStreamer.class",
             "org/apache/hadoop/hdfs/server/balancer/Dispatcher.class",
         ]
         if any(not (classes / name).is_file() for name in patched):
             parser.error("SASL overlay lacks a required patched class")
         receipt = {
-            "schema_version": 1,
+            "schema_version": 2,
             "kind": "native_hdfs_sasl_same_jvm_overlay",
             "native_overlay": str(native),
             "hdfs_client_classes": str(client),
@@ -86,6 +89,7 @@ def main():
                               for p in (runtime_source, patch_source)},
             "patched_class_sha256": {name: sha(classes / name) for name in patched},
             "scope": "same JVM MiniCluster; other-process receipt is a blocking gap",
+            "streamer_source": "DataStreamer.src SHA-256/32 plus per-path run ordinal",
         }
         (classes / "NATIVE_HDFS_SASL_OVERLAY_RECEIPT.json").write_text(
             json.dumps(receipt, indent=2, sort_keys=True) + "\n")

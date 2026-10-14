@@ -3,7 +3,9 @@ package org.apache.hadoop.hdfs.protocol.datatransfer.sasl;
 import edu.uva.liftlab.graphchecker.contract.GapClass;
 import edu.uva.liftlab.graphchecker.contract.GapKind;
 import edu.uva.liftlab.graphchecker.runtime.MessageDoors;
+import edu.uva.liftlab.graphchecker.runtime.MalloryOriginalHdfsSourceRoots;
 import edu.uva.liftlab.graphchecker.runtime.RowRuntime;
+import edu.uva.liftlab.graphchecker.smt.ArtifactIO;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -14,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicLong;
 import org.apache.hadoop.hdfs.protocol.proto.DataTransferProtos.DataTransferEncryptorMessageProto;
 import org.apache.hadoop.thirdparty.protobuf.ByteString;
 import org.apache.hadoop.thirdparty.protobuf.UnknownFieldSet;
@@ -35,8 +38,45 @@ public final class NativeHdfsSaslDoors {
       PENDING = new ConcurrentHashMap<>();
   private static final ThreadLocal<ClientExchange> CLIENT = new ThreadLocal<>();
   private static final ThreadLocal<ServerExchange> SERVER = new ThreadLocal<>();
+  private static final ThreadLocal<Long> STREAMER_ROOT = new ThreadLocal<>();
+  private static final ConcurrentHashMap<String, AtomicLong> STREAMER_ORDINALS =
+      new ConcurrentHashMap<>();
 
   private NativeHdfsSaslDoors() { }
+
+  /** Bind the real streamer thread before its NameNode RPC and SASL send. */
+  public static void beginStreamer(Object streamer, String src) {
+    if (STREAMER_ROOT.get() != null) {
+      gap("STREAMER_ROOT_NESTED", "DataStreamer.run entered twice");
+      return;
+    }
+    if (MalloryOriginalHdfsSourceRoots.aliasCurrent(streamer)) {
+      STREAMER_ROOT.set(0L);
+      return;
+    }
+    if (src == null || src.isEmpty()) {
+      gap("STREAMER_SOURCE_MISSING", "DataStreamer.src is absent");
+      STREAMER_ROOT.set(0L);
+      return;
+    }
+    // A file has one writer lease at a time. Distinguish later reopen and
+    // append streamers with a per-path ordinal while keeping replay identity.
+    long ordinal = STREAMER_ORDINALS.computeIfAbsent(src,
+        ignored -> new AtomicLong()).incrementAndGet();
+    MessageDoors.registerSource(streamer, "HDFS_STREAMER", "CLIENT",
+        "streamer-" + ArtifactIO.digest(src, 32) + "-" + ordinal, 0L);
+    STREAMER_ROOT.set(MessageDoors.beginRequest(streamer, "DataStreamer.run"));
+  }
+
+  public static void endStreamer() {
+    Long root = STREAMER_ROOT.get();
+    STREAMER_ROOT.remove();
+    if (root == null) {
+      gap("STREAMER_ROOT_UNPAIRED", "DataStreamer.run exit without entry");
+    } else if (root != 0L) {
+      MessageDoors.endRequest(root, "DataStreamer.run");
+    }
+  }
 
   /** Carries the submitting Balancer turn through its dispatcher executors. */
   public static Runnable carry(final Runnable task, final String api) {
@@ -60,7 +100,9 @@ public final class NativeHdfsSaslDoors {
       current.depth++;
       return;
     }
-    CLIENT.set(new ClientExchange("hdfs-sasl-" + UUID.randomUUID(), owner,
+    Object anchor = new Object();
+    MalloryOriginalHdfsSourceRoots.aliasCurrent(anchor);
+    CLIENT.set(new ClientExchange("hdfs-sasl-" + UUID.randomUUID(), anchor,
         MessageDoors.setAside()));
   }
 
@@ -70,7 +112,9 @@ public final class NativeHdfsSaslDoors {
       current.depth++;
       return;
     }
-    SERVER.set(new ServerExchange(owner, MessageDoors.setAside()));
+    Object anchor = new Object();
+    MalloryOriginalHdfsSourceRoots.aliasCurrent(anchor);
+    SERVER.set(new ServerExchange(anchor, MessageDoors.setAside()));
   }
 
   public static void endServer() {

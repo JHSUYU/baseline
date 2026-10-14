@@ -78,6 +78,13 @@ public final class PatchNativeSasl {
     server.writeFile(args[2]);
     server.detach();
 
+    CtClass streamer = pool.get("org.apache.hadoop.hdfs.DataStreamer");
+    CtMethod streamerRun = streamer.getDeclaredMethod("run");
+    streamerRun.insertBefore(DOORS + ".beginStreamer(this, this.src);");
+    streamerRun.insertAfter(DOORS + ".endStreamer();", true);
+    streamer.writeFile(args[2]);
+    streamer.detach();
+
     CtClass dispatcher = pool.get(
         "org.apache.hadoop.hdfs.server.balancer.Dispatcher");
     final int[] moveSubmissions = {0};
