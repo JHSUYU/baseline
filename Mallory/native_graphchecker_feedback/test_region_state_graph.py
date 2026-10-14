@@ -11,7 +11,7 @@ from unittest.mock import patch
 from pathlib import Path
 
 from Mallory.native_graphchecker_feedback.region_state_graph import (
-    JAR, _closed_inputs, _plan_identity_rows, _plan_projection,
+    JAR, _closed_inputs, _fatal_unplanned, _plan_identity_rows, _plan_projection,
     delta_region_state, record_region_state, summarize_region_state,
 )
 from Mallory.native_graphchecker_feedback.artifacts import region_plan_path
@@ -621,6 +621,44 @@ class RegionStateGraphTest(unittest.TestCase):
                                          self.root / "absent-graph", **args)
             self.assertEqual("target_absent", absent["status"])
             self.assertFalse(absent["targetReached"])
+
+            pinned = record_region_state(
+                case["trace"], self.root / "pinned-absent-graph",
+                target_occurrence="selected-late", **args)
+            self.assertEqual("target_absent", pinned["status"])
+            self.assertFalse(pinned["targetReached"])
+
+    def test_unplanned_recorder_throw_is_scoped_to_resolved_target(self) -> None:
+        case = self._case("fatal-resolved-target")
+        throw_site = "<example.Keys: void check()>#u8"
+        expected_throw = {"kind": "TARGET_THROW", "seq": 2,
+                          "siteId": throw_site,
+                          "exceptionClass": "java.io.IOException",
+                          "node": "nn1", "actorEpochOrdinal": 1,
+                          "occurrenceId": "other-runtime-check"}
+        with case["events"].open("a", encoding="utf-8") as stream:
+            stream.write(json.dumps({"kind": "TARGET_CHECK", "seq": 2,
+                                     "siteId": SITE, "node": "nn1",
+                                     "actorEpochOrdinal": 1, "ordinal": 2,
+                                     "occurrenceId": "other-runtime-check"}) + "\n")
+            stream.write(json.dumps(expected_throw) + "\n")
+        pins = _closed_inputs(case["trace"], self.scope, self.graph,
+                              self.skeletons)
+        selected = json.loads(case["receipt"].read_text())
+        args = (case["trace"], case["events"], SITE,
+                {"siteId": throw_site,
+                 "exceptionClass": "java.io.IOException"},
+                pins, self.engine)
+        self.assertIsNone(_fatal_unplanned(*args, selected))
+        with case["events"].open("a", encoding="utf-8") as stream:
+            stream.write(json.dumps({**expected_throw, "seq": 3,
+                                     "occurrenceId": "exact-runtime-check"}) + "\n")
+        fatal = _fatal_unplanned(*args, selected)
+        self.assertEqual("target_throw_unplanned", fatal["status"])
+        self.assertEqual(["exact-runtime-check"], fatal["targetEvidence"][
+            "targetCheckOccurrenceIds"])
+        self.assertEqual(["exact-runtime-check"], [row["occurrenceId"] for
+                         row in fatal["targetEvidence"]["targetThrowRows"]])
 
     def test_real_zk07_recordings_if_available(self) -> None:
         base = Path("/dev/shm/mallory-native-zk07-regionfault-v1")

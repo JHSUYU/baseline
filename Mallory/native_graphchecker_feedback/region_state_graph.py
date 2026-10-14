@@ -266,6 +266,8 @@ def _target_throws(fault_events: Path, target_throw: dict[str, str] | None,
     return [row for row in events if row.get("kind") == "TARGET_THROW" and
             row.get("siteId") == target_throw["siteId"] and
             row.get("exceptionClass") == target_throw["exceptionClass"] and
+            row.get("actualExceptionClass", row.get("exceptionClass")) ==
+            target_throw["exceptionClass"] and
             row.get("node") == actor and row.get("actorEpochOrdinal") == epoch and
             row.get("occurrenceId") in checks and
             isinstance(row.get("seq"), int) and isinstance(
@@ -275,17 +277,41 @@ def _target_throws(fault_events: Path, target_throw: dict[str, str] | None,
 
 def _fatal_unplanned(trace_dir: Path, fault_events: Path,
                      target_site: str, target_throw: dict[str, str] | None,
-                     pins: dict[str, str], engine_jar: Path) -> dict[str, Any] | None:
+                     pins: dict[str, str], engine_jar: Path,
+                     selected_receipt: dict[str, Any] | None = None
+                     ) -> dict[str, Any] | None:
     """Preserve an exact thrown target when original nonfatal planning stops."""
     if target_throw is None:
         return None
-    calls: dict[int, str] = {}
+    calls: dict[int, dict[str, Any]] = {}
     branches: list[dict[str, Any]] = []
     for row in _rows(trace_dir / "runtime_trace.jsonl"):
         if row.get("event") == "METHOD_ENTER":
-            calls[row.get("callId")] = row.get("sourceKey", "")
+            calls[row.get("callId")] = {
+                "sourceKey": row.get("sourceKey", "")}
         elif row.get("event") == "BRANCH" and row.get("siteId") == target_site:
             branches.append(row)
+    if selected_receipt is not None:
+        selected = _validate_target(selected_receipt, pins, branches, calls,
+                                    target_site, fault_events)
+        throws = _target_throws(
+            fault_events, target_throw, selected["physicalActor"],
+            selected["actorEpochOrdinal"],
+            set(selected["targetCheckOccurrenceIds"]))
+        if not throws:
+            return None
+        evidence = {**selected, "targetThrowRows": throws,
+                    "rawTargetBranchSeqs": [selected["selectedEventSeq"]]}
+        return {"schemaVersion": SCHEMA, "backend": "original_region_state",
+                "status": "target_throw_unplanned", "targetSiteId": target_site,
+                "targetReached": True, "targetThrowObserved": True,
+                "targetEvidence": evidence,
+                "nodeFamilies": [], "edgeFamilies": [],
+                "contextBoundaryEdgeFamilies": [],
+                "valueReadFromEdgeFamilies": [],
+                "closureEdgeFamilies": [], "branchOutcomeIds": [],
+                "provenance": {**pins, "faultEventsSha256": _sha(fault_events),
+                               "engineJarSha256": _sha(engine_jar)}}
     events = list(_rows(fault_events))
     for checked in events:
         if checked.get("kind") != "TARGET_CHECK" or checked.get(
@@ -298,8 +324,8 @@ def _fatal_unplanned(trace_dir: Path, fault_events: Path,
                 isinstance(occurrence, str) and occurrence):
             continue
         source = f"{actor}#epoch{epoch}"
-        matching = [row for row in branches if calls.get(row.get("callId")) ==
-                    source]
+        matching = [row for row in branches if calls.get(
+            row.get("callId"), {}).get("sourceKey") == source]
         ordinal = checked.get("ordinal")
         if (not isinstance(ordinal, int) or ordinal < 1 or
                 ordinal > len(matching)):
@@ -740,7 +766,8 @@ def record_region_state(
             # Another target activation must not replace an exact pinned one.
             # A throw-only run is retained separately by the fault-event
             # oracle, but does not establish this activation's causal graph.
-            result = (None if "TARGET_OCCURRENCE_NOT_OBSERVED" in resolved.stderr
+            result = (None if target_occurrence is not None or
+                      "TARGET_OCCURRENCE_NOT_OBSERVED" in resolved.stderr
                       else _fatal_unplanned(trace_dir, fault_events, target_site,
                                             target_throw, before, engine_jar))
             if result is None:
@@ -779,7 +806,7 @@ def record_region_state(
     (output_dir / "recorder.stderr").write_text(recorded.stderr)
     if recorded.returncode != 0:
         fatal = _fatal_unplanned(trace_dir, fault_events, target_site,
-                                 target_throw, before, engine_jar)
+                                 target_throw, before, engine_jar, receipt)
         if fatal is not None:
             (output_dir / "summary.json").write_text(json.dumps(
                 fatal, sort_keys=True, indent=2) + "\n")
