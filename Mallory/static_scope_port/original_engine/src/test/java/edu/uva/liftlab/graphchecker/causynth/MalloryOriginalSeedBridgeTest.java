@@ -6,7 +6,9 @@ import soot.Scene;
 import soot.SootMethod;
 import soot.Unit;
 import soot.jimple.Stmt;
+import soot.jimple.IfStmt;
 import soot.options.Options;
+import edu.uva.liftlab.graphchecker.plan.StaticScopeMap;
 
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
@@ -136,9 +138,11 @@ public class MalloryOriginalSeedBridgeTest {
         SootMethod owner = Scene.v().getSootClass("fx.CalledCheck")
                 .getMethodByName("check");
         int callIndex = -1;
+        int guardIndex = -1;
         String callee = "";
         int ordinal = 0;
         for (Unit unit : owner.retrieveActiveBody().getUnits()) {
+            if (guardIndex < 0 && unit instanceof IfStmt) guardIndex = ordinal;
             if (unit instanceof Stmt && ((Stmt) unit).containsInvokeExpr()
                     && ((Stmt) unit).getInvokeExpr().getMethodRef()
                             .name().equals("checkState")) {
@@ -149,19 +153,38 @@ public class MalloryOriginalSeedBridgeTest {
             ordinal++;
         }
         assertTrue(callIndex >= 0);
+        assertTrue(guardIndex >= 0);
         String oldBound = System.getProperty("causynth.loop.default.bound");
         try {
             System.setProperty("causynth.loop.default.bound", "3");
             JsonObject result = MalloryOriginalSeedBridge.analyzeCallThrow(
                     Collections.singletonList(root.toString()), root.resolve("out"),
                     owner.getSignature(), callIndex, callee,
-                    "java.lang.IllegalStateException");
+                    "java.lang.IllegalStateException", owner.getSignature()
+                            + "#u" + guardIndex, false);
             assertEquals("CALL_THROW", result.getAsJsonObject("targetResolved")
                     .get("targetKind").getAsString());
             assertEquals(callIndex, result.getAsJsonObject("targetResolved")
                     .get("callUnitIndex").getAsInt());
             assertTrue(result.getAsJsonArray("regions").size() > 0);
             assertTrue(result.getAsJsonArray("staticScopeSites").size() > 0);
+            JsonObject target = null;
+            for (com.google.gson.JsonElement element : result.getAsJsonArray(
+                    "staticScopeSites")) {
+                JsonObject row = element.getAsJsonObject();
+                if ("TARGET_SITE".equals(row.get("role").getAsString())
+                        && (owner.getSignature() + "#u" + callIndex).equals(
+                                row.get("siteId").getAsString())) target = row;
+            }
+            assertTrue(target != null);
+            assertEquals(owner.getSignature() + "#u" + guardIndex,
+                    target.getAsJsonArray("guards").get(0).getAsString());
+            assertFalse(target.getAsJsonArray("guardOutcomes").get(0)
+                    .getAsBoolean());
+            assertTrue(target.get("callArgumentMayFailureArm").getAsBoolean());
+            assertEquals(Boolean.FALSE, StaticScopeMap.read(root.resolve(
+                    "out/static_scope_map.jsonl")).fatalArm(owner.getSignature()
+                    + "#u" + guardIndex));
         } finally {
             if (oldBound == null) System.clearProperty("causynth.loop.default.bound");
             else System.setProperty("causynth.loop.default.bound", oldBound);

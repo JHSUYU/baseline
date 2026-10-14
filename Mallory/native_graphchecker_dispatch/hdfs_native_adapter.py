@@ -195,7 +195,8 @@ def request_from_inventory(inventory: Path, case_id: str,
             result = _object(Path(att["native_official_healthy_result_path"]))
             if (receipt.get("checkSiteId") != att.get("target_site_id") or
                     receipt.get("test") != att.get("executed_selector") or
-                    not healthy_reached_nonfatal(receipt) or
+                    not _healthy_nonfatal_occurrence(receipt,
+                        att["target_site_id"], target["site_id"]) or
                     result.get("case_id") != case_id or
                     result.get("status") != "healthy_seed" or
                     result.get("junit_passed") is not True or
@@ -291,6 +292,20 @@ def _target_sites(request: dict, scope: Path) -> tuple[str, str, dict]:
     return analysis["targetSiteId"], throws[0]["siteId"], manifest
 
 
+def _healthy_nonfatal_occurrence(occurrence: dict, check: str,
+                                 throw: str) -> bool:
+    """A real branch observation on the nonfatal side of an exact target."""
+    fatal = occurrence.get("fatalOutcome")
+    selected = occurrence.get("selectedEventSeq")
+    reached = occurrence.get("reachedEvents", [])
+    return (healthy_reached_nonfatal(occurrence)
+            and occurrence.get("checkSiteId") == check
+            and occurrence.get("throwSiteId", throw) == throw
+            and any(row.get("eventSeq") == selected
+                    and type(row.get("observedOutcome")) is bool
+                    and row["observedOutcome"] != fatal for row in reached))
+
+
 def verify_existing(request: dict, static_root: Path, healthy_root: Path) -> dict:
     """Read-only gate for already frozen original GraphChecker evidence."""
     if request.get("mode") != MODE or request.get("system") != "hdfs":
@@ -357,7 +372,7 @@ def verify_existing(request: dict, static_root: Path, healthy_root: Path) -> dic
             not healthy_without_target_throw(rows) or
             occurrence.get("test") != junit or
             occurrence.get("checkSiteId") != check or
-            not healthy_reached_nonfatal(occurrence) or
+            not _healthy_nonfatal_occurrence(occurrence, check, throw) or
             occurrence.get("selectedOccurrenceAddress") in (None, "") or
             occurrence.get("runtimeTraceSha256") != _sha(
                 trace / "runtime_trace.jsonl")):
@@ -749,12 +764,13 @@ def prepare(request_file: Path, profile_file: Path, output: Path,
     _run("target-resolver", [*graph_jvm,
         "edu.uva.liftlab.graphchecker.runtime.MalloryTargetOccurrenceResolver",
         *common, "--check-site-id", check,
+        "--throw-site-id", throw,
         "--output", str(occurrence_file)], output,
         profile.get("graph_timeout_seconds", 900))
     occurrence = _object(occurrence_file)
     if (occurrence.get("checkSiteId") != check or
             occurrence.get("test") != test or
-            not healthy_reached_nonfatal(occurrence)):
+            not _healthy_nonfatal_occurrence(occurrence, check, throw)):
         raise ValueError("original HDFS target guard was not reached healthy")
     selector = occurrence["selectedOccurrenceAddress"]
     recorded = healthy / "healthy-recorded"

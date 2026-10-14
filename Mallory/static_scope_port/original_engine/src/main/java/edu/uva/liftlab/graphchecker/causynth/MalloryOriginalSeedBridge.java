@@ -49,7 +49,7 @@ public final class MalloryOriginalSeedBridge {
                     String.join(java.io.File.pathSeparator, processDirs));
             CausynthTargetContext targetContext =
                     CausynthTargetResolver.resolve(processDirs);
-            return analyzeResolved(processDirs, outputDir, targetContext);
+            return analyzeResolved(processDirs, outputDir, targetContext, null, null);
         } finally {
             restore("causynth.target.spec", oldSpec);
             restore("causynth.output.dir", oldOut);
@@ -61,6 +61,15 @@ public final class MalloryOriginalSeedBridge {
     public static JsonObject analyzeCallThrow(List<String> processDirs, Path outputDir,
                                               String methodSignature, int callUnitIndex,
                                               String calledMethod, String exceptionClass)
+            throws IOException {
+        return analyzeCallThrow(processDirs, outputDir, methodSignature,
+                callUnitIndex, calledMethod, exceptionClass, null, false);
+    }
+
+    public static JsonObject analyzeCallThrow(List<String> processDirs, Path outputDir,
+                                              String methodSignature, int callUnitIndex,
+                                              String calledMethod, String exceptionClass,
+                                              String checkSiteId, boolean failureArm)
             throws IOException {
         Files.createDirectories(outputDir);
         soot.SootMethod owner = soot.Scene.v().getMethod(methodSignature);
@@ -84,7 +93,8 @@ public final class MalloryOriginalSeedBridge {
             System.setProperty(LibraryReceivers.ROOTS,
                     String.join(java.io.File.pathSeparator, processDirs));
             return analyzeResolved(processDirs, outputDir,
-                    new CausynthTargetContext(outputDir, site));
+                    new CausynthTargetContext(outputDir, site), checkSiteId,
+                    checkSiteId == null ? null : failureArm);
         } finally {
             restore("causynth.output.dir", oldOut);
             restore(LibraryReceivers.ROOTS, oldRoots);
@@ -92,7 +102,9 @@ public final class MalloryOriginalSeedBridge {
     }
 
     private static JsonObject analyzeResolved(List<String> processDirs, Path outputDir,
-                                              CausynthTargetContext targetContext)
+                                              CausynthTargetContext targetContext,
+                                              String callCheckSiteId,
+                                              Boolean callFailureArm)
             throws IOException {
             soot.SootMethod targetMethod = soot.Scene.v().getMethod(
                     targetContext.exceptionTargetSite.methodSignature);
@@ -142,6 +154,10 @@ public final class MalloryOriginalSeedBridge {
             List<JsonObject> scope = StaticScopeMap.rows(sites,
                     SiteControlDependence.over(StaticScopeMap.siteIds(sites)),
                     result.executionContextAuthorities::containsKey);
+            if (callCheckSiteId != null) {
+                declareCallArgumentArm(scope, result, callCheckSiteId,
+                        callFailureArm);
+            }
             scope.addAll(recognized.keyRows(demand.configSources(),
                     configReads));
             Set<String> rootCallees = new LinkedHashSet<>(clocks.keySet());
@@ -181,6 +197,52 @@ public final class MalloryOriginalSeedBridge {
             }
             exported.add("demandedDoors", doors);
             return exported;
+    }
+
+    /**
+     * GraphChecker's TARGET_SITE guards describe control dependence. A
+     * postdominating assertion call has no such guard, although a prior
+     * branch controls its Boolean argument. This explicit adapter row states
+     * the statically proven MAY-failure arm; the runtime exception hook is
+     * still the only failure oracle.
+     */
+    private static void declareCallArgumentArm(List<JsonObject> scope,
+                                               StaticProgram result,
+                                               String checkSiteId,
+                                               Boolean failureArm)
+            throws IOException {
+        if (failureArm == null || !checkSiteId.startsWith(
+                String.valueOf(result.targetResolved.get("method")) + "#u")) {
+            throw new IOException("call argument guard is not in exact target method");
+        }
+        String targetId = SiteId.of(String.valueOf(
+                result.targetResolved.get("method")), ((Number)
+                result.targetResolved.get("callUnitIndex")).intValue());
+        int matches = 0;
+        for (JsonObject row : scope) {
+            if (!"TARGET_SITE".equals(row.get("role").getAsString())
+                    || !targetId.equals(row.get("siteId").getAsString())) continue;
+            JsonArray guards = row.getAsJsonArray("guards");
+            JsonArray outcomes = row.getAsJsonArray("guardOutcomes");
+            if (guards == null) guards = new JsonArray();
+            if (outcomes == null) outcomes = new JsonArray();
+            if (guards.size() != outcomes.size()) {
+                throw new IOException("call target has malformed original scope guards");
+            }
+            for (int i = 0; i < guards.size(); i++) {
+                if (checkSiteId.equals(guards.get(i).getAsString())) {
+                    throw new IOException("call argument guard conflicts with control guard");
+                }
+            }
+            guards.add(checkSiteId);
+            outcomes.add(failureArm);
+            row.add("guards", guards);
+            row.add("guardOutcomes", outcomes);
+            row.addProperty("callArgumentMayFailureArm", true);
+            matches++;
+        }
+        if (matches != 1) throw new IOException("call target has " + matches
+                + " exact original GraphChecker target rows");
     }
 
     private static void restore(String name, String prior) {

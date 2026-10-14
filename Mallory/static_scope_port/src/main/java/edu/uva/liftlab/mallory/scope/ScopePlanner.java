@@ -29,15 +29,21 @@ import soot.Unit;
 import soot.Value;
 import soot.ValueBox;
 import soot.jimple.AssignStmt;
+import soot.jimple.ConditionExpr;
+import soot.jimple.EqExpr;
 import soot.jimple.FieldRef;
 import soot.jimple.IdentityStmt;
 import soot.jimple.IfStmt;
+import soot.jimple.IntConstant;
+import soot.jimple.NeExpr;
 import soot.jimple.InstanceFieldRef;
 import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.InvokeExpr;
 import soot.jimple.LookupSwitchStmt;
 import soot.jimple.NewExpr;
 import soot.jimple.ParameterRef;
+import soot.jimple.ReturnStmt;
+import soot.jimple.ReturnVoidStmt;
 import soot.jimple.StaticInvokeExpr;
 import soot.jimple.Stmt;
 import soot.jimple.TableSwitchStmt;
@@ -139,6 +145,7 @@ public final class ScopePlanner {
     // One branch anchors runtime identity; all branches remain in the static
     // failure demand rooted at the unique throw.
     private final List<Site> compoundCheckSites = new ArrayList<>();
+    private Boolean callThrowFatalArm;
 
     private ScopePlanner() {}
 
@@ -310,6 +317,10 @@ public final class ScopePlanner {
             }
         } else {
             fatalThrow = resolveControlledThrow(target, object(input, "target"));
+            if (fatalThrow != null && !(fatalThrow.unit instanceof ThrowStmt)) {
+                callThrowFatalArm = callThrowFatalArm(target, fatalThrow,
+                        string(object(input, "target"), "exception", ""));
+            }
         }
         if (analysis.has("original_graphchecker_seed")
                 && analysis.get("original_graphchecker_seed").getAsBoolean()) {
@@ -404,11 +415,13 @@ public final class ScopePlanner {
             } else {
                 original = (JsonObject) bridge.getMethod("analyzeCallThrow", List.class,
                         Path.class, String.class, int.class, String.class,
-                        String.class).invoke(null, dirs, Paths.get(directory),
+                        String.class, String.class, boolean.class).invoke(null,
+                        dirs, Paths.get(directory),
                         fatalThrow.owner.soot.getSignature(), fatalThrow.index,
                         ((Stmt) fatalThrow.unit).getInvokeExpr().getMethodRef()
                                 .getSignature(),
-                        string(object(config, "target"), "exception", ""));
+                        string(object(config, "target"), "exception", ""),
+                        target.id, callThrowFatalArm.booleanValue());
             }
         } catch (ReflectiveOperationException error) {
             Throwable cause = error instanceof java.lang.reflect.InvocationTargetException
@@ -662,6 +675,10 @@ public final class ScopePlanner {
         result.addProperty("caseId", string(config, "case_id", ""));
         result.addProperty("targetSiteId", anchors.get(0).id);
         result.addProperty("throwSiteId", fatalThrow.id);
+        if (callThrowFatalArm != null) {
+            result.addProperty("callThrowFatalArm", callThrowFatalArm);
+            result.addProperty("callThrowArmSemantics", "MAY_PASS_FALSE_TO_EXACT_CALL");
+        }
         addCompoundCheckGroup(result);
         result.addProperty("sootDependencyClasspathSha256", sha256Full(
                 String.join(File.pathSeparator, strings(analysisConfig.get("classpath")))));
@@ -1067,6 +1084,193 @@ public final class ScopePlanner {
         return false;
     }
 
+    /**
+     * A call may be postdominated by the check and therefore have no ordinary
+     * GraphChecker control arm. Prove its Boolean argument separately on both
+     * CFG successors. The selected arm is only a MAY-failure arm: a later
+     * branch can still pass true. The actual exception remains the oracle.
+     */
+    private Boolean callThrowFatalArm(Site check, Site call, String exception) {
+        if (!(check.unit instanceof IfStmt) || !(call.unit instanceof Stmt)
+                || !((Stmt) call.unit).containsInvokeExpr()) {
+            throw new IllegalArgumentException("call-thrown target needs an exact if/call pair");
+        }
+        InvokeExpr invoke = ((Stmt) call.unit).getInvokeExpr();
+        if (invoke.getArgCount() < 1
+                || !(invoke.getArg(0).getType() instanceof soot.BooleanType)
+                || !rejectsFalse(invoke.getMethodRef(), exception)) {
+            throw new IllegalArgumentException("unproved false-throws contract at " + call.id);
+        }
+        Method method = check.owner;
+        method.flow();
+        Unit trueStart = ((IfStmt) check.unit).getTarget();
+        Unit falseStart = null;
+        for (Unit successor : method.graph.getSuccsOf(check.unit)) {
+            if (successor != trueStart) falseStart = successor;
+        }
+        if (falseStart == null) throw new IllegalArgumentException(
+                "call-thrown check has no two CFG arms: " + check.id);
+        Set<Boolean> onTrue = callArgumentValues(method, trueStart, call, invoke.getArg(0));
+        Set<Boolean> onFalse = callArgumentValues(method, falseStart, call, invoke.getArg(0));
+        boolean trueMayFail = onTrue.contains(Boolean.FALSE);
+        boolean falseMayFail = onFalse.contains(Boolean.FALSE);
+        if (onTrue.isEmpty() || onFalse.isEmpty() || trueMayFail == falseMayFail) {
+            throw new IllegalArgumentException("call-thrown check has no unique proven "
+                    + "may-failure arm: " + check.id + " true=" + onTrue
+                    + " false=" + onFalse);
+        }
+        return trueMayFail;
+    }
+
+    private boolean rejectsFalse(SootMethodRef callee, String exception) {
+        // These source-level contracts have the same semantics in Guava and
+        // its Hadoop/HBase shaded copies. The exact class and descriptor are
+        // still recorded in the target manifest and verified by the weaver.
+        if ("checkState".equals(callee.name())
+                && callee.declaringClass().getName().endsWith("Preconditions")
+                && "java.lang.IllegalStateException".equals(exception)
+                && callee.parameterTypes().size() >= 1
+                && callee.parameterTypes().get(0) instanceof soot.BooleanType) {
+            return true;
+        }
+        // Application helpers are accepted only when their own loaded Jimple
+        // proves the declared exception reachable with false and unreachable
+        // with true. A mere matching throw instruction is insufficient.
+        Method method = methods.get(callee.getSignature());
+        if (method != null && callee.parameterTypes().size() >= 1
+                && callee.parameterTypes().get(0) instanceof soot.BooleanType) {
+            Local formal = null;
+            for (Unit unit : method.body.getUnits()) {
+                if (unit instanceof IdentityStmt
+                        && ((IdentityStmt) unit).getRightOp()
+                                instanceof ParameterRef
+                        && ((ParameterRef) ((IdentityStmt) unit)
+                                .getRightOp()).getIndex() == 0) {
+                    formal = (Local) ((IdentityStmt) unit).getLeftOp();
+                    break;
+                }
+            }
+            return formal != null && helperMayThrow(method, formal, false,
+                    exception) && !helperMayThrow(method, formal, true,
+                    exception);
+        }
+        return false;
+    }
+
+    private boolean helperMayThrow(Method method, Local formal,
+                                   boolean argument, String exception) {
+        method.flow();
+        Deque<BooleanPath> pending = new ArrayDeque<>();
+        Set<String> seen = new HashSet<>();
+        Map<Local, Boolean> initial = new LinkedHashMap<>();
+        initial.put(formal, argument);
+        pending.add(new BooleanPath(method.body.getUnits().getFirst(), initial));
+        while (!pending.isEmpty()) {
+            BooleanPath path = pending.removeFirst();
+            String key = method.indexOf(path.unit) + ":" + path.values;
+            if (!seen.add(key)) continue;
+            if (seen.size() > 10000) throw new IllegalArgumentException(
+                    "callee Boolean proof exceeded CFG state bound: "
+                    + method.soot.getSignature());
+            if (path.unit instanceof ThrowStmt
+                    && exception.equals(((ThrowStmt) path.unit).getOp()
+                            .getType().toString())) return true;
+            if (path.unit instanceof ThrowStmt || path.unit instanceof ReturnStmt
+                    || path.unit instanceof ReturnVoidStmt) continue;
+            Map<Local, Boolean> next = new LinkedHashMap<>(path.values);
+            if (path.unit instanceof AssignStmt) {
+                AssignStmt assign = (AssignStmt) path.unit;
+                if (assign.getLeftOp() instanceof Local
+                        && assign.getLeftOp().getType()
+                                instanceof soot.BooleanType) {
+                    Local local = (Local) assign.getLeftOp();
+                    Boolean value = booleanValue(assign.getRightOp(), next);
+                    if (value == null) next.remove(local);
+                    else next.put(local, value);
+                }
+            }
+            Boolean decided = path.unit instanceof IfStmt
+                    ? decidedBranch((IfStmt) path.unit, next) : null;
+            for (Unit successor : method.graph.getSuccsOf(path.unit)) {
+                if (decided != null && (successor == ((IfStmt) path.unit)
+                        .getTarget()) != decided.booleanValue()) continue;
+                pending.addLast(new BooleanPath(successor, next));
+            }
+        }
+        return false;
+    }
+
+    private static final class BooleanPath {
+        final Unit unit;
+        final Map<Local, Boolean> values;
+        BooleanPath(Unit unit, Map<Local, Boolean> values) {
+            this.unit = unit;
+            this.values = values;
+        }
+    }
+
+    private Set<Boolean> callArgumentValues(Method method, Unit start,
+                                            Site call, Value argument) {
+        Set<Boolean> outcomes = new LinkedHashSet<>();
+        Deque<BooleanPath> pending = new ArrayDeque<>();
+        Set<String> seen = new HashSet<>();
+        pending.add(new BooleanPath(start, Collections.emptyMap()));
+        while (!pending.isEmpty()) {
+            BooleanPath path = pending.removeFirst();
+            String key = method.indexOf(path.unit) + ":" + path.values;
+            if (!seen.add(key)) continue;
+            if (seen.size() > 10000) throw new IllegalArgumentException(
+                    "call-thrown Boolean proof exceeded CFG state bound: " + call.id);
+            if (path.unit == call.unit) {
+                Boolean value = booleanValue(argument, path.values);
+                if (value == null) throw new IllegalArgumentException(
+                        "unresolved Boolean argument at call-thrown target: " + call.id);
+                outcomes.add(value);
+                continue;
+            }
+            Map<Local, Boolean> next = new LinkedHashMap<>(path.values);
+            if (path.unit instanceof AssignStmt) {
+                AssignStmt assignment = (AssignStmt) path.unit;
+                if (assignment.getLeftOp() instanceof Local
+                        && assignment.getLeftOp().getType()
+                                instanceof soot.BooleanType) {
+                    Local local = (Local) assignment.getLeftOp();
+                    Boolean value = booleanValue(assignment.getRightOp(), next);
+                    if (value == null) next.remove(local);
+                    else next.put(local, value);
+                }
+            }
+            Boolean decided = path.unit instanceof IfStmt
+                    ? decidedBranch((IfStmt) path.unit, next) : null;
+            for (Unit successor : method.graph.getSuccsOf(path.unit)) {
+                if (decided != null && (successor == ((IfStmt) path.unit)
+                        .getTarget()) != decided.booleanValue()) continue;
+                pending.addLast(new BooleanPath(successor, next));
+            }
+        }
+        return outcomes;
+    }
+
+    private static Boolean booleanValue(Value value, Map<Local, Boolean> values) {
+        if (value instanceof IntConstant) {
+            int number = ((IntConstant) value).value;
+            return number == 0 ? Boolean.FALSE : number == 1 ? Boolean.TRUE : null;
+        }
+        return value instanceof Local ? values.get(value) : null;
+    }
+
+    private static Boolean decidedBranch(IfStmt branch,
+                                         Map<Local, Boolean> values) {
+        if (!(branch.getCondition() instanceof ConditionExpr)) return null;
+        ConditionExpr condition = (ConditionExpr) branch.getCondition();
+        Boolean left = booleanValue(condition.getOp1(), values);
+        Boolean right = booleanValue(condition.getOp2(), values);
+        if (left == null || right == null) return null;
+        if (condition instanceof EqExpr) return left.equals(right);
+        if (condition instanceof NeExpr) return !left.equals(right);
+        return null;
+    }
+
     private boolean valueControlledBy(Method method, Value value, Unit use,
                                       Unit check, Set<String> seen) {
         if (!(value instanceof Local)) return false;
@@ -1074,6 +1278,12 @@ public final class ScopePlanner {
         if (!seen.add(key)) return false;
         for (Unit definition : method.defs.getDefsOfAt((Local) value, use)) {
             if (method.guardsOf(definition).contains(check)) return true;
+            for (Unit guard : method.guardsOf(definition)) {
+                for (ValueBox input : guard.getUseBoxes()) {
+                    if (valueControlledBy(method, input.getValue(), guard,
+                            check, seen)) return true;
+                }
+            }
             if (definition instanceof AssignStmt) {
                 for (ValueBox input : ((AssignStmt) definition).getRightOp()
                         .getUseBoxes()) {
@@ -1875,6 +2085,10 @@ public final class ScopePlanner {
         result.addProperty("targetSiteId", checkSites.isEmpty()
                 ? target.id : checkSites.get(0).id);
         result.addProperty("throwSiteId", fatalThrow == null ? "" : fatalThrow.id);
+        if (callThrowFatalArm != null) {
+            result.addProperty("callThrowFatalArm", callThrowFatalArm);
+            result.addProperty("callThrowArmSemantics", "MAY_PASS_FALSE_TO_EXACT_CALL");
+        }
         addCompoundCheckGroup(result);
         result.add("scopeSites", scope);
         result.add("weaveManifest", manifest);

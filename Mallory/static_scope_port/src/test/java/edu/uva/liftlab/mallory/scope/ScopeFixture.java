@@ -113,4 +113,17 @@ final class ScopeFixture {
         boolean valid = first == second; // CALL_THROW_CHECK
         helperCheckState(valid); // CALL_THROW_SITE
     }
+
+    static void checkCalledStateWithFallback(Object first, Object second,
+                                              Object referred) {
+        boolean identity = first == second; // CALL_THROW_FALLBACK_CHECK
+        boolean valid = identity || first == referred;
+        helperCheckState(valid); // CALL_THROW_FALLBACK_SITE
+    }
+
+    static void checkCalledStateBothArmsFail(boolean flag) {
+        boolean valid;
+        if (flag) valid = false; else valid = false; // CALL_THROW_AMBIGUOUS_CHECK
+        helperCheckState(valid); // CALL_THROW_AMBIGUOUS_SITE
+    }
 }

@@ -84,6 +84,35 @@ public class ScopePlannerTest {
         assertEquals(2, targets.size());
         assertEquals("CALL_THROW", targets.get(1).getAsJsonObject()
                 .get("kind").getAsString());
+        assertTrue(result.get("callThrowFatalArm").getAsBoolean());
+    }
+
+    @Test
+    public void callThrowArmCanBeNecessaryButNotSufficient() throws Exception {
+        JsonObject config = fixtureTarget("checkCalledStateWithFallback",
+                fixtureLine("CALL_THROW_FALLBACK_CHECK"), "BRANCH",
+                "java.lang.IllegalStateException");
+        config.getAsJsonObject("target").addProperty("throw_line",
+                fixtureLine("CALL_THROW_FALLBACK_SITE"));
+        JsonObject result = ScopePlanner.analyze(config);
+        assertTrue(result.get("callThrowFatalArm").getAsBoolean());
+        assertEquals("MAY_PASS_FALSE_TO_EXACT_CALL", result.get(
+                "callThrowArmSemantics").getAsString());
+    }
+
+    @Test
+    public void callThrowRejectsBranchWhoseBothArmsMayFail() throws Exception {
+        JsonObject config = fixtureTarget("checkCalledStateBothArmsFail",
+                fixtureLine("CALL_THROW_AMBIGUOUS_CHECK"), "BRANCH",
+                "java.lang.IllegalStateException");
+        config.getAsJsonObject("target").addProperty("throw_line",
+                fixtureLine("CALL_THROW_AMBIGUOUS_SITE"));
+        try {
+            ScopePlanner.analyze(config);
+            org.junit.Assert.fail("expected ambiguous call-throw arm refusal");
+        } catch (IllegalArgumentException expected) {
+            assertTrue(expected.getMessage().contains("call-thrown"));
+        }
     }
 
     @Test

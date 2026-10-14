@@ -1,6 +1,7 @@
 package edu.uva.liftlab.graphchecker.runtime;
 
 import static org.junit.Assert.assertEquals;
+import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,6 +11,24 @@ import java.util.Map;
 import org.junit.Test;
 
 public final class MalloryTargetOccurrenceResolverTest {
+    @Test
+    public void registeredServerOccurrenceWinsOverEarlierClientSetup() {
+        JsonObject client = event(10, "CLIENT");
+        JsonObject server = event(20, "NAMENODE");
+        assertEquals(20L, MalloryTargetOccurrenceResolver.selectOccurrence(
+                Arrays.asList(client, server)).get("eventSeq").getAsLong());
+        assertEquals(10L, MalloryTargetOccurrenceResolver.selectOccurrence(
+                Arrays.asList(client, event(30, "CLIENT"))).get("eventSeq")
+                .getAsLong());
+    }
+
+    private static JsonObject event(long seq, String role) {
+        JsonObject row = new JsonObject();
+        row.addProperty("eventSeq", seq);
+        row.addProperty("sourceRole", role);
+        return row;
+    }
+
     @Test
     public void exactCallAndFoldedTargetRegionFindOneOwner() {
         List<Map<String, Object>> activations = new ArrayList<>();

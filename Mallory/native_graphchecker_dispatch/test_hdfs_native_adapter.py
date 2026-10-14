@@ -16,6 +16,19 @@ EVIDENCE = Path("/proj/silentfailure-PG0/ZhenyuLi")
 
 
 class HdfsNativeAdapterTest(unittest.TestCase):
+    def test_call_throw_occurrence_uses_observed_nonfatal_arm(self):
+        check = "<C: void f()>#u15"
+        throw = "<C: void f()>#u27"
+        receipt = {"checkSiteId": check, "throwSiteId": throw,
+                   "fatalOutcome": True, "selectedEventSeq": 12,
+                   "reachedEventCount": 1, "reachedEvents": [
+                       {"eventSeq": 12, "observedOutcome": False}]}
+        self.assertTrue(adapter._healthy_nonfatal_occurrence(
+            receipt, check, throw))
+        receipt["reachedEvents"][0]["observedOutcome"] = True
+        self.assertFalse(adapter._healthy_nonfatal_occurrence(
+            receipt, check, throw))
+
     def test_parameterized_original_junit_selector_keeps_source_method(self):
         self.assertEqual(
             ("org.apache.hadoop.hdfs.TestEncryptedTransfer",

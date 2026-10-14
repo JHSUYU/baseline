@@ -40,9 +40,10 @@ public final class MalloryTargetOccurrenceResolver {
         Path output = path(options, "--output");
         String test = required(options, "--test");
         String check = options.get("--check-site-id");
+        String throwSite = options.get("--throw-site-id");
 
         JsonObject receipt = resolve(traceDir, test, skeletons, scope, graph,
-                check);
+                check, throwSite);
         Files.createDirectories(output.toAbsolutePath().getParent());
         Path staged = Files.createTempFile(output.toAbsolutePath().getParent(),
                 ".target-occurrence-", ".json");
@@ -61,6 +62,13 @@ public final class MalloryTargetOccurrenceResolver {
     static JsonObject resolve(Path traceDir, String test, File skeletons,
                               File scopeFile, File graph, String check)
             throws Exception {
+        return resolve(traceDir, test, skeletons, scopeFile, graph, check, null);
+    }
+
+    static JsonObject resolve(Path traceDir, String test, File skeletons,
+                              File scopeFile, File graph, String check,
+                              String throwSite)
+            throws Exception {
         Path traceFile = traceDir.resolve("runtime_trace.jsonl");
         Path scheduleFile = traceDir.resolve("schedule.jsonl");
         String traceHash = sha256(traceFile);
@@ -78,7 +86,7 @@ public final class MalloryTargetOccurrenceResolver {
             throw new IOException("no unique declared fatal arm for check "
                     + check);
         }
-        String targetRegion = targetRegion(scope, check);
+        String targetRegion = targetRegion(scope, check, throwSite);
         CausynthTraceRecorder.TraceData trace =
                 CausynthTraceRecorder.readStateTrace(traceDir.toFile(), test);
         if (!traceHash.equals(sha256(traceFile))
@@ -122,7 +130,12 @@ public final class MalloryTargetOccurrenceResolver {
 
         JsonArray reached = new JsonArray();
         Set<String> addresses = new LinkedHashSet<>();
-        JsonObject selectedEvent = null;
+        List<JsonObject> eligible = new ArrayList<>();
+        Map<Long, RuntimeRegionPlanner.MethodEvent> methodByCall =
+                new LinkedHashMap<>();
+        for (RuntimeRegionPlanner.MethodEvent method : trace.methods) {
+            methodByCall.put(method.callId, method);
+        }
         for (RuntimeRegionPlanner.RuntimeEvent event : trace.execution) {
             if (!"BRANCH".equals(event.kind)
                     || !check.equals(event.siteId)
@@ -150,20 +163,36 @@ public final class MalloryTargetOccurrenceResolver {
             row.addProperty("occurrenceAddress", address);
             row.addProperty("activationRegionId", String.valueOf(
                     owners.get(0).get("regionId")));
+            RuntimeRegionPlanner.MethodEvent method = methodByCall.get(
+                    event.callId);
+            if (method == null) throw new IOException("target branch event "
+                    + event.seq + " has no exact method frame");
+            row.addProperty("sourceRole", method.source == null ? ""
+                    : method.source.role());
+            row.addProperty("sourceKey", method.sourceKey);
+            row.addProperty("threadName", method.threadName);
+            row.addProperty("remoteParentSpanId", method.remoteParentSpanId);
             reached.add(row);
+            eligible.add(row);
             addresses.add(address);
-            if (selectedEvent == null) selectedEvent = row;
         }
-        if (selectedEvent == null) {
+        if (eligible.isEmpty()) {
             throw new IOException("TARGET_CHECK_NOT_OBSERVED: " + check);
         }
+        JsonObject selectedEvent = selectOccurrence(eligible);
         JsonObject receipt = new JsonObject();
         receipt.addProperty("schemaVersion", 1);
         receipt.addProperty("kind", "MALLORY_OBSERVED_TARGET_OCCURRENCE");
         receipt.addProperty("test", test);
         receipt.addProperty("checkSiteId", check);
         receipt.addProperty("targetRegionId", targetRegion);
+        if (throwSite != null && !throwSite.isEmpty()) {
+            receipt.addProperty("throwSiteId", throwSite);
+        }
         receipt.addProperty("fatalOutcome", fatal);
+        receipt.addProperty("observationKind", "NONFATAL_BRANCH_OUTCOME");
+        receipt.addProperty("selectionPolicy",
+                "PREFER_REGISTERED_NON_CLIENT_SOURCE_THEN_EARLIEST");
         receipt.addProperty("selectedOccurrenceAddress",
                 selectedEvent.get("occurrenceAddress").getAsString());
         receipt.addProperty("selectedEventSeq",
@@ -183,6 +212,27 @@ public final class MalloryTargetOccurrenceResolver {
         receipt.addProperty("regionSkeletonsSha256", sha256(
                 skeletons.toPath()));
         return receipt;
+    }
+
+    /** Prefer an observed server-side invocation over setup in the test
+     * client. This uses GraphChecker source registration, never a class-name
+     * or case-specific occurrence ordinal. Preserve every candidate above.
+     */
+    static JsonObject selectOccurrence(List<JsonObject> eligible) {
+        JsonObject best = null;
+        for (JsonObject row : eligible) {
+            if (best == null || occurrenceRank(row) < occurrenceRank(best)
+                    || occurrenceRank(row) == occurrenceRank(best)
+                    && row.get("eventSeq").getAsLong()
+                            < best.get("eventSeq").getAsLong()) best = row;
+        }
+        return best;
+    }
+
+    private static int occurrenceRank(JsonObject row) {
+        String role = row.get("sourceRole").getAsString();
+        return role.isEmpty() || "CLIENT".equals(role) || "TEST".equals(role)
+                ? 1 : 0;
     }
 
     static List<Map<String, Object>> owners(
@@ -205,11 +255,14 @@ public final class MalloryTargetOccurrenceResolver {
         return found;
     }
 
-    private static String targetRegion(StaticScopeMap scope, String check)
+    private static String targetRegion(StaticScopeMap scope, String check,
+                                       String throwSite)
             throws IOException {
         Set<String> regions = new LinkedHashSet<>();
         for (StaticScopeMap.Site target : scope.targetSites()) {
-            if (target.guards.contains(check)
+            if ((throwSite == null || throwSite.isEmpty()
+                    || throwSite.equals(target.siteId))
+                    && target.guards.contains(check)
                     && !target.regionId.isEmpty()) {
                 regions.add(target.regionId);
             }
