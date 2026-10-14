@@ -85,6 +85,20 @@ def _closed_trace_manifest(manifest: dict) -> bool:
              manifest.get("closed") is True))
 
 
+def _successful_junit_result(stdout: str, *kinds: str) -> bool:
+    """Verify all original invocations of one selected JUnit method passed."""
+    pattern = re.compile(
+        r"^(NATIVE_(?:RECORDING|ZK_SESSION)_JUNIT_RESULT) "
+        r"passed=(\d+) failed=(\d+) skipped=(\d+)"
+        r"(?: found=(\d+))?$", re.MULTILINE)
+    results = pattern.findall(stdout)
+    if len(results) != 1:
+        return False
+    kind, passed, failed, skipped, found = results[0]
+    return (kind in kinds and int(passed) > 0 and int(failed) == 0 and
+            int(skipped) == 0 and (not found or int(found) == int(passed)))
+
+
 def _paths(values: object, label: str) -> list[Path]:
     if not isinstance(values, list) or not values:
         raise ValueError(f"{label} requires nonempty pinned paths")
@@ -421,9 +435,9 @@ def _profile(request: dict, profile_file: Path) -> dict:
     verified_file("healthy_trace_manifest_path", "healthy_trace_manifest_sha256")
     healthy_stdout = Path(gate["healthy_stdout_path"]).read_text(
         encoding="utf-8", errors="replace")
-    if (not any(marker in healthy_stdout for marker in
-                ("NATIVE_RECORDING_JUNIT_RESULT passed=1 failed=0",
-                 "NATIVE_ZK_SESSION_JUNIT_RESULT passed=1 failed=0")) or
+    if (not _successful_junit_result(
+            healthy_stdout, "NATIVE_RECORDING_JUNIT_RESULT",
+            "NATIVE_ZK_SESSION_JUNIT_RESULT") or
             not _closed_trace_manifest(_object(Path(
                 gate["healthy_trace_manifest_path"])))):
         raise ValueError("ZooKeeper protocol seed JUnit or trace is not closed")
@@ -744,7 +758,8 @@ def prepare(request_file: Path, output: Path, profile_file: Path) -> dict:
     stdout = (output / "commands/healthy-junit.stdout").read_text(
         encoding="utf-8", errors="replace")
     manifest = _object(trace / "streaming_trace_manifest.json")
-    if ("NATIVE_RECORDING_JUNIT_RESULT passed=1 failed=0" not in stdout or
+    if (not _successful_junit_result(
+            stdout, "NATIVE_RECORDING_JUNIT_RESULT") or
             not _closed_trace_manifest(manifest)):
         raise ValueError("unchanged original JUnit or healthy recording did not close")
     return finalize_after_healthy(request_file, output, profile_file)
@@ -800,7 +815,8 @@ def finalize_after_healthy(request_file: Path, output: Path,
         raise ValueError("ZooKeeper post-healthy source/static/weave pins changed")
     stdout = (output / "commands/healthy-junit.stdout").read_text(
         encoding="utf-8", errors="replace")
-    if ("NATIVE_RECORDING_JUNIT_RESULT passed=1 failed=0" not in stdout or
+    if (not _successful_junit_result(
+            stdout, "NATIVE_RECORDING_JUNIT_RESULT") or
             not _closed_trace_manifest(_object(
                 trace / "streaming_trace_manifest.json"))):
         raise ValueError("unchanged original JUnit or healthy trace did not close")

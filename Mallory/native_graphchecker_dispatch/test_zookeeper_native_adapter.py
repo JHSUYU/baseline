@@ -17,6 +17,23 @@ from Mallory.native_graphchecker_dispatch import zookeeper_native_adapter as zk
 
 
 class ZooKeeperNativeAdapterTest(unittest.TestCase):
+    def test_parameterized_junit_result_requires_every_selected_invocation(self) -> None:
+        marker = "NATIVE_RECORDING_JUNIT_RESULT"
+        self.assertTrue(zk._successful_junit_result(
+            f"{marker} passed=2 failed=0 skipped=0 found=2\n", marker))
+        self.assertTrue(zk._successful_junit_result(
+            "NATIVE_ZK_SESSION_JUNIT_RESULT passed=1 failed=0 skipped=0\n",
+            "NATIVE_ZK_SESSION_JUNIT_RESULT"))
+        for counts in ("passed=0 failed=0 skipped=0 found=0",
+                       "passed=1 failed=1 skipped=0 found=2",
+                       "passed=1 failed=0 skipped=1 found=2",
+                       "passed=1 failed=0 skipped=0 found=2"):
+            self.assertFalse(zk._successful_junit_result(
+                f"{marker} {counts}\n", marker))
+        self.assertFalse(zk._successful_junit_result(
+            f"{marker} passed=2 failed=0 skipped=0 found=2\n"
+            f"{marker} passed=2 failed=0 skipped=0 found=2\n", marker))
+
     def test_region_state_handoff_uses_dynamic_original_target(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             java = Path(temporary) / "java"

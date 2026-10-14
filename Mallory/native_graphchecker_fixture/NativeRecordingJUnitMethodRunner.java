@@ -34,12 +34,17 @@ public final class NativeRecordingJUnitMethodRunner {
             launcher.execute(discovery);
             TestExecutionSummary summary = listener.getSummary();
             summary.printFailuresTo(new PrintWriter(System.err, true));
-            status = summary.getTestsSucceededCount() == 1
-                    && summary.getTestsFailedCount() == 0 ? 0 : 1;
+            // Selecting one parameterized method executes all of its original
+            // invocations.  Require at least one completed invocation and no
+            // failed or skipped invocation, without assuming a single test.
+            status = summary.getTestsSucceededCount() > 0
+                    && summary.getTestsFailedCount() == 0
+                    && summary.getTestsSkippedCount() == 0 ? 0 : 1;
             System.out.println("NATIVE_RECORDING_JUNIT_RESULT passed="
                     + summary.getTestsSucceededCount() + " failed="
                     + summary.getTestsFailedCount() + " skipped="
-                    + summary.getTestsSkippedCount());
+                    + summary.getTestsSkippedCount() + " found="
+                    + summary.getTestsFoundCount());
         } finally {
             CausynthTraceRecorder.stopRecording();
             Identity.exitFrame(frame);
