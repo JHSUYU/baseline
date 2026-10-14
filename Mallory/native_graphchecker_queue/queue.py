@@ -499,6 +499,17 @@ def pinned_campaign_python(source: dict[str, Any]) -> Path:
         actual[str(path.relative_to(root))] = sha(path)
     if actual != expected:
         raise ValueError("per-case campaign Python source changed")
+    required = source.get("required_files_sha256", {})
+    if not isinstance(required, dict):
+        raise ValueError("per-case required source pins are invalid")
+    for relative, expected_sha in required.items():
+        if (not isinstance(relative, str) or
+                not relative.startswith("Mallory/") or
+                Path(relative).is_absolute() or ".." in Path(relative).parts):
+            raise ValueError("per-case required source path is unsafe")
+        path = root / relative
+        if path.is_symlink() or not path.is_file() or sha(path) != expected_sha:
+            raise ValueError("per-case required source changed")
     return root
 
 

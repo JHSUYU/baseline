@@ -120,7 +120,9 @@ def _native_case_files(item: dict, config_root: Path,
     if not entry.is_file():
         return entry, state_root / case_id
     document = _object(entry)
-    if document.get("mode") != "native_region_state_case_binding":
+    binding_mode = document.get("mode")
+    if binding_mode not in ("native_region_state_case_binding",
+                            "native_concolic_case_binding"):
         return entry, state_root / case_id
     native_id = document.get("native_case_id")
     config = Path(document.get("native_config_path", ""))
@@ -137,12 +139,16 @@ def _native_case_files(item: dict, config_root: Path,
             config.is_symlink() or root.is_symlink() or
             _sha(config) != document.get("native_config_sha256") or
             _object(config).get("case_id") != native_id or
-            _object(config).get("runner", {}).get("mode") != "region_state" or
+            _object(config).get("runner", {}).get("mode") != (
+                "region_state" if binding_mode ==
+                "native_region_state_case_binding" else "concolic") or
             _object(config).get("target_throw", {}).get("siteId") != item[
                 "target"]["site_id"] or
             _object(config).get("target_throw", {}).get("exceptionClass") != item[
                 "target"].get("target_exception")):
-        raise ValueError("native REGION_STATE case binding changed identity or inputs")
+        raise ValueError("native case binding changed identity or inputs")
+    if binding_mode == "native_concolic_case_binding":
+        _verify_direct_concolic_admission(item, document, config)
     identity = document.get("target_identity_audit")
     if identity is not None:
         if not isinstance(identity, dict) or set(identity) != {
@@ -181,6 +187,97 @@ def _native_case_files(item: dict, config_root: Path,
             if actual != audit[sha_key]:
                 raise ValueError("native target identity source evidence changed")
     return config, root
+
+
+def _verify_direct_concolic_admission(item: dict, binding: dict,
+                                      config_file: Path) -> None:
+    """Accept a direct original admission without inventing preparation state."""
+    pins = binding.get("direct_admission")
+    if not isinstance(pins, dict) or set(pins) != {
+            "adapter_proof", "recording_admission", "validation_stdout",
+            "zero_vm_java"}:
+        raise ValueError("direct concolic admission pins are incomplete")
+    paths = {}
+    for name, pin in pins.items():
+        if not isinstance(pin, dict) or set(pin) != {"path", "sha256"}:
+            raise ValueError(f"direct concolic {name} pin is invalid")
+        path = Path(pin["path"])
+        if (not path.is_absolute() or path.is_symlink() or not path.is_file() or
+                _sha(path) != _digest(pin["sha256"], name)):
+            raise ValueError(f"direct concolic {name} changed")
+        paths[name] = path
+    config = _object(config_file)
+    if config.get("runner", {}).get("zero_vm_java") != str(paths["zero_vm_java"]):
+        raise ValueError("direct concolic Zero VM differs from config")
+    proof = _object(paths["adapter_proof"])
+    admission = _object(paths["recording_admission"])
+    target = item["target"]
+    identity = proof.get("target_identity", {})
+    guard = identity.get("original_guard_site_id")
+    if (proof.get("schema_version") != 1 or
+            proof.get("mode") != "original_graphchecker_native_adapter" or
+            proof.get("case_id") != item["case_id"] or
+            proof.get("junit") != config.get("junit") or
+            proof.get("original_cluster_junit_verified") is not True or
+            proof.get("recording_closed") is not True or
+            proof.get("scope_generated_by_original_graphchecker") is not True or
+            not isinstance(guard, str) or
+            not re.fullmatch(re.escape(guard) + r"#[1-9][0-9]*",
+                             config.get("target_site", "")) or
+            identity.get("original_throw_site_id") != target["site_id"] or
+            identity.get("inventory_throw_site_id") != target["site_id"] or
+            identity.get("original_throw_source_line") != target["source_line"] or
+            identity.get("exception_class") != target["target_exception"]):
+        raise ValueError("direct concolic proof differs from inventory or config")
+    source = next((Path(path) for path in proof.get("source_evidence_paths", [])
+                   if str(path).endswith(target["source_path"])), None)
+    archive = binding.get("target_source_archive")
+    if source is not None and source.is_file():
+        actual_source_sha = _sha(source) if not source.is_symlink() else None
+    elif isinstance(archive, dict) and set(archive) == {"path", "sha256"}:
+        archived = Path(archive["path"])
+        actual_source_sha = (_sha(archived) if archived.is_absolute() and
+                             archived.is_file() and not archived.is_symlink() and
+                             _sha(archived) == archive["sha256"] else None)
+    else:
+        actual_source_sha = None
+    if actual_source_sha != target["source_sha256"]:
+        raise ValueError("direct concolic target source differs from inventory")
+    occurrence_path = Path(proof.get("target_occurrence_receipt_path", ""))
+    if (not occurrence_path.is_absolute() or occurrence_path.is_symlink() or
+            _sha(occurrence_path) != proof.get("target_occurrence_receipt_sha256")):
+        raise ValueError("direct concolic target occurrence changed")
+    occurrence = _object(occurrence_path)
+    if (occurrence.get("checkSiteId") != guard or
+            occurrence.get("reachedEventCount", 0) < 1 or
+            occurrence.get("selectedOccurrenceAddress") != config.get(
+                "recording", {}).get("target_occurrence")):
+        raise ValueError("direct concolic healthy target occurrence changed")
+    weave_path = Path(config["native_weave_config"])
+    weave = _object(weave_path)
+    weave_receipt_path = (Path(weave["output_classes"]) /
+                          "native-original-weave-receipt.json")
+    weave_receipt = _object(weave_receipt_path)
+    fingerprint = admission.get("recording_fingerprint", {})
+    origin = admission.get("origin", {})
+    if (admission.get("schema_version") != 1 or
+            fingerprint.get("weave_config_sha256") != _sha(weave_path) or
+            fingerprint.get("weave_receipt_sha256") != _sha(weave_receipt_path) or
+            fingerprint.get("engine_jar_sha256") != weave_receipt.get(
+                "engine_jar_sha256") or
+            origin.get("selected_task_plan_sha256") != _sha(Path(
+                weave["task_plan"])) or
+            origin.get("static_scope_map_sha256") != _sha(Path(
+                config["recording"]["static_scope_map"]))):
+        raise ValueError("direct concolic recording admission changed")
+    jar = Path(weave_receipt["engine_jar"])
+    if (not jar.is_absolute() or jar.is_symlink() or
+            _sha(jar) != fingerprint["engine_jar_sha256"]):
+        raise ValueError("direct concolic engine changed")
+    accepted = {f"ADMISSION_OK {config_file}\n",
+                f"ADMISSION_OK_ZERO_VM {config_file}\n"}
+    if paths["validation_stdout"].read_text() not in accepted:
+        raise ValueError("direct concolic original admission did not pass")
 
 
 def _verify_alternate_junit(item: dict, entry: Path, config: dict) -> None:
@@ -984,6 +1081,11 @@ def inspect_case(item: dict, owner: str, config_root: Path, state_root: Path,
         region = config["runner"].get("mode") == "region_state"
         if region:
             _verify_region_weave(config_file)
+        elif bound and _object(config_root / f"{case_id}.json").get(
+                "mode") == "native_concolic_case_binding":
+            # _native_case_files verified the pinned direct admission.  This
+            # campaign was started independently and has no synthetic prep state.
+            pass
         else:
             verify_preparation_receipt(item, config_file, case_root)
         row["native_target_site"] = config["target_site"]

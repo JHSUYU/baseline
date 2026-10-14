@@ -1,4 +1,4 @@
-"""Bind one immutable native REGION_STATE case, then run one owner-host wave."""
+"""Bind one immutable native campaign, then run one owner-host wave."""
 
 from __future__ import annotations
 
@@ -6,6 +6,7 @@ import argparse
 import fcntl
 import hashlib
 import json
+import tarfile
 from pathlib import Path
 
 from Mallory.native_graphchecker_campaign.campaign import _validate_config
@@ -22,6 +23,10 @@ DEFAULT_ROOT = Path('/proj/silentfailure-PG0/ZhenyuLi/Mallory/native-102-queue-v
 def binding_for(item: dict, config_path: Path, state_path: Path,
                 *, alternate: Path | None = None,
                 identity: Path | None = None,
+                adapter_proof: Path | None = None,
+                recording_admission: Path | None = None,
+                validation_stdout: Path | None = None,
+                target_source_archive: Path | None = None,
                 campaign_python_root: Path | None = None,
                 campaign_python_tar: Path | None = None) -> dict:
     if (not config_path.is_absolute() or not state_path.is_absolute() or
@@ -34,7 +39,7 @@ def binding_for(item: dict, config_path: Path, state_path: Path,
     native_id = config.get('case_id')
     if (not isinstance(native_id, str) or
             not (native_id == case_id or native_id.startswith(case_id + '-native-')) or
-            config.get('runner', {}).get('mode') != 'region_state' or
+            config.get('runner', {}).get('mode') not in ('region_state', 'concolic') or
             config.get('target_throw', {}).get('siteId') != item['target']['site_id'] or
             config.get('target_throw', {}).get('exceptionClass') != item[
                 'target'].get('target_exception') or
@@ -51,14 +56,43 @@ def binding_for(item: dict, config_path: Path, state_path: Path,
         raise ValueError('alternate JUnit attestation is not immutable')
     row_sha = hashlib.sha256(json.dumps(
         item, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+    runner_mode = config['runner']['mode']
     binding = {'schema_version': 1,
-               'mode': 'native_region_state_case_binding',
+               'mode': ('native_region_state_case_binding' if runner_mode ==
+                        'region_state' else 'native_concolic_case_binding'),
                'inventory_case_id': case_id,
                'inventory_row_sha256': row_sha,
                'native_case_id': native_id,
                'native_config_path': str(config_path),
                'native_config_sha256': sha(config_path),
                'native_state_path': str(state_path)}
+    direct = {'adapter_proof': adapter_proof,
+              'recording_admission': recording_admission,
+              'validation_stdout': validation_stdout}
+    if runner_mode == 'concolic':
+        if any(direct[name] is None for name in (
+                'adapter_proof', 'recording_admission', 'validation_stdout')):
+            raise ValueError('direct concolic admission requires all three receipts')
+        direct['zero_vm_java'] = Path(config['runner'].get('zero_vm_java', ''))
+        for name, path in direct.items():
+            if not path.is_absolute() or path.is_symlink() or not path.is_file():
+                raise ValueError(f'direct concolic {name} is not immutable')
+        binding['direct_admission'] = {
+            name: {'path': str(path), 'sha256': sha(path)}
+            for name, path in direct.items()}
+        if target_source_archive is not None:
+            if (not target_source_archive.is_absolute() or
+                    target_source_archive.is_symlink() or
+                    not target_source_archive.is_file() or
+                    sha(target_source_archive) != item['target']['source_sha256']):
+                raise ValueError('direct concolic target source archive changed')
+            binding['target_source_archive'] = {
+                'path': str(target_source_archive),
+                'sha256': sha(target_source_archive)}
+    elif any(path is not None for path in direct.values()):
+        raise ValueError('direct concolic admission requires concolic runner')
+    elif target_source_archive is not None:
+        raise ValueError('source archive is only for direct concolic admission')
     if alternate is not None:
         binding['alternate_original_junit'] = {
             'attestation_path': str(alternate), 'attestation_sha256': sha(alternate)}
@@ -69,6 +103,8 @@ def binding_for(item: dict, config_path: Path, state_path: Path,
                                             'sha256': sha(identity)}
     if (campaign_python_root is None) != (campaign_python_tar is None):
         raise ValueError('campaign Python root and source tar must be paired')
+    if runner_mode == 'concolic' and campaign_python_root is None:
+        raise ValueError('direct concolic campaign requires frozen source closure')
     if campaign_python_root is not None:
         from .queue import pinned_campaign_python
         source = {'root_path': str(campaign_python_root),
@@ -77,6 +113,20 @@ def binding_for(item: dict, config_path: Path, state_path: Path,
                   'python_sha256': {
                       str(path.relative_to(campaign_python_root)): sha(path)
                       for path in sorted(campaign_python_root.rglob('*.py'))}}
+        if runner_mode == 'concolic':
+            relative = 'Mallory/native_graphchecker_feedback/NativeFeedbackMain.java'
+            java = campaign_python_root / relative
+            if java.is_symlink() or not java.is_file():
+                raise ValueError('concolic campaign source lacks NativeFeedbackMain.java')
+            with tarfile.open(campaign_python_tar, 'r:*') as archive:
+                try:
+                    member = archive.getmember(relative)
+                except KeyError as failure:
+                    raise ValueError('concolic campaign tar lacks NativeFeedbackMain.java') from failure
+                stream = archive.extractfile(member) if member.isfile() else None
+                if stream is None or hashlib.sha256(stream.read()).hexdigest() != sha(java):
+                    raise ValueError('concolic campaign Java source differs from tar')
+            source['required_files_sha256'] = {relative: sha(java)}
         pinned_campaign_python(source)
         binding['campaign_python_source'] = source
     return binding
@@ -124,6 +174,10 @@ def promote(*, root: Path, case_id: str, native_config: Path,
             port_review: Path | None = None,
             alternate_attestation: Path | None = None,
             target_identity_audit: Path | None = None,
+            adapter_proof: Path | None = None,
+            recording_admission: Path | None = None,
+            validation_stdout: Path | None = None,
+            target_source_archive: Path | None = None,
             campaign_python_root: Path | None = None,
             campaign_python_tar: Path | None = None,
             dispatch: bool = True) -> dict:
@@ -163,13 +217,18 @@ def promote(*, root: Path, case_id: str, native_config: Path,
         binding = binding_for(item, native_config, native_state,
                               alternate=alternate_attestation,
                               identity=target_identity_audit,
+                              adapter_proof=adapter_proof,
+                              recording_admission=recording_admission,
+                              validation_stdout=validation_stdout,
+                              target_source_archive=target_source_archive,
                               campaign_python_root=campaign_python_root,
                               campaign_python_tar=campaign_python_tar)
         for other_path in config_root.glob('*.json'):
             if other_path.stem in ('ownership', case_id):
                 continue
             other = obj(other_path)
-            if other.get('mode') == 'native_region_state_case_binding':
+            if other.get('mode') in ('native_region_state_case_binding',
+                                     'native_concolic_case_binding'):
                 other_state = Path(other['native_state_path'])
                 if (native_state == other_state or
                         native_state.is_relative_to(other_state) or
@@ -241,6 +300,10 @@ def main() -> None:
     parser.add_argument('--port-review', type=Path)
     parser.add_argument('--alternate-attestation', type=Path)
     parser.add_argument('--target-identity-audit', type=Path)
+    parser.add_argument('--adapter-proof', type=Path)
+    parser.add_argument('--recording-admission', type=Path)
+    parser.add_argument('--validation-stdout', type=Path)
+    parser.add_argument('--target-source-archive', type=Path)
     parser.add_argument('--campaign-python-root', type=Path)
     parser.add_argument('--campaign-python-tar', type=Path)
     parser.add_argument('--bind-only', action='store_true')
@@ -251,6 +314,10 @@ def main() -> None:
         port_review=args.port_review,
         alternate_attestation=args.alternate_attestation,
         target_identity_audit=args.target_identity_audit,
+        adapter_proof=args.adapter_proof,
+        recording_admission=args.recording_admission,
+        validation_stdout=args.validation_stdout,
+        target_source_archive=args.target_source_archive,
         campaign_python_root=args.campaign_python_root,
         campaign_python_tar=args.campaign_python_tar,
         dispatch=not args.bind_only), sort_keys=True))

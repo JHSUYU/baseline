@@ -97,6 +97,22 @@ The isolation contract requires a real system-specific port setting or a
 reviewed dynamic-port receipt. An unprepared case remains pending; no case is
 made runnable merely by this queue.
 
+## Adopt an existing concolic campaign
+
+For a campaign started directly from the original native concolic adapter,
+use `bind_and_run --bind-only` with `--adapter-proof`,
+`--recording-admission`, and `--validation-stdout`. The admission stdout must
+name the exact config path being bound. The binding verifies the original
+JUnit and target occurrence, inventory throw site and source bytes, selected
+task plan, weave receipt, and source-built engine. A shared source archive can
+be supplied with `--target-source-archive` when the original source path is
+local to its owner host. The config's Zero VM executable is pinned too. The
+frozen Python source tree and tar must both contain the original feedback
+Java entry point used after the JUnit. All evidence is pinned by SHA-256. A direct campaign
+keeps its existing checkpoint and `.campaign.lock`; binding never launches a
+second worker. A failed healthy seed remains blocked and cannot be promoted as
+a completed fuzz run.
+
 Tests that do not launch a distributed JUnit:
 
 ```bash
