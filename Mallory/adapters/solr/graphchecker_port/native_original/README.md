@@ -22,6 +22,7 @@ python3 build_native_overlay.py --source /absolute/path/to/patched/solr \
   --source-attestation /absolute/path/to/source-attestation.json \
   --classpath-file /absolute/path/to/solr-classpath.txt \
   --engine-jar /absolute/path/to/mallory-original-graphchecker.jar \
+  --shard-handoff \
   --output /absolute/path/to/isolated-protocol-classes
 ```
 
@@ -80,12 +81,14 @@ the native trial must still observe the door, pair the HTTP request with a
 server receipt, and retain the chosen target after the fault. The overlay
 does not alter an original JUnit or nominate a case-specific fault site.
 
-The 12 changed files passed source attestation. The 10 changed Java files
-passed direct Java 8 compilation against the pinned source-built original
-engine on node1, producing 47 classes. The unchanged
-`DeleteLastCustomShardedReplicaTest#test` passed on node1 with the native
-protocol overlay and runner, yielding a closed pre-weave trace with two
-versioned Overseer queue receives. This
-is a source and runner gate. A native `REGION_STATE` recording, target closure,
-and fault trial still require the generated static scope and recording-derived
-task plan.
+The current base protocol patch was checked against the original Solr commit:
+all 12 patched files match the source receipt, including the exact-version
+ZooKeeper write hook. The source-built GraphChecker engine with that API
+passed 28 tests. With the shard handoff, the 10 base Java files, one worker
+file, and JUnit runner passed Java 8 compilation, producing 49 classes. The
+build receipt records the engine, ordered classpath, both patches, and all
+output class hashes. An earlier base overlay passed the unchanged
+`DeleteLastCustomShardedReplicaTest#test` on node1 and recorded two versioned
+Overseer queue receives. The current overlay still needs an unchanged-JUnit
+healthy recording to prove that the new HTTP door is observed, followed by
+a target closure and fault trial from the generated static scope.

@@ -41,6 +41,8 @@ def main() -> None:
     parser.add_argument("--engine-jar", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--source-attestation", type=Path)
+    parser.add_argument("--shard-handoff", action="store_true",
+                        help="include the verified generic shard-request worker handoff")
     parser.add_argument("--javac", default="javac")
     args = parser.parse_args()
 
@@ -85,6 +87,12 @@ def main() -> None:
             raise ValueError("missing dependency: " + entry)
     sources = sorted(source / relative for relative in
                      receipt["patched_source_sha256"] if relative.endswith(".java"))
+    shard_handoff = None
+    if args.shard_handoff:
+        from apply_shard_handoff import RECEIPT as SHARD_RECEIPT, install as verify_shard
+        verify_shard(source, verify_only=True)
+        shard_handoff = json.loads(SHARD_RECEIPT.read_text())
+        sources.append(source / shard_handoff["path"])
     sources.append(HERE / "NativeSolrJUnitRunner.java")
     output.mkdir(parents=True)
     subprocess.run([args.javac, "-source", "8", "-target", "8",
@@ -102,6 +110,9 @@ def main() -> None:
         "source_attestation_sha256": attestation_sha256,
         "classes_sha256": tree_sha256(output),
     }
+    if shard_handoff is not None:
+        build["shard_handoff_patch_sha256"] = shard_handoff["overlay_patch_sha256"]
+        build["shard_handoff_source_sha256"] = shard_handoff["patched_source_sha256"]
     output.with_name(output.name + "-receipt.json").write_text(
         json.dumps(build, indent=2, sort_keys=True) + "\n")
     print(json.dumps(build, sort_keys=True))
