@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import edu.uva.liftlab.graphchecker.runtime.RuntimeTraceMode;
 import soot.Body;
 import soot.RefType;
 import soot.Scene;
@@ -95,8 +96,9 @@ public final class MalloryNativeFaultWeave {
     }
 
     private void captureSites() {
-        if (!ConcolicInstrumentationSelections.instrumentationRequested()) {
-            throw new IllegalStateException("native fault adapter requires original concolic weave");
+        if (!ConcolicInstrumentationSelections.instrumentationRequested()
+                && RuntimeTraceMode.configured() != RuntimeTraceMode.REGION_STATE) {
+            throw new IllegalStateException("native fault adapter requires original concolic or REGION_STATE weave");
         }
         List<SootClass> application = new ArrayList<>(Scene.v().getApplicationClasses());
         application.sort(Comparator.comparing(SootClass::getName));
