@@ -93,6 +93,14 @@ native trial counts, elapsed time, and an exact bug-candidate mark. Only
 case remains distinct. This queue does not overwrite the old 102-row TSV;
 the native dispatcher `status` command can build the audited native table.
 
+A pre-JUnit static timeout can be recorded under
+`STATE_ROOT/.native-queue/preparation-notes/CASE-ID.json`. The 102-row exporter
+checks the note's exact review, request, and source preflight SHA-256, then
+reports `preparation_static_timeout` with zero preparation JUnit and fault
+trials. It leaves terminal trial counts unset and
+`native_tested_complete: false`. A later bound campaign can still proceed
+from its own immutable healthy gate and checkpoint.
+
 The isolation contract requires a real system-specific port setting or a
 reviewed dynamic-port receipt. An unprepared case remains pending; no case is
 made runnable merely by this queue.

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import csv
 import fcntl
+import hashlib
 import io
 import json
 import os
@@ -19,6 +20,10 @@ from .coverage import coverage_path, read_coverage
 
 FIELDS = (
     "case_id", "system", "system_version", "owner", "native_state",
+    "preparation_status", "preparation_junit_trials",
+    "preparation_fault_trials", "preparation_review_path",
+    "preparation_review_sha256", "preparation_note_pin_path",
+    "preparation_note_pin_sha256", "preparation_note",
     "target_source_path", "target_class", "target_method", "target_line",
     "target_check_code", "target_exception", "original_junit",
     "executed_original_junit", "terminal_disposition", "checkpoint_status",
@@ -45,6 +50,76 @@ def _method_parts(function: str) -> tuple[str, str]:
     head = function.split("(", 1)[0]
     class_name, _ = head.rsplit(".", 1)
     return class_name, function[len(class_name) + 1:]
+
+
+def _preparation_note(item: dict, state_root: Path) -> dict[str, Any] | None:
+    """Read a pinned pre-JUnit failure without granting terminal status."""
+    case_id = item["case_id"]
+    pin_path = (state_root / ".native-queue" / "preparation-notes" /
+                f"{case_id}.json")
+    if not pin_path.is_file():
+        return None
+    pin = obj(pin_path)
+    paths = {}
+    for name in ("review", "source_preflight", "request"):
+        entry = pin.get(name)
+        path = Path(entry.get("path", "")) if isinstance(entry, dict) else Path("")
+        if (not path.is_absolute() or path.is_symlink() or not path.is_file() or
+                sha(path) != entry.get("sha256")):
+            raise ValueError(f"native preparation {name} pin changed: {case_id}")
+        paths[name] = path
+    if (pin.get("schema_version") != 1 or pin.get("case_id") != case_id or
+            pin.get("status") != "static_timeout" or
+            pin.get("junit_trials") != 0 or
+            pin.get("fault_trials") != 0):
+        raise ValueError(f"native preparation note changed: {case_id}")
+    review = obj(paths["review"])
+    source = obj(paths["source_preflight"])
+    request = obj(paths["request"])
+    timeout = review.get("configured_static_timeout_seconds")
+    if (review.get("schema_version") != 1 or
+            review.get("case_id") != case_id or
+            review.get("status") != "static_timeout" or
+            review.get("no_weave_manifest") is not True or
+            review.get("no_junit_run") is not True or
+            review.get("no_fault_trial") is not True or
+            str(review.get("exit_code")) != "1" or
+            not isinstance(timeout, (int, float)) or isinstance(timeout, bool) or
+            timeout <= 0 or
+            review.get("request_sha256") != sha(paths["request"]) or
+            source.get("schema_version") != 1 or
+            source.get("case_id") != case_id or
+            source.get("target_source_sha256") != item["target"]["source_sha256"] or
+            source.get("target_throw_source_line") != item["target"]["source_line"] or
+            source.get("target_exception") != item["target"].get(
+                "target_exception") or
+            source.get("original_junit") != item["workload"].get(
+                "selected_selector") or
+            request.get("case_id") != case_id or
+            request.get("inventory_row_sha256") != hashlib.sha256(
+                json.dumps(item, sort_keys=True, separators=(",", ":")
+                           ).encode()).hexdigest() or
+            request.get("original_junit", {}).get("selector") != item[
+                "workload"].get("selected_selector") or
+            request.get("target", {}).get("site_id") != item["target"][
+                "site_id"]):
+        raise ValueError(f"native preparation evidence changed: {case_id}")
+    stage = review.get("last_observed_stage")
+    if not isinstance(stage, str) or not stage:
+        raise ValueError(f"native preparation stage is missing: {case_id}")
+    return {
+        "preparation_status": "static_timeout",
+        "preparation_junit_trials": 0,
+        "preparation_fault_trials": 0,
+        "preparation_review_path": str(paths["review"].resolve()),
+        "preparation_review_sha256": sha(paths["review"]),
+        "preparation_note_pin_path": str(pin_path.resolve()),
+        "preparation_note_pin_sha256": sha(pin_path),
+        "preparation_note": (f"Original static ScopePlanner stopped after "
+                             f"{timeout:g}s at {stage}; no JUnit or fault trial ran."),
+        "evidence_paths": [str(path.resolve()) for path in paths.values()] +
+                          [str(pin_path.resolve())],
+    }
 
 
 def _elapsed_basis(native_root: Path, fault_trials: int,
@@ -199,6 +274,13 @@ def native_rows(inventory: Path, ownership_file: Path, config_root: Path,
             "case_id": case_id, "system": item["system"],
             "system_version": item["system_version"],
             "owner": owners[case_id], "native_state": "not_completed",
+            "preparation_status": None, "preparation_junit_trials": None,
+            "preparation_fault_trials": None,
+            "preparation_review_path": None,
+            "preparation_review_sha256": None,
+            "preparation_note_pin_path": None,
+            "preparation_note_pin_sha256": None,
+            "preparation_note": None,
             "target_source_path": target["source_path"],
             "target_class": source_class, "target_method": source_method,
             "target_line": target["source_line"],
@@ -231,6 +313,12 @@ def native_rows(inventory: Path, ownership_file: Path, config_root: Path,
             "completion_receipt_path": None,
             "completion_receipt_sha256": None, "evidence_paths": [],
         }
+        preparation = _preparation_note(item, state_root)
+        if preparation is not None:
+            evidence = preparation.pop("evidence_paths")
+            row.update(preparation)
+            row["evidence_paths"].extend(evidence)
+            row["native_state"] = "preparation_static_timeout"
         if config_file.is_file():
             row["native_config_path"] = str(config_file.resolve())
             row["native_config_sha256"] = sha(config_file)

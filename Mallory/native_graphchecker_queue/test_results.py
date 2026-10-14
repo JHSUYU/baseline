@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import hashlib
 import json
 import tempfile
 import unittest
@@ -17,6 +18,70 @@ from .results import (_elapsed_basis, _reviewed_exact_closure,
 
 
 class NativeResultsTest(unittest.TestCase):
+    def test_static_timeout_preparation_is_pinned_but_not_completed(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            config_root, state_root, results_dir = (root / name for name in
+                                                    ("config", "state", "results"))
+            config_root.mkdir()
+            state_root.mkdir()
+            item = next(row for row in load_inventory(DEFAULT_INVENTORY)[0]
+                        if row["case_id"] == "HDFS-39")
+            source = root / "source-preflight.json"
+            source.write_text(json.dumps({
+                "schema_version": 1, "case_id": item["case_id"],
+                "target_source_sha256": item["target"]["source_sha256"],
+                "target_throw_source_line": item["target"]["source_line"],
+                "target_exception": item["target"]["target_exception"],
+                "original_junit": item["workload"]["selected_selector"]}))
+            request = root / "request.json"
+            request.write_text(json.dumps({
+                "case_id": item["case_id"],
+                "inventory_row_sha256": hashlib.sha256(json.dumps(
+                    item, sort_keys=True, separators=(",", ":")
+                    ).encode()).hexdigest(),
+                "original_junit": {"selector": item["workload"][
+                    "selected_selector"]},
+                "target": {"site_id": item["target"]["site_id"]}}))
+            review = root / "static-timeout-review.json"
+            review.write_text(json.dumps({
+                "schema_version": 1, "case_id": item["case_id"],
+                "status": "static_timeout", "exit_code": "1",
+                "configured_static_timeout_seconds": 1800,
+                "last_observed_stage": "StaticScopeMap.sites/holders",
+                "no_weave_manifest": True, "no_junit_run": True,
+                "no_fault_trial": True,
+                "request_sha256": sha(request)}))
+            note = state_root / ".native-queue/preparation-notes/HDFS-39.json"
+            note.parent.mkdir(parents=True)
+            note.write_text(json.dumps({
+                "schema_version": 1, "case_id": item["case_id"],
+                "status": "static_timeout", "junit_trials": 0,
+                "fault_trials": 0,
+                "review": {"path": str(review), "sha256": sha(review)},
+                "source_preflight": {"path": str(source),
+                                     "sha256": sha(source)},
+                "request": {"path": str(request),
+                            "sha256": sha(request)}}))
+            output, _ = export_native_results(
+                DEFAULT_INVENTORY, DEFAULT_OWNERSHIP, config_root,
+                state_root, results_dir)
+            document = json.loads(output.read_text())
+            row = next(row for row in document["rows"]
+                       if row["case_id"] == item["case_id"])
+            self.assertEqual(document["case_count"], 102)
+            self.assertEqual(document["verified_terminal_count"], 0)
+            self.assertEqual(row["native_state"], "preparation_static_timeout")
+            self.assertFalse(row["native_tested_complete"])
+            self.assertEqual(row["preparation_junit_trials"], 0)
+            self.assertEqual(row["preparation_fault_trials"], 0)
+            self.assertIsNone(row["fault_trials"])
+            self.assertIsNone(row["terminal_disposition"])
+            review.write_text(review.read_text() + " ")
+            with self.assertRaisesRegex(ValueError, "preparation review pin changed"):
+                export_native_results(DEFAULT_INVENTORY, DEFAULT_OWNERSHIP,
+                                      config_root, state_root, results_dir)
+
     def test_exact_closure_review_pins_frozen_plan_and_fault_events(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
