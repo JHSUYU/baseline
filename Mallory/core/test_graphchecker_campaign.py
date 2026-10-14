@@ -19,6 +19,7 @@ from Mallory.core.graphchecker_campaign import (_archive_jsonl, _archive_stat,
                                                 _target_throw_profiles,
                                                 _profile_exceeds_healthy_envelope,
                                                 _static_producer_frontier_sites,
+                                                _static_may_sidecar,
                                                 _trial_scratch_root,
                                                 _validate_scratch_root,
                                                 _check_woven_major,
@@ -263,6 +264,46 @@ class GraphCheckerCampaignTest(unittest.TestCase):
             self.assertEqual({("producer", "rpc-reply")},
                              _static_producer_frontier_sites(path, graph))
             self.assertEqual(set(), _static_producer_frontier_sites(path, {}))
+
+    def test_separate_static_may_sidecar_ranks_observed_door_only(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "merged-may.jsonl"
+            rows = [
+                {"role": "TARGET_SITE", "regionId": "target", "siteId": "check"},
+                {"role": "STATIC_REGION_METHOD", "regionId": "target",
+                 "vmMethod": "targetMethod"},
+                {"role": "STATIC_REGION_METHOD", "regionId": "producer",
+                 "vmMethod": "producerMethod"},
+                {"role": "STATIC_VALUE_EDGE", "producerMethod": "producerMethod",
+                 "consumerMethod": "targetMethod", "carrier": "key"},
+                {"role": "DOOR_SITE", "regionId": "producer", "siteId": "rpc"},
+                {"role": "DOOR_SITE", "regionId": "unrelated", "siteId": "other"},
+            ]
+            path.write_text("".join(json.dumps({"kind": "STATIC_SCOPE_SITE", **row})
+                                    + "\n" for row in rows))
+            may = _static_may_sidecar(path, ["check"], set())
+            self.assertEqual({"rpc"}, may["door_sites"])
+            self.assertEqual({("producer", "rpc")}, may["producer_frontier_sites"])
+            self.assertEqual(1, may["relation_count"])
+            runtime = [
+                {"kind": "FAULT_DOOR", "seq": 2, "siteId": "rpc",
+                 "regionId": "producer", "node": "nn#epoch0",
+                 "occurrenceId": "unrelated-rpc", "doorOrdinal": 1},
+                {"kind": "TARGET_CHECK", "seq": 3, "siteId": "check",
+                 "node": "nn#epoch0", "occurrenceId": "target-occ", "outcome": "FALSE"},
+            ]
+            graph = {**self.graph(), "closureOccurrenceIds": ["target-occ"],
+                     "closureOccurrenceCutoffs": {"target-occ": 3},
+                     "staticMayObservedDoorSiteIds": []}
+            evidence = summarize_evidence(runtime, graph, self.TARGET, [],
+                                          {"rpc": "java.io.IOException"},
+                                          may["producer_frontier_sites"], may)
+            self.assertEqual("static_may_observed",
+                             evidence["eligible_doors"][0]["tier"])
+            self.assertFalse(evidence["injection_specific_target_reached"])
+            self.assertEqual("separate_soot_sidecar",
+                             evidence["static_may_ranking_source"])
+            self.assertEqual([], graph["staticMayObservedDoorSiteIds"])
 
     def test_real_hdfs_target_row_shape_is_counted_without_attribution(self):
         # HDFS-29 healthy raw trace has this exact selected TARGET_CHECK

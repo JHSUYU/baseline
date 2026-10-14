@@ -18,7 +18,8 @@ from pathlib import Path
 from typing import Any
 
 from .graphchecker_campaign import (_configured_check_sites, _json, _write_json,
-                                    load_config, prepare,
+                                    _prior_trace_metadata, _prior_trace_profiles,
+                                    _sha256, load_config, prepare,
                                     run_trial, verify_trial_artifacts)
 
 SCHEMA = 1
@@ -601,7 +602,8 @@ def _accept_result(state: dict[str, Any], name: str,
 
 
 def _resume_active(state: dict[str, Any], root: Path,
-                   config: dict[str, Any], prepared: Path) -> None:
+                   config: dict[str, Any], prepared: Path,
+                   additional_healthy_seeds: list[Path] | None = None) -> None:
     active = state.get("active")
     if active is None:
         return
@@ -635,7 +637,8 @@ def _resume_active(state: dict[str, Any], root: Path,
             raise FileNotFoundError(f"healthy GraphChecker trace missing: {prior}")
         prior = legacy
     result = run_trial(config, prepared, trial, {"faults": active["faults"]},
-                       prior if active["index"] > 0 else None)
+                       prior if active["index"] > 0 else None,
+                       additional_healthy_seeds if active["index"] > 0 else None)
     _accept_result(state, name, result)
     _write_json(root / "checkpoint.json", state)
 
@@ -720,7 +723,9 @@ def _finish(state: dict[str, Any], root: Path) -> dict[str, Any]:
 
 
 def run_campaign(config_path: Path, root: Path,
-                 stop_after_fault_trials: int | None = None) -> dict[str, Any]:
+                 stop_after_fault_trials: int | None = None,
+                 additional_healthy_seeds: list[Path] | None = None
+                 ) -> dict[str, Any]:
     config = load_config(config_path)
     budget = _budget(config_path)
     if (stop_after_fault_trials is not None and
@@ -730,6 +735,15 @@ def run_campaign(config_path: Path, root: Path,
              stop_after_fault_trials > budget["fault_trials"])):
         raise ValueError("stop_after_fault_trials must be within the immutable budget")
     root = root.resolve()
+    healthy_seed_paths = [path.resolve() for path in additional_healthy_seeds or []]
+    if len(set(healthy_seed_paths)) != len(healthy_seed_paths):
+        raise ValueError("duplicate additional healthy seed trace")
+    for path in healthy_seed_paths:
+        _prior_trace_metadata(path, config["target"], config["case_id"])
+        if _prior_trace_profiles(path, config["target"]) is None:
+            raise ValueError("additional healthy seed lacks structural target profiles")
+    healthy_seed_pins = [{"path": str(path), "archive_sha256": _sha256(path)}
+                         for path in healthy_seed_paths]
     root.mkdir(parents=True, exist_ok=True)
     with (root / ".campaign.lock").open("a+") as lock:
         try:
@@ -744,6 +758,8 @@ def run_campaign(config_path: Path, root: Path,
                     state.get("config_sha256") != config["config_sha256"] or
                     state.get("budget") != budget):
                 raise ValueError("campaign checkpoint does not match immutable config")
+            if state.get("additional_healthy_seed_pins", []) != healthy_seed_pins:
+                raise ValueError("campaign additional healthy seeds changed")
             if state.get("scheduler_version", 1) >= 4 and (
                     state.get("bootstrap_policy_version") != BOOTSTRAP_POLICY_VERSION or
                     state.get("bootstrap_limits") != {
@@ -766,6 +782,7 @@ def run_campaign(config_path: Path, root: Path,
             _verify_recorded_evidence(state, root)
         else:
             state = _new_state(config, budget)
+            state["additional_healthy_seed_pins"] = healthy_seed_pins
             _write_json(checkpoint, state)
         if state["status"] != "running":
             return _finish(state, root)
@@ -778,7 +795,7 @@ def run_campaign(config_path: Path, root: Path,
         if state["healthy"] is None and state["active"] is None:
             state["active"] = {"index": 0, "name": "r0000", "faults": []}
             _write_json(checkpoint, state)
-        _resume_active(state, root, config, prepared)
+        _resume_active(state, root, config, prepared, healthy_seed_paths)
         while state["status"] == "running":
             if (state["completed_fault_trials"] >= budget["fault_trials"] or
                     state["trial_elapsed_seconds"] >= budget["seconds"] or
@@ -822,7 +839,7 @@ def run_campaign(config_path: Path, root: Path,
                                "bootstrap_seed": selected.get("bootstrap_seed", False),
                                "unmatched_retry": selected.get("unmatched_retry", 0)}
             _write_json(checkpoint, state)
-            _resume_active(state, root, config, prepared)
+            _resume_active(state, root, config, prepared, healthy_seed_paths)
         return _finish(state, root)
 
 
@@ -833,8 +850,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--stop-after-fault-trials", type=int,
                         help="pause after this cumulative fault-trial count; "
                              "preserve the nonterminal checkpoint for resume")
+    parser.add_argument("--additional-healthy-seed-trace", action="append",
+                        type=Path, default=[],
+                        help="independent unchanged no-fault trace; its archive "
+                             "digest is pinned in the campaign checkpoint")
     args = parser.parse_args(argv)
-    state = run_campaign(args.config, args.out, args.stop_after_fault_trials)
+    state = run_campaign(args.config, args.out, args.stop_after_fault_trials,
+                         args.additional_healthy_seed_trace)
     paused = (state["status"] == "running" and args.stop_after_fault_trials is not None
               and state["completed_fault_trials"] >= args.stop_after_fault_trials)
     print(json.dumps({"case_id": state["case_id"],

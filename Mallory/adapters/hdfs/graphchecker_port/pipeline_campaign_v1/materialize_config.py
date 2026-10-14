@@ -9,10 +9,9 @@ from zipfile import ZipFile
 
 HERE = Path(__file__).resolve().parent
 REQUEST = json.loads((HERE / "campaign-request-v1.json").read_text())
-SCOPE_INPUT = json.loads((HERE / "scope-input-v1.json").read_text())
-OLD = json.loads(Path(
+DEFAULT_REFERENCE = Path(
     "/users/ZhenyuLi/baseline/data/mallory/graphchecker_port/imports/"
-    "HDFS-32/49edf7055d5e4fd5-d9373a7b348a/config.json").read_text())
+    "HDFS-32/49edf7055d5e4fd5-d9373a7b348a/config.json")
 
 
 def sha256(path):
@@ -22,6 +21,12 @@ def sha256(path):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--scope-output", type=Path, required=True)
+    parser.add_argument("--scope-input", type=Path,
+                        default=HERE / "scope-input-v1.json")
+    parser.add_argument("--source-root", type=Path,
+                        default=Path(REQUEST["source"]["root"]))
+    parser.add_argument("--reference-config", type=Path,
+                        default=DEFAULT_REFERENCE)
     parser.add_argument("--weaver-jar", type=Path, required=True)
     parser.add_argument("--runtime-jar", type=Path, required=True)
     parser.add_argument("--graph-jar", type=Path, required=True)
@@ -29,7 +34,9 @@ def main():
     args = parser.parse_args()
     if args.out.exists():
         raise FileExistsError(args.out)
-    source = Path(REQUEST["source"]["root"])
+    source = args.source_root.resolve()
+    scope_input = json.loads(args.scope_input.read_text())
+    reference = json.loads(args.reference_config.read_text())
     for name in ("target", "junit"):
         file = source / REQUEST["source"][name + "_source"]
         if sha256(file) != REQUEST["source"][name + "_source_sha256"]:
@@ -37,7 +44,7 @@ def main():
     for jar in (args.weaver_jar, args.runtime_jar, args.graph_jar):
         if not jar.is_file():
             raise FileNotFoundError(jar)
-    cp = SCOPE_INPUT["analysis"]["classpath"][0].split(":")
+    cp = scope_input["analysis"]["classpath"][0].split(":")
     if str(args.weaver_jar.resolve()) not in cp or str(args.runtime_jar.resolve()) not in cp:
         raise ValueError("weaver/runtime jars must be the exact static classpath entries")
     with ZipFile(args.runtime_jar) as archive:
@@ -45,12 +52,15 @@ def main():
                 "TargetThrowFingerprint.class") not in archive.namelist():
             raise ValueError("runtime jar lacks healthy target structural fingerprint")
     scope = args.scope_output.resolve()
-    manifest = json.loads((scope / "weave_manifest.json").read_text())
-    scope_map = scope / "static_scope_map.jsonl"
-    if not scope_map.is_file():
-        raise FileNotFoundError(scope_map)
-    target_class = SCOPE_INPUT["target"]["class"]
-    exception = SCOPE_INPUT["target"]["exception"]
+    manifest_file = scope / "graphchecker_weave_manifest.json"
+    manifest = json.loads(manifest_file.read_text())
+    scope_map = scope / "graphchecker_static_scope_map.jsonl"
+    may_map = scope / "static_scope_map.jsonl"
+    for path in (scope_map, may_map):
+        if not path.is_file():
+            raise FileNotFoundError(path)
+    target_class = scope_input["target"]["class"]
+    exception = scope_input["target"]["exception"]
     targets = manifest["targets"]
     checks = [x for x in targets if x.get("clazz") == target_class and
               x.get("method") == "retrieveDataEncryptionKey" and
@@ -66,7 +76,7 @@ def main():
         raise ValueError("fresh Soot classpath differs from staged input")
     if not all(Path(x).exists() for x in cp):
         raise ValueError("fresh Soot classpath has missing entry")
-    with scope_map.open() as stream:
+    with may_map.open() as stream:
         value_edges = sum(1 for line in stream if line.strip() and
                           json.loads(line).get("role") == "STATIC_VALUE_EDGE")
     if value_edges < 1:
@@ -84,9 +94,9 @@ def main():
     if sha256(target_class_file) != REQUEST["source"][
             "compiled_target_class_sha256_expected_inventory"]:
         raise ValueError("compiled target class differs from inventory pin")
-    old_weaver, old_runtime = OLD["tool_classpath"][:2]
+    old_weaver, old_runtime = reference["tool_classpath"][:2]
     tool = [str(args.weaver_jar.resolve()), str(args.runtime_jar.resolve())]
-    tool += [x for x in OLD["tool_classpath"] if x not in (old_weaver, old_runtime)]
+    tool += [x for x in reference["tool_classpath"] if x not in (old_weaver, old_runtime)]
     template = args.out.parent / "trial-cwd-template"
     if template.exists():
         raise FileExistsError(template)
@@ -98,14 +108,15 @@ def main():
         "target": {"check_site_id": checks[0]["siteId"],
                    "throw_site_id": throws[0]["siteId"],
                    "exception_class": exception},
-        "weave_manifest": str(scope / "weave_manifest.json"),
+        "weave_manifest": str(manifest_file),
         "static_scope_map": str(scope_map),
+        "static_may_scope_map": str(may_map),
         "original_class_dirs": [str(merged)],
         "soot_dependency_classpath": cp,
         "tool_classpath": tool,
-        "test_classpath": OLD["test_classpath"],
+        "test_classpath": reference["test_classpath"],
         "graph_jar": str(args.graph_jar.resolve()),
-        "cwd": REQUEST["source"]["root"],
+        "cwd": str(source),
         "java": "/usr/lib/jvm/java-8-openjdk-amd64/bin/java",
         "runner": {"main_class":
                    "edu.uva.liftlab.mallory.graphchecker.weave.JUnitTrialMain",
@@ -125,6 +136,8 @@ def main():
                       "check_site_id": checks[0]["siteId"],
                       "throw_site_id": throws[0]["siteId"],
                       "static_value_edges": value_edges,
+                      "graphchecker_map_sha256": sha256(scope_map),
+                      "static_may_sidecar_sha256": sha256(may_map),
                       "generic_doors": len(manifest["doors"]),
                       "generic_rpc_ioexception_doors": len(rpc_doors)}))
 

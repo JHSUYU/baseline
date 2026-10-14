@@ -9,7 +9,7 @@ the old Mallory Probe event file is never an injection or target oracle.
 from __future__ import annotations
 
 import argparse
-from collections import Counter
+from collections import Counter, deque
 import gzip
 import hashlib
 import json
@@ -125,6 +125,115 @@ def _static_producer_frontier_sites(static_scope_map: Path,
                     isinstance(row.get("siteId"), str) and row["siteId"]):
                 result.add((row["regionId"], row["siteId"]))
     return result
+
+
+def _static_may_sidecar(path: Path, target_sites: list[str],
+                        observed_regions: set[str]) -> dict[str, Any]:
+    """Rank static MAY producers without adding edges to the observed graph.
+
+    The original GraphChecker map remains the sole input to TrialGraphMain.
+    This independently pinned Soot map may only affect fault-door priority.
+    """
+    from collections import defaultdict
+
+    reads = defaultdict(list)
+    imports = defaultdict(list)
+    writes = defaultdict(list)
+    exports = defaultdict(list)
+    doors = defaultdict(list)
+    methods_by_region = defaultdict(set)
+    regions_by_method = defaultdict(set)
+    values = defaultdict(list)
+    targets = defaultdict(set)
+    with path.open(encoding="utf-8") as source:
+        for line in source:
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            if not isinstance(row, dict) or row.get("kind") != "STATIC_SCOPE_SITE":
+                raise ValueError("invalid static MAY sidecar row")
+            role, region = row.get("role"), row.get("regionId")
+            if role == "STATIC_VALUE_EDGE":
+                if row.get("consumerMethod"):
+                    values[row["consumerMethod"]].append(row)
+                continue
+            if not isinstance(region, str) or not region:
+                continue
+            if role == "STATIC_REGION_METHOD":
+                method = row.get("vmMethod")
+                if isinstance(method, str) and method:
+                    methods_by_region[region].add(method)
+                    regions_by_method[method].add(region)
+            elif role == "READ_SITE" and row.get("cell"):
+                reads[region].append(row)
+            elif role == "IMPORT_SITE" and row.get("portId"):
+                imports[region].append(row)
+            elif role == "WRITE_SITE" and row.get("cell"):
+                writes[row["cell"]].append(row)
+            elif role == "EXPORT_SITE" and row.get("portId"):
+                exports[row["portId"]].append(row)
+            elif role == "DOOR_SITE":
+                doors[region].append(row)
+            elif role in {"TARGET_SITE", "THROW_SITE"} and row.get("siteId"):
+                targets[row["siteId"]].add(region)
+    roots = set().union(*(targets.get(site, set()) for site in target_sites))
+    if not roots:
+        raise ValueError("static MAY sidecar lacks configured target")
+    # Observed regions are useful seeds only when the sidecar also names them.
+    known_regions = set(methods_by_region) | set(reads) | set(imports) | set(doors)
+    regions = roots | (observed_regions & known_regions)
+    pending = deque(sorted(regions))
+    relations = []
+    relation_keys = set()
+    while pending:
+        consumer = pending.popleft()
+        candidates = []
+        for read in reads[consumer]:
+            candidates.extend(("STATIC_STATE", read["cell"], write, read)
+                              for write in writes[read["cell"]])
+        for imported in imports[consumer]:
+            candidates.extend(("STATIC_WIRE", imported["portId"], export, imported)
+                              for export in exports[imported["portId"]])
+        for kind, carrier, producer, use in candidates:
+            source_region = producer.get("regionId")
+            if not isinstance(source_region, str) or not source_region:
+                continue
+            key = (kind, carrier, producer.get("siteId"), use.get("siteId"))
+            if key not in relation_keys:
+                relation_keys.add(key)
+                relations.append({"kind": kind, "carrier": carrier,
+                                  "producerRegionId": source_region,
+                                  "producerSiteId": producer.get("siteId"),
+                                  "consumerRegionId": consumer,
+                                  "consumerSiteId": use.get("siteId")})
+            if source_region not in regions:
+                regions.add(source_region)
+                pending.append(source_region)
+        for method in methods_by_region[consumer]:
+            for edge in values[method]:
+                for source_region in regions_by_method[edge.get("producerMethod")]:
+                    if source_region == consumer:
+                        continue
+                    key = ("STATIC_VALUE", source_region, consumer,
+                           edge.get("producerMethod"), method)
+                    if key not in relation_keys:
+                        relation_keys.add(key)
+                        relations.append({"kind": "STATIC_VALUE",
+                                          "producerRegionId": source_region,
+                                          "consumerRegionId": consumer,
+                                          "producerMethod": edge.get("producerMethod"),
+                                          "consumerMethod": method,
+                                          "carrier": edge.get("carrier")})
+                    if source_region not in regions:
+                        regions.add(source_region)
+                        pending.append(source_region)
+    may_sites = {row["siteId"] for region in regions for row in doors[region]
+                 if isinstance(row.get("siteId"), str) and row["siteId"]}
+    producers = {item["producerRegionId"] for item in relations}
+    frontier = {(region, row["siteId"]) for region in producers
+                for row in doors[region] if row.get("siteId")}
+    return {"door_sites": may_sites, "producer_frontier_sites": frontier,
+            "relation_count": len(relations), "region_count": len(regions)}
 
 
 def _profile_exceeds_healthy_envelope(
@@ -723,6 +832,9 @@ def load_config(path: Path) -> dict[str, Any]:
     target_site_rows = _manifest_target(manifest, target)
     _door_types(manifest)
     static_map = _path(raw.get("static_scope_map"), base, "static_scope_map")
+    static_may_map = (_path(raw["static_may_scope_map"], base,
+                            "static_may_scope_map")
+                      if "static_may_scope_map" in raw else None)
     if "original_class_dirs" in raw:
         originals = _paths(raw["original_class_dirs"], base, "original_class_dirs")
         if not all(path.is_dir() for path in originals):
@@ -766,6 +878,7 @@ def load_config(path: Path) -> dict[str, Any]:
             "junit": junit, "target": target,
             "target_site_rows": target_site_rows, "timeout_seconds": timeout,
             "weave_manifest": manifest_path, "static_scope_map": static_map,
+            "static_may_scope_map": static_may_map,
             "original_class_dirs": originals, "tool_classpath": tool_cp,
             "test_classpath": test_cp, "graph_jar": graph_jar,
             "soot_dependency_classpath": soot_cp,
@@ -872,6 +985,8 @@ def prepare(config: dict[str, Any], output: Path) -> Path:
         "source_manifest_sha256": _sha256(config["weave_manifest"]),
         "effective_manifest_sha256": _sha256(effective_manifest),
         "static_scope_map_sha256": _sha256(config["static_scope_map"]),
+        "static_may_scope_map_sha256": (_sha256(config["static_may_scope_map"])
+                                        if config["static_may_scope_map"] else None),
         "graph_jar_sha256": _sha256(config["graph_jar"]),
         "soot_dependency_classpath_sha256": config["soot_dependency_classpath_sha256"],
         "soot_dependency_classpath": list(map(str, config["soot_dependency_classpath"])),
@@ -898,6 +1013,9 @@ def _verify_prepared(config: dict[str, Any], prepared: Path) -> list[Path]:
             receipt.get("config_sha256") != config["config_sha256"] or
             receipt.get("source_manifest_sha256") != _sha256(config["weave_manifest"]) or
             receipt.get("static_scope_map_sha256") != _sha256(config["static_scope_map"]) or
+            receipt.get("static_may_scope_map_sha256") != (
+                _sha256(config["static_may_scope_map"])
+                if config["static_may_scope_map"] else None) or
             receipt.get("graph_jar_sha256") != _sha256(config["graph_jar"]) or
             receipt.get("soot_dependency_classpath_sha256",
                         config["soot_dependency_classpath_sha256"]) !=
@@ -1116,7 +1234,8 @@ def _planned_fault_matches(fault: dict[str, Any], actual: dict[str, Any]) -> boo
 def summarize_evidence(rows: list[dict[str, Any]], graph: dict[str, Any],
                        target: dict[str, Any], faults: list[dict[str, Any]],
                        door_types: dict[str, str] | None = None,
-                       producer_frontier_sites: set[tuple[str, str]] | None = None
+                       producer_frontier_sites: set[tuple[str, str]] | None = None,
+                       static_may_sidecar: dict[str, Any] | None = None
                        ) -> dict[str, Any]:
     """Return strict runtime identity, exact target oracle, and door tiers."""
     check_sites = _configured_check_sites(target)
@@ -1131,11 +1250,15 @@ def summarize_evidence(rows: list[dict[str, Any]], graph: dict[str, Any],
         raise ValueError("GraphChecker closure cutoff map is invalid")
     if target.get("check_site_id") and graph.get("staticScopeTargetFound") is not True:
         raise ValueError("static may-scope does not contain the selected target")
-    may_sites = set(graph.get("staticMayObservedDoorSiteIds", []))
+    may_sites = (set(static_may_sidecar["door_sites"])
+                 if static_may_sidecar is not None else
+                 set(graph.get("staticMayObservedDoorSiteIds", [])))
     doors = [row for row in rows if row["kind"] == "FAULT_DOOR"
              and all(row.get(key) for key in ("siteId", "node", "occurrenceId"))
              and isinstance(row.get("doorOrdinal"), int)
              and row["doorOrdinal"] > 0]
+    if static_may_sidecar is not None:
+        may_sites.intersection_update(row["siteId"] for row in doors)
     applied = [row for row in rows if row["kind"] == "FAULT_APPLIED"]
     strict = bool(faults) and len(applied) == len(faults)
     matched: list[dict[str, Any]] = []
@@ -1263,6 +1386,12 @@ def summarize_evidence(rows: list[dict[str, Any]], graph: dict[str, Any],
             "causal_closure_edges": graph.get("closureEdgeIds", []),
             "closure_coverage_sites": graph.get("closureCoverageSiteIds", []),
             "static_may_observed_door_sites": sorted(may_sites),
+            "static_may_ranking_source": ("separate_soot_sidecar"
+                                          if static_may_sidecar is not None else
+                                          "graphchecker_original_seed"),
+            "static_may_sidecar_relation_count": (
+                static_may_sidecar["relation_count"]
+                if static_may_sidecar is not None else None),
             "static_producer_frontier_doors": [
                 {"regionId": region, "siteId": site}
                 for region, site in sorted(producer_frontier_sites or set())],
@@ -1409,6 +1538,8 @@ def run_trial(config: dict[str, Any], prepared: Path, trial: Path,
         "prior_seed_target_throw_count": prior_throw_count,
         "healthy_seed_trace_sha256s": healthy_seed_digests,
         "static_scope_map_sha256": _sha256(config["static_scope_map"]),
+        "static_may_scope_map_sha256": (_sha256(config["static_may_scope_map"])
+                                        if config["static_may_scope_map"] else None),
         "weave_receipt_sha256": _sha256(prepared / "weave-receipt.json"),
         "trial_cwd_template_sha256": config["trial_cwd_template_sha256"],
         "phase_seconds": phase_seconds,
@@ -1432,11 +1563,28 @@ def run_trial(config: dict[str, Any], prepared: Path, trial: Path,
         graph = analyze_trial(scratch, anchor, prior_trace, config["graph_jar"],
                               config["static_scope_map"])
         phase_seconds["graph_analysis"] = round(time.monotonic() - phase_started, 3)
+        static_may = None
+        if config["static_may_scope_map"] is not None:
+            phase_started = time.monotonic()
+            closure = set(graph.get("closureOccurrenceIds", []))
+            observed_regions = {row["regionId"] for row in rows
+                                if row.get("occurrenceId") in closure and
+                                isinstance(row.get("regionId"), str) and
+                                row["regionId"]}
+            static_may = _static_may_sidecar(
+                config["static_may_scope_map"],
+                [*check_sites, config["target"]["throw_site_id"]],
+                observed_regions)
+            phase_seconds["static_may_ranking"] = round(
+                time.monotonic() - phase_started, 3)
         phase_started = time.monotonic()
         evidence = summarize_evidence(rows, graph, config["target"], faults,
                                       door_types,
-                                      _static_producer_frontier_sites(
-                                          config["static_scope_map"], graph))
+                                      (static_may["producer_frontier_sites"]
+                                       if static_may is not None else
+                                       _static_producer_frontier_sites(
+                                           config["static_scope_map"], graph)),
+                                      static_may)
         triggered = evidence["target_exception_triggered"]
         status, candidate = _trial_verdict(evidence, faults, prior_throw_count,
                                            config["target"], healthy_profiles)

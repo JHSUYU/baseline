@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import tempfile
 import unittest
 from pathlib import Path
@@ -586,6 +587,36 @@ class GraphCheckerFuzzerTest(unittest.TestCase):
             prepare.assert_not_called()
             self.assertTrue(returned["terminal"])
             self.assertTrue((root / "summary.json").is_file())
+
+    def test_external_healthy_seed_archive_is_pinned_across_resume(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            config_file = root / "config.json"
+            config_file.write_text("{}")
+            seed = root / "independent-healthy.jsonl.gz"
+            seed.write_bytes(b"healthy seed archive")
+            config = {**self.config(), "target": {
+                "throw_site_id": "throw", "exception_class": "java.io.IOException"}}
+            state = _new_state(config, self.budget())
+            state.update(status="complete_queue", terminal=True,
+                         additional_healthy_seed_pins=[{
+                             "path": str(seed.resolve()),
+                             "archive_sha256": hashlib.sha256(
+                                 seed.read_bytes()).hexdigest()}])
+            (root / "checkpoint.json").write_text(json.dumps(state))
+            with patch("Mallory.core.graphchecker_fuzzer.load_config",
+                       return_value=config), patch(
+                       "Mallory.core.graphchecker_fuzzer._budget",
+                       return_value=self.budget()), patch(
+                       "Mallory.core.graphchecker_fuzzer._prior_trace_metadata",
+                       return_value=(0, "content-sha", "archive-sha")), patch(
+                       "Mallory.core.graphchecker_fuzzer._prior_trace_profiles",
+                       return_value={}):
+                self.assertEqual("complete_queue", run_campaign(
+                    config_file, root, additional_healthy_seeds=[seed])["status"])
+                seed.write_bytes(b"changed")
+                with self.assertRaisesRegex(ValueError, "healthy seeds changed"):
+                    run_campaign(config_file, root, additional_healthy_seeds=[seed])
 
     def test_checkpoint_policy_preserves_v2_v3_v4_replay(self):
         for version in (2, 3, 4, 5):
