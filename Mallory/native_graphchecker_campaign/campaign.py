@@ -152,6 +152,9 @@ def _validate_config(config: dict[str, Any]) -> None:
         raise ValueError("native campaign requires bounded Zero VM JUnit runner")
     if runner.get("mode", "concolic") not in ("concolic", "region_state"):
         raise ValueError("runner mode must be concolic or region_state")
+    if (runner.get("mode") == "region_state" and
+            recording["test_id"] != junit["class"] + "#" + junit["method"]):
+        raise ValueError("recording test_id must match the original JUnit workload")
     budget = config.get("budget")
     if (not isinstance(budget, dict) or any(
             not isinstance(budget.get(key), int) or isinstance(budget[key], bool)

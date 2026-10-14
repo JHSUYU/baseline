@@ -356,6 +356,14 @@ class NativeCampaignFixtureTest(unittest.TestCase):
                          "zero_vm_sha256": "fixture-zero",
                          "runner_classpath_artifacts": []}
 
+    def test_region_state_rejects_recording_of_another_junit(self) -> None:
+        self.config["runner"]["mode"] = "region_state"
+        with self.assertRaisesRegex(ValueError, "recording test_id must match"):
+            core._validate_config(self.config)
+        self.config["recording"]["test_id"] = (
+            "UnchangedFixtureTest#testOperation")
+        core._validate_config(self.config)
+
     def _generate(self, iteration: Path, *, mixed_target: bool = False,
                   direct_wire: bool = False) -> None:
         subprocess.run(["java", "-cp", self.classpath,
