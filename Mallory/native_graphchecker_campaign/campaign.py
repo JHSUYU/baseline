@@ -28,7 +28,7 @@ from Mallory.instrumentation.graphchecker_port.native_original_weave import (
 from Mallory.native_graphchecker_feedback import delta, summarize_target_set
 from Mallory.native_graphchecker_feedback.feedback import NoNativeTargetError
 from Mallory.native_graphchecker_feedback.region_state_graph import (
-    delta_region_state, record_region_state,
+    _closed_inputs, delta_region_state, record_region_state,
 )
 from .source_preflight import feedback_bridge
 
@@ -126,6 +126,9 @@ def _validate_config(config: dict[str, Any]) -> None:
             (not isinstance(recording["target_occurrence"], str) or
              not recording["target_occurrence"])):
         raise ValueError("recording target_occurrence must be an exact ID")
+    admission_mode = recording.get("admission_mode", "scheduled")
+    if admission_mode not in ("scheduled", "region_state_no_schedule"):
+        raise ValueError("unknown original recording admission mode")
     heap_mb = recording.get("graph_analysis_heap_mb", 3072)
     if (not isinstance(heap_mb, int) or isinstance(heap_mb, bool) or
             not 0 < heap_mb <= 65536):
@@ -156,6 +159,9 @@ def _validate_config(config: dict[str, Any]) -> None:
         raise ValueError("native campaign requires bounded Zero VM JUnit runner")
     if runner.get("mode", "concolic") not in ("concolic", "region_state"):
         raise ValueError("runner mode must be concolic or region_state")
+    if (admission_mode == "region_state_no_schedule" and
+            runner.get("mode") != "region_state"):
+        raise ValueError("no-schedule admission requires REGION_STATE runner")
     if (runner.get("mode") == "region_state" and
             recording["test_id"] != junit["class"] + "#" + junit["method"]):
         raise ValueError("recording test_id must match the original JUnit workload")
@@ -272,12 +278,13 @@ def _region_state_plan_lineage(full_plan: Path, index: Path,
 
 def _verify_recording_plan(config: dict[str, Any], weave: dict[str, Any],
                            campaign_root: Path) -> dict[str, Any]:
-    """Re-run the original recorder and scheduler; reject a hand-authored task.
+    """Bind original recording provenance; schedule unless explicitly task-free.
 
     The source-built recorder validates the closed region-state recording's
     TracedRows digest against the same static artifacts before planning.
-    Re-aggregation and scheduling occur once at campaign admission, never
-    per fuzz trial. Concolic task plans must match the pinned weave exactly.
+    Scheduled re-aggregation occurs once at admission. Task-free REGION_STATE
+    runs the original graph stages on each fresh JUnit trial instead.
+    Concolic task plans must match the pinned weave exactly.
     """
     rec = config["recording"]
     admission_timeout = rec.get("admission_timeout_seconds", 300)
@@ -293,6 +300,20 @@ def _verify_recording_plan(config: dict[str, Any], weave: dict[str, Any],
     trace = Path(rec["trace_dir"]).resolve(strict=True)
     if not (trace / "streaming_trace_manifest.json").is_file():
         raise ValueError("closed original region-state recording is missing")
+    if rec.get("admission_mode") == "region_state_no_schedule":
+        if planned is not None or weave.get("task_id"):
+            raise ValueError("no-schedule REGION_STATE weave carries a concolic task")
+        # The fresh r0000 trial runs the original Resolver, Recorder and
+        # Finalizer before it can seed a fault queue. Here we only bind the
+        # closed prior recording and static input bytes to the verified weave.
+        closed = _closed_inputs(trace, scope, graph, skeletons)
+        if _sha(woven_skeletons) != closed["regionSkeletonsSha256"]:
+            raise ValueError("woven regions differ from the pinned static skeletons")
+        return {"admission_mode": "region_state_no_schedule",
+                "recording_manifest_sha256": closed["traceManifestSha256"],
+                "closed_inputs": closed,
+                "static_scope_map_sha256": closed["scopeMapSha256"],
+                "static_skeletons_sha256": closed["regionSkeletonsSha256"]}
     with tempfile.TemporaryDirectory(prefix=".recording-admission-",
                                      dir=campaign_root) as scratch:
         output = Path(scratch) / "recorded"
@@ -369,6 +390,8 @@ def _admit(config: dict[str, Any], root: Path) -> dict[str, Any]:
         "scheduler_source_sha256": _sha(_scheduler_source()),
         "engine_jar_sha256": _sha(JAR),
     }
+    if rec.get("admission_mode") == "region_state_no_schedule":
+        recording_fingerprint["admission_mode"] = "region_state_no_schedule"
     if feedback_source is not None:
         recording_fingerprint["feedback_source"] = feedback_source
     admission = root / "recording-admission.json"

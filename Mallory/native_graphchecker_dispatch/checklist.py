@@ -623,6 +623,7 @@ def _audit_region_terminal(case_id: str, config_path: Path, root: Path,
         "candidate_graph_sha256": _sha(Path(recording["candidate_graph"])),
         "region_skeletons_sha256": _sha(Path(recording["region_skeletons"])),
     }
+    no_schedule = recording.get("admission_mode") == "region_state_no_schedule"
     if (admission.get("schema_version") != 1 or not isinstance(origin, dict) or
             checkpoint.get("origin") != origin or
             checkpoint.get("weave_receipt_sha256") != _sha(receipt_path) or
@@ -630,12 +631,27 @@ def _audit_region_terminal(case_id: str, config_path: Path, root: Path,
             origin.get("recording_manifest_sha256") != _sha(
                 Path(recording["trace_dir"]) / "streaming_trace_manifest.json") or
             origin.get("static_scope_map_sha256") != expected[
-                "static_scope_map_sha256"] or
-            origin.get("scheduler_source_sha256") != fingerprint.get(
-                "scheduler_source_sha256")):
+                "static_scope_map_sha256"]):
         raise ValueError("REGION_STATE admission differs from original pinned inputs")
-    for field in ("recording_plan_sha256", "scheduler_source_sha256"):
-        _digest(origin.get(field), field)
+    if no_schedule:
+        if (fingerprint.get("admission_mode") != "region_state_no_schedule" or
+                origin.get("admission_mode") != "region_state_no_schedule" or
+                weave.get("task_plan") or weave.get("task_id") or
+                origin.get("closed_inputs") != _closed_inputs(
+                    Path(recording["trace_dir"]),
+                    Path(recording["static_scope_map"]),
+                    Path(recording["candidate_graph"]),
+                    Path(recording["region_skeletons"])) or
+                origin.get("static_skeletons_sha256") != expected[
+                    "region_skeletons_sha256"]):
+            raise ValueError("REGION_STATE no-schedule admission pins changed")
+    else:
+        if (origin.get("scheduler_source_sha256") != fingerprint.get(
+                "scheduler_source_sha256") or
+                fingerprint.get("admission_mode") is not None):
+            raise ValueError("REGION_STATE scheduled admission pins changed")
+        for field in ("recording_plan_sha256", "scheduler_source_sha256"):
+            _digest(origin.get(field), field)
     for field in ("engine_jar_sha256", "trace_tree_sha256",
                   "scheduler_source_sha256"):
         _digest(fingerprint.get(field), field)

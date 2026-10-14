@@ -14,11 +14,18 @@ receipt pins the woven class tree, source-built engine, dependencies, Java
 executable, and any concolic task supplied to the weave. The campaign
 checkpoint also pins the JUnit runner classpath and Zero VM executable.
 
-At campaign admission this driver verifies the immutable weave receipt,
+At campaign admission the default mode verifies the immutable weave receipt,
 re-runs the original recorder and scheduler, pins the generated schedule, and
 checks selected region skeletons. Concolic mode additionally requires the
 woven task to match a generated schedule row. It refuses a manually written
-task occurrence. The source-built engine must contain the original scheduler;
+task occurrence. For a `REGION_STATE` weave with no concolic task, set
+`recording.admission_mode` to `region_state_no_schedule`. This opt-in mode pins
+the closed healthy trace and static inputs without precomputing a task plan;
+the fresh `r0000` JUnit must then pass and reach the exact target, and its
+original Resolver, Recorder, and Finalizer graph must succeed before any fault
+enters the queue. Every fault trial uses those same original graph stages.
+Existing scheduled REGION_STATE and concolic checkpoint semantics are unchanged.
+The source-built engine must contain the original scheduler;
 the older seed engine that omits it cannot pass admission. In particular, old
 ZooKeeper pilot static artifacts with synthetic lambda names are not accepted
 as a recording-derived campaign seed.
