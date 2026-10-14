@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * GraphChecker identity and row publication adapted for one original JUnit
@@ -42,6 +43,9 @@ final class TraceRows {
     private static final Map<String, AtomicInteger> ROOT_COUNTS =
             new ConcurrentHashMap<>();
     private static final Set<String> EMITTED_ACTIVATIONS = new HashSet<>();
+    /** A failed region entry creates no occurrence or graph edge. Keep one diagnostic per thread/site. */
+    private static final Map<String, AtomicLong> UNATTRIBUTED_REGION_COUNTS =
+            new ConcurrentHashMap<>();
     private static final ThreadLocal<Context> CURRENT =
             ThreadLocal.withInitial(Context::new);
     private static final Gson GSON = new Gson();
@@ -581,8 +585,29 @@ final class TraceRows {
     }
 
     static void gap(String kind, String subject, String detail) {
+        if ("UNATTRIBUTED_REGION".equals(kind)) {
+            String key = Thread.currentThread().getId() + "\n" + subject;
+            if (UNATTRIBUTED_REGION_COUNTS.computeIfAbsent(key,
+                    ignored -> new AtomicLong()).incrementAndGet() > 1) return;
+        }
         row("GAP", null, fields("gapKind", kind, "subject", subject,
                 "detail", detail));
+    }
+
+    static void beginGapWindow() {
+        UNATTRIBUTED_REGION_COUNTS.clear();
+    }
+
+    static void flushSuppressedRegionGaps() {
+        for (Map.Entry<String, AtomicLong> entry : UNATTRIBUTED_REGION_COUNTS.entrySet()) {
+            long suppressed = entry.getValue().get() - 1;
+            if (suppressed <= 0) continue;
+            String[] key = entry.getKey().split("\n", 2);
+            row("GAP", null, fields("gapKind", "UNATTRIBUTED_REGION_COALESCED",
+                    "subject", key[1], "sourceThreadKey", key[0],
+                    "suppressedCount", suppressed));
+        }
+        UNATTRIBUTED_REGION_COUNTS.clear();
     }
 
     static void close() {

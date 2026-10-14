@@ -46,10 +46,12 @@ public final class MessageDoors {
     private MessageDoors() { }
 
     public static void startRecording() {
+        TraceRows.beginGapWindow();
         TraceRows.row("WINDOW_OPEN", null, null);
     }
 
     public static void stopRecording() {
+        TraceRows.flushSuppressedRegionGaps();
         TraceRows.row("WINDOW_CLOSE", null, null);
     }
 
