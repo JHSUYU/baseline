@@ -646,6 +646,7 @@ def prepare(request_file: Path, output: Path, profile_file: Path) -> dict:
         f"-Dbuild.test.dir={run_root / 'data'}",
         "-Dcausynth.trace.mode=region-state",
         f"-Dcausynth.trace.test={junit['selector']}",
+        *profile.get("runner_jvm_args", []),
         "-cp", _original_cp([recorded_classes, *runner_cp]),
         "edu.uva.liftlab.graphchecker.runtime.NativeRecordingJUnitMethodRunner",
         junit["class"], junit["method"]], output,
