@@ -26,6 +26,7 @@ FIELDS = (
     "native_tested_complete", "fault_trials", "strict_fault_trials",
     "target_retained_fault_trials", "strict_target_retained_fault_trials",
     "strict_in_target_closure_trials", "closure_attribution_basis",
+    "closure_audit_path", "closure_audit_sha256",
     "target_throw_trials", "candidate_trials",
     "elapsed_seconds", "elapsed_basis", "target_throw_observed",
     "reviewed_campaign_wall_seconds", "reviewed_static_to_terminal_wall_seconds",
@@ -93,6 +94,88 @@ def _reviewed_wall_timing(review: dict, trial_elapsed: float) -> tuple[float | N
                                   else None)
 
 
+def _reviewed_exact_closure(case_id: str, native_root: Path, state_root: Path,
+                            strict: int, proxy: int,
+                            completion_sha: str) -> tuple[int, Path, str, Path] | None:
+    """Accept an exact Finalizer-plan ID audit only with frozen trial inputs."""
+    pin_path = (state_root / ".native-queue" / "closure-reviews" /
+                f"{case_id}.json")
+    if not pin_path.is_file():
+        return None
+    pin = obj(pin_path)
+    report_path = Path(pin.get("report_path", ""))
+    method_path = Path(pin.get("method_path", ""))
+    id_source_path = Path(pin.get("id_source_path", ""))
+    engine_path = Path(pin.get("engine_jar_path", ""))
+    index_path = Path(pin.get("index_path", ""))
+    checked = ((report_path, "report_sha256"),
+               (method_path, "method_sha256"),
+               (id_source_path, "id_source_sha256"),
+               (engine_path, "engine_jar_sha256"),
+               (index_path, "index_sha256"))
+    if (pin.get("schema_version") != 1 or pin.get("case_id") != case_id or
+            pin.get("completion_receipt_sha256") != completion_sha or
+            any(not path.is_absolute() or path.is_symlink() or
+                not path.is_file() or sha(path) != pin.get(key)
+                for path, key in checked)):
+        raise ValueError(f"native exact closure audit pin changed: {case_id}")
+    report = obj(report_path)
+    index = obj(index_path)
+    index_rows = [row for row in index.get("rows", []) if isinstance(row, dict)
+                  and row.get("auditPath") == str(report_path)]
+    rows = report.get("trials")
+    if (report.get("kind") != "READ_ONLY_REGION_STATE_CLOSURE_AUDIT" or
+            index.get("kind") != "READ_ONLY_REGION_STATE_CLOSURE_AUDIT_INDEX" or
+            len(index_rows) != 1 or
+            index_rows[0].get("auditSha256") != pin["report_sha256"] or
+            index_rows[0].get("campaign") != str(native_root.resolve()) or
+            index_rows[0].get("engineJarSha256") != pin["engine_jar_sha256"] or
+            any(index_rows[0].get(key) != report.get(key) for key in (
+                "strictTargetRetainedTrials", "reportedLastFaultInClosure",
+                "correctedLastFaultInClosure")) or
+            report.get("campaign") != str(native_root.resolve()) or
+            report.get("engineJarSha256") != pin["engine_jar_sha256"] or
+            report.get("strictTargetRetainedTrials") != strict or
+            report.get("reportedLastFaultInClosure") != proxy or
+            not isinstance(rows, list) or len(rows) != strict or
+            any(not isinstance(row, dict) or
+                not isinstance(row.get("correctedLastFaultInClosure"), bool) or
+                not isinstance(row.get("reportedLastFaultInClosure"), bool)
+                for row in rows) or
+            report.get("correctedLastFaultInClosure") != sum(
+                row.get("correctedLastFaultInClosure") is True for row in rows)):
+        raise ValueError(f"native exact closure report differs from receipts: {case_id}")
+    observed = set()
+    for trial in rows:
+        name = trial.get("trial", "")
+        if (not isinstance(name, str) or not name.startswith("r") or
+                not name[1:].isdigit() or name in observed):
+            raise ValueError(f"native exact closure trial is invalid: {case_id}")
+        observed.add(name)
+        directory = native_root / "trials" / name
+        result = obj(directory / "result.json")
+        plan = directory / "original-graph/recorded/concolic_region_plan.jsonl"
+        events = directory / "iteration-native/fault-events.jsonl"
+        if (result.get("strict_injection") is not True or
+                result.get("native_target_retained") is not True or
+                result.get("fault_in_target_closure") is not trial.get(
+                    "reportedLastFaultInClosure") or
+                result.get("target_exception_triggered") is not trial.get(
+                    "targetExceptionTriggered") or
+                result.get("target_temporal_admitted") is not trial.get(
+                    "targetTemporalAdmitted") or
+                sha(plan) != trial.get("originalPlanSha256") or
+                sha(events) != trial.get("faultEventsSha256")):
+            raise ValueError(f"native exact closure trial changed: {case_id}/{name}")
+    expected = {path.parent.name for path in (native_root / "trials").glob(
+        "r*/result.json") if obj(path).get("strict_injection") is True and
+        obj(path).get("native_target_retained") is True}
+    if observed != expected:
+        raise ValueError(f"native exact closure trial set changed: {case_id}")
+    return (report["correctedLastFaultInClosure"], report_path,
+            sha(report_path), index_path)
+
+
 def native_rows(inventory: Path, ownership_file: Path, config_root: Path,
                 state_root: Path) -> list[dict[str, Any]]:
     cases, by_id = load_inventory(inventory)
@@ -132,6 +215,7 @@ def native_rows(inventory: Path, ownership_file: Path, config_root: Path,
             "strict_target_retained_fault_trials": None,
             "strict_in_target_closure_trials": None,
             "closure_attribution_basis": None,
+            "closure_audit_path": None, "closure_audit_sha256": None,
             "target_throw_trials": None,
             "candidate_trials": None, "elapsed_seconds": None,
             "elapsed_basis": None, "target_throw_observed": False,
@@ -229,6 +313,24 @@ def native_rows(inventory: Path, ownership_file: Path, config_root: Path,
                     "reachability_unverified")
                 row["evidence_paths"].append(str(coverage_path(
                     state_root, case_id).resolve()))
+                exact = _reviewed_exact_closure(
+                    case_id, native_root, state_root,
+                    metric["strict_target_retained_fault_trials"],
+                    metric["strict_in_target_closure_trials"],
+                    row["completion_receipt_sha256"])
+                if exact is not None:
+                    count, exact_path, exact_sha, index_path = exact
+                    row["strict_in_target_closure_trials"] = count
+                    row["closure_attribution_basis"] = (
+                        "original_finalizer_plan_exact_occurrence_id_join; "
+                        "temporal_causality_unverified")
+                    row["closure_audit_path"] = str(exact_path)
+                    row["closure_audit_sha256"] = exact_sha
+                    row["evidence_paths"].extend((str(exact_path),
+                                                   str((state_root / ".native-queue" /
+                                                        "closure-reviews" /
+                                                        f"{case_id}.json").resolve()),
+                                                   str(index_path)))
             review_pin = (state_root / ".native-queue" / "reviews" /
                           f"{case_id}.json")
             if review_pin.is_file():

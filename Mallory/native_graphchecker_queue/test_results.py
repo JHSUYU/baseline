@@ -12,10 +12,79 @@ from Mallory.native_graphchecker_dispatch.checklist import (
     DEFAULT_INVENTORY, DEFAULT_OWNERSHIP, load_inventory,
 )
 from .queue import completion, sha
-from .results import _elapsed_basis, _reviewed_wall_timing, export_native_results
+from .results import (_elapsed_basis, _reviewed_exact_closure,
+                      _reviewed_wall_timing, export_native_results)
 
 
 class NativeResultsTest(unittest.TestCase):
+    def test_exact_closure_review_pins_frozen_plan_and_fault_events(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            native = root / "native"
+            state = root / "state"
+            case_id = "ZOOKEEPER-02"
+            trial = native / "trials/r0001"
+            (trial / "original-graph/recorded").mkdir(parents=True)
+            (trial / "iteration-native").mkdir()
+            (trial / "result.json").write_text(json.dumps({
+                "strict_injection": True, "native_target_retained": True,
+                "fault_in_target_closure": False,
+                "target_exception_triggered": False,
+                "target_temporal_admitted": False}))
+            plan = trial / "original-graph/recorded/concolic_region_plan.jsonl"
+            events = trial / "iteration-native/fault-events.jsonl"
+            plan.write_text('{"kind":"CONCOLIC_REGION_PLAN"}\n')
+            events.write_text('{"kind":"FAULT_APPLIED"}\n')
+            report = root / "audit.json"
+            report.write_text(json.dumps({
+                "kind": "READ_ONLY_REGION_STATE_CLOSURE_AUDIT",
+                "campaign": str(native.resolve()), "engineJarSha256": "placeholder",
+                "strictTargetRetainedTrials": 1,
+                "reportedLastFaultInClosure": 0,
+                "correctedLastFaultInClosure": 1,
+                "trials": [{"trial": "r0001",
+                            "correctedLastFaultInClosure": True,
+                            "reportedLastFaultInClosure": False,
+                            "targetExceptionTriggered": False,
+                            "targetTemporalAdmitted": False,
+                            "originalPlanSha256": sha(plan),
+                            "faultEventsSha256": sha(events)}]}))
+            method, java, engine = (root / "method.py", root / "Ids.java",
+                                    root / "engine.jar")
+            for path in (method, java, engine):
+                path.write_text(path.name)
+            document = json.loads(report.read_text())
+            document["engineJarSha256"] = sha(engine)
+            report.write_text(json.dumps(document))
+            index = root / "index.json"
+            index.write_text(json.dumps({
+                "kind": "READ_ONLY_REGION_STATE_CLOSURE_AUDIT_INDEX",
+                "rows": [{"auditPath": str(report),
+                          "auditSha256": sha(report),
+                          "campaign": str(native.resolve()),
+                          "engineJarSha256": sha(engine),
+                          "strictTargetRetainedTrials": 1,
+                          "reportedLastFaultInClosure": 0,
+                          "correctedLastFaultInClosure": 1}]}))
+            pin_path = (state / ".native-queue/closure-reviews" /
+                        f"{case_id}.json")
+            pin_path.parent.mkdir(parents=True)
+            pin_path.write_text(json.dumps({
+                "schema_version": 1, "case_id": case_id,
+                "report_path": str(report), "report_sha256": sha(report),
+                "method_path": str(method), "method_sha256": sha(method),
+                "id_source_path": str(java), "id_source_sha256": sha(java),
+                "engine_jar_path": str(engine),
+                "engine_jar_sha256": sha(engine),
+                "index_path": str(index), "index_sha256": sha(index),
+                "completion_receipt_sha256": "receipt"}))
+            self.assertEqual(_reviewed_exact_closure(
+                case_id, native, state, 1, 0, "receipt")[0], 1)
+            plan.write_text("changed\n")
+            with self.assertRaisesRegex(ValueError, "trial changed"):
+                _reviewed_exact_closure(case_id, native, state, 1, 0,
+                                        "receipt")
+
     def test_reviewed_wall_timing_preserves_distinct_elapsed_basis(self) -> None:
         review = {"timing": {"cumulative_trial_seconds": 1862.14,
                              "campaign_wall_seconds": 2166.528,
