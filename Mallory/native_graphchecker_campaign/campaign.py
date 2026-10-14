@@ -25,6 +25,9 @@ from Mallory.instrumentation.graphchecker_port.native_original_weave import (
 )
 from Mallory.native_graphchecker_feedback import delta, summarize_target_set
 from Mallory.native_graphchecker_feedback.feedback import NoNativeTargetError
+from Mallory.native_graphchecker_feedback.region_state_graph import (
+    delta_region_state, record_region_state,
+)
 
 SCHEMA = 1
 FAULT_FIELDS = ("siteId", "node", "actorEpochOrdinal", "occurrenceId",
@@ -638,10 +641,15 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
 
 def _novelty(state: dict[str, Any], feedback: dict[str, Any]) -> int:
     score = 0
+    region_state = "newNodeFamilies" in feedback
     for field, seen_field, weight in (
             ("newClosureNodeFamilies", "seen_node_families", 2),
             ("newObservedClosureEdgeFamilies", "seen_edge_families", 4),
             ("newClosureBranchOutcomeIds", "seen_branch_outcomes", 1)):
+        if region_state:
+            field = {"newClosureNodeFamilies": "newNodeFamilies",
+                     "newObservedClosureEdgeFamilies": "newClosureEdgeFamilies",
+                     "newClosureBranchOutcomeIds": "newBranchOutcomeIds"}[field]
         values = feedback.get(field)
         if not isinstance(values, list) or not all(
                 isinstance(value, str) and value for value in values):
@@ -651,6 +659,80 @@ def _novelty(state: dict[str, Any], feedback: dict[str, Any]) -> int:
         state[seen_field] = sorted(seen | set(values))
         score += weight * len(new)
     return min(60, score)
+
+
+def _region_doors(rows: list[dict[str, Any]], summary: dict[str, Any],
+                  after_fault: dict[str, Any] | None = None
+                  ) -> list[dict[str, Any]]:
+    """Mutate only actual native doors; direct target receipts earn priority."""
+    checks = {(row["occurrenceId"], row["node"], row["actorEpochOrdinal"])
+              for row in rows if row["kind"] == "TARGET_CHECK" and
+              row.get("siteId") == summary["targetSiteId"] and
+              isinstance(row.get("occurrenceId"), str)}
+    found = []
+    for row in rows:
+        if row["kind"] != "FAULT_DOOR":
+            continue
+        if (after_fault is not None and
+                (row.get("node"), row.get("actorEpochOrdinal")) ==
+                (after_fault.get("node"), after_fault.get("actorEpochOrdinal"))
+                and row["seq"] <= after_fault["seq"]):
+            continue
+        try:
+            _fault_identity(row, applied=True)
+        except ValueError:
+            continue
+        fault = {field: row[field] for field in SELECTOR_FIELDS}
+        fault["sourceOccurrenceId"] = row["occurrenceId"]
+        direct = (row["occurrenceId"], row["node"],
+                  row["actorEpochOrdinal"]) in checks
+        found.append({"fault": fault, "seq": row["seq"],
+                      "tier": "observed_closure" if direct else "outside_closure"})
+    return found
+
+
+def _region_throw_evidence(rows: list[dict[str, Any]], target_site: str,
+                           target_throw: dict[str, str],
+                           applied: dict[str, Any] | None
+                           ) -> tuple[list[dict[str, Any]], bool, str,
+                                      dict[str, Any] | None]:
+    """Keep exact throw evidence distinct from proven fault-to-check order."""
+    checks = [row for row in rows if row["kind"] == "TARGET_CHECK" and
+              row.get("siteId") == target_site]
+    throws = []
+    temporal = None
+    for row in rows:
+        if (row["kind"] != "TARGET_THROW" or
+                row.get("siteId") != target_throw["siteId"] or
+                row.get("exceptionClass") != target_throw["exceptionClass"]):
+            continue
+        matching = [check for check in checks if
+                    (check.get("occurrenceId"), check.get("node"),
+                     check.get("actorEpochOrdinal")) ==
+                    (row.get("occurrenceId"), row.get("node"),
+                     row.get("actorEpochOrdinal")) and
+                    check["seq"] < row["seq"]]
+        if not matching:
+            continue
+        throws.append(row)
+        if applied is not None:
+            for check in matching:
+                if ((applied.get("occurrenceId"), applied.get("node"),
+                     applied.get("actorEpochOrdinal")) ==
+                    (check.get("occurrenceId"), check.get("node"),
+                     check.get("actorEpochOrdinal")) and
+                        applied["seq"] < check["seq"]):
+                    temporal = {"faultSeq": applied["seq"],
+                                "checkSeq": check["seq"],
+                                "throwSeq": row["seq"],
+                                "targetOccurrenceId": row["occurrenceId"]}
+                    break
+    if applied is None:
+        return throws, False, "no_applied_fault", None
+    return (throws, temporal is not None,
+            "same_occurrence_before_check" if temporal else
+            "cross_occurrence_order_unproved" if throws else
+            "no_exact_target_throw", temporal)
 
 
 def _trial_jvm_args(runner: dict[str, Any], workdir: Path) -> list[str]:
@@ -725,6 +807,82 @@ def _execute_junit(config: dict[str, Any], admitted: dict[str, Any],
             "elapsed_seconds": round(time.monotonic() - started, 3)}
 
 
+def _run_region_trial(config: dict[str, Any], admitted: dict[str, Any],
+                      trial: Path, faults: list[dict[str, Any]],
+                      healthy: dict[str, Any] | None,
+                      result: dict[str, Any], events: list[dict[str, Any]],
+                      strict: bool) -> dict[str, Any]:
+    """Extract each run's graph from its own original CLOSED trace."""
+    if not faults and not result["junit_passed"]:
+        result["status"] = "blocked_healthy_junit"
+        return result
+    if faults and not strict:
+        result["status"] = "unmatched"
+        return result
+    iteration = trial / "iteration-native"
+    recording = config["recording"]
+    try:
+        loop_args = [arg.split("=", 1)[1] for arg in recording.get(
+            "recorder_jvm_args", []) if arg.startswith(
+                "-Dcausynth.loop.default.bound=")]
+        loop_bound = int(loop_args[-1]) if loop_args else 3
+        summary = record_region_state(
+            iteration / "trace", trial / "original-graph",
+            test_id=recording["test_id"], target_site=config["target_site"],
+            fault_events=iteration / "fault-events.jsonl",
+            static_scope_map=Path(recording["static_scope_map"]),
+            candidate_graph=Path(recording["candidate_graph"]),
+            region_skeletons=Path(recording["region_skeletons"]),
+            engine_jar=JAR, java=Path(admitted["weave_config"]["java"]),
+            loop_bound=loop_bound, timeout_seconds=300,
+            target_throw=config["target_throw"])
+    except (ValueError, FileNotFoundError, subprocess.SubprocessError,
+            OSError, RuntimeError) as failure:
+        result["status"] = ("blocked_healthy_native_session" if not faults
+                            else "invalid_native_session")
+        result["analysis_error"] = str(failure)
+        return result
+    _atomic(trial / "native-summary.json", summary)
+    result["native_session_sha256"] = _sha(trial / "native-summary.json")
+    result["native_target_occurrence_ids"] = summary.get(
+        "targetEvidence", {}).get("targetCheckOccurrenceIds", [])
+    if not summary.get("targetReached"):
+        result["status"] = "blocked_healthy_target" if not faults else "target_lost"
+        return result
+    result["native_target_retained"] = True
+    if healthy is not None and summary.get("status") != "target_throw_unplanned":
+        feedback = delta_region_state(healthy, summary)
+        result["native_delta"] = feedback
+        if not feedback["targetRetained"]:
+            result["native_target_retained"] = False
+            result["status"] = "target_lost"
+            return result
+    elif faults:
+        result["native_delta"] = {"newNodeFamilies": [],
+                                  "newClosureEdgeFamilies": [],
+                                  "newBranchOutcomeIds": []}
+    applied = [row for row in events if row["kind"] == "FAULT_APPLIED"]
+    last = applied[-1] if applied else None
+    checks = {row["occurrenceId"] for row in events if
+              row["kind"] == "TARGET_CHECK" and
+              row.get("siteId") == config["target_site"] and
+              isinstance(row.get("occurrenceId"), str)}
+    if last is not None:
+        result["fault_in_target_closure"] = last["occurrenceId"] in checks
+    result["eligible_doors"] = _region_doors(events, summary, last)
+    throws, admitted_temporal, reason, evidence = _region_throw_evidence(
+        events, config["target_site"], config["target_throw"], last)
+    result["target_exception_triggered"] = bool(throws)
+    result["target_throw_rows"] = throws
+    result["target_temporal_admitted"] = admitted_temporal
+    result["target_temporal_reason"] = reason
+    result["target_temporal_evidence"] = evidence
+    result["status"] = ("healthy_seed" if not faults else
+                        "candidate" if throws and admitted_temporal else
+                        "needs_causal_review" if throws else "checked")
+    return result
+
+
 def _run_trial(config: dict[str, Any], admitted: dict[str, Any],
                trial: Path, faults: list[dict[str, Any]],
                healthy: dict[str, Any] | None) -> dict[str, Any]:
@@ -755,6 +913,11 @@ def _run_trial(config: dict[str, Any], admitted: dict[str, Any],
         _atomic(trial / "result.json", result)
         return result
     result["strict_injection"] = bool(faults and strict)
+    if config["runner"].get("mode") == "region_state":
+        result = _run_region_trial(config, admitted, trial, faults, healthy,
+                                   result, events, strict)
+        _atomic(trial / "result.json", result)
+        return result
     if not result["junit_passed"] and not faults:
         result["status"] = "blocked_healthy_junit"
     else:

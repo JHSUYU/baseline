@@ -122,6 +122,48 @@ class WireTemporalProofTest(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "nonmonotone"):
                 core._rows(path)
 
+    def test_region_target_throw_requires_same_actor_check_after_fault(self) -> None:
+        target_site = "Keys#check#u3"
+        target_throw = {"siteId": "Keys#throw#u4",
+                        "exceptionClass": "java.io.IOException"}
+        fault = {"kind": "FAULT_APPLIED", "seq": 4, "node": "dn",
+                 "actorEpochOrdinal": 1, "occurrenceId": "target-occ"}
+        check = {"kind": "TARGET_CHECK", "seq": 5,
+                 "siteId": target_site, "node": "dn",
+                 "actorEpochOrdinal": 1, "occurrenceId": "target-occ"}
+        throw = {"kind": "TARGET_THROW", "seq": 6,
+                 "siteId": target_throw["siteId"],
+                 "exceptionClass": target_throw["exceptionClass"],
+                 "node": "dn", "actorEpochOrdinal": 1,
+                 "occurrenceId": "target-occ"}
+        rows, admitted, reason, evidence = core._region_throw_evidence(
+            [fault, check, throw], target_site, target_throw, fault)
+        self.assertEqual([throw], rows)
+        self.assertTrue(admitted)
+        self.assertEqual("same_occurrence_before_check", reason)
+        self.assertEqual(4, evidence["faultSeq"])
+        late = dict(fault, seq=7)
+        rows, admitted, reason, evidence = core._region_throw_evidence(
+            [check, throw, late], target_site, target_throw, late)
+        self.assertEqual([throw], rows)
+        self.assertFalse(admitted)
+        self.assertEqual("cross_occurrence_order_unproved", reason)
+        self.assertIsNone(evidence)
+
+    def test_region_door_priority_uses_exact_target_occurrence(self) -> None:
+        summary = {"targetSiteId": "Keys#check#u3"}
+        check = {"kind": "TARGET_CHECK", "seq": 7,
+                 "siteId": summary["targetSiteId"], "node": "dn",
+                 "actorEpochOrdinal": 1, "occurrenceId": "target-occ"}
+        doors = [{"kind": "FAULT_DOOR", "seq": index + 1,
+                  "siteId": "RPC#dn", "node": "dn", "actorEpochOrdinal": 1,
+                  "occurrenceId": occurrence, "ordinal": 1,
+                  "exceptionClass": "java.io.IOException"}
+                 for index, occurrence in enumerate(("target-occ", "other-occ"))]
+        ranked = core._region_doors([*doors, check], summary)
+        self.assertEqual(["observed_closure", "outside_closure"],
+                         [item["tier"] for item in ranked])
+
     def test_queue_door_filter_does_not_compare_actor_clocks(self) -> None:
         door = {"kind": "FAULT_DOOR", "seq": 1,
                 "siteId": "RPC#dn", "node": "dn", "actorEpochOrdinal": 0,
