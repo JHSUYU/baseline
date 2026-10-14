@@ -54,14 +54,9 @@ def _rows(path: Path):
                 yield row
 
 
-def _plan_identity_rows(plan_path: Path, engine_jar: Path,
-                        plans: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
-    """Join Finalizer's selected occurrences using original GraphChecker IDs.
-
-    The REGION_STATE trace has no SessionReader ActivationRows. Its original
-    RuntimeSelectedRegionFinalizer plan is the admitted target demand closure;
-    OccurrenceAddress, not a Python approximation of its hash, names members.
-    """
+def _plan_helper_output(plan_path: Path, engine_jar: Path,
+                        *, project: bool = False) -> str:
+    """Run the pinned GraphChecker address parser over an unchanged plan."""
     jar_sha = _sha(engine_jar)
     classes = PLAN_ID_SOURCE.parent / "target" / f"region-plan-ids-{jar_sha[:16]}"
     compiled = classes / "edu/uva/liftlab/mallory/nativefeedback/RegionPlanIdsMain.class"
@@ -75,11 +70,27 @@ def _plan_identity_rows(plan_path: Path, engine_jar: Path,
                             str(PLAN_ID_SOURCE)], check=True, timeout=120,
                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     before = _sha(plan_path)
-    output = subprocess.run(["java", "-cp", f"{classes}:{classpath}",
-                             PLAN_ID_CLASS, str(plan_path)], check=True,
-                            timeout=120, text=True, capture_output=True).stdout
+    command = ["java", "-cp", f"{classes}:{classpath}", PLAN_ID_CLASS]
+    if project:
+        command.append("--project")
+    command.append(str(plan_path))
+    output = subprocess.run(command, check=True,
+                            timeout=900 if project else 120,
+                            text=True, capture_output=True).stdout
     if _sha(engine_jar) != jar_sha or _sha(plan_path) != before:
         raise ValueError("original plan or GraphChecker engine changed during ID join")
+    return output
+
+
+def _plan_identity_rows(plan_path: Path, engine_jar: Path,
+                        plans: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    """Join Finalizer's selected occurrences using original GraphChecker IDs.
+
+    The REGION_STATE trace has no SessionReader ActivationRows. Its original
+    RuntimeSelectedRegionFinalizer plan is the admitted target demand closure;
+    OccurrenceAddress, not a Python approximation of its hash, names members.
+    """
+    output = _plan_helper_output(plan_path, engine_jar)
     by_address = {row["occurrenceId"]: row for row in plans}
     if len(by_address) != len(plans):
         raise ValueError("original Finalizer plan repeats an occurrence address")
@@ -94,6 +105,43 @@ def _plan_identity_rows(plan_path: Path, engine_jar: Path,
     if len(by_id) != len(plans):
         raise ValueError("GraphChecker omitted a Finalizer plan occurrence")
     return by_id
+
+
+def _plan_projection(plan_path: Path, engine_jar: Path
+                     ) -> tuple[int, list[dict[str, Any]],
+                                dict[str, dict[str, Any]]]:
+    """Read only the catalog count and plan fields used by this summary.
+
+    The Java helper skips closureGoals while deriving exact GraphChecker IDs.
+    Its output is small enough to retain one row per selected occurrence.
+    """
+    output = _plan_helper_output(plan_path, engine_jar, project=True)
+    lines = iter(output.splitlines())
+    first = next(lines, None)
+    if first is None:
+        raise ValueError("original Recorder region catalog is missing")
+    catalog = json.loads(first)
+    if catalog.get("kind") != "CONCOLIC_RUNTIME_MODEL_CATALOG":
+        raise ValueError("original Recorder region catalog is missing")
+    plans: list[dict[str, Any]] = []
+    by_id: dict[str, dict[str, Any]] = {}
+    addresses: set[str] = set()
+    for line in lines:
+        row = json.loads(line)
+        if row.get("kind") != "CONCOLIC_REGION_PLAN":
+            raise ValueError("original Recorder plan has invalid rows")
+        identifier = row.pop("graphCheckerId", None)
+        address = row["occurrenceId"]
+        if address in addresses:
+            raise ValueError("original Finalizer plan repeats an occurrence address")
+        if not identifier or identifier in by_id:
+            raise ValueError("original Finalizer plan has colliding occurrence IDs")
+        addresses.add(address)
+        plans.append(row)
+        by_id[identifier] = row
+    if not plans:
+        raise ValueError("original Recorder plan has invalid rows")
+    return catalog["catalogGaps"], plans, by_id
 
 
 def _source_actor(source_key: str) -> tuple[str, int]:
@@ -292,16 +340,8 @@ def summarize_region_state(
     receipt = _json(target_receipt)
     target = _validate_target(receipt, pins, branches, calls, target_site,
                               fault_events)
-    plan_rows = list(_rows(plan_path))
-    if not plan_rows or plan_rows[0].get("kind") != (
-            "CONCOLIC_RUNTIME_MODEL_CATALOG"):
-        raise ValueError("original Recorder region catalog is missing")
-    plans = [row for row in plan_rows[1:] if row.get("kind") ==
-             "CONCOLIC_REGION_PLAN"]
-    if len(plans) != len(plan_rows) - 1 or not plans:
-        raise ValueError("original Recorder plan has invalid rows")
     original_jar = (engine_jar or JAR).resolve(strict=True)
-    closure_by_id = _plan_identity_rows(plan_path, original_jar, plans)
+    catalog_gaps, plans, closure_by_id = _plan_projection(plan_path, original_jar)
     by_occurrence = {row["occurrenceId"]: row for row in plans}
     selected = by_occurrence.get(target["selectedOccurrenceAddress"])
     if selected is None:
@@ -553,7 +593,7 @@ def summarize_region_state(
                          "selectedValueReadFromEdges": len(value_read_from_edges),
                          "unmappedPairedExchanges": unmapped,
                          "ambiguousExchangeReceives": ambiguous,
-                         "catalogGaps": len(plan_rows[0].get("gaps", []))},
+                         "catalogGaps": catalog_gaps},
               "provenance": {**pins, "regionPlanSha256": _sha(plan_path),
                              "targetReceiptSha256": _sha(target_receipt),
                              "faultEventsSha256": _sha(fault_events),

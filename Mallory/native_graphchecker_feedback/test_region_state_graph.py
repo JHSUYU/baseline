@@ -10,8 +10,8 @@ from unittest.mock import patch
 from pathlib import Path
 
 from Mallory.native_graphchecker_feedback.region_state_graph import (
-    JAR, _closed_inputs, delta_region_state, record_region_state,
-    summarize_region_state,
+    JAR, _closed_inputs, _plan_identity_rows, _plan_projection,
+    delta_region_state, record_region_state, summarize_region_state,
 )
 
 
@@ -37,6 +37,29 @@ class RegionStateGraphTest(unittest.TestCase):
         self.engine = self.root / "engine.jar"
         for path in (self.scope, self.graph, self.skeletons, self.engine):
             path.write_text("pinned fixture\n")
+
+    def test_plan_projection_skips_unneeded_closure_goals(self) -> None:
+        if not JAR.is_file():
+            self.skipTest("source-built original engine is unavailable")
+        address = "nn1#epoch1/region/REGION.one/ctx:Lost:CLIENT/idx:"
+        plan = self.root / "projected-plan.jsonl"
+        write_jsonl(plan, [
+            {"kind": "CONCOLIC_RUNTIME_MODEL_CATALOG",
+             "gaps": [{"nested": [1, 2]}, {"nested": [3]}],
+             "regions": [{"unused": "x" * 10000}]},
+            {"kind": "CONCOLIC_REGION_PLAN", "occurrenceId": address,
+             "regionId": "REGION.one", "sourceKey": "nn1#epoch1",
+             "rootCallId": 7, "foldedRegionIds": ["REGION.check"],
+             "admissionBasis": "fixture", "demandDepth": 2,
+             "closureGoals": [{"unused": ["y" * 10000]}]},
+        ])
+        gaps, plans, by_id = _plan_projection(plan, JAR)
+        self.assertEqual(2, gaps)
+        self.assertEqual(1, len(plans))
+        self.assertNotIn("closureGoals", plans[0])
+        self.assertEqual("fixture", plans[0]["admissionBasis"])
+        self.assertEqual(2, plans[0]["demandDepth"])
+        self.assertEqual(_plan_identity_rows(plan, JAR, plans), by_id)
 
     def test_configured_graph_heap_is_used_for_original_resolver(self) -> None:
         case = self._case("heap")
@@ -132,11 +155,14 @@ class RegionStateGraphTest(unittest.TestCase):
                 "events": events}
 
     def _summarize(self, case: dict) -> dict:
-        def original_ids(_path, _jar, plans):
-            return {("exact-runtime-check" if row["regionId"] == ACTIVATION
-                     else "exact-receiver"): row for row in plans}
+        def original_projection(path, _jar):
+            rows = [json.loads(line) for line in path.read_text().splitlines()]
+            plans = rows[1:]
+            ids = {("exact-runtime-check" if row["regionId"] == ACTIVATION
+                    else "exact-receiver"): row for row in plans}
+            return len(rows[0].get("gaps", [])), plans, ids
         with patch("Mallory.native_graphchecker_feedback.region_state_graph."
-                   "_plan_identity_rows", side_effect=original_ids):
+                   "_plan_projection", side_effect=original_projection):
             return summarize_region_state(
                 case["trace"], case["plan"], case["receipt"], case["events"],
                 self.scope, self.graph, self.skeletons, SITE,
@@ -415,16 +441,20 @@ class RegionStateGraphTest(unittest.TestCase):
                 recorded_ids = {row["occurrenceAddress"]: row["occurrenceId"]
                                 for row in original.get("closureMembers", [])}
 
-                def original_ids(_path, _jar, plans):
+                def original_projection(path, _jar):
+                    rows = [json.loads(line) for line in path.read_text().splitlines()]
+                    plans = rows[1:]
                     if recorded_ids:
                         self.assertEqual({p["occurrenceId"] for p in plans},
                                          set(recorded_ids))
-                        return {recorded_ids[p["occurrenceId"]]: p for p in plans}
+                        ids = {recorded_ids[p["occurrenceId"]]: p for p in plans}
+                        return len(rows[0].get("gaps", [])), plans, ids
                     # Older frozen summaries predate ID publication. Only
                     # the selected target ID participates in this read-only
                     # summary; unrelated IDs need unique placeholders.
-                    return {selected_id if p["occurrenceId"] == selected_address
-                            else f"offline-{i}": p for i, p in enumerate(plans)}
+                    ids = {selected_id if p["occurrenceId"] == selected_address
+                           else f"offline-{i}": p for i, p in enumerate(plans)}
+                    return len(rows[0].get("gaps", [])), plans, ids
 
                 closed = {key: pins[key] for key in (
                     "traceManifestSha256", "runtimeTraceSha256", "scheduleSha256",
@@ -433,7 +463,7 @@ class RegionStateGraphTest(unittest.TestCase):
                 with patch("Mallory.native_graphchecker_feedback.region_state_graph."
                            "_closed_inputs", return_value=closed), patch(
                            "Mallory.native_graphchecker_feedback.region_state_graph."
-                           "_plan_identity_rows", side_effect=original_ids):
+                           "_plan_projection", side_effect=original_projection):
                     refreshed = summarize_region_state(
                         trace, plan_path, receipt, events, receipt, receipt,
                         receipt, original["targetSiteId"], engine_jar=engine)
