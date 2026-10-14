@@ -135,6 +135,10 @@ public final class ScopePlanner {
     private Site target;
     private Site fatalThrow;
     private final List<Site> checkSites = new ArrayList<>();
+    // A compound source-level check may lower to several Jimple branches.
+    // One branch anchors runtime identity; all branches remain in the static
+    // failure demand rooted at the unique throw.
+    private final List<Site> compoundCheckSites = new ArrayList<>();
 
     private ScopePlanner() {}
 
@@ -315,6 +319,9 @@ public final class ScopePlanner {
         // throw is an oracle probe, deliberately not a backward value seed:
         // exception construction is irrelevant to what makes the check fail.
         if (checkSites.isEmpty()) mark(target, "declared_target_fallback");
+        for (Site check : compoundCheckSites) {
+            if (check != target) mark(check, "compound_target_control");
+        }
         while (!queue.isEmpty()) {
             Site site = queue.removeFirst();
             if (expanded.add(site.id)) expand(site);
@@ -422,16 +429,31 @@ public final class ScopePlanner {
         List<JsonObject> rows = new ArrayList<>();
         Set<String> seen = new HashSet<>();
         String originalTargetRegion = "";
+        Set<String> originalFatalGuards = new LinkedHashSet<>();
         for (JsonElement item : original.getAsJsonArray("staticScopeSites")) {
             JsonObject source = item.getAsJsonObject();
             if ("TARGET_SITE".equals(string(source, "role", ""))
                     && fatalThrow.id.equals(string(source, "siteId", ""))) {
                 originalTargetRegion = string(source, "regionId", "");
+                if (source.has("guards")) {
+                    for (JsonElement guard : source.getAsJsonArray("guards")) {
+                        originalFatalGuards.add(guard.getAsString());
+                    }
+                }
+                if (source.has("chain")) {
+                    for (JsonElement guard : source.getAsJsonArray("chain")) {
+                        originalFatalGuards.add(string(guard.getAsJsonObject(), "siteId", ""));
+                    }
+                }
                 break;
             }
         }
         if (originalTargetRegion.isEmpty()) throw new IllegalStateException(
                 "original GraphChecker target has no selected region: " + fatalThrow.id);
+        for (Site control : compoundCheckSites) {
+            if (!originalFatalGuards.contains(control.id)) throw new IllegalStateException(
+                    "original GraphChecker target omits compound guard: " + control.id);
+        }
         // The inventory may name the throw as its target. Runtime feedback
         // must anchor the controlling check, which is reached in the healthy
         // run, rather than the exceptional throw that healthy execution skips.
@@ -589,6 +611,7 @@ public final class ScopePlanner {
         result.addProperty("caseId", string(config, "case_id", ""));
         result.addProperty("targetSiteId", anchors.get(0).id);
         result.addProperty("throwSiteId", fatalThrow.id);
+        addCompoundCheckGroup(result);
         result.addProperty("sootDependencyClasspathSha256", sha256Full(
                 String.join(File.pathSeparator, strings(analysisConfig.get("classpath")))));
         result.add("scopeSites", scope);
@@ -813,29 +836,111 @@ public final class ScopePlanner {
                 matches.add(site);
             }
         }
-        if (matches.size() != 1) {
-            throw new IllegalArgumentException("target must resolve to one site; found="
-                    + matches.size() + " class=" + clazz + " method=" + methodName
-                    + " line=" + lineStart + ".." + lineEnd + " kind=" + kind);
+        if (matches.size() == 1) return matches.get(0);
+        if (matches.size() > 1 && "BRANCH".equals(kind)
+                && integer(spec, "throw_line", 0) > 0 && !exception.isEmpty()) {
+            return resolveCompoundCheck(matches, spec);
         }
-        return matches.get(0);
+        throw new IllegalArgumentException("target must resolve to one site; found="
+                + matches.size() + " class=" + clazz + " method=" + methodName
+                + " line=" + lineStart + ".." + lineEnd + " kind=" + kind);
+    }
+
+    /**
+     * A Java short-circuit check can have several branches on one source
+     * line. The unique throw remains the GraphChecker demand seed, so its
+     * guards are all retained in the backward closure. For runtime identity
+     * choose the deepest guard that dominates that throw: every fatal path
+     * executes it, and a healthy trace must still prove its nonfatal arm.
+     * Parallel fatal paths, multiple throws, and missing dominance refuse.
+     */
+    private Site resolveCompoundCheck(List<Site> lineBranches, JsonObject spec) {
+        Map<Site, List<Site>> byThrow = new LinkedHashMap<>();
+        for (Site branch : lineBranches) {
+            branch.owner.flow();
+            for (Site candidate : branch.owner.sites) {
+                if (!matchesFatalThrow(candidate, spec)) continue;
+                Set<Unit> controls = transitiveGuards(candidate);
+                if (controls.contains(branch.unit)) {
+                    byThrow.computeIfAbsent(candidate, unused -> new ArrayList<>()).add(branch);
+                }
+            }
+        }
+        if (byThrow.size() != 1) throw new IllegalArgumentException(
+                "compound target must control one exact fatal throw; found="
+                        + byThrow.size());
+        Map.Entry<Site, List<Site>> entry = byThrow.entrySet().iterator().next();
+        Site thrown = entry.getKey();
+        List<Site> controls = entry.getValue();
+        if (controls.size() < 2) throw new IllegalArgumentException(
+                "same-line branches do not form one compound fatal check: " + thrown.id);
+        List<Unit> throwDominators = thrown.owner.dom.getDominators(thrown.unit);
+        List<Unit> directGuards = thrown.owner.guardsOf(thrown.unit);
+        List<Site> dominantControls = new ArrayList<>();
+        for (Site check : controls) {
+            if (throwDominators.contains(check.unit) && directGuards.contains(check.unit)) {
+                dominantControls.add(check);
+            }
+        }
+        List<Site> nearest = new ArrayList<>();
+        for (Site check : dominantControls) {
+            List<Unit> checkDominators = check.owner.dom.getDominators(check.unit);
+            boolean belowAllOthers = true;
+            for (Site other : dominantControls) {
+                if (other != check && !checkDominators.contains(other.unit)) {
+                    belowAllOthers = false;
+                    break;
+                }
+            }
+            if (belowAllOthers) nearest.add(check);
+        }
+        if (nearest.size() != 1) throw new IllegalArgumentException(
+                "compound fatal check has no unique always-executed anchor; found="
+                        + nearest.size() + " throw=" + thrown.id);
+        controls.sort(Comparator.comparingInt(site -> site.index));
+        compoundCheckSites.addAll(controls);
+        return nearest.get(0);
+    }
+
+    private Set<Unit> transitiveGuards(Site site) {
+        Set<Unit> controls = new LinkedHashSet<>();
+        Deque<Unit> pending = new ArrayDeque<>(site.owner.guardsOf(site.unit));
+        while (!pending.isEmpty()) {
+            Unit guard = pending.removeFirst();
+            if (controls.add(guard)) pending.addAll(site.owner.guardsOf(guard));
+        }
+        return controls;
+    }
+
+    private boolean matchesFatalThrow(Site candidate, JsonObject spec) {
+        if (!(candidate.unit instanceof ThrowStmt)) return false;
+        int throwLine = integer(spec, "throw_line", 0);
+        if (throwLine > 0 && candidate.line != throwLine) return false;
+        String exception = string(spec, "exception", string(spec, "exception_class", ""));
+        String type = ((ThrowStmt) candidate.unit).getOp().getType().toString();
+        return exception.isEmpty() || type.equals(exception)
+                || type.endsWith("." + exception) || type.endsWith("$" + exception);
+    }
+
+    private void addCompoundCheckGroup(JsonObject result) {
+        if (compoundCheckSites.isEmpty()) return;
+        JsonArray controls = new JsonArray();
+        for (Site check : compoundCheckSites) controls.add(check.id);
+        result.add("targetCheckGroupSiteIds", controls);
     }
 
     private Site resolveControlledThrow(Site check, JsonObject spec) {
-        String exception = string(spec, "exception", string(spec, "exception_class", ""));
-        int throwLine = integer(spec, "throw_line", 0);
         List<Site> matches = new ArrayList<>();
         for (Site candidate : check.owner.sites) {
-            if (!(candidate.unit instanceof ThrowStmt)
-                    || throwLine > 0 && candidate.line != throwLine
-                    || !check.owner.guardsOf(candidate.unit).contains(check.unit)) continue;
-            String type = ((ThrowStmt) candidate.unit).getOp().getType().toString();
-            if (!exception.isEmpty() && !type.equals(exception)
-                    && !type.endsWith("." + exception)
-                    && !type.endsWith("$" + exception)) continue;
+            if (!matchesFatalThrow(candidate, spec)
+                    || !(compoundCheckSites.isEmpty()
+                         ? check.owner.guardsOf(candidate.unit).contains(check.unit)
+                         : transitiveGuards(candidate).contains(check.unit))) continue;
             matches.add(candidate);
         }
         if (matches.size() == 1) return matches.get(0);
+        String exception = string(spec, "exception", string(spec, "exception_class", ""));
+        int throwLine = integer(spec, "throw_line", 0);
         if (matches.size() > 1 || throwLine > 0) {
             throw new IllegalArgumentException("check branch must control one fatal throw; found="
                     + matches.size() + " check=" + check.id + " exception=" + exception
@@ -1632,6 +1737,7 @@ public final class ScopePlanner {
         result.addProperty("targetSiteId", checkSites.isEmpty()
                 ? target.id : checkSites.get(0).id);
         result.addProperty("throwSiteId", fatalThrow == null ? "" : fatalThrow.id);
+        addCompoundCheckGroup(result);
         result.add("scopeSites", scope);
         result.add("weaveManifest", manifest);
         if (analysisConfig.has("graphchecker_region_port")

@@ -86,4 +86,22 @@ final class ScopeFixture {
             throw new IOException("HELPER_TARGET");
         }
     }
+
+    static void checkCompoundAssert(boolean leader, boolean pull) {
+        assert !(leader && pull) : "COMPOUND_ASSERT_TARGET";
+    }
+
+    static void checkCompoundOr(boolean first, boolean second) throws IOException {
+        if (first || second) throw new IOException("COMPOUND_OR_TARGET");
+    }
+
+    static void checkAmbiguousSameLine(boolean first, boolean second) throws IOException {
+        if (first) throw new IOException("AMBIGUOUS_TARGET"); if (second) throw new IOException("other");
+    }
+
+    static void checkBlockPoolLike(boolean running) throws IOException {
+        if (running) {
+            throw new IOException("BLOCK_POOL_TARGET");
+        }
+    }
 }

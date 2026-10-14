@@ -31,8 +31,99 @@ import java.util.Arrays;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class ScopePlannerTest {
+    private static int fixtureLine(String marker) throws Exception {
+        String source = new String(Files.readAllBytes(Paths.get(
+                "src/test/java/edu/uva/liftlab/mallory/scope/ScopeFixture.java")),
+                StandardCharsets.UTF_8);
+        int line = 1;
+        for (String text : source.split("\n", -1)) {
+            if (text.contains(marker)) return line;
+            line++;
+        }
+        throw new IllegalArgumentException("fixture marker missing: " + marker);
+    }
+
+    private static JsonObject fixtureTarget(String method, int line, String kind,
+                                            String exception) {
+        JsonObject config = new JsonObject();
+        JsonObject target = new JsonObject();
+        target.addProperty("class", ScopeFixture.class.getName());
+        target.addProperty("method", method);
+        target.addProperty("line", line);
+        target.addProperty("kind", kind);
+        target.addProperty("exception", exception);
+        config.add("target", target);
+        JsonObject analysis = new JsonObject();
+        JsonArray paths = new JsonArray();
+        paths.add("target/test-classes");
+        analysis.add("process_dirs", paths);
+        analysis.add("classpath", paths);
+        config.add("analysis", analysis);
+        return config;
+    }
+
+    @Test
+    public void compoundAssertUsesOneDominatingAnchorAndKeepsEveryControl()
+            throws Exception {
+        int line = fixtureLine("COMPOUND_ASSERT_TARGET");
+        JsonObject config = fixtureTarget("checkCompoundAssert", line,
+                "BRANCH", "java.lang.AssertionError");
+        config.getAsJsonObject("target").addProperty("throw_line", line);
+        JsonObject result = ScopePlanner.analyze(config);
+        JsonArray group = result.getAsJsonArray("targetCheckGroupSiteIds");
+        assertEquals(3, group.size());
+        assertEquals(group.get(2).getAsString(), result.get("targetSiteId").getAsString());
+        assertTrue(result.get("throwSiteId").getAsString().contains("#u"));
+        JsonArray targets = result.getAsJsonObject("weaveManifest")
+                .getAsJsonArray("targets");
+        assertEquals(2, targets.size());
+        assertTrue(result.getAsJsonArray("scopeSites").size() > 0);
+    }
+
+    @Test
+    public void compoundOrUsesAlwaysExecutedGuardAndKeepsBothControls()
+            throws Exception {
+        int line = fixtureLine("COMPOUND_OR_TARGET");
+        JsonObject config = fixtureTarget("checkCompoundOr", line,
+                "BRANCH", "java.io.IOException");
+        config.getAsJsonObject("target").addProperty("throw_line", line);
+        JsonObject result = ScopePlanner.analyze(config);
+        JsonArray group = result.getAsJsonArray("targetCheckGroupSiteIds");
+        assertEquals(2, group.size());
+        assertEquals(group.get(0).getAsString(), result.get("targetSiteId").getAsString());
+        assertEquals(2, result.getAsJsonObject("weaveManifest")
+                .getAsJsonArray("targets").size());
+    }
+
+    @Test
+    public void sameLineIndependentThrowsRemainAmbiguous() throws Exception {
+        int line = fixtureLine("AMBIGUOUS_TARGET");
+        JsonObject config = fixtureTarget("checkAmbiguousSameLine", line,
+                "BRANCH", "java.io.IOException");
+        config.getAsJsonObject("target").addProperty("throw_line", line);
+        try {
+            ScopePlanner.analyze(config);
+            fail("independent same-line throws must remain ambiguous");
+        } catch (IllegalArgumentException expected) {
+            assertTrue(expected.getMessage().contains("one exact fatal throw"));
+        }
+    }
+
+    @Test
+    public void singleGuardThrowKeepsItsHealthyCheckAnchor() throws Exception {
+        int throwLine = fixtureLine("BLOCK_POOL_TARGET");
+        JsonObject config = fixtureTarget("checkBlockPoolLike", throwLine,
+                "THROW", "java.io.IOException");
+        config.getAsJsonObject("target").addProperty("check_line", throwLine - 1);
+        JsonObject result = ScopePlanner.analyze(config);
+        assertTrue(result.get("targetSiteId").getAsString().contains("#u"));
+        assertTrue(result.get("throwSiteId").getAsString().contains("#u"));
+        assertTrue(!result.has("targetCheckGroupSiteIds"));
+    }
+
     @Test
     public void streamedArtifactsKeepTheExistingJsonBytes() throws Exception {
         JsonObject result = new JsonObject();
