@@ -200,6 +200,8 @@ def rebase(args: argparse.Namespace) -> dict:
     if _sha(local_checkpoint) not in (args.source_checkpoint_sha256,
                                       receipt["rebased_checkpoint_sha256"]):
         raise ValueError("local checkpoint is not an exact frozen copy")
+    if getattr(args, "dry_run", False):
+        return {**receipt, "dry_run": True}
     campaign._atomic(local_checkpoint, rebased)
     if _sha(local_checkpoint) != receipt["rebased_checkpoint_sha256"]:
         raise ValueError("rebased checkpoint write digest differs")
@@ -214,6 +216,8 @@ def main() -> None:
         parser.add_argument("--" + name, required=True, type=Path)
     parser.add_argument("--source-checkpoint-sha256", required=True)
     parser.add_argument("--source-admission-sha256", required=True)
+    parser.add_argument("--dry-run", action="store_true",
+                        help="verify every input and emit a preview without writing")
     print(json.dumps(rebase(parser.parse_args()), sort_keys=True))
 
 

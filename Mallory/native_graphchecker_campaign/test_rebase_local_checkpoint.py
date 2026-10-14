@@ -114,6 +114,25 @@ class RebaseLocalCheckpointTest(unittest.TestCase):
             rebased["config_sha256"] = frozen["config_sha256"]
             self.assertEqual(frozen, rebased)
 
+    def test_dry_run_keeps_local_checkpoint_byte_identical(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            args, admitted = self._fixture(Path(directory))
+            args.dry_run = True
+            original = (args.local_root / "checkpoint.json").read_bytes()
+            with (patch.object(importer, "_require_pg0_read_only"),
+                  patch.object(importer, "_require_local", side_effect=lambda path, *_:
+                               path.resolve()),
+                  patch.object(importer.os, "statvfs",
+                               return_value=argparse.Namespace(f_flag=os.ST_RDONLY)),
+                  patch.object(campaign, "_validate_config"),
+                  patch.object(campaign, "_validate_local_work_root"),
+                  patch.object(campaign, "_validate_local_artifact_root"),
+                  patch.object(campaign, "_admit", return_value=admitted)):
+                receipt = importer.rebase(args)
+            self.assertTrue(receipt["dry_run"])
+            self.assertEqual(original, (args.local_root / "checkpoint.json").read_bytes())
+            self.assertFalse((args.local_root / "checkpoint-rebase.json").exists())
+
     def test_rejects_changed_target_before_rebase(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             args, admitted = self._fixture(Path(directory))
