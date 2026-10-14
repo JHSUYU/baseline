@@ -43,6 +43,16 @@ short original test does not naturally wait for the default block-key update
 interval. The same healthy trace has 75 `retrieveDataEncryptionKey` checks,
 all taking the key-present branch, and zero target throws. Thus it proves
 receiver reachability but not the missing-key condition.
+The original test also runs separate first and second MiniDFSCluster lifecycles.
+In the later v4 native pilot, the pinned `dn1#epoch1` target check occurs
+before the second Balancer `KeyManager` is constructed; two pre-target
+`getBlockKeys` RPC doors belong to the first cluster and are poor producers
+for that selected target. The GraphChecker exchange trace can associate a
+DataNode actor with the actual NameNode peer epoch through matched
+`EXCHANGE_SEND`/`EXCHANGE_RECEIVE` correlation IDs. A useful general selector
+must join a fault door to that peer/lifecycle before ranking its relation to
+the target; equal local epoch numbers or a simple earlier timestamp do not
+establish the relationship. The v4 fault wave has no extra exact target throw.
 `testLongLivedClientPipelineRecovery` deliberately shortens key
 rotation and reaches the DataNode mirror/replication callers, but those peers
 create DEKs from local DataNode keys; an additional server-side target throw

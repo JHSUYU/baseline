@@ -722,28 +722,15 @@ def _strict_faults(faults: list[dict[str, Any]], rows: list[dict[str, Any]]
     return True, applied[-1]["seq"] if applied else None
 
 
-def _raw_prefix_target_throws(
-        faults: list[dict[str, Any]], rows: list[dict[str, Any]],
-        target_site: str, target_throw: dict[str, str]) -> dict[str, Any]:
-    """Record an exact throw after a verified applied prefix, without an oracle.
-
-    Rows from different actors have no proven causal order. Their append order
-    only makes this a lead for source and lifecycle review; strict admission
-    still requires the entire plan and original graph/temporal checks.
-    """
-    applied_positions = [index for index, row in enumerate(rows)
-                         if row["kind"] == "FAULT_APPLIED"]
-    prefix_size = len(applied_positions)
-    if (not faults or not prefix_size or prefix_size > len(faults) or
-            not _strict_faults(faults[:prefix_size], rows)[0]):
-        return {"appliedPrefixCount": 0, "targetThrows": [],
-                "lifecycleContext": "not_applicable",
-                "causalAttribution": "unproven"}
-    last_applied = applied_positions[-1]
+def _target_throw_observations(
+        rows: list[dict[str, Any]], target_site: str,
+        target_throw: dict[str, str], *, after_index: int = -1
+        ) -> list[dict[str, Any]]:
+    """Pair exact target checks and throws on one actor and occurrence."""
     checks: dict[tuple[str, str, int], tuple[int, dict[str, Any]]] = {}
     observed: list[dict[str, Any]] = []
     for index, row in enumerate(rows):
-        if index <= last_applied:
+        if index <= after_index:
             continue
         identity = (row.get("occurrenceId"), row.get("node"),
                     row.get("actorEpochOrdinal"))
@@ -765,6 +752,28 @@ def _raw_prefix_target_throws(
                                  "actorEpochOrdinal": row.get(
                                      "actorEpochOrdinal"),
                                  "occurrenceId": row.get("occurrenceId")})
+    return observed
+
+
+def _raw_prefix_target_throws(
+        faults: list[dict[str, Any]], rows: list[dict[str, Any]],
+        target_site: str, target_throw: dict[str, str]) -> dict[str, Any]:
+    """Record an exact throw after a verified applied prefix, without an oracle.
+
+    Rows from different actors have no proven causal order. Their append order
+    only makes this a lead for source and lifecycle review; strict admission
+    still requires the entire plan and original graph/temporal checks.
+    """
+    applied_positions = [index for index, row in enumerate(rows)
+                         if row["kind"] == "FAULT_APPLIED"]
+    prefix_size = len(applied_positions)
+    if (not faults or not prefix_size or prefix_size > len(faults) or
+            not _strict_faults(faults[:prefix_size], rows)[0]):
+        return {"appliedPrefixCount": 0, "targetThrows": [],
+                "lifecycleContext": "not_applicable",
+                "causalAttribution": "unproven"}
+    observed = _target_throw_observations(
+        rows, target_site, target_throw, after_index=applied_positions[-1])
     return {"appliedPrefixCount": prefix_size, "targetThrows": observed,
             "lifecycleContext": "unclassified" if observed else
             "not_applicable", "causalAttribution": "unproven"}
@@ -1394,18 +1403,26 @@ def _post_fault_target_checks(rows: list[dict[str, Any]],
 
 def _region_throw_evidence(rows: list[dict[str, Any]], target_site: str,
                            target_throw: dict[str, str],
-                           applied: dict[str, Any] | None
+                           applied: dict[str, Any] | None,
+                           selected_occurrence_ids: set[str] | None = None
                            ) -> tuple[list[dict[str, Any]], bool, str,
                                       dict[str, Any] | None]:
-    """Keep exact throw evidence distinct from proven fault-to-check order."""
+    """Keep the selected original target's throw distinct from other calls."""
     checks = [row for row in rows if row["kind"] == "TARGET_CHECK" and
-              row.get("siteId") == target_site]
+              row.get("siteId") == target_site and
+              (selected_occurrence_ids is None or
+               row.get("occurrenceId") in selected_occurrence_ids)]
     throws = []
     temporal = None
     for row in rows:
         if (row["kind"] != "TARGET_THROW" or
                 row.get("siteId") != target_throw["siteId"] or
-                row.get("exceptionClass") != target_throw["exceptionClass"]):
+                row.get("exceptionClass") != target_throw["exceptionClass"] or
+                row.get("actualExceptionClass",
+                        row.get("exceptionClass")) !=
+                target_throw["exceptionClass"] or
+                (selected_occurrence_ids is not None and
+                 row.get("occurrenceId") not in selected_occurrence_ids)):
             continue
         matching = [check for check in checks if
                     (check.get("occurrenceId"), check.get("node"),
@@ -1866,8 +1883,19 @@ def _run_region_trial(config: dict[str, Any], admitted: dict[str, Any],
                                         config["target_site"])
                                     if "static_may_scope_map" in recording
                                     else frozenset()))
+    selected_ids = summary.get("targetEvidence", {}).get(
+        "targetCheckOccurrenceIds")
+    if (not isinstance(selected_ids, list) or not selected_ids or
+            any(not isinstance(identifier, str) or not identifier
+                for identifier in selected_ids)):
+        result["status"] = ("blocked_healthy_native_session" if not faults else
+                            "invalid_native_session")
+        result["analysis_error"] = (
+            "original selected target has no exact check occurrences")
+        return result
     throws, admitted_temporal, reason, evidence = _region_throw_evidence(
-        events, config["target_site"], config["target_throw"], last)
+        events, config["target_site"], config["target_throw"], last,
+        set(selected_ids))
     result["target_exception_triggered"] = bool(throws)
     result["target_throw_rows"] = throws
     result["target_temporal_admitted"] = admitted_temporal
@@ -1882,7 +1910,8 @@ def _run_region_trial(config: dict[str, Any], admitted: dict[str, Any],
 
 def _run_trial(config: dict[str, Any], admitted: dict[str, Any],
                trial: Path, faults: list[dict[str, Any]],
-               healthy: dict[str, Any] | None) -> dict[str, Any]:
+               healthy: dict[str, Any] | None,
+               healthy_raw_throw_count: int | None = None) -> dict[str, Any]:
     _verify_pins(config, admitted)
     trial.mkdir(parents=True, exist_ok=False)
     _prepare_trial_artifacts(config, trial)
@@ -1910,6 +1939,9 @@ def _run_trial(config: dict[str, Any], admitted: dict[str, Any],
     result["target_temporal_evidence"] = None
     result["eligible_doors"] = []
     result["raw_exact_target_throw_after_applied_prefix"] = False
+    result["raw_exact_target_throw_count"] = None
+    result["healthy_raw_exact_target_throw_count"] = healthy_raw_throw_count
+    result["raw_target_throw_differential_candidate"] = False
     result["raw_target_throw_observation"] = {
         "appliedPrefixCount": 0, "targetThrows": [],
         "lifecycleContext": "not_applicable", "causalAttribution": "unproven"}
@@ -1921,10 +1953,16 @@ def _run_trial(config: dict[str, Any], admitted: dict[str, Any],
         result["analysis_error"] = str(failure)
         return _save_trial_result(trial, result, trial_started)
     result["strict_injection"] = bool(faults and strict)
+    result["raw_exact_target_throw_count"] = len(_target_throw_observations(
+        events, config["target_site"], config["target_throw"]))
     raw = _raw_prefix_target_throws(
         faults, events, config["target_site"], config["target_throw"])
     result["raw_target_throw_observation"] = raw
     result["raw_exact_target_throw_after_applied_prefix"] = bool(
+        raw["targetThrows"])
+    result["raw_target_throw_differential_candidate"] = bool(
+        faults and strict and healthy_raw_throw_count is not None and
+        result["raw_exact_target_throw_count"] > healthy_raw_throw_count and
         raw["targetThrows"])
     if config["runner"].get("mode") == "region_state":
         if faults and not strict:
@@ -2068,6 +2106,11 @@ def _accept(state: dict[str, Any], result: dict[str, Any], name: str) -> None:
                   "native_target_retained": result["native_target_retained"],
                   "target_exception_triggered": result["target_exception_triggered"],
                   "elapsed_seconds": result["elapsed_seconds"]}
+        if "raw_target_throw_differential_candidate" in result:
+            record["raw_target_throw_differential_candidate"] = result[
+                "raw_target_throw_differential_candidate"]
+            record["raw_exact_target_throw_count"] = result.get(
+                "raw_exact_target_throw_count")
         if (result.get("runner_mode") == "region_state" and
                 "post_fault_target_check_observed" in result):
             record["post_fault_target_check_observed"] = result[
@@ -2398,7 +2441,20 @@ def _resume_active(config: dict[str, Any], admitted: dict[str, Any],
         trial.rename(interrupted / f"{name}-attempt{suffix}")
     healthy = (_load(root / "trials" / "r0000" / "native-summary.json")
                if active["index"] > 0 else None)
-    result = _run_trial(config, admitted, trial, active["faults"], healthy)
+    healthy_raw_throw_count = None
+    if active["index"] > 0:
+        healthy_result = _load(root / "trials" / "r0000" / "result.json")
+        healthy_raw_throw_count = healthy_result.get("raw_exact_target_throw_count")
+        if (healthy_raw_throw_count is not None and
+                (not isinstance(healthy_raw_throw_count, int) or
+                 isinstance(healthy_raw_throw_count, bool) or
+                 healthy_raw_throw_count < 0)):
+            raise ValueError("invalid healthy exact target throw count")
+    if active["index"] > 0:
+        result = _run_trial(config, admitted, trial, active["faults"], healthy,
+                            healthy_raw_throw_count)
+    else:
+        result = _run_trial(config, admitted, trial, active["faults"], healthy)
     _accept(state, result, name)
     _atomic(root / "checkpoint.json", state)
 

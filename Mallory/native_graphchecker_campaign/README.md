@@ -263,6 +263,17 @@ distinguish workload execution from a JUnit's own teardown. Source and log
 review must classify such observations. This raw field never changes
 `target_exception_triggered`, the campaign status, or the candidate oracle.
 
+The native runner also records `raw_exact_target_throw_count` across all
+check/throw pairs, including those in the unchanged healthy JUnit. Fault
+trials carry `healthy_raw_exact_target_throw_count` and set
+`raw_target_throw_differential_candidate` only when every planned fault was
+strictly injected, an exact throw appeared after the last applied fault, and
+the run has more exact throws than its healthy seed. This is a source-review
+lead, separate from the original GraphChecker selected-region verdict and
+caller-path attribution. The selected-region verdict only examines the
+original finalizer's `targetCheckOccurrenceIds`, so an expected throw at a
+different occurrence does not block a nonthrowing healthy selected target.
+
 ## Checkpoints and status
 
 `checkpoint.json` is atomically replaced after each trial and records the

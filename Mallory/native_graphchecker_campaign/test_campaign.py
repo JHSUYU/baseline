@@ -466,6 +466,25 @@ class RawPrefixTargetThrowTest(unittest.TestCase):
                                                 rows[0], rows[1]])[
             "targetThrows"])
 
+    def test_all_exact_throws_include_healthy_baseline_but_keep_actor_pairing(self):
+        rows = self.rows()
+        second_check = {**rows[2], "seq": 5, "occurrenceId": "second-target"}
+        second_throw = {**rows[3], "seq": 6, "occurrenceId": "second-target"}
+        target = {"siteId": "Guard#u12",
+                  "exceptionClass": "java.io.IOException"}
+        observed = core._target_throw_observations(
+            [*rows, second_check, second_throw], "Guard#u4#1", target)
+        self.assertEqual(["target-region", "second-target"],
+                         [item["occurrenceId"] for item in observed])
+        observed_after_fault = core._target_throw_observations(
+            [*rows, second_check, second_throw], "Guard#u4#1", target,
+            after_index=3)
+        self.assertEqual(["second-target"],
+                         [item["occurrenceId"] for item in observed_after_fault])
+        wrong_actor = {**second_throw, "node": "dn2"}
+        self.assertEqual(1, len(core._target_throw_observations(
+            [*rows, second_check, wrong_actor], "Guard#u4#1", target)))
+
     def test_unmatched_trial_keeps_raw_evidence_and_strict_oracle_false(self):
         plan = [self.fault("RPC#first", "dn0"),
                 self.fault("IO#missing", "dn2")]
@@ -988,6 +1007,26 @@ class WireTemporalProofTest(unittest.TestCase):
         self.assertFalse(admitted)
         self.assertEqual("cross_occurrence_order_unproved", reason)
         self.assertIsNone(evidence)
+
+    def test_selected_region_ignores_other_healthy_target_throw(self) -> None:
+        target_site = "Keys#check#u3"
+        target_throw = {"siteId": "Keys#throw#u4",
+                        "exceptionClass": "java.io.IOException"}
+        check = {"kind": "TARGET_CHECK", "seq": 3,
+                 "siteId": target_site, "node": "dn",
+                 "actorEpochOrdinal": 0, "occurrenceId": "expected-throw"}
+        throw = {"kind": "TARGET_THROW", "seq": 4,
+                 "siteId": target_throw["siteId"],
+                 "exceptionClass": target_throw["exceptionClass"],
+                 "node": "dn", "actorEpochOrdinal": 0,
+                 "occurrenceId": "expected-throw"}
+        selected = {**check, "seq": 5, "occurrenceId": "selected"}
+        rows, admitted, reason, _ = core._region_throw_evidence(
+            [check, throw, selected], target_site, target_throw, None,
+            {"selected"})
+        self.assertEqual([], rows)
+        self.assertFalse(admitted)
+        self.assertEqual("no_applied_fault", reason)
 
     def test_region_door_priority_uses_original_exact_closure_membership(self) -> None:
         summary = {"targetSiteId": "Keys#check#u3",
@@ -1708,6 +1747,9 @@ class NativeCampaignFixtureTest(unittest.TestCase):
         self.assertTrue(faulted["target_exception_triggered"])
         self.assertTrue(
             faulted["raw_exact_target_throw_after_applied_prefix"])
+        self.assertEqual(0, faulted["healthy_raw_exact_target_throw_count"])
+        self.assertEqual(1, faulted["raw_exact_target_throw_count"])
+        self.assertTrue(faulted["raw_target_throw_differential_candidate"])
         self.assertEqual(0, faulted["native_delta"]["newObservedClosureEdges"])
         self.assertTrue((self.root / "campaign/summary.json").is_file())
 
