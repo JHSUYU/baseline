@@ -31,7 +31,8 @@ audit for current status. Each JSON binding pins the exact immutable native
 config and state path. HDFS-11 also pins an attestation for its alternate
 unchanged upstream JUnit selector. The real `inspect_case` audit of HDFS-11
 returned `tested_no_target_throw`, 24 fault trials, 15 strict and target-retained
-trials, zero target throws, and 1865.235 cumulative trial seconds. Its
+trials, zero target throws, and 1865.235 cumulative trial seconds including
+per-trial graph analysis. Its
 `terminal-review.json` SHA-256 is
 `a277f743bfb55c6c2d3a23f02d97c34cd0fecac27e4569911eaa201bed0a514a`.
 That review explicitly records **budget terminal, not high-quality complete**:

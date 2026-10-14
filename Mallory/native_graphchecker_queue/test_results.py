@@ -12,7 +12,7 @@ from Mallory.native_graphchecker_dispatch.checklist import (
     DEFAULT_INVENTORY, DEFAULT_OWNERSHIP, load_inventory,
 )
 from .queue import completion, sha
-from .results import export_native_results
+from .results import _elapsed_basis, export_native_results
 
 
 class NativeResultsTest(unittest.TestCase):
@@ -39,6 +39,14 @@ class NativeResultsTest(unittest.TestCase):
                         "config_sha256": sha(config_file)}
             (case_root / "checkpoint.json").write_text(json.dumps(terminal))
             (case_root / "summary.json").write_text(json.dumps(terminal))
+            for index, (junit, analysis) in enumerate((
+                    (1.0, 1.75), (1.0, 2.0), (1.0, 2.0), (1.0, 3.0))):
+                trial = case_root / "trials" / f"r{index:04d}"
+                trial.mkdir(parents=True)
+                (trial / "result.json").write_text(json.dumps({
+                    "elapsed_seconds": junit + analysis,
+                    "junit_elapsed_seconds": junit,
+                    "analysis_elapsed_seconds": analysis}))
             row = {"terminal_disposition": "tested_candidate",
                    "native_tested_complete": True,
                    "fault_trials": 3, "strict_fault_trials": 2,
@@ -71,8 +79,11 @@ class NativeResultsTest(unittest.TestCase):
                 "locateRegionInMeta("))
             self.assertEqual(completed["fault_trials"], 3)
             self.assertEqual(completed["elapsed_seconds"], 12.75)
+            self.assertEqual(completed["elapsed_basis"],
+                             "sum_native_trial_elapsed_seconds_including_graph_analysis")
             self.assertTrue(completed["target_throw_observed"])
-            self.assertTrue(completed["new_bug_candidate"])
+            self.assertTrue(completed["target_exception_candidate"])
+            self.assertIsNone(completed["confirmed_new_bug"])
             self.assertEqual(len(completed["evidence_paths"]), 4)
             with tsv_path.open(newline="") as stream:
                 tsv_rows = list(csv.DictReader(stream, delimiter="\t"))
@@ -85,6 +96,17 @@ class NativeResultsTest(unittest.TestCase):
                                   config_root, state_root, results_dir)
             self.assertEqual(json_path.read_bytes(), first_json)
             self.assertEqual(tsv_path.read_bytes(), first_tsv)
+
+    def test_legacy_native_receipts_identify_junit_only_accounting(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            for index, seconds in enumerate((1.25, 1.75)):
+                trial = root / "trials" / f"r{index:04d}"
+                trial.mkdir(parents=True)
+                (trial / "result.json").write_text(json.dumps({
+                    "elapsed_seconds": seconds}))
+            self.assertEqual(_elapsed_basis(root, 1, 3.0),
+                             "sum_native_junit_execution_seconds_legacy")
 
 
 if __name__ == "__main__":

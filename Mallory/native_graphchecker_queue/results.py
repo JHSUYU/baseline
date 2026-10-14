@@ -25,7 +25,8 @@ FIELDS = (
     "native_tested_complete", "fault_trials", "strict_fault_trials",
     "target_retained_fault_trials", "target_throw_trials", "candidate_trials",
     "elapsed_seconds", "elapsed_basis", "target_throw_observed",
-    "new_bug_candidate", "native_config_path", "native_config_sha256",
+    "target_exception_candidate", "confirmed_new_bug",
+    "native_config_path", "native_config_sha256",
     "checkpoint_path", "checkpoint_sha256", "summary_path", "summary_sha256",
     "completion_receipt_path", "completion_receipt_sha256", "evidence_paths",
 )
@@ -37,6 +38,31 @@ def _method_parts(function: str) -> tuple[str, str]:
     head = function.split("(", 1)[0]
     class_name, _ = head.rsplit(".", 1)
     return class_name, function[len(class_name) + 1:]
+
+
+def _elapsed_basis(native_root: Path, fault_trials: int,
+                   elapsed_seconds: float) -> str:
+    """Attribute reported time to the native trial receipts' actual schema."""
+    files = sorted((native_root / "trials").glob("r*/result.json"))
+    if len(files) != fault_trials + 1:
+        raise ValueError("native elapsed basis lacks healthy/fault trial receipts")
+    rows = [obj(path) for path in files]
+    if round(sum(float(row["elapsed_seconds"]) for row in rows), 3) != round(
+            elapsed_seconds, 3):
+        raise ValueError("native elapsed seconds differ from original trial receipts")
+    breakdown = ["junit_elapsed_seconds" in row and
+                 "analysis_elapsed_seconds" in row for row in rows]
+    if all(breakdown):
+        for row in rows:
+            if abs(row["elapsed_seconds"] - row["junit_elapsed_seconds"] -
+                   row["analysis_elapsed_seconds"]) > 0.002:
+                raise ValueError("native JUnit/analysis time breakdown changed")
+        return "sum_native_trial_elapsed_seconds_including_graph_analysis"
+    if not any(breakdown) and all(
+            "junit_elapsed_seconds" not in row and
+            "analysis_elapsed_seconds" not in row for row in rows):
+        return "sum_native_junit_execution_seconds_legacy"
+    raise ValueError("native trial elapsed accounting changed within campaign")
 
 
 def native_rows(inventory: Path, ownership_file: Path, config_root: Path,
@@ -75,7 +101,8 @@ def native_rows(inventory: Path, ownership_file: Path, config_root: Path,
             "target_retained_fault_trials": None, "target_throw_trials": None,
             "candidate_trials": None, "elapsed_seconds": None,
             "elapsed_basis": None, "target_throw_observed": False,
-            "new_bug_candidate": False, "native_config_path": None,
+            "target_exception_candidate": False,
+            "confirmed_new_bug": None, "native_config_path": None,
             "native_config_sha256": None,
             "checkpoint_path": None, "checkpoint_sha256": None,
             "summary_path": None, "summary_sha256": None,
@@ -136,9 +163,11 @@ def native_rows(inventory: Path, ownership_file: Path, config_root: Path,
                 "target_throw_trials": receipt["target_throw_trials"],
                 "candidate_trials": receipt["candidate_trials"],
                 "elapsed_seconds": receipt["elapsed_seconds"],
-                "elapsed_basis": "sum_original_native_junit_trial_seconds",
+                "elapsed_basis": _elapsed_basis(
+                    native_root, receipt["fault_trials"],
+                    receipt["elapsed_seconds"]),
                 "target_throw_observed": receipt["target_throw_trials"] > 0,
-                "new_bug_candidate": receipt["bug_candidate"],
+                "target_exception_candidate": receipt["bug_candidate"],
                 "checkpoint_sha256": fingerprint["checkpoint_sha256"],
                 "summary_path": str(summary_path.resolve()),
                 "summary_sha256": fingerprint["summary_sha256"],

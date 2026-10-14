@@ -164,6 +164,13 @@ class NativeQueueTest(unittest.TestCase):
                       "terminal": True, "status": "complete_trial_budget"}
         (native_root / "checkpoint.json").write_text(json.dumps(checkpoint))
         (native_root / "summary.json").write_text(json.dumps(checkpoint))
+        for index in range(2):
+            trial = native_root / "trials" / f"r{index:04d}"
+            trial.mkdir(parents=True)
+            (trial / "result.json").write_text(json.dumps({
+                "elapsed_seconds": 0.5,
+                "junit_elapsed_seconds": 0.3,
+                "analysis_elapsed_seconds": 0.2}))
         row = {"terminal_disposition": "tested_no_target_throw",
                "native_tested_complete": True, "fault_trials": 1,
                "strict_fault_trials": 1, "target_retained_fault_trials": 1,

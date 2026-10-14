@@ -12,8 +12,20 @@ its full original GraphChecker audit. `running_no_terminal_receipt` and
 `terminal_awaiting_adoption` preserve observed checkpoint progress separately;
 their final fault counts, elapsed time, target throws, and bug marks remain
 unset until receipt adoption. `checkpoint_observed_*` fields are preliminary.
-`elapsed_seconds` for a verified row is the sum of original native JUnit trial
-times, as stated in `elapsed_basis`.
+`elapsed_seconds` for a verified row is the sum of the original native trial
+receipts, including the healthy run. `elapsed_basis` records what those
+receipts actually timed. Current native receipts include JUnit execution and
+per-trial original graph analysis; they exclude one-time static analysis,
+recording, weave, and other setup. Legacy ZOOKEEPER-07 receipts predate total
+trial timing and count JUnit execution only: its 65 reported trial times sum
+to 648.415 seconds, matching its checkpoint and completion receipt. They do
+not include graph analysis. The exporter verifies this basis from each
+campaign's immutable trial result receipts.
+
+`target_exception_candidate` means the native campaign observed an exact
+target exception with its required trial evidence. It does not assert a new
+bug. `confirmed_new_bug` remains null until independent source-level review
+provides that conclusion.
 
 The committed snapshot has 102 rows and one verified terminal import,
 ZOOKEEPER-07. HDFS-11 is budget terminal and awaiting queue adoption; its
