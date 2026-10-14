@@ -85,6 +85,32 @@ class NoScheduleAdmissionTest(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "cached native recording"):
                 core._admit(self.config, self.root)
 
+    def test_optional_static_may_map_has_own_pin_and_keeps_seed_digest(self) -> None:
+        may = self.root / "static-may.jsonl"
+        may.write_text(json.dumps({"kind": "STATIC_SCOPE_SITE",
+                                   "role": "TARGET_SITE", "siteId": "Target#u1",
+                                   "regionId": "target-region"}) + "\n")
+        self.config["recording"].update({
+            "static_may_scope_map": str(may),
+            "static_may_scope_sha256": core._sha(may),
+        })
+        core._validate_config(self.config)
+        with (patch.object(core, "JAR", self.jar),
+              patch.object(core, "_scheduler_source", return_value=self.jar),
+              patch.object(core, "verify_existing", return_value={"verified": True}),
+              patch.object(core, "dependency_digests", return_value=[])):
+            first = core._admit(self.config, self.root)
+            self.assertEqual(core._sha(self.scope), first["origin"][
+                "static_scope_map_sha256"])
+            self.assertEqual(core._sha(may), first["origin"][
+                "static_may_scope_sha256"])
+            core._verify_pins(self.config, first)
+            may.write_text(may.read_text() + "\n")
+            with self.assertRaisesRegex(ValueError, "static MAY scope SHA-256 mismatch"):
+                core._admit(self.config, self.root)
+            with self.assertRaisesRegex(ValueError, "static MAY scope map changed"):
+                core._verify_pins(self.config, first)
+
     def test_pinned_analysis_engine_is_separate_from_woven_engine(self) -> None:
         analyzer = self.root / "optimized-analyzer.jar"
         analyzer.write_bytes(b"optimized original region analyzer")

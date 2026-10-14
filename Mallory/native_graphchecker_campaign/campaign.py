@@ -31,6 +31,7 @@ from Mallory.native_graphchecker_feedback.region_state_graph import (
     _closed_inputs, delta_region_state, record_region_state,
 )
 from .source_preflight import feedback_bridge
+from .static_may import rpc_producer_sites
 
 SCHEMA = 1
 SCHEDULER_VERSION = 7
@@ -126,6 +127,14 @@ def _validate_config(config: dict[str, Any]) -> None:
             (not isinstance(recording["target_occurrence"], str) or
              not recording["target_occurrence"])):
         raise ValueError("recording target_occurrence must be an exact ID")
+    may_path = recording.get("static_may_scope_map")
+    may_sha = recording.get("static_may_scope_sha256")
+    if (may_path is None) != (may_sha is None) or (may_path is not None and
+            (not isinstance(may_path, str) or
+             not Path(may_path).is_absolute() or
+             not isinstance(may_sha, str) or
+             not SHA256_HEX.fullmatch(may_sha))):
+        raise ValueError("static MAY scope requires an absolute path and SHA-256 pin")
     precomputed = recording.get("precomputed_schedule")
     if precomputed is not None and (not isinstance(precomputed, str) or
                                     not Path(precomputed).is_absolute()):
@@ -581,6 +590,14 @@ def _admit(config: dict[str, Any], root: Path) -> dict[str, Any]:
         "scheduler_source_sha256": _sha(_scheduler_source()),
         "engine_jar_sha256": _sha(JAR),
     }
+    if "static_may_scope_map" in rec:
+        may_path = Path(rec["static_may_scope_map"]).resolve(strict=True)
+        may_sha = _sha(may_path)
+        if may_sha != rec["static_may_scope_sha256"]:
+            raise ValueError("static MAY scope SHA-256 mismatch")
+        rpc_producer_sites(str(may_path), may_sha, config["target_site"])
+        recording_fingerprint["static_may_scope_map"] = str(may_path)
+        recording_fingerprint["static_may_scope_sha256"] = may_sha
     if "analysis_engine_jar" in rec:
         analyzer = _analysis_engine_jar(config)
         recording_fingerprint["analysis_engine_jar"] = str(analyzer)
@@ -607,6 +624,9 @@ def _admit(config: dict[str, Any], root: Path) -> dict[str, Any]:
             raise ValueError("cached precomputed GraphChecker schedule changed")
     else:
         origin = _verify_recording_plan(config, weave, root)
+        if "static_may_scope_sha256" in recording_fingerprint:
+            origin["static_may_scope_sha256"] = recording_fingerprint[
+                "static_may_scope_sha256"]
         _atomic(admission, {"schema_version": SCHEMA,
                             "recording_fingerprint": recording_fingerprint,
                             "origin": origin})
@@ -631,6 +651,13 @@ def _verify_pins(config: dict[str, Any], admitted: dict[str, Any]) -> None:
     scope = Path(config["recording"]["static_scope_map"]).resolve(strict=True)
     if _sha(scope) != admitted["origin"]["static_scope_map_sha256"]:
         raise ValueError("native static scope map changed during campaign")
+    rec = config["recording"]
+    if "static_may_scope_map" in rec:
+        may_path = Path(rec["static_may_scope_map"]).resolve(strict=True)
+        if (_sha(may_path) != rec["static_may_scope_sha256"] or
+                admitted["origin"].get("static_may_scope_sha256") !=
+                rec["static_may_scope_sha256"]):
+            raise ValueError("native static MAY scope map changed during campaign")
     if dependency_digests(os.pathsep.join(config["runner"]["classpath"])) != (
             admitted["runner_classpath_artifacts"]):
         raise ValueError("JUnit runner classpath changed during campaign")
@@ -1136,7 +1163,8 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
                           else -10**9)
             return (-attempts(item),
                     -state["fault_id_successes"].get(fault_id, 0),
-                    {"observed_closure": 3, "pre_target_actor": 2,
+                    {"observed_closure": 4, "static_producer_frontier": 3,
+                     "pre_target_actor": 2,
                      "outside_closure": 1}.get(item["tier"], 1),
                     *((recurrence,) if version >= 7 else ()),
                     proximity, item["novelty"], len(item["faults"]),
@@ -1144,7 +1172,8 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
                     -item.get("attempt", 0), item["key"])
         return (-attempts(item),
                 -state["fault_id_successes"].get(fault_id, 0),
-                {"observed_closure": 3, "pre_target_actor": 2,
+                {"observed_closure": 4, "static_producer_frontier": 3,
+                 "pre_target_actor": 2,
                  "outside_closure": 1}.get(item["tier"], 1),
                 item["novelty"], len(item["faults"]),
                 completed - item["enqueued_at"],
@@ -1212,7 +1241,8 @@ def _novelty(state: dict[str, Any], feedback: dict[str, Any]) -> int:
 
 
 def _region_doors(rows: list[dict[str, Any]], summary: dict[str, Any],
-                  after_fault: dict[str, Any] | None = None
+                  after_fault: dict[str, Any] | None = None,
+                  static_may_rpc_sites: frozenset[str] = frozenset()
                   ) -> list[dict[str, Any]]:
     """Mutate doors admitted by the original target demand closure."""
     if summary.get("closureMembershipAuthority") != (
@@ -1286,6 +1316,9 @@ def _region_doors(rows: list[dict[str, Any]], summary: dict[str, Any],
                       "selected_target_actor": actor_affinity,
                       "target_order_distance": target_distance,
                       "tier": "observed_closure" if direct else
+                              "static_producer_frontier" if (
+                                  row["siteId"] in static_may_rpc_sites and
+                                  target_phase == "before_selected_target") else
                               "pre_target_actor" if before_actor_check else
                               "outside_closure"})
     return found
@@ -1823,7 +1856,15 @@ def _run_region_trial(config: dict[str, Any], admitted: dict[str, Any],
         result["post_fault_target_check_evidence"] = post_fault
     result["eligible_doors"] = ([] if summary.get("status") ==
                                 "target_throw_unplanned" else
-                                _region_doors(events, summary, last))
+                                _region_doors(
+                                    events, summary, last,
+                                    rpc_producer_sites(
+                                        str(Path(recording[
+                                            "static_may_scope_map"]).resolve(strict=True)),
+                                        recording["static_may_scope_sha256"],
+                                        config["target_site"])
+                                    if "static_may_scope_map" in recording
+                                    else frozenset()))
     throws, admitted_temporal, reason, evidence = _region_throw_evidence(
         events, config["target_site"], config["target_throw"], last)
     result["target_exception_triggered"] = bool(throws)
