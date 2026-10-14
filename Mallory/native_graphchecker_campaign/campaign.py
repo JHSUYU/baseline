@@ -877,7 +877,8 @@ def _run_region_trial(config: dict[str, Any], admitted: dict[str, Any],
     result["target_temporal_admitted"] = admitted_temporal
     result["target_temporal_reason"] = reason
     result["target_temporal_evidence"] = evidence
-    result["status"] = ("healthy_seed" if not faults else
+    result["status"] = ("blocked_healthy_target_exception" if not faults and
+                        throws else "healthy_seed" if not faults else
                         "candidate" if throws and admitted_temporal else
                         "needs_causal_review" if throws else "checked")
     return result
