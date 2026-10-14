@@ -699,6 +699,7 @@ def _execute_junit(config: dict[str, Any], admitted: dict[str, Any],
     env.update({"CAUSYNTH_STATIC_SCOPE_MAP": str(Path(config["recording"][
         "static_scope_map"]).resolve(strict=True)),
                 "CAUSYNTH_CONCOLIC_SESSIONS": str(iteration / "sessions"),
+                "CAUSYNTH_TRACE_OUTPUT_DIR": str(iteration / "trace"),
                 "MALLORY_NATIVE_FAULT_PLAN": str(iteration / "fault-plan.json"),
                 "MALLORY_NATIVE_FAULT_EVENTS": str(iteration / "fault-events.jsonl")})
     started = time.monotonic()
