@@ -5,7 +5,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from Mallory.native_graphchecker_dispatch.checklist import _native_case_files
+from Mallory.native_graphchecker_dispatch.checklist import (
+    _checkpoint_trial_refs, _native_case_files,
+)
 from .queue import (_same_or_write, _terminal_fingerprint, obj, sha)
 
 
@@ -15,15 +17,13 @@ def coverage_path(state_root: Path, case_id: str) -> Path:
 
 
 def _trial_evidence(native_root: Path, fault_trials: int) -> tuple[int, int, dict[str, str]]:
-    trial_results = sorted((native_root / "trials").glob("r*/result.json"))
-    if len(trial_results) != fault_trials + 1:
+    trial_refs = _checkpoint_trial_refs(native_root, obj(native_root / "checkpoint.json"))
+    if len(trial_refs) != fault_trials + 1:
         raise ValueError("target-closure count lacks exact native trial receipts")
     files: dict[str, str] = {}
     strict_retained = inside_closure = 0
-    for index, path in enumerate(trial_results):
+    for index, (_, path) in enumerate(trial_refs):
         result = obj(path)
-        if path.parent.name != f"r{index:04d}":
-            raise ValueError("target-closure trials are out of order")
         files[str(path.resolve())] = sha(path)
         for evidence in (path.parent / "native-summary.json",
                          path.parent / "iteration-native/fault-events.jsonl"):

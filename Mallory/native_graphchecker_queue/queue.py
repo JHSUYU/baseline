@@ -398,8 +398,12 @@ def _local_artifact_attestation_valid(audit: dict, fingerprint: dict) -> bool:
             not isinstance(manifests, dict) or not isinstance(trees, dict) or
             len(manifests) != count + 1 or len(trees) != count + 1):
         return False
-    for index in range(count + 1):
-        trial = root / "trials" / f"r{index:04d}"
+    from Mallory.native_graphchecker_dispatch.checklist import _checkpoint_trial_refs
+    refs = _checkpoint_trial_refs(root, obj(root / "checkpoint.json"))
+    if len(refs) != count + 1:
+        return False
+    for _, result_path in refs:
+        trial = result_path.parent
         path = trial / "local-artifacts.json"
         digest = manifests.get(str(path))
         if (not isinstance(digest, str) or path.is_symlink() or

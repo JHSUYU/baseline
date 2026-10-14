@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Any
 
 from Mallory.native_graphchecker_dispatch.checklist import (
-    _native_case_files, _verify_alternate_junit,
+    _checkpoint_trial_refs, _native_case_files, _verify_alternate_junit,
 )
 from .queue import (_pinned_engine_root, _terminal_fingerprint, atomic, obj,
                     _frozen_source_cache_valid, pinned_campaign_python, sha)
@@ -60,11 +60,11 @@ def _project_binding(item: dict, entry: Path, native_config: dict) -> dict:
 def _trial_sha256(root: Path, count: int) -> tuple[dict[str, str], dict[str, str]]:
     evidence: dict[str, str] = {}
     raw_targets: dict[str, str] = {}
-    for index in range(count + 1):
-        trial = root / "trials" / f"r{index:04d}"
-        result = trial / "result.json"
-        if not result.is_file():
-            raise ValueError(f"missing sealed trial result: {result}")
+    refs = _checkpoint_trial_refs(root, obj(root / "checkpoint.json"))
+    if len(refs) != count + 1:
+        raise ValueError("frozen trial count differs from checkpoint")
+    for _, result in refs:
+        trial = result.parent
         for relative in ("result.json", "native-summary.json",
                          "iteration-native/fault-events.jsonl",
                          "original-graph/summary.json"):
@@ -74,8 +74,6 @@ def _trial_sha256(root: Path, count: int) -> tuple[dict[str, str], dict[str, str
                 evidence[name] = sha(path)
                 if relative == "original-graph/summary.json" and path.parent.is_symlink():
                     raw_targets[name] = str(path.parent.readlink() / path.name)
-    if len(list((root / "trials").glob("r*/result.json"))) != count + 1:
-        raise ValueError("sealed campaign has extra trial results")
     return evidence, raw_targets
 
 
@@ -94,10 +92,13 @@ def _local_artifact_receipts(root: Path, count: int,
     host = os.uname().nodename
     manifests: dict[str, str] = {}
     trees: dict[str, str] = {}
-    for index in range(count + 1):
-        trial = root / "trials" / f"r{index:04d}"
+    refs = _checkpoint_trial_refs(root, obj(root / "checkpoint.json"))
+    if len(refs) != count + 1:
+        raise ValueError("local artifact count differs from checkpoint")
+    for _, result_path in refs:
+        trial = result_path.parent
         path = trial / "local-artifacts.json"
-        result = obj(trial / "result.json")
+        result = obj(result_path)
         if path.is_symlink() or not path.is_file():
             raise ValueError(f"missing durable local artifact manifest: {path}")
         manifest_sha = sha(path)

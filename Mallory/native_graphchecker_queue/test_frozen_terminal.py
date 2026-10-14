@@ -48,6 +48,10 @@ class FrozenTerminalTest(unittest.TestCase):
             for index in range(2):
                 (native / "trials" / f"r{index:04d}" / "result.json").write_text(
                     json.dumps({"trial": index}))
+            (native / "checkpoint.json").write_text(json.dumps({
+                "healthy": {"name": "r0000", "result": "trials/r0000/result.json"},
+                "trials": [{"name": "r0001", "result": "trials/r0001/result.json"}],
+                "completed_fault_trials": 1, "next_trial_index": 2}))
             (native / "summary.json").write_text(json.dumps({
                 "completed_fault_trials": 1, "elapsed_seconds": 3.0}))
             engine = root / "engine"

@@ -101,6 +101,9 @@ class ChainedCompletionTest(unittest.TestCase):
         state = {"case_id": self.case, "status": "complete_trial_budget",
                  "terminal": True, "active": None, "config_sha256": sha256(config_path),
                  "completed_fault_trials": 1, "elapsed_seconds": 12.0,
+                 "healthy": {"name": "r0000", "result": "trials/r0000/result.json",
+                             "status": "healthy_seed"},
+                 "next_trial_index": 2,
                  "trials": [{"name": "r0001", "result": "trials/r0001/result.json",
                              "elapsed_seconds": 10.0, "strict_injection": True,
                              "native_target_retained": True,
@@ -204,6 +207,7 @@ class ChainedCompletionTest(unittest.TestCase):
         second.update(name="r0002", result="trials/r0002/result.json")
         checkpoint["trials"].append(second)
         checkpoint["completed_fault_trials"] = 2
+        checkpoint["next_trial_index"] = 3
         checkpoint["elapsed_seconds"] = 22.0
         write(root / "checkpoint.json", checkpoint)
         write(root / "summary.json", checkpoint)
@@ -211,6 +215,28 @@ class ChainedCompletionTest(unittest.TestCase):
         segment["summary"] = pin(root / "summary.json")
         with self.assertRaisesRegex(ValueError, "segment replayed an exact fault plan"):
             inspect_chain(self.manifest([segment], fault_budget=2))
+
+    def test_interrupted_trial_gap_uses_checkpoint_name(self) -> None:
+        segment = self.segment("gap")
+        root = Path(segment["checkpoint"]["path"]).parent
+        (root / "trials/r0001").rename(root / "trials/r0002")
+        checkpoint = json.loads((root / "checkpoint.json").read_text())
+        checkpoint["trials"][0].update(
+            name="r0002", result="trials/r0002/result.json")
+        checkpoint["next_trial_index"] = 3
+        write(root / "checkpoint.json", checkpoint)
+        write(root / "summary.json", checkpoint)
+        segment["checkpoint"] = pin(root / "checkpoint.json")
+        segment["summary"] = pin(root / "summary.json")
+        segment.pop("frozen_audit")
+        receipt = inspect_chain(self.manifest([segment]))
+        self.assertFalse(receipt["native_tested_complete"])
+        self.assertEqual(receipt["completed_fault_trials"], 1)
+        self.assertEqual(set(receipt["segments"][0]["trial_result_sha256"]),
+                         {"r0000", "r0002"})
+        write(root / "trials/r0001/result.json", {"forged": True})
+        with self.assertRaisesRegex(ValueError, "extra"):
+            inspect_chain(self.manifest([segment]))
 
 
 if __name__ == "__main__":

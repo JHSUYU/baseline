@@ -175,7 +175,12 @@ class NativeQueueTest(unittest.TestCase):
         native_root = self.state_root / self.case_id
         native_root.mkdir()
         checkpoint = {"case_id": self.case_id, "config_sha256": sha(self.config_file),
-                      "terminal": True, "status": "complete_trial_budget"}
+                      "terminal": True, "status": "complete_trial_budget",
+                      "healthy": {"name": "r0000",
+                                  "result": "trials/r0000/result.json"},
+                      "trials": [{"name": "r0001",
+                                  "result": "trials/r0001/result.json"}],
+                      "completed_fault_trials": 1, "next_trial_index": 2}
         (native_root / "checkpoint.json").write_text(json.dumps(checkpoint))
         (native_root / "summary.json").write_text(json.dumps(checkpoint))
         for index in range(2):
@@ -398,6 +403,10 @@ class NativeQueueTest(unittest.TestCase):
         manifest_sha = native_campaign._close_trial_artifacts(trial)
         native_campaign._atomic(trial / "result.json", {
             "local_artifacts_manifest_sha256": manifest_sha})
+        (campaign_root / "checkpoint.json").write_text(json.dumps({
+            "healthy": {"name": "r0000", "result": "trials/r0000/result.json"},
+            "trials": [], "completed_fault_trials": 0,
+            "next_trial_index": 1}))
         manifest_path = trial / "local-artifacts.json"
         manifest = native_campaign._load(manifest_path)
         fingerprint = {"case_id": self.case_id,

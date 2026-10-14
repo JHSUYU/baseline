@@ -15,6 +15,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from Mallory.native_graphchecker_dispatch.checklist import _checkpoint_trial_refs
 from .raw_archive import verify_trial_evidence
 
 
@@ -133,13 +134,13 @@ def _exact_throw(rows: list[dict[str, Any]], target_site: str,
             "no_exact_target_throw", temporal)
 
 
-def _archive_evidence(root: Path, count: int, pin: dict[str, str],
+def _archive_evidence(root: Path, refs: list[tuple[dict, Path]], pin: dict[str, str],
                       case_id: str) -> str:
     receipt = _pinned(pin, "raw archive evidence")
     trial_hashes: dict[str, str] = {}
     raw_targets: dict[str, str] = {}
-    for index in range(count + 1):
-        trial = root / "trials" / f"r{index:04d}"
+    for _, result_path in refs:
+        trial = result_path.parent
         for relative in ("result.json", "native-summary.json",
                          "iteration-native/fault-events.jsonl"):
             path = trial / relative
@@ -295,8 +296,10 @@ def inspect_chain(manifest_path: Path) -> dict[str, Any]:
                 raise ValueError("terminal native summary changed")
         elif segment.get("summary") is not None:
             raise ValueError("nonterminal segment claims a summary")
-        healthy = _load(root / "trials/r0000/result.json")
-        result_hashes = {"r0000": sha256(root / "trials/r0000/result.json")}
+        refs = _checkpoint_trial_refs(root, checkpoint)
+        healthy_path = refs[0][1]
+        healthy = _load(healthy_path)
+        result_hashes = {"r0000": sha256(healthy_path)}
         if (healthy.get("status") != "healthy_seed" or
                 healthy.get("junit_passed") is not True or
                 healthy.get("native_target_retained") is not True or
@@ -306,13 +309,9 @@ def inspect_chain(manifest_path: Path) -> dict[str, Any]:
         segment_elapsed = healthy.get("elapsed_seconds")
         if not isinstance(segment_elapsed, (int, float)) or segment_elapsed < 0:
             raise ValueError("healthy elapsed time is invalid")
-        for index, record in enumerate(checkpoint["trials"], 1):
-            name = f"r{index:04d}"
-            if record.get("name") != name or record.get("result") != (
-                    f"trials/{name}/result.json"):
-                raise ValueError("native trial numbering changed")
-            trial = root / "trials" / name
-            result_path = trial / "result.json"
+        for record, result_path in refs[1:]:
+            name = record["name"]
+            trial = result_path.parent
             result = _load(result_path)
             result_hashes[name] = sha256(result_path)
             faults = result.get("faults")
@@ -363,13 +362,13 @@ def inspect_chain(manifest_path: Path) -> dict[str, Any]:
         if abs(round(segment_elapsed, 3) - checkpoint.get("elapsed_seconds", -1)) > 0.001:
             raise ValueError("native campaign elapsed time differs from trial sum")
         if segment.get("raw_archive_evidence") is not None:
-            archive_sha = _archive_evidence(root, checkpoint[
-                "completed_fault_trials"], segment["raw_archive_evidence"], case_id)
+            archive_sha = _archive_evidence(
+                root, refs, segment["raw_archive_evidence"], case_id)
         else:
             archive_sha = None
-            for index in range(checkpoint["completed_fault_trials"] + 1):
-                trial = root / "trials" / f"r{index:04d}"
-                result = _load(trial / "result.json")
+            for _, result_path in refs:
+                trial = result_path.parent
+                result = _load(result_path)
                 graph = trial / "original-graph/summary.json"
                 if result.get("native_target_retained") and not graph.is_file():
                     raise ValueError("neither live graph nor pinned raw archive exists")

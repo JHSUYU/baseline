@@ -50,6 +50,10 @@ class RawArchiveTest(unittest.TestCase):
         root = self.trial.parents[2]
         result = self.trial.parent / "result.json"
         result.write_text('{"status":"healthy_seed"}\n')
+        (root / "checkpoint.json").write_text(json.dumps({
+            "healthy": {"name": "r0000", "result": "trials/r0000/result.json"},
+            "trials": [], "completed_fault_trials": 0,
+            "next_trial_index": 1}))
         hashes, targets = _trial_sha256(root, 0)
         self.assertEqual(hashes[str(self.summary)], self.digest)
         self.assertEqual(targets[str(self.summary)], self.targets[str(self.summary)])

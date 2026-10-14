@@ -81,6 +81,49 @@ def _inside(root: Path, relative: str) -> Path:
     return root / path
 
 
+def _checkpoint_trial_refs(root: Path, checkpoint: dict
+                           ) -> list[tuple[dict, Path]]:
+    """Use sealed checkpoint IDs, allowing gaps left by interrupted attempts."""
+    trials = checkpoint.get("trials")
+    count = checkpoint.get("completed_fault_trials")
+    healthy = checkpoint.get("healthy")
+    if (not isinstance(trials, list) or
+            not isinstance(count, int) or isinstance(count, bool) or
+            count != len(trials) or not isinstance(healthy, dict) or
+            any(not isinstance(record, dict) for record in trials)):
+        raise ValueError("native healthy seed or trial count missing")
+    refs = []
+    previous = -1
+    for position, record in enumerate((healthy, *trials)):
+        name = record.get("name")
+        if not isinstance(name, str) or not re.fullmatch(r"r[0-9]{4,}", name):
+            raise ValueError("native checkpoint trial name changed")
+        index = int(name[1:])
+        if (name != f"r{index:04d}" or
+                (position == 0 and index != 0) or
+                (position > 0 and index <= previous)):
+            raise ValueError("native checkpoint trial order changed")
+        relative = f"trials/{name}/result.json"
+        if record.get("result") != relative:
+            raise ValueError("native checkpoint result path changed")
+        path = _inside(root, relative)
+        if path.is_symlink() or not path.is_file():
+            raise ValueError(f"missing sealed trial result: {path}")
+        refs.append((record, path))
+        previous = index
+    next_index = checkpoint.get("next_trial_index")
+    if next_index is not None and (
+            not isinstance(next_index, int) or isinstance(next_index, bool) or
+            next_index <= previous):
+        raise ValueError("native next trial index changed")
+    expected = {path for _, path in refs}
+    actual = {path for path in (root / "trials").glob("*/result.json")
+              if path.is_file() or path.is_symlink()}
+    if actual != expected:
+        raise ValueError("sealed campaign has extra or missing trial results")
+    return refs
+
+
 def _same_checkpoint_summary(checkpoint: dict, summary: dict) -> None:
     expected = {key: value for key, value in checkpoint.items()
                 if key not in ("queue", "seen_plan_keys", "active")}
@@ -783,19 +826,10 @@ def _audit_region_terminal(case_id: str, config_path: Path, root: Path,
     for field in ("engine_jar_sha256", "trace_tree_sha256",
                   "scheduler_source_sha256"):
         _digest(fingerprint.get(field), field)
-    trials = checkpoint.get("trials")
-    healthy_ref = checkpoint.get("healthy")
-    if (not isinstance(trials, list) or
-            checkpoint.get("completed_fault_trials") != len(trials) or
-            not isinstance(healthy_ref, dict) or healthy_ref.get("name") != "r0000"):
-        raise ValueError("REGION_STATE healthy seed or trial count missing")
-    rows = [healthy_ref, *trials]
+    rows = _checkpoint_trial_refs(root, checkpoint)
+    healthy_ref = rows[0][0]
     results = []
-    for index, record in enumerate(rows):
-        name = f"r{index:04d}"
-        path = _inside(root, record.get("result", ""))
-        if record.get("name") != name or path != root / "trials" / name / "result.json":
-            raise ValueError("REGION_STATE trial order/path changed")
+    for index, (record, path) in enumerate(rows):
         result = _object(path)
         if (result.get("schema_version") != 1 or result.get("case_id") != case_id or
                 result.get("runner_mode") != "region_state" or
@@ -996,18 +1030,13 @@ def _audit_terminal(case_id: str, config_path: Path, root: Path,
               healthy.get("return_code") != 0 or
               healthy.get("timed_out") is not False))):
         raise ValueError("native healthy seed identity mismatch")
-    trials = checkpoint.get("trials")
-    if (not isinstance(trials, list) or checkpoint.get("completed_fault_trials") != len(trials)
-            or any(not isinstance(item, dict) for item in trials)):
-        raise ValueError("native trial count mismatch")
+    refs = _checkpoint_trial_refs(root, checkpoint)
+    if refs[0][1] != healthy_path:
+        raise ValueError("native healthy checkpoint result changed")
     all_rows = [(healthy_ref, healthy, healthy_path.parent)]
-    for index, record in enumerate(trials, 1):
-        name = f"r{index:04d}"
-        if record.get("name") != name:
-            raise ValueError("native trial order changed")
-        path = _inside(root, record.get("result", ""))
+    for record, path in refs[1:]:
         result = _object(path)
-        if (path.parent != root / "trials" / name or result.get("case_id") != case_id
+        if (result.get("case_id") != case_id
                 or result.get("status") != record.get("status") or
                 any(result.get(key) != record.get(key) for key in
                     ("strict_injection", "native_target_retained",
@@ -1172,12 +1201,10 @@ def load_reviews(path: Path | None, case_ids: set[str]) -> dict[str, dict]:
 def _audited_elapsed_basis(root: Path, fault_trials: int,
                            elapsed_seconds: float) -> str:
     """Name the sealed trial time only after checking its actual breakdown."""
-    paths = sorted((root / "trials").glob("r*/result.json"))
-    if (len(paths) != fault_trials + 1 or
-            any(path.parent.name != f"r{index:04d}" for index, path in
-                enumerate(paths))):
+    refs = _checkpoint_trial_refs(root, _object(root / "checkpoint.json"))
+    if len(refs) != fault_trials + 1:
         raise ValueError("native elapsed basis lacks exact trial receipts")
-    rows = [_object(path) for path in paths]
+    rows = [_object(path) for _, path in refs]
     if round(sum(float(row["elapsed_seconds"]) for row in rows), 3) != round(
             float(elapsed_seconds), 3):
         raise ValueError("native elapsed seconds differ from trial receipts")

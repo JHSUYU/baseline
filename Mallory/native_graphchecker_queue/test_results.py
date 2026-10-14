@@ -485,7 +485,14 @@ class NativeResultsTest(unittest.TestCase):
             case_root.mkdir()
             terminal = {"case_id": case_id, "terminal": True,
                         "status": "complete_trial_budget",
-                        "config_sha256": sha(config_file)}
+                        "config_sha256": sha(config_file),
+                        "healthy": {"name": "r0000",
+                                    "result": "trials/r0000/result.json"},
+                        "trials": [{"name": f"r{index:04d}",
+                                    "result": f"trials/r{index:04d}/result.json"}
+                                   for index in (1, 2, 3)],
+                        "completed_fault_trials": 3,
+                        "next_trial_index": 4}
             (case_root / "checkpoint.json").write_text(json.dumps(terminal))
             (case_root / "summary.json").write_text(json.dumps(terminal))
             for index, (junit, analysis) in enumerate((
@@ -561,7 +568,14 @@ class NativeResultsTest(unittest.TestCase):
             native_root = state_root / case_id
             native_root.mkdir()
             terminal = {"case_id": case_id, "terminal": True,
-                        "config_sha256": sha(config)}
+                        "config_sha256": sha(config),
+                        "healthy": {"name": "r0000",
+                                    "result": "trials/r0000/result.json"},
+                        "trials": [{"name": f"r{index:04d}",
+                                    "result": f"trials/r{index:04d}/result.json"}
+                                   for index in (1, 2)],
+                        "completed_fault_trials": 2,
+                        "next_trial_index": 3}
             (native_root / "checkpoint.json").write_text(json.dumps(terminal))
             (native_root / "summary.json").write_text(json.dumps(terminal))
             for index, inside in enumerate((False, True, False)):
@@ -609,6 +623,10 @@ class NativeResultsTest(unittest.TestCase):
                 trial.mkdir(parents=True)
                 (trial / "result.json").write_text(json.dumps({
                     "elapsed_seconds": seconds}))
+            (root / "checkpoint.json").write_text(json.dumps({
+                "healthy": {"name": "r0000", "result": "trials/r0000/result.json"},
+                "trials": [{"name": "r0001", "result": "trials/r0001/result.json"}],
+                "completed_fault_trials": 1, "next_trial_index": 2}))
             self.assertEqual(_elapsed_basis(root, 1, 3.0),
                              "sum_native_junit_execution_seconds_legacy")
 

@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from Mallory.native_graphchecker_dispatch.checklist import (
-    _native_case_files, load_ownership,
+    _checkpoint_trial_refs, _native_case_files, load_ownership,
 )
 from Mallory.native_graphchecker_dispatch.region_state_target import (
     healthy_reached_nonfatal,
@@ -421,10 +421,10 @@ def _eligibility_supersession(item: dict, state_root: Path,
 def _elapsed_basis(native_root: Path, fault_trials: int,
                    elapsed_seconds: float) -> str:
     """Attribute reported time to the native trial receipts' actual schema."""
-    files = sorted((native_root / "trials").glob("r*/result.json"))
-    if len(files) != fault_trials + 1:
+    refs = _checkpoint_trial_refs(native_root, obj(native_root / "checkpoint.json"))
+    if len(refs) != fault_trials + 1:
         raise ValueError("native elapsed basis lacks healthy/fault trial receipts")
-    rows = [obj(path) for path in files]
+    rows = [obj(path) for _, path in refs]
     if round(sum(float(row["elapsed_seconds"]) for row in rows), 3) != round(
             elapsed_seconds, 3):
         raise ValueError("native elapsed seconds differ from original trial receipts")

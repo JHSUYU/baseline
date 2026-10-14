@@ -35,6 +35,10 @@ class RegionChecklistTest(unittest.TestCase):
                 "junit_elapsed_seconds": junit,
                 "analysis_elapsed_seconds": analysis,
             }))
+        (self.root / "checkpoint.json").write_text(json.dumps({
+            "healthy": {"name": "r0000", "result": "trials/r0000/result.json"},
+            "trials": [{"name": "r0001", "result": "trials/r0001/result.json"}],
+            "completed_fault_trials": 1, "next_trial_index": 2}))
         self.assertEqual(
             "sum_native_trial_elapsed_seconds_including_graph_analysis",
             checklist._audited_elapsed_basis(self.root, 1, 6.5))
