@@ -10,12 +10,13 @@ import edu.uva.liftlab.graphchecker.contract.Endpoint;
 import edu.uva.liftlab.graphchecker.contract.OccurrenceAddress;
 
 import java.io.IOException;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Constructor;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -234,9 +235,12 @@ public final class NativeFaultHooks {
         for (Map.Entry<String, JsonElement> entry : fields.entrySet()) {
             row.add(entry.getKey(), entry.getValue());
         }
-        try {
-            Files.write(events, (row.toString() + "\n").getBytes(StandardCharsets.UTF_8),
-                    StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        // Workload shutdown may interrupt a thread while it emits a door.
+        // A channel opened by Files.write closes on interrupt and can turn
+        // that harmless teardown event into a workload exception. The
+        // receipt lock already serializes writers in this JVM.
+        try (OutputStream out = new FileOutputStream(events.toFile(), true)) {
+            out.write((row.toString() + "\n").getBytes(StandardCharsets.UTF_8));
         } catch (IOException failure) {
             throw new IllegalStateException("cannot publish native fault receipt", failure);
         }
