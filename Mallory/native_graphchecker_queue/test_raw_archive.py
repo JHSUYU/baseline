@@ -148,3 +148,19 @@ class RawArchiveTest(unittest.TestCase):
         self.binding["raw_archive_evidence"]["sha256"] = _sha(self.receipt)
         self.assertFalse(verify_trial_evidence(
             self.binding, "SOLR-18", self.hashes, self.targets))
+
+    def test_ancestor_symlink_alias_survives_raw_reclamation(self):
+        alias = self.raw.parent / "run-alias"
+        alias.symlink_to(self.raw.parent, target_is_directory=True)
+        alias_target = alias / self.raw.name / "raw/r0000/original-graph"
+        self.trial.unlink()
+        self.trial.symlink_to(alias_target, target_is_directory=True)
+        self.targets[str(self.summary)] = str(alias_target / "summary.json")
+        self.assertTrue(verify_trial_evidence(
+            self.binding, "SOLR-18", self.hashes, self.targets))
+        shutil.rmtree(self.raw)
+        self.assertTrue(verify_trial_evidence(
+            self.binding, "SOLR-18", self.hashes, self.targets))
+        alias.unlink()
+        self.assertFalse(verify_trial_evidence(
+            self.binding, "SOLR-18", self.hashes, self.targets))

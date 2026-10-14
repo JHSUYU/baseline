@@ -91,12 +91,20 @@ def verify_trial_evidence(binding: dict, case_id: str,
                         not path.parent.is_symlink() or
                         path.parent.readlink() != target.parent):
                     return False
+                # A campaign may expose the same raw directory through a
+                # stable ancestor symlink (for example, /run -> /dev/shm).
+                # Resolve that alias before comparing it with the pinned
+                # physical raw root. This also works after raw files have
+                # been reclaimed, provided the ancestor alias remains.
+                physical_target = target.resolve(strict=False)
                 matching = [item for item in archives if
-                            target.is_relative_to(Path(item["raw_dir"]))]
+                            physical_target.is_relative_to(
+                                Path(item["raw_dir"]).resolve(strict=False))]
                 if len(matching) != 1:
                     return False
                 item = matching[0]
-                relative = target.relative_to(Path(item["raw_dir"]))
+                relative = physical_target.relative_to(
+                    Path(item["raw_dir"]).resolve(strict=False))
                 member = str(PurePosixPath(Path(item["raw_dir"]).name,
                                             *relative.parts))
                 needed[str(item["archive"])][member] = digest
