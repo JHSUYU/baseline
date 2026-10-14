@@ -16,6 +16,69 @@ def write(path: Path, value: dict) -> None:
 
 
 class BindAndRunTest(unittest.TestCase):
+    def test_assigned_case_review_repins_exact_live_port_range(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "PortAssignment.java"
+            source.write_text("thread range formula\n")
+            ready = root / "ready.json"
+            config_sha = "c" * 64
+            write(ready, {"case_id": "ZOOKEEPER-06",
+                          "case_config_sha256": config_sha,
+                          "thread_id": 7, "port_range": [19297, 20642]})
+            admission = root / "admission.json"
+            write(admission, {"port_range": {
+                "start": 19297, "end": 20642, "thread_id": 7},
+                "paths_sha256": {"config": config_sha,
+                                 "ready": hashlib.sha256(
+                                     ready.read_bytes()).hexdigest()}})
+            digest = hashlib.sha256(source.read_bytes()).hexdigest()
+            review = root / "assigned-review.json"
+            write(review, {"schema_version": 1,
+                           "kind": "native_assigned_port_case_review",
+                           "system": "zookeeper", "case_id": "ZOOKEEPER-06",
+                           "native_config_sha256": config_sha,
+                           "port_range": {"start": 19297, "end": 20642,
+                                          "count": 1346, "thread_id": 7},
+                           "required_jvm_args": [
+                               "-Dzookeeper.junit.threadid=7"],
+                           "source_evidence": {"path": str(source),
+                                               "sha256": digest},
+                           "ready": {"path": str(ready),
+                                     "sha256": hashlib.sha256(
+                                         ready.read_bytes()).hexdigest()},
+                           "admission": {"path": str(admission),
+                                         "sha256": hashlib.sha256(
+                                             admission.read_bytes()).hexdigest()}})
+            profile = {"schema_version": 1, "systems": {"zookeeper": {
+                "required_jvm_args": [], "ports": {"mode": "assigned",
+                    "evidence": {str(source): digest}, "cases": {
+                        "ZOOKEEPER-06": {"start": 17951, "count": 1346,
+                            "required_jvm_args": [
+                                "-Dzookeeper.junit.threadid=6"]},
+                        "ZOOKEEPER-08": {"start": 20643, "count": 1346,
+                            "required_jvm_args": [
+                                "-Dzookeeper.junit.threadid=8"]}}}}}}
+            updated = extend_profile(profile, "zookeeper", "ZOOKEEPER-06",
+                                     review, config_sha)
+            self.assertEqual(17951, profile["systems"]["zookeeper"][
+                "ports"]["cases"]["ZOOKEEPER-06"]["start"])
+            self.assertEqual(19297, updated["systems"]["zookeeper"][
+                "ports"]["cases"]["ZOOKEEPER-06"]["start"])
+            config = {"runner": {"jvm_args": [
+                "-Dzookeeper.junit.threadid=7"]}}
+            with patch("Mallory.native_graphchecker_queue.queue._contains_trial_dir",
+                       return_value=True):
+                self.assertEqual("assigned", validate_isolation(
+                    updated, "zookeeper", "ZOOKEEPER-06", config,
+                    {"ZOOKEEPER-06": "node2", "ZOOKEEPER-08": "node2"},
+                    "node2")["mode"])
+            ready.write_text("changed\n")
+            with self.assertRaisesRegex(ValueError,
+                                        "assigned port ready evidence changed"):
+                extend_profile(profile, "zookeeper", "ZOOKEEPER-06",
+                               review, config_sha)
+
     def test_native_suffix_keeps_inventory_identity(self):
         with TemporaryDirectory() as directory:
             root = Path(directory)

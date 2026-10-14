@@ -53,6 +53,13 @@ actual bind collision; a collision writes `invalid-overlap/CASE-ID.json` and
 prevents a queue completion receipt until reviewed. It does not erase a native
 checkpoint or its evidence.
 
+If an admitted direct campaign uses a different assigned range, pass a
+case-scoped `--port-review` to `bind_and_run --bind-only`. The review must pin
+the immutable native config, source port assignment, prepared-case receipt,
+and owner-host admission; their exact thread ID and port range must agree.
+Promotion updates only that case's range under the queue lock, then checks
+all assigned ranges for overlap before writing the binding and pilot pins.
+
 ## Pilot and full host run
 
 Run one native pilot on its physical owner host. A pilot receipt is written

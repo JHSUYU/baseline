@@ -133,13 +133,66 @@ def binding_for(item: dict, config_path: Path, state_path: Path,
 
 
 def extend_profile(profile: dict, system: str, case_id: str,
-                   review: Path | None) -> dict:
-    """Add a case-scoped port review; assigned ZooKeeper ports are preallocated."""
+                   review: Path | None,
+                   config_sha256: str | None = None) -> dict:
+    """Add a pinned case port review, including reviewed assigned-port changes."""
     copied = json.loads(json.dumps(profile))
     ports = copied['systems'][system]['ports']
     if ports['mode'] == 'assigned':
-        if review is not None:
-            raise ValueError('assigned port policy does not take a case review')
+        if review is None:
+            return copied
+        if (not review.is_absolute() or review.is_symlink() or
+                not review.is_file() or config_sha256 is None):
+            raise ValueError('assigned port change requires a pinned case review')
+        receipt = obj(review)
+        address = receipt.get('port_range', {})
+        thread_id = address.get('thread_id')
+        start = address.get('start')
+        count = address.get('count')
+        end = address.get('end')
+        expected_arg = f'-Dzookeeper.junit.threadid={thread_id}'
+        if (receipt.get('schema_version') != 1 or
+                receipt.get('kind') != 'native_assigned_port_case_review' or
+                receipt.get('system') != system or
+                receipt.get('case_id') != case_id or
+                receipt.get('native_config_sha256') != config_sha256 or
+                any(not isinstance(value, int) or isinstance(value, bool)
+                    for value in (thread_id, start, count, end)) or
+                thread_id < 1 or start < 1024 or count < 1 or
+                end != start + count - 1 or end > 65535 or
+                receipt.get('required_jvm_args') != [expected_arg]):
+            raise ValueError('assigned port review differs from case config')
+        source = receipt.get('source_evidence', {})
+        ready = receipt.get('ready', {})
+        admission = receipt.get('admission', {})
+        for name, entry in (("source", source), ("ready", ready),
+                            ("admission", admission)):
+            path = Path(entry.get('path', ''))
+            if (not path.is_absolute() or path.is_symlink() or
+                    not path.is_file() or sha(path) != entry.get('sha256')):
+                raise ValueError(f'assigned port {name} evidence changed')
+        if ports.get('evidence', {}).get(source['path']) != source['sha256']:
+            raise ValueError('assigned port source is not in isolation profile')
+        ready_doc = obj(Path(ready['path']))
+        admission_doc = obj(Path(admission['path']))
+        if (ready_doc.get('case_id') != case_id or
+                ready_doc.get('case_config_sha256') != config_sha256 or
+                ready_doc.get('thread_id') != thread_id or
+                ready_doc.get('port_range') != [start, end] or
+                admission_doc.get('port_range') != {
+                    'start': start, 'end': end, 'thread_id': thread_id} or
+                admission_doc.get('paths_sha256', {}).get('config') !=
+                    config_sha256 or
+                admission_doc['paths_sha256'].get('ready') != ready['sha256']):
+            raise ValueError('assigned port admission differs from review')
+        if case_id not in ports.get('cases', {}):
+            raise ValueError('assigned port case is absent from isolation profile')
+        ports['cases'][case_id] = {
+            'start': start, 'count': count,
+            'required_jvm_args': [expected_arg]}
+        ports['evidence'][str(review)] = sha(review)
+        ports['evidence'][ready['path']] = ready['sha256']
+        ports['evidence'][admission['path']] = admission['sha256']
         return copied
     if review is None or not review.is_absolute() or review.is_symlink() or not review.is_file():
         raise ValueError('dynamic ports require an absolute case source review')
@@ -213,7 +266,7 @@ def promote(*, root: Path, case_id: str, native_config: Path,
                                    ('node0', 'node1', 'node2')}
         ownership_doc['basis'] = 'physical owner of immutable native campaign'
         profile = extend_profile(obj(profile_path), item['system'], case_id,
-                                 port_review)
+                                 port_review, sha(native_config))
         binding = binding_for(item, native_config, native_state,
                               alternate=alternate_attestation,
                               identity=target_identity_audit,
