@@ -222,6 +222,19 @@ class NativeQueueTest(unittest.TestCase):
         self.assertEqual(cache["basis"], "pinned_pilot_and_completion_receipts")
         self.assertEqual(cache["fingerprint"]["checkpoint_sha256"],
                          sha(native_root / "checkpoint.json"))
+        self.isolation.write_text(json.dumps({"schema_version": 1,
+                                              "repinned": True}))
+        pilot_doc = json.loads(pilot.read_text())
+        pilot_doc["isolation_sha256"] = sha(self.isolation)
+        pilot.write_text(json.dumps(pilot_doc))
+        with patch("Mallory.native_graphchecker_queue.queue.inspect_case",
+                   side_effect=AssertionError("unchanged terminal was re-audited")):
+            pilot_receipt(pilot, DEFAULT_INVENTORY, DEFAULT_OWNERSHIP,
+                          self.config_root, self.state_root, self.cases,
+                          self.owners, self.isolation)
+        self.assertEqual(sha(pilot), json.loads((self.state_root /
+            ".native-queue/audits" / f"{self.case_id}.json").read_text())[
+                "pilot_receipt_sha256"])
         (native_root / "summary.json").write_text(json.dumps({**checkpoint,
                                                                "changed": True}))
         with self.assertRaisesRegex(ValueError, "pilot evidence changed"):

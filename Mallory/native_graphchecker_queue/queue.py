@@ -423,18 +423,34 @@ def pilot_receipt(path: Path, inventory: Path, ownership_file: Path,
                  fingerprint["binding_sha256"])):
             raise ValueError("native pilot completion receipt changed")
         cache_path = _terminal_cache_path(state_root, case_id)
-        if not cache_path.is_file():
-            row = {key: completed[key] for key in (
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        with cache_path.with_suffix(".lock").open("a+") as cache_lock:
+            fcntl.flock(cache_lock, fcntl.LOCK_EX)
+            expected_row = {key: completed[key] for key in (
                 "terminal_disposition", "native_tested_complete", "fault_trials",
                 "strict_fault_trials", "target_retained_fault_trials",
                 "target_throw_trials", "candidate_trials", "elapsed_seconds")}
-            atomic(cache_path, {"schema_version": 1, "owner": owners[case_id],
-                                "basis": "pinned_pilot_and_completion_receipts",
-                                "pilot_receipt_path": str(path.resolve()),
-                                "pilot_receipt_sha256": sha(path),
-                                "completion_receipt_path": str(completed_path.resolve()),
-                                "completion_receipt_sha256": sha(completed_path),
-                                "fingerprint": fingerprint, "row": row})
+            if not cache_path.is_file():
+                atomic(cache_path, {"schema_version": 1, "owner": owners[case_id],
+                                    "basis": "pinned_pilot_and_completion_receipts",
+                                    "pilot_receipt_path": str(path.resolve()),
+                                    "pilot_receipt_sha256": sha(path),
+                                    "completion_receipt_path": str(completed_path.resolve()),
+                                    "completion_receipt_sha256": sha(completed_path),
+                                    "fingerprint": fingerprint, "row": expected_row})
+            else:
+                cache = obj(cache_path)
+                if (cache.get("schema_version") == 1 and
+                        cache.get("basis") == "pinned_pilot_and_completion_receipts" and
+                        cache.get("owner") == owners[case_id] and
+                        cache.get("fingerprint") == fingerprint and
+                        cache.get("pilot_receipt_path") == str(path.resolve()) and
+                        cache.get("completion_receipt_path") == str(completed_path.resolve()) and
+                        cache.get("completion_receipt_sha256") == sha(completed_path) and
+                        cache.get("row") == expected_row and
+                        cache.get("pilot_receipt_sha256") != sha(path)):
+                    cache["pilot_receipt_sha256"] = sha(path)
+                    atomic(cache_path, cache)
     row = _cached_terminal_inspection(item, owners[case_id], config_root,
                                       state_root)
     if row["native_tested_complete"] is not True:
