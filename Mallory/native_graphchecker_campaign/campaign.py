@@ -211,7 +211,8 @@ def _task_plan_lineage(full_plan: Path, woven_plan: Path,
             "selected_task_plan_sha256": woven_sha}
 
 
-def _verify_recording_plan(config: dict[str, Any], weave: dict[str, Any]) -> dict[str, str]:
+def _verify_recording_plan(config: dict[str, Any], weave: dict[str, Any],
+                           campaign_root: Path) -> dict[str, str]:
     """Re-run the original recorder and scheduler; reject a hand-authored task.
 
     The source-built recorder validates the closed region-state recording's
@@ -228,7 +229,8 @@ def _verify_recording_plan(config: dict[str, Any], weave: dict[str, Any]) -> dic
     trace = Path(rec["trace_dir"]).resolve(strict=True)
     if not (trace / "streaming_trace_manifest.json").is_file():
         raise ValueError("closed original region-state recording is missing")
-    with tempfile.TemporaryDirectory(prefix="mallory-native-recording-") as scratch:
+    with tempfile.TemporaryDirectory(prefix=".recording-admission-",
+                                     dir=campaign_root) as scratch:
         output = Path(scratch) / "recorded"
         scheduled = Path(scratch) / "scheduled"
         _scheduler_source()
@@ -299,7 +301,7 @@ def _admit(config: dict[str, Any], root: Path) -> dict[str, Any]:
             raise ValueError("cached native recording admission inputs changed")
         origin = cached["origin"]
     else:
-        origin = _verify_recording_plan(config, weave)
+        origin = _verify_recording_plan(config, weave, root)
         _atomic(admission, {"schema_version": SCHEMA,
                             "recording_fingerprint": recording_fingerprint,
                             "origin": origin})
