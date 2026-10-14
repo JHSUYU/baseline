@@ -176,7 +176,7 @@ def promote(*, root: Path, case_id: str, native_config: Path,
         inspected = inspect_case(item, host, candidate_dir, state_root)
         if inspected['terminal_disposition'] not in (
                 'ready', 'resumable', 'tested_candidate',
-                'tested_no_target_throw', 'tested_inconclusive', 'native_blocked'):
+                'tested_no_target_throw', 'tested_inconclusive'):
             raise ValueError(f'native case is not dispatchable: {inspected}')
         binding_path = config_root / f'{case_id}.json'
         if binding_path.is_file() and obj(binding_path) != binding:
