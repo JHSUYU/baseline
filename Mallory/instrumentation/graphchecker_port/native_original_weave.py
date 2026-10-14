@@ -196,6 +196,8 @@ def verified_vendor() -> dict:
         copied = ENGINE / "vendor" / "src" / "main" / "java" / row["path"]
         if digest(copied) != row["copiedSha256"]:
             raise ValueError(f"vendored GraphChecker source changed: {row['path']}")
+        if row.get("changed") is not (row["copiedSha256"] != row["upstreamSha256"]):
+            raise ValueError(f"GraphChecker adaptation flag differs from source hashes: {row['path']}")
         if row.get("changed") and ("/runtime/" in row["path"]
                                    or row["path"].endswith("/contract/SessionReader.java")) \
                 and row["path"] not in reviewed_runtime_adaptations:

@@ -27,3 +27,15 @@ This equivalence fixture does not establish a memory or runtime improvement
 for HDFS11. The cache removes repeated parsing but does not bound fixed-point
 work or closure traversal; a separately pinned HDFS11 static run must measure
 both time and memory before it can be adopted for formal experiments.
+
+## Source provenance
+
+This is a local adaptation of upstream GraphChecker revision
+`c4a90033c654737206466ed36ce837c5b3c12457`. The original
+`ReturnOnlyFormals.java` SHA-256 is
+`e6164ef18cdd26146e84f773f08335d4d45af5dd78d238db5dfe8d19d1ce7802`;
+the bounded-cache version introduced in `b7480acd` is
+`799b5d48ea713053506e3d15ff50dc69e3b16f20c607c20e330e3e236e13fc74`.
+`UPSTREAM_SOURCES.json` records both hashes and marks the copy as changed.
+`native_original_weave.py` verifies the copied bytes and checks that `changed`
+agrees with the two hashes before admitting a source-built engine.
