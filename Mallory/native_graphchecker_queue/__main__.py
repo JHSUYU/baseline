@@ -94,7 +94,7 @@ def main() -> None:
             raise RuntimeError("pilot did not complete an audited native fuzz budget")
         completion(item, row, config_file, args.state_root,
                    args.state_root / ".native-queue", native_root=native_root,
-                   binding_file=binding_file)
+                   binding_file=binding_file, config_root=args.config_root)
         export_native_results(args.inventory, args.ownership, args.config_root,
                               args.state_root, args.results_dir)
         receipt = {"schema_version": 1, "passed": True,

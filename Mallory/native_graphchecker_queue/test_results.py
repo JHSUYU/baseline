@@ -84,6 +84,7 @@ class NativeResultsTest(unittest.TestCase):
             self.assertTrue(completed["target_throw_observed"])
             self.assertTrue(completed["target_exception_candidate"])
             self.assertIsNone(completed["confirmed_new_bug"])
+            self.assertIsNone(completed["strict_in_target_closure_trials"])
             self.assertEqual(len(completed["evidence_paths"]), 4)
             with tsv_path.open(newline="") as stream:
                 tsv_rows = list(csv.DictReader(stream, delimiter="\t"))
@@ -96,6 +97,57 @@ class NativeResultsTest(unittest.TestCase):
                                   config_root, state_root, results_dir)
             self.assertEqual(json_path.read_bytes(), first_json)
             self.assertEqual(tsv_path.read_bytes(), first_tsv)
+
+    def test_coverage_export_pins_original_trial_and_graph_evidence(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            config_root, state_root = root / "config", root / "state"
+            config_root.mkdir()
+            state_root.mkdir()
+            cases, _ = load_inventory(DEFAULT_INVENTORY)
+            item = next(row for row in cases if row["case_id"] == "HBASE-01")
+            case_id = item["case_id"]
+            config = config_root / f"{case_id}.json"
+            config.write_text(json.dumps({"case_id": case_id}))
+            native_root = state_root / case_id
+            native_root.mkdir()
+            terminal = {"case_id": case_id, "terminal": True,
+                        "config_sha256": sha(config)}
+            (native_root / "checkpoint.json").write_text(json.dumps(terminal))
+            (native_root / "summary.json").write_text(json.dumps(terminal))
+            for index, inside in enumerate((False, True, False)):
+                trial = native_root / "trials" / f"r{index:04d}"
+                trial.mkdir(parents=True)
+                (trial / "result.json").write_text(json.dumps({
+                    "elapsed_seconds": 1.0, "junit_elapsed_seconds": 0.5,
+                    "analysis_elapsed_seconds": 0.5,
+                    "strict_injection": index > 0,
+                    "native_target_retained": index > 0,
+                    "fault_in_target_closure": inside}))
+                (trial / "native-summary.json").write_text("{}\n")
+            audited = {"terminal_disposition": "tested_no_target_throw",
+                       "native_tested_complete": True, "fault_trials": 2,
+                       "strict_fault_trials": 2,
+                       "target_retained_fault_trials": 2,
+                       "strict_target_retained_fault_trials": 2,
+                       "strict_in_target_closure_trials": 1,
+                       "target_throw_trials": 0, "candidate_trials": 0,
+                       "elapsed_seconds": 3.0}
+            completion(item, audited, config, state_root,
+                       state_root / ".native-queue", config_root=config_root)
+            published = export_native_results(
+                DEFAULT_INVENTORY, DEFAULT_OWNERSHIP, config_root, state_root,
+                root / "results")[0]
+            row = next(row for row in json.loads(published.read_text())["rows"]
+                       if row["case_id"] == case_id)
+            self.assertEqual(row["strict_target_retained_fault_trials"], 2)
+            self.assertEqual(row["strict_in_target_closure_trials"], 1)
+            self.assertEqual(len(row["evidence_paths"]), 5)
+            (native_root / "trials/r0001/native-summary.json").write_text(
+                '{"changed": true}\n')
+            with self.assertRaisesRegex(ValueError, "evidence changed"):
+                export_native_results(DEFAULT_INVENTORY, DEFAULT_OWNERSHIP,
+                                      config_root, state_root, root / "results")
 
     def test_legacy_native_receipts_identify_junit_only_accounting(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

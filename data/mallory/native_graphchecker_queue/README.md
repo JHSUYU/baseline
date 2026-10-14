@@ -27,14 +27,21 @@ target exception with its required trial evidence. It does not assert a new
 bug. `confirmed_new_bug` remains null until independent source-level review
 provides that conclusion.
 
-The committed v2 snapshot has 102 rows and two verified terminal imports:
-ZOOKEEPER-07 and HDFS-11. Six other bound campaigns show live checkpoint
-observations without a terminal receipt. HDFS-11's separate terminal review
-records 24 trials, 15 strict target-retained trials, incomplete SASL value
-provenance, and no new closure-edge families or target throw. Its completed
-time budget is recorded without upgrading the graph result to a candidate.
-`promotion-v2.json` and `promotion-v2-manifest.json` pin the durable runtime,
-all eight binding digests, the pilot, two completions, and this snapshot.
+The committed v2 snapshot has 102 rows and four verified terminal imports:
+ZOOKEEPER-07, HDFS-11, HDFS-29, and SOLR-01. The remaining four bound
+campaigns show checkpoint observations without a terminal receipt. HDFS-11's
+separate terminal review records incomplete SASL value provenance. HDFS-29
+finished its fault budget without an exact target throw. SOLR-01 has a
+client-only static map with no proven server receive edge; its completed
+budget also has no exact target throw. A completed budget counts as tested
+without treating graph novelty or a target exception as established.
+`strict_in_target_closure_trials` is audited against each original native
+trial graph and stays separate from target retention. Coverage sidecars pin
+the trial files used for that count.
+
+`promotion-v2.json` and `promotion-v2-manifest.json` record the initial
+two-completion promotion. The later terminal rows are pinned by their
+completion receipts, coverage sidecars, and this snapshot.
 
 These files are distinct from the earlier custom/preliminary
 `data/mallory/graphchecker_port/final-results.tsv` and never read that table.
@@ -46,7 +53,7 @@ python3 - <<'PY'
 from pathlib import Path
 from Mallory.native_graphchecker_queue.results import export_native_results
 b = Path('/proj/silentfailure-PG0/ZhenyuLi/Mallory/native-102-queue-v2')
-export_native_results(b / 'python-snapshot/Mallory/cases/inventory.json',
+export_native_results(b / 'python-snapshot-closure-v1/Mallory/cases/inventory.json',
     b / 'config/ownership.json', b / 'config', b / 'state',
     Path('data/mallory/native_graphchecker_queue'))
 PY

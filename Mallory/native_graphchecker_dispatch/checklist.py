@@ -565,7 +565,7 @@ def _audit_region_terminal(case_id: str, config_path: Path, root: Path,
             healthy_summary is None or not healthy_summary.get("targetReached") or
             healthy_summary.get("targetThrowObserved")):
         raise ValueError("REGION_STATE healthy original JUnit/target is unverified")
-    strict_count = retained = strict_retained = throws = candidates = 0
+    strict_count = retained = strict_retained = inside_closure = throws = candidates = 0
     for result, trial_root, events in results[1:]:
         is_strict = result["strict_injection"] is True
         strict_count += is_strict
@@ -594,9 +594,10 @@ def _audit_region_terminal(case_id: str, config_path: Path, root: Path,
                 checks = {row.get("occurrenceId") for row in events if
                           row.get("kind") == "TARGET_CHECK" and
                           row.get("siteId") == config["target_site"]}
-                if result.get("fault_in_target_closure") is not bool(
-                        last and last.get("occurrenceId") in checks):
+                inside = bool(last and last.get("occurrenceId") in checks)
+                if result.get("fault_in_target_closure") is not inside:
                     raise ValueError("REGION_STATE fault/target membership changed")
+                inside_closure += inside
                 exact, admitted, reason, evidence = native._region_throw_evidence(
                     events, config["target_site"], config["target_throw"], last)
                 if (result.get("target_throw_rows") != exact or
@@ -627,6 +628,7 @@ def _audit_region_terminal(case_id: str, config_path: Path, root: Path,
             "fault_trials": len(trials), "strict_fault_trials": strict_count,
             "target_retained_fault_trials": retained,
             "strict_target_retained_fault_trials": strict_retained,
+            "strict_in_target_closure_trials": inside_closure,
             "target_throw_trials": throws, "candidate_trials": candidates,
             "elapsed_seconds": elapsed, "status": status,
             "evidence": str(root / "summary.json")}
@@ -716,7 +718,7 @@ def _audit_terminal(case_id: str, config_path: Path, root: Path,
     if round(sum(float(item[1]["elapsed_seconds"]) for item in all_rows), 3) != (
             checkpoint["elapsed_seconds"]):
         raise ValueError("native elapsed sum differs from trial receipts")
-    strict = retained = strict_retained = throws = candidates = 0
+    strict = retained = strict_retained = inside_closure = throws = candidates = 0
     healthy_summary: dict[str, Any] | None = None
     for index, (_, result, trial_root) in enumerate(all_rows):
         faults = result.get("faults")
@@ -769,6 +771,7 @@ def _audit_terminal(case_id: str, config_path: Path, root: Path,
                 inside = bool(applied and applied[-1].get("occurrenceId") in closure)
                 if result.get("fault_in_target_closure") is not inside:
                     raise ValueError("fault/target closure attribution differs from native graph")
+                inside_closure += inside
                 admitted, reason, evidence = native._temporal_target(
                     events, target_summary, config["target_site"])
                 if (result.get("target_temporal_admitted") is not admitted or
@@ -816,6 +819,7 @@ def _audit_terminal(case_id: str, config_path: Path, root: Path,
             "fault_trials": len(trials), "strict_fault_trials": strict,
             "target_retained_fault_trials": retained,
             "strict_target_retained_fault_trials": strict_retained,
+            "strict_in_target_closure_trials": inside_closure,
             "target_throw_trials": throws, "candidate_trials": candidates,
             "elapsed_seconds": checkpoint["elapsed_seconds"],
             "status": status,
@@ -897,6 +901,7 @@ def inspect_case(item: dict, owner: str, config_root: Path, state_root: Path,
         "native_tested_complete": False, "fault_trials": 0,
         "strict_fault_trials": 0, "target_retained_fault_trials": 0,
         "strict_target_retained_fault_trials": 0,
+        "strict_in_target_closure_trials": 0,
         "target_throw_trials": 0, "candidate_trials": 0,
         "elapsed_seconds": "", "elapsed_basis": "cumulative_junit_seconds",
         "evidence": "", "reason": "",

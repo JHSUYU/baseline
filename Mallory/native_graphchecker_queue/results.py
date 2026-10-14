@@ -15,6 +15,7 @@ from Mallory.native_graphchecker_dispatch.checklist import (
     _native_case_files, load_inventory, load_ownership,
 )
 from .queue import _terminal_fingerprint, obj, sha
+from .coverage import coverage_path, read_coverage
 
 FIELDS = (
     "case_id", "system", "system_version", "owner", "native_state",
@@ -23,11 +24,13 @@ FIELDS = (
     "executed_original_junit", "terminal_disposition", "checkpoint_status",
     "checkpoint_observed_fault_trials", "checkpoint_observed_elapsed_seconds",
     "native_tested_complete", "fault_trials", "strict_fault_trials",
-    "target_retained_fault_trials", "target_throw_trials", "candidate_trials",
+    "target_retained_fault_trials", "strict_target_retained_fault_trials",
+    "strict_in_target_closure_trials", "target_throw_trials", "candidate_trials",
     "elapsed_seconds", "elapsed_basis", "target_throw_observed",
     "target_exception_candidate", "confirmed_new_bug",
     "native_config_path", "native_config_sha256",
     "checkpoint_path", "checkpoint_sha256", "summary_path", "summary_sha256",
+    "terminal_review_path", "terminal_review_sha256",
     "completion_receipt_path", "completion_receipt_sha256", "evidence_paths",
 )
 RESULT_STATES = {"tested_candidate", "tested_no_target_throw",
@@ -98,7 +101,10 @@ def native_rows(inventory: Path, ownership_file: Path, config_root: Path,
             "checkpoint_observed_elapsed_seconds": None,
             "native_tested_complete": False, "fault_trials": None,
             "strict_fault_trials": None,
-            "target_retained_fault_trials": None, "target_throw_trials": None,
+            "target_retained_fault_trials": None,
+            "strict_target_retained_fault_trials": None,
+            "strict_in_target_closure_trials": None,
+            "target_throw_trials": None,
             "candidate_trials": None, "elapsed_seconds": None,
             "elapsed_basis": None, "target_throw_observed": False,
             "target_exception_candidate": False,
@@ -106,6 +112,7 @@ def native_rows(inventory: Path, ownership_file: Path, config_root: Path,
             "native_config_sha256": None,
             "checkpoint_path": None, "checkpoint_sha256": None,
             "summary_path": None, "summary_sha256": None,
+            "terminal_review_path": None, "terminal_review_sha256": None,
             "completion_receipt_path": None,
             "completion_receipt_sha256": None, "evidence_paths": [],
         }
@@ -178,6 +185,32 @@ def native_rows(inventory: Path, ownership_file: Path, config_root: Path,
                                    str(summary_path.resolve()),
                                    str(receipt_path.resolve())],
             })
+            metric = read_coverage(item, config_root, state_root)
+            if metric is not None:
+                row["strict_target_retained_fault_trials"] = metric[
+                    "strict_target_retained_fault_trials"]
+                row["strict_in_target_closure_trials"] = metric[
+                    "strict_in_target_closure_trials"]
+                row["evidence_paths"].append(str(coverage_path(
+                    state_root, case_id).resolve()))
+            review_pin = (state_root / ".native-queue" / "reviews" /
+                          f"{case_id}.json")
+            if review_pin.is_file():
+                pin = obj(review_pin)
+                review_path = Path(pin.get("review_path", ""))
+                if (pin.get("schema_version") != 1 or
+                        pin.get("case_id") != case_id or
+                        not review_path.is_absolute() or review_path.is_symlink() or
+                        not review_path.is_file() or
+                        sha(review_path) != pin.get("review_sha256") or
+                        pin.get("checkpoint_sha256") != row["checkpoint_sha256"] or
+                        pin.get("completion_receipt_sha256") != row[
+                            "completion_receipt_sha256"]):
+                    raise ValueError(f"native terminal review pin changed: {case_id}")
+                row["terminal_review_path"] = str(review_path)
+                row["terminal_review_sha256"] = pin["review_sha256"]
+                row["evidence_paths"].extend((str(review_path),
+                                               str(review_pin.resolve())))
         elif row["checkpoint_status"] == "running":
             row["native_state"] = "running_no_terminal_receipt"
         elif checkpoint_path.is_file() and obj(checkpoint_path).get("terminal") is True:

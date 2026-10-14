@@ -110,7 +110,8 @@ def _campaign_running(root: Path) -> bool:
 
 def completion(item: dict, row: dict, config_file: Path, state_root: Path,
                queue_root: Path, *, native_root: Path | None = None,
-               binding_file: Path | None = None) -> dict[str, Any]:
+               binding_file: Path | None = None,
+               config_root: Path | None = None) -> dict[str, Any]:
     """Publish only a terminal result already audited by native inspect_case."""
     if row["terminal_disposition"] not in TERMINAL:
         raise ValueError("native case has no audited terminal disposition")
@@ -157,6 +158,13 @@ def completion(item: dict, row: dict, config_file: Path, state_root: Path,
         receipt["binding_path"] = str(binding_file.resolve())
         receipt["binding_sha256"] = sha(binding_file)
     _same_or_write(queue_root / "completions" / f"{case_id}.json", receipt)
+    if "strict_in_target_closure_trials" in row:
+        if config_root is None:
+            raise ValueError("closure audit requires the binding config root")
+        from .coverage import publish_coverage
+        # inspect_case has already validated membership against the original
+        # per-trial graph summary; pin those exact files for the result table.
+        publish_coverage(item, row, config_root, state_root)
     return receipt
 
 
@@ -234,7 +242,13 @@ def validate_isolation(profile: dict[str, Any], system: str, case_id: str,
             raise ValueError("dynamic-port source evidence differs from profile")
         return {"mode": "ephemeral", "evidence": evidence}
     if ports["mode"] == "random_retry":
-        receipt_path = Path(ports.get("receipt", ""))
+        case_receipts = ports.get("case_receipts")
+        if case_receipts is not None:
+            if not isinstance(case_receipts, dict) or case_id not in case_receipts:
+                raise ValueError("HBase random-retry review does not cover this JUnit")
+            receipt_path = Path(case_receipts[case_id])
+        else:
+            receipt_path = Path(ports.get("receipt", ""))
         if (system != "hbase" or not receipt_path.is_absolute() or
                 not receipt_path.is_file() or str(receipt_path) not in evidence):
             raise ValueError("HBase random-retry requires pinned source review")
@@ -246,9 +260,9 @@ def validate_isolation(profile: dict[str, Any], system: str, case_id: str,
                 receipt.get("zk_random_port_range") != [49152, 65279] or
                 receipt.get("zk_bind_exception_retry") is not True or
                 receipt.get("hbase_cluster_default_ports_zero") is not True or
-                receipt.get("reviewed_source_sha256") != {
-                    name: digest for name, digest in evidence.items()
-                    if name != str(receipt_path)}):
+                not isinstance(receipt.get("reviewed_source_sha256"), dict) or
+                any(evidence.get(name) != digest for name, digest in
+                    receipt["reviewed_source_sha256"].items())):
             raise ValueError("HBase random-retry review does not cover this JUnit")
         return {"mode": "random_retry", "evidence": evidence}
     assignments = ports.get("cases")
@@ -515,7 +529,8 @@ def run_worker(*, host: str, slot: int, slots: int, inventory: Path,
                                    obj(config_file),
                                    owners, host)
                 completion(item, row, config_file, state_root, queue_root,
-                           native_root=root, binding_file=binding_file)
+                           native_root=root, binding_file=binding_file,
+                           config_root=config_root)
                 _publish_results_if_requested(results_dir, inventory,
                                               ownership_file, config_root,
                                               state_root)
@@ -572,7 +587,8 @@ def run_worker(*, host: str, slot: int, slots: int, inventory: Path,
                         raise RuntimeError("native campaign returned without audited terminal result")
                     result = completion(item, after, config_file, state_root,
                                         queue_root, native_root=root,
-                                        binding_file=binding_file)
+                                        binding_file=binding_file,
+                                        config_root=config_root)
                     _publish_results_if_requested(results_dir, inventory,
                                                   ownership_file, config_root,
                                                   state_root)

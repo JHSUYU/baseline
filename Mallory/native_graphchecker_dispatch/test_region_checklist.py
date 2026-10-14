@@ -32,7 +32,10 @@ class RegionChecklistTest(unittest.TestCase):
         native_config = self.root / "native-config.json"
         native_id = "ZOOKEEPER-07-native-fixture"
         native_config.write_text(json.dumps({
-            "case_id": native_id, "runner": {"mode": "region_state"}}) + "\n")
+            "case_id": native_id, "runner": {"mode": "region_state"},
+            "target_throw": {"siteId": item["target"]["site_id"],
+                             "exceptionClass": item["target"][
+                                 "target_exception"]}}) + "\n")
         native_state = self.root / "native-state"
         native_state.mkdir()
         binding = {
