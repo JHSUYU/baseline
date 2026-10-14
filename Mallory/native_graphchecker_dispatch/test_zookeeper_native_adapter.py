@@ -17,6 +17,19 @@ from Mallory.native_graphchecker_dispatch import zookeeper_native_adapter as zk
 
 
 class ZooKeeperNativeAdapterTest(unittest.TestCase):
+    def test_selected_weave_plan_is_exactly_one_original_scheduler_row(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            full = root / "execution_task_plan.jsonl"
+            selected = root / "selected.jsonl"
+            wanted = b'{"taskId":"TASK.2", "admission":{"state":"EXECUTABLE"}}'
+            full.write_bytes(b'{"taskId":"TASK.1"}\n' + wanted + b'\n')
+            zk.select_exact_task_row(full, "TASK.2", selected)
+            self.assertEqual(wanted + b"\n", selected.read_bytes())
+            self.assertEqual(wanted, full.read_bytes().splitlines()[1])
+            with self.assertRaisesRegex(ValueError, "not unique"):
+                zk.select_exact_task_row(full, "TASK.2", selected)
+
     def test_preflight_pins_all_entrypoints_and_catches_missing_dependency(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

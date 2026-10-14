@@ -489,6 +489,29 @@ def _cp(paths: list[Path]) -> str:
     return os.pathsep.join(str(path.resolve(strict=True)) for path in paths)
 
 
+def _loop_arg(profile: dict) -> str:
+    value = profile.get("analysis", {}).get("original_loop_default_bound")
+    if not isinstance(value, str) or not value.isdigit() or int(value) < 1:
+        raise ValueError("ZooKeeper original loop bound must be positive")
+    return f"-Dcausynth.loop.default.bound={value}"
+
+
+def _fresh_name(root: Path, stem: str) -> str:
+    index = 0
+    while (root / (stem if index == 0 else f"{stem}-resume{index}")).exists():
+        index += 1
+    return stem if index == 0 else f"{stem}-resume{index}"
+
+
+def _fresh_command_stage(output: Path, stem: str) -> str:
+    index = 0
+    while (output / "commands" / (
+            (stem if index == 0 else f"{stem}-resume{index}") + ".json"
+            )).exists():
+        index += 1
+    return stem if index == 0 else f"{stem}-resume{index}"
+
+
 def _run(stage: str, argv: list[str], output: Path, timeout: int,
          env: dict[str, str] | None = None) -> None:
     (output / "commands").mkdir(exist_ok=True)
@@ -522,6 +545,21 @@ def select_target_task(plan_file: Path, occurrence: dict) -> dict:
     return candidates[0]
 
 
+def select_exact_task_row(plan_file: Path, task_id: str, selected: Path) -> None:
+    """Give GraphChecker one original scheduler row, preserving its bytes."""
+    matches = []
+    with plan_file.open("rb") as stream:
+        for line in stream:
+            if line.strip() and json.loads(line).get("taskId") == task_id:
+                matches.append(line.rstrip(b"\r\n"))
+    if len(matches) != 1 or selected.exists():
+        raise ValueError("original scheduler target task is not unique")
+    with tempfile.NamedTemporaryFile(dir=selected.parent, delete=False) as staged:
+        staged.write(matches[0] + b"\n")
+        stage_path = Path(staged.name)
+    os.replace(stage_path, selected)
+
+
 def _original_cp(extra: list[Path]) -> str:
     dependencies = native.DEPENDENCIES.read_text(encoding="utf-8").strip()
     return os.pathsep.join((str(native.JAR.resolve(strict=True)), dependencies,
@@ -531,6 +569,7 @@ def _original_cp(extra: list[Path]) -> str:
 def prepare(request_file: Path, output: Path, profile_file: Path) -> dict:
     request = _object(request_file)
     profile = _profile(request, profile_file)
+    loop_arg = _loop_arg(profile)
     class_preflight = preflight_execution_classes(profile)
     if output.exists() and any(output.iterdir()):
         raise ValueError("native adapter output must start empty")
@@ -646,6 +685,7 @@ def prepare(request_file: Path, output: Path, profile_file: Path) -> dict:
         f"-Dbuild.test.dir={run_root / 'data'}",
         "-Dcausynth.trace.mode=region-state",
         f"-Dcausynth.trace.test={junit['selector']}",
+        loop_arg,
         *profile.get("runner_jvm_args", []),
         "-cp", _original_cp([recorded_classes, *runner_cp]),
         "edu.uva.liftlab.graphchecker.runtime.NativeRecordingJUnitMethodRunner",
@@ -657,26 +697,87 @@ def prepare(request_file: Path, output: Path, profile_file: Path) -> dict:
     if ("NATIVE_RECORDING_JUNIT_RESULT passed=1 failed=0" not in stdout or
             not _closed_trace_manifest(manifest)):
         raise ValueError("unchanged original JUnit or healthy recording did not close")
+    return finalize_after_healthy(request_file, output, profile_file)
+
+
+def finalize_after_healthy(request_file: Path, output: Path,
+                           profile_file: Path) -> dict:
+    """Resume from pinned static/weave and a CLOSED unchanged healthy trace."""
+    request = _object(request_file)
+    profile = _profile(request, profile_file)
+    loop_arg = _loop_arg(profile)
+    if (output / "case.json").exists() or (output / "adapter-proof.json").exists():
+        raise ValueError("ZooKeeper preparation is already finalized")
+    receipt = _object(output / "static-scope-receipt.json")
+    recording = _object(output / "recording-weave-receipt.json")
+    source_classes = Path(profile["source_classes"]).resolve(strict=True)
+    scope_out = output / "scope"
+    original = output / "original"
+    graph = original / "candidate_dataflow_edges.jsonl.gz"
+    scope = original / "static_scope_map.jsonl"
+    skeletons = original / "region_skeletons.jsonl.gz"
+    recorded_classes = output / "recording-classes"
+    trace = output / "healthy-trace"
+    junit = request["original_junit"]
+    java = str(Path(profile["java"]).resolve(strict=True))
+    extra = _paths(profile["runtime_classpath"], "runtime_classpath")
+    post = _paths(profile["post_weave_classpath"], "post_weave_classpath")
+    runner_cp = _paths(profile["runner_classpath"], "runner_classpath")
+    process_classes_sha = weave.class_tree_digest(source_classes)
+    identity = resolve_original_target(
+        request, _object(scope_out / "analysis.json"),
+        _object(scope_out / "weave_manifest.json"), source_classes)
+    if (receipt.get("case_id") != request["case_id"] or
+            receipt.get("request_sha256") != _digest(request) or
+            receipt.get("target_identity") != identity or
+            receipt.get("engine_jar_sha256") != _sha(native.JAR) or
+            receipt.get("process_classes_sha256") != process_classes_sha or
+            recording.get("request_sha256") != _digest(request) or
+            recording.get("engine_jar_sha256") != _sha(native.JAR) or
+            recording.get("input_classes_sha256") != process_classes_sha or
+            recording.get("output_classes_sha256") !=
+                weave.class_tree_digest(recorded_classes) or
+            _object(output / "class-preflight.json") !=
+                preflight_execution_classes(profile) or
+            _object(output / "static-sidecar-preflight.json") !=
+                preflight_static_sidecars(original, scope_out) or
+            any(receipt.get(key) != _sha(path) for key, path in (
+                ("candidate_graph_sha256", graph),
+                ("static_scope_map_sha256", scope),
+                ("region_skeletons_sha256", skeletons),
+                ("analysis_sha256", scope_out / "analysis.json"),
+                ("scope_input_sha256", output / "scope-input.json")))):
+        raise ValueError("ZooKeeper post-healthy source/static/weave pins changed")
+    stdout = (output / "commands/healthy-junit.stdout").read_text(
+        encoding="utf-8", errors="replace")
+    if ("NATIVE_RECORDING_JUNIT_RESULT passed=1 failed=0" not in stdout or
+            not _closed_trace_manifest(_object(
+                trace / "streaming_trace_manifest.json"))):
+        raise ValueError("unchanged original JUnit or healthy trace did not close")
     occurrence_file = output / "target-occurrence.json"
-    _run("target-occurrence", [java, "-cp", _original_cp([]),
+    stage = _fresh_command_stage(output, "target-occurrence")
+    _run(stage, [java, loop_arg, "-cp", _original_cp([]),
         "edu.uva.liftlab.graphchecker.runtime.MalloryTargetOccurrenceResolver",
         "--trace-dir", str(trace), "--test", junit["selector"],
         "--candidate-graph", str(graph), "--static-scope-map", str(scope),
         "--region-skeletons", str(skeletons),
+        "--check-site-id", identity["original_guard_site_id"],
         "--output", str(occurrence_file)], output, 300)
     occurrence = _object(occurrence_file)
     if (occurrence.get("kind") != "MALLORY_OBSERVED_TARGET_OCCURRENCE" or
             occurrence.get("reachedEventCount", 0) < 1):
         raise ValueError("original runtime found no observed target check")
-    recorded = output / "recorded-plan"
-    scheduled = output / "scheduled-plan"
+    recorded = output / _fresh_name(output, "recorded-plan")
+    scheduled = output / _fresh_name(output, "scheduled-plan")
     target_arg = f"target={graph},{scope},{skeletons},{recorded}"
     selector = occurrence["selectedOccurrenceAddress"]
-    _run("original-recorder", [java, "-cp", _original_cp([]),
+    _run(_fresh_command_stage(output, "original-recorder"),
+         [java, loop_arg, "-cp", _original_cp([]),
         "edu.uva.liftlab.graphchecker.runtime.CausynthTraceRecorder",
         "--trace-dir", str(trace), "--test", junit["selector"],
         "--target", target_arg, "--target-occurrence", selector], output, 300)
-    _run("original-scheduler", [java, "-cp", _original_cp([]),
+    _run(_fresh_command_stage(output, "original-scheduler"),
+         [java, loop_arg, "-cp", _original_cp([]),
         "edu.uva.liftlab.graphchecker.plan.ConcolicScheduler",
         "--region-plan", str(recorded / "concolic_region_plan.jsonl"),
         "--candidate-graph", str(graph), "--static-scope-map", str(scope),
@@ -684,14 +785,20 @@ def prepare(request_file: Path, output: Path, profile_file: Path) -> dict:
         "--target-occurrence", selector], output, 300)
     plan = scheduled / "execution_task_plan.jsonl"
     task = select_target_task(plan, occurrence)
+    selected_plan = output / _fresh_name(output, "selected-task-plan.jsonl")
+    select_exact_task_row(plan, task["taskId"], selected_plan)
     branch = task["targetBranch"]
     anchor = f"{branch['siteId']}#{branch['occurrence']}"
-    weave_file = output / "native-weave.json"
+    weave_file = output / _fresh_name(output, "native-weave.json")
+    concolic_classes = output / _fresh_name(output, "concolic-classes")
     _atomic(weave_file, {
         "java": java, "input_classes": str(source_classes),
-        "output_classes": str(output / "concolic-classes"),
-        "task_plan": str(plan), "task_id": task["taskId"],
-        "region_skeletons": str(recorded / "region_skeletons.jsonl"),
+        "output_classes": str(concolic_classes),
+        "weave_mode": "concolic", "jvm_args": ["-Xmx3g"],
+        "task_plan": str(selected_plan), "task_id": task["taskId"],
+        "region_skeletons": str(skeletons),
+        "communication_mappings": str(Path(
+            profile["communication_mapping"]).resolve(strict=True)),
         "dependency_classpath": _cp(extra),
         "native_fault_manifest": str(scope_out / "weave_manifest.json"),
         "post_weave": {"classpath": _original_cp(post),
@@ -701,7 +808,7 @@ def prepare(request_file: Path, output: Path, profile_file: Path) -> dict:
         "timeout_seconds": 1800})
     weave.run(weave_file)
     native_weave_receipt = _object(
-        output / "concolic-classes/native-original-weave-receipt.json")
+        concolic_classes / "native-original-weave-receipt.json")
     if native_weave_receipt.get("input_classes_sha256") != process_classes_sha:
         raise ValueError("concolic weave preimage differs from static Soot analysis")
     config = {
@@ -714,14 +821,19 @@ def prepare(request_file: Path, output: Path, profile_file: Path) -> dict:
                       "static_scope_map": str(scope),
                       "region_skeletons": str(skeletons),
                       "target_occurrence": selector,
+                      "recorder_jvm_args": [loop_arg],
+                      "scheduler_jvm_args": [loop_arg],
                       "max_jobs": profile["max_jobs"]},
         "junit": {"class": junit["class"], "method": junit["method"]},
         "runner": {"zero_vm_java": java,
+                   "mode": "concolic",
                    "main_class":
                        "edu.uva.liftlab.graphchecker.runtime.NativeJUnitMethodRunner",
                    "classpath": [str(path) for path in runner_cp],
-                   "jvm_args": ["-Djava.io.tmpdir={trial_workdir}",
+                   "jvm_args": ["-Xmx3g",
+                                "-Djava.io.tmpdir={trial_workdir}",
                                 "-Dbuild.test.dir={trial_workdir}",
+                                loop_arg,
                                 *profile.get("runner_jvm_args", [])]},
         "budget": profile["budget"],
         "timeout_seconds": profile["timeout_seconds"]}
@@ -756,11 +868,17 @@ def prepare(request_file: Path, output: Path, profile_file: Path) -> dict:
 
 
 def main() -> None:
-    if len(sys.argv) != 4:
+    if len(sys.argv) == 5 and sys.argv[1] == "--resume-posthealthy":
+        result = finalize_after_healthy(Path(sys.argv[3]), Path(sys.argv[4]),
+                                        Path(sys.argv[2]))
+    elif len(sys.argv) == 4:
+        result = prepare(Path(sys.argv[2]), Path(sys.argv[3]),
+                         Path(sys.argv[1]))
+    else:
         raise SystemExit("usage: python -m Mallory.native_graphchecker_dispatch."
-                         "zookeeper_native_adapter PROFILE REQUEST OUTPUT")
-    print(json.dumps(prepare(Path(sys.argv[2]), Path(sys.argv[3]),
-                             Path(sys.argv[1])), sort_keys=True))
+                         "zookeeper_native_adapter [--resume-posthealthy] "
+                         "PROFILE REQUEST OUTPUT")
+    print(json.dumps(result, sort_keys=True))
 
 
 if __name__ == "__main__":
