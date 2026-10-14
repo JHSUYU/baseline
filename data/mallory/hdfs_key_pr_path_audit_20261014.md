@@ -10,6 +10,13 @@ System under test: Hadoop HDFS 3.4.3, with unchanged original JUnit tests. The c
 | HDFS-17899 SPS `BlockDispatcher.moveBlock` | Available SPS tests do not enable data-transfer encryption. | No matching unchanged original JUnit established. |
 | HDFS-17967 `StripedBlockWriter` | No unchanged test combining EC reconstruction and encrypted transfer has been established. | No matching unchanged original JUnit established. |
 
+`TestEncryptedTransfer#testEncryptedAppendRequiringBlockTransfer` is a second
+unchanged four-DataNode workload for the HDFS-17899 `DataNode.DataTransfer.run`
+caller: it shuts down a replica holder, then appends and transfers a block to
+another DataNode. It does not deliberately rotate or expire a data encryption
+key, unlike `testLongLivedClientPipelineRecovery`, so caller reach alone does
+not establish the stale-key condition.
+
 The low-potential calls above are based on the *combination* required by each
 defect, rather than on a missing operation alone. `TestFileChecksum` exercises
 striped checksums but leaves data-transfer encryption at its default false
