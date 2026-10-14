@@ -232,9 +232,80 @@ def extend_profile(profile: dict, system: str, case_id: str,
     return copied
 
 
+def swap_unbound_reservation(original: dict, extended: dict, *,
+                             case_id: str, displaced_case_id: str,
+                             host: str, ownership: dict[str, str],
+                             config_root: Path, state_root: Path,
+                             profile_sha256: str,
+                             ownership_sha256: str,
+                             review_path: Path | None) -> tuple[dict, dict]:
+    """Move only an unused assigned reservation when a direct case owns it."""
+    if (not isinstance(displaced_case_id, str) or
+            displaced_case_id == case_id or
+            ownership.get(case_id) != host or
+            ownership.get(displaced_case_id) != host or
+            review_path is None or not review_path.is_absolute() or
+            review_path.is_symlink() or not review_path.is_file() or
+            (config_root / f'{displaced_case_id}.json').exists() or
+            (state_root / displaced_case_id).exists()):
+        raise ValueError('assigned reservation swap requires an unbound same-host case')
+    review = obj(review_path)
+    if (review.get('schema_version') != 1 or
+            review.get('kind') != 'unbound_assigned_port_reservation_review' or
+            review.get('case_id') != case_id or
+            review.get('displaced_case_id') != displaced_case_id or
+            review.get('host') != host or
+            review.get('isolation_sha256') != profile_sha256 or
+            review.get('ownership_sha256') != ownership_sha256 or
+            review.get('displaced_binding_absent') is not True or
+            review.get('prepared_case_root_absent') is not True or
+            review.get('active_process_absent') is not True or
+            review.get('checked_hosts') != ['node0', 'node1', 'node2']):
+        raise ValueError('unbound assigned-port review differs from queue state')
+    observations = review.get('evidence', {})
+    for checked_host in ('node0', 'node1', 'node2'):
+        entry = observations.get(checked_host, {})
+        path = Path(entry.get('path', ''))
+        if (not path.is_absolute() or path.is_symlink() or
+                not path.is_file() or sha(path) != entry.get('sha256') or
+                obj(path) != entry.get('observations')):
+            raise ValueError('unbound assigned-port host observation changed')
+        host_observation = entry['observations']
+        if (not host_observation.get('hostname', '').startswith(checked_host + '.') or
+                any(host_observation.get(key) != [] for key in (
+                    'matching_prepared_roots', 'matching_processes',
+                    'matching_tmux_sessions'))):
+            raise ValueError('displaced case has a prepared root or active process')
+    old_ports = original['systems']['zookeeper']['ports']
+    new_ports = extended['systems']['zookeeper']['ports']
+    if old_ports.get('mode') != 'assigned' or new_ports.get('mode') != 'assigned':
+        raise ValueError('reservation swap requires assigned ZooKeeper ports')
+    old_target = old_ports['cases'].get(case_id)
+    old_displaced = old_ports['cases'].get(displaced_case_id)
+    new_target = new_ports['cases'].get(case_id)
+    if (not isinstance(old_target, dict) or
+            not isinstance(old_displaced, dict) or
+            new_target != old_displaced or old_target == old_displaced):
+        raise ValueError('direct port review does not match unused reservation')
+    new_ports['cases'][displaced_case_id] = old_target
+    migration = {'schema_version': 1,
+                 'kind': 'unbound_assigned_port_reservation_swap',
+                 'case_id': case_id, 'displaced_case_id': displaced_case_id,
+                 'host': host, 'previous_case_assignment': old_target,
+                 'previous_displaced_assignment': old_displaced,
+                 'new_case_assignment': new_target,
+                 'new_displaced_assignment': old_target,
+                 'previous_isolation_sha256': profile_sha256,
+                 'unbound_review_path': str(review_path),
+                 'unbound_review_sha256': sha(review_path)}
+    return extended, migration
+
+
 def promote(*, root: Path, case_id: str, native_config: Path,
             native_state: Path, host: str,
             port_review: Path | None = None,
+            reservation_swap_with: str | None = None,
+            unbound_reservation_review: Path | None = None,
             alternate_attestation: Path | None = None,
             alternate_source_receipt: Path | None = None,
             target_identity_audit: Path | None = None,
@@ -276,8 +347,22 @@ def promote(*, root: Path, case_id: str, native_config: Path,
                                             new_owners.values()) for name in
                                    ('node0', 'node1', 'node2')}
         ownership_doc['basis'] = 'physical owner of immutable native campaign'
-        profile = extend_profile(obj(profile_path), item['system'], case_id,
+        original_profile = obj(profile_path)
+        profile = extend_profile(original_profile, item['system'], case_id,
                                  port_review, sha(native_config))
+        migration = None
+        if reservation_swap_with is not None:
+            if item['system'] != 'zookeeper' or port_review is None:
+                raise ValueError('reservation swap requires assigned ZooKeeper review')
+            profile, migration = swap_unbound_reservation(
+                original_profile, profile, case_id=case_id,
+                displaced_case_id=reservation_swap_with, host=host,
+                ownership=new_owners, config_root=config_root,
+                state_root=state_root, profile_sha256=sha(profile_path),
+                ownership_sha256=sha(ownership),
+                review_path=unbound_reservation_review)
+        elif unbound_reservation_review is not None:
+            raise ValueError('unbound reservation review needs a swap case')
         binding = binding_for(item, native_config, native_state,
                               alternate=alternate_attestation,
                               alternate_source_receipt=alternate_source_receipt,
@@ -351,6 +436,14 @@ def promote(*, root: Path, case_id: str, native_config: Path,
                    'terminal_disposition': inspected['terminal_disposition'],
                    'ownership_sha256': sha(ownership),
                    'isolation_sha256': sha(profile_path)}
+        if migration is not None:
+            migration['new_isolation_sha256'] = sha(profile_path)
+            migration['binding_sha256'] = sha(binding_path)
+            migration_path = (queue_root / 'promotions' /
+                              f'{case_id}-port-reservation-swap.json')
+            atomic(migration_path, migration)
+            receipt['port_reservation_swap_path'] = str(migration_path)
+            receipt['port_reservation_swap_sha256'] = sha(migration_path)
         atomic(queue_root / 'promotions' / f'{case_id}.json', receipt)
     if dispatch:
         receipt['worker_exit_codes'] = run_host(
@@ -369,6 +462,8 @@ def main() -> None:
     parser.add_argument('--native-config', type=Path, required=True)
     parser.add_argument('--native-state', type=Path, required=True)
     parser.add_argument('--port-review', type=Path)
+    parser.add_argument('--reservation-swap-with')
+    parser.add_argument('--unbound-reservation-review', type=Path)
     parser.add_argument('--alternate-attestation', type=Path)
     parser.add_argument('--alternate-source-receipt', type=Path)
     parser.add_argument('--target-identity-audit', type=Path)
@@ -384,6 +479,8 @@ def main() -> None:
         root=args.root, case_id=args.case_id, host=args.host,
         native_config=args.native_config, native_state=args.native_state,
         port_review=args.port_review,
+        reservation_swap_with=args.reservation_swap_with,
+        unbound_reservation_review=args.unbound_reservation_review,
         alternate_attestation=args.alternate_attestation,
         alternate_source_receipt=args.alternate_source_receipt,
         target_identity_audit=args.target_identity_audit,

@@ -8,7 +8,8 @@ import unittest
 from unittest.mock import patch
 
 from Mallory.native_graphchecker_dispatch.checklist import _verify_alternate_junit
-from .bind_and_run import binding_for, extend_profile
+from .bind_and_run import (binding_for, extend_profile,
+                           swap_unbound_reservation)
 from .queue import pinned_campaign_python, validate_isolation
 
 
@@ -17,6 +18,73 @@ def write(path: Path, value: dict) -> None:
 
 
 class BindAndRunTest(unittest.TestCase):
+    def test_assigned_port_swap_requires_review_and_unbound_case(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            config, state = root / 'config', root / 'state'
+            config.mkdir()
+            state.mkdir()
+            old = {'systems': {'zookeeper': {'ports': {
+                'mode': 'assigned', 'cases': {
+                    'ZOOKEEPER-09': {'start': 21989, 'count': 1346,
+                                     'required_jvm_args': [
+                                         '-Dzookeeper.junit.threadid=9']},
+                    'ZOOKEEPER-12': {'start': 26027, 'count': 1346,
+                                     'required_jvm_args': [
+                                         '-Dzookeeper.junit.threadid=12']}}}}}}
+            changed = json.loads(json.dumps(old))
+            changed['systems']['zookeeper']['ports']['cases']['ZOOKEEPER-12'] = (
+                old['systems']['zookeeper']['ports']['cases']['ZOOKEEPER-09'])
+            review = root / 'unbound.json'
+            observations = {}
+            for checked_host in ('node0', 'node1', 'node2'):
+                observation = {
+                    'hostname': checked_host + '.example',
+                    'matching_prepared_roots': [],
+                    'matching_processes': [],
+                    'matching_tmux_sessions': []}
+                path = root / f'{checked_host}.json'
+                write(path, observation)
+                observations[checked_host] = {
+                    'path': str(path),
+                    'sha256': hashlib.sha256(path.read_bytes()).hexdigest(),
+                    'observations': observation}
+            write(review, {'schema_version': 1,
+                           'kind': 'unbound_assigned_port_reservation_review',
+                           'case_id': 'ZOOKEEPER-12',
+                           'displaced_case_id': 'ZOOKEEPER-09',
+                           'host': 'node0',
+                           'isolation_sha256': 'a' * 64,
+                           'ownership_sha256': 'b' * 64,
+                           'displaced_binding_absent': True,
+                           'prepared_case_root_absent': True,
+                           'active_process_absent': True,
+                           'checked_hosts': ['node0', 'node1', 'node2'],
+                           'evidence': observations})
+            args = {'case_id': 'ZOOKEEPER-12',
+                    'displaced_case_id': 'ZOOKEEPER-09',
+                    'host': 'node0',
+                    'ownership': {'ZOOKEEPER-09': 'node0',
+                                  'ZOOKEEPER-12': 'node0'},
+                    'config_root': config, 'state_root': state,
+                    'profile_sha256': 'a' * 64,
+                    'ownership_sha256': 'b' * 64,
+                    'review_path': review}
+            swapped, receipt = swap_unbound_reservation(old, changed,
+                                                          **args)
+            self.assertEqual(swapped['systems']['zookeeper']['ports'][
+                'cases']['ZOOKEEPER-09']['start'], 26027)
+            self.assertEqual(receipt['unbound_review_sha256'],
+                             hashlib.sha256(review.read_bytes()).hexdigest())
+            write(root / 'node1.json', {'hostname': 'node1.example',
+                                        'matching_processes': ['ZK09']})
+            with self.assertRaisesRegex(ValueError, 'host observation changed'):
+                swap_unbound_reservation(old, changed, **args)
+            write(root / 'node1.json', observations['node1']['observations'])
+            write(config / 'ZOOKEEPER-09.json', {})
+            with self.assertRaisesRegex(ValueError, 'unbound same-host'):
+                swap_unbound_reservation(old, changed, **args)
+
     def test_alternate_junit_shared_source_works_on_nonowner_host(self):
         with TemporaryDirectory() as directory:
             root = Path(directory)
