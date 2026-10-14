@@ -18,6 +18,8 @@ from Mallory.core.graphchecker_campaign import (_archive_jsonl, _archive_stat,
                                                 _target_throw_count,
                                                 _target_throw_profiles,
                                                 _profile_exceeds_healthy_envelope,
+                                                _raw_target_throw_exceeds_healthy_envelope,
+                                                _strict_fault_receipt,
                                                 _static_producer_frontier_sites,
                                                 _static_may_sidecar,
                                                 _trial_scratch_root,
@@ -247,6 +249,33 @@ class GraphCheckerCampaignTest(unittest.TestCase):
                                         [{expected: 1}, {novel: 1}]))
         rows[5].pop("fingerprintVersion")
         self.assertIsNone(_target_throw_profiles(rows, self.TARGET))
+
+    def test_extra_post_fault_throw_is_recorded_without_a_graph_edge(self):
+        healthy = "a" * 64
+        rows = self.rows()
+        rows[5].update(fingerprintVersion=1, structuralFingerprint=healthy)
+        extra = {**rows[5], "seq": 8}
+        rows.insert(6, extra)
+        self.assertTrue(_raw_target_throw_exceeds_healthy_envelope(
+            rows, [extra], self.TARGET, [{healthy: 1}, {healthy: 1}]))
+        self.assertFalse(_raw_target_throw_exceeds_healthy_envelope(
+            rows, [extra], self.TARGET, [{healthy: 2}]))
+        self.assertFalse(_raw_target_throw_exceeds_healthy_envelope(
+            rows, [{**extra, "exceptionClass": "other"}], self.TARGET,
+            [{healthy: 1}]))
+        self.assertFalse(_raw_target_throw_exceeds_healthy_envelope(
+            rows, [extra], self.TARGET, None))
+
+    def test_raw_fault_receipt_checks_full_identity_before_graph(self):
+        rows = self.rows()
+        _, _, matched, strict, last_seq = _strict_fault_receipt(
+            rows, [self.FAULT])
+        self.assertTrue(strict)
+        self.assertEqual((1, 4), (len(matched), last_seq))
+        wrong = {**self.FAULT, "occurrenceId": "another-request"}
+        _, _, _, strict, last_seq = _strict_fault_receipt(rows, [wrong])
+        self.assertFalse(strict)
+        self.assertIsNone(last_seq)
 
     def test_static_producer_frontier_is_only_a_site_hint(self):
         with tempfile.TemporaryDirectory() as temporary:

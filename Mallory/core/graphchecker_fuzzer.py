@@ -455,6 +455,8 @@ def _trial_record(name: str, result: dict[str, Any]) -> dict[str, Any]:
                 "injection_specific_target_reached", False),
             "target_exception_triggered": result["target_exception_triggered"],
             "target_exception_candidate": result["target_exception_candidate"],
+            "target_exception_candidate_raw_differential": result.get(
+                "target_exception_candidate_raw_differential", False),
             "observed_check_sites": evidence.get("observed_check_sites", []),
             "junit_passed": result["junit_passed"]}
 
@@ -739,6 +741,9 @@ def _finish(state: dict[str, Any], root: Path) -> dict[str, Any]:
                        row["target_exception_triggered"] for row in trials),
                    "differential_candidates": sum(
                        row["target_exception_candidate"] for row in trials),
+                   "raw_differential_candidates": sum(
+                       row.get("target_exception_candidate_raw_differential", False)
+                       for row in trials),
                    "first_target_exception_trial": next(
                        (row["name"] for row in trials
                         if row["target_exception_triggered"]), None),

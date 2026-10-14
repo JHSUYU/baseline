@@ -16,6 +16,7 @@ from Mallory.core.graphchecker_fuzzer import (_accept_result, _admit_capacity,
                                              _actor_site_key, _plan_key,
                                              _retention_score,
                                              _new_state, _pick, _resume_active,
+                                             _trial_record,
                                              run_campaign)
 from Mallory.core.resource_guard import CapacityGuardStop
 
@@ -56,6 +57,14 @@ class GraphCheckerFuzzerTest(unittest.TestCase):
                                            "closureNodeFamilies": ["target"],
                                            "closureEdgeFamilies": [],
                                            "closureCoverageSiteIds": []}}
+
+    def test_checkpoint_keeps_raw_differential_separate_from_graph_candidate(self):
+        result = self.result([self.door(1, 1)])
+        result["target_exception_triggered"] = True
+        result["target_exception_candidate_raw_differential"] = True
+        record = _trial_record("r0001", result)
+        self.assertTrue(record["target_exception_candidate_raw_differential"])
+        self.assertFalse(record["target_exception_candidate"])
 
     def test_enqueue_samples_late_occurrences_and_excludes_after_target(self):
         state = _new_state(self.config(), self.budget())

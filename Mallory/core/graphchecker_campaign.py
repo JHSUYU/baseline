@@ -252,6 +252,27 @@ def _profile_exceeds_healthy_envelope(
         seed.get(profile, 0) for seed in healthy_profiles) for profile in causal)
 
 
+def _raw_target_throw_exceeds_healthy_envelope(
+        rows: list[dict[str, Any]], post_fault_rows: list[dict[str, Any]],
+        target: dict[str, Any], healthy_profiles: list[dict[str, int]] | None
+        ) -> bool:
+    """Flag an extra exact post-fault throw even when the graph misses an edge.
+
+    This is an observation for source review, not a causal-graph verdict. The
+    full trial count must exceed every healthy seed for a profile that actually
+    appears after the last matched fault.
+    """
+    if not post_fault_rows or not healthy_profiles:
+        return False
+    observed = _target_throw_profiles(rows, target)
+    after_fault = _target_throw_profiles(post_fault_rows, target)
+    if observed is None or after_fault is None:
+        return False
+    return any(observed.get(profile, 0) > max(
+        seed.get(profile, 0) for seed in healthy_profiles)
+        for profile in after_fault)
+
+
 def _prior_trace_metadata(prior_trace: Path, target: dict[str, Any],
                           case_id: str) -> tuple[int, str, str | None]:
     """Reuse a prior trial's sealed oracle count; scan old receipts unchanged.
@@ -1273,6 +1294,36 @@ def _planned_fault_matches(fault: dict[str, Any], actual: dict[str, Any]) -> boo
     return _identity(actual) == _plan_identity(fault)
 
 
+def _strict_fault_receipt(rows: list[dict[str, Any]], faults: list[dict[str, Any]]
+                          ) -> tuple[list[dict[str, Any]], list[dict[str, Any]],
+                                     list[dict[str, Any]], bool, int | None]:
+    """Validate exact runtime fault identity without requiring a causal graph."""
+    doors = [row for row in rows if row["kind"] == "FAULT_DOOR"
+             and all(row.get(key) for key in ("siteId", "node", "occurrenceId"))
+             and isinstance(row.get("doorOrdinal"), int)
+             and row["doorOrdinal"] > 0]
+    applied = [row for row in rows if row["kind"] == "FAULT_APPLIED"]
+    strict = bool(faults) and len(applied) == len(faults)
+    matched: list[dict[str, Any]] = []
+    previous_seq = -1
+    for fault, actual in zip(faults, applied):
+        source = next((door for door in doors if _identity(door) == _identity(actual)
+                       and door["seq"] < actual["seq"]), None)
+        if (not _planned_fault_matches(fault, actual) or
+                (fault.get("replayOccurrenceId") and source is not None and
+                 source.get("replayOccurrenceId") != actual.get("replayOccurrenceId")) or
+                actual.get("exceptionClass") != fault["exceptionClass"] or
+                actual["seq"] <= previous_seq or source is None):
+            strict = False
+            break
+        matched.append(actual)
+        previous_seq = actual["seq"]
+    if len(matched) != len(faults):
+        strict = False
+    return doors, applied, matched, strict, (
+        applied[-1]["seq"] if strict and applied else None)
+
+
 def summarize_evidence(rows: list[dict[str, Any]], graph: dict[str, Any],
                        target: dict[str, Any], faults: list[dict[str, Any]],
                        door_types: dict[str, str] | None = None,
@@ -1295,31 +1346,10 @@ def summarize_evidence(rows: list[dict[str, Any]], graph: dict[str, Any],
     may_sites = (set(static_may_sidecar["door_sites"])
                  if static_may_sidecar is not None else
                  set(graph.get("staticMayObservedDoorSiteIds", [])))
-    doors = [row for row in rows if row["kind"] == "FAULT_DOOR"
-             and all(row.get(key) for key in ("siteId", "node", "occurrenceId"))
-             and isinstance(row.get("doorOrdinal"), int)
-             and row["doorOrdinal"] > 0]
+    doors, applied, matched, strict, last_fault_seq = _strict_fault_receipt(
+        rows, faults)
     if static_may_sidecar is not None:
         may_sites.intersection_update(row["siteId"] for row in doors)
-    applied = [row for row in rows if row["kind"] == "FAULT_APPLIED"]
-    strict = bool(faults) and len(applied) == len(faults)
-    matched: list[dict[str, Any]] = []
-    previous_seq = -1
-    for fault, actual in zip(faults, applied):
-        source = next((door for door in doors if _identity(door) == _identity(actual)
-                       and door["seq"] < actual["seq"]), None)
-        if (not _planned_fault_matches(fault, actual) or
-                (fault.get("replayOccurrenceId") and source is not None and
-                 source.get("replayOccurrenceId") != actual.get("replayOccurrenceId")) or
-                actual.get("exceptionClass") != fault["exceptionClass"] or
-                actual["seq"] <= previous_seq or source is None):
-            strict = False
-            break
-        matched.append(actual)
-        previous_seq = actual["seq"]
-    if len(matched) != len(faults):
-        strict = False
-    last_fault_seq = applied[-1]["seq"] if strict and applied else None
     raw_checks = [row for row in rows if row["kind"] == "TARGET_CHECK"
                   and row.get("siteId") in check_sites] if check_sites else []
     raw_throws = [row for row in rows if row["kind"] == "TARGET_THROW"
@@ -1600,7 +1630,8 @@ def run_trial(config: dict[str, Any], prepared: Path, trial: Path,
         "trial_cwd_template_sha256": config["trial_cwd_template_sha256"],
         "phase_seconds": phase_seconds,
         "target_exception_triggered": False,
-        "target_exception_candidate": False}
+        "target_exception_candidate": False,
+        "target_exception_candidate_raw_differential": False}
     try:
         phase_started = time.monotonic()
         rows, window_count = scan_window_trace(raw_trace, trace)
@@ -1612,6 +1643,20 @@ def run_trial(config: dict[str, Any], prepared: Path, trial: Path,
         result["target_throw_count_scope"] = {
             "site_id": config["target"]["throw_site_id"],
             "exception_class": config["target"]["exception_class"]}
+        _, _, _, raw_strict, raw_last_fault_seq = _strict_fault_receipt(
+            rows, faults)
+        raw_post_fault_throws = [row for row in rows
+            if raw_last_fault_seq is not None and
+            row["kind"] == "TARGET_THROW" and
+            row.get("siteId") == config["target"]["throw_site_id"] and
+            row.get("exceptionClass") == config["target"]["exception_class"] and
+            row.get("occurrenceId") and row.get("node") and
+            row["seq"] > raw_last_fault_seq]
+        result["strict_injection_raw"] = raw_strict
+        result["target_exception_triggered"] = bool(raw_post_fault_throws)
+        result["target_exception_candidate_raw_differential"] = bool(
+            raw_strict and _raw_target_throw_exceeds_healthy_envelope(
+                rows, raw_post_fault_throws, config["target"], healthy_profiles))
         check_sites = _configured_check_sites(config["target"])
         anchor = check_sites if len(check_sites) > 1 else (
             check_sites[0] if check_sites else config["target"]["throw_site_id"])

@@ -183,6 +183,14 @@ which guards were observed across all trials. An automatic bug candidate
 additionally requires the fault on the exact
 throw event's own closure. An exact target throw outside that throw closure
 remains `needs_causal_review`.
+The separate `target_exception_candidate_raw_differential` field records a
+strictly injected, post-fault exact throw whose structural profile exceeds
+every unchanged healthy seed, even when the observed graph has a missing
+cross-thread or cross-process edge. The campaign summary counts these as
+`raw_differential_candidates`. This is a candidate observation for source
+review; `target_exception_candidate` still means the graph supports the
+injection-specific causal path. An ordinary healthy-run throw never becomes
+a differential candidate merely because it was observed again.
 When a closure uses a `PROGRAM_ORDER` edge between completed root scopes,
 the edge proves same-thread happens-before; a candidate still needs replay
 and source review to establish that the earlier fault caused a retry or state
