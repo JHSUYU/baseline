@@ -60,3 +60,13 @@ run in a fresh JVM with `CAUSYNTH_TRACE_OUTPUT_DIR` and
 protocol/session proof must inspect original `runtime_trace.jsonl` and the
 original session manifest for matching request/response and SASL identities,
 source attribution, and explicit gaps before any fault trials.
+
+The optional `record_pilot.py` healthy recorder accepts
+`--recording-weave-heap-mb` and `--target-resolver-heap-mb`. The defaults remain
+8192 MiB and 4096 MiB. Both values must be between 1024 and 32768 MiB, and
+the selected values and static scope map size are written to `pins.json`.
+Choose the heaps for the static scope map and available node memory before
+launching a large case. The supervisor should continue to enforce its own
+memory and disk floors; the CLI bounds only prevent an unbounded Java heap
+request. These options change GraphChecker analysis JVMs, not the original
+JUnit or its workload.
