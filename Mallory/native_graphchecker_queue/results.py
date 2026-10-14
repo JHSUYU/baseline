@@ -33,6 +33,7 @@ FIELDS = (
     "native_config_path", "native_config_sha256",
     "checkpoint_path", "checkpoint_sha256", "summary_path", "summary_sha256",
     "terminal_review_path", "terminal_review_sha256",
+    "terminal_quality_note",
     "completion_receipt_path", "completion_receipt_sha256", "evidence_paths",
 )
 RESULT_STATES = {"tested_candidate", "tested_no_target_throw",
@@ -142,6 +143,7 @@ def native_rows(inventory: Path, ownership_file: Path, config_root: Path,
             "checkpoint_path": None, "checkpoint_sha256": None,
             "summary_path": None, "summary_sha256": None,
             "terminal_review_path": None, "terminal_review_sha256": None,
+            "terminal_quality_note": None,
             "completion_receipt_path": None,
             "completion_receipt_sha256": None, "evidence_paths": [],
         }
@@ -243,6 +245,19 @@ def native_rows(inventory: Path, ownership_file: Path, config_root: Path,
                     raise ValueError(f"native terminal review pin changed: {case_id}")
                 row["terminal_review_path"] = str(review_path)
                 row["terminal_review_sha256"] = pin["review_sha256"]
+                identity = pin.get("identity_review")
+                if identity is not None:
+                    identity_path = Path(identity.get("path", ""))
+                    if (not identity_path.is_absolute() or
+                            identity_path.is_symlink() or
+                            not identity_path.is_file() or
+                            sha(identity_path) != identity.get("sha256")):
+                        raise ValueError(f"native target identity review changed: {case_id}")
+                    row["evidence_paths"].append(str(identity_path))
+                note = pin.get("quality_note")
+                if note is not None and (not isinstance(note, str) or not note):
+                    raise ValueError(f"native terminal quality note is invalid: {case_id}")
+                row["terminal_quality_note"] = note
                 wall, static_wall = _reviewed_wall_timing(
                     obj(review_path), row["elapsed_seconds"])
                 row["reviewed_campaign_wall_seconds"] = wall

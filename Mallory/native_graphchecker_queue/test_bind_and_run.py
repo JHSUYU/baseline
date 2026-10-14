@@ -8,7 +8,7 @@ import unittest
 from unittest.mock import patch
 
 from .bind_and_run import binding_for, extend_profile
-from .queue import validate_isolation
+from .queue import pinned_campaign_python, validate_isolation
 
 
 def write(path: Path, value: dict) -> None:
@@ -39,10 +39,24 @@ class BindAndRunTest(unittest.TestCase):
                 "junit": {"class": "OriginalTest", "method": "testCase"},
             }
             write(config_path, config)
+            campaign_source = root / "campaign-python"
+            campaign_source.mkdir()
+            module = campaign_source / "campaign.py"
+            module.write_text("pass\n")
+            archive = root / "campaign-python.tar"
+            archive.write_bytes(b"immutable campaign source archive")
             with patch("Mallory.native_graphchecker_queue.bind_and_run._validate_config"):
-                binding = binding_for(item, config_path, state)
+                binding = binding_for(
+                    item, config_path, state,
+                    campaign_python_root=campaign_source,
+                    campaign_python_tar=archive)
                 self.assertEqual("HBASE-01", binding["inventory_case_id"])
                 self.assertEqual(config["case_id"], binding["native_case_id"])
+                self.assertEqual(campaign_source, pinned_campaign_python(
+                    binding["campaign_python_source"]))
+                module.write_text("changed\n")
+                with self.assertRaisesRegex(ValueError, "Python source changed"):
+                    pinned_campaign_python(binding["campaign_python_source"])
                 config["case_id"] = "HBASE-02-native-original-v5"
                 write(config_path, config)
                 with self.assertRaisesRegex(ValueError, "exact inventory target"):

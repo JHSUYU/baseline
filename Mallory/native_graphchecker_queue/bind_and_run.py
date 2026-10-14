@@ -21,7 +21,9 @@ DEFAULT_ROOT = Path('/proj/silentfailure-PG0/ZhenyuLi/Mallory/native-102-queue-v
 
 def binding_for(item: dict, config_path: Path, state_path: Path,
                 *, alternate: Path | None = None,
-                identity: Path | None = None) -> dict:
+                identity: Path | None = None,
+                campaign_python_root: Path | None = None,
+                campaign_python_tar: Path | None = None) -> dict:
     if (not config_path.is_absolute() or not state_path.is_absolute() or
             config_path.is_symlink() or state_path.is_symlink() or
             not config_path.is_file()):
@@ -65,6 +67,18 @@ def binding_for(item: dict, config_path: Path, state_path: Path,
             raise ValueError('native target identity audit is not immutable')
         binding['target_identity_audit'] = {'path': str(identity),
                                             'sha256': sha(identity)}
+    if (campaign_python_root is None) != (campaign_python_tar is None):
+        raise ValueError('campaign Python root and source tar must be paired')
+    if campaign_python_root is not None:
+        from .queue import pinned_campaign_python
+        source = {'root_path': str(campaign_python_root),
+                  'source_tar_path': str(campaign_python_tar),
+                  'source_tar_sha256': sha(campaign_python_tar),
+                  'python_sha256': {
+                      str(path.relative_to(campaign_python_root)): sha(path)
+                      for path in sorted(campaign_python_root.rglob('*.py'))}}
+        pinned_campaign_python(source)
+        binding['campaign_python_source'] = source
     return binding
 
 
@@ -110,9 +124,11 @@ def promote(*, root: Path, case_id: str, native_config: Path,
             port_review: Path | None = None,
             alternate_attestation: Path | None = None,
             target_identity_audit: Path | None = None,
+            campaign_python_root: Path | None = None,
+            campaign_python_tar: Path | None = None,
             dispatch: bool = True) -> dict:
     physical_host(host)
-    inventory = root / 'python-snapshot-bind-v2/Mallory/cases/inventory.json'
+    inventory = root / 'python-snapshot-bind-v3/Mallory/cases/inventory.json'
     ownership = root / 'config/ownership.json'
     config_root = root / 'config'
     state_root = root / 'state'
@@ -146,7 +162,9 @@ def promote(*, root: Path, case_id: str, native_config: Path,
                                  port_review)
         binding = binding_for(item, native_config, native_state,
                               alternate=alternate_attestation,
-                              identity=target_identity_audit)
+                              identity=target_identity_audit,
+                              campaign_python_root=campaign_python_root,
+                              campaign_python_tar=campaign_python_tar)
         for other_path in config_root.glob('*.json'):
             if other_path.stem in ('ownership', case_id):
                 continue
@@ -223,6 +241,8 @@ def main() -> None:
     parser.add_argument('--port-review', type=Path)
     parser.add_argument('--alternate-attestation', type=Path)
     parser.add_argument('--target-identity-audit', type=Path)
+    parser.add_argument('--campaign-python-root', type=Path)
+    parser.add_argument('--campaign-python-tar', type=Path)
     parser.add_argument('--bind-only', action='store_true')
     args = parser.parse_args()
     print(json.dumps(promote(
@@ -231,6 +251,8 @@ def main() -> None:
         port_review=args.port_review,
         alternate_attestation=args.alternate_attestation,
         target_identity_audit=args.target_identity_audit,
+        campaign_python_root=args.campaign_python_root,
+        campaign_python_tar=args.campaign_python_tar,
         dispatch=not args.bind_only), sort_keys=True))
 
 

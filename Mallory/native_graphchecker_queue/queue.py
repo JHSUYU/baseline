@@ -481,14 +481,37 @@ def _pinned_campaign_command(config_file: Path, root: Path) -> list[str]:
             "--config", str(config_file), "--output", str(root)]
 
 
+def pinned_campaign_python(source: dict[str, Any]) -> Path:
+    """Verify the exact per-case campaign Python source before a resume."""
+    root = Path(source.get("root_path", ""))
+    archive = Path(source.get("source_tar_path", ""))
+    expected = source.get("python_sha256")
+    if (not root.is_absolute() or not root.is_dir() or root.is_symlink() or
+            not archive.is_absolute() or not archive.is_file() or
+            archive.is_symlink() or sha(archive) != source.get(
+                "source_tar_sha256") or
+            not isinstance(expected, dict) or not expected):
+        raise ValueError("per-case campaign Python source pin is invalid")
+    actual = {}
+    for path in sorted(root.rglob("*.py")):
+        if path.is_symlink() or not path.resolve().is_relative_to(root.resolve()):
+            raise ValueError("per-case campaign Python contains a symlink")
+        actual[str(path.relative_to(root))] = sha(path)
+    if actual != expected:
+        raise ValueError("per-case campaign Python source changed")
+    return root
+
+
 def run_pinned_campaign(config_file: Path, root: Path) -> dict[str, Any]:
     """Resume one native campaign in a fresh Python process with its engine."""
     engine_root = _pinned_engine_root(config_file)
     env = os.environ.copy()
     env["MALLORY_NATIVE_ENGINE_ROOT"] = str(engine_root)
+    campaign_source = env.get("MALLORY_NATIVE_CAMPAIGN_PYTHON_ROOT")
     result = subprocess.run(
         _pinned_campaign_command(config_file, root),
-        cwd=Path(__file__).resolve().parents[2], env=env,
+        cwd=Path(campaign_source) if campaign_source else
+            Path(__file__).resolve().parents[2], env=env,
         text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
         check=True)
     return json.loads(result.stdout)
@@ -573,6 +596,13 @@ def run_worker(*, host: str, slot: int, slots: int, inventory: Path,
                                                obj(config_file), owners, host)
                 _resources(root, scratch_root, min_memory_gib,
                            min_state_gib, min_scratch_gib)
+                python_root = None
+                if binding_file is not None:
+                    python_source = obj(binding_file).get("campaign_python_source")
+                    if python_source is not None:
+                        if not isinstance(python_source, dict):
+                            raise ValueError("per-case campaign Python pin is invalid")
+                        python_root = pinned_campaign_python(python_source)
                 scratch = scratch_root / case_id
                 if scratch.is_symlink():
                     raise ValueError("case scratch path is a symlink")
@@ -584,6 +614,8 @@ def run_worker(*, host: str, slot: int, slots: int, inventory: Path,
                            "config_sha256": sha(config_file),
                            "binding_sha256": (sha(binding_file) if binding_file
                                               is not None else None),
+                           "campaign_python_root": (str(python_root) if
+                                                    python_root is not None else None),
                            "isolation_sha256": sha(isolation_file),
                            "port_policy": isolation,
                            "scratch_path": str(scratch.resolve()),
@@ -591,7 +623,16 @@ def run_worker(*, host: str, slot: int, slots: int, inventory: Path,
                            "started_at": time.time(), "status": "running"}
                 atomic(attempt_file, attempt)
                 previous_tmpdir = os.environ.get("TMPDIR")
+                previous_pythonpath = os.environ.get("PYTHONPATH")
+                previous_campaign_source = os.environ.get(
+                    "MALLORY_NATIVE_CAMPAIGN_PYTHON_ROOT")
                 os.environ["TMPDIR"] = str(scratch.resolve())
+                if python_root is not None:
+                    os.environ["PYTHONPATH"] = str(python_root)
+                    os.environ["MALLORY_NATIVE_CAMPAIGN_PYTHON_ROOT"] = str(
+                        python_root)
+                else:
+                    os.environ.pop("MALLORY_NATIVE_CAMPAIGN_PYTHON_ROOT", None)
                 try:
                     runner(config_file, root)
                     after = _cached_terminal_inspection(
@@ -625,6 +666,15 @@ def run_worker(*, host: str, slot: int, slots: int, inventory: Path,
                         os.environ.pop("TMPDIR", None)
                     else:
                         os.environ["TMPDIR"] = previous_tmpdir
+                    if previous_pythonpath is None:
+                        os.environ.pop("PYTHONPATH", None)
+                    else:
+                        os.environ["PYTHONPATH"] = previous_pythonpath
+                    if previous_campaign_source is None:
+                        os.environ.pop("MALLORY_NATIVE_CAMPAIGN_PYTHON_ROOT", None)
+                    else:
+                        os.environ["MALLORY_NATIVE_CAMPAIGN_PYTHON_ROOT"] = (
+                            previous_campaign_source)
     return {"host": host, "slot": slot, "completed": len(results),
             "cases": [row["case_id"] for row in results]}
 
