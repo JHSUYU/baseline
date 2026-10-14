@@ -176,6 +176,32 @@ public class ScopePlannerTest {
     }
 
     @Test
+    public void originalMethodReturnCaptureKeepsAllTypedValueExits() {
+        SootClass owner = new SootClass("fixture.OriginalReturnCapture");
+        SootMethod method = new SootMethod("receive", Arrays.asList(),
+                IntType.v(), Modifier.STATIC);
+        owner.addMethod(method);
+        JimpleBody body = Jimple.v().newBody(method);
+        Local value = Jimple.v().newLocal("value", IntType.v());
+        body.getLocals().add(value);
+        body.getUnits().add(Jimple.v().newNopStmt());
+        body.getUnits().add(Jimple.v().newReturnStmt(value));
+        body.getUnits().add(Jimple.v().newNopStmt());
+        body.getUnits().add(Jimple.v().newReturnStmt(value));
+        assertEquals(Arrays.asList(1, 3),
+                ScopePlanner.originalReturnUnitIndices(body, "int"));
+        assertTrue(ScopePlanner.originalReturnUnitIndices(body, "byte[]").isEmpty());
+        assertTrue(ScopePlanner.originalReturnUnitIndices(body, "").isEmpty());
+
+        SootMethod voidMethod = new SootMethod("noValue", Arrays.asList(),
+                VoidType.v(), Modifier.STATIC);
+        owner.addMethod(voidMethod);
+        JimpleBody voidBody = Jimple.v().newBody(voidMethod);
+        voidBody.getUnits().add(Jimple.v().newReturnVoidStmt());
+        assertTrue(ScopePlanner.originalReturnUnitIndices(voidBody, "void").isEmpty());
+    }
+
+    @Test
     public void graphCheckerRegionPortSelectsRealFixtureDoorWithoutChangingDefault()
             throws Exception {
         String source = new String(Files.readAllBytes(Paths.get(

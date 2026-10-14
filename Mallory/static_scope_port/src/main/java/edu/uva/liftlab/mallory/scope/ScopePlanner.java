@@ -542,6 +542,7 @@ public final class ScopePlanner {
         }
         Map<String, Port> originalPorts = new LinkedHashMap<>();
         int parameterPortAnchors = 0;
+        int returnPortAnchors = 0;
         for (JsonElement item : original.getAsJsonArray("regions")) {
             JsonObject region = item.getAsJsonObject();
             JsonArray catalog = region.has("communicationPorts")
@@ -556,34 +557,49 @@ public final class ScopePlanner {
                     int index = integer(capture, "definitionUnitIndex", -1);
                     if (index >= 0) siteId = method + "#u" + index;
                 }
-                Site site = exactSite(siteId);
+                List<Site> sites = new ArrayList<>();
+                Site exact = exactSite(siteId);
                 boolean parameterAnchor = false;
-                if (site == null && "METHOD_PARAMETER".equals(
-                        string(capture, "outputCaptureKind", ""))) {
-                    site = originalParameterSite(capture);
-                    parameterAnchor = site != null;
+                boolean returnAnchor = false;
+                String captureKind = string(capture, "outputCaptureKind", "");
+                if ("METHOD_RETURN".equals(captureKind)) {
+                    // A METHOD_RETURN declares the entire method result even
+                    // if a catalog happens to nominate one individual exit.
+                    sites.addAll(originalReturnSites(capture));
+                    returnAnchor = !sites.isEmpty();
+                } else if (exact != null) {
+                    sites.add(exact);
+                } else if ("METHOD_PARAMETER".equals(captureKind)) {
+                    Site parameter = originalParameterSite(capture);
+                    if (parameter != null) sites.add(parameter);
+                    parameterAnchor = !sites.isEmpty();
                 }
-                if (portId.isEmpty() || site == null) {
+                if (portId.isEmpty() || sites.isEmpty()) {
                     analysisGaps.add("original_graphchecker_port_unmapped:" + portId + ":" + siteId);
                     continue;
                 }
                 Port port = originalPorts.computeIfAbsent(portId,
                         id -> new Port(id, string(capture, "transport", "RPC"), ""));
-                if ("OUT".equals(side)) {
-                    port.producers.add(site);
-                } else if ("IN".equals(side)) {
-                    port.consumers.add(site);
-                } else continue;
-                JsonObject mapped = row("OUT".equals(side) ? "EXPORT_SITE" : "IMPORT_SITE",
-                        site, "", portId);
-                mapped.addProperty("regionId", string(region, "regionId", ""));
-                if (parameterAnchor) {
-                    mapped.addProperty("selectionSource", "ORIGINAL_METHOD_PARAMETER_CAPTURE");
-                    mapped.addProperty("captureArgumentIndex",
-                            integer(capture, "argumentIndex", -1));
-                    parameterPortAnchors++;
+                for (Site site : sites) {
+                    if ("OUT".equals(side)) {
+                        port.producers.add(site);
+                    } else if ("IN".equals(side)) {
+                        port.consumers.add(site);
+                    } else continue;
+                    JsonObject mapped = row("OUT".equals(side) ? "EXPORT_SITE" : "IMPORT_SITE",
+                            site, "", portId);
+                    mapped.addProperty("regionId", string(region, "regionId", ""));
+                    if (parameterAnchor) {
+                        mapped.addProperty("selectionSource", "ORIGINAL_METHOD_PARAMETER_CAPTURE");
+                        mapped.addProperty("captureArgumentIndex",
+                                integer(capture, "argumentIndex", -1));
+                        parameterPortAnchors++;
+                    } else if (returnAnchor) {
+                        mapped.addProperty("selectionSource", "ORIGINAL_METHOD_RETURN_CAPTURE");
+                        returnPortAnchors++;
+                    }
+                    addOriginal(rows, seen, mapped);
                 }
-                addOriginal(rows, seen, mapped);
             }
         }
         ports.addAll(originalPorts.values());
@@ -620,6 +636,7 @@ public final class ScopePlanner {
         JsonObject translation = new JsonObject();
         translation.addProperty("supplementalTypedIoDoors", supplementalDoors);
         translation.addProperty("methodParameterPortAnchors", parameterPortAnchors);
+        translation.addProperty("methodReturnPortAnchors", returnPortAnchors);
         result.add("scopeTranslation", translation);
         JsonArray gaps = new JsonArray();
         for (String gap : analysisGaps) gaps.add(gap);
@@ -649,6 +666,32 @@ public final class ScopePlanner {
                 || parameter >= method.soot.getParameterCount()) return null;
         int index = originalParameterUnitIndex(method.body, parameter);
         return index < 0 ? null : method.sites.get(index);
+    }
+
+    /** Map a method-level wire return capture to every exact value-return unit. */
+    private List<Site> originalReturnSites(JsonObject capture) {
+        Method method = methods.get(string(capture, "definitionMethod", ""));
+        if (method == null) return Collections.emptyList();
+        List<Site> result = new ArrayList<>();
+        for (int index : originalReturnUnitIndices(method.body,
+                string(capture, "javaType", ""))) {
+            result.add(method.sites.get(index));
+        }
+        return result;
+    }
+
+    static List<Integer> originalReturnUnitIndices(Body body, String javaType) {
+        if (body == null || javaType.isEmpty()
+                || !javaType.equals(body.getMethod().getReturnType().toString())) {
+            return Collections.emptyList();
+        }
+        List<Integer> result = new ArrayList<>();
+        int index = 0;
+        for (Unit unit : body.getUnits()) {
+            if (unit instanceof soot.jimple.ReturnStmt) result.add(index);
+            index++;
+        }
+        return result;
     }
 
     static int originalParameterUnitIndex(Body body, int parameter) {
