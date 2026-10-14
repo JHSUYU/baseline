@@ -15,9 +15,11 @@ from pathlib import Path
 from unittest.mock import patch
 
 from Mallory.native_graphchecker_dispatch.checklist import (
-    DEFAULT_INVENTORY, DEFAULT_OWNERSHIP, load_inventory, load_ownership,
+    DEFAULT_INVENTORY, DEFAULT_OWNERSHIP, _native_case_files,
+    load_inventory, load_ownership,
 )
-from .queue import (_cached_terminal_inspection, completion, pilot_receipt,
+from .queue import (_cached_terminal_inspection, _terminal_fingerprint,
+                    atomic, completion, pilot_receipt,
                     run_worker, sha,
                     validate_isolation)
 
@@ -76,6 +78,16 @@ class NativeQueueTest(unittest.TestCase):
                          "required_jvm_args": ["-Dhbase.test.port=20050"]}})
         with self.assertRaisesRegex(ValueError, "port ranges overlap"):
             validate_isolation(self.profile, "hbase", self.case_id,
+                               self.config, self.owners, "node1")
+
+    def test_ephemeral_review_is_scoped_to_case(self) -> None:
+        ports = self.profile["systems"]["hbase"]["ports"]
+        ports["case_receipts"] = {self.case_id: ports.pop("receipt")}
+        self.assertEqual(validate_isolation(self.profile, "hbase", self.case_id,
+                                            self.config, self.owners,
+                                            "node1")["mode"], "ephemeral")
+        with self.assertRaisesRegex(ValueError, "does not cover this JUnit"):
+            validate_isolation(self.profile, "hbase", "HBASE-02",
                                self.config, self.owners, "node1")
 
     def test_hdfs_solr_trial_data_properties_and_hbase_random_retry(self) -> None:
@@ -249,6 +261,43 @@ class NativeQueueTest(unittest.TestCase):
                                         self.state_root)
             self.assertEqual(inspect.call_count, 4)
 
+    def test_audited_promotion_cache_pins_completion_receipt(self) -> None:
+        self.config["case_id"] = self.case_id
+        self.config_file.write_text(json.dumps(self.config))
+        root = self.state_root / self.case_id
+        root.mkdir()
+        state = {"case_id": self.case_id, "terminal": True,
+                 "config_sha256": sha(self.config_file)}
+        (root / "checkpoint.json").write_text(json.dumps(state))
+        (root / "summary.json").write_text(json.dumps(state))
+        row = {"terminal_disposition": "tested_no_target_throw",
+               "native_tested_complete": True, "fault_trials": 1,
+               "strict_fault_trials": 1, "target_retained_fault_trials": 1,
+               "target_throw_trials": 0, "candidate_trials": 0,
+               "elapsed_seconds": 1.0}
+        completion(self.item, row, self.config_file, self.state_root,
+                   self.state_root / ".native-queue")
+        receipt = (self.state_root / ".native-queue/completions" /
+                   f"{self.case_id}.json")
+        cache = (self.state_root / ".native-queue/audits" /
+                 f"{self.case_id}.json")
+        atomic(cache, {"schema_version": 1, "owner": "node1",
+                       "basis": "audited_promotion_receipt",
+                       "completion_receipt_path": str(receipt),
+                       "completion_receipt_sha256": sha(receipt),
+                       "fingerprint": _terminal_fingerprint(
+                           self.item, self.config_root, self.state_root),
+                       "row": row})
+        with patch("Mallory.native_graphchecker_queue.queue.inspect_case",
+                   return_value=row) as inspect:
+            self.assertEqual(_cached_terminal_inspection(
+                self.item, "node1", self.config_root, self.state_root), row)
+            self.assertEqual(inspect.call_count, 0)
+            receipt.write_text(receipt.read_text() + " ")
+            _cached_terminal_inspection(self.item, "node1", self.config_root,
+                                        self.state_root)
+            self.assertEqual(inspect.call_count, 1)
+
     def test_bound_region_campaign_skips_live_lock_and_adopts_native_root(self) -> None:
         native_config = self.root / "immutable-native-config.json"
         native_root = self.root / "immutable-native-state"
@@ -256,6 +305,9 @@ class NativeQueueTest(unittest.TestCase):
         native = {"case_id": self.case_id + "-native-fixture",
                   "runner": {"mode": "region_state",
                              "jvm_args": self.config["runner"]["jvm_args"]},
+                  "target_throw": {"siteId": self.item["target"]["site_id"],
+                                   "exceptionClass": self.item["target"][
+                                       "target_exception"]},
                   "junit": {"class": "OriginalTest", "method": "testOriginal"}}
         native_config.write_text(json.dumps(native) + "\n")
         row_sha = hashlib.sha256(json.dumps(
@@ -268,6 +320,18 @@ class NativeQueueTest(unittest.TestCase):
             "native_config_path": str(native_config),
             "native_config_sha256": sha(native_config),
             "native_state_path": str(native_root)}) + "\n")
+        wrong = json.loads(self.config_file.read_text())
+        wrong["native_config_sha256"] = sha(native_config)
+        native["target_throw"]["siteId"] = "<wrong: void site()>#u1"
+        native_config.write_text(json.dumps(native) + "\n")
+        wrong["native_config_sha256"] = sha(native_config)
+        self.config_file.write_text(json.dumps(wrong) + "\n")
+        with self.assertRaisesRegex(ValueError, "changed identity or inputs"):
+            _native_case_files(self.item, self.config_root, self.state_root)
+        native["target_throw"]["siteId"] = self.item["target"]["site_id"]
+        native_config.write_text(json.dumps(native) + "\n")
+        wrong["native_config_sha256"] = sha(native_config)
+        self.config_file.write_text(json.dumps(wrong) + "\n")
         calls = []
 
         def inspect(*_args):

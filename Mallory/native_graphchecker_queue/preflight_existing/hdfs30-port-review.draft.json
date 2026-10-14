@@ -1,0 +1,11 @@
+{
+  "all_listeners_bind_port_zero": true,
+  "case_id": "HDFS-30",
+  "evidence": {
+    "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/MiniDFSCluster.java": "2583c9c9f0ad1912cfc00ba1da5b154617306bdf1b8cc5b4d658dd7c68a23338",
+    "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestLeaseRecovery.java": "95d7af3e7992bf74285e497492ea9b8a0d362025685acc294ffdcca485605133"
+  },
+  "schema_version": 1,
+  "scope": "TestLeaseRecovery#testBlockSynchronization constructs MiniDFSCluster.Builder(conf).numDataNodes(5) without fixed ports. Builder defaults NameNode RPC and HTTP to zero; DataNode HTTP and IPC arrays are null and start at zero; setupDatanodeAddress sets data transfer, HTTP, and IPC to localhost:0. Applies to HDFS-30 executed unchanged JUnit only; alternate selector attestation is pinned separately.",
+  "system": "hdfs"
+}

@@ -211,15 +211,27 @@ def validate_isolation(profile: dict[str, Any], system: str, case_id: str,
             not all(isinstance(arg, str) and arg in args for arg in required)):
         raise ValueError("missing required JUnit isolation JVM argument")
     if ports["mode"] == "ephemeral":
-        receipt_path = Path(ports.get("receipt", ""))
+        case_receipts = ports.get("case_receipts")
+        if case_receipts is not None:
+            if not isinstance(case_receipts, dict) or case_id not in case_receipts:
+                raise ValueError("ephemeral port review does not cover this JUnit")
+            receipt_path = Path(case_receipts[case_id])
+        else:
+            receipt_path = Path(ports.get("receipt", ""))
         if (not receipt_path.is_absolute() or not receipt_path.is_file() or
                 str(receipt_path) not in evidence):
             raise ValueError("ephemeral ports require a pinned dynamic-port receipt")
         receipt = obj(receipt_path)
         if (receipt.get("schema_version") != 1 or
                 receipt.get("system") != system or
+                receipt.get("case_id") not in (None, case_id) or
                 receipt.get("all_listeners_bind_port_zero") is not True):
             raise ValueError("dynamic-port receipt does not attest this system")
+        source_evidence = receipt.get("evidence", {})
+        if (not isinstance(source_evidence, dict) or
+                any(evidence.get(name) != digest for name, digest in
+                    source_evidence.items())):
+            raise ValueError("dynamic-port source evidence differs from profile")
         return {"mode": "ephemeral", "evidence": evidence}
     if ports["mode"] == "random_retry":
         receipt_path = Path(ports.get("receipt", ""))
@@ -330,11 +342,15 @@ def _cached_terminal_inspection(item: dict, owner: str, config_root: Path,
             cache = obj(cache_path)
             pilot_path = Path(cache.get("pilot_receipt_path", ""))
             completed_path = Path(cache.get("completion_receipt_path", ""))
+            basis = cache.get("basis")
             receipt_basis_valid = (
-                cache.get("basis") != "pinned_pilot_and_completion_receipts" or
-                (pilot_path.is_file() and completed_path.is_file() and
-                 sha(pilot_path) == cache.get("pilot_receipt_sha256") and
-                 sha(completed_path) == cache.get("completion_receipt_sha256")))
+                basis not in ("pinned_pilot_and_completion_receipts",
+                              "audited_promotion_receipt") or
+                (completed_path.is_file() and
+                 sha(completed_path) == cache.get("completion_receipt_sha256") and
+                 (basis == "audited_promotion_receipt" or
+                  (pilot_path.is_file() and
+                   sha(pilot_path) == cache.get("pilot_receipt_sha256")))))
             if (cache.get("fingerprint") == fingerprint and
                     cache.get("owner") == owner and
                     receipt_basis_valid and
@@ -625,4 +641,15 @@ def run_host(*, host: str, slots: int, pilot: Path, inventory: Path,
         argv.extend(("--pilot-receipt", str(pilot)))
         processes.append(subprocess.Popen(argv,
                                           cwd=Path(__file__).resolve().parents[2]))
-    return [process.wait() for process in processes]
+    controller = (state_root / ".native-queue" / "controllers" /
+                  f"{host}.json")
+    status = {"schema_version": 1, "host": host, "slots": slots,
+              "controller_pid": os.getpid(),
+              "worker_pids": [process.pid for process in processes],
+              "started_at": time.time(), "status": "running"}
+    atomic(controller, status)
+    codes = [process.wait() for process in processes]
+    status.update(status="finished", ended_at=time.time(),
+                  worker_exit_codes=codes)
+    atomic(controller, status)
+    return codes

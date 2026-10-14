@@ -3,11 +3,26 @@
 from __future__ import annotations
 
 import unittest
+from pathlib import Path
+
+from Mallory.native_graphchecker_dispatch.checklist import (
+    _native_case_files, load_inventory,
+)
 
 from .audit import audit
 
 
 class ExistingCampaignPreflightTest(unittest.TestCase):
+    def test_hdfs29_binding_pins_exact_inventory_throw(self) -> None:
+        here = Path(__file__).resolve().parent
+        cases, _ = load_inventory(here.parents[2] /
+                                  "Mallory/cases/inventory.json")
+        item = next(row for row in cases if row["case_id"] == "HDFS-29")
+        config, root = _native_case_files(item, here / "bindings",
+                                          Path("/unused"))
+        self.assertEqual(config.name, "campaign-config.json")
+        self.assertEqual(root.name, "campaign")
+
     def test_existing_campaigns_have_distinct_native_roots_and_trial_scratch(self) -> None:
         result = audit()
         cases = {row["case_id"]: row for row in result["cases"]}

@@ -112,8 +112,45 @@ def _native_case_files(item: dict, config_root: Path,
             config.is_symlink() or root.is_symlink() or
             _sha(config) != document.get("native_config_sha256") or
             _object(config).get("case_id") != native_id or
-            _object(config).get("runner", {}).get("mode") != "region_state"):
+            _object(config).get("runner", {}).get("mode") != "region_state" or
+            _object(config).get("target_throw", {}).get("siteId") != item[
+                "target"]["site_id"] or
+            _object(config).get("target_throw", {}).get("exceptionClass") != item[
+                "target"].get("target_exception")):
         raise ValueError("native REGION_STATE case binding changed identity or inputs")
+    identity = document.get("target_identity_audit")
+    if identity is not None:
+        if not isinstance(identity, dict) or set(identity) != {
+                "path", "sha256"}:
+            raise ValueError("native target identity audit pin is invalid")
+        audit_path = Path(identity["path"])
+        if (not audit_path.is_absolute() or audit_path.is_symlink() or
+                _sha(audit_path) != identity["sha256"]):
+            raise ValueError("native target identity audit changed")
+        audit = _object(audit_path)
+        native_config = _object(config)
+        if (audit.get("schema_version") != 1 or
+                audit.get("status") != "exact_inventory_guard_and_throw_verified" or
+                audit.get("case_id") != case_id or
+                audit.get("campaign_config_sha256") != _sha(config) or
+                audit.get("guard", {}).get("site_id") != native_config.get(
+                    "target_site") or
+                audit.get("throw", {}).get("site_id") != item["target"][
+                    "site_id"] or
+                audit.get("throw", {}).get("site_id") != native_config.get(
+                    "target_throw", {}).get("siteId") or
+                audit.get("throw", {}).get("exception_class") != item[
+                    "target"].get("target_exception") or
+                audit.get("throw", {}).get("source_line") != item[
+                    "target"].get("source_line") or
+                audit.get("source_sha256") != item["target"].get(
+                    "source_sha256")):
+            raise ValueError("native guard/throw proof differs from inventory")
+        for path_key, sha_key in (("source_path", "source_sha256"),
+                                  ("jimple_path", "jimple_sha256"),
+                                  ("manifest_path", "manifest_sha256")):
+            if _sha(Path(audit[path_key])) != audit[sha_key]:
+                raise ValueError("native target identity source evidence changed")
     return config, root
 
 
