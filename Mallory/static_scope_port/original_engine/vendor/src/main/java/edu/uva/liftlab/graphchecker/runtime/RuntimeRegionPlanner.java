@@ -2089,8 +2089,12 @@ public final class RuntimeRegionPlanner {
                 gaps.add(toJsonTreeFast(gap).getAsJsonObject());
             }
             Files.createDirectories(file.toAbsolutePath().getParent());
-            try (Writer output = Files.newBufferedWriter(file,
-                    StandardCharsets.UTF_8)) {
+            try (Writer output = file.getFileName().toString().endsWith(".gz")
+                    ? new java.io.BufferedWriter(new java.io.OutputStreamWriter(
+                            new java.util.zip.GZIPOutputStream(
+                                    Files.newOutputStream(file)),
+                            StandardCharsets.UTF_8))
+                    : Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
                 RuntimePlanArtifact.write(output, regions, gaps,
                         () -> regionPlans.stream().map(plan ->
                                 toJsonTreeFast(plan).getAsJsonObject())

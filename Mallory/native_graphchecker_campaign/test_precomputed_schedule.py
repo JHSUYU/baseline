@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import gzip
 import shutil
 import tempfile
 import unittest
@@ -136,6 +137,24 @@ class PrecomputedScheduleTest(unittest.TestCase):
             self.assertEqual(2, run.call_count)
         reuse.pop("precomputed_schedule_receipt_sha256")
         self.assertEqual(recomputed, reuse)
+
+    def test_compressed_region_plan_seals_and_rechecks_exact_bytes(self) -> None:
+        plain = self.recorded / "concolic_region_plan.jsonl"
+        compressed = self.recorded / "concolic_region_plan.jsonl.gz"
+        compressed.write_bytes(gzip.compress(plain.read_bytes(), mtime=0))
+        plain.unlink()
+        command = core._load(self.scheduler_command)
+        argv = command["argv"]
+        argv[argv.index("--region-plan") + 1] = str(compressed)
+        self._write(self.scheduler_command, command)
+        sealed = self._seal()
+        self.assertEqual(core._sha(compressed), sealed["artifacts_sha256"]["region_plan"])
+        weave = core._load(self.weave_file)
+        with self._pins()[0], self._pins()[1], self._pins()[2]:
+            core._verify_recording_plan(self.config, weave, self.root)
+            compressed.write_bytes(compressed.read_bytes() + b"changed")
+            with self.assertRaises(ValueError):
+                core._verify_recording_plan(self.config, weave, self.root)
 
     def test_mutated_trace_plan_command_or_engine_fails_closed(self) -> None:
         self._seal()

@@ -38,6 +38,12 @@ SIDECARS = ("candidate_dataflow_edges.jsonl.gz", "static_scope_map.jsonl",
             "region_skeletons.jsonl.gz")
 
 
+def region_plan_path(recorded: Path) -> Path:
+    """Accept the current compressed Recorder plan and older plaintext runs."""
+    compressed = recorded / "concolic_region_plan.jsonl.gz"
+    return compressed if compressed.is_file() else recorded / "concolic_region_plan.jsonl"
+
+
 def sha256(path: Path) -> str:
     hash_ = hashlib.sha256()
     with path.open("rb") as stream:
@@ -434,7 +440,7 @@ def prepare_weave(args: argparse.Namespace) -> dict:
     scheduler = [str(args.java), analysis_heap, "-Dcausynth.loop.default.bound=3",
                  "-cp", original_cp,
                  "edu.uva.liftlab.graphchecker.plan.ConcolicScheduler",
-                 "--region-plan", str(healthy / "recorded/concolic_region_plan.jsonl"),
+                 "--region-plan", str(region_plan_path(healthy / "recorded")),
                  "--candidate-graph", str(artifacts / "candidate_dataflow_edges.jsonl.gz"),
                  "--static-scope-map", str(artifacts / "static_scope_map.jsonl"),
                  "--output-dir", str(healthy / "scheduled"),

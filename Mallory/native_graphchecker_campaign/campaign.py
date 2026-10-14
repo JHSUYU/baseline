@@ -352,7 +352,8 @@ def _precomputed_body(config: dict[str, Any], recorded: Path,
     recorded, scheduled = recorded.resolve(strict=True), scheduled.resolve(strict=True)
     recorder_command = recorder_command.resolve(strict=True)
     scheduler_command = scheduler_command.resolve(strict=True)
-    plan = recorded / "concolic_region_plan.jsonl"
+    from Mallory.native_graphchecker_feedback.artifacts import region_plan_path
+    plan = region_plan_path(recorded)
     selected = recorded / "region_skeletons.jsonl"
     generated = scheduled / "execution_task_plan.jsonl"
     index = scheduled / "runtime_workflow_schedule_index.json"
@@ -509,7 +510,8 @@ def _verify_recording_plan(config: dict[str, Any], weave: dict[str, Any],
             command.extend(("--target-occurrence", rec["target_occurrence"]))
         subprocess.run(command, check=True, timeout=admission_timeout,
                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        region_plan = output / "concolic_region_plan.jsonl"
+        from Mallory.native_graphchecker_feedback.artifacts import region_plan_path
+        region_plan = region_plan_path(output)
         if not region_plan.is_file():
             raise ValueError("original recorder produced no region plan")
         scheduler = [str(Path(weave["java"]).resolve(strict=True)), analysis_heap,

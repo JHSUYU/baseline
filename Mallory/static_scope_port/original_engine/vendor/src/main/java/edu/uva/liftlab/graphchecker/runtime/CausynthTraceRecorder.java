@@ -2363,7 +2363,7 @@ public final class CausynthTraceRecorder {
         RuntimeRegionPlanner.plan(regions, "runtime region closure",
                 runtimeSeeds, trace.methods, trace.execution, trace.fields,
                 trace.protocol, planGaps).writeRuntimePlan(
-                        new File(directory, "concolic_region_plan.jsonl")
+                        new File(directory, "concolic_region_plan.jsonl.gz")
                                 .toPath());
     }
 

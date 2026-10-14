@@ -21,6 +21,7 @@ from pathlib import Path
 
 from Mallory.instrumentation.graphchecker_port import native_original_weave as weave
 from Mallory.native_graphchecker_campaign import campaign as native
+from Mallory.native_graphchecker_feedback.artifacts import region_plan_path
 from .preparation import _atomic, _digest, _object, _sha
 
 PROFILE_MODE = "original_graphchecker_zookeeper_profile"
@@ -849,7 +850,7 @@ def finalize_after_healthy(request_file: Path, output: Path,
         _run(_fresh_command_stage(output, "original-scheduler"),
              [java, loop_arg, "-cp", _original_cp([]),
             "edu.uva.liftlab.graphchecker.plan.ConcolicScheduler",
-            "--region-plan", str(recorded / "concolic_region_plan.jsonl"),
+            "--region-plan", str(region_plan_path(recorded)),
             "--candidate-graph", str(graph), "--static-scope-map", str(scope),
             "--output-dir", str(scheduled), "--max-jobs", str(profile["max_jobs"]),
             "--target-occurrence", selector], output, 300)

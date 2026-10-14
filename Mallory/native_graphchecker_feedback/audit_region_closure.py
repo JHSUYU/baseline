@@ -9,6 +9,7 @@ from pathlib import Path
 from Mallory.native_graphchecker_feedback.region_state_graph import (
     _plan_identity_rows, _rows, _sha,
 )
+from Mallory.native_graphchecker_feedback.artifacts import region_plan_path
 
 
 def audit(campaign: Path, engine_jar: Path) -> dict:
@@ -27,7 +28,7 @@ def audit(campaign: Path, engine_jar: Path) -> dict:
         if (result.get("native_session_sha256") and
                 result["native_session_sha256"] != _sha(directory / "native-summary.json")):
             raise ValueError(f"native summary pin differs: {directory}")
-        plan_path = directory / "original-graph/recorded/concolic_region_plan.jsonl"
+        plan_path = region_plan_path(directory / "original-graph/recorded")
         if summary.get("provenance", {}).get("regionPlanSha256") != _sha(plan_path):
             raise ValueError(f"original Finalizer plan pin differs: {directory}")
         plans = [row for row in _rows(plan_path) if row.get("kind") ==

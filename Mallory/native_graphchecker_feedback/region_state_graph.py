@@ -9,6 +9,7 @@ the static candidate graph is an input pin, not an observed edge.
 from __future__ import annotations
 
 import hashlib
+import gzip
 import json
 import os
 import re
@@ -21,6 +22,7 @@ from typing import Any
 from Mallory.instrumentation.graphchecker_port.native_original_weave import (
     DEPENDENCIES, JAR,
 )
+from Mallory.native_graphchecker_feedback.artifacts import region_plan_path
 
 SCHEMA = 1
 REGION_IN_ENDPOINT = re.compile(r"/region/(REGION\.[^/]+)/")
@@ -45,7 +47,8 @@ def _json(path: Path) -> dict[str, Any]:
 
 
 def _rows(path: Path):
-    with path.open(encoding="utf-8") as stream:
+    opener = gzip.open if path.suffix == ".gz" else open
+    with opener(path, "rt", encoding="utf-8") as stream:
         for number, line in enumerate(stream, 1):
             if line.strip():
                 row = json.loads(line)
@@ -737,7 +740,7 @@ def record_region_state(
     if _closed_inputs(trace_dir, scope, graph, skeletons) != before:
         raise ValueError("original trace or static inputs changed during extraction")
     summary = summarize_region_state(trace_dir,
-                                     plan_dir / "concolic_region_plan.jsonl",
+                                     region_plan_path(plan_dir),
                                      receipt_file, fault_events, scope, graph,
                                      skeletons, target_site,
                                      output_dir / "summary.json",

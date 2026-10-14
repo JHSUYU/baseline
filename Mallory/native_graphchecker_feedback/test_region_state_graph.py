@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import hashlib
+import gzip
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -13,6 +14,7 @@ from Mallory.native_graphchecker_feedback.region_state_graph import (
     JAR, _closed_inputs, _plan_identity_rows, _plan_projection,
     delta_region_state, record_region_state, summarize_region_state,
 )
+from Mallory.native_graphchecker_feedback.artifacts import region_plan_path
 
 
 SITE = "<example.Keys: void check()>#u7"
@@ -60,6 +62,14 @@ class RegionStateGraphTest(unittest.TestCase):
         self.assertEqual("fixture", plans[0]["admissionBasis"])
         self.assertEqual(2, plans[0]["demandDepth"])
         self.assertEqual(_plan_identity_rows(plan, JAR, plans), by_id)
+        compressed = self.root / "concolic_region_plan.jsonl.gz"
+        compressed.write_bytes(gzip.compress(plan.read_bytes(), mtime=0))
+        self.assertEqual((gaps, plans, by_id),
+                         _plan_projection(compressed, JAR))
+        self.assertEqual(compressed, region_plan_path(self.root))
+        compressed.unlink()
+        self.assertEqual(self.root / "concolic_region_plan.jsonl",
+                         region_plan_path(self.root))
 
     def test_configured_graph_heap_is_used_for_original_resolver(self) -> None:
         case = self._case("heap")

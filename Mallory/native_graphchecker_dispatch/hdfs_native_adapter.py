@@ -20,6 +20,7 @@ from pathlib import Path
 
 from Mallory.instrumentation.graphchecker_port import native_original_weave as weave
 from Mallory.native_graphchecker_campaign import campaign as native
+from Mallory.native_graphchecker_feedback.artifacts import region_plan_path
 from .preparation import (_atomic, _digest, _sha,
                           stage_original_recording_artifacts)
 from .region_state_target import (healthy_reached_nonfatal,
@@ -770,7 +771,7 @@ def prepare(request_file: Path, profile_file: Path, output: Path,
         profile.get("graph_timeout_seconds", 900))
     _run("original-scheduler", [java, graph_jvm[1], loop_bound, "-cp", engine_cp,
         "edu.uva.liftlab.graphchecker.plan.ConcolicScheduler",
-        "--region-plan", str(recorded / "concolic_region_plan.jsonl"),
+        "--region-plan", str(region_plan_path(recorded)),
         "--candidate-graph", str(artifacts / graph.name),
         "--static-scope-map", str(artifacts / static_map.name),
         "--output-dir", str(scheduled), "--max-jobs",

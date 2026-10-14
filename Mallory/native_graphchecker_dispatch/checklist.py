@@ -22,6 +22,7 @@ from typing import Any
 
 from Mallory.native_graphchecker_campaign import campaign as native
 from Mallory.native_graphchecker_feedback.feedback import _session_digest, delta
+from Mallory.native_graphchecker_feedback.artifacts import region_plan_path
 from Mallory.native_graphchecker_feedback.region_state_graph import (
     _closed_inputs, _fatal_unplanned, delta_region_state,
     summarize_region_state,
@@ -622,7 +623,7 @@ def _verified_region_summary(trial: Path, result: dict, config: dict,
     original = trial / "original-graph"
     if summary.get("status") == "recorded":
         recomputed = summarize_region_state(
-            trace, original / "recorded/concolic_region_plan.jsonl",
+            trace, region_plan_path(original / "recorded"),
             original / "target-occurrence.json", events, scope, graph,
             skeletons, config["target_site"], engine_jar=engine,
             target_throw=config["target_throw"])

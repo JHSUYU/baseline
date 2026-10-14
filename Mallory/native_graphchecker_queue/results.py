@@ -18,6 +18,7 @@ from Mallory.native_graphchecker_dispatch.checklist import (
 from Mallory.native_graphchecker_dispatch.region_state_target import (
     healthy_reached_nonfatal,
 )
+from Mallory.native_graphchecker_feedback.artifacts import region_plan_path
 from .queue import _terminal_fingerprint, obj, sha
 from .coverage import coverage_path, read_coverage
 from .inventory_epoch import (_row_sha, load_queue_inventory,
@@ -531,7 +532,7 @@ def _reviewed_exact_closure(case_id: str, native_root: Path, state_root: Path,
         observed.add(name)
         directory = native_root / "trials" / name
         result = obj(directory / "result.json")
-        plan = directory / "original-graph/recorded/concolic_region_plan.jsonl"
+        plan = region_plan_path(directory / "original-graph/recorded")
         events = directory / "iteration-native/fault-events.jsonl"
         if (result.get("strict_injection") is not True or
                 result.get("native_target_retained") is not True or

@@ -9,11 +9,14 @@ import com.google.gson.stream.JsonReader;
 import edu.uva.liftlab.graphchecker.contract.OccurrenceAddress;
 
 import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.zip.GZIPInputStream;
 
 /** Resolve original Finalizer plan addresses through GraphChecker identity. */
 public final class RegionPlanIdsMain {
@@ -27,8 +30,11 @@ public final class RegionPlanIdsMain {
         Path plan = Paths.get(args[project ? 1 : 0]);
         JsonParser parser = new JsonParser();
         TypeAdapter<JsonElement> values = new Gson().getAdapter(JsonElement.class);
-        try (BufferedReader lines = Files.newBufferedReader(
-                plan, StandardCharsets.UTF_8)) {
+        try (InputStream input = Files.newInputStream(plan);
+             InputStream decoded = plan.getFileName().toString().endsWith(".gz")
+                     ? new GZIPInputStream(input) : input;
+             BufferedReader lines = new BufferedReader(new InputStreamReader(
+                     decoded, StandardCharsets.UTF_8))) {
             String line;
             while ((line = lines.readLine()) != null) {
                 if (line.trim().isEmpty()) continue;
