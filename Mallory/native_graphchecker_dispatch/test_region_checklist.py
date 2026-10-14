@@ -170,6 +170,12 @@ class RegionChecklistTest(unittest.TestCase):
                           "targetEvidence"]["targetCheckOccurrenceIds"]}
             self.assertEqual(summary, checklist._verified_region_summary(
                 trial, result, config, graph_fixture.engine))
+            other_engine = self.root / "other-analysis-engine.jar"
+            other_engine.write_bytes(b"different engine bytes")
+            with self.assertRaisesRegex(
+                    ValueError, "original REGION_STATE graph or target receipt changed"):
+                checklist._verified_region_summary(trial, result, config,
+                                                   other_engine)
             events.write_text(events.read_text().replace("exact-runtime-check",
                                                         "wrong-occurrence"))
             with self.assertRaisesRegex(
