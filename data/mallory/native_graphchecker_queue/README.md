@@ -95,9 +95,10 @@ HBASE-01, HDFS-28, HDFS-31, SOLR-05, and SOLR-07 retain the explicitly labelled 
 same-occurrence proxy until an exact-ID frozen-evidence audit is pinned;
 their proxy counts do not establish causal closure.
 
-ZOOKEEPER-03 and ZOOKEEPER-05 are bound to active direct campaigns with
-immutable configs and isolated states. ZOOKEEPER-05 v5 is the bound campaign;
-its earlier v3/v4 blocked states remain separate.
+SOLR-19, ZOOKEEPER-03, and ZOOKEEPER-05 are bound to active direct campaigns
+with immutable configs and isolated states. SOLR-19's original healthy JUnit
+passed and retained its exact target before read-only binding. ZOOKEEPER-05
+v5 is the bound campaign; its earlier v3/v4 blocked states remain separate.
 The queue must honor their direct campaign locks until those processes finish.
 `promotion-v2.json` and `promotion-v2-manifest.json` record the initial
 two-completion promotion. Later rows are pinned by completion receipts,
@@ -107,8 +108,9 @@ handoff. `promotion-bind-v4.json` and its manifest pin the eight-completion
 successor and exact-ID audit index. `promotion-bind-v5.json` pins the fifteen
 bindings, ten completions, v5 launcher, and HBase source lineage at the
 previous handoff. `promotion-bind-v6.json` pins the eleventh completion;
-`promotion-bind-v7.json` pins both HDFS terminal reviews and this result
-snapshot.
+`promotion-bind-v7.json` pins both HDFS terminal reviews. The current
+`promotion-bind-v8.json` pins the SOLR-19 active binding, ownership, port
+profile, and this result snapshot.
 
 For a newly prepared case, run the one-command promoter on its physical owner
 host after the immutable native config, healthy target gate, and port review
