@@ -21,6 +21,7 @@ from Mallory.native_graphchecker_dispatch.region_state_target import (
 from Mallory.native_graphchecker_feedback.artifacts import region_plan_path
 from .queue import _terminal_fingerprint, obj, sha
 from .coverage import coverage_path, read_coverage
+from .chain_progress import validate_progress
 from .inventory_epoch import (_row_sha, load_queue_inventory,
                               require_epoch_results_dir)
 
@@ -46,6 +47,7 @@ FIELDS = (
     "checkpoint_path", "checkpoint_sha256", "summary_path", "summary_sha256",
     "terminal_review_path", "terminal_review_sha256",
     "terminal_quality_note",
+    "chain_progress",
     "completion_receipt_path", "completion_receipt_sha256", "evidence_paths",
 )
 RESULT_STATES = {"tested_candidate", "tested_no_target_throw",
@@ -648,6 +650,7 @@ def native_rows(inventory: Path, ownership_file: Path, config_root: Path,
             "summary_path": None, "summary_sha256": None,
             "terminal_review_path": None, "terminal_review_sha256": None,
             "terminal_quality_note": None,
+            "chain_progress": None,
             "completion_receipt_path": None,
             "completion_receipt_sha256": None, "evidence_paths": [],
         }
@@ -832,6 +835,19 @@ def native_rows(inventory: Path, ownership_file: Path, config_root: Path,
             row["native_state"] = "running_no_terminal_receipt"
         elif checkpoint_path.is_file() and obj(checkpoint_path).get("terminal") is True:
             row["native_state"] = "terminal_awaiting_adoption"
+        progress_pin = (state_root / ".native-queue" / "chain-progress" /
+                        f"{case_id}.json")
+        if progress_pin.is_file() or progress_pin.is_symlink():
+            if preparation is not None or admission is not None or eligibility is not None:
+                raise ValueError(f"native chain progress conflicts with preparation: {case_id}")
+            progress = validate_progress(item, progress_pin)
+            row["chain_progress"] = progress
+            row["evidence_paths"].extend((progress["manifest_path"],
+                                          progress["receipt_path"],
+                                          progress["pin_path"]))
+            if not receipt_path.is_file():
+                row["native_state"] = "partial_chain_audited"
+                row["native_tested_complete"] = False
         rows.append(row)
     return rows
 

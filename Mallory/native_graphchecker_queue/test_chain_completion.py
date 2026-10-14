@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -193,6 +194,23 @@ class ChainedCompletionTest(unittest.TestCase):
         events.write_text(events.read_text().replace("FAULT_APPLIED", "FAULT_DOOR"))
         with self.assertRaisesRegex(ValueError, "durable fault events changed"):
             inspect_chain(manifest)
+
+    def test_same_segment_duplicate_plan_rejected(self) -> None:
+        segment = self.segment("one")
+        root = Path(segment["checkpoint"]["path"]).parent
+        shutil.copytree(root / "trials/r0001", root / "trials/r0002")
+        checkpoint = json.loads((root / "checkpoint.json").read_text())
+        second = dict(checkpoint["trials"][0])
+        second.update(name="r0002", result="trials/r0002/result.json")
+        checkpoint["trials"].append(second)
+        checkpoint["completed_fault_trials"] = 2
+        checkpoint["elapsed_seconds"] = 22.0
+        write(root / "checkpoint.json", checkpoint)
+        write(root / "summary.json", checkpoint)
+        segment["checkpoint"] = pin(root / "checkpoint.json")
+        segment["summary"] = pin(root / "summary.json")
+        with self.assertRaisesRegex(ValueError, "segment replayed an exact fault plan"):
+            inspect_chain(self.manifest([segment], fault_budget=2))
 
 
 if __name__ == "__main__":

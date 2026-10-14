@@ -296,6 +296,7 @@ def inspect_chain(manifest_path: Path) -> dict[str, Any]:
         elif segment.get("summary") is not None:
             raise ValueError("nonterminal segment claims a summary")
         healthy = _load(root / "trials/r0000/result.json")
+        result_hashes = {"r0000": sha256(root / "trials/r0000/result.json")}
         if (healthy.get("status") != "healthy_seed" or
                 healthy.get("junit_passed") is not True or
                 healthy.get("native_target_retained") is not True or
@@ -313,6 +314,7 @@ def inspect_chain(manifest_path: Path) -> dict[str, Any]:
             trial = root / "trials" / name
             result_path = trial / "result.json"
             result = _load(result_path)
+            result_hashes[name] = sha256(result_path)
             faults = result.get("faults")
             if (result.get("case_id") != case_id or not isinstance(faults, list) or
                     not faults or len(faults) > budget.get("max_faults_per_trial", 10)):
@@ -330,6 +332,8 @@ def inspect_chain(manifest_path: Path) -> dict[str, Any]:
             key = _plan_key(faults)
             if key in prior_keys:
                 raise ValueError("successor replayed a prior exact fault plan")
+            if key in local_keys:
+                raise ValueError("segment replayed an exact fault plan")
             local_keys.add(key)
             events_path = trial / "iteration-native/fault-events.jsonl"
             if sha256(events_path) != result.get("fault_events_sha256"):
@@ -385,6 +389,7 @@ def inspect_chain(manifest_path: Path) -> dict[str, Any]:
                                      "sha256"), "terminal": terminal,
                                  "completed_fault_trials": len(checkpoint["trials"]),
                                  "distinct_plan_keys": len(local_keys),
+                                 "trial_result_sha256": result_hashes,
                                  "raw_archive_evidence_sha256": archive_sha,
                                  "frozen_full_graph_audit_sha256": audit_sha})
         elapsed += checkpoint.get("elapsed_seconds", 0.0)

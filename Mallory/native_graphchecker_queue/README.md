@@ -181,6 +181,30 @@ A healthy JUnit whose original graph admission timed out can be pinned under
 the immutable config, healthy result, exact target occurrence, and review.
 It records one preparation JUnit and zero fault trials, without terminal credit.
 
+Bounded successor campaigns can publish **partial chain progress** without
+claiming a 102-case completion. Create a SHA-pinned chain manifest for
+`chain_completion.inspect_chain`, including the reviewed formal per-case budget
+authority, then run:
+
+```bash
+python3 -m Mallory.native_graphchecker_queue.chain_progress \
+  --case-id ZOOKEEPER-10 --manifest /absolute/chain-manifest.json \
+  --inventory /absolute/inventory.json --state-root /absolute/queue/state \
+  --alternate-attestation /absolute/unchanged-junit-attestation.json
+```
+
+The command checks distinct fault plans, each segment's predecessor and
+result/event hashes, the formal budget authority, inventory target, and
+unchanged JUnit source proof if an alternate original selector ran. It writes
+an immutable inspection receipt and an atomic pointer under
+`STATE_ROOT/.native-queue/chain-progress/`. The exporter reinspects the chain
+on each export and reports its counts in `chain_progress`, with
+`native_state: partial_chain_audited`. Official `fault_trials`, elapsed time,
+and `native_tested_complete` remain unset/false. Partial closure counts are
+saved-result flags; exact Finalizer membership requires a frozen full graph
+audit. A chain reaching formal budget is handled by the separate terminal
+adoption path after every segment has such an audit.
+
 A source-only original JUnit eligibility review can be pinned under
 `STATE_ROOT/.native-queue/eligibility-notes/CASE-ID.json`. The exporter checks
 the exact inventory row, selected JUnit, prior source review and failed
