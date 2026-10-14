@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
+import org.apache.solr.client.solrj.impl.Http2SolrClient;
 
 final class ScopeFixture {
     static final class Box { String value; }
@@ -74,6 +75,11 @@ final class ScopeFixture {
     static void checkReader(BufferedReader reader) throws IOException {
         String value = reader.readLine();
         if (value == null) throw new IOException("READ_TARGET");
+    }
+
+    static void checkSolrHttp(Http2SolrClient client) throws IOException {
+        String response = client.request("core-admin");
+        if (response == null) throw new IOException("SOLR_HTTP_TARGET");
     }
 
     static void checkFileReader(File file) throws IOException {

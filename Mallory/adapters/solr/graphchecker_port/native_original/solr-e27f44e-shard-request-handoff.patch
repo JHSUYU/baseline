@@ -1,0 +1,47 @@
+diff --git a/solr/core/src/java/org/apache/solr/handler/component/ShardRequestor.java b/solr/core/src/java/org/apache/solr/handler/component/ShardRequestor.java
+--- a/solr/core/src/java/org/apache/solr/handler/component/ShardRequestor.java
++++ b/solr/core/src/java/org/apache/solr/handler/component/ShardRequestor.java
+@@ -16,6 +16,7 @@
+  */
+ package org.apache.solr.handler.component;
+ 
++import edu.uva.liftlab.graphchecker.runtime.MessageDoors;
+ import io.opentracing.Span;
+ import io.opentracing.Tracer;
+ import io.opentracing.propagation.Format;
+@@ -44,6 +45,7 @@
+   private final ModifiableSolrParams params;
+   private final Tracer tracer;
+   private final Span span;
++  private final Object malloryScope;
+   private final List<String> urls;
+   private final HttpShardHandler httpShardHandler;
+ 
+@@ -61,6 +63,7 @@
+     this.urls = getURLs(shard);
+     tracer = GlobalTracer.getTracer();
+     span = tracer != null ? tracer.activeSpan() : null;
++    malloryScope = MessageDoors.captureScope();
+   }
+ 
+ 
+@@ -91,6 +94,9 @@
+ 
+   @Override
+   public ShardResponse call() throws Exception {
++    long carried = malloryScope == null ? 0L : MessageDoors.enterCarriedScope(
++        malloryScope, "SOLR_SHARD_REQUEST", "ShardRequestor.call");
++    try {
+ 
+     ShardResponse srsp = new ShardResponse();
+     if (sreq.nodeName != null) {
+@@ -147,6 +153,9 @@
+     ssr.elapsedTime = TimeUnit.MILLISECONDS.convert(System.nanoTime() - startTime, TimeUnit.NANOSECONDS);
+ 
+     return httpShardHandler.transfomResponse(sreq, srsp, shard);
++    } finally {
++      MessageDoors.exitCarriedScope(carried);
++    }
+   }
+ 
+   static class SimpleSolrResponse extends SolrResponse {

@@ -1868,6 +1868,12 @@ public final class ScopePlanner {
         if (owner.equals("org.apache.zookeeper.server.quorum.Learner")) {
             return name.equals("writePacket") || name.equals("readPacket");
         }
+        if (owner.equals("org.apache.solr.client.solrj.impl.Http2SolrClient")) {
+            return name.equals("request") || name.equals("requestAsync");
+        }
+        if (owner.equals("org.apache.solr.handler.component.HttpShardHandler")) {
+            return name.equals("request") && declaresIoFault(ref);
+        }
         if (owner.equals("org.apache.solr.client.solrj.impl.HttpSolrClient")) {
             return name.equals("request") || name.equals("executeMethod");
         }
@@ -1985,7 +1991,27 @@ public final class ScopePlanner {
         // transports. Entries name API signatures or regexes, never a case's
         // fault point. Both halves remain MAY candidates until runtime IDs
         // pair the exact message.
-        JsonArray mappings = array(analysis, "rpc_mappings");
+        JsonArray mappings = array(analysis, "rpc_mappings").deepCopy();
+        boolean solrHttpMapped = false;
+        for (JsonElement element : mappings) {
+            if (element.isJsonObject() && "solr:http-request".equals(
+                    string(element.getAsJsonObject(), "portId", ""))) {
+                solrHttpMapped = true;
+            }
+        }
+        if (!solrHttpMapped) {
+            // The protocol adapter carries an exact correlation ID in HTTP
+            // headers. This static port merely nominates selected SolrJ
+            // send/dispatch calls; runtime IDs must still prove the handoff.
+            JsonObject solrHttp = new JsonObject();
+            solrHttp.addProperty("portId", "solr:http-request");
+            solrHttp.addProperty("transport", "SOLR_HTTP");
+            solrHttp.addProperty("sendMethod",
+                    "<org\\.apache\\.solr\\.client\\.solrj\\.impl\\.(HttpSolrClient|Http2SolrClient):");
+            solrHttp.addProperty("receiveMethod",
+                    "<org\\.apache\\.solr\\.servlet\\.SolrDispatchFilter:");
+            mappings.add(solrHttp);
+        }
         for (JsonElement element : mappings) {
             if (!element.isJsonObject()) continue;
             JsonObject map = element.getAsJsonObject();

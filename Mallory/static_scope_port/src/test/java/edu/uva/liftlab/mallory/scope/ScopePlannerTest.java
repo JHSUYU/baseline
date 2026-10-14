@@ -420,6 +420,53 @@ public class ScopePlannerTest {
     }
 
     @Test
+    public void solrHttp2RequestIsTypedDoorInSelectedMethod() throws Exception {
+        JsonObject config = fixtureTarget("checkSolrHttp",
+                fixtureLine("SOLR_HTTP_TARGET"), "BRANCH", "java.io.IOException");
+        JsonObject result = ScopePlanner.analyze(config);
+        boolean observed = false;
+        for (JsonElement entry : result.getAsJsonArray("scopeSites")) {
+            JsonObject site = entry.getAsJsonObject();
+            if ("DOOR_SITE".equals(site.get("role").getAsString())
+                    && site.get("callee").getAsString().contains(
+                        "org.apache.solr.client.solrj.impl.Http2SolrClient:")) {
+                observed = true;
+                assertEquals("java.io.IOException",
+                        site.get("exceptionClass").getAsString());
+            }
+        }
+        assertTrue("HTTP/2 request must remain in the static I/O frontier", observed);
+        boolean port = false;
+        for (JsonElement entry : result.getAsJsonObject("weaveManifest")
+                .getAsJsonArray("rpcPorts")) {
+            JsonObject mapped = entry.getAsJsonObject();
+            if ("solr:http-request".equals(mapped.get("portId").getAsString())) {
+                port = true;
+                assertTrue(mapped.getAsJsonArray("exports").size() > 0);
+            }
+        }
+        assertTrue("selected Solr HTTP request needs a static transport port", port);
+        JsonObject declared = new JsonObject();
+        declared.addProperty("portId", "solr:http-request");
+        declared.addProperty("transport", "SOLR_HTTP2");
+        declared.addProperty("sendMethod", "<org\\.apache\\.solr\\.client\\.solrj\\.impl\\.Http2SolrClient:");
+        JsonArray mappings = new JsonArray();
+        mappings.add(declared);
+        config.getAsJsonObject("analysis").add("rpc_mappings", mappings);
+        JsonArray preserved = ScopePlanner.analyze(config)
+                .getAsJsonObject("weaveManifest").getAsJsonArray("rpcPorts");
+        int matchingPorts = 0;
+        for (JsonElement entry : preserved) {
+            JsonObject mapped = entry.getAsJsonObject();
+            if ("solr:http-request".equals(mapped.get("portId").getAsString())) {
+                matchingPorts++;
+                assertEquals("SOLR_HTTP2", mapped.get("transport").getAsString());
+            }
+        }
+        assertEquals("explicit system map must not be duplicated", 1, matchingPorts);
+    }
+
+    @Test
     public void branchTargetExportsItsUniqueControlledFatalThrow() throws Exception {
         String source = new String(Files.readAllBytes(Paths.get(
                 "src/test/java/edu/uva/liftlab/mallory/scope/ScopeFixture.java")),

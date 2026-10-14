@@ -59,6 +59,27 @@ an unreceived export is not evidence of a delivered message. This differs
 from the two-phase Mallory runtime API. Native graph validation must inspect
 the resulting paired endpoint and the target's backward closure.
 
+## Shard-request worker handoff
+
+For subsequent Solr campaigns, apply the separate
+`solr-e27f44e-shard-request-handoff.patch` after the base protocol overlay:
+
+```bash
+python3 apply_shard_handoff.py --source /absolute/path/to/patched/solr
+python3 apply_shard_handoff.py --source /absolute/path/to/patched/solr --verify-only
+```
+
+`HttpShardHandler.submit` creates a `ShardRequestor` and submits it to a
+completion service. The overlay captures the current GraphChecker scope in
+the requestor constructor and restores it around `call`, where the HTTP/2
+request is issued. It applies to all shard requests, including collection
+admin operations. The static planner recognizes selected `Http2SolrClient`
+request calls as typed `IOException` doors and supplies the system-wide
+Solr HTTP port when no explicit map is provided. These are MAY candidates;
+the native trial must still observe the door, pair the HTTP request with a
+server receipt, and retain the chosen target after the fault. The overlay
+does not alter an original JUnit or nominate a case-specific fault site.
+
 The 12 changed files passed source attestation. The 10 changed Java files
 passed direct Java 8 compilation against the pinned source-built original
 engine on node1, producing 47 classes. The unchanged
