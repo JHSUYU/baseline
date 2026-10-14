@@ -67,6 +67,30 @@ public final class ConcolicSchedulerFatalDeciderTest {
     }
 
     @Test
+    public void keepsBothHelperArmsForRuntimeDecision() throws Exception {
+        java.util.List<StaticScopeMap.Guard> arms =
+                ConcolicScheduler.fatalDeciders(map(false), GUARD);
+        assertEquals(2, arms.size());
+        assertEquals(HELPER, arms.get(0).siteId());
+        assertEquals(Boolean.TRUE, arms.get(0).outcome());
+        assertNull(arms.get(0).verdict());
+        assertEquals(HELPER, arms.get(1).siteId());
+        assertEquals(Boolean.FALSE, arms.get(1).outcome());
+        assertEquals(Boolean.TRUE, arms.get(1).verdict());
+        assertEquals(2, StaticScopeMap.guardsOf(
+                StaticScopeMap.guardsJson(arms)).size());
+    }
+
+    @Test
+    public void fallsBackToTargetGuardForUnstatedHelperTree() throws Exception {
+        // Distinct helper methods cannot be resolved by the one call-frame
+        // attribution in RowPublication.decided.  Its own target guard
+        // condition remains a safe, less precise fallback.
+        assertTrue(ConcolicScheduler.fatalDeciders(
+                map(true), GUARD).isEmpty());
+    }
+
+    @Test
     public void retainsRefusalWhenTwoCompatibleArmsRemain() throws Exception {
         try {
             ConcolicScheduler.fatalDecider(map(true), GUARD);

@@ -126,13 +126,12 @@ public final class ConcolicScheduler {
                         candidate.targetOccurrence);
                 target.addProperty("requiredOutcome",
                         candidate.targetRequiredOutcome);
-                if (candidate.targetDecider != null) {
-                    JsonObject decider = new JsonObject();
-                    decider.addProperty("siteId",
-                            candidate.targetDecider.siteId());
-                    decider.addProperty("requiredOutcome",
-                            candidate.targetDecider.outcome());
-                    target.add("decidedBy", decider);
+                if (!candidate.targetDeciders.isEmpty()) {
+                    // The runtime consumes every arm of the helper's
+                    // decision tree.  Keeping only one fatal-compatible arm
+                    // loses the other arm needed to state the branch phi.
+                    target.add("decidedBy", StaticScopeMap.guardsJson(
+                            candidate.targetDeciders));
                 }
                 if (!candidate.targetGuards.isEmpty()) {
                     JsonArray guards = new JsonArray();
@@ -321,6 +320,55 @@ public final class ConcolicScheduler {
             return compatible.get(0);
         }
         return null;
+    }
+
+    /** All arms of the one helper method deciding a target guard.  A helper
+     *  may return through several branches, so choosing one compatible arm
+     *  would silently miss another route to the target.  The runtime's
+     *  {@code RowPublication.decided} resolves the actual branch occurrence
+     *  from the trace and needs both arms at every listed site.  If the map
+     *  does not state one complete helper decision tree, use the guard's own
+     *  recorded condition rather than inventing a helper attribution. */
+    static List<StaticScopeMap.Guard> fatalDeciders(StaticScopeMap map,
+                                                   String guardSiteId) {
+        Boolean fatal = fatalArm(map, guardSiteId);
+        List<StaticScopeMap.Guard> stated = null;
+        String targetSiteId = null;
+        for (StaticScopeMap.Site target : map.targetSites()) {
+            List<StaticScopeMap.Guard> deciders =
+                    target.guardDeciders.get(guardSiteId);
+            if (deciders == null || deciders.isEmpty()) continue;
+            if (fatal == null) {
+                throw new IllegalStateException("missing fatal arm for decider "
+                        + guardSiteId);
+            }
+            if (stated != null && !target.siteId.equals(targetSiteId)) {
+                throw new IllegalStateException("ambiguous target binding for "
+                        + guardSiteId + ": " + targetSiteId + " and "
+                        + target.siteId);
+            }
+            stated = deciders;
+            targetSiteId = target.siteId;
+        }
+        if (stated == null) return Collections.emptyList();
+        String method = "";
+        Map<String, Set<Boolean>> arms = new LinkedHashMap<>();
+        for (StaticScopeMap.Guard decider : stated) {
+            String current = SiteId.methodOf(decider.siteId());
+            if (current.isEmpty() || decider.outcome() == null
+                    || !method.isEmpty() && !method.equals(current)) {
+                return Collections.emptyList();
+            }
+            method = current;
+            arms.computeIfAbsent(decider.siteId(), ignored ->
+                    new LinkedHashSet<Boolean>()).add(decider.outcome());
+        }
+        for (Set<Boolean> pair : arms.values()) {
+            if (!pair.contains(Boolean.TRUE) || !pair.contains(Boolean.FALSE)) {
+                return Collections.emptyList();
+            }
+        }
+        return Collections.unmodifiableList(new ArrayList<>(stated));
     }
 
     private static void scheduleTargetFirst(Arguments arguments)
@@ -548,7 +596,8 @@ public final class ConcolicScheduler {
         result.add(new Candidate(goal, branches, site,
                 optionalInteger(fatal, "selectedOccurrence", 1),
                 fatalArm(scopeMap, site).booleanValue(),
-                guards.isEmpty() ? fatalDecider(scopeMap, site) : null,
+                guards.isEmpty() ? fatalDeciders(scopeMap, site)
+                        : Collections.<StaticScopeMap.Guard>emptyList(),
                 guards, inputActions));
     }
 
@@ -918,8 +967,8 @@ public final class ConcolicScheduler {
         private final String targetSiteId;
         private final int targetOccurrence;
         private final boolean targetRequiredOutcome;
-        /** The helper branch that decides the target branch, or null. */
-        private final StaticScopeMap.Guard targetDecider;
+        /** Complete arms of the helper that decides the target branch. */
+        private final List<StaticScopeMap.Guard> targetDeciders;
         /** Every test of a disjunctive guard with its fatal arm, first the
          *  target branch; empty for one guard. */
         private final List<StaticScopeMap.Guard> targetGuards;
@@ -930,7 +979,8 @@ public final class ConcolicScheduler {
                           boolean targetRequiredOutcome,
                           JsonArray inputActions) {
             this(goal, branches, targetSiteId, targetOccurrence,
-                    targetRequiredOutcome, null,
+                    targetRequiredOutcome,
+                    Collections.<StaticScopeMap.Guard>emptyList(),
                     Collections.<StaticScopeMap.Guard>emptyList(),
                     inputActions);
         }
@@ -938,11 +988,11 @@ public final class ConcolicScheduler {
         private Candidate(Goal goal, JsonArray branches,
                           String targetSiteId, int targetOccurrence,
                           boolean targetRequiredOutcome,
-                          StaticScopeMap.Guard targetDecider,
+                          List<StaticScopeMap.Guard> targetDeciders,
                           List<StaticScopeMap.Guard> targetGuards,
                           JsonArray inputActions) {
             this.goal = goal;
-            this.targetDecider = targetDecider;
+            this.targetDeciders = targetDeciders;
             this.targetGuards = targetGuards;
             this.branches = branches;
             this.targetSiteId = nonNull(targetSiteId);
