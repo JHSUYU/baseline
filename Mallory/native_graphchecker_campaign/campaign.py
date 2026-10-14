@@ -213,14 +213,35 @@ def _task_plan_lineage(full_plan: Path, woven_plan: Path,
             "selected_task_plan_sha256": woven_sha}
 
 
+def _region_state_plan_lineage(full_plan: Path, index: Path,
+                               woven_plan: Path) -> dict[str, Any]:
+    """Pin the recorder schedule without comparing an unused weave task.
+
+    REGION_STATE runs do not publish a concolic task to the JVM. The original
+    scheduler can give the same task a different dynamic root call ID when a
+    healthy trace is rerun, while the static region and native hook pins stay
+    identical. Concolic campaigns retain exact task-row matching.
+    """
+    rows = [json.loads(line) for line in full_plan.read_text(encoding="utf-8").splitlines()
+            if line.strip()]
+    if not rows or any(not isinstance(row, dict) or
+                       not isinstance(row.get("taskId"), str) or
+                       not row["taskId"] for row in rows):
+        raise ValueError("original scheduler produced no valid task")
+    return {"recording_plan_sha256": _sha(full_plan),
+            "recording_index_sha256": _sha(index),
+            "recording_plan_task_count": len(rows),
+            "unused_weave_task_plan_sha256": _sha(woven_plan)}
+
+
 def _verify_recording_plan(config: dict[str, Any], weave: dict[str, Any],
-                           campaign_root: Path) -> dict[str, str]:
+                           campaign_root: Path) -> dict[str, Any]:
     """Re-run the original recorder and scheduler; reject a hand-authored task.
 
     The source-built recorder validates the closed region-state recording's
     TracedRows digest against the same static artifacts before planning.
     Re-aggregation and scheduling occur once at campaign admission, never
-    per fuzz trial. The task plan must be byte-identical to the pinned weave.
+    per fuzz trial. Concolic task plans must match the pinned weave exactly.
     """
     rec = config["recording"]
     planned = Path(weave["task_plan"]).resolve(strict=True)
@@ -268,7 +289,10 @@ def _verify_recording_plan(config: dict[str, Any], weave: dict[str, Any],
         index = scheduled / "runtime_workflow_schedule_index.json"
         if not generated.is_file() or not index.is_file():
             raise ValueError("original scheduler produced no complete task plan")
-        task_plan_lineage = _task_plan_lineage(generated, planned, weave["task_id"])
+        if config["runner"].get("mode") == "region_state":
+            task_plan_lineage = _region_state_plan_lineage(generated, index, planned)
+        else:
+            task_plan_lineage = _task_plan_lineage(generated, planned, weave["task_id"])
         skeleton_lineage = _skeleton_lineage(
             skeletons, woven_skeletons, output / "region_skeletons.jsonl")
     return {"recording_manifest_sha256": _sha(trace / "streaming_trace_manifest.json"),

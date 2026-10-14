@@ -60,6 +60,24 @@ class NativeAdmissionLineageTest(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "full schedule"):
                 core._task_plan_lineage(full, chosen, "TASK.B")
 
+    def test_region_state_pins_fresh_schedule_without_unused_task_equality(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fresh = root / "fresh.jsonl"
+            woven = root / "woven.jsonl"
+            index = root / "index.json"
+            fresh.write_text('{"taskId":"TASK.A","rootCallId":"fresh"}\n')
+            woven.write_text('{"taskId":"TASK.A","rootCallId":"older"}\n')
+            index.write_text('{"tasks":1}\n')
+            receipt = core._region_state_plan_lineage(fresh, index, woven)
+            self.assertEqual(1, receipt["recording_plan_task_count"])
+            self.assertEqual(core._sha(fresh), receipt["recording_plan_sha256"])
+            self.assertEqual(core._sha(index), receipt["recording_index_sha256"])
+            self.assertNotEqual(receipt["recording_plan_sha256"],
+                                receipt["unused_weave_task_plan_sha256"])
+            with self.assertRaisesRegex(ValueError, "full schedule"):
+                core._task_plan_lineage(fresh, woven, "TASK.A")
+
     def test_runner_prefix_uses_fresh_trial_result_path(self) -> None:
         prefix = core._runner_prefix(
             {"args_before_test": ["{trial_result_file}"]}, Path("/tmp/trial"))
