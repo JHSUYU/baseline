@@ -33,20 +33,29 @@ runtime and does **not** supply the new campaign's structural fingerprint.
    `MALLORY_HDFS_COMMON_SCOPE=ipc`. Recreate the pinned overlay classpath
    directory on the assigned host. The scope input's ordered classpath must
    exist exactly as written; if the host paths differ, version a new request.
-3. Run the current `ScopePlanner` with `scope-input-v1.json`, writing its
-   output and `original_engine_output_dir` to isolated local storage. The
+3. Run the current `ScopePlanner` with a host-local copy of the pinned scope
+   input, writing its output and `original_engine_output_dir` to isolated
+   local storage. The ordered classpath must place the planner's ASM 9.4
+   dependencies before Hadoop's ASM 5 dependencies. The
    output must contain one check at line 552, one typed throw at line 555,
    `STATIC_VALUE_EDGE` rows, and general Hadoop IPC `IOException` doors.
    `materialize_config.py` checks those conditions and writes the immutable
    campaign config. Pass it the exact weaver and runtime jars present in the
-   scope input's dependency classpath, plus the current analyzer jar.
-4. Run **one fresh no-fault** `Mallory.core.graphchecker_campaign` trial using
-   `JUnitTrialMain` and parameter index 0. Require one JUnit execution,
-   healthy pass, target reach, one typed line-555 `TARGET_THROW`, and a
-   version-1 `structuralFingerprint`. This is the healthy envelope, not a
-   detection. The old trace cannot replace it.
-5. Only then start `Mallory.core.graphchecker_fuzzer` from that prepared
-   healthy state. Fuzzer scheduler v5 admits up to 192 fault trials / 4 hours,
+   scope input's dependency classpath, plus the current analyzer jar. The
+   original GraphChecker seed map (`graphchecker_static_scope_map.jsonl`) is
+   the sole trace-analysis digest authority. The merged Soot MAY map
+   (`static_scope_map.jsonl`) is a separate SHA-pinned sidecar used to rank
+   observed fault doors; it adds no causal graph edges.
+4. Run **two fresh independent no-fault** `Mallory.core.graphchecker_campaign`
+   trials using `JUnitTrialMain` and parameter index 0. Require one JUnit
+   execution per trial, healthy pass, target reach, and a stable typed
+   line-555 `TARGET_THROW` structural fingerprint/count. The expected throw
+   is the healthy envelope and earns no detection credit. The old trace
+   cannot replace either fresh run.
+5. Only then start `Mallory.core.graphchecker_fuzzer` with one independent
+   trace passed as `--additional-healthy-seed-trace`; its archive hash is
+   checkpointed along with the fuzzer's own healthy run. Scheduler v5 admits
+   up to 192 fault trials / 4 hours,
    six faults per plan; its first 128 bootstrap trials are capped at three
    faults. A plan is eligible only if its exact `FAULT_DOOR` is observed, its
    `FAULT_APPLIED` receipt matches, and the target remains reachable.
@@ -63,9 +72,10 @@ python3 -m Mallory.core.graphchecker_fuzzer \
 The stdout status `paused_wave` means the checkpoint is still `running`,
 `terminal=false`, and retains the queue and full immutable 192/4h/max6
 budget. After checking the host again, resume with the **same config bytes
-and campaign directory**, first `--stop-after-fault-trials 128`, then without
-that option for the final full budget. The scheduler refuses a changed config
-hash or budget. If the queue exhausts, the time budget expires, or the
+and campaign directory** and the same pinned independent healthy trace,
+first `--stop-after-fault-trials 128`, then without that option for the final
+full budget. The scheduler refuses a changed config hash, budget, or healthy
+seed archive. If the queue exhausts, the time budget expires, or the
 target is lost before 64 trials, record the actual terminal status instead
 of marking a completed 64-trial wave. A comparable 64-trial local footprint
 is about 3.0 GB including static/healthy files and one transient raw trace;
@@ -89,9 +99,13 @@ and process-isolation preflight. Keep raw traces and trial scratch local.
 Enforce PG0 start available ≥10 GiB, stop ≤9 GiB, at most two concurrent
 bounded campaigns, ≤32 MiB PG0 durable allocation for this campaign and
 ≤64 MiB aggregate, with checks before each trial and durable write and a
-poll interval ≤3 seconds. A monitored process group must be stopped and
-checkpointed on breach. The current fuzzer has no built-in capacity guard;
-attach one before launching. No HDFS trial has been started by this staging.
+poll interval ≤3 seconds. The generic `capacity_guard` config checks PG0,
+root, tmpfs, memory, private local tree, and dedicated durable allocation
+before preparation and each trial. On refusal it writes `capacity_pause`
+with the exact reason to the nonterminal checkpoint; resume uses the same
+config and campaign directory after a fresh admission check. A monitored
+process group handles changes during a running JVM. No HDFS trial has been
+started by this staging.
 
 Read-only sizing on node1 at staging time found 5.20 GB free in `/dev/shm`
 and 1.70 GB free on root. A comparable HDFS48 static plus healthy tree used
@@ -101,5 +115,6 @@ trials, the new class tree, and one transient raw trace gives about 4.4 GB
 of tmpfs use. With a 1 GiB local reserve the full budget needs at least
 about 5.5 GB free *before* admission; node1's measured 5.20 GB does not
 pass that estimate. The 1.90 GB HDFS48 tree is pinned evidence and must be
-preserved. A shorter pilot can be considered only with a separately versioned
-budget and fresh host resource proof.
+preserved. The 64-trial first wave pauses without changing the full budget,
+then can resume after old raw data has been bounded and the host passes a
+fresh guard.

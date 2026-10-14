@@ -129,6 +129,22 @@ def main():
         "timeout_seconds": REQUEST["budget"]["trial_timeout_seconds"],
         "scratch_root": "/dev/shm",
         "trial_cwd_template": str(template.resolve()),
+        "capacity_guard": {
+            "pg0_path": "/proj/silentfailure-PG0",
+            "pg0_start_min_bytes": REQUEST["capacity"]["start_available_bytes_at_least"],
+            "pg0_stop_max_bytes": REQUEST["capacity"]["stop_available_bytes_at_or_below"],
+            "root_path": "/",
+            "root_min_bytes": 1073741824,
+            "scratch_path": "/dev/shm",
+            "scratch_min_bytes": 1073741824,
+            "memory_min_bytes": 17179869184,
+            "private_max_bytes": 4831838208,
+            "durable_path": "/proj/silentfailure-PG0/ZhenyuLi/Mallory/"
+                            "campaigns/HDFS-11-PIPELINE-GC-V1",
+            "durable_max_bytes": REQUEST["capacity"][
+                "per_campaign_durable_pg0_cap_bytes"],
+            "poll_seconds": 3,
+        },
     }
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(config, indent=2, sort_keys=True) + "\n")

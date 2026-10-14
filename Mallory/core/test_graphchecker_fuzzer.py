@@ -10,7 +10,8 @@ from pathlib import Path
 from unittest.mock import patch
 
 from Mallory.core.graphchecker_campaign import _archive_jsonl, _trial_verdict
-from Mallory.core.graphchecker_fuzzer import (_accept_result, _enqueue, _finish,
+from Mallory.core.graphchecker_fuzzer import (_accept_result, _admit_capacity,
+                                             _enqueue, _finish,
                                              _actor_site_key, _plan_key,
                                              _retention_score,
                                              _new_state, _pick, _resume_active,
@@ -617,6 +618,37 @@ class GraphCheckerFuzzerTest(unittest.TestCase):
                 seed.write_bytes(b"changed")
                 with self.assertRaisesRegex(ValueError, "healthy seeds changed"):
                     run_campaign(config_file, root, additional_healthy_seeds=[seed])
+
+    def test_capacity_pause_checkpoints_before_preparation_and_can_resume(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            config_file = root / "config.json"
+            config_file.write_text('{"capacity_guard": {}}')
+            refused = {"phase": "preparation", "reason": "pg0_start_floor",
+                       "sample": {"pg0_available_bytes": 1}}
+            accepted = {"phase": "preparation", "reason": None,
+                        "sample": {"pg0_available_bytes": 2}}
+            with patch("Mallory.core.graphchecker_fuzzer.load_config",
+                       return_value=self.config()), patch(
+                       "Mallory.core.graphchecker_fuzzer._budget",
+                       return_value=self.budget()), patch(
+                       "Mallory.core.graphchecker_fuzzer.load_capacity_guard",
+                       return_value={}), patch(
+                       "Mallory.core.graphchecker_fuzzer.check_capacity",
+                       return_value=refused), patch(
+                       "Mallory.core.graphchecker_fuzzer.prepare") as prepare:
+                paused = run_campaign(config_file, root)
+            prepare.assert_not_called()
+            self.assertFalse(paused["terminal"])
+            self.assertEqual("pg0_start_floor", paused["capacity_pause"]["reason"])
+            self.assertIsNone(paused["active"])
+            with patch("Mallory.core.graphchecker_fuzzer.check_capacity",
+                       return_value=accepted):
+                self.assertTrue(_admit_capacity(
+                    paused, root / "checkpoint.json", {}, root, "preparation"))
+            self.assertNotIn("capacity_pause", paused)
+            self.assertNotIn("capacity_pause", json.loads(
+                (root / "checkpoint.json").read_text()))
 
     def test_checkpoint_policy_preserves_v2_v3_v4_replay(self):
         for version in (2, 3, 4, 5):

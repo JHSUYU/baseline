@@ -21,6 +21,7 @@ from .graphchecker_campaign import (_configured_check_sites, _json, _write_json,
                                     _prior_trace_metadata, _prior_trace_profiles,
                                     _sha256, load_config, prepare,
                                     run_trial, verify_trial_artifacts)
+from .resource_guard import check_capacity, load_capacity_guard
 
 SCHEMA = 1
 PLAN_FIELDS = ("siteId", "node", "occurrenceId", "ordinal", "exceptionClass")
@@ -653,6 +654,25 @@ def _verify_recorded_evidence(state: dict[str, Any], root: Path) -> None:
         verify_trial_artifacts(path.parent, result)
 
 
+def _admit_capacity(state: dict[str, Any], checkpoint: Path,
+                    guard: dict[str, Any] | None, root: Path,
+                    phase: str) -> bool:
+    if guard is None:
+        return True
+    receipt = check_capacity(guard, root, phase)
+    state["capacity_guard_last"] = receipt
+    if receipt["reason"] is not None:
+        state["capacity_pause"] = receipt
+        state["updated_at"] = _now()
+        state["terminal"] = False
+        _write_json(checkpoint, state)
+        return False
+    if state.pop("capacity_pause", None) is not None:
+        state["updated_at"] = _now()
+        _write_json(checkpoint, state)
+    return True
+
+
 def _finish(state: dict[str, Any], root: Path) -> dict[str, Any]:
     if state["status"] == "running":
         if state["completed_fault_trials"] >= state["budget"]["fault_trials"]:
@@ -735,6 +755,7 @@ def run_campaign(config_path: Path, root: Path,
              stop_after_fault_trials > budget["fault_trials"])):
         raise ValueError("stop_after_fault_trials must be within the immutable budget")
     root = root.resolve()
+    guard = load_capacity_guard(_json(config_path).get("capacity_guard"), root)
     healthy_seed_paths = [path.resolve() for path in additional_healthy_seeds or []]
     if len(set(healthy_seed_paths)) != len(healthy_seed_paths):
         raise ValueError("duplicate additional healthy seed trace")
@@ -786,6 +807,8 @@ def run_campaign(config_path: Path, root: Path,
             _write_json(checkpoint, state)
         if state["status"] != "running":
             return _finish(state, root)
+        if not _admit_capacity(state, checkpoint, guard, root, "preparation"):
+            return state
         prepared = root / "prepared"
         if not (prepared / "weave-receipt.json").is_file():
             if prepared.exists():
@@ -795,6 +818,9 @@ def run_campaign(config_path: Path, root: Path,
         if state["healthy"] is None and state["active"] is None:
             state["active"] = {"index": 0, "name": "r0000", "faults": []}
             _write_json(checkpoint, state)
+        if not _admit_capacity(state, checkpoint, guard, root,
+                               "healthy" if state["healthy"] is None else "fault"):
+            return state
         _resume_active(state, root, config, prepared, healthy_seed_paths)
         while state["status"] == "running":
             if (state["completed_fault_trials"] >= budget["fault_trials"] or
@@ -839,6 +865,8 @@ def run_campaign(config_path: Path, root: Path,
                                "bootstrap_seed": selected.get("bootstrap_seed", False),
                                "unmatched_retry": selected.get("unmatched_retry", 0)}
             _write_json(checkpoint, state)
+            if not _admit_capacity(state, checkpoint, guard, root, "fault"):
+                return state
             _resume_active(state, root, config, prepared, healthy_seed_paths)
         return _finish(state, root)
 
@@ -860,7 +888,8 @@ def main(argv: list[str] | None = None) -> int:
     paused = (state["status"] == "running" and args.stop_after_fault_trials is not None
               and state["completed_fault_trials"] >= args.stop_after_fault_trials)
     print(json.dumps({"case_id": state["case_id"],
-                      "status": "paused_wave" if paused else state["status"],
+                      "status": ("paused_capacity_guard" if state.get("capacity_pause")
+                                 else "paused_wave" if paused else state["status"]),
                       "completed_fault_trials": state["completed_fault_trials"],
                       "summary": (str((args.out / "summary.json").resolve())
                                   if (args.out / "summary.json").is_file() else None)}))
