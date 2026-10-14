@@ -7,7 +7,8 @@ import json
 from pathlib import Path
 
 from Mallory.native_graphchecker_dispatch.checklist import (
-    DEFAULT_INVENTORY, DEFAULT_OWNERSHIP, inspect_case, load_inventory,
+    DEFAULT_INVENTORY, DEFAULT_OWNERSHIP, _native_case_files,
+    inspect_case, load_inventory,
     load_ownership,
 )
 from .queue import (MAX_SLOTS, atomic, completion, obj, physical_host,
@@ -63,8 +64,13 @@ def main() -> None:
         item = next((item for item in cases if item["case_id"] == args.case_id), None)
         if item is None or owners[args.case_id] != args.host:
             raise ValueError("pilot case is not owned by this host")
+        config_file, native_root = _native_case_files(item, args.config_root,
+                                                       args.state_root)
+        binding_file = args.config_root / f"{args.case_id}.json"
+        if config_file == binding_file:
+            binding_file = None
         validate_isolation(obj(args.isolation), item["system"], args.case_id,
-                           obj(args.config_root / f"{args.case_id}.json"),
+                           obj(config_file),
                            owners, args.host)
         result = run_worker(host=args.host, slot=0, slots=1,
                             inventory=args.inventory, ownership_file=args.ownership,
@@ -78,16 +84,18 @@ def main() -> None:
         row = inspect_case(item, args.host, args.config_root, args.state_root)
         if row["native_tested_complete"] is not True:
             raise RuntimeError("pilot did not complete an audited native fuzz budget")
-        completion(item, row, args.config_root / f"{args.case_id}.json",
-                   args.state_root, args.state_root / ".native-queue")
+        completion(item, row, config_file, args.state_root,
+                   args.state_root / ".native-queue", native_root=native_root,
+                   binding_file=binding_file)
         receipt = {"schema_version": 1, "passed": True,
                    "case_id": args.case_id, "host": args.host,
                    "inventory_sha256": sha(args.inventory),
                    "ownership_sha256": sha(args.ownership),
                    "isolation_sha256": sha(args.isolation),
-                   "config_sha256": sha(args.config_root / f"{args.case_id}.json"),
-                   "summary_sha256": sha(args.state_root / args.case_id /
-                                         "summary.json")}
+                   "config_sha256": sha(config_file),
+                   "summary_sha256": sha(native_root / "summary.json")}
+        if binding_file is not None:
+            receipt["binding_sha256"] = sha(binding_file)
         atomic(args.pilot_receipt, receipt)
         print(json.dumps(result, sort_keys=True))
         return
