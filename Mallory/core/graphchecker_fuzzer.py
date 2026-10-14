@@ -526,6 +526,9 @@ def _trial_record(name: str, result: dict[str, Any]) -> dict[str, Any]:
             "result": f"trials/{name}/result.json",
             "elapsed_seconds": result["elapsed_seconds"],
             "faults": result["fault_plan"],
+            "graph_analysis": result.get("graph_analysis"),
+            "applied_faults_raw": result.get("applied_faults_raw"),
+            "matched_fault_prefix_raw": result.get("matched_fault_prefix_raw"),
             "strict_injection": evidence.get("strict_injection", False),
             "post_fault_target_reached": evidence.get("post_fault_target_reached", False),
             "injection_specific_target_reached": evidence.get(
@@ -534,6 +537,10 @@ def _trial_record(name: str, result: dict[str, Any]) -> dict[str, Any]:
             "target_exception_candidate": result["target_exception_candidate"],
             "target_exception_candidate_raw_differential": result.get(
                 "target_exception_candidate_raw_differential", False),
+            "partial_target_exception_observed": result.get(
+                "partial_target_exception_observed", False),
+            "partial_target_exception_candidate_raw_differential": result.get(
+                "partial_target_exception_candidate_raw_differential", False),
             "observed_check_sites": evidence.get("observed_check_sites", []),
             "junit_passed": result["junit_passed"]}
 
@@ -930,6 +937,12 @@ def _finish(state: dict[str, Any], root: Path) -> dict[str, Any]:
                        row["target_exception_candidate"] for row in trials),
                    "raw_differential_candidates": sum(
                        row.get("target_exception_candidate_raw_differential", False)
+                       for row in trials),
+                   "partial_target_exception_observations": sum(
+                       row.get("partial_target_exception_observed", False)
+                       for row in trials),
+                   "partial_raw_differential_candidates": sum(
+                       row.get("partial_target_exception_candidate_raw_differential", False)
                        for row in trials),
                    "first_target_exception_trial": next(
                        (row["name"] for row in trials

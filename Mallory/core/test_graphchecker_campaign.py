@@ -33,13 +33,165 @@ from Mallory.core.graphchecker_campaign import (_archive_jsonl, _archive_stat,
                                                 _runner_class_sha256, _verify_prepared,
                                                 _tracing_runtime_jar,
                                                 _runtime_classpath,
-                                                load_config, load_trace, prepare,
+                                                load_config, load_trace, prepare, run_trial,
                                                 scan_window_trace, summarize_evidence,
                                                 validate_plan, verify_trial_artifacts)
 from Mallory.core.graphchecker_trial import analyze_trial
 
 
 class GraphCheckerCampaignTest(unittest.TestCase):
+    def _stub_run_trial(self, root, rows, faults, graph=None,
+                        healthy_profiles=None):
+        prepared = root / "prepared"
+        prepared.mkdir()
+        (prepared / "weave-manifest.json").write_text(json.dumps({
+            "doors": [{"siteId": "door", "exceptionClass": "java.io.IOException"}]}))
+        (prepared / "weave-receipt.json").write_text("{}")
+        scope = root / "scope.jsonl"
+        scope.write_text("")
+        config = {"case_id": "fixture", "junit": {"class": "OriginalJUnit"},
+                  "target": self.TARGET, "target_site_rows": [],
+                  "static_scope_map": scope, "static_may_scope_map": None,
+                  "trial_cwd_template": None, "trial_cwd_template_sha256": None,
+                  "runner": {"main_class": "OriginalRunner", "args": [],
+                             "jvm_args": []}, "java": "java", "timeout_seconds": 10,
+                  "graph_jar": root / "unused-graph.jar"}
+
+        class FinishedJUnit:
+            pid = os.getpid()
+
+            def __init__(self, _argv, *, env, **_kwargs):
+                Path(env["MALLORY_GC_TRACE"]).write_text("".join(
+                    json.dumps(row) + "\n" for row in rows))
+
+            def wait(self, timeout=None):
+                return 0
+
+        def graph_run(scratch, *_args):
+            if graph is None:
+                raise AssertionError("unmatched fast path called graph analyzer")
+            (scratch / "graphchecker-feedback.json").write_text(json.dumps(graph))
+            (scratch / "graphchecker-graph.jsonl").write_text('{}\n')
+            return graph
+
+        prior = None
+        if healthy_profiles is not None:
+            prior = root / "prior.jsonl.gz"
+            prior.write_bytes(b"pinned prior")
+        with patch("Mallory.core.graphchecker_campaign._verify_prepared",
+                   return_value=[root / "woven"]), patch(
+                   "Mallory.core.graphchecker_campaign._runtime_classpath",
+                   return_value=[]), patch(
+                   "Mallory.core.graphchecker_campaign._trial_scratch_root",
+                   return_value=root), patch(
+                   "Mallory.core.graphchecker_campaign._process_start_ticks",
+                   return_value=1), patch(
+                   "Mallory.core.graphchecker_campaign.subprocess.Popen",
+                   side_effect=FinishedJUnit), patch(
+                   "Mallory.core.graphchecker_campaign.analyze_trial",
+                   side_effect=graph_run) as analyzer, patch(
+                   "Mallory.core.graphchecker_campaign._prior_trace_metadata",
+                   return_value=(0, "a" * 64, None)), patch(
+                   "Mallory.core.graphchecker_campaign._prior_trace_profiles",
+                   return_value=(healthy_profiles[0]
+                                 if healthy_profiles is not None else None)):
+            result = run_trial(config, prepared, root / "trial",
+                               {"faults": faults}, prior)
+        return result, analyzer
+
+    def test_unmatched_without_postfault_throw_skips_graph_and_resumes_safely(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            rows = [self.rows()[0], self.rows()[2], self.rows()[4], self.rows()[-1]]
+            result, analyzer = self._stub_run_trial(root, rows, [self.FAULT])
+            analyzer.assert_not_called()
+            self.assertEqual("unmatched", result["status"])
+            self.assertEqual("skipped_unmatched_v1", result["graph_analysis"])
+            self.assertEqual(0.0, result["phase_seconds"]["graph_analysis"])
+            self.assertEqual((0, 0), (result["applied_faults_raw"],
+                                      result["matched_fault_prefix_raw"]))
+            self.assertTrue(result["junit_passed"])
+            self.assertEqual(1, result["evidence"]["raw_target_check_rows"])
+            self.assertEqual({"raw_trace", "window_trace"},
+                             set(result["artifacts"]))
+            verify_trial_artifacts(root / "trial", result)
+            archive = root / "trial" / result["artifacts"]["raw_trace"]["path"]
+            with archive.open("ab") as output:
+                output.write(b"damaged")
+            with self.assertRaisesRegex(ValueError, "changed raw_trace"):
+                verify_trial_artifacts(root / "trial", result)
+
+    def test_partial_applied_without_target_throw_skips_graph_but_keeps_prefix(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            rows = [row for row in self.rows() if row["kind"] != "TARGET_THROW"]
+            second = {**self.FAULT, "ordinal": 2}
+            result, analyzer = self._stub_run_trial(root, rows, [self.FAULT, second])
+            analyzer.assert_not_called()
+            self.assertEqual("skipped_unmatched_v1", result["graph_analysis"])
+            self.assertEqual((1, 1), (result["applied_faults_raw"],
+                                      result["matched_fault_prefix_raw"]))
+            self.assertEqual(["occ-A"], result[
+                "matched_fault_prefix_occurrence_ids"])
+            self.assertFalse(result["partial_target_exception_observed"])
+            verify_trial_artifacts(root / "trial", result)
+            with self.assertRaisesRegex(ValueError, "invalid unmatched graph-skip"):
+                verify_trial_artifacts(root / "trial", {
+                    **result, "status": "checked"})
+            with self.assertRaisesRegex(ValueError, "invalid unmatched graph-skip"):
+                verify_trial_artifacts(root / "trial", {
+                    **result, "partial_target_exception_observed": True})
+
+    def test_partial_applied_target_throw_keeps_graph_and_manual_review(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            rows = self.rows()
+            rows[5].update(fingerprintVersion=1, structuralFingerprint="b" * 64)
+            second = {**self.FAULT, "ordinal": 2}
+            result, analyzer = self._stub_run_trial(
+                root, rows, [self.FAULT, second], self.graph(), [{}])
+            analyzer.assert_called_once()
+            self.assertEqual("unmatched", result["status"])
+            self.assertEqual("completed", result["graph_analysis"])
+            self.assertEqual((1, 1), (result["applied_faults_raw"],
+                                      result["matched_fault_prefix_raw"]))
+            self.assertEqual(["occ-A"], result[
+                "matched_fault_prefix_occurrence_ids"])
+            self.assertTrue(result["partial_target_exception_observed"])
+            self.assertTrue(result[
+                "partial_target_exception_candidate_raw_differential"])
+            self.assertFalse(result["target_exception_candidate"])
+            self.assertIn("graph", result["artifacts"])
+            self.assertIn("workdir_artifact", result)
+            verify_trial_artifacts(root / "trial", result)
+
+    def test_later_mismatched_applied_row_does_not_hide_prefix_throw(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            rows = self.rows()
+            rows[-1]["seq"] = 8
+            rows.insert(-1, {**rows[3], "seq": 7, "doorOrdinal": 3})
+            second = {**self.FAULT, "ordinal": 2}
+            result, analyzer = self._stub_run_trial(
+                root, rows, [self.FAULT, second], self.graph())
+            analyzer.assert_called_once()
+            self.assertEqual("unmatched", result["status"])
+            self.assertEqual((2, 1), (result["applied_faults_raw"],
+                                      result["matched_fault_prefix_raw"]))
+            self.assertEqual(4, result["partial_target_throw_review_cutoff_seq"])
+            self.assertEqual([6], result[
+                "partial_target_throw_seqs_after_observed_fault"])
+
+    def test_fault_free_healthy_still_runs_full_graph(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            rows = [self.rows()[0], self.rows()[4], self.rows()[-1]]
+            result, analyzer = self._stub_run_trial(root, rows, [], self.graph())
+            analyzer.assert_called_once()
+            self.assertEqual("healthy_seed", result["status"])
+            self.assertEqual("completed", result["graph_analysis"])
+            self.assertIn("graph", result["artifacts"])
+
     def test_sha_pinned_tracing_runtime_precedes_exact_soot_cp_without_shadowing(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

@@ -68,6 +68,30 @@ class GraphCheckerFuzzerTest(unittest.TestCase):
         self.assertTrue(record["target_exception_candidate_raw_differential"])
         self.assertFalse(record["target_exception_candidate"])
 
+    def test_unmatched_partial_throw_is_recorded_but_only_plan_is_retried(self):
+        state = _new_state(self.config(), self.budget())
+        fault = {key: self.door(1, 1)[key] for key in
+                 ("siteId", "node", "occurrenceId", "ordinal", "exceptionClass")}
+        state["active"] = {"index": 1, "name": "r0001", "faults": [fault],
+                           "selection_tier": "observed_closure"}
+        result = self.result([fault])
+        result.update(status="unmatched", graph_analysis="completed",
+                      applied_faults_raw=1, matched_fault_prefix_raw=0,
+                      partial_target_exception_observed=True,
+                      partial_target_exception_candidate_raw_differential=True)
+        result["evidence"].update(strict_injection=False,
+                                  injection_specific_target_reached=False,
+                                  target_reached=False)
+        _accept_result(state, "r0001", result)
+        record = state["trials"][0]
+        self.assertTrue(record["partial_target_exception_observed"])
+        self.assertTrue(record["partial_target_exception_candidate_raw_differential"])
+        self.assertFalse(record["target_exception_candidate"])
+        self.assertEqual(1, state["completed_fault_trials"])
+        self.assertEqual(1, len(state["queue"]))
+        self.assertEqual([fault], state["queue"][0]["faults"])
+        self.assertEqual(1, state["queue"][0]["unmatched_retry"])
+
     def test_enqueue_samples_late_occurrences_and_excludes_after_target(self):
         state = _new_state(self.config(), self.budget())
         doors = [self.door(i, i) for i in range(1, 101)]

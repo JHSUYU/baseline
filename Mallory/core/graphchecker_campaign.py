@@ -548,8 +548,26 @@ def verify_trial_artifacts(trial: Path, result: dict[str, Any],
     if not isinstance(artifacts, dict) or (
             "raw_trace" not in artifacts and result.get("raw_trace_sha256") is not None):
         raise ValueError(f"native trial has no archived raw trace receipt: {trial}")
+    skipped_graph = result.get("graph_analysis") == "skipped_unmatched_v1"
+    if skipped_graph:
+        if (result.get("status") != "unmatched" or not result.get("fault_plan") or
+                result.get("strict_injection_raw") is not False or
+                result.get("graphchecker_feedback") is not None or
+                result.get("feedback_sha256") is not None or
+                result.get("graph_sha256") is not None or
+                result.get("target_exception_triggered") is not False or
+                result.get("target_exception_candidate") is not False or
+                result.get("target_exception_candidate_raw_differential") is not False or
+                result.get("partial_target_exception_observed") is not False or
+                result.get("partial_target_exception_candidate_raw_differential") is not False or
+                not isinstance(result.get("evidence"), dict) or
+                result["evidence"].get("strict_injection") is not False or
+                "graph" in artifacts):
+            raise ValueError(f"invalid unmatched graph-skip receipt: {trial}")
+    required = ({"raw_trace", "window_trace"} if skipped_graph else
+                {"raw_trace", "window_trace", "graph"})
     if result.get("status") != "invalid_graphchecker_trace" and not (
-            {"raw_trace", "window_trace", "graph"} <= artifacts.keys()):
+            required <= artifacts.keys()):
         raise ValueError(f"completed native trial lacks trace or graph archive: {trial}")
     if names is not None and not names.issubset(artifacts):
         raise ValueError(f"native trial lacks required trace archives {names}: {trial}")
@@ -1357,6 +1375,49 @@ def _strict_fault_receipt(rows: list[dict[str, Any]], faults: list[dict[str, Any
         applied[-1]["seq"] if strict and applied else None)
 
 
+def _unmatched_trace_evidence(rows: list[dict[str, Any]],
+                              target: dict[str, Any], faults: list[dict[str, Any]],
+                              applied: list[dict[str, Any]],
+                              matched: list[dict[str, Any]]) -> dict[str, Any]:
+    """Keep raw target and partial-fault facts without inventing a closure.
+
+    The fuzzer retries an unmatched plan but never mutates from this result.
+    Applied rows can still explain a target throw and must remain reviewable.
+    """
+    check_sites = _configured_check_sites(target)
+    raw_checks = [row for row in rows if row["kind"] == "TARGET_CHECK"
+                  and row.get("siteId") in check_sites]
+    raw_throws = [row for row in rows if row["kind"] == "TARGET_THROW"
+                  and row.get("siteId") == target["throw_site_id"]
+                  and row.get("exceptionClass") == target["exception_class"]]
+    checks = [row for row in raw_checks if row.get("occurrenceId") and row.get("node")]
+    throws = [row for row in raw_throws if row.get("occurrenceId") and row.get("node")]
+    last_applied_seq = applied[-1]["seq"] if applied else None
+    return {"strict_injection": False, "applied_faults": len(applied),
+            "matched_faults": len(matched), "planned_faults": len(faults),
+            "matched_fault_occurrence_ids": [row["occurrenceId"] for row in matched],
+            "last_observed_fault_seq": last_applied_seq,
+            "raw_target_check_rows": len(raw_checks),
+            "raw_target_throw_rows": len(raw_throws),
+            "unattributed_target_check_rows": len(raw_checks) - len(checks),
+            "unattributed_target_throw_rows": len(raw_throws) - len(throws),
+            "attributed_target_check_rows": len(checks),
+            "attributed_target_throw_rows": len(throws),
+            "observed_target_reached": bool(checks or throws),
+            "observed_post_fault_target_reached": bool(
+                last_applied_seq is not None and any(
+                    row["seq"] > last_applied_seq for row in (*checks, *throws))),
+            "target_reached": False, "post_fault_target_reached": False,
+            "injection_specific_target_reached": False,
+            "injection_specific_target_throw": False,
+            "target_exception_triggered": False,
+            "target_throw_seen": bool(throws),
+            "eligible_doors": [], "configured_check_sites": check_sites,
+            "observed_check_sites": sorted({row["siteId"] for row in checks}),
+            "missing_check_sites_in_trial": sorted(set(check_sites) - {
+                row["siteId"] for row in checks})}
+
+
 def summarize_evidence(rows: list[dict[str, Any]], graph: dict[str, Any],
                        target: dict[str, Any], faults: list[dict[str, Any]],
                        door_types: dict[str, str] | None = None,
@@ -1676,8 +1737,20 @@ def run_trial(config: dict[str, Any], prepared: Path, trial: Path,
         result["target_throw_count_scope"] = {
             "site_id": config["target"]["throw_site_id"],
             "exception_class": config["target"]["exception_class"]}
-        _, _, _, raw_strict, raw_last_fault_seq = _strict_fault_receipt(
+        _, applied, matched, raw_strict, raw_last_fault_seq = _strict_fault_receipt(
             rows, faults)
+        # Prefer the verified prefix, but still preserve a throw after an
+        # unexpected applied fault for controller/trace diagnosis. A later
+        # unmatched applied row must not hide an earlier prefix-induced throw.
+        partial_review_cutoff = (matched[-1]["seq"] if matched else
+                                 applied[0]["seq"] if applied else None)
+        partial_post_fault_throws = [row for row in rows
+            if not raw_strict and partial_review_cutoff is not None and
+            row["kind"] == "TARGET_THROW" and
+            row.get("siteId") == config["target"]["throw_site_id"] and
+            row.get("exceptionClass") == config["target"]["exception_class"] and
+            row.get("occurrenceId") and row.get("node") and
+            row["seq"] > partial_review_cutoff]
         raw_post_fault_throws = [row for row in rows
             if raw_last_fault_seq is not None and
             row["kind"] == "TARGET_THROW" and
@@ -1686,53 +1759,75 @@ def run_trial(config: dict[str, Any], prepared: Path, trial: Path,
             row.get("occurrenceId") and row.get("node") and
             row["seq"] > raw_last_fault_seq]
         result["strict_injection_raw"] = raw_strict
+        result["applied_faults_raw"] = len(applied)
+        result["matched_fault_prefix_raw"] = len(matched)
+        result["matched_fault_prefix_occurrence_ids"] = [
+            row["occurrenceId"] for row in matched]
+        result["partial_target_throw_review_cutoff_seq"] = partial_review_cutoff
+        result["partial_target_throw_seqs_after_observed_fault"] = [
+            row["seq"] for row in partial_post_fault_throws]
+        result["partial_target_exception_observed"] = bool(partial_post_fault_throws)
+        result["partial_target_exception_candidate_raw_differential"] = bool(
+            partial_post_fault_throws and _raw_target_throw_exceeds_healthy_envelope(
+                rows, partial_post_fault_throws, config["target"], healthy_profiles))
         result["target_exception_triggered"] = bool(raw_post_fault_throws)
         result["target_exception_candidate_raw_differential"] = bool(
             raw_strict and _raw_target_throw_exceeds_healthy_envelope(
                 rows, raw_post_fault_throws, config["target"], healthy_profiles))
         check_sites = _configured_check_sites(config["target"])
-        anchor = check_sites if len(check_sites) > 1 else (
-            check_sites[0] if check_sites else config["target"]["throw_site_id"])
-        phase_started = time.monotonic()
-        graph = analyze_trial(scratch, anchor, prior_trace, config["graph_jar"],
-                              config["static_scope_map"],
-                              config.get("graph_heap_mb", 6144),
-                              config.get("graph_output_gzip", False))
-        phase_seconds["graph_analysis"] = round(time.monotonic() - phase_started, 3)
-        static_may = None
-        if config["static_may_scope_map"] is not None:
+        if faults and not raw_strict and not partial_post_fault_throws:
             phase_started = time.monotonic()
-            closure = set(graph.get("closureOccurrenceIds", []))
-            observed_regions = {row["regionId"] for row in rows
-                                if row.get("occurrenceId") in closure and
-                                isinstance(row.get("regionId"), str) and
-                                row["regionId"]}
-            static_may = _static_may_sidecar(
-                config["static_may_scope_map"],
-                [*check_sites, config["target"]["throw_site_id"]],
-                observed_regions)
-            phase_seconds["static_may_ranking"] = round(
+            evidence = _unmatched_trace_evidence(
+                rows, config["target"], faults, applied, matched)
+            result.update({"status": "unmatched", "graph_analysis":
+                           "skipped_unmatched_v1", "evidence": evidence,
+                           "window_rows": window_count})
+            phase_seconds["unmatched_summary"] = round(
                 time.monotonic() - phase_started, 3)
-        phase_started = time.monotonic()
-        evidence = summarize_evidence(rows, graph, config["target"], faults,
-                                      door_types,
-                                      (static_may["producer_frontier_sites"]
-                                       if static_may is not None else
-                                       _static_producer_frontier_sites(
-                                           config["static_scope_map"], graph)),
-                                      static_may)
-        triggered = evidence["target_exception_triggered"]
-        status, candidate = _trial_verdict(evidence, faults, prior_throw_count,
-                                           config["target"], healthy_profiles)
-        result.update({"status": status,
-                       "graphchecker_feedback": graph, "evidence": evidence,
-                       "window_rows": window_count,
-                       "target_exception_triggered": triggered,
-                       "target_exception_candidate": candidate,
-                       "feedback_sha256": _sha256(scratch / "graphchecker-feedback.json")})
-        shutil.copyfile(scratch / "graphchecker-feedback.json",
-                        trial / "graphchecker-feedback.json")
-        phase_seconds["evidence_summary"] = round(time.monotonic() - phase_started, 3)
+            phase_seconds["graph_analysis"] = 0.0
+        else:
+            anchor = check_sites if len(check_sites) > 1 else (
+                check_sites[0] if check_sites else config["target"]["throw_site_id"])
+            phase_started = time.monotonic()
+            graph = analyze_trial(scratch, anchor, prior_trace, config["graph_jar"],
+                                  config["static_scope_map"],
+                                  config.get("graph_heap_mb", 6144),
+                                  config.get("graph_output_gzip", False))
+            phase_seconds["graph_analysis"] = round(time.monotonic() - phase_started, 3)
+            static_may = None
+            if config["static_may_scope_map"] is not None:
+                phase_started = time.monotonic()
+                closure = set(graph.get("closureOccurrenceIds", []))
+                observed_regions = {row["regionId"] for row in rows
+                                    if row.get("occurrenceId") in closure and
+                                    isinstance(row.get("regionId"), str) and
+                                    row["regionId"]}
+                static_may = _static_may_sidecar(
+                    config["static_may_scope_map"],
+                    [*check_sites, config["target"]["throw_site_id"]],
+                    observed_regions)
+                phase_seconds["static_may_ranking"] = round(
+                    time.monotonic() - phase_started, 3)
+            phase_started = time.monotonic()
+            evidence = summarize_evidence(rows, graph, config["target"], faults,
+                                          door_types,
+                                          (static_may["producer_frontier_sites"]
+                                           if static_may is not None else
+                                           _static_producer_frontier_sites(
+                                               config["static_scope_map"], graph)),
+                                          static_may)
+            triggered = evidence["target_exception_triggered"]
+            status, candidate = _trial_verdict(evidence, faults, prior_throw_count,
+                                               config["target"], healthy_profiles)
+            result.update({"status": status, "graph_analysis": "completed",
+                           "graphchecker_feedback": graph, "evidence": evidence,
+                           "window_rows": window_count,
+                           "target_exception_triggered": triggered,
+                           "target_exception_candidate": candidate,
+                           "feedback_sha256": _sha256(scratch / "graphchecker-feedback.json")})
+            shutil.copyfile(scratch / "graphchecker-feedback.json",
+                            trial / "graphchecker-feedback.json")
+            phase_seconds["evidence_summary"] = round(time.monotonic() - phase_started, 3)
     except (ValueError, FileNotFoundError, subprocess.SubprocessError, OSError,
             json.JSONDecodeError) as failure:
         result.update({"status": "invalid_graphchecker_trace",
@@ -1768,7 +1863,8 @@ def run_trial(config: dict[str, Any], prepared: Path, trial: Path,
         result["graph_sha256"] = artifacts["graph"]["content_sha256"]
     fresh_stats = {name: _archive_stat(trial / receipt["path"])
                    for name, receipt in artifacts.items()}
-    if result["target_exception_triggered"]:
+    if (result["target_exception_triggered"] or
+            result.get("partial_target_exception_observed")):
         phase_started = time.monotonic()
         result["workdir_artifact"] = _archive_workdir(workdir, trial)
         phase_seconds["archive_workdir"] = round(time.monotonic() - phase_started, 3)

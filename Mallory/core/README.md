@@ -209,14 +209,24 @@ invent a target closure. Only a trial with the fault on an observed exact
 target closure can enter closure-guided mutation. Older checkpoints retain
 their pinned scheduler version. A plan whose selected I/O disappears may be
 retried twice, with every unmatched attempt counted against the fault-trial and time
-budgets. The time budget counts actual JUnit trial runtime.
+budgets. A completed unmatched plan with no exact target throw after an
+observed applied fault skips TrialGraphMain, since it cannot earn closure
+novelty or seed a new sequence. Its receipt says
+`graph_analysis=skipped_unmatched_v1`; it retains the full raw and JUnit-window
+traces, applied and matched-prefix fault counts, raw target counts, and their
+verified archive hashes. A partial injection followed by an exact target
+throw still runs the graph and records a separate
+`partial_target_exception_candidate_raw_differential` for manual review; it
+does not become a strictly injected candidate. The time budget counts actual
+JUnit trial runtime.
 
 `checkpoint.json` is written atomically before and after each trial. A restart
 reconciles a completed active trial, refuses to duplicate a still-running JVM,
 and archives an incomplete attempt before retrying its plan. Terminal cases
 have `terminal: true` and `summary.json`; restarting one returns immediately.
-Every trial retains its exact plan, compressed trace and graph, feedback,
-result, and elapsed time. Resume verifies the archived evidence before
+Every trial retains its exact plan, compressed trace, result, and elapsed time;
+graph-analyzed trials also retain the graph and feedback. Resume verifies the
+archived evidence before
 accepting a completed checkpoint. New analyses cache the healthy trace's
 verified closure-family summary for comparison and retain the original
 compressed trace for audit. An exact post-fault target throw is
