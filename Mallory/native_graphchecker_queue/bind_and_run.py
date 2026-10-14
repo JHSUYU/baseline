@@ -381,6 +381,7 @@ def promote(*, root: Path, case_id: str, native_config: Path,
             epoch_receipt: Path | None = None,
             epoch_receipt_sha256: str | None = None,
             raw_archive_receipt: Path | None = None,
+            frozen_terminal_audit: Path | None = None,
             shared_port_evidence: Path | None = None,
             dispatch: bool = True) -> dict:
     physical_host(host)
@@ -489,7 +490,12 @@ def promote(*, root: Path, case_id: str, native_config: Path,
             if (state.get('case_id') != config['case_id'] or
                     state.get('config_sha256') != sha(native_config)):
                 raise ValueError('existing native checkpoint has another config')
-        inspected = inspect_case(item, host, candidate_dir, state_root)
+        if frozen_terminal_audit is None:
+            inspected = inspect_case(item, host, candidate_dir, state_root)
+        else:
+            from .frozen_terminal import validated_frozen_audit
+            inspected = validated_frozen_audit(
+                item, host, candidate_dir, state_root, frozen_terminal_audit)
         if inspected['terminal_disposition'] not in (
                 'ready', 'resumable', 'tested_candidate',
                 'tested_no_target_throw', 'tested_inconclusive'):
@@ -525,6 +531,9 @@ def promote(*, root: Path, case_id: str, native_config: Path,
                    'terminal_disposition': inspected['terminal_disposition'],
                    'ownership_sha256': sha(ownership),
                    'isolation_sha256': sha(profile_path)}
+        if frozen_terminal_audit is not None:
+            receipt['frozen_terminal_audit_path'] = str(frozen_terminal_audit)
+            receipt['frozen_terminal_audit_sha256'] = sha(frozen_terminal_audit)
         if migration is not None:
             migration['new_isolation_sha256'] = sha(profile_path)
             migration['binding_sha256'] = sha(binding_path)
@@ -573,6 +582,7 @@ def main() -> None:
     parser.add_argument('--inventory-epoch-receipt', type=Path)
     parser.add_argument('--inventory-epoch-sha256')
     parser.add_argument('--raw-archive-receipt', type=Path)
+    parser.add_argument('--frozen-terminal-audit', type=Path)
     parser.add_argument('--shared-port-evidence', type=Path)
     parser.add_argument('--bind-only', action='store_true')
     args = parser.parse_args()
@@ -596,6 +606,7 @@ def main() -> None:
         epoch_receipt=args.inventory_epoch_receipt,
         epoch_receipt_sha256=args.inventory_epoch_sha256,
         raw_archive_receipt=args.raw_archive_receipt,
+        frozen_terminal_audit=args.frozen_terminal_audit,
         shared_port_evidence=args.shared_port_evidence,
         dispatch=not args.bind_only), sort_keys=True))
 

@@ -21,7 +21,7 @@ from Mallory.native_graphchecker_dispatch.checklist import (
     _native_case_files, _verify_alternate_junit,
 )
 from .queue import (_pinned_engine_root, _terminal_fingerprint, atomic, obj,
-                    pinned_campaign_python, sha)
+                    _frozen_source_cache_valid, pinned_campaign_python, sha)
 from .raw_archive import pinned_archives, verify_trial_evidence
 
 
@@ -250,3 +250,25 @@ def publish_frozen_terminal(item: dict, owner: str, config_root: Path,
         raise ValueError("existing frozen terminal audit differs")
     atomic(destination, receipt)
     return destination
+
+
+def validated_frozen_audit(item: dict, owner: str, config_root: Path,
+                           state_root: Path, audit_path: Path) -> dict:
+    """Use a sealed exact-source inspection at bind time if current schemas drift."""
+    if not audit_path.is_absolute() or audit_path.is_symlink():
+        raise ValueError("frozen terminal audit must be an absolute regular file")
+    audit = obj(audit_path)
+    fingerprint = _terminal_fingerprint(item, config_root, state_root)
+    row = audit.get("row")
+    if (fingerprint is None or not isinstance(row, dict) or
+            row.get("case_id") != item["case_id"] or
+            row.get("owner") != owner or
+            row.get("native_tested_complete") is not True or
+            row.get("terminal_disposition") not in (
+                "tested_candidate", "tested_no_target_throw")):
+        raise ValueError("frozen terminal audit has wrong case or verdict")
+    cache = {"frozen_audit_path": str(audit_path),
+             "frozen_audit_sha256": sha(audit_path), "row": row}
+    if not _frozen_source_cache_valid(cache, fingerprint, config_root):
+        raise ValueError("frozen terminal audit source or trial evidence changed")
+    return row

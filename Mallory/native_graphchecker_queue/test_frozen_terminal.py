@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from .frozen_terminal import inspect_frozen_terminal
+from .frozen_terminal import inspect_frozen_terminal, validated_frozen_audit
 from .queue import sha
 
 
@@ -68,6 +68,21 @@ class FrozenTerminalTest(unittest.TestCase):
                 self.assertEqual(receipt["row"]["fault_trials"], 1)
                 self.assertEqual(receipt["source_tar_sha256"], sha(archive))
                 self.assertEqual(len(receipt["trial_evidence_sha256"]), 2)
+                audit = root / "sealed-audit.json"
+                audit.write_text(json.dumps(receipt))
+                # This gate uses the pinned engine and inspector, even when
+                # the current process has no working default engine path.
+                self.assertEqual(validated_frozen_audit(
+                    item, "node0", config_root, state_root, audit),
+                    receipt["row"])
+                with self.assertRaisesRegex(ValueError, "wrong case or verdict"):
+                    validated_frozen_audit(item, "node1", config_root,
+                                           state_root, audit)
+                jar.write_bytes(b"changed engine")
+                with self.assertRaisesRegex(ValueError, "source or trial evidence"):
+                    validated_frozen_audit(item, "node0", config_root,
+                                           state_root, audit)
+                jar.write_bytes(b"engine fixture")
                 module.write_text(module.read_text() + "# changed\n")
                 with self.assertRaisesRegex(ValueError, "source changed"):
                     inspect_frozen_terminal(item, "node0", config_root,
