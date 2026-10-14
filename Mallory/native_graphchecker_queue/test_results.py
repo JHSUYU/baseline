@@ -118,6 +118,12 @@ class NativeResultsTest(unittest.TestCase):
             item["target"]["source_sha256"] = sources["processor"]["sha256"]
             item["workload"]["candidates"][0]["source_sha256"] = sources[
                 "time_test"]["sha256"]
+            decoy = dict(item["workload"]["candidates"][0])
+            decoy["selector"] = "org.apache.solr.other.DecoyTest#test"
+            decoy["source_sha256"] = "0" * 64
+            item["workload"]["candidates"].insert(0, decoy)
+            self.assertEqual(item["workload"]["selected_selector"],
+                             item["workload"]["candidates"][1]["selector"])
             inventory_file = root / "inventory.json"
             inventory_file.write_text(json.dumps(inventory))
             prior = root / "prior-review.json"

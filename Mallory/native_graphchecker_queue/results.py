@@ -201,6 +201,15 @@ def _admission_note(item: dict, state_root: Path) -> dict[str, Any] | None:
     }
 
 
+def _selected_test_candidate(item: dict) -> dict:
+    workload = item["workload"]
+    selected = [candidate for candidate in workload.get("candidates", [])
+                if candidate.get("selector") == workload.get("selected_selector")]
+    if len(selected) != 1:
+        raise ValueError(f"selected original JUnit candidate ambiguous: {item['case_id']}")
+    return selected[0]
+
+
 def _eligibility_note(item: dict, inventory: Path,
                       state_root: Path) -> dict[str, Any] | None:
     """Verify a source-only skip without granting a native trial verdict."""
@@ -287,8 +296,8 @@ def _eligibility_note(item: dict, inventory: Path,
             not required.issubset(source_files) or
             source_files["processor"].get("sha256") != item["target"][
                 "source_sha256"] or
-            source_files["time_test"].get("sha256") != item["workload"][
-                "candidates"][0]["source_sha256"] or
+            source_files["time_test"].get("sha256") != _selected_test_candidate(
+                item)["source_sha256"] or
             "@AwaitsFix" not in log or
             "Can't create a configset with an unauthenticated request" not in log):
         raise ValueError(f"native eligibility source review changed: {case_id}")
@@ -380,7 +389,7 @@ def _eligibility_supersession(item: dict, state_root: Path,
             junit.get("tests") != 1 or
             any(junit.get(key) != 0 for key in
                 ("failures", "errors", "skipped", "assumption_failures")) or
-            sha(files["test_source"]) != item["workload"]["candidates"][0][
+            sha(files["test_source"]) != _selected_test_candidate(item)[
                 "source_sha256"] or
             sha(files["target_source"]) != item["target"]["source_sha256"]):
         raise ValueError(f"native eligibility supersession healthy evidence changed: {case_id}")
