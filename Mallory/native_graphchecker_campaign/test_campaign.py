@@ -879,6 +879,60 @@ class NativeQueueDiversityTest(unittest.TestCase):
         self.assertEqual("RPC#late", core._pick(self._state(
             [early, late], version=6))["faults"][-1]["siteId"])
 
+    def test_v9_bounded_late_occurrence_slot_across_transports(self) -> None:
+        for transport in ("HDFS_HEARTBEAT", "SOLR_ZK_WATCH"):
+            with self.subTest(transport=transport):
+                fresh = self._item(f"{transport}#fresh", "fresh",
+                                   target_phase="before_selected_target")
+                fresh["faults"][-1].update(node="peer", ordinal=1)
+                fresh.update(selected_target_actor=True,
+                             target_order_distance=1)
+                late = self._item(f"{transport}#repeat", "late",
+                                  target_phase="after_selected_target")
+                late["faults"][-1].update(node="peer", ordinal=2)
+                late.update(selected_target_actor=True,
+                            target_order_distance=90)
+                repeated_id = core._fault_id(late["faults"][-1])
+                for version, successful, expected in (
+                        (8, 1, "fresh"), (9, 0, "fresh"), (9, 1, "late")):
+                    state = self._state([dict(fresh), dict(late)],
+                                        completed=12, version=version)
+                    state["fault_id_attempts"] = {repeated_id: successful}
+                    state["fault_id_successes"] = {repeated_id: successful}
+                    self.assertEqual(expected, core._pick(state)["key"])
+
+    def test_v9_late_occurrence_slot_survives_checkpoint_round_trip(self) -> None:
+        later = self._item("RPC#repeat", "late",
+                           target_phase="after_selected_target")
+        later["faults"][-1].update(node="dn", ordinal=2)
+        later.update(selected_target_actor=True,
+                     target_order_distance=50)
+        state = self._state([later], completed=12, version=9)
+        repeated_id = core._fault_id(later["faults"][-1])
+        state["fault_id_attempts"] = {repeated_id: 1}
+        state["fault_id_successes"] = {repeated_id: 1}
+        with tempfile.TemporaryDirectory() as directory:
+            checkpoint = Path(directory) / "checkpoint.json"
+            core._atomic(checkpoint, state)
+            resumed = core._load(checkpoint)
+        self.assertEqual("late", core._pick(resumed)["key"])
+
+    def test_v9_late_slot_spreads_across_observed_phase(self) -> None:
+        near = self._item("RPC#near-repeat", "near",
+                          target_phase="after_selected_target")
+        far = self._item("RPC#far-repeat", "far",
+                         target_phase="after_selected_target")
+        for item, distance in ((near, 2), (far, 90)):
+            item["faults"][-1].update(node="dn", ordinal=2)
+            item.update(selected_target_actor=True,
+                        target_order_distance=distance)
+        state = self._state([near, far], completed=12, version=9)
+        for item in (near, far):
+            identity = core._fault_id(item["faults"][-1])
+            state["fault_id_attempts"][identity] = 1
+            state["fault_id_successes"][identity] = 1
+        self.assertEqual("far", core._pick(state)["key"])
+
     def test_v6_actor_and_proximity_metadata_survive_checkpoint(self) -> None:
         state = self._state([], version=6)
         state["seen_plan_keys"] = []

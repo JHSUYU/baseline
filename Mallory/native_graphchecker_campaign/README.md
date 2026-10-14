@@ -62,7 +62,7 @@ that session, compares observed target closure families and branch outcomes,
 and updates a persistent fault queue. It gives most queue slots to observed
 closure doors and reserves one in eight fault trials for doors outside it.
 
-New campaigns use scheduler version 8. The last fault's `siteId` and
+New campaigns use scheduler version 9. The last fault's `siteId` and
 `exceptionClass` form a fault ID; physical actors and event ordinals remain in
 the exact injection selector but do not split this scheduling identity. A
 new or less-tested fault ID outranks repeated IDs before closure novelty and
@@ -96,6 +96,14 @@ target receipt. Resume, terminal reopening, and predecessor import verify
 that durable peer receipt against the result's SHA-256; the local raw-trace
 artifact manifest does not cover this separate file. Old checkpoints retain
 their frozen scheduler version.
+
+Version 9 reserves one in sixteen selections for a later occurrence of an
+observed-closure I/O site whose fault ID previously injected successfully.
+The exact actor and ordinal remain in the selector. Within that slot it first
+prefers less-tested fault IDs and lower ordinals, then spreads across later
+observed positions. If no eligible repeat exists, ordinary version 8 ordering
+applies. This changes only queue priority; eligibility, target retention,
+strict injection, and the bug oracle remain unchanged.
 
 When a REGION_STATE trial misses its exact selector, versions 3 through 5 verify any already applied prefix
 against its original door receipts, then offers alternate actors observed at

@@ -35,7 +35,7 @@ from .static_may import rpc_producer_sites
 from .peer_identity import rank_region_doors_by_peer
 
 SCHEMA = 1
-SCHEDULER_VERSION = 8
+SCHEDULER_VERSION = 9
 FAULT_FIELDS = ("siteId", "node", "actorEpochOrdinal", "occurrenceId",
                 "ordinal", "exceptionClass")
 SELECTOR_FIELDS = ("siteId", "node", "actorEpochOrdinal", "ordinal",
@@ -1159,7 +1159,7 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
     version = state.get("scheduler_version", 1)
     if version == 1:
         return _pick_v1(state)
-    if version not in (2, 3, 4, 5, 6, 7, SCHEDULER_VERSION):
+    if version not in (2, 3, 4, 5, 6, 7, 8, SCHEDULER_VERSION):
         raise ValueError(f"unsupported native scheduler version: {version}")
     queue = state["queue"]
     if not queue:
@@ -1170,6 +1170,22 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
     # Keep one of eight slots for observed doors outside the target closure.
     outside_slot = bool(outside) and completed % 8 == 7
     candidates = outside if outside_slot else inside or outside
+    repeat_phase_slot = False
+    if version >= 9 and not outside_slot and completed % 16 == 12:
+        # A late occurrence of an already successful I/O site may observe a
+        # different recovery state. Give such exact, observed-closure doors a
+        # bounded slot; leave every other selection and old checkpoint rule
+        # unchanged. The selector still includes the actor and ordinal.
+        repeated = [item for item in candidates if
+                    item["tier"] == "observed_closure" and
+                    item.get("target_phase") == "after_selected_target" and
+                    isinstance(item["faults"][-1].get("ordinal"), int) and
+                    not isinstance(item["faults"][-1]["ordinal"], bool) and
+                    item["faults"][-1]["ordinal"] > 1 and
+                    state["fault_id_successes"].get(_fault_id(
+                        item["faults"][-1]), 0) > 0]
+        if repeated:
+            candidates, repeat_phase_slot = repeated, True
     peer_slot = False
     if version >= 8 and not outside_slot and completed % 8 == 4:
         # A bounded slot gives tool-selected producer RPC doors to the
@@ -1207,7 +1223,7 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
                       (len(item["faults"]) > 1) == (preferred_depth > 1)]
         if same_depth:
             candidates = same_depth
-    if version >= 5 and not outside_slot and completed % 8 != 5:
+    if version >= 5 and not outside_slot and not repeat_phase_slot and completed % 8 != 5:
         # Row order is an observation, not a cross-actor happens-before
         # proof. Favor doors observed before the selected target instance's
         # final check, while reserving one slot in eight for later recovery.
@@ -1233,7 +1249,10 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
         fault_id = _fault_id(item["faults"][-1])
         if version >= 6:
             distance = item.get("target_order_distance")
-            proximity = (-distance if isinstance(distance, int) and
+            # Most slots stay near the selected check. The bounded repeat
+            # slot spreads to later observed positions.
+            proximity = ((distance if repeat_phase_slot else -distance)
+                         if isinstance(distance, int) and
                          not isinstance(distance, bool) and distance >= 0
                          else -10**9)
             ordinal = item["faults"][-1].get("ordinal")
