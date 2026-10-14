@@ -180,6 +180,15 @@ addition only when every other binding field is unchanged. On the owner host
 the original files and clean source revision are still checked; on another
 host the shared byte-identical copies provide the source/class proof.
 
+When an owner host lacks source files named by the existing global port
+profile, `bind_and_run --shared-port-evidence` accepts a versioned
+`native_shared_port_evidence_fallback` receipt. It pins the previous isolation
+SHA, case/config/host identity, and byte-identical shared copies of each
+missing source file. Promotion keeps the original evidence keys and adds the
+copies under the same lock as ownership and binding. A present original file
+with changed bytes still fails validation; the fallback applies only when the
+original path is absent on that host.
+
 The isolation contract requires a real system-specific port setting or a
 reviewed dynamic-port receipt. An unprepared case remains pending; no case is
 made runnable merely by this queue.
