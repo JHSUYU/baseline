@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from Mallory.adapters.solr.native_graphchecker_port import prepare_case as prep
 
@@ -93,6 +95,50 @@ class PrepareCaseTest(unittest.TestCase):
         (self.source / self.test_source).write_text("modified test\n")
         with self.assertRaisesRegex(ValueError, "original source differs"):
             prep.attest_source(row, self.source)
+
+    def test_skipped_junit_requires_queue_verified_healthy_supersession(self):
+        skipped = copy.deepcopy(self.row)
+        skipped["eligibility"] = {"may_dispatch_healthy_seed": False,
+                                  "state": "original_junit_skipped"}
+        skipped["workload"]["candidates"][0]["inherited_awaits_fix_sources"] = [
+            "solr/core/src/test/org/apache/solr/cloud/SampleBaseTest.java"]
+        self.assertEqual(prep.original_junit_jvm_args(skipped),
+                         ["-Dtests.awaitsfix=true"])
+        self.assertEqual(prep.original_junit_jvm_args(self.row), [])
+        self.inventory.write_text(json.dumps({"cases": [skipped]}))
+        state = self.root / "queue-state"
+        state.mkdir()
+        with self.assertRaisesRegex(ValueError, "explicit eligibility state root"):
+            prep.inventory_row("SOLR-XX", self.inventory)
+        with self.assertRaisesRegex(ValueError, "verified healthy supersession"):
+            prep.inventory_row("SOLR-XX", self.inventory, state)
+        old = {"preparation_note_pin_path": str(state / "old.json"),
+               "preparation_note_pin_sha256": "old-sha"}
+        current = {"preparation_review_path": str(state / "new.json"),
+                   "preparation_review_sha256": "new-sha"}
+        with patch("Mallory.native_graphchecker_queue.results._eligibility_note",
+                   return_value=old), patch(
+                "Mallory.native_graphchecker_queue.results._eligibility_supersession",
+                return_value=current):
+            row = prep.inventory_row("SOLR-XX", self.inventory, state)
+            proof = prep.verified_eligibility_supersession(row, self.inventory, state)
+            scope = self.root / "pinned" / "static-input.json"
+            scope.parent.mkdir()
+            scope.write_text("{}")
+            (scope.parent / "source-receipt.json").write_text(json.dumps({
+                "case_id": "SOLR-XX", "selected_junit": self.test_class + "#testRun",
+                "eligibility_supersession": proof}))
+            self.assertEqual(prep.require_static_eligibility_pin(
+                row, self.inventory, state, scope), proof)
+            (scope.parent / "source-receipt.json").write_text(json.dumps({
+                "case_id": "SOLR-XX", "selected_junit": self.test_class + "#testRun",
+                "eligibility_supersession": {**proof, "sha256": "tampered"}}))
+            with self.assertRaisesRegex(ValueError, "pin differs"):
+                prep.require_static_eligibility_pin(row, self.inventory, state, scope)
+        with patch("Mallory.native_graphchecker_queue.results._eligibility_note",
+                   side_effect=ValueError("eligibility note changed")):
+            with self.assertRaisesRegex(ValueError, "eligibility note changed"):
+                prep.inventory_row("SOLR-XX", self.inventory, state)
 
     def test_static_selects_exact_target_and_typed_doors(self):
         result = prep.validate_static(self.row, self.static_input,

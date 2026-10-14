@@ -89,14 +89,40 @@ def emit_script(path: Path, argv: list[str], env: dict[str, str] | None = None) 
     path.chmod(0o755)
 
 
-def inventory_row(case_id: str, inventory: Path = INVENTORY) -> dict:
+def verified_eligibility_supersession(row: dict, inventory: Path,
+                                      state_root: Path | None) -> dict | None:
+    """Use the queue's exact verifier to reopen a source-only skipped test.
+
+    This is admission to a fresh native healthy run, never a substitute for
+    that run or for the generated GraphChecker scope.
+    """
+    if row.get("eligibility", {}).get("may_dispatch_healthy_seed"):
+        return None
+    if (state_root is None or not state_root.is_absolute() or
+            state_root.is_symlink() or not state_root.is_dir()):
+        raise ValueError("skipped original JUnit requires an explicit eligibility state root")
+    from Mallory.native_graphchecker_queue.results import (
+        _eligibility_note, _eligibility_supersession,
+    )
+    old = _eligibility_note(row, inventory, state_root)
+    current = _eligibility_supersession(row, state_root, old)
+    if old is None or current is None:
+        raise ValueError("skipped original JUnit lacks a verified healthy supersession")
+    return {"path": current["preparation_review_path"],
+            "sha256": current["preparation_review_sha256"],
+            "old_note_path": old["preparation_note_pin_path"],
+            "old_note_sha256": old["preparation_note_pin_sha256"],
+            "inventory_sha256": sha256(inventory)}
+
+
+def inventory_row(case_id: str, inventory: Path = INVENTORY,
+                  eligibility_state_root: Path | None = None) -> dict:
     rows = [row for row in read_json(inventory)["cases"]
             if row.get("case_id") == case_id and row.get("system") == "solr"]
     if len(rows) != 1:
         raise ValueError(f"expected one Solr inventory row: {case_id}")
     row = rows[0]
-    if not row.get("eligibility", {}).get("may_dispatch_healthy_seed"):
-        raise ValueError(f"original JUnit is not eligible: {case_id}")
+    verified_eligibility_supersession(row, inventory, eligibility_state_root)
     selector = row["workload"]["selected_selector"]
     matches = [candidate for candidate in row["workload"]["candidates"]
                if candidate.get("selector") == selector and
@@ -104,6 +130,21 @@ def inventory_row(case_id: str, inventory: Path = INVENTORY) -> dict:
     if len(matches) != 1 or not matches[0].get("source_sha256"):
         raise ValueError(f"selected original JUnit lacks one source receipt: {selector}")
     return row
+
+
+def require_static_eligibility_pin(row: dict, inventory: Path,
+                                   state_root: Path | None,
+                                   static_input_path: Path) -> dict | None:
+    """Keep the verified eligibility receipt identical across all phases."""
+    proof = verified_eligibility_supersession(row, inventory, state_root)
+    if proof is not None:
+        receipt_path = static_input_path.parent / "source-receipt.json"
+        receipt = read_json(receipt_path)
+        if (receipt.get("case_id") != row["case_id"] or
+                receipt.get("selected_junit") != row["workload"]["selected_selector"] or
+                receipt.get("eligibility_supersession") != proof):
+            raise ValueError("static eligibility supersession pin differs")
+    return proof
 
 
 def target_from_inventory(row: dict) -> dict:
@@ -117,6 +158,14 @@ def target_from_inventory(row: dict) -> dict:
     return {"class": owner, "method": method, "line": lines.pop(),
             "throw_line": int(target["source_line"]), "kind": "BRANCH",
             "exception": target["target_exception"]}
+
+
+def original_junit_jvm_args(row: dict) -> list[str]:
+    """Enable an inventoried inherited @AwaitsFix on the original test."""
+    selected = next(candidate for candidate in row["workload"]["candidates"]
+                    if candidate["selector"] == row["workload"]["selected_selector"])
+    return (["-Dtests.awaitsfix=true"]
+            if selected.get("inherited_awaits_fix_sources") else [])
 
 
 def attest_source(row: dict, source: Path) -> dict:
@@ -300,7 +349,9 @@ def validate_schedule(index_path: Path, plan_path: Path) -> dict:
 
 
 def prepare_scope(args: argparse.Namespace) -> dict:
-    row = inventory_row(args.case_id, args.inventory)
+    state_root = getattr(args, "eligibility_state_root", None)
+    row = inventory_row(args.case_id, args.inventory, state_root)
+    eligibility = verified_eligibility_supersession(row, args.inventory, state_root)
     source = args.source.resolve(strict=True)
     proof = attest_source(row, source)
     proof.update(attest_native_protocol(row, source, args.protocol_receipt,
@@ -320,6 +371,7 @@ def prepare_scope(args: argparse.Namespace) -> dict:
     mapping = args.communication_mappings.resolve(strict=True)
     emit_json(output / "source-receipt.json", {"case_id": row["case_id"],
               **proof, "selected_junit": row["workload"]["selected_selector"],
+              **({"eligibility_supersession": eligibility} if eligibility else {}),
               "planner_jar_sha256": sha256(planner),
               "planner_dependencies_sha256": sha256(args.planner_deps),
               "ordered_classpath_sha256": sha256(args.classpath_file),
@@ -335,13 +387,15 @@ def prepare_scope(args: argparse.Namespace) -> dict:
 
 
 def prepare_weave(args: argparse.Namespace) -> dict:
-    row = inventory_row(args.case_id, args.inventory)
+    state_root = getattr(args, "eligibility_state_root", None)
+    row = inventory_row(args.case_id, args.inventory, state_root)
     source_root = args.source.resolve(strict=True)
     source_proof = attest_source(row, source_root)
     source_proof.update(attest_native_protocol(row, source_root,
                                                args.protocol_receipt,
                                                args.protocol_patch))
     static_path = args.static_input.resolve(strict=True)
+    require_static_eligibility_pin(row, args.inventory, state_root, static_path)
     static_output = args.static_output.resolve(strict=True)
     sidecars = args.sidecars.resolve(strict=True)
     receipt = validate_static(row, static_path, static_output, sidecars)
@@ -412,6 +466,7 @@ def prepare_weave(args: argparse.Namespace) -> dict:
                "-Dsolr.log.dir=" + str(healthy / "tmp"),
                "-Dtest.solr.allowed.securerandom=NativePRNG",
                "-Dtests.src.home=" + str(test_home),
+               *original_junit_jvm_args(row),
                "-cp", os.pathsep.join(runner_cp), RUNNER,
                row["workload"]["test_class"], row["workload"]["test_method"]]
     script = ["#!/usr/bin/env bash", "set -euo pipefail",
@@ -513,7 +568,10 @@ def bind_executed_schedule(campaign: dict, trace_dir: Path,
 
 
 def prepare_campaign(args: argparse.Namespace) -> dict:
-    row = inventory_row(args.case_id, args.inventory)
+    state_root = getattr(args, "eligibility_state_root", None)
+    row = inventory_row(args.case_id, args.inventory, state_root)
+    require_static_eligibility_pin(row, args.inventory, state_root,
+                                   args.static_input.resolve(strict=True))
     source = args.source.resolve(strict=True)
     source_proof = attest_source(row, source)
     source_proof.update(attest_native_protocol(row, source,
@@ -589,7 +647,8 @@ def prepare_campaign(args: argparse.Namespace) -> dict:
                                         "-Djava.io.tmpdir={trial_workdir}",
                                         "-Dsolr.log.dir={trial_workdir}",
                                         "-Dtest.solr.allowed.securerandom=NativePRNG",
-                                        "-Dtests.src.home=" + str(test_home)],
+                                        "-Dtests.src.home=" + str(test_home),
+                                        *original_junit_jvm_args(row)],
                            "args_before_test": []},
                 "budget": {"fault_trials": args.trials, "seconds": args.seconds,
                            "max_faults_per_trial": args.max_faults},
@@ -626,6 +685,8 @@ def main() -> None:
         part.add_argument("--case-id", required=True)
         part.add_argument("--inventory", type=Path, default=INVENTORY)
         part.add_argument("--output", required=True, type=Path)
+        part.add_argument("--eligibility-state-root", type=Path,
+                          help="queue state root with SHA-verified healthy supersession for a skipped JUnit")
     scope = sub.choices["scope"]
     scope.add_argument("--source", required=True, type=Path)
     scope.add_argument("--protocol-receipt", type=Path,
