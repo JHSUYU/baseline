@@ -62,7 +62,7 @@ that session, compares observed target closure families and branch outcomes,
 and updates a persistent fault queue. It gives most queue slots to observed
 closure doors and reserves one in eight fault trials for doors outside it.
 
-New campaigns use scheduler version 5. The last fault's `siteId` and
+New campaigns use scheduler version 8. The last fault's `siteId` and
 `exceptionClass` form a fault ID; physical actors and event ordinals remain in
 the exact injection selector but do not split this scheduling identity. A
 new or less-tested fault ID outranks repeated IDs before closure novelty and
@@ -76,7 +76,26 @@ slots favor doors seen before that check; one in eight admits later doors to
 explore recovery and later target instances. This is a scheduling heuristic:
 receipt order across actors does not prove a causal order. If the exact selected
 check is absent, doors retain an unknown phase and normal feedback ranking.
-Versions 1 through 4 keep their frozen checkpoint selection rules.
+Version 8 adds an optional peer identity hint for REGION_STATE campaigns with
+an independently pinned static RPC scope. It pairs the original GraphChecker
+`EXCHANGE_SEND` and `EXCHANGE_RECEIVE` request events by correlation, attempt,
+and half, then reads the actual receiver process epoch. A correlation key
+with multiple sends or receives is ambiguous even when the counts match; the
+runner does not use per-actor sequence numbers to pair it. It joins an already
+observed `FAULT_DOOR` to a request only when method, source actor, ordinal,
+and cardinality agree; ambiguous joins remain `unknown`. The selected target
+actor's pretarget requests identify its peer for the same receiver role. The
+native hook receipt's append order marks a door as observed before or after
+the selected target check; this is a scheduling heuristic, not a cross-actor
+causal order. Only a same-peer RPC door with `before_selected_target` phase
+gets a bounded scheduling bonus, including one peer-aware static-producer slot
+in eight selections. This does
+not change static eligibility, the original graph, strict injection, or bug
+verdict. The per-trial `peer-ranking-receipt.json` pins the trace and selected
+target receipt. Resume, terminal reopening, and predecessor import verify
+that durable peer receipt against the result's SHA-256; the local raw-trace
+artifact manifest does not cover this separate file. Old checkpoints retain
+their frozen scheduler version.
 
 When a REGION_STATE trial misses its exact selector, versions 3 through 5 verify any already applied prefix
 against its original door receipts, then offers alternate actors observed at

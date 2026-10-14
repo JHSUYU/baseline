@@ -32,9 +32,10 @@ from Mallory.native_graphchecker_feedback.region_state_graph import (
 )
 from .source_preflight import feedback_bridge
 from .static_may import rpc_producer_sites
+from .peer_identity import rank_region_doors_by_peer
 
 SCHEMA = 1
-SCHEDULER_VERSION = 7
+SCHEDULER_VERSION = 8
 FAULT_FIELDS = ("siteId", "node", "actorEpochOrdinal", "occurrenceId",
                 "ordinal", "exceptionClass")
 SELECTOR_FIELDS = ("siteId", "node", "actorEpochOrdinal", "ordinal",
@@ -1063,6 +1064,8 @@ def _enqueue(state: dict[str, Any], doors: list[dict[str, Any]],
         if state.get("scheduler_version", 1) >= 6:
             item["selected_target_actor"] = door.get("selected_target_actor")
             item["target_order_distance"] = door.get("target_order_distance")
+        if state.get("scheduler_version", 1) >= 8:
+            item["peer_relation"] = door.get("peer_relation", "unknown")
         state["queue"].append(item)
     state["seen_plan_keys"] = sorted(seen)
 
@@ -1097,7 +1100,7 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
     version = state.get("scheduler_version", 1)
     if version == 1:
         return _pick_v1(state)
-    if version not in (2, 3, 4, 5, 6, SCHEDULER_VERSION):
+    if version not in (2, 3, 4, 5, 6, 7, SCHEDULER_VERSION):
         raise ValueError(f"unsupported native scheduler version: {version}")
     queue = state["queue"]
     if not queue:
@@ -1108,6 +1111,17 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
     # Keep one of eight slots for observed doors outside the target closure.
     outside_slot = bool(outside) and completed % 8 == 7
     candidates = outside if outside_slot else inside or outside
+    peer_slot = False
+    if version >= 8 and not outside_slot and completed % 8 == 4:
+        # A bounded slot gives tool-selected producer RPC doors to the
+        # target's observed peer a chance before a large closure queue uses
+        # the whole budget. Peer identity is a hint, never causal closure.
+        matching_peer = [item for item in candidates if item.get(
+            "peer_relation") == "same_peer_before_target"]
+        if matching_peer:
+            static_peer = [item for item in matching_peer if item["tier"] ==
+                           "static_producer_frontier"]
+            candidates, peer_slot = static_peer or matching_peer, True
     if version >= 5 and not outside_slot and completed % 8 == 5:
         # Preserve a bounded recovery slot even when the late plan's fault
         # depth differs from the usual depth preference.
@@ -1142,7 +1156,7 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
             "target_phase") != "after_selected_target"]
         if timely:
             candidates = timely
-    if version >= 6 and not outside_slot:
+    if version >= 6 and not outside_slot and not peer_slot:
         # Actor affinity is a scheduling hint, not closure membership. Keep
         # cross-actor plans in the queue and give them a recurring slot.
         actor_choice = (completed % 4 in (0, 1))
@@ -1175,6 +1189,10 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
                     {"observed_closure": 4, "static_producer_frontier": 3,
                      "pre_target_actor": 2,
                      "outside_closure": 1}.get(item["tier"], 1),
+                    *(({"same_peer_before_target": 2,
+                        "same_peer_after_target": 1}.get(
+                            item.get("peer_relation"), 0),)
+                      if version >= 8 else ()),
                     *((recurrence,) if version >= 7 else ()),
                     proximity, item["novelty"], len(item["faults"]),
                     completed - item["enqueued_at"],
@@ -1802,7 +1820,8 @@ def _run_region_trial(config: dict[str, Any], admitted: dict[str, Any],
                       trial: Path, faults: list[dict[str, Any]],
                       healthy: dict[str, Any] | None,
                       result: dict[str, Any], events: list[dict[str, Any]],
-                      strict: bool) -> dict[str, Any]:
+                      strict: bool, scheduler_version: int = SCHEDULER_VERSION
+                      ) -> dict[str, Any]:
     """Extract each run's graph from its own original CLOSED trace."""
     if not faults and not result["junit_passed"]:
         result["status"] = "blocked_healthy_junit"
@@ -1872,17 +1891,23 @@ def _run_region_trial(config: dict[str, Any], admitted: dict[str, Any],
         post_fault = _post_fault_target_checks(events, summary, last)
         result["post_fault_target_check_observed"] = post_fault["observed"]
         result["post_fault_target_check_evidence"] = post_fault
+    static_rpc_sites = (rpc_producer_sites(
+        str(Path(recording["static_may_scope_map"]).resolve(strict=True)),
+        recording["static_may_scope_map_sha256"], config["target_site"])
+        if "static_may_scope_map" in recording else frozenset())
     result["eligible_doors"] = ([] if summary.get("status") ==
                                 "target_throw_unplanned" else
-                                _region_doors(
-                                    events, summary, last,
-                                    rpc_producer_sites(
-                                        str(Path(recording[
-                                            "static_may_scope_map"]).resolve(strict=True)),
-                                        recording["static_may_scope_map_sha256"],
-                                        config["target_site"])
-                                    if "static_may_scope_map" in recording
-                                    else frozenset()))
+                                _region_doors(events, summary, last,
+                                              static_rpc_sites))
+    if scheduler_version >= 8 and result["eligible_doors"] and static_rpc_sites:
+        result["eligible_doors"], peer_receipt = rank_region_doors_by_peer(
+            result["eligible_doors"],
+            iteration / "trace" / "runtime_trace.jsonl",
+            trial / "original-graph" / "target-occurrence.json",
+            static_rpc_sites, events)
+        _atomic(trial / "peer-ranking-receipt.json", peer_receipt)
+        result["peer_ranking_receipt_sha256"] = _sha(
+            trial / "peer-ranking-receipt.json")
     selected_ids = summary.get("targetEvidence", {}).get(
         "targetCheckOccurrenceIds")
     if (not isinstance(selected_ids, list) or not selected_ids or
@@ -1911,7 +1936,8 @@ def _run_region_trial(config: dict[str, Any], admitted: dict[str, Any],
 def _run_trial(config: dict[str, Any], admitted: dict[str, Any],
                trial: Path, faults: list[dict[str, Any]],
                healthy: dict[str, Any] | None,
-               healthy_raw_throw_count: int | None = None) -> dict[str, Any]:
+               healthy_raw_throw_count: int | None = None,
+               scheduler_version: int = SCHEDULER_VERSION) -> dict[str, Any]:
     _verify_pins(config, admitted)
     trial.mkdir(parents=True, exist_ok=False)
     _prepare_trial_artifacts(config, trial)
@@ -1970,7 +1996,7 @@ def _run_trial(config: dict[str, Any], admitted: dict[str, Any],
             result["applied_prefix_count"] = prefix_size
             result["observed_actor_successors"] = successors
         result = _run_region_trial(config, admitted, trial, faults, healthy,
-                                   result, events, strict)
+                                   result, events, strict, scheduler_version)
         return _save_trial_result(trial, result, trial_started)
     if not result["junit_passed"] and not faults:
         result["status"] = "blocked_healthy_junit"
@@ -2083,6 +2109,39 @@ def _save_trial_result(trial: Path, result: dict[str, Any],
     return result
 
 
+def _verify_peer_ranking_receipt(trial: Path, result: dict[str, Any]) -> None:
+    """Peer hints live outside the local raw-trace artifact manifest."""
+    expected = result.get("peer_ranking_receipt_sha256")
+    if expected is None:
+        return
+    receipt = trial / "peer-ranking-receipt.json"
+    if (not isinstance(expected, str) or not SHA256_HEX.fullmatch(expected)
+            or receipt.is_symlink() or not receipt.is_file() or
+            _sha(receipt) != expected):
+        raise ValueError("completed native trial peer ranking receipt changed")
+
+
+def _verify_terminal_peer_ranking_receipts(root: Path,
+                                           state: dict[str, Any]) -> None:
+    """Recheck durable peer receipts when opening or sealing a terminal run."""
+    recorded = [state.get("healthy"), *state.get("trials", [])]
+    for item in recorded:
+        if item is None:
+            continue
+        relative = item.get("result") if isinstance(item, dict) else None
+        if (item is state.get("healthy") and relative is None and
+                state.get("scheduler_version", 1) < 8):
+            # Legacy terminal snapshots may record only the healthy name.
+            continue
+        if (not isinstance(relative, str) or
+                not re.fullmatch(r"trials/r[0-9]{4,}/result\.json", relative)):
+            raise ValueError("terminal native trial result path is invalid")
+        result_file = root / relative
+        if result_file.is_symlink() or not result_file.is_file():
+            raise ValueError("terminal native trial result is missing")
+        _verify_peer_ranking_receipt(result_file.parent, _load(result_file))
+
+
 def _accept(state: dict[str, Any], result: dict[str, Any], name: str) -> None:
     active = state["active"]
     if active is None or active["name"] != name or active["faults"] != result["faults"]:
@@ -2121,6 +2180,8 @@ def _accept(state: dict[str, Any], result: dict[str, Any], name: str) -> None:
         if state.get("scheduler_version", 1) >= 6:
             record["selected_target_actor"] = active.get("selected_target_actor")
             record["target_order_distance"] = active.get("target_order_distance")
+        if state.get("scheduler_version", 1) >= 8:
+            record["peer_relation"] = active.get("peer_relation", "unknown")
         if state.get("scheduler_version", 1) >= 2:
             fault_id = _fault_id(active["faults"][-1])
             attempts = state["fault_id_attempts"]
@@ -2142,6 +2203,8 @@ def _accept(state: dict[str, Any], result: dict[str, Any], name: str) -> None:
             if state.get("scheduler_version", 1) >= 6:
                 retry["selected_target_actor"] = active.get("selected_target_actor")
                 retry["target_order_distance"] = active.get("target_order_distance")
+            if state.get("scheduler_version", 1) >= 8:
+                retry["peer_relation"] = active.get("peer_relation", "unknown")
             state["queue"].append(retry)
             record["retry_enqueued"] = active.get("attempt", 0) + 1
         if (state.get("scheduler_version", 1) >= 3 and
@@ -2240,6 +2303,7 @@ def _predecessor_snapshot(config: dict[str, Any], root: Path,
             summary != {key: value for key, value in source.items()
                         if key not in ("queue", "seen_plan_keys", "active")}):
         raise ValueError("predecessor is not a consistent completed campaign")
+    _verify_terminal_peer_ranking_receipts(source_root, source)
     # A new budget and scheduler are legitimate; workload, target, bytecode,
     # static scope, and original recorder identity must remain exact.
     for name in ("case_id", "target_site", "target_throw",
@@ -2300,6 +2364,7 @@ def _predecessor_snapshot(config: dict[str, Any], root: Path,
         if result_file.resolve(strict=True) != result_file:
             raise ValueError("predecessor trial result must not be a symlink")
         result = _load(result_file)
+        _verify_peer_ranking_receipt(result_file.parent, result)
         if (result.get("case_id") != config["case_id"] or
                 result.get("status") != item.get("status") or
                 not isinstance(result.get("faults"), list) or
@@ -2416,6 +2481,7 @@ def _resume_active(config: dict[str, Any], admitted: dict[str, Any],
         local_sha = result.get("local_artifacts_manifest_sha256")
         if local_sha is not None and _sha(trial / "local-artifacts.json") != local_sha:
             raise ValueError("completed native trial local artifact receipt changed")
+        _verify_peer_ranking_receipt(trial, result)
         _accept(state, result, name)
         _atomic(root / "checkpoint.json", state)
         return
@@ -2450,11 +2516,14 @@ def _resume_active(config: dict[str, Any], admitted: dict[str, Any],
                  isinstance(healthy_raw_throw_count, bool) or
                  healthy_raw_throw_count < 0)):
             raise ValueError("invalid healthy exact target throw count")
+    version_arg = ({"scheduler_version": state["scheduler_version"]}
+                   if "scheduler_version" in state else {})
     if active["index"] > 0:
         result = _run_trial(config, admitted, trial, active["faults"], healthy,
-                            healthy_raw_throw_count)
+                            healthy_raw_throw_count, **version_arg)
     else:
-        result = _run_trial(config, admitted, trial, active["faults"], healthy)
+        result = _run_trial(config, admitted, trial, active["faults"], healthy,
+                            **version_arg)
     _accept(state, result, name)
     _atomic(root / "checkpoint.json", state)
 
@@ -2505,6 +2574,7 @@ def run_campaign(config_path: Path, root: Path) -> dict[str, Any]:
                 _import_predecessor(config, root, state)
             _atomic(checkpoint, state)
         if state["terminal"]:
+            _verify_terminal_peer_ranking_receipts(root, state)
             return state
         (root / "trials").mkdir(exist_ok=True)
         if state["healthy"] is None and state["active"] is None:
@@ -2533,9 +2603,13 @@ def run_campaign(config_path: Path, root: Path) -> dict[str, Any]:
                         "selected_target_actor")
                     state["active"]["target_order_distance"] = selected.get(
                         "target_order_distance")
+                if state.get("scheduler_version", 1) >= 8:
+                    state["active"]["peer_relation"] = selected.get(
+                        "peer_relation", "unknown")
                 _atomic(checkpoint, state)
             _resume_active(config, admitted, root, state)
         _atomic(checkpoint, state)
         _atomic(root / "summary.json", {key: value for key, value in state.items()
                                          if key not in ("queue", "seen_plan_keys", "active")})
+        _verify_terminal_peer_ranking_receipts(root, state)
         return state
