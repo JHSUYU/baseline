@@ -27,6 +27,64 @@ class HdfsNativeAdapterTest(unittest.TestCase):
                              "testEncryptedReadDefaultAlgorithmCipherSuite[0]"))
         with self.assertRaisesRegex(ValueError, "selector"):
             adapter._selector("org.apache.hadoop.hdfs.TestEncryptedTransfer#test[-1]")
+    def test_static_planner_uses_verified_source_built_engine(self):
+        jar = Path("/pinned/original-engine.jar")
+        sha = "a" * 64
+        profile = {"planner_classpath": ["/pinned/scope-planner.jar", str(jar),
+                                         "/pinned/soot.jar"],
+                   "classpath_pins": {str(jar): sha}}
+        adapter._require_source_built_planner_engine(profile, jar, sha)
+        for classpath, pins in (
+                (["/pinned/scope-planner.jar", "/old/engine.jar",
+                  str(jar)], {str(jar): sha}),
+                (["/pinned/scope-planner.jar", str(jar), str(jar)],
+                 {str(jar): sha}),
+                (profile["planner_classpath"], {str(jar): "0" * 64})):
+            with self.subTest(classpath=classpath, pins=pins):
+                stale = {"planner_classpath": classpath,
+                         "classpath_pins": pins}
+                with self.assertRaisesRegex(ValueError, "source-built"):
+                    adapter._require_source_built_planner_engine(
+                        stale, jar, sha)
+
+    def test_profile_selector_pins_same_source_built_engine_for_planner(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            old = root / "old-engine.jar"
+            new = root / "new-engine.jar"
+            old.write_bytes(b"old")
+            new.write_bytes(b"new")
+            build_receipt = root / "engine-build.json"
+            build_receipt.write_text("{}\n")
+            source = root / "source-profile.json"
+            source.write_text(json.dumps({
+                "planner_classpath": ["/planner.jar", str(old), "/soot.jar"],
+                "classpath_pins": {str(old): adapter._sha(old)},
+                "engine_root": "/old/source", "engine_jar_sha256": "0" * 64,
+            }))
+            destination = root / "selected-profile.json"
+            engine = {"source_tree_sha256": "b" * 64,
+                      "engine_jar_sha256": adapter._sha(new)}
+            with mock.patch.object(adapter.weave, "ENGINE", root), \
+                 mock.patch.object(adapter.weave, "JAR", new), \
+                 mock.patch.object(adapter.weave, "ENGINE_RECEIPT",
+                                   build_receipt), \
+                 mock.patch.object(adapter.weave, "verify_engine",
+                                   return_value=engine):
+                receipt = adapter.pin_source_built_engine_profile(
+                    source, destination)
+                with self.assertRaisesRegex(ValueError, "overwrite"):
+                    adapter.pin_source_built_engine_profile(
+                        source, destination)
+            selected = json.loads(destination.read_text())
+            self.assertEqual(str(new), selected["planner_classpath"][1])
+            self.assertEqual(str(root), selected["engine_root"])
+            self.assertEqual(engine["engine_jar_sha256"],
+                             selected["classpath_pins"][str(new)])
+            self.assertEqual(engine["source_tree_sha256"],
+                             receipt["engine_source_tree_sha256"])
+            self.assertTrue((root / "selected-profile.json.engine-pin.json")
+                            .is_file())
 
     def test_inventory_request_binds_compiled_check_and_distinct_throw(self):
         rows = json.loads(INVENTORY.read_text())["cases"]

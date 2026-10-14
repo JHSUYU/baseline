@@ -31,6 +31,66 @@ FORBIDDEN_PROFILE = {"doors", "fault_sites", "io_points", "target_site",
                      "check_line", "throw_line", "junit", "case_id"}
 
 
+def _require_source_built_planner_engine(profile: dict, engine_jar: Path,
+                                         engine_sha256: str) -> None:
+    """Bind the static JVM's bridge to the verified GraphChecker source build."""
+    selected = str(engine_jar)
+    classpath = profile["planner_classpath"]
+    if (len(classpath) < 2 or classpath[1] != selected or
+            classpath.count(selected) != 1 or
+            profile["classpath_pins"].get(selected) != engine_sha256):
+        raise ValueError("HDFS ScopePlanner must load the pinned source-built "
+                         "GraphChecker engine as its second classpath entry")
+
+
+def pin_source_built_engine_profile(source: Path, destination: Path) -> dict:
+    """Select one verified engine for future HDFS preparation, without editing
+    the source profile or any completed campaign.
+
+    MALLORY_NATIVE_ENGINE_ROOT selects the source tree.  The original engine
+    verifier checks every source and dependency before this profile is written.
+    Other dependency classpaths retain their exact ordered identities; the
+    static planner's bridge is the only classpath entry replaced here.
+    """
+    receipt_path = destination.with_name(destination.name + ".engine-pin.json")
+    if destination.exists() or receipt_path.exists():
+        raise ValueError("refusing to overwrite an HDFS engine profile")
+    profile = _object(source)
+    prior = profile.get("planner_classpath")
+    pins = profile.get("classpath_pins")
+    if (not isinstance(prior, list) or len(prior) < 2 or
+            not isinstance(pins, dict) or prior[1] not in pins):
+        raise ValueError("source HDFS profile has no pinned planner engine")
+    engine = weave.verify_engine()
+    selected = str(weave.JAR)
+    if selected in prior[2:]:
+        raise ValueError("source HDFS planner repeats selected engine")
+    result = dict(profile)
+    result["planner_classpath"] = [prior[0], selected, *prior[2:]]
+    result["classpath_pins"] = {**pins,
+                                selected: engine["engine_jar_sha256"]}
+    result["engine_root"] = str(weave.ENGINE)
+    result["engine_jar_sha256"] = engine["engine_jar_sha256"]
+    result["engine_source_tree_sha256"] = engine["source_tree_sha256"]
+    _require_source_built_planner_engine(result, weave.JAR,
+                                         engine["engine_jar_sha256"])
+    _atomic(destination, result)
+    receipt = {"schema_version": 1,
+            "source_profile_path": str(source.resolve(strict=True)),
+            "source_profile_sha256": _sha(source),
+            "selected_profile_path": str(destination.resolve(strict=True)),
+            "selected_profile_sha256": _sha(destination),
+            "replaced_planner_engine_path": prior[1],
+            "replaced_planner_engine_sha256": pins[prior[1]],
+            "engine_root": str(weave.ENGINE),
+            "engine_source_tree_sha256": engine["source_tree_sha256"],
+            "engine_jar_path": selected,
+            "engine_jar_sha256": engine["engine_jar_sha256"],
+            "engine_build_receipt_sha256": _sha(weave.ENGINE_RECEIPT)}
+    _atomic(receipt_path, receipt)
+    return receipt
+
+
 def _object(path: Path) -> dict:
     value = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(value, dict):
@@ -482,6 +542,17 @@ def _profile(request: dict, path: Path) -> dict:
     engine = weave.verify_engine()
     if engine.get("engine_jar_sha256") != profile.get("engine_jar_sha256"):
         raise ValueError("source-built original GraphChecker engine changed")
+    if (profile.get("engine_source_tree_sha256") is not None and
+            profile["engine_source_tree_sha256"] !=
+            engine["source_tree_sha256"]):
+        raise ValueError("source-built original GraphChecker source changed")
+    # ScopePlanner invokes MalloryOriginalSeedBridge from its own JVM.  That
+    # class must resolve from the same source-built engine that REGION_STATE
+    # later verifies and weaves.  An older bridge on the planner classpath
+    # silently restores older static algorithms while the receipt still names
+    # the newer engine.  Keep the position deterministic after the planner JAR.
+    _require_source_built_planner_engine(profile, weave.JAR,
+                                         engine["engine_jar_sha256"])
     _source_file(source, request["target"]["source_path"],
                  request["target"]["source_sha256"])
     junit = request["original_junit"]
@@ -568,6 +639,10 @@ def prepare(request_file: Path, profile_file: Path, output: Path,
         "scope_input_path": str(static / "scope-input.json"),
         "scope_input_sha256": _sha(static / "scope-input.json"),
         "engine_jar_sha256": _sha(weave.JAR),
+        "planner_engine_jar_path": str(weave.JAR),
+        "planner_engine_jar_sha256": _sha(weave.JAR),
+        "engine_source_tree_sha256": weave.verify_engine()[
+            "source_tree_sha256"],
         "process_classes_path": str(process),
         "process_classes_sha256": weave.class_tree_digest(process),
         "ordered_analysis_classpath_sha256": hashlib.sha256(
@@ -757,7 +832,8 @@ def prepare(request_file: Path, profile_file: Path, output: Path,
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("request", "verify-existing", "prepare"))
+    parser.add_argument("command", choices=("request", "verify-existing", "prepare",
+                                            "pin-engine-profile"))
     parser.add_argument("--inventory", type=Path)
     parser.add_argument("--case-id")
     parser.add_argument("--alternate-junit-attestation", type=Path)
@@ -769,6 +845,12 @@ def main() -> None:
     parser.add_argument("--reuse-static-root", type=Path)
     parser.add_argument("--out", type=Path)
     args = parser.parse_args()
+    if args.command == "pin-engine-profile":
+        if args.profile is None or args.out is None:
+            parser.error("pin-engine-profile requires profile and out")
+        print(json.dumps(pin_source_built_engine_profile(args.profile,
+                                                         args.out), sort_keys=True))
+        return
     if args.command == "prepare":
         if args.request is None or args.profile is None or args.out is None:
             parser.error("prepare requires request, profile, and out")
