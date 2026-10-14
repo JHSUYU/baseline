@@ -593,6 +593,7 @@ public final class StaticScopeMap {
         Map<String, SharedFieldFlow.TrackedKind> kinds =
                 new LinkedHashMap<String, SharedFieldFlow.TrackedKind>();
         List<Region> retained = regions(regions);
+        Ownership ownership = new Ownership(retained);
         Set<String> regionRoots = new LinkedHashSet<String>();
         for (Region region : retained) regionRoots.addAll(region.methods);
         List<Site> found = new ArrayList<Site>();
@@ -604,13 +605,13 @@ public final class StaticScopeMap {
             int unitIndex = integer(edge.get("unitIndex"));
             if (method.isEmpty() || unitIndex < 0) continue;
             if (THROW_KIND.equals(kind)) {
-                add(found, seen, retained, new Site(TARGET_SITE, "",
+                add(found, seen, ownership, new Site(TARGET_SITE, "",
                         SiteId.of(method, unitIndex), vmSite(method), "", "",
                         "", "", "", null, NO_GUARDS, NO_OUTCOMES));
                 continue;
             }
-            addRootSite(found, seen, retained, edge, method, unitIndex);
-            addDeclaredSite(found, seen, retained, edge, kind, method,
+            addRootSite(found, seen, ownership, edge, method, unitIndex);
+            addDeclaredSite(found, seen, ownership, edge, kind, method,
                     unitIndex, clocks, configCalls, demand, regionRoots);
             String field = field(edge);
             if (READ_KINDS.contains(kind)) {
@@ -636,7 +637,7 @@ public final class StaticScopeMap {
                     // no getfield of the cell at the site, and the VM
                     // records the read in the accessor's body.
                     boolean accessor = ACCESSOR_READ.equals(kind);
-                    add(found, seen, retained, new Site(READ_SITE, "",
+                    add(found, seen, ownership, new Site(READ_SITE, "",
                             siteId, vmSite(accessor ? text(edge.get(
                                     "accessorImplementationMethod"))
                                     : method), field, field, "",
@@ -651,7 +652,7 @@ public final class StaticScopeMap {
             if (field.isEmpty()) continue;
             String invoke = text(edge.get("invoke"));
             String leaf = SharedFieldFlow.atomicValueField(field, invoke);
-            add(found, seen, retained, new Site(WRITE_SITE, "",
+            add(found, seen, ownership, new Site(WRITE_SITE, "",
                     SiteId.of(method, unitIndex), vmSite(method),
                     leaf.isEmpty() ? field : leaf, field, "", invoke, "",
                     null, NO_GUARDS, NO_OUTCOMES, NO_DECIDERS, NO_CHAIN,
@@ -1039,7 +1040,7 @@ public final class StaticScopeMap {
     /** ROOT_SITE rows of an edge defining a local of its own method from a
      *  {@code <callee>.return} cell. */
     private static void addRootSite(List<Site> into, Set<String> seen,
-                                    List<Region> retained,
+                                    Ownership ownership,
                                     Map<String, Object> edge, String method,
                                     int unitIndex) {
         if (!Boolean.TRUE.equals(edge.get("definitionSite"))) return;
@@ -1049,7 +1050,7 @@ public final class StaticScopeMap {
                 text(edge.get("toCell")));
         if (!local.matches() || !local.group(1).equals(method)) return;
         String siteId = SiteId.of(method, unitIndex);
-        for (String regionId : owners(retained, method)) {
+        for (String regionId : ownership.owners(method)) {
             if (!seen.add(ROOT_SITE + "|" + regionId + "|" + siteId + "|"
                     + source + "|" + local.group(2))) {
                 continue;
@@ -1069,7 +1070,7 @@ public final class StaticScopeMap {
      *  marker.
      */
     private static void addDeclaredSite(
-            List<Site> into, Set<String> seen, List<Region> retained,
+            List<Site> into, Set<String> seen, Ownership ownership,
             Map<String, Object> edge, String kind, String method,
             int unitIndex, Map<String, Clock> clocks,
             ConfigCalls configCalls, Demand demand,
@@ -1118,7 +1119,7 @@ public final class StaticScopeMap {
         String declaredKind = "accessor_field_return".equals(kind)
                 ? ACCESSOR_RETURN : CALL_RETURN;
         String siteId = SiteId.of(method, unitIndex);
-        for (String regionId : owners(retained, method)) {
+        for (String regionId : ownership.owners(method)) {
             if (!seen.add(DECLARED_SITE + "|" + regionId + "|" + siteId
                     + "|" + cell + "|" + callee + "|" + dependencyCell)) {
                 continue;
@@ -1178,8 +1179,8 @@ public final class StaticScopeMap {
     /** One row of {@code site} per innermost region holding its method,
      *  once per (role, region, site, carrier). */
     private static void add(List<Site> into, Set<String> seen,
-                            List<Region> retained, Site site) {
-        for (String regionId : holders(retained,
+                            Ownership ownership, Site site) {
+        for (String regionId : ownership.holders(
                 SiteId.methodOf(site.siteId))) {
             if (!seen.add(site.role + "|" + regionId + "|" + site.siteId
                     + "|" + site.carrier)) {
@@ -1244,38 +1245,71 @@ public final class StaticScopeMap {
         return regions;
     }
 
-    /** One row per innermost holding region (never choose between
-     *  siblings); a method no region holds is published once with region "".
+    /** Immutable per-sites-call ownership index and memo. The old algorithm
+     *  inspected all regions and compared their method sets for every edge;
+     *  neither the region set nor its methods change during one sites call.
      */
-    private static List<String> owners(List<Region> retained, String method) {
-        List<String> owners = holders(retained, method);
-        if (owners.isEmpty()) owners.add("");
-        return owners;
-    }
+    private static final class Ownership {
+        private final Map<String, List<Region>> byMethod =
+                new LinkedHashMap<String, List<Region>>();
+        private final Map<String, List<String>> memo =
+                new LinkedHashMap<String, List<String>>();
 
-    /** The INNERMOST retained regions holding one method. The recording
-     *  attributes an event to the innermost activation, so an enclosing region
-     *  would name every occurrence of the request as a writer. Innermost is set
-     *  inclusion, not a ranking; incomparable regions are all returned. */
-    private static List<String> holders(List<Region> retained, String method) {
-        List<Region> holding = new ArrayList<Region>();
-        for (Region region : retained) {
-            if (region.methods.contains(method)) holding.add(region);
-        }
-        List<String> innermost = new ArrayList<String>();
-        for (Region region : holding) {
-            boolean encloses = false;
-            for (Region other : holding) {
-                if (other == region) continue;
-                if (region.methods.containsAll(other.methods)
-                        && other.methods.size() < region.methods.size()) {
-                    encloses = true;
-                    break;
+        private Ownership(List<Region> retained) {
+            for (Region region : retained) {
+                for (String method : region.methods) {
+                    byMethod.computeIfAbsent(method,
+                            key -> new ArrayList<Region>()).add(region);
                 }
             }
-            if (!encloses) innermost.add(region.regionId);
         }
-        return innermost;
+
+        /** The innermost retained regions, preserving their original order. */
+        private List<String> holders(String method) {
+            List<String> cached = memo.get(method);
+            if (cached != null) return cached;
+            List<Region> holding = byMethod.get(method);
+            if (holding == null) holding = Collections.<Region>emptyList();
+            // A region is innermost iff no strictly smaller holding region
+            // has a method set contained in it. Any nonminimal smaller
+            // region has a minimal descendant, so checking only the minima
+            // found in ascending size order is equivalent to the old full
+            // pairwise comparison. Equal-size regions are always retained.
+            List<Region> bySize = new ArrayList<Region>(holding);
+            bySize.sort((left, right) -> Integer.compare(
+                    left.methods.size(), right.methods.size()));
+            List<Region> minima = new ArrayList<Region>();
+            Set<Region> retained = Collections.newSetFromMap(
+                    new java.util.IdentityHashMap<Region, Boolean>());
+            for (Region region : bySize) {
+                boolean encloses = false;
+                for (Region smaller : minima) {
+                    if (smaller.methods.size() >= region.methods.size()) {
+                        break;
+                    }
+                    if (region.methods.containsAll(smaller.methods)) {
+                        encloses = true;
+                        break;
+                    }
+                }
+                if (!encloses) {
+                    minima.add(region);
+                    retained.add(region);
+                }
+            }
+            List<String> innermost = new ArrayList<String>();
+            for (Region region : holding) {
+                if (retained.contains(region)) innermost.add(region.regionId);
+            }
+            memo.put(method, innermost);
+            return innermost;
+        }
+
+        /** Unheld methods keep the original empty-region authority. */
+        private List<String> owners(String method) {
+            List<String> held = holders(method);
+            return held.isEmpty() ? Collections.singletonList("") : held;
+        }
     }
 
     // ---- reading and joining (EXPLORE) --------------------------------
