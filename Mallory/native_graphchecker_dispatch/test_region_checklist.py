@@ -156,6 +156,54 @@ class RegionChecklistTest(unittest.TestCase):
                 checklist._verified_region_summary(trial, result, config,
                                                     graph_fixture.engine)
 
+    def test_target_absent_summary_preserves_context_boundary_schema(self) -> None:
+        trial = self.root / "r0006"
+        trace = trial / "iteration-native/trace"
+        trace.mkdir(parents=True)
+        (trace / "streaming_trace_manifest.json").write_text(json.dumps({
+            "schemaVersion": 2, "kind": "STREAMING_RUNTIME_TRACE",
+            "status": "CLOSED", "tracedRows": "exact-trace-digest"}) + "\n")
+        (trace / "runtime_trace.jsonl").write_text("")
+        (trace / "schedule.jsonl").write_text("")
+        scope = self.root / "static_scope_map.jsonl"
+        graph = self.root / "candidate_dataflow_edges.jsonl.gz"
+        skeletons = self.root / "region_skeletons.jsonl.gz"
+        for path in (scope, graph, skeletons):
+            path.write_bytes(b"pinned static input")
+        pins = checklist._closed_inputs(trace, scope, graph, skeletons)
+        site = "<example.Target: void check()>#u7"
+        summary = {"schemaVersion": 1, "backend": "original_region_state",
+                   "targetSiteId": site, "targetReached": False,
+                   "targetThrowObserved": False, "status": "target_absent",
+                   "nodeFamilies": [], "edgeFamilies": [],
+                   "contextBoundaryEdgeFamilies": [],
+                   "closureEdgeFamilies": [], "branchOutcomeIds": [],
+                   "provenance": pins}
+        original = trial / "original-graph"
+        original.mkdir()
+        saved = trial / "native-summary.json"
+        for path in (saved, original / "summary.json"):
+            path.write_text(json.dumps(summary) + "\n")
+        (trial / "schedule-lineage.json").write_text(json.dumps({
+            "source": str(trace / "schedule.jsonl"),
+            "source_sha256": checklist._sha(trace / "schedule.jsonl"),
+            "destination_sha256": checklist._sha(trace / "schedule.jsonl"),
+            "copied": False}) + "\n")
+        result = {"native_session_sha256": checklist._sha(saved),
+                  "native_target_occurrence_ids": []}
+        config = {"target_site": site, "recording": {
+            "static_scope_map": str(scope), "candidate_graph": str(graph),
+            "region_skeletons": str(skeletons)}}
+        self.assertEqual(summary, checklist._verified_region_summary(
+            trial, result, config, self.root / "engine.jar"))
+        summary["contextBoundaryEdgeFamilies"] = ["unexpected-edge"]
+        for path in (saved, original / "summary.json"):
+            path.write_text(json.dumps(summary) + "\n")
+        result["native_session_sha256"] = checklist._sha(saved)
+        with self.assertRaisesRegex(ValueError, "graph or target receipt changed"):
+            checklist._verified_region_summary(
+                trial, result, config, self.root / "engine.jar")
+
     def test_alternate_upstream_junit_requires_pinned_source_and_target(self) -> None:
         item = next(row for row in checklist.load_inventory(
             checklist.DEFAULT_INVENTORY)[0] if row["case_id"] == "HDFS-11")

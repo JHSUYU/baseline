@@ -636,7 +636,8 @@ def _verified_region_summary(trial: Path, result: dict, config: dict,
                       "targetSiteId": config["target_site"],
                       "targetReached": False, "targetThrowObserved": False,
                       "status": "target_absent", "nodeFamilies": [],
-                      "edgeFamilies": [], "closureEdgeFamilies": [],
+                      "edgeFamilies": [], "contextBoundaryEdgeFamilies": [],
+                      "closureEdgeFamilies": [],
                       "branchOutcomeIds": [], "provenance": pins}
     else:
         raise ValueError("unknown original REGION_STATE summary status")
