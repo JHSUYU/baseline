@@ -659,6 +659,31 @@ def _last_fault_in_region_closure(summary: dict, last_fault: dict | None) -> boo
     return bool(last_fault and last_fault.get("occurrenceId") in closure)
 
 
+def _region_analysis_engine(recording: dict, fingerprint: dict,
+                            weave_engine: Path) -> Path:
+    """Select an explicitly pinned graph-analysis JAR when it differs from weave."""
+    name = recording.get("analysis_engine_jar")
+    digest = recording.get("analysis_engine_sha256")
+    if name is None and digest is None:
+        if (fingerprint.get("analysis_engine_jar") is not None or
+                fingerprint.get("analysis_engine_sha256") is not None):
+            raise ValueError("REGION_STATE analysis engine admission changed")
+        return weave_engine
+    if not isinstance(name, str) or not isinstance(digest, str):
+        raise ValueError("REGION_STATE analysis engine pin is incomplete")
+    if not Path(name).is_absolute():
+        raise ValueError("REGION_STATE analysis engine path is not absolute")
+    try:
+        path = Path(name).resolve(strict=True)
+    except (OSError, RuntimeError) as exc:
+        raise ValueError("REGION_STATE analysis engine path changed") from exc
+    if (not path.is_file() or _sha(path) != digest or
+            fingerprint.get("analysis_engine_jar") != str(path) or
+            fingerprint.get("analysis_engine_sha256") != digest):
+        raise ValueError("REGION_STATE analysis engine bytes or admission changed")
+    return path
+
+
 def _audit_region_terminal(case_id: str, config_path: Path, root: Path,
                            checkpoint: dict, summary: dict) -> dict[str, Any]:
     config = _object(config_path)
@@ -759,7 +784,8 @@ def _audit_region_terminal(case_id: str, config_path: Path, root: Path,
             elapsed < 0 or round(sum(float(row[0]["elapsed_seconds"])
                                      for row in results), 3) != elapsed):
         raise ValueError("REGION_STATE elapsed time differs from trial receipts")
-    engine = Path(weave_receipt["engine_jar"])
+    engine = _region_analysis_engine(
+        recording, fingerprint, Path(weave_receipt["engine_jar"]))
     healthy, healthy_root, _ = results[0]
     healthy_summary = _verified_region_summary(healthy_root, healthy, config, engine)
     if (healthy.get("status") != "healthy_seed" or

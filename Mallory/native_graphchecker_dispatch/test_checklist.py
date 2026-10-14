@@ -550,5 +550,61 @@ class NativeChecklistTest(unittest.TestCase):
                                       runner=lambda *_: self.fail("ran under lock"))
 
 
+class RegionAnalysisEnginePinTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temporary.cleanup)
+        self.root = Path(self.temporary.name)
+        self.weave = self.root / "weave.jar"
+        self.weave.write_bytes(b"weave engine")
+        self.analysis = self.root / "analysis.jar"
+        self.analysis.write_bytes(b"distinct analysis engine")
+        self.pin = dispatch._sha(self.analysis)
+        self.recording = {"analysis_engine_jar": str(self.analysis),
+                          "analysis_engine_sha256": self.pin}
+        self.fingerprint = dict(self.recording)
+
+    def select(self) -> Path:
+        return dispatch._region_analysis_engine(self.recording,
+                                                self.fingerprint, self.weave)
+
+    def test_distinct_pinned_analysis_engine_and_legacy_fallback(self) -> None:
+        self.assertEqual(self.analysis, self.select())
+        self.assertEqual(self.weave,
+                         dispatch._region_analysis_engine({}, {}, self.weave))
+
+    def test_canonical_path_matches_campaign_admission(self) -> None:
+        alias = self.root / "alias.jar"
+        alias.symlink_to(self.analysis)
+        self.recording["analysis_engine_jar"] = str(alias)
+        self.assertEqual(self.analysis, self.select())
+
+    def test_rejects_mutated_analysis_engine_bytes(self) -> None:
+        self.analysis.write_bytes(b"tampered")
+        with self.assertRaisesRegex(ValueError, "analysis engine bytes"):
+            self.select()
+
+    def test_rejects_mismatched_admission_or_incomplete_pin(self) -> None:
+        self.fingerprint["analysis_engine_sha256"] = "0" * 64
+        with self.assertRaisesRegex(ValueError, "analysis engine bytes"):
+            self.select()
+        self.fingerprint = dict(self.recording)
+        del self.recording["analysis_engine_sha256"]
+        with self.assertRaisesRegex(ValueError, "pin is incomplete"):
+            self.select()
+        self.recording = {}
+        with self.assertRaisesRegex(ValueError, "admission changed"):
+            self.select()
+
+    def test_rejects_missing_or_relative_analysis_engine(self) -> None:
+        self.analysis.unlink()
+        with self.assertRaisesRegex(ValueError, "path changed"):
+            self.select()
+        self.analysis.write_bytes(b"distinct analysis engine")
+        self.recording["analysis_engine_jar"] = "analysis.jar"
+        with self.assertRaisesRegex(ValueError, "not absolute"):
+            self.select()
+
+
 if __name__ == "__main__":
     unittest.main()
