@@ -78,6 +78,8 @@ import static edu.uva.liftlab.graphchecker.causynth.MapFields.text;
  * callers' demand follows the rows.
  */
 final class ReturnOnlyFormals {
+    private static final int DEFAULT_CACHED_ROWS = 32768;
+    private static final int DEFAULT_CACHED_METHODS = 64;
     /** The slice a summary reads. */
     interface Slice {
         /** The method's demanded cells. */
@@ -119,6 +121,12 @@ final class ReturnOnlyFormals {
     private final Slice slice;
     private final Map<String, List<Map<String, Object>>> rowsByOwner =
             new LinkedHashMap<>();
+    /** Parsed method adjacency; row count and method count bound its retention. */
+    private final LinkedHashMap<String, Body> bodyCache =
+            new LinkedHashMap<>(16, 0.75f, true);
+    private final int maxCachedRows;
+    private final int maxCachedMethods;
+    private int cachedRows;
     private final Map<String, Integer> versions = new LinkedHashMap<>();
     private final Map<String, Summary> summaries = new LinkedHashMap<>();
     private final Set<String> computing = new LinkedHashSet<>();
@@ -133,7 +141,16 @@ final class ReturnOnlyFormals {
     private int turns;
 
     ReturnOnlyFormals(Slice slice) {
+        this(slice, DEFAULT_CACHED_ROWS, DEFAULT_CACHED_METHODS);
+    }
+
+    ReturnOnlyFormals(Slice slice, int maxCachedRows, int maxCachedMethods) {
+        if (maxCachedRows < 0 || maxCachedMethods < 0) {
+            throw new IllegalArgumentException("negative body-cache bound");
+        }
         this.slice = slice;
+        this.maxCachedRows = maxCachedRows;
+        this.maxCachedMethods = maxCachedMethods;
     }
 
     /** Whether only {@code method}'s return needs its demanded {@code
@@ -174,6 +191,13 @@ final class ReturnOnlyFormals {
         if (method == null) return;
         rowsByOwner.computeIfAbsent(method,
                 ignored -> new ArrayList<Map<String, Object>>()).add(row);
+        Body cached = bodyCache.get(method);
+        if (cached != null) {
+            cached.read(row, cached.baseOrigins);
+            cached.rowCount++;
+            cachedRows++;
+            trimBodyCache();
+        }
         grew(method);
     }
 
@@ -205,12 +229,8 @@ final class ReturnOnlyFormals {
     }
 
     private Set<String> compute(String method) {
-        Body body = new Body(method);
-        List<String> origins = new ArrayList<>();
-        for (Map<String, Object> row : rowsByOwner.getOrDefault(method,
-                Collections.<Map<String, Object>>emptyList())) {
-            body.read(row, origins);
-        }
+        Body body = body(method);
+        List<String> origins = new ArrayList<>(body.baseOrigins);
         Set<String> relevant = new LinkedHashSet<>(slice.relevant(method));
         String self = slice.thisCell(method);
         for (String stored : body.stored) {
@@ -246,6 +266,33 @@ final class ReturnOnlyFormals {
         return found;
     }
 
+    private Body body(String method) {
+        Body cached = bodyCache.get(method);
+        if (cached != null) return cached;
+        Body built = new Body(method);
+        for (Map<String, Object> row : rowsByOwner.getOrDefault(method,
+                Collections.<Map<String, Object>>emptyList())) {
+            built.read(row, built.baseOrigins);
+            built.rowCount++;
+        }
+        if (maxCachedRows > 0 && maxCachedMethods > 0
+                && built.rowCount <= maxCachedRows) {
+            bodyCache.put(method, built);
+            cachedRows += built.rowCount;
+            trimBodyCache();
+        }
+        return built;
+    }
+
+    private void trimBodyCache() {
+        while (cachedRows > maxCachedRows
+                || bodyCache.size() > maxCachedMethods) {
+            Map.Entry<String, Body> eldest = bodyCache.entrySet().iterator().next();
+            cachedRows -= eldest.getValue().rowCount;
+            bodyCache.remove(eldest.getKey());
+        }
+    }
+
     private static List<String> formals(String method, Set<String> relevant,
                                         String self) {
         List<String> formals = new ArrayList<>();
@@ -260,6 +307,8 @@ final class ReturnOnlyFormals {
     private final class Body {
         private final String method;
         private final String returned;
+        private final List<String> baseOrigins = new ArrayList<>();
+        private int rowCount;
         /** A cell of the method: the cells rows bring into it. */
         private final Map<String, List<String>> upstream =
                 new LinkedHashMap<>();
