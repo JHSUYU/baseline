@@ -117,7 +117,8 @@ public final class MalloryOriginalSeedBridge {
                     result.targetResolved));
             exported.add("traceMethods", GraphCheckerJson.toTree(
                     result.traceMethods));
-            exported.add("edges", GraphCheckerJson.toTree(result.edges));
+            // Discovery artifacts already preserve the graph; ScopePlanner
+            // does not consume an in-memory copy of every edge.
             exported.add("regions", GraphCheckerJson.toTree(result.regions));
             exported.add("communicationCallSites", GraphCheckerJson.toTree(
                     result.communicationCallSites));

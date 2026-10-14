@@ -7,12 +7,16 @@ import soot.options.Options;
 
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.zip.GZIPInputStream;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /** Executes the vendored original analyzer, region planner and scope map. */
@@ -46,7 +50,13 @@ public class MalloryOriginalSeedBridgeTest {
                     "java.io.IOException");
             assertEquals("original_graphchecker_seed_backward",
                     result.get("engine").getAsString());
-            assertTrue(result.getAsJsonArray("edges").size() > 0);
+            assertFalse(result.has("edges"));
+            try (BufferedReader edges = new BufferedReader(
+                    new InputStreamReader(new GZIPInputStream(Files.newInputStream(
+                            root.resolve("out/candidate_dataflow_edges.jsonl.gz"))),
+                            StandardCharsets.UTF_8))) {
+                assertTrue(edges.readLine() != null);
+            }
             assertTrue(result.getAsJsonArray("regions").size() > 0);
             assertTrue(result.getAsJsonArray("staticScopeSites").size() > 0);
             assertTrue(Files.size(root.resolve("out/static_scope_map.jsonl")) > 0);
