@@ -816,6 +816,54 @@ class NativeQueueDiversityTest(unittest.TestCase):
         self.assertTrue(all("target_phase" not in item
                             for item in frozen["queue"]))
 
+    def test_v6_reaches_target_actor_and_keeps_cross_actor_slots(self) -> None:
+        same = self._item("RPC#same", "same", novelty=0,
+                          target_phase="before_selected_target")
+        same.update(selected_target_actor=True, target_order_distance=4)
+        cross = self._item("RPC#cross", "cross", novelty=60,
+                           target_phase="before_selected_target")
+        cross.update(selected_target_actor=False, target_order_distance=1)
+        self.assertEqual("RPC#same", core._pick(self._state(
+            [same, cross], completed=0, version=6))["faults"][-1]["siteId"])
+        self.assertEqual("RPC#cross", core._pick(self._state(
+            [same, cross], completed=3, version=6))["faults"][-1]["siteId"])
+
+    def test_v6_target_proximity_and_third_fault_slot(self) -> None:
+        near = self._item("RPC#near", "near", novelty=0)
+        near.update(selected_target_actor=True, target_order_distance=2)
+        far = self._item("RPC#far", "far", novelty=60)
+        far.update(selected_target_actor=True, target_order_distance=100)
+        self.assertEqual("RPC#near", core._pick(self._state(
+            [near, far], version=6))["faults"][-1]["siteId"])
+        # The v5 rule remains unchanged for an existing checkpoint.
+        self.assertEqual("RPC#far", core._pick(self._state(
+            [near, far], version=5))["faults"][-1]["siteId"])
+        deep = self._item("RPC#deep", "deep", depth=3)
+        deep.update(selected_target_actor=False, target_order_distance=8)
+        shallow = self._item("RPC#shallow", "shallow", novelty=60)
+        shallow.update(selected_target_actor=False, target_order_distance=1)
+        self.assertEqual(3, len(core._pick(self._state(
+            [deep, shallow], completed=10, version=6))["faults"]))
+
+    def test_v6_actor_and_proximity_metadata_survive_checkpoint(self) -> None:
+        state = self._state([], version=6)
+        state["seen_plan_keys"] = []
+        core._enqueue(state, [{
+            "fault": {"siteId": "RPC#same", "node": "peer-a",
+                      "actorEpochOrdinal": 0, "ordinal": 1,
+                      "exceptionClass": "java.io.IOException"},
+            "tier": "observed_closure",
+            "target_phase": "before_selected_target",
+            "selected_target_actor": True, "target_order_distance": 3
+        }], [], novelty=0)
+        with tempfile.TemporaryDirectory() as directory:
+            checkpoint = Path(directory) / "checkpoint.json"
+            core._atomic(checkpoint, state)
+            resumed = core._load(checkpoint)
+        self.assertEqual(6, resumed["scheduler_version"])
+        self.assertTrue(resumed["queue"][0]["selected_target_actor"])
+        self.assertEqual(3, resumed["queue"][0]["target_order_distance"])
+
     def test_closure_feedback_still_breaks_ties_within_diverse_fault_ids(self) -> None:
         state = self._state([self._item("RPC#low", "low", novelty=0),
                              self._item("RPC#high", "high", novelty=7)])
@@ -977,6 +1025,10 @@ class WireTemporalProofTest(unittest.TestCase):
                          [item["target_phase"] for item in ranked])
         self.assertEqual(["observed_closure"] * 3,
                          [item["tier"] for item in ranked])
+        self.assertEqual([True] * 3,
+                         [item["selected_target_actor"] for item in ranked])
+        self.assertEqual([3, 1, 1],
+                         [item["target_order_distance"] for item in ranked])
 
         # A selected check missing from the log gives no temporal inference.
         summary["targetEvidence"]["targetCheckOccurrenceIds"] = ["missing"]

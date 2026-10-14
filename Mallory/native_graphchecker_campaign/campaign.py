@@ -33,7 +33,7 @@ from Mallory.native_graphchecker_feedback.region_state_graph import (
 from .source_preflight import feedback_bridge
 
 SCHEMA = 1
-SCHEDULER_VERSION = 5
+SCHEDULER_VERSION = 6
 FAULT_FIELDS = ("siteId", "node", "actorEpochOrdinal", "occurrenceId",
                 "ordinal", "exceptionClass")
 SELECTOR_FIELDS = ("siteId", "node", "actorEpochOrdinal", "ordinal",
@@ -1022,6 +1022,9 @@ def _enqueue(state: dict[str, Any], doors: list[dict[str, Any]],
                 "attempt": 0}
         if state.get("scheduler_version", 1) >= 5:
             item["target_phase"] = door.get("target_phase", "unknown")
+        if state.get("scheduler_version", 1) >= 6:
+            item["selected_target_actor"] = door.get("selected_target_actor")
+            item["target_order_distance"] = door.get("target_order_distance")
         state["queue"].append(item)
     state["seen_plan_keys"] = sorted(seen)
 
@@ -1056,7 +1059,7 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
     version = state.get("scheduler_version", 1)
     if version == 1:
         return _pick_v1(state)
-    if version not in (2, 3, 4, SCHEDULER_VERSION):
+    if version not in (2, 3, 4, 5, SCHEDULER_VERSION):
         raise ValueError(f"unsupported native scheduler version: {version}")
     queue = state["queue"]
     if not queue:
@@ -1074,7 +1077,14 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
             "target_phase") == "after_selected_target"]
         if later:
             candidates = later
-    if version >= 4 and not outside_slot:
+    if version >= 6 and not outside_slot and completed % 16 == 10:
+        # Recovery may need a third fault. Spend a bounded slot on plans
+        # with at least three faults instead of waiting for depth-two plans
+        # to exhaust the queue.
+        deep = [item for item in candidates if len(item["faults"]) >= 3]
+        if deep:
+            candidates = deep
+    elif version >= 4 and not outside_slot:
         # A target-reaching seed can reveal hundreds of descendants. If all
         # descendants inherit its novelty, the old score selects deep plans
         # repeatedly even when their second actor often runs before the
@@ -1094,12 +1104,34 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
             "target_phase") != "after_selected_target"]
         if timely:
             candidates = timely
+    if version >= 6 and not outside_slot:
+        # Actor affinity is a scheduling hint, not closure membership. Keep
+        # cross-actor plans in the queue and give them a recurring slot.
+        actor_choice = (completed % 4 in (0, 1))
+        if completed % 4 == 3:
+            actor_choice = False
+        matching = [item for item in candidates if item.get(
+            "selected_target_actor") is actor_choice]
+        if matching:
+            candidates = matching
 
     def attempts(item: dict[str, Any]) -> int:
         return state["fault_id_attempts"].get(_fault_id(item["faults"][-1]), 0)
 
     def score(item: dict[str, Any]) -> tuple[Any, ...]:
         fault_id = _fault_id(item["faults"][-1])
+        if version >= 6:
+            distance = item.get("target_order_distance")
+            proximity = (-distance if isinstance(distance, int) and
+                         not isinstance(distance, bool) and distance >= 0
+                         else -10**9)
+            return (-attempts(item),
+                    -state["fault_id_successes"].get(fault_id, 0),
+                    {"observed_closure": 3, "pre_target_actor": 2,
+                     "outside_closure": 1}.get(item["tier"], 1),
+                    proximity, item["novelty"], len(item["faults"]),
+                    completed - item["enqueued_at"],
+                    -item.get("attempt", 0), item["key"])
         return (-attempts(item),
                 -state["fault_id_successes"].get(fault_id, 0),
                 {"observed_closure": 3, "pre_target_actor": 2,
@@ -1228,8 +1260,17 @@ def _region_doors(rows: list[dict[str, Any]], summary: dict[str, Any],
         target_phase = ("unknown" if last_selected_check is None else
                         "before_selected_target" if index < last_selected_check else
                         "after_selected_target")
+        selected_actor = (selected.get("physicalActor"),
+                          selected.get("actorEpochOrdinal"))
+        actor_affinity = (actor == selected_actor if
+                          selected_actor[0] is not None and
+                          selected_actor[1] is not None else None)
+        target_distance = (abs(last_selected_check - index) if
+                           last_selected_check is not None else None)
         found.append({"fault": fault, "seq": row["seq"],
                       "target_phase": target_phase,
+                      "selected_target_actor": actor_affinity,
+                      "target_order_distance": target_distance,
                       "tier": "observed_closure" if direct else
                               "pre_target_actor" if before_actor_check else
                               "outside_closure"})
@@ -1978,6 +2019,9 @@ def _accept(state: dict[str, Any], result: dict[str, Any], name: str) -> None:
         state["trials"].append(record)
         if state.get("scheduler_version", 1) >= 5:
             record["target_phase"] = active.get("target_phase", "unknown")
+        if state.get("scheduler_version", 1) >= 6:
+            record["selected_target_actor"] = active.get("selected_target_actor")
+            record["target_order_distance"] = active.get("target_order_distance")
         if state.get("scheduler_version", 1) >= 2:
             fault_id = _fault_id(active["faults"][-1])
             attempts = state["fault_id_attempts"]
@@ -1996,6 +2040,9 @@ def _accept(state: dict[str, Any], result: dict[str, Any], name: str) -> None:
                 "attempt": active.get("attempt", 0) + 1}
             if state.get("scheduler_version", 1) >= 5:
                 retry["target_phase"] = active.get("target_phase", "unknown")
+            if state.get("scheduler_version", 1) >= 6:
+                retry["selected_target_actor"] = active.get("selected_target_actor")
+                retry["target_order_distance"] = active.get("target_order_distance")
             state["queue"].append(retry)
             record["retry_enqueued"] = active.get("attempt", 0) + 1
         if (state.get("scheduler_version", 1) >= 3 and
@@ -2369,6 +2416,11 @@ def run_campaign(config_path: Path, root: Path) -> dict[str, Any]:
                 if state.get("scheduler_version", 1) >= 5:
                     state["active"]["target_phase"] = selected.get(
                         "target_phase", "unknown")
+                if state.get("scheduler_version", 1) >= 6:
+                    state["active"]["selected_target_actor"] = selected.get(
+                        "selected_target_actor")
+                    state["active"]["target_order_distance"] = selected.get(
+                        "target_order_distance")
                 _atomic(checkpoint, state)
             _resume_active(config, admitted, root, state)
         _atomic(checkpoint, state)
