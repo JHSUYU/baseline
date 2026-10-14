@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -499,6 +500,11 @@ public final class StaticScopeMap {
     public static final String REGIONS = "region_skeletons.jsonl";
 
     private final List<Site> sites;
+    /** Candidate declarations in publication order, indexed once at read
+     *  time. Runtime capture looks these up for every observed call, so a
+     *  full scan of the map here is quadratic in trace length. The lists are
+     *  private and never mutated after construction. */
+    private final Map<String, Map<String, List<Site>>> declaredBySiteAndCallee;
     /** Method set of each retained region: the reverse of {@link #holders}.
      *  Needed because under the fold rule a site of region R is recorded under
      *  an enclosing R' ({@code explore.ClosurePlanner#candidates}), which
@@ -512,6 +518,18 @@ public final class StaticScopeMap {
                            Map<String, Set<String>> regionMethods,
                            Map<String, List<String>> concreteReads) {
         this.sites = Collections.unmodifiableList(sites);
+        Map<String, Map<String, List<Site>>> declared =
+                new HashMap<String, Map<String, List<Site>>>();
+        for (Site site : sites) {
+            if (!DECLARED_SITE.equals(site.role) || site.declared == null) {
+                continue;
+            }
+            declared.computeIfAbsent(site.siteId,
+                    ignored -> new HashMap<String, List<Site>>())
+                    .computeIfAbsent(site.declaredCallee,
+                            ignored -> new ArrayList<Site>()).add(site);
+        }
+        this.declaredBySiteAndCallee = declared;
         this.regionMethods = Collections.unmodifiableMap(regionMethods);
         this.concreteConfigurationReads =
                 Collections.unmodifiableMap(concreteReads);
@@ -1750,13 +1768,19 @@ public final class StaticScopeMap {
                                       String declaredCallee) {
         String named = siteId == null ? "" : siteId;
         String callee = declaredCallee == null ? "" : declaredCallee;
+        Map<String, List<Site>> byCallee = declaredBySiteAndCallee.get(named);
+        List<Site> candidates = byCallee == null ? null : byCallee.get(callee);
+        List<Site> found = new ArrayList<Site>();
+        if (candidates == null) return found;
         Set<String> seen = new LinkedHashSet<String>();
-        return ofRole(DECLARED_SITE, site -> site.declared != null
-                && named.equals(site.siteId)
-                && callee.equals(site.declaredCallee)
-                && seen.add(site.declared.kind + "|" + site.declared.edgeId
-                        + "|" + site.cell + "|"
-                        + site.declared.dependencyCell));
+        for (Site site : candidates) {
+            if (seen.add(site.declared.kind + "|" + site.declared.edgeId
+                    + "|" + site.cell + "|"
+                    + site.declared.dependencyCell)) {
+                found.add(site);
+            }
+        }
+        return found;
     }
 
     /** The declared target sites this map states. */
