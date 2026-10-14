@@ -12,6 +12,12 @@ its full original GraphChecker audit. `running_no_terminal_receipt` and
 `terminal_awaiting_adoption` preserve observed checkpoint progress separately;
 their final fault counts, elapsed time, target throws, and bug marks remain
 unset until receipt adoption. `checkpoint_observed_*` fields are preliminary.
+`preparation_static_timeout` is a nonterminal preparation note. HDFS-39's
+original static ScopePlanner timed out after 1800 seconds; it produced no
+weave, JUnit execution, or fault trial. Its pinned review and source preflight
+are recorded with `preparation_junit_trials=0` and
+`preparation_fault_trials=0`, while `native_tested_complete=false` and all
+terminal trial and elapsed fields remain unset.
 `elapsed_seconds` for a verified row is the sum of the original native trial
 receipts, including the healthy run. `elapsed_basis` records what those
 receipts actually timed. Current native receipts include JUnit execution and
@@ -109,8 +115,9 @@ successor and exact-ID audit index. `promotion-bind-v5.json` pins the fifteen
 bindings, ten completions, v5 launcher, and HBase source lineage at the
 previous handoff. `promotion-bind-v6.json` pins the eleventh completion;
 `promotion-bind-v7.json` pins both HDFS terminal reviews. The current
-`promotion-bind-v8.json` pins the SOLR-19 active binding, ownership, port
-profile, and this result snapshot.
+`promotion-bind-v8.json` pins the SOLR-19 active binding and its result
+snapshot. `promotion-bind-v9.json` pins the HDFS-39 nonterminal preparation
+note, the v6 exporter snapshot, and the 13-terminal result hashes.
 
 For a newly prepared case, run the one-command promoter on its physical owner
 host after the immutable native config, healthy target gate, and port review
@@ -122,7 +129,7 @@ that host awaits an independent terminal audit; then run `run-host-once.sh`
 after the audit is pinned. The active ZOOKEEPER-05 v5 binding can be verified again with:
 
 ```bash
-PYTHONPATH=/proj/silentfailure-PG0/ZhenyuLi/Mallory/native-102-queue-v2/python-snapshot-bind-v5 \
+PYTHONPATH=/proj/silentfailure-PG0/ZhenyuLi/Mallory/native-102-queue-v2/python-snapshot-bind-v6 \
 python3 -m Mallory.native_graphchecker_queue.bind_and_run \
   --case-id ZOOKEEPER-05 --host node0 \
   --native-config /proj/silentfailure-PG0/ZhenyuLi/Mallory/ZOOKEEPER-05-20261014-native-prep-v1/config/case-region-state-frontier-v5.json \
@@ -143,12 +150,12 @@ These files are distinct from the earlier custom/preliminary
 Regenerate from the promoted durable queue state:
 
 ```bash
-cd /proj/silentfailure-PG0/ZhenyuLi/Mallory/native-102-queue-v2/python-snapshot-bind-v5
+cd /proj/silentfailure-PG0/ZhenyuLi/Mallory/native-102-queue-v2/python-snapshot-bind-v6
 python3 - <<'PY'
 from pathlib import Path
 from Mallory.native_graphchecker_queue.results import export_native_results
 b = Path('/proj/silentfailure-PG0/ZhenyuLi/Mallory/native-102-queue-v2')
-export_native_results(b / 'python-snapshot-bind-v5/Mallory/cases/inventory.json',
+export_native_results(b / 'python-snapshot-bind-v6/Mallory/cases/inventory.json',
     b / 'config/ownership.json', b / 'config', b / 'state',
     b / 'results')
 PY
