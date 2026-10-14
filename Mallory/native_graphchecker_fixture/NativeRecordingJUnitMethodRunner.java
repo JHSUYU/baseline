@@ -1,6 +1,7 @@
 package edu.uva.liftlab.graphchecker.runtime;
 
 import java.io.PrintWriter;
+import java.lang.reflect.Method;
 import org.junit.platform.engine.discovery.DiscoverySelectors;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
@@ -25,8 +26,25 @@ public final class NativeRecordingJUnitMethodRunner {
         int status = 1;
         CausynthTraceRecorder.startRecording();
         try {
+            Class<?> testClass = Class.forName(args[0]);
+            Method selected = null;
+            for (Class<?> owner = testClass; owner != null;
+                    owner = owner.getSuperclass()) {
+                for (Method candidate : owner.getDeclaredMethods()) {
+                    if (candidate.getName().equals(args[1])) {
+                        if (selected != null) {
+                            throw new IllegalArgumentException(
+                                    "JUnit method name is ambiguous: " + args[1]);
+                        }
+                        selected = candidate;
+                    }
+                }
+            }
+            if (selected == null) {
+                throw new IllegalArgumentException("JUnit method is absent: " + args[1]);
+            }
             LauncherDiscoveryRequest discovery = LauncherDiscoveryRequestBuilder.request()
-                    .selectors(DiscoverySelectors.selectMethod(args[0], args[1]))
+                    .selectors(DiscoverySelectors.selectMethod(testClass, selected))
                     .build();
             Launcher launcher = LauncherFactory.create();
             SummaryGeneratingListener listener = new SummaryGeneratingListener();
