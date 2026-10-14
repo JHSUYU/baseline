@@ -385,6 +385,9 @@ def _reviewed_exact_closure(case_id: str, native_root: Path, state_root: Path,
     if not pin_path.is_file():
         return None
     pin = obj(pin_path)
+    selected_instance = pin.get("audit_basis") == "selected_target_occurrence"
+    if pin.get("audit_basis") not in (None, "selected_target_occurrence"):
+        raise ValueError(f"native exact closure audit basis changed: {case_id}")
     report_path = Path(pin.get("report_path", ""))
     method_path = Path(pin.get("method_path", ""))
     id_source_path = Path(pin.get("id_source_path", ""))
@@ -449,6 +452,38 @@ def _reviewed_exact_closure(case_id: str, native_root: Path, state_root: Path,
                 sha(plan) != trial.get("originalPlanSha256") or
                 sha(events) != trial.get("faultEventsSha256")):
             raise ValueError(f"native exact closure trial changed: {case_id}/{name}")
+        if selected_instance:
+            summary = obj(directory / "native-summary.json")
+            selected = trial.get("selectedTargetOccurrenceId")
+            target = summary.get("targetEvidence", {})
+            rows = [json.loads(line) for line in events.read_text().splitlines()
+                    if line.strip()]
+            applied = [row for row in rows if row.get("kind") == "FAULT_APPLIED"]
+            if (not isinstance(selected, str) or not selected or
+                    summary.get("provenance", {}).get("engineJarSha256") !=
+                        pin["engine_jar_sha256"] or
+                    summary.get("provenance", {}).get("regionPlanSha256") !=
+                        trial["originalPlanSha256"] or
+                    summary.get("provenance", {}).get("faultEventsSha256") !=
+                        trial["faultEventsSha256"] or
+                    selected not in summary.get("closureOccurrenceIds", []) or
+                    selected not in target.get("targetCheckOccurrenceIds", []) or
+                    not any(row.get("kind") == "TARGET_CHECK" and
+                            row.get("occurrenceId") == selected and
+                            row.get("siteId") == summary.get("targetSiteId") and
+                            row.get("node") == target.get("physicalActor") and
+                            row.get("actorEpochOrdinal") == target.get(
+                                "actorEpochOrdinal") for row in rows) or
+                    not applied or
+                    applied[-1].get("occurrenceId") != trial.get(
+                        "lastFaultOccurrenceId") or
+                    (applied[-1]["occurrenceId"] in summary[
+                        "closureOccurrenceIds"]) is not trial[
+                            "correctedLastFaultInClosure"] or
+                    sorted(set(target.get("targetCheckOccurrenceIds", [])) -
+                           set(summary["closureOccurrenceIds"])) != trial.get(
+                               "observedTargetIdsOutsideClosure")):
+                raise ValueError(f"native selected target closure changed: {case_id}/{name}")
     expected = {path.parent.name for path in (native_root / "trials").glob(
         "r*/result.json") if obj(path).get("strict_injection") is True and
         obj(path).get("native_target_retained") is True}
@@ -641,7 +676,12 @@ def native_rows(inventory: Path, ownership_file: Path, config_root: Path,
                 if exact is not None:
                     count, exact_path, exact_sha, index_path = exact
                     row["strict_in_target_closure_trials"] = count
+                    exact_pin = obj(state_root / ".native-queue" /
+                                    "closure-reviews" / f"{case_id}.json")
                     row["closure_attribution_basis"] = (
+                        "original_finalizer_plan_exact_selected_occurrence_id_join; "
+                        "temporal_causality_unverified" if exact_pin.get(
+                            "audit_basis") == "selected_target_occurrence" else
                         "original_finalizer_plan_exact_occurrence_id_join; "
                         "temporal_causality_unverified")
                     row["closure_audit_path"] = str(exact_path)

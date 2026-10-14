@@ -322,6 +322,44 @@ class NativeResultsTest(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "trial changed"):
                 _reviewed_exact_closure(case_id, native, state, 1, 0,
                                         "receipt")
+            plan.write_text('{"kind":"CONCOLIC_REGION_PLAN"}\n')
+            events.write_text('\n'.join(json.dumps(row) for row in (
+                {"kind": "TARGET_CHECK", "occurrenceId": "selected",
+                 "siteId": "site", "node": "node", "actorEpochOrdinal": 0},
+                {"kind": "FAULT_APPLIED", "occurrenceId": "fault"})) + '\n')
+            (trial / "native-summary.json").write_text(json.dumps({
+                "provenance": {"engineJarSha256": sha(engine),
+                               "regionPlanSha256": sha(plan),
+                               "faultEventsSha256": sha(events)},
+                "closureOccurrenceIds": ["selected", "fault"],
+                "targetSiteId": "site",
+                "targetEvidence": {"targetCheckOccurrenceIds": ["selected", "extra"],
+                                   "physicalActor": "node",
+                                   "actorEpochOrdinal": 0}}))
+            document = json.loads(report.read_text())
+            document["trials"][0].update({
+                "faultEventsSha256": sha(events),
+                "selectedTargetOccurrenceId": "selected",
+                "lastFaultOccurrenceId": "fault",
+                "observedTargetIdsOutsideClosure": ["extra"]})
+            report.write_text(json.dumps(document))
+            index_doc = json.loads(index.read_text())
+            index_doc["rows"][0]["auditSha256"] = sha(report)
+            index.write_text(json.dumps(index_doc))
+            pin_doc = json.loads(pin_path.read_text())
+            pin_doc.update({"audit_basis": "selected_target_occurrence",
+                            "report_sha256": sha(report),
+                            "index_sha256": sha(index)})
+            pin_path.write_text(json.dumps(pin_doc))
+            self.assertEqual(_reviewed_exact_closure(
+                case_id, native, state, 1, 0, "receipt")[0], 1)
+            summary_path = trial / "native-summary.json"
+            summary = json.loads(summary_path.read_text())
+            summary["closureOccurrenceIds"].remove("selected")
+            summary_path.write_text(json.dumps(summary))
+            with self.assertRaisesRegex(ValueError, "selected target closure changed"):
+                _reviewed_exact_closure(case_id, native, state, 1, 0,
+                                        "receipt")
 
     def test_reviewed_wall_timing_preserves_distinct_elapsed_basis(self) -> None:
         review = {"timing": {"cumulative_trial_seconds": 1862.14,
