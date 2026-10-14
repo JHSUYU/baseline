@@ -2017,10 +2017,6 @@ public final class RuntimeSelectedRegionFinalizer {
         return result;
     }
 
-    private static String contextKey(String region, String cell) {
-        return region + "\n" + cell;
-    }
-
     /**
      * Records one plan gap once per (kind, subject), stating its own class
      * like a {@link edu.uva.liftlab.graphchecker.contract.GapRow}; the one
@@ -2097,12 +2093,16 @@ public final class RuntimeSelectedRegionFinalizer {
          *  into the site. */
         private final Map<String, Set<String>> guardOperands =
                 new HashMap<>();
-        /** (region, cell) -> incoming cell -> the methods of its edges. */
-        private final Map<String, Map<String, Set<String>>> localIncoming =
-                new LinkedHashMap<>();
+        /** Candidate edges by destination, in original graph order.  Region
+         *  and observed-method membership are applied only on demand. */
+        private final Map<String, List<Map<String, Object>>> localIncoming =
+                new HashMap<>();
         /** Control predecessors remain live when value flow hits a store. */
-        private final Map<String, Map<String, Set<String>>> guardIncoming =
-                new LinkedHashMap<>();
+        private final Map<String, List<Map<String, Object>>> guardIncoming =
+                new HashMap<>();
+        private final Set<String> selectedRegions = new HashSet<>();
+        private final Map<String, Set<String>> skeletonMethodsByRegion =
+                new HashMap<>();
         private final Map<String, Map<String, List<String>>>
                 explicitFatalSeedsBySite = new LinkedHashMap<>();
         /** The decisions on the way to the declared throw (the scope map's
@@ -2152,10 +2152,17 @@ public final class RuntimeSelectedRegionFinalizer {
                     }
                 }
             }
-            Set<String> selectedRegions = new LinkedHashSet<>();
+            Set<String> selectedMethods = new HashSet<>();
             for (Map<String, Object> region : program.regions) {
                 String regionId = text(region.get("regionId"));
                 selectedRegions.add(regionId);
+                StaticProgram.RegionRow skeleton =
+                        program.skeletons.get(regionId);
+                if (skeleton != null) {
+                    Set<String> methods = new HashSet<>(skeleton.methods);
+                    skeletonMethodsByRegion.put(regionId, methods);
+                    selectedMethods.addAll(methods);
+                }
                 for (Map<String, Object> branch
                         : rows(region.get("branchPolicies"))) {
                     String site = text(branch.get("siteId"));
@@ -2179,20 +2186,19 @@ public final class RuntimeSelectedRegionFinalizer {
                 String to = text(edge.get("toCell"));
                 String method = text(edge.get("method"));
                 if (from.isEmpty() || to.isEmpty()) continue;
-                if ("GUARD".equals(text(edge.get("transferKind")))
-                        && to.equals(text(edge.get("siteId")))) {
+                boolean guard = "GUARD".equals(text(edge.get("transferKind")));
+                if (guard && to.equals(text(edge.get("siteId")))) {
                     guardOperands.computeIfAbsent(to,
                             ignored -> new LinkedHashSet<>()).add(from);
                 }
-                for (String regionId
-                        : program.skeletonRegionsHolding(method)) {
-                    if (!selectedRegions.contains(regionId)) continue;
-                    add(localIncoming, contextKey(regionId, to), from,
-                            method);
-                    if ("GUARD".equals(text(edge.get("transferKind")))) {
-                        add(guardIncoming, contextKey(regionId, to), from,
-                                method);
-                    }
+                if (method.isEmpty() || !selectedMethods.contains(method)) {
+                    continue;
+                }
+                localIncoming.computeIfAbsent(to,
+                        ignored -> new ArrayList<>()).add(edge);
+                if (guard) {
+                    guardIncoming.computeIfAbsent(to,
+                            ignored -> new ArrayList<>()).add(edge);
                 }
             }
         }
@@ -2377,7 +2383,7 @@ public final class RuntimeSelectedRegionFinalizer {
          * methods that ran in them, 244).
          */
         private List<String> edgesInto(
-                Map<String, Map<String, Set<String>>> edges,
+                Map<String, List<Map<String, Object>>> edges,
                 String occurrenceId, String cell) {
             Map<Map.Entry<String, String>, List<String>> cache =
                     edges == localIncoming
@@ -2390,14 +2396,26 @@ public final class RuntimeSelectedRegionFinalizer {
             Set<String> ran = methodsByOccurrence.getOrDefault(occurrenceId,
                     Collections.<String>emptySet());
             Set<String> incoming = new LinkedHashSet<>();
+            List<Map<String, Object>> candidates = edges.getOrDefault(cell,
+                    Collections.<Map<String, Object>>emptyList());
             for (String regionId : regionsByOccurrence.getOrDefault(
                     occurrenceId, Collections.<String>emptyList())) {
-                for (Map.Entry<String, Set<String>> from : edges.getOrDefault(
-                        contextKey(regionId, cell),
-                        Collections.<String, Set<String>>emptyMap())
-                        .entrySet()) {
-                    if (!incoming.contains(from.getKey())
-                            && !Collections.disjoint(from.getValue(), ran)) {
+                if (!selectedRegions.contains(regionId)) continue;
+                Set<String> held = skeletonMethodsByRegion.getOrDefault(
+                        regionId, Collections.<String>emptySet());
+                // Insert each source at its first edge in this region, even
+                // if a later edge is the one whose method ran.  Filtering
+                // rows by ran first would change the original result order.
+                Map<String, Boolean> fromRan = new LinkedHashMap<>();
+                for (Map<String, Object> edge : candidates) {
+                    String method = text(edge.get("method"));
+                    if (!held.contains(method)) continue;
+                    String from = text(edge.get("fromCell"));
+                    if (Boolean.TRUE.equals(fromRan.get(from))) continue;
+                    fromRan.put(from, ran.contains(method));
+                }
+                for (Map.Entry<String, Boolean> from : fromRan.entrySet()) {
+                    if (from.getValue()) {
                         incoming.add(from.getKey());
                     }
                 }
@@ -2408,12 +2426,6 @@ public final class RuntimeSelectedRegionFinalizer {
             return result;
         }
 
-        private static void add(Map<String, Map<String, Set<String>>> target,
-                                String key, String from, String method) {
-            target.computeIfAbsent(key, ignored -> new LinkedHashMap<>())
-                    .computeIfAbsent(from, ignored -> new HashSet<>())
-                    .add(method);
-        }
     }
 
     public static final class Result {
