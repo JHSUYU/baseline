@@ -254,6 +254,7 @@ def _verify_recording_plan(config: dict[str, Any], weave: dict[str, Any],
     """
     rec = config["recording"]
     admission_timeout = rec.get("admission_timeout_seconds", 300)
+    analysis_heap = f"-Xmx{rec.get('graph_analysis_heap_mb', 3072)}m"
     planned = Path(weave["task_plan"]).resolve(strict=True)
     scope = Path(rec["static_scope_map"]).resolve(strict=True)
     skeletons = Path(rec["region_skeletons"]).resolve(strict=True)
@@ -269,7 +270,7 @@ def _verify_recording_plan(config: dict[str, Any], weave: dict[str, Any],
         _scheduler_source()
         classpath = f"{JAR}:{DEPENDENCIES.read_text(encoding='utf-8').strip()}"
         target = ",".join((str(graph), str(scope), str(skeletons), str(output)))
-        command = [str(Path(weave["java"]).resolve(strict=True)),
+        command = [str(Path(weave["java"]).resolve(strict=True)), analysis_heap,
                    *rec.get("recorder_jvm_args", []), "-cp",
                    classpath,
                    "edu.uva.liftlab.graphchecker.runtime.CausynthTraceRecorder",
@@ -282,7 +283,7 @@ def _verify_recording_plan(config: dict[str, Any], weave: dict[str, Any],
         region_plan = output / "concolic_region_plan.jsonl"
         if not region_plan.is_file():
             raise ValueError("original recorder produced no region plan")
-        scheduler = [str(Path(weave["java"]).resolve(strict=True)),
+        scheduler = [str(Path(weave["java"]).resolve(strict=True)), analysis_heap,
                      *rec.get("scheduler_jvm_args", []), "-cp",
                      classpath,
                      "edu.uva.liftlab.graphchecker.plan.ConcolicScheduler",
