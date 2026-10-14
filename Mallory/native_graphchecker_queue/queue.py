@@ -390,20 +390,29 @@ def _local_artifact_attestation_valid(audit: dict, fingerprint: dict) -> bool:
     root = Path(fingerprint["native_root"])
     manifests = attestation.get("manifest_sha256")
     trees = attestation.get("trial_tree_sha256")
+    archived = attestation.get("archived_imports", [])
     count = audit.get("row", {}).get("fault_trials")
     if (not isinstance(host, str) or not host or
             os.uname().nodename != host or
             not isinstance(local_root, str) or not Path(local_root).is_absolute() or
             not isinstance(count, int) or isinstance(count, bool) or count < 0 or
+            not isinstance(archived, list) or
+            archived != sorted(set(archived)) or
+            any(not isinstance(name, str) for name in archived) or
             not isinstance(manifests, dict) or not isinstance(trees, dict) or
-            len(manifests) != count + 1 or len(trees) != count + 1):
+            len(manifests) != count + 1 - len(archived) or
+            len(trees) != count + 1 - len(archived)):
         return False
     from Mallory.native_graphchecker_dispatch.checklist import _checkpoint_trial_refs
     refs = _checkpoint_trial_refs(root, obj(root / "checkpoint.json"))
     if len(refs) != count + 1:
         return False
+    if not set(archived).issubset({path.parent.name for _, path in refs}):
+        return False
     for _, result_path in refs:
         trial = result_path.parent
+        if trial.name in archived:
+            continue
         path = trial / "local-artifacts.json"
         digest = manifests.get(str(path))
         if (not isinstance(digest, str) or path.is_symlink() or
@@ -526,6 +535,17 @@ def _frozen_source_cache_valid(cache: dict, fingerprint: dict,
             return verify_trial_evidence(
                 binding, fingerprint["case_id"],
                 audit["trial_evidence_sha256"], audit.get("raw_summary_targets"))
+        if "import_lineage_evidence" in audit:
+            from .import_lineage import verify_import_evidence
+            pin = binding.get("import_lineage_evidence")
+            if (pin is None or
+                    verify_import_evidence(Path(fingerprint["native_root"]), pin,
+                                           fingerprint["case_id"]) !=
+                        audit["import_lineage_evidence"] or
+                    audit.get("local_artifact_attestation", {}).get(
+                        "archived_imports") != audit[
+                            "import_lineage_evidence"]["imported_trials"]):
+                return False
         attestation = audit.get("local_artifact_attestation")
         if attestation is None:
             if require_local_attestation:

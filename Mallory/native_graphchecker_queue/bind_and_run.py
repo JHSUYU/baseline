@@ -32,7 +32,8 @@ def binding_for(item: dict, config_path: Path, state_path: Path,
                 campaign_python_root: Path | None = None,
                 campaign_python_tar: Path | None = None,
                 raw_archive_receipt: Path | None = None,
-                inspector_overlay_manifest: Path | None = None) -> dict:
+                inspector_overlay_manifest: Path | None = None,
+                import_lineage_descriptor: Path | None = None) -> dict:
     if (not config_path.is_absolute() or not state_path.is_absolute() or
             config_path.is_symlink() or state_path.is_symlink() or
             not config_path.is_file()):
@@ -162,6 +163,20 @@ def binding_for(item: dict, config_path: Path, state_path: Path,
             'path': str(raw_archive_receipt),
             'sha256': sha(raw_archive_receipt)}
         pinned_archives(binding, case_id)
+    if import_lineage_descriptor is not None:
+        if (runner_mode != 'region_state' or
+                inspector_overlay_manifest is None or
+                raw_archive_receipt is not None or
+                not import_lineage_descriptor.is_absolute() or
+                import_lineage_descriptor.is_symlink() or
+                not import_lineage_descriptor.is_file()):
+            raise ValueError('imported REGION_STATE trials require an exact overlay')
+        from .import_lineage import verify_import_evidence
+        binding['import_lineage_evidence'] = {
+            'path': str(import_lineage_descriptor),
+            'sha256': sha(import_lineage_descriptor)}
+        verify_import_evidence(state_path, binding['import_lineage_evidence'],
+                               case_id)
     return binding
 
 
@@ -393,6 +408,7 @@ def promote(*, root: Path, case_id: str, native_config: Path,
             epoch_receipt_sha256: str | None = None,
             raw_archive_receipt: Path | None = None,
             inspector_overlay_manifest: Path | None = None,
+            import_lineage_descriptor: Path | None = None,
             frozen_terminal_audit: Path | None = None,
             shared_port_evidence: Path | None = None,
             dispatch: bool = True) -> dict:
@@ -475,7 +491,8 @@ def promote(*, root: Path, case_id: str, native_config: Path,
                               campaign_python_root=campaign_python_root,
                               campaign_python_tar=campaign_python_tar,
                               raw_archive_receipt=raw_archive_receipt,
-                              inspector_overlay_manifest=inspector_overlay_manifest)
+                              inspector_overlay_manifest=inspector_overlay_manifest,
+                              import_lineage_descriptor=import_lineage_descriptor)
         for other_path in config_root.glob('*.json'):
             if other_path.stem in ('ownership', case_id):
                 continue
@@ -596,6 +613,7 @@ def main() -> None:
     parser.add_argument('--inventory-epoch-sha256')
     parser.add_argument('--raw-archive-receipt', type=Path)
     parser.add_argument('--inspector-overlay-manifest', type=Path)
+    parser.add_argument('--import-lineage-descriptor', type=Path)
     parser.add_argument('--frozen-terminal-audit', type=Path)
     parser.add_argument('--shared-port-evidence', type=Path)
     parser.add_argument('--bind-only', action='store_true')
@@ -621,6 +639,7 @@ def main() -> None:
         epoch_receipt_sha256=args.inventory_epoch_sha256,
         raw_archive_receipt=args.raw_archive_receipt,
         inspector_overlay_manifest=args.inspector_overlay_manifest,
+        import_lineage_descriptor=args.import_lineage_descriptor,
         frozen_terminal_audit=args.frozen_terminal_audit,
         shared_port_evidence=args.shared_port_evidence,
         dispatch=not args.bind_only), sort_keys=True))

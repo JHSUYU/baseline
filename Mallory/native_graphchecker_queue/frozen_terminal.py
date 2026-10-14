@@ -24,6 +24,7 @@ from .queue import (_pinned_engine_root, _terminal_fingerprint, atomic, obj,
                     _frozen_source_cache_valid, pinned_campaign_python, sha)
 from .raw_archive import pinned_archives, verify_trial_evidence
 from .inspector_overlay import METHOD as OVERLAY_METHOD, verify_inspector_overlay
+from .import_lineage import verify_import_evidence
 
 
 _INSPECT = """
@@ -61,6 +62,7 @@ def _project_binding(item: dict, entry: Path, native_config: dict) -> dict:
     """Remove only a later shared-source field unknown to older inspectors."""
     binding = copy.deepcopy(obj(entry))
     binding.pop("inspector_overlay", None)
+    binding.pop("import_lineage_evidence", None)
     alternate = binding.get("alternate_original_junit")
     if alternate is None:
         return binding
@@ -100,7 +102,8 @@ def _trial_sha256(root: Path, count: int) -> tuple[dict[str, str], dict[str, str
 
 
 def _local_artifact_receipts(root: Path, count: int,
-                             config: dict) -> dict[str, Any] | None:
+                             config: dict, *, archived_imports: set[str] | None = None
+                             ) -> dict[str, Any] | None:
     """Attest local raw bytes only on their physical owner host.
 
     This runs after the frozen inspector has recomputed each graph from raw
@@ -117,8 +120,13 @@ def _local_artifact_receipts(root: Path, count: int,
     refs = _checkpoint_trial_refs(root, obj(root / "checkpoint.json"))
     if len(refs) != count + 1:
         raise ValueError("local artifact count differs from checkpoint")
+    skipped = archived_imports or set()
+    if not skipped.issubset({path.parent.name for _, path in refs}):
+        raise ValueError("imported trial absent from checkpoint")
     for _, result_path in refs:
         trial = result_path.parent
+        if trial.name in skipped:
+            continue
         path = trial / "local-artifacts.json"
         result = obj(result_path)
         if path.is_symlink() or not path.is_file():
@@ -185,7 +193,8 @@ def _local_artifact_receipts(root: Path, count: int,
         manifests[str(path)] = manifest_sha
         trees[trial.name] = digest.hexdigest()
     return {"host": host, "local_root": str(local_root),
-            "manifest_sha256": manifests, "trial_tree_sha256": trees}
+            "manifest_sha256": manifests, "trial_tree_sha256": trees,
+            "archived_imports": sorted(skipped)}
 
 
 def inspect_frozen_terminal(item: dict, owner: str, config_root: Path,
@@ -210,6 +219,12 @@ def inspect_frozen_terminal(item: dict, owner: str, config_root: Path,
     if fingerprint is None:
         raise ValueError("native checkpoint and summary are not terminal")
     native_config = obj(config_file)
+    import_pin = binding.get("import_lineage_evidence")
+    if import_pin is not None and (overlay is None or
+                                   binding.get("raw_archive_evidence") is not None):
+        raise ValueError("imported trials need a reviewed inspector overlay")
+    imported = (verify_import_evidence(native_root, import_pin, case_id)
+                if import_pin is not None else None)
     projected = _project_binding(item, entry, native_config)
     with tempfile.TemporaryDirectory(prefix=f"{case_id}-frozen-inspect-") as temp:
         projected_path = Path(temp) / f"{case_id}.json"
@@ -227,6 +242,19 @@ def inspect_frozen_terminal(item: dict, owner: str, config_root: Path,
         environment.update(PYTHONPATH=str(python_root),
                            MALLORY_NATIVE_ENGINE_ROOT=str(engine_root),
                            PYTHONDONTWRITEBYTECODE="1")
+        if imported is not None:
+            descriptor = obj(Path(import_pin["path"]))
+            environment.update(
+                MALLORY_NATIVE_IMPORT_LINEAGE_PATH=descriptor["lineage_path"],
+                MALLORY_NATIVE_IMPORT_LINEAGE_SHA=descriptor["lineage_sha256"],
+                MALLORY_NATIVE_IMPORT_GRAPH_PATH=descriptor["graph_path"],
+                MALLORY_NATIVE_IMPORT_GRAPH_SHA=descriptor["graph_sha256"],
+                MALLORY_NATIVE_IMPORT_JAVA_PATH=descriptor[
+                    "auxiliary_java_path"],
+                MALLORY_NATIVE_IMPORT_JAVA_SHA=descriptor[
+                    "auxiliary_java_sha256"],
+                MALLORY_NATIVE_ORIGINAL_INSPECTOR_SHA=source["python_sha256"][
+                    inspector_key])
         command = [sys.executable, "-c", _INSPECT_OVERLAY if overlay else _INSPECT]
         request = {
             "item": item, "owner": owner, "config_root": temp,
@@ -256,7 +284,12 @@ def inspect_frozen_terminal(item: dict, owner: str, config_root: Path,
         if not verify_trial_evidence(binding, case_id, trial_hashes, raw_targets):
             raise ValueError("frozen raw archive differs from inspected trial evidence")
     local_artifacts = None if raw_pin is not None else _local_artifact_receipts(
-        native_root, row["fault_trials"], native_config)
+        native_root, row["fault_trials"], native_config,
+        archived_imports=(set(imported["imported_trials"])
+                          if imported is not None else None))
+    if imported is not None and verify_import_evidence(
+            native_root, import_pin, case_id) != imported:
+        raise ValueError("imported trial evidence changed during inspection")
     if _terminal_fingerprint(item, config_root, state_root) != fingerprint:
         raise ValueError("terminal inputs changed during frozen inspection")
     jar = engine_root / "target/mallory-original-graphchecker-seed-1.0-SNAPSHOT.jar"
@@ -278,6 +311,8 @@ def inspect_frozen_terminal(item: dict, owner: str, config_root: Path,
         receipt["inspector_overlay"] = overlay
     if local_artifacts is not None:
         receipt["local_artifact_attestation"] = local_artifacts
+    if imported is not None:
+        receipt["import_lineage_evidence"] = imported
     if raw_pin is not None:
         receipt["raw_archive_evidence"] = raw_pin
         receipt["raw_summary_targets"] = raw_targets
