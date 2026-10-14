@@ -40,7 +40,10 @@ caller caches a DEK while a separate
 `BlockKeyUpdater` obtains key state from the NameNode; repeated failures on
 selected key-update RPC doors could produce a stale Balancer key, although the
 short original test does not naturally wait for the default block-key update
-interval. `testLongLivedClientPipelineRecovery` deliberately shortens key
+interval. The same healthy trace has 75 `retrieveDataEncryptionKey` checks,
+all taking the key-present branch, and zero target throws. Thus it proves
+receiver reachability but not the missing-key condition.
+`testLongLivedClientPipelineRecovery` deliberately shortens key
 rotation and reaches the DataNode mirror/replication callers, but those peers
 create DEKs from local DataNode keys; an additional server-side target throw
 needs asymmetric key state across DataNodes. In both cases, the failure must
