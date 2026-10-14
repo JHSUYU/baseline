@@ -3,17 +3,22 @@
 @@ -6,0 +7,2 @@
 +import org.apache.solr.client.solrj.SolrRequest;
 +import org.apache.solr.common.params.SolrParams;
-@@ -19,0 +22,11 @@
+@@ -19,0 +22,16 @@
 +
 +  /** Request shape only: no host, query string, request body, or other parameters. */
 +  public static MessageDoors.OperationScope operationScope(SolrRequest<?> request) {
 +    if (!ENABLED || request == null)
 +      return MessageDoors.operationScope(null, null, null);
-+    SolrParams params = request.getParams();
-+    String action = params == null ? null : params.get("action");
-+    return MessageDoors.operationScope(
-+        request.getMethod() == null ? null : request.getMethod().name(),
-+        request.getPath(), action);
++    try {
++      SolrParams params = request.getParams();
++      String action = params == null ? null : params.get("action");
++      return MessageDoors.operationScope(
++          request.getMethod() == null ? null : request.getMethod().name(),
++          request.getPath(), action);
++    } catch (RuntimeException unavailable) {
++      // Observability must not change the result of the original request.
++      return MessageDoors.operationScope(null, null, null);
++    }
 +  }
 --- a/solr/solrj/src/java/org/apache/solr/client/solrj/impl/HttpSolrClient.java
 +++ b/solr/solrj/src/java/org/apache/solr/client/solrj/impl/HttpSolrClient.java
