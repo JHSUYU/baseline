@@ -162,6 +162,16 @@ one actor, never across processes. Closure membership, an unpaired endpoint, or 
 STATE edge alone cannot prove this order; those trials remain
 `needs_causal_review`.
 
+Every trial also records `raw_exact_target_throw_after_applied_prefix` and
+`raw_target_throw_observation`. These fields retain an exact target throw
+after a verified prefix when a later planned fault misses, as well as in
+strict trials. The observation records the matching target check and throw,
+the applied prefix length, and `lifecycleContext=unclassified`. Append
+order across actors is not causal proof, and the runner cannot generally
+distinguish workload execution from a JUnit's own teardown. Source and log
+review must classify such observations. This raw field never changes
+`target_exception_triggered`, the campaign status, or the candidate oracle.
+
 ## Checkpoints and status
 
 `checkpoint.json` is atomically replaced after each trial and records the

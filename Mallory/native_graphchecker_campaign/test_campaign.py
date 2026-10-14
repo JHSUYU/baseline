@@ -215,6 +215,94 @@ class ObservedActorSuccessorTest(unittest.TestCase):
                          previous["trials"][0])
 
 
+class RawPrefixTargetThrowTest(unittest.TestCase):
+    """Raw exact throws remain visible when a later planned fault misses."""
+
+    @staticmethod
+    def fault(site: str, node: str) -> dict:
+        return {"siteId": site, "node": node, "actorEpochOrdinal": 0,
+                "ordinal": 1, "exceptionClass": "java.io.IOException"}
+
+    def rows(self, *, actual: str = "java.io.IOException") -> list[dict]:
+        first = {**self.fault("RPC#first", "dn0"),
+                 "occurrenceId": "fault-region"}
+        return [
+            {**first, "kind": "FAULT_DOOR", "seq": 1},
+            {**first, "kind": "FAULT_APPLIED", "seq": 2},
+            {"kind": "TARGET_CHECK", "seq": 3, "siteId": "Guard#u4",
+             "targetAnchorSiteId": "Guard#u4#1", "node": "dn1",
+             "actorEpochOrdinal": 0, "occurrenceId": "target-region"},
+            {"kind": "TARGET_THROW", "seq": 4, "siteId": "Guard#u12",
+             "exceptionClass": "java.io.IOException",
+             "actualExceptionClass": actual, "node": "dn1",
+             "actorEpochOrdinal": 0, "occurrenceId": "target-region"}]
+
+    def observe(self, faults: list[dict], rows: list[dict]) -> dict:
+        return core._raw_prefix_target_throws(
+            faults, rows, "Guard#u4#1",
+            {"siteId": "Guard#u12",
+             "exceptionClass": "java.io.IOException"})
+
+    def test_verified_prefix_records_exact_raw_throw_without_causality(self):
+        plan = [self.fault("RPC#first", "dn0"),
+                self.fault("IO#missing", "dn2")]
+        observation = self.observe(plan, self.rows())
+        self.assertEqual(1, observation["appliedPrefixCount"])
+        self.assertEqual("unclassified", observation["lifecycleContext"])
+        self.assertEqual("unproven", observation["causalAttribution"])
+        self.assertEqual([{"throwSeq": 4, "checkSeq": 3, "node": "dn1",
+                           "actorEpochOrdinal": 0,
+                           "occurrenceId": "target-region"}],
+                         observation["targetThrows"])
+
+    def test_missing_or_wrong_prefix_and_wrong_exception_do_not_count(self):
+        plan = [self.fault("RPC#first", "dn0"),
+                self.fault("IO#missing", "dn2")]
+        self.assertEqual([], self.observe(plan, self.rows(
+            actual="java.lang.IllegalStateException"))["targetThrows"])
+        self.assertEqual([], self.observe([
+            self.fault("RPC#different", "dn0"), plan[1]], self.rows())[
+                "targetThrows"])
+        rows = self.rows()
+        self.assertEqual([], self.observe(plan, rows[:2] + [
+            {**rows[2], "occurrenceId": "other-target"}, rows[3]])[
+                "targetThrows"])
+        self.assertEqual([], self.observe(plan, [rows[2], rows[3],
+                                                rows[0], rows[1]])[
+            "targetThrows"])
+
+    def test_unmatched_trial_keeps_raw_evidence_and_strict_oracle_false(self):
+        plan = [self.fault("RPC#first", "dn0"),
+                self.fault("IO#missing", "dn2")]
+        config = {"case_id": "HDFS-fixture",
+                  "runner": {"mode": "region_state"},
+                  "target_site": "Guard#u4#1",
+                  "target_throw": {"siteId": "Guard#u12",
+                                   "exceptionClass": "java.io.IOException"}}
+
+        def execute(_config, _admitted, trial, _faults):
+            iteration = trial / "iteration-native"
+            iteration.mkdir()
+            (iteration / "fault-events.jsonl").write_text(
+                "".join(json.dumps(row) + "\n" for row in self.rows()))
+            return {"return_code": 0, "timed_out": False,
+                    "elapsed_seconds": 0.01}
+
+        with tempfile.TemporaryDirectory() as directory, patch.object(
+                core, "_verify_pins"), patch.object(
+                core, "_execute_junit", side_effect=execute):
+            result = core._run_trial(
+                config, {}, Path(directory) / "r0001", plan, None)
+        self.assertEqual("unmatched", result["status"])
+        self.assertEqual(1, result["applied_prefix_count"])
+        self.assertFalse(result["strict_injection"])
+        self.assertFalse(result["target_exception_triggered"])
+        self.assertTrue(
+            result["raw_exact_target_throw_after_applied_prefix"])
+        self.assertEqual(1, len(result[
+            "raw_target_throw_observation"]["targetThrows"]))
+
+
 class TerminalSuccessorImportTest(unittest.TestCase):
     """A new queue reuses a terminal campaign without replaying tested plans."""
 
@@ -913,6 +1001,8 @@ class NativeCampaignFixtureTest(unittest.TestCase):
                          faulted["target_temporal_reason"])
         self.assertTrue(faulted["native_target_retained"])
         self.assertTrue(faulted["target_exception_triggered"])
+        self.assertTrue(
+            faulted["raw_exact_target_throw_after_applied_prefix"])
         self.assertEqual(0, faulted["native_delta"]["newObservedClosureEdges"])
         self.assertTrue((self.root / "campaign/summary.json").is_file())
 
@@ -924,6 +1014,8 @@ class NativeCampaignFixtureTest(unittest.TestCase):
         self.assertFalse(faulted["target_temporal_admitted"])
         self.assertEqual("post_target_fault", faulted["target_temporal_reason"])
         self.assertTrue(faulted["target_exception_triggered"])
+        self.assertFalse(
+            faulted["raw_exact_target_throw_after_applied_prefix"])
         self.assertEqual("needs_causal_review", faulted["status"])
 
     def test_cross_occurrence_closure_member_requires_order_proof(self) -> None:

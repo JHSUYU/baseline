@@ -492,6 +492,54 @@ def _strict_faults(faults: list[dict[str, Any]], rows: list[dict[str, Any]]
     return True, applied[-1]["seq"] if applied else None
 
 
+def _raw_prefix_target_throws(
+        faults: list[dict[str, Any]], rows: list[dict[str, Any]],
+        target_site: str, target_throw: dict[str, str]) -> dict[str, Any]:
+    """Record an exact throw after a verified applied prefix, without an oracle.
+
+    Rows from different actors have no proven causal order. Their append order
+    only makes this a lead for source and lifecycle review; strict admission
+    still requires the entire plan and original graph/temporal checks.
+    """
+    applied_positions = [index for index, row in enumerate(rows)
+                         if row["kind"] == "FAULT_APPLIED"]
+    prefix_size = len(applied_positions)
+    if (not faults or not prefix_size or prefix_size > len(faults) or
+            not _strict_faults(faults[:prefix_size], rows)[0]):
+        return {"appliedPrefixCount": 0, "targetThrows": [],
+                "lifecycleContext": "not_applicable",
+                "causalAttribution": "unproven"}
+    last_applied = applied_positions[-1]
+    checks: dict[tuple[str, str, int], tuple[int, dict[str, Any]]] = {}
+    observed: list[dict[str, Any]] = []
+    for index, row in enumerate(rows):
+        if index <= last_applied:
+            continue
+        identity = (row.get("occurrenceId"), row.get("node"),
+                    row.get("actorEpochOrdinal"))
+        if row["kind"] == "TARGET_CHECK" and (
+                row.get("siteId") == target_site or
+                row.get("targetAnchorSiteId") == target_site):
+            checks[identity] = (index, row)
+        elif (row["kind"] == "TARGET_THROW" and identity in checks and
+              row.get("siteId") == target_throw["siteId"] and
+              row.get("exceptionClass") == target_throw["exceptionClass"] and
+              row.get("actualExceptionClass",
+                      row.get("exceptionClass")) ==
+              target_throw["exceptionClass"]):
+            check_index, check = checks[identity]
+            if check_index < index:
+                observed.append({"throwSeq": row["seq"],
+                                 "checkSeq": check["seq"],
+                                 "node": row.get("node"),
+                                 "actorEpochOrdinal": row.get(
+                                     "actorEpochOrdinal"),
+                                 "occurrenceId": row.get("occurrenceId")})
+    return {"appliedPrefixCount": prefix_size, "targetThrows": observed,
+            "lifecycleContext": "unclassified" if observed else
+            "not_applicable", "causalAttribution": "unproven"}
+
+
 def _unmatched_actor_successors(
         faults: list[dict[str, Any]], rows: list[dict[str, Any]]
         ) -> tuple[int, list[dict[str, Any]]]:
@@ -1201,6 +1249,10 @@ def _run_trial(config: dict[str, Any], admitted: dict[str, Any],
     result["target_temporal_reason"] = "no_applied_fault"
     result["target_temporal_evidence"] = None
     result["eligible_doors"] = []
+    result["raw_exact_target_throw_after_applied_prefix"] = False
+    result["raw_target_throw_observation"] = {
+        "appliedPrefixCount": 0, "targetThrows": [],
+        "lifecycleContext": "not_applicable", "causalAttribution": "unproven"}
     try:
         events = _rows(iteration / "fault-events.jsonl")
         strict, last_fault = _strict_faults(faults, events)
@@ -1209,6 +1261,11 @@ def _run_trial(config: dict[str, Any], admitted: dict[str, Any],
         result["analysis_error"] = str(failure)
         return _save_trial_result(trial, result, trial_started)
     result["strict_injection"] = bool(faults and strict)
+    raw = _raw_prefix_target_throws(
+        faults, events, config["target_site"], config["target_throw"])
+    result["raw_target_throw_observation"] = raw
+    result["raw_exact_target_throw_after_applied_prefix"] = bool(
+        raw["targetThrows"])
     if config["runner"].get("mode") == "region_state":
         if faults and not strict:
             prefix_size, successors = _unmatched_actor_successors(faults, events)
