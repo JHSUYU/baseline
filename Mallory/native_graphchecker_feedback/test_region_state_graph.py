@@ -81,6 +81,30 @@ class RegionStateGraphTest(unittest.TestCase):
             record_region_state(case["trace"], self.root / "invalid-heap",
                                 heap_mb=0, **arguments)
 
+    def test_original_resolver_output_uses_physical_local_directory(self) -> None:
+        case = self._case("linked-output")
+        local = self.root / "host-local-graph"
+        local.mkdir()
+        linked = self.root / "durable-graph-link"
+        linked.symlink_to(local, target_is_directory=True)
+
+        class FailedResolver:
+            returncode = 2
+            stdout = ""
+            stderr = "TARGET_CHECK_NOT_OBSERVED"
+
+        with patch("Mallory.native_graphchecker_feedback.region_state_graph.subprocess.run",
+                   return_value=FailedResolver()):
+            record_region_state(
+                case["trace"], linked, test_id="fixture", target_site=SITE,
+                fault_events=case["events"], static_scope_map=self.scope,
+                candidate_graph=self.graph, region_skeletons=self.skeletons,
+                engine_jar=self.engine)
+        command = json.loads((linked / "resolver-command.json").read_text())
+        self.assertEqual(str(local / "target-occurrence.json"),
+                         command[command.index("--output") + 1])
+        self.assertTrue((linked / "summary.json").is_file())
+
     def _case(self, name: str, *, target_actor: str = "nn1",
               new_region: bool = False) -> dict:
         root = self.root / name

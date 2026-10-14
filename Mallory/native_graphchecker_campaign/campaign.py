@@ -1412,7 +1412,10 @@ def _execute_junit(config: dict[str, Any], admitted: dict[str, Any],
     runner = config["runner"]
     # JUnit cluster data directories must be fresh for every replay. The
     # caller can opt into this path in JVM properties without changing tests.
-    jvm_args = _trial_jvm_args(runner, workdir)
+    # Java 8 Files.createDirectories rejects a symlink even when it points to
+    # an existing directory. The local-artifact layout retains audited links
+    # in the durable trial, but JVM output paths must name physical directories.
+    jvm_args = _trial_jvm_args(runner, workdir.resolve(strict=True))
     cp = os.pathsep.join((
         str(Path(weave["output_classes"]).resolve(strict=True)),
         *(str(Path(item).resolve(strict=True)) for item in runner["classpath"]),
@@ -1424,13 +1427,17 @@ def _execute_junit(config: dict[str, Any], admitted: dict[str, Any],
             *_runner_prefix(runner, iteration),
             config["junit"]["class"], config["junit"]["method"]]
     env = os.environ.copy()
+    trace_dir = iteration / "trace"
+    trace_dir.mkdir(parents=True, exist_ok=True)
     env.update({"CAUSYNTH_STATIC_SCOPE_MAP": str(Path(config["recording"][
         "static_scope_map"]).resolve(strict=True)),
-                "CAUSYNTH_TRACE_OUTPUT_DIR": str(iteration / "trace"),
+                "CAUSYNTH_TRACE_OUTPUT_DIR": str(trace_dir.resolve(strict=True)),
                 "MALLORY_NATIVE_FAULT_PLAN": str(iteration / "fault-plan.json"),
                 "MALLORY_NATIVE_FAULT_EVENTS": str(iteration / "fault-events.jsonl")})
     if runner.get("mode", "concolic") == "concolic":
-        env["CAUSYNTH_CONCOLIC_SESSIONS"] = str(iteration / "sessions")
+        sessions = iteration / "sessions"
+        sessions.mkdir(parents=True, exist_ok=True)
+        env["CAUSYNTH_CONCOLIC_SESSIONS"] = str(sessions.resolve(strict=True))
     else:
         # RowRuntime's explicit concolic publisher steals ScheduleLog's sink
         # from the original REGION_STATE trace. Its schedule must stay beside

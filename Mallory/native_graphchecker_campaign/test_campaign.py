@@ -1060,6 +1060,45 @@ class NativeLocalWorkRootTest(unittest.TestCase):
         self.assertFalse((trial / "result.json").is_symlink())
         self.assertFalse((trial / "iteration-native/fault-events.jsonl").is_symlink())
 
+    def test_java8_recorder_closes_manifest_through_local_artifact_link(self) -> None:
+        java_home = Path("/usr/lib/jvm/java-8-openjdk-amd64")
+        javac = java_home / "bin/javac"
+        java = java_home / "jre/bin/java"
+        if not all(path.is_file() for path in (
+                javac, java, core.JAR, core.DEPENDENCIES)):
+            self.skipTest("source-built GraphChecker and Java 8 are required")
+        source = self.root / "TraceManifestProbe.java"
+        source.write_text(
+            "public final class TraceManifestProbe {\n"
+            "  public static void main(String[] args) {\n"
+            "    edu.uva.liftlab.graphchecker.runtime.CausynthTraceRecorder"
+            ".startRecording();\n"
+            "    edu.uva.liftlab.graphchecker.runtime.CausynthTraceRecorder"
+            ".stopRecording();\n"
+            "    System.exit(0);\n"
+            "  }\n"
+            "}\n")
+        subprocess.run([str(javac), "-cp", str(core.JAR), "-d",
+                        str(self.classes), str(source)], check=True,
+                       capture_output=True, timeout=30)
+        config = json.loads(json.dumps(self.config))
+        config["runner"].pop("local_work_root")
+        config["runner"].update({
+            "local_artifact_root": str(self.local),
+            "zero_vm_java": str(java), "main_class": "TraceManifestProbe",
+            "jvm_args": ["-Dbuild.test.dir={trial_workdir}"]})
+        trial = self.campaign / "trials/r0000"
+        trial.mkdir(parents=True)
+        core._prepare_trial_artifacts(config, trial)
+        self.assertTrue((trial / "iteration-native/trace").is_symlink())
+        execution = core._execute_junit(config, self.admitted, trial, [])
+        self.assertEqual(0, execution["return_code"])
+        trace = trial / "iteration-native/trace"
+        manifest = core._load(trace / "streaming_trace_manifest.json")
+        self.assertEqual("CLOSED", manifest["status"])
+        self.assertTrue((trace / "runtime_trace.jsonl").is_file())
+        self.assertTrue((trace.resolve() / "streaming_trace_manifest.json").is_file())
+
     def test_local_artifact_allocation_never_reuses_an_interrupted_attempt(self) -> None:
         config = json.loads(json.dumps(self.config))
         config["runner"]["local_artifact_root"] = str(self.local)

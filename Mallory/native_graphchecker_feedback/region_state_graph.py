@@ -668,6 +668,9 @@ def record_region_state(
         raise ValueError("positive loop bound, timeout, and bounded heap are required")
     trace_dir = trace_dir.resolve(strict=True)
     output_dir.mkdir(parents=True, exist_ok=True)
+    # The durable trial may expose this local output through a symlink.
+    # Java 8 Files.createDirectories rejects that link during Recorder setup.
+    output_dir = output_dir.resolve(strict=True)
     scope, graph, skeletons = (path.resolve(strict=True) for path in (
         static_scope_map, candidate_graph, region_skeletons))
     engine_jar = engine_jar.resolve(strict=True)
