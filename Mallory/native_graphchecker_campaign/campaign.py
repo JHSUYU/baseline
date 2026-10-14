@@ -126,6 +126,11 @@ def _validate_config(config: dict[str, Any]) -> None:
     if (not isinstance(heap_mb, int) or isinstance(heap_mb, bool) or
             not 0 < heap_mb <= 65536):
         raise ValueError("graph_analysis_heap_mb must be within 1..65536")
+    for key in ("admission_timeout_seconds", "graph_analysis_timeout_seconds"):
+        seconds = recording.get(key, 300)
+        if (not isinstance(seconds, int) or isinstance(seconds, bool) or
+                not 0 < seconds <= 3600):
+            raise ValueError(f"{key} must be within 1..3600")
     junit = config.get("junit")
     if not isinstance(junit, dict) or not all(
             isinstance(junit.get(key), str) and junit[key]
@@ -248,6 +253,7 @@ def _verify_recording_plan(config: dict[str, Any], weave: dict[str, Any],
     per fuzz trial. Concolic task plans must match the pinned weave exactly.
     """
     rec = config["recording"]
+    admission_timeout = rec.get("admission_timeout_seconds", 300)
     planned = Path(weave["task_plan"]).resolve(strict=True)
     scope = Path(rec["static_scope_map"]).resolve(strict=True)
     skeletons = Path(rec["region_skeletons"]).resolve(strict=True)
@@ -271,7 +277,7 @@ def _verify_recording_plan(config: dict[str, Any], weave: dict[str, Any],
                    "--target", f"{rec['target_name']}={target}"]
         if rec.get("target_occurrence"):
             command.extend(("--target-occurrence", rec["target_occurrence"]))
-        subprocess.run(command, check=True, timeout=300,
+        subprocess.run(command, check=True, timeout=admission_timeout,
                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         region_plan = output / "concolic_region_plan.jsonl"
         if not region_plan.is_file():
@@ -287,7 +293,7 @@ def _verify_recording_plan(config: dict[str, Any], weave: dict[str, Any],
                      "--max-jobs", str(rec["max_jobs"])]
         if rec.get("target_occurrence"):
             scheduler.extend(("--target-occurrence", rec["target_occurrence"]))
-        subprocess.run(scheduler, check=True, timeout=300,
+        subprocess.run(scheduler, check=True, timeout=admission_timeout,
                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         generated = scheduled / "execution_task_plan.jsonl"
         index = scheduled / "runtime_workflow_schedule_index.json"
@@ -936,7 +942,8 @@ def _run_region_trial(config: dict[str, Any], admitted: dict[str, Any],
             candidate_graph=Path(recording["candidate_graph"]),
             region_skeletons=Path(recording["region_skeletons"]),
             engine_jar=JAR, java=Path(admitted["weave_config"]["java"]),
-            loop_bound=loop_bound, timeout_seconds=300,
+            loop_bound=loop_bound,
+            timeout_seconds=recording.get("graph_analysis_timeout_seconds", 300),
             heap_mb=recording.get("graph_analysis_heap_mb", 3072),
             target_throw=config["target_throw"])
     except (ValueError, FileNotFoundError, subprocess.SubprocessError,
