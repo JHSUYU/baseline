@@ -154,7 +154,6 @@ def _eligibility_note(item: dict, inventory: Path,
             review.get("native_queue_fault_trials") != 0 or
             item.get("eligibility", {}).get("may_dispatch_healthy_seed") is not False or
             item["eligibility"].get("state") != "original_junit_skipped" or
-            inventory_pin.get("path") != str(inventory.resolve()) or
             inventory_pin.get("sha256") != sha(inventory) or
             inventory_pin.get("row_sha256") != row_sha or
             review.get("target", {}).get("source_path") != item["target"][
@@ -170,6 +169,11 @@ def _eligibility_note(item: dict, inventory: Path,
                 "tests": 1, "failures": 1, "target_checks": 0,
                 "target_throws": 0}):
         raise ValueError(f"native eligibility review identity changed: {case_id}")
+    pinned_inventory = Path(inventory_pin.get("path", ""))
+    if (not pinned_inventory.is_absolute() or pinned_inventory.is_symlink() or
+            not pinned_inventory.is_file() or
+            sha(pinned_inventory) != inventory_pin["sha256"]):
+        raise ValueError(f"native eligibility inventory pin changed: {case_id}")
     paths = {}
     for name in ("prior_source_review", "prior_opt_in_junit_log"):
         entry = review.get(name, {})

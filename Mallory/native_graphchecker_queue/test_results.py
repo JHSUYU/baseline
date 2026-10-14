@@ -101,6 +101,13 @@ class NativeResultsTest(unittest.TestCase):
             self.assertEqual(row["preparation_fault_trials"], 0)
             self.assertIsNone(row["fault_trials"])
             self.assertIsNone(row["completion_receipt_path"])
+            copied_inventory = root / "inventory-copy.json"
+            copied_inventory.write_bytes(inventory_file.read_bytes())
+            copied, _ = export_native_results(
+                copied_inventory, DEFAULT_OWNERSHIP, config_root,
+                state_root, results_dir)
+            self.assertEqual(json.loads(copied.read_text())[
+                "verified_terminal_count"], 0)
             (root / "base_test.java").write_text("changed\n")
             with self.assertRaisesRegex(ValueError,
                                         "native eligibility source base_test changed"):
