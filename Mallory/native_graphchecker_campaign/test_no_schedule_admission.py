@@ -92,7 +92,7 @@ class NoScheduleAdmissionTest(unittest.TestCase):
                                    "regionId": "target-region"}) + "\n")
         self.config["recording"].update({
             "static_may_scope_map": str(may),
-            "static_may_scope_sha256": core._sha(may),
+            "static_may_scope_map_sha256": core._sha(may),
         })
         core._validate_config(self.config)
         with (patch.object(core, "JAR", self.jar),
@@ -103,7 +103,7 @@ class NoScheduleAdmissionTest(unittest.TestCase):
             self.assertEqual(core._sha(self.scope), first["origin"][
                 "static_scope_map_sha256"])
             self.assertEqual(core._sha(may), first["origin"][
-                "static_may_scope_sha256"])
+                "static_may_scope_map_sha256"])
             core._verify_pins(self.config, first)
             may.write_text(may.read_text() + "\n")
             with self.assertRaisesRegex(ValueError, "static MAY scope SHA-256 mismatch"):

@@ -128,7 +128,7 @@ def _validate_config(config: dict[str, Any]) -> None:
              not recording["target_occurrence"])):
         raise ValueError("recording target_occurrence must be an exact ID")
     may_path = recording.get("static_may_scope_map")
-    may_sha = recording.get("static_may_scope_sha256")
+    may_sha = recording.get("static_may_scope_map_sha256")
     if (may_path is None) != (may_sha is None) or (may_path is not None and
             (not isinstance(may_path, str) or
              not Path(may_path).is_absolute() or
@@ -593,11 +593,11 @@ def _admit(config: dict[str, Any], root: Path) -> dict[str, Any]:
     if "static_may_scope_map" in rec:
         may_path = Path(rec["static_may_scope_map"]).resolve(strict=True)
         may_sha = _sha(may_path)
-        if may_sha != rec["static_may_scope_sha256"]:
+        if may_sha != rec["static_may_scope_map_sha256"]:
             raise ValueError("static MAY scope SHA-256 mismatch")
         rpc_producer_sites(str(may_path), may_sha, config["target_site"])
         recording_fingerprint["static_may_scope_map"] = str(may_path)
-        recording_fingerprint["static_may_scope_sha256"] = may_sha
+        recording_fingerprint["static_may_scope_map_sha256"] = may_sha
     if "analysis_engine_jar" in rec:
         analyzer = _analysis_engine_jar(config)
         recording_fingerprint["analysis_engine_jar"] = str(analyzer)
@@ -624,9 +624,9 @@ def _admit(config: dict[str, Any], root: Path) -> dict[str, Any]:
             raise ValueError("cached precomputed GraphChecker schedule changed")
     else:
         origin = _verify_recording_plan(config, weave, root)
-        if "static_may_scope_sha256" in recording_fingerprint:
-            origin["static_may_scope_sha256"] = recording_fingerprint[
-                "static_may_scope_sha256"]
+        if "static_may_scope_map_sha256" in recording_fingerprint:
+            origin["static_may_scope_map_sha256"] = recording_fingerprint[
+                "static_may_scope_map_sha256"]
         _atomic(admission, {"schema_version": SCHEMA,
                             "recording_fingerprint": recording_fingerprint,
                             "origin": origin})
@@ -654,9 +654,9 @@ def _verify_pins(config: dict[str, Any], admitted: dict[str, Any]) -> None:
     rec = config["recording"]
     if "static_may_scope_map" in rec:
         may_path = Path(rec["static_may_scope_map"]).resolve(strict=True)
-        if (_sha(may_path) != rec["static_may_scope_sha256"] or
-                admitted["origin"].get("static_may_scope_sha256") !=
-                rec["static_may_scope_sha256"]):
+        if (_sha(may_path) != rec["static_may_scope_map_sha256"] or
+                admitted["origin"].get("static_may_scope_map_sha256") !=
+                rec["static_may_scope_map_sha256"]):
             raise ValueError("native static MAY scope map changed during campaign")
     if dependency_digests(os.pathsep.join(config["runner"]["classpath"])) != (
             admitted["runner_classpath_artifacts"]):
@@ -1861,7 +1861,7 @@ def _run_region_trial(config: dict[str, Any], admitted: dict[str, Any],
                                     rpc_producer_sites(
                                         str(Path(recording[
                                             "static_may_scope_map"]).resolve(strict=True)),
-                                        recording["static_may_scope_sha256"],
+                                        recording["static_may_scope_map_sha256"],
                                         config["target_site"])
                                     if "static_may_scope_map" in recording
                                     else frozenset()))
