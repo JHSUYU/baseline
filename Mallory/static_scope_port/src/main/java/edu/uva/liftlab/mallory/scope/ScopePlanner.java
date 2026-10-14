@@ -402,6 +402,12 @@ public final class ScopePlanner {
                 if (captured != null) method.setActiveBody((Body) captured.clone());
             }
         }
+        // The original seed reads the restored active bodies.  The captured
+        // snapshots have no reader beyond this point; the legacy Method
+        // index retains the bodies it needs for translating selected sites.
+        // In particular, release generated-protobuf snapshots that the
+        // legacy index deliberately skipped before the larger seed runs.
+        jtpBodies.clear();
         String directory = string(analysis, "original_engine_output_dir", "");
         if (directory.isEmpty()) throw new IllegalArgumentException(
                 "analysis.original_engine_output_dir is required");
