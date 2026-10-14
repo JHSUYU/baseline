@@ -343,8 +343,107 @@ def _terminal_cache_path(state_root: Path, case_id: str) -> Path:
     return state_root / ".native-queue" / "audits" / f"{case_id}.json"
 
 
+def _local_artifact_attestation_valid(audit: dict, fingerprint: dict) -> bool:
+    """Permit a remote reader to use only a pinned, local-host full audit."""
+    attestation = audit.get("local_artifact_attestation")
+    if not isinstance(attestation, dict):
+        return False
+    host = attestation.get("host")
+    local_root = attestation.get("local_root")
+    root = Path(fingerprint["native_root"])
+    manifests = attestation.get("manifest_sha256")
+    trees = attestation.get("trial_tree_sha256")
+    count = audit.get("row", {}).get("fault_trials")
+    if (not isinstance(host, str) or not host or
+            os.uname().nodename != host or
+            not isinstance(local_root, str) or not Path(local_root).is_absolute() or
+            not isinstance(count, int) or isinstance(count, bool) or count < 0 or
+            not isinstance(manifests, dict) or not isinstance(trees, dict) or
+            len(manifests) != count + 1 or len(trees) != count + 1):
+        return False
+    for index in range(count + 1):
+        trial = root / "trials" / f"r{index:04d}"
+        path = trial / "local-artifacts.json"
+        digest = manifests.get(str(path))
+        if (not isinstance(digest, str) or path.is_symlink() or
+                not path.is_file() or sha(path) != digest):
+            return False
+        manifest = obj(path)
+        result_path = trial / "result.json"
+        if result_path.is_symlink() or not result_path.is_file():
+            return False
+        result = obj(result_path)
+        local = Path(manifest.get("local_attempt_dir", ""))
+        if (manifest.get("status") != "closed" or
+                manifest.get("host") != host or
+                manifest.get("campaign_root") != str(root) or
+                manifest.get("trial") != trial.name or
+                manifest.get("tree_sha256") != trees.get(trial.name) or
+                result.get("local_artifacts_manifest_sha256") != digest or
+                not local.is_absolute() or
+                not local.is_relative_to(Path(local_root)) or
+                not local.is_dir()):
+            return False
+        links = manifest.get("links")
+        if not isinstance(links, dict) or not links:
+            return False
+        for relative, target in links.items():
+            link = trial / relative
+            if (not isinstance(relative, str) or not isinstance(target, str) or
+                    not link.is_symlink() or os.readlink(link) != target or
+                    not Path(target).is_relative_to(local)):
+                return False
+        selected = manifest.get("selected_sha256")
+        if not isinstance(selected, dict):
+            return False
+        files = sorted(path for path in local.rglob("*")
+                       if path.is_file() or path.is_symlink())
+        tree = hashlib.sha256()
+        actual_selected = {}
+        total_bytes = 0
+        selected_names = {
+            "trace/streaming_trace_manifest.json", "trace/runtime_trace.jsonl",
+            "trace/schedule.jsonl", "original-graph/summary.json",
+            "stdout.log", "stderr.log",
+        }
+        for file in files:
+            relative = file.relative_to(local).as_posix()
+            if file.is_symlink():
+                file_sha = hashlib.sha256(os.readlink(file).encode()).hexdigest()
+                marker, size = b"L", file.lstat().st_size
+            else:
+                file_sha = sha(file)
+                marker, size = b"F", file.stat().st_size
+            tree.update(relative.encode() + b"\0" + marker +
+                        bytes.fromhex(file_sha))
+            total_bytes += size
+            if relative in selected_names:
+                actual_selected[relative] = file_sha
+        if (manifest.get("tree_sha256") != tree.hexdigest() or
+                manifest.get("file_count") != len(files) or
+                manifest.get("total_bytes") != total_bytes or
+                actual_selected != selected):
+            return False
+        for relative, selected_sha in selected.items():
+            raw = local / relative
+            observed = audit["trial_evidence_sha256"].get(str(raw))
+            if observed is not None and observed != selected_sha:
+                return False
+        lineage_path = trial / "schedule-lineage.json"
+        if lineage_path.is_file():
+            lineage = obj(lineage_path)
+            schedule = trial / "native-schedule.jsonl"
+            if (lineage.get("durable_copy") != str(schedule) or
+                    not schedule.is_file() or schedule.is_symlink() or
+                    lineage.get("durable_copy_sha256") != sha(schedule) or
+                    lineage.get("destination_sha256") != sha(schedule)):
+                return False
+    return True
+
+
 def _frozen_source_cache_valid(cache: dict, fingerprint: dict,
-                               config_root: Path) -> bool:
+                               config_root: Path, *,
+                               require_local_attestation: bool = False) -> bool:
     """Recheck a sealed inspector's source and trial bytes before reuse."""
     try:
         audit_path = Path(cache["frozen_audit_path"])
@@ -369,8 +468,16 @@ def _frozen_source_cache_valid(cache: dict, fingerprint: dict,
                 not isinstance(audit.get("trial_evidence_sha256"), dict) or
                 not audit["trial_evidence_sha256"]):
             return False
-        return all(sha(Path(name)) == digest for name, digest in
-                   audit["trial_evidence_sha256"].items())
+        attestation = audit.get("local_artifact_attestation")
+        if attestation is None:
+            if require_local_attestation:
+                return False
+            return all(sha(Path(name)) == digest for name, digest in
+                       audit["trial_evidence_sha256"].items())
+        if not _local_artifact_attestation_valid(audit, fingerprint):
+            return False
+        return all(Path(name).is_file() and sha(Path(name)) == digest
+                   for name, digest in audit["trial_evidence_sha256"].items())
     except (KeyError, OSError, ValueError, TypeError):
         return False
 
@@ -380,6 +487,9 @@ def _cached_terminal_inspection(item: dict, owner: str, config_root: Path,
     fingerprint = _terminal_fingerprint(item, config_root, state_root)
     if fingerprint is None:
         return inspect_case(item, owner, config_root, state_root, review)
+    native_config_file, _ = _native_case_files(item, config_root, state_root)
+    local_artifact_mode = bool(obj(native_config_file).get("runner", {}).get(
+        "local_artifact_root"))
     if review is not None:
         fingerprint["review_sha256"] = hashlib.sha256(json.dumps(
             review, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
@@ -404,7 +514,14 @@ def _cached_terminal_inspection(item: dict, owner: str, config_root: Path,
                    sha(pilot_path) == cache.get("pilot_receipt_sha256")))))
             if basis == "frozen_source_full_native_inspect_case":
                 receipt_basis_valid = (receipt_basis_valid and
-                    _frozen_source_cache_valid(cache, fingerprint, config_root))
+                    _frozen_source_cache_valid(
+                        cache, fingerprint, config_root,
+                        require_local_attestation=local_artifact_mode))
+            elif local_artifact_mode:
+                # A prior full inspection on this host is not a remotely
+                # verifiable cache until its frozen source and local raw
+                # evidence are sealed in a host-identified receipt.
+                receipt_basis_valid = False
             if (cache.get("fingerprint") == fingerprint and
                     cache.get("owner") == owner and
                     receipt_basis_valid and

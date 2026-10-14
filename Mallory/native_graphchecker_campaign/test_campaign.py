@@ -1023,6 +1023,77 @@ class NativeLocalWorkRootTest(unittest.TestCase):
             separate = Path(core._load(second / "process.json")["junit_workdir"])
             self.assertNotEqual(retry.parent, separate.parent)
 
+    def test_opt_in_raw_artifacts_are_local_with_durable_trial_receipt(self) -> None:
+        config = json.loads(json.dumps(self.config))
+        config["runner"]["local_artifact_root"] = str(self.local)
+        core._validate_config(config)
+        trial = self.campaign / "trials/r0001"
+        trial.mkdir(parents=True)
+        core._prepare_trial_artifacts(config, trial)
+        allocated = core._load(trial / "local-artifacts.json")
+        local = Path(allocated["local_attempt_dir"])
+        self.assertTrue(local.is_relative_to(self.local))
+        self.assertTrue((trial / "iteration-native/trace").is_symlink())
+        self.assertTrue((trial / "original-graph").is_symlink())
+        self.assertFalse((trial / "iteration-native/fault-plan.json").is_symlink())
+        with patch.object(core, "JAR", self.engine), patch.object(
+                core, "DEPENDENCIES", self.dependencies):
+            execution = core._execute_junit(config, self.admitted, trial, [])
+        self.assertEqual(0, execution["return_code"])
+        (trial / "iteration-native/fault-events.jsonl").write_text("{}\n")
+        (trial / "original-graph/summary.json").write_text("{}\n")
+        saved = core._save_trial_result(trial, execution, 0.0)
+        closed = core._load(trial / "local-artifacts.json")
+        self.assertEqual("closed", closed["status"])
+        self.assertEqual(core._sha(trial / "local-artifacts.json"),
+                         saved["local_artifacts_manifest_sha256"])
+        self.assertEqual(core._sha(local / "trace/row.jsonl"),
+                         core._sha(trial / "iteration-native/trace/row.jsonl"))
+        self.assertIn("original-graph/summary.json", closed["selected_sha256"])
+        self.assertGreater(closed["file_count"], 0)
+        self.assertTrue((trial / "result.json").is_file())
+        self.assertFalse((trial / "result.json").is_symlink())
+        self.assertFalse((trial / "iteration-native/fault-events.jsonl").is_symlink())
+
+    def test_local_artifact_allocation_never_reuses_an_interrupted_attempt(self) -> None:
+        config = json.loads(json.dumps(self.config))
+        config["runner"]["local_artifact_root"] = str(self.local)
+        first = self.campaign / "trials/r0001"
+        first.mkdir(parents=True)
+        core._prepare_trial_artifacts(config, first)
+        old = Path(core._load(first / "local-artifacts.json")["local_attempt_dir"])
+        (old / "trace/partial.jsonl").write_text("partial\n")
+        interrupted = self.campaign / "interrupted/r0001-attempt1"
+        interrupted.parent.mkdir()
+        first.rename(interrupted)
+        first.mkdir()
+        core._prepare_trial_artifacts(config, first)
+        new = Path(core._load(first / "local-artifacts.json")["local_attempt_dir"])
+        self.assertNotEqual(old, new)
+        self.assertEqual("partial\n", (old / "trace/partial.jsonl").read_text())
+        self.assertEqual(str(old), core._load(
+            interrupted / "local-artifacts.json")["local_attempt_dir"])
+
+    def test_local_schedule_has_a_durable_byte_identical_copy(self) -> None:
+        config = json.loads(json.dumps(self.config))
+        config["runner"]["local_artifact_root"] = str(self.local)
+        trial = self.campaign / "trials/r0000"
+        trial.mkdir(parents=True)
+        core._prepare_trial_artifacts(config, trial)
+        iteration = trial / "iteration-native"
+        core._atomic(iteration / "trace/streaming_trace_manifest.json",
+                     {"status": "CLOSED"})
+        source = iteration / "sessions/one/schedule.jsonl"
+        source.parent.mkdir()
+        source.write_bytes(b'{"taskId":"observed"}\n')
+        core._region_schedule(iteration, trial)
+        lineage = core._load(trial / "schedule-lineage.json")
+        copy = trial / "native-schedule.jsonl"
+        self.assertEqual(str(copy), lineage["durable_copy"])
+        self.assertFalse(copy.is_symlink())
+        self.assertEqual(source.read_bytes(), copy.read_bytes())
+        self.assertEqual(core._sha(copy), lineage["durable_copy_sha256"])
+
     def test_root_validation_rejects_shared_or_nested_paths(self) -> None:
         invalid = json.loads(json.dumps(self.config))
         invalid["runner"]["local_work_root"] = "relative/work"
@@ -1039,6 +1110,25 @@ class NativeLocalWorkRootTest(unittest.TestCase):
                           return_value=(Path("/"), "ext3")):
             with self.assertRaisesRegex(ValueError, "host-local"):
                 core._validate_local_work_root(self.config, self.campaign)
+
+    def test_raw_artifact_root_rejects_relative_nfs_root_or_nested(self) -> None:
+        invalid = json.loads(json.dumps(self.config))
+        invalid["runner"]["local_artifact_root"] = "relative/raw"
+        with self.assertRaisesRegex(ValueError, "absolute path"):
+            core._validate_config(invalid)
+        invalid["runner"]["local_artifact_root"] = str(
+            self.campaign / "raw")
+        with self.assertRaisesRegex(ValueError, "separate"):
+            core._validate_local_artifact_root(invalid, self.campaign)
+        invalid["runner"]["local_artifact_root"] = str(self.local)
+        with patch.object(core, "_filesystem_mount",
+                          return_value=(Path("/mnt/shared"), "nfs4")):
+            with self.assertRaisesRegex(ValueError, "host-local"):
+                core._validate_local_artifact_root(invalid, self.campaign)
+        with patch.object(core, "_filesystem_mount",
+                          return_value=(Path("/"), "ext4")):
+            with self.assertRaisesRegex(ValueError, "host-local"):
+                core._validate_local_artifact_root(invalid, self.campaign)
 
     def test_interrupted_trial_preserves_old_attempt_and_retries_fresh(self) -> None:
         old_trial = self.campaign / "trials/r0000"
@@ -1067,6 +1157,26 @@ class NativeLocalWorkRootTest(unittest.TestCase):
                          "interrupted/r0000-attempt1/process.json").is_file())
         self.assertTrue((old_trial / "result.json").is_file())
         self.assertTrue((self.campaign / "checkpoint.json").is_file())
+
+    def test_foreign_host_pid_does_not_block_interrupted_attempt(self) -> None:
+        trial = self.campaign / "trials/r0000"
+        trial.mkdir(parents=True)
+        core._atomic(trial / "process.json", {
+            "pid": os.getpid(), "start_ticks": core._start_ticks(os.getpid()),
+            "host": "another-physical-host"})
+        state = {"active": {"index": 0, "name": "r0000", "faults": []}}
+
+        def rerun(config, admitted, new_trial, faults, healthy):
+            new_trial.mkdir()
+            core._atomic(new_trial / "result.json", {"faults": []})
+            return {"faults": []}
+
+        with patch.object(core, "_run_trial", side_effect=rerun), patch.object(
+                core, "_accept"):
+            core._resume_active(self.config, self.admitted, self.campaign, state)
+        self.assertTrue((trial / "result.json").is_file())
+        self.assertTrue((self.campaign /
+                         "interrupted/r0000-attempt1/process.json").is_file())
 
     def test_resume_keeps_config_sha_pin_for_local_root(self) -> None:
         config_file = self.root / "case.json"

@@ -178,6 +178,12 @@ def _validate_config(config: dict[str, Any]) -> None:
             not local_work_root or
             not Path(local_work_root).is_absolute()):
         raise ValueError("runner.local_work_root must be an absolute path")
+    local_artifact_root = runner.get("local_artifact_root")
+    if local_artifact_root is not None and (
+            not isinstance(local_artifact_root, str) or
+            not local_artifact_root or
+            not Path(local_artifact_root).is_absolute()):
+        raise ValueError("runner.local_artifact_root must be an absolute path")
     marker = runner.get("result_marker")
     if marker is not None and (not isinstance(marker, str) or
                                not re.fullmatch(r"[A-Z][A-Z0-9_]*", marker)):
@@ -339,8 +345,12 @@ def _verify_recording_plan(config: dict[str, Any], weave: dict[str, Any],
                 "closed_inputs": closed,
                 "static_scope_map_sha256": closed["scopeMapSha256"],
                 "static_skeletons_sha256": closed["regionSkeletonsSha256"]}
+    admission_scratch = campaign_root
+    if config["runner"].get("local_artifact_root") is not None:
+        _validate_local_artifact_root(config, campaign_root)
+        admission_scratch = Path(config["runner"]["local_artifact_root"]).resolve()
     with tempfile.TemporaryDirectory(prefix=".recording-admission-",
-                                     dir=campaign_root) as scratch:
+                                     dir=admission_scratch) as scratch:
         output = Path(scratch) / "recorded"
         scheduled = Path(scratch) / "scheduled"
         _scheduler_source()
@@ -1130,9 +1140,11 @@ def _region_schedule(iteration: Path, trial: Path) -> None:
     trace = iteration / "trace"
     destination = trace / "schedule.jsonl"
     if destination.is_file():
-        _atomic(trial / "schedule-lineage.json", {
+        lineage = {
             "source": str(destination), "source_sha256": _sha(destination),
-            "destination_sha256": _sha(destination), "copied": False})
+            "destination_sha256": _sha(destination), "copied": False}
+        _durable_schedule_copy(trial, destination, lineage)
+        _atomic(trial / "schedule-lineage.json", lineage)
         return
     manifest = _load(trace / "streaming_trace_manifest.json")
     if manifest.get("status") != "CLOSED":
@@ -1154,9 +1166,34 @@ def _region_schedule(iteration: Path, trial: Path) -> None:
         os.replace(temporary, destination)
     finally:
         temporary.unlink(missing_ok=True)
-    _atomic(trial / "schedule-lineage.json", {
+    lineage = {
         "source": str(source), "source_sha256": _sha(source),
-        "destination_sha256": _sha(destination), "copied": True})
+        "destination_sha256": _sha(destination), "copied": True}
+    _durable_schedule_copy(trial, destination, lineage)
+    _atomic(trial / "schedule-lineage.json", lineage)
+
+
+def _durable_schedule_copy(trial: Path, source: Path,
+                           lineage: dict[str, Any]) -> None:
+    """Keep exact original schedule bytes available to a remote auditor."""
+    if not (trial / "local-artifacts.json").is_file():
+        return
+    copy = trial / "native-schedule.jsonl"
+    with tempfile.NamedTemporaryFile("wb", dir=trial, prefix=".schedule-copy-",
+                                     delete=False) as stream:
+        temporary = Path(stream.name)
+        with source.open("rb") as original:
+            shutil.copyfileobj(original, stream)
+        stream.flush()
+        os.fsync(stream.fileno())
+    try:
+        if _sha(temporary) != lineage["destination_sha256"]:
+            raise ValueError("durable original schedule copy changed")
+        os.replace(temporary, copy)
+    finally:
+        temporary.unlink(missing_ok=True)
+    lineage["durable_copy"] = str(copy)
+    lineage["durable_copy_sha256"] = _sha(copy)
 
 
 def _trial_jvm_args(runner: dict[str, Any], workdir: Path) -> list[str]:
@@ -1203,6 +1240,115 @@ def _validate_local_work_root(config: dict[str, Any], campaign: Path) -> None:
     mount, fs_type = _filesystem_mount(root)
     if mount == Path("/") or fs_type.lower().startswith("nfs"):
         raise ValueError("runner.local_work_root must be on a host-local filesystem")
+
+
+def _validate_local_artifact_root(config: dict[str, Any], campaign: Path) -> None:
+    """Only an explicit host-local directory may hold raw trial artifacts."""
+    configured = config["runner"].get("local_artifact_root")
+    if configured is None:
+        return
+    root = Path(configured).resolve()
+    campaign = campaign.resolve()
+    if root == campaign or campaign in root.parents or root in campaign.parents:
+        raise ValueError("local artifact root must be separate from campaign output")
+    if not root.is_dir():
+        raise ValueError("runner.local_artifact_root must already exist as a directory")
+    mount, fs_type = _filesystem_mount(root)
+    if mount == Path("/") or fs_type.lower().startswith("nfs"):
+        raise ValueError("runner.local_artifact_root must be on a host-local filesystem")
+
+
+def _prepare_trial_artifacts(config: dict[str, Any], trial: Path) -> None:
+    """Put only raw trace, graph and logs on local scratch.
+
+    Durable fault receipts, native summary and result remain under `trial`.
+    A new local attempt directory is allocated after an interrupted trial is
+    moved aside, so recovery never overwrites evidence from the old attempt.
+    """
+    configured = config["runner"].get("local_artifact_root")
+    if configured is None:
+        return
+    campaign = trial.parent.parent.resolve()
+    _validate_local_artifact_root(config, campaign)
+    namespace = hashlib.sha256((str(campaign) + "\0" + config["case_id"])
+                               .encode("utf-8")).hexdigest()[:24]
+    parent = Path(configured).resolve() / namespace / "raw"
+    parent.mkdir(parents=True, exist_ok=True)
+    local = Path(tempfile.mkdtemp(prefix=f"{trial.name}-attempt-", dir=parent))
+    iteration = trial / "iteration-native"
+    iteration.mkdir()
+    links = {
+        "iteration-native/trace": local / "trace",
+        "iteration-native/sessions": local / "sessions",
+        "original-graph": local / "original-graph",
+        "stdout.log": local / "stdout.log",
+        "stderr.log": local / "stderr.log",
+    }
+    if config["runner"].get("local_work_root") is None:
+        links["iteration-native/workdir"] = local / "workdir"
+    for name, destination in links.items():
+        if name.endswith(("trace", "sessions", "original-graph", "workdir")):
+            destination.mkdir()
+        (trial / name).symlink_to(destination, target_is_directory=
+                                  destination.is_dir())
+    _atomic(trial / "local-artifacts.json", {
+        "schema_version": 1, "status": "allocated",
+        "host": os.uname().nodename, "campaign_root": str(campaign),
+        "trial": trial.name, "local_attempt_dir": str(local),
+        "links": {name: str(destination) for name, destination in links.items()},
+    })
+
+
+def _close_trial_artifacts(trial: Path) -> str | None:
+    """Commit a compact, hash-checked receipt before publishing result.json."""
+    manifest_file = trial / "local-artifacts.json"
+    if not manifest_file.is_file():
+        return None
+    manifest = _load(manifest_file)
+    if manifest.get("status") != "allocated":
+        raise ValueError("local trial artifacts are not in allocated state")
+    if manifest.get("host") != os.uname().nodename:
+        raise ValueError("local trial artifacts belong to another host")
+    local = Path(manifest["local_attempt_dir"])
+    if not local.is_dir():
+        raise ValueError("local trial artifacts disappeared before completion")
+    for name, destination in manifest["links"].items():
+        link = trial / name
+        if not link.is_symlink() or os.readlink(link) != destination:
+            raise ValueError(f"local trial artifact link changed: {name}")
+    files = sorted(path for path in local.rglob("*")
+                   if path.is_file() or path.is_symlink())
+    digest = hashlib.sha256()
+    selected = {}
+    total_bytes = 0
+    selected_names = {
+        "trace/streaming_trace_manifest.json", "trace/runtime_trace.jsonl",
+        "trace/schedule.jsonl", "original-graph/summary.json",
+        "stdout.log", "stderr.log",
+    }
+    for path in files:
+        relative = path.relative_to(local).as_posix()
+        if path.is_symlink():
+            # JUnit data directories may themselves contain symlinks. Commit
+            # their link text without following an untrusted external target.
+            content_sha = hashlib.sha256(os.readlink(path).encode("utf-8")).hexdigest()
+            marker = b"L"
+            size = path.lstat().st_size
+        else:
+            content_sha = _sha(path)
+            marker = b"F"
+            size = path.stat().st_size
+        digest.update(relative.encode("utf-8") + b"\0" +
+                      marker + bytes.fromhex(content_sha))
+        total_bytes += size
+        if relative in selected_names:
+            selected[relative] = content_sha
+    manifest.update({"status": "closed", "file_count": len(files),
+                     "total_bytes": total_bytes,
+                     "tree_sha256": digest.hexdigest(),
+                     "selected_sha256": selected})
+    _atomic(manifest_file, manifest)
+    return _sha(manifest_file)
 
 
 def _junit_workdir(config: dict[str, Any], trial: Path) -> Path:
@@ -1294,7 +1440,8 @@ def _execute_junit(config: dict[str, Any], admitted: dict[str, Any],
                                    stderr=stderr, start_new_session=True)
         process_receipt = {"pid": process.pid,
                            "start_ticks": _start_ticks(process.pid),
-                           "argv": argv, "started_at": time.time()}
+                           "argv": argv, "started_at": time.time(),
+                           "host": os.uname().nodename}
         if runner.get("local_work_root") is not None:
             process_receipt["junit_workdir"] = str(workdir)
         _atomic(trial / "process.json", process_receipt)
@@ -1409,6 +1556,7 @@ def _run_trial(config: dict[str, Any], admitted: dict[str, Any],
                healthy: dict[str, Any] | None) -> dict[str, Any]:
     _verify_pins(config, admitted)
     trial.mkdir(parents=True, exist_ok=False)
+    _prepare_trial_artifacts(config, trial)
     trial_started = time.monotonic()
     execution = _execute_junit(config, admitted, trial, faults)
     iteration = trial / "iteration-native"
@@ -1555,10 +1703,13 @@ def _run_trial(config: dict[str, Any], admitted: dict[str, Any],
 def _save_trial_result(trial: Path, result: dict[str, Any],
                        trial_started: float) -> dict[str, Any]:
     junit_seconds = result["elapsed_seconds"]
+    local_manifest_sha = _close_trial_artifacts(trial)
     total_seconds = round(time.monotonic() - trial_started, 3)
     result["junit_elapsed_seconds"] = junit_seconds
     result["analysis_elapsed_seconds"] = round(max(0.0, total_seconds - junit_seconds), 3)
     result["elapsed_seconds"] = total_seconds
+    if local_manifest_sha is not None:
+        result["local_artifacts_manifest_sha256"] = local_manifest_sha
     _atomic(trial / "result.json", result)
     return result
 
@@ -1872,6 +2023,9 @@ def _resume_active(config: dict[str, Any], admitted: dict[str, Any],
         if result.get("case_id") != state["case_id"] or result.get(
                 "faults") != active["faults"]:
             raise ValueError("completed native trial disagrees with checkpoint")
+        local_sha = result.get("local_artifacts_manifest_sha256")
+        if local_sha is not None and _sha(trial / "local-artifacts.json") != local_sha:
+            raise ValueError("completed native trial local artifact receipt changed")
         _accept(state, result, name)
         _atomic(root / "checkpoint.json", state)
         return
@@ -1882,7 +2036,9 @@ def _resume_active(config: dict[str, Any], admitted: dict[str, Any],
         if process.is_file():
             process_receipt = _load(process)
             pid = process_receipt.get("pid")
-            if isinstance(pid, int):
+            if (isinstance(pid, int) and
+                    process_receipt.get("host", os.uname().nodename) ==
+                    os.uname().nodename):
                 current_ticks = _start_ticks(pid)
                 saved_ticks = process_receipt.get("start_ticks")
                 if current_ticks and (not saved_ticks or current_ticks == saved_ticks):
@@ -1908,6 +2064,7 @@ def run_campaign(config_path: Path, root: Path) -> dict[str, Any]:
     root = root.resolve()
     root.mkdir(parents=True, exist_ok=True)
     _validate_local_work_root(config, root)
+    _validate_local_artifact_root(config, root)
     with (root / ".campaign.lock").open("a+") as lock:
         try:
             fcntl.flock(lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)

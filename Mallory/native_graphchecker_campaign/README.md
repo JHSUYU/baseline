@@ -138,6 +138,7 @@ the following shape (paths are absolute in an actual campaign):
     "main_class": "JUnit runner main class",
     "classpath": ["/path/to/test-classes", "/path/to/dependencies.jar"],
     "local_work_root": "/mnt/mallory-scratch/junit",
+    "local_artifact_root": "/mnt/mallory-scratch/raw",
     "jvm_args": []
   },
   "budget": {"fault_trials": 32, "seconds": 7200,
@@ -159,13 +160,47 @@ path inside the campaign output are rejected. The mount is checked again at
 every trial, so losing the scratch mount cannot silently fill `/`. Each campaign and
 each trial attempt receives a separate directory beneath that root. The JUnit
 process uses it as its current directory, and `{trial_workdir}` resolves there.
-The exact path is retained in `process.json`. Fault plans, trace, original
-graph, stdout/stderr, trial result, and checkpoint stay in the campaign output
-directory. Local work directories are retained for diagnosis; after a trial
+The exact path is retained in `process.json`. With only this option, fault
+plans, trace, original graph, stdout/stderr, trial result, and checkpoint stay
+in the campaign output directory. Local work directories are retained for diagnosis; after a trial
 result and checkpoint are durable, they may be pruned separately. If local
 scratch disappears during an incomplete trial, normal resume retries that
 trial in a new directory. Changing `local_work_root` in a running campaign
 changes the config SHA and is rejected by checkpoint validation.
+
+`runner.local_artifact_root` is a separate, optional setting for **new**
+campaigns. It must point to an existing host-local mounted directory; the
+same root-filesystem and NFS checks apply. When enabled, each trial allocates
+a unique local attempt directory. Its raw runtime trace, original session
+files, original GraphChecker analysis tree, and JUnit stdout/stderr are linked
+from the familiar trial paths to that directory. If `local_work_root` is not
+also set, the JUnit current directory moves there too. The fault plan,
+append-only fault events, JUnit result marker, process receipt, schedule
+lineage, native summary, `result.json`, and checkpoint remain as real files
+in the shared campaign tree. Graph feedback and injection selectors are
+unchanged. Existing campaigns with no `local_artifact_root` keep their exact
+layout. Changing this setting changes the config SHA, so it cannot silently
+alter a running campaign.
+
+Before `result.json` is published, `local-artifacts.json` in the shared trial
+directory records the physical host, unique local path, symlink targets,
+file count, byte count, a SHA-256 tree commitment, and hashes of selected
+trace/graph/log files. The result pins that manifest's SHA-256. An interrupted
+trial is moved to `interrupted/` and a fresh attempt gets a new local path;
+the old local files are retained. A completed trial with a durable result is
+accepted on resume without rerunning it, even if its raw local files are no
+longer accessible. The source graph and trace can only be independently
+recomputed on the host with that local directory. A copied tree can be
+reviewed manually, but queue promotion remains bound to the recorded host.
+The frozen terminal inspector publishes a host-identified audit
+receipt only after reading every local raw tree and the original graph. Queue
+promotion rehashes those bytes on the owner host. On another node, the shared
+summary, fault events, result, and manifest support identity and outcome
+review, but raw graph replay and terminal promotion are held. A stale audit
+receipt cannot substitute for a missing local file. Losing the local
+directory loses that raw evidence; the checkpoint and compact result survive
+on shared storage, and completed trials are not silently rerun. Do not delete
+local attempt directories before required raw audit and promotion are complete.
 
 The fault adapter is a separate contract. It reads `MALLORY_NATIVE_FAULT_PLAN`
 and writes monotone JSONL events to `MALLORY_NATIVE_FAULT_EVENTS`. A plan item

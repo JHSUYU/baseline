@@ -8,6 +8,7 @@ exact source and trial files used by that inspection.  It never launches JUnit.
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 import os
 import subprocess
@@ -73,6 +74,92 @@ def _trial_sha256(root: Path, count: int) -> dict[str, str]:
     return evidence
 
 
+def _local_artifact_receipts(root: Path, count: int,
+                             config: dict) -> dict[str, Any] | None:
+    """Attest local raw bytes only on their physical owner host.
+
+    This runs after the frozen inspector has recomputed each graph from raw
+    trace bytes. The durable result and manifest bind those bytes for a later
+    owner-host queue recheck. A different host cannot promote local raw data.
+    """
+    configured = config.get("runner", {}).get("local_artifact_root")
+    if configured is None:
+        return None
+    local_root = Path(configured).resolve(strict=True)
+    host = os.uname().nodename
+    manifests: dict[str, str] = {}
+    trees: dict[str, str] = {}
+    for index in range(count + 1):
+        trial = root / "trials" / f"r{index:04d}"
+        path = trial / "local-artifacts.json"
+        result = obj(trial / "result.json")
+        if path.is_symlink() or not path.is_file():
+            raise ValueError(f"missing durable local artifact manifest: {path}")
+        manifest_sha = sha(path)
+        manifest = obj(path)
+        local = Path(manifest.get("local_attempt_dir", ""))
+        if (result.get("local_artifacts_manifest_sha256") != manifest_sha or
+                manifest.get("schema_version") != 1 or
+                manifest.get("status") != "closed" or
+                manifest.get("host") != host or
+                manifest.get("trial") != trial.name or
+                manifest.get("campaign_root") != str(root.resolve()) or
+                not local.is_absolute() or
+                not local.resolve(strict=True).is_relative_to(local_root) or
+                not local.is_dir()):
+            raise ValueError(f"local raw artifact identity changed: {trial}")
+        links = manifest.get("links")
+        if not isinstance(links, dict) or not links:
+            raise ValueError(f"local raw artifact links missing: {trial}")
+        for relative, target in links.items():
+            if (not isinstance(relative, str) or not isinstance(target, str) or
+                    not (trial / relative).is_symlink() or
+                    os.readlink(trial / relative) != target or
+                    not Path(target).is_relative_to(local)):
+                raise ValueError(f"local raw artifact link changed: {trial}/{relative}")
+        files = sorted(path for path in local.rglob("*")
+                       if path.is_file() or path.is_symlink())
+        digest = hashlib.sha256()
+        selected = {}
+        total_bytes = 0
+        selected_names = {
+            "trace/streaming_trace_manifest.json", "trace/runtime_trace.jsonl",
+            "trace/schedule.jsonl", "original-graph/summary.json",
+            "stdout.log", "stderr.log",
+        }
+        for file in files:
+            relative = file.relative_to(local).as_posix()
+            if file.is_symlink():
+                file_sha = hashlib.sha256(os.readlink(file).encode()).hexdigest()
+                marker, size = b"L", file.lstat().st_size
+            else:
+                file_sha = sha(file)
+                marker, size = b"F", file.stat().st_size
+            digest.update(relative.encode() + b"\0" + marker +
+                          bytes.fromhex(file_sha))
+            total_bytes += size
+            if relative in selected_names:
+                selected[relative] = file_sha
+        if (manifest.get("file_count") != len(files) or
+                manifest.get("total_bytes") != total_bytes or
+                manifest.get("tree_sha256") != digest.hexdigest() or
+                manifest.get("selected_sha256") != selected):
+            raise ValueError(f"local raw artifact bytes changed: {trial}")
+        lineage = trial / "schedule-lineage.json"
+        if lineage.is_file():
+            schedule = obj(lineage)
+            durable = trial / "native-schedule.jsonl"
+            if (schedule.get("durable_copy") != str(durable) or
+                    schedule.get("durable_copy_sha256") != sha(durable) or
+                    schedule["durable_copy_sha256"] != schedule.get(
+                        "destination_sha256")):
+                raise ValueError(f"durable schedule lineage changed: {trial}")
+        manifests[str(path)] = manifest_sha
+        trees[trial.name] = digest.hexdigest()
+    return {"host": host, "local_root": str(local_root),
+            "manifest_sha256": manifests, "trial_tree_sha256": trees}
+
+
 def inspect_frozen_terminal(item: dict, owner: str, config_root: Path,
                             state_root: Path) -> dict[str, Any]:
     """Return a source-pinned audit receipt; reject an incomplete campaign."""
@@ -118,10 +205,12 @@ def inspect_frozen_terminal(item: dict, owner: str, config_root: Path,
             row.get("elapsed_seconds") != summary.get("elapsed_seconds")):
         raise ValueError("frozen inspection differs from sealed summary")
     trial_hashes = _trial_sha256(native_root, row["fault_trials"])
+    local_artifacts = _local_artifact_receipts(native_root, row["fault_trials"],
+                                                native_config)
     if _terminal_fingerprint(item, config_root, state_root) != fingerprint:
         raise ValueError("terminal inputs changed during frozen inspection")
     jar = engine_root / "target/mallory-original-graphchecker-seed-1.0-SNAPSHOT.jar"
-    return {"schema_version": 1,
+    receipt = {"schema_version": 1,
             "method": "exact_frozen_python_full_native_inspect_case",
             "case_id": case_id, "owner": owner,
             "fingerprint": fingerprint,
@@ -134,6 +223,9 @@ def inspect_frozen_terminal(item: dict, owner: str, config_root: Path,
             "projected_binding_sha256": projected_sha,
             "trial_evidence_sha256": trial_hashes,
             "row": row}
+    if local_artifacts is not None:
+        receipt["local_artifact_attestation"] = local_artifacts
+    return receipt
 
 
 def publish_frozen_terminal(item: dict, owner: str, config_root: Path,

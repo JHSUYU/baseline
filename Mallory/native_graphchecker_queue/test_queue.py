@@ -18,8 +18,10 @@ from Mallory.native_graphchecker_dispatch.checklist import (
     DEFAULT_INVENTORY, DEFAULT_OWNERSHIP, _native_case_files,
     load_inventory, load_ownership,
 )
+from Mallory.native_graphchecker_campaign import campaign as native_campaign
 from .queue import (_cached_terminal_inspection, _terminal_fingerprint,
-                    atomic, completion, pilot_receipt,
+                    _frozen_source_cache_valid,
+                    _local_artifact_attestation_valid, atomic, completion, pilot_receipt,
                     run_worker, sha,
                     validate_isolation)
 
@@ -377,6 +379,83 @@ class NativeQueueTest(unittest.TestCase):
             _cached_terminal_inspection(self.item, "node1", self.config_root,
                                         self.state_root)
             self.assertEqual(inspect.call_count, 1)
+
+    def test_local_raw_audit_rejects_deleted_file_and_other_host(self) -> None:
+        campaign_root = self.root / "local-artifact-campaign"
+        trial = campaign_root / "trials/r0000"
+        trial.mkdir(parents=True)
+        local_root = self.root / "host-local-artifacts"
+        local_root.mkdir()
+        config = {"case_id": self.case_id,
+                  "runner": {"local_artifact_root": str(local_root)}}
+        with patch.object(native_campaign, "_filesystem_mount",
+                          return_value=(Path("/mnt/scratch"), "ext4")):
+            native_campaign._prepare_trial_artifacts(config, trial)
+        graph = trial / "original-graph/summary.json"
+        graph.write_text('{"targetReached":true}\n')
+        (trial / "iteration-native/trace/runtime_trace.jsonl").write_text(
+            '{"kind":"TARGET_CHECK"}\n')
+        manifest_sha = native_campaign._close_trial_artifacts(trial)
+        native_campaign._atomic(trial / "result.json", {
+            "local_artifacts_manifest_sha256": manifest_sha})
+        manifest_path = trial / "local-artifacts.json"
+        manifest = native_campaign._load(manifest_path)
+        fingerprint = {"case_id": self.case_id,
+                       "native_root": str(campaign_root.resolve())}
+        audit = {"row": {"fault_trials": 0}, "trial_evidence_sha256": {
+            str(graph.resolve()): sha(graph)},
+            "local_artifact_attestation": {
+                "host": os.uname().nodename, "local_root": str(local_root),
+                "manifest_sha256": {str(manifest_path): sha(manifest_path)},
+                "trial_tree_sha256": {"r0000": manifest["tree_sha256"]}}}
+        self.assertTrue(_local_artifact_attestation_valid(audit, fingerprint))
+        source_root = self.root / "pinned-source"
+        source_root.mkdir()
+        archive = self.root / "pinned-source.tar"
+        archive.write_bytes(b"pinned source")
+        engine = self.root / "engine-local-artifact.jar"
+        engine.write_bytes(b"engine")
+        binding = self.config_root / f"{self.case_id}.json"
+        binding.write_text(json.dumps({"campaign_python_source": {
+            "source_tar_path": str(archive),
+            "source_tar_sha256": sha(archive),
+            "python_sha256": {
+                "Mallory/native_graphchecker_dispatch/checklist.py": "a" * 64}}}))
+        audit.update({"method": "exact_frozen_python_full_native_inspect_case",
+                      "fingerprint": fingerprint,
+                      "source_root": str(source_root.resolve()),
+                      "source_tar_path": str(archive),
+                      "source_tar_sha256": sha(archive),
+                      "inspector_sha256": "a" * 64,
+                      "engine_jar_path": str(engine),
+                      "engine_jar_sha256": sha(engine)})
+        audit_path = self.root / "frozen-local-audit.json"
+        atomic(audit_path, audit)
+        cache = {"frozen_audit_path": str(audit_path),
+                 "frozen_audit_sha256": sha(audit_path), "row": audit["row"]}
+        with patch("Mallory.native_graphchecker_queue.queue.pinned_campaign_python",
+                   return_value=source_root):
+            self.assertTrue(_frozen_source_cache_valid(
+                cache, fingerprint, self.config_root,
+                require_local_attestation=True))
+            without_attestation = dict(audit)
+            without_attestation.pop("local_artifact_attestation")
+            atomic(audit_path, without_attestation)
+            cache["frozen_audit_sha256"] = sha(audit_path)
+            self.assertFalse(_frozen_source_cache_valid(
+                cache, fingerprint, self.config_root,
+                require_local_attestation=True))
+            atomic(audit_path, audit)
+            cache["frozen_audit_sha256"] = sha(audit_path)
+            graph.unlink()
+            self.assertFalse(_frozen_source_cache_valid(
+                cache, fingerprint, self.config_root,
+                require_local_attestation=True))
+        with patch("Mallory.native_graphchecker_queue.queue.os.uname") as uname:
+            uname.return_value.nodename = "another-node"
+            self.assertFalse(_local_artifact_attestation_valid(
+                audit, fingerprint))
+        self.assertFalse(_local_artifact_attestation_valid(audit, fingerprint))
 
     def test_bound_region_campaign_skips_live_lock_and_adopts_native_root(self) -> None:
         native_config = self.root / "immutable-native-config.json"
