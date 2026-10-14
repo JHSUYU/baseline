@@ -6,6 +6,8 @@ trial. A separate process-group monitor handles changes during a running JVM.
 
 from __future__ import annotations
 
+import hashlib
+import json
 import os
 import signal
 import stat
@@ -14,6 +16,18 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
+
+_POLICY_OVERRIDE_ENV = "MALLORY_CAPACITY_POLICY_OVERRIDE"
+
+
+def _sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _guard_digest(raw: dict[str, Any]) -> str:
+    encoded = json.dumps(raw, sort_keys=True, separators=(",", ":")).encode()
+    return hashlib.sha256(encoded).hexdigest()
 
 
 class CapacityGuardStop(RuntimeError):
@@ -63,6 +77,8 @@ def _allocated_tree(path: Path) -> int:
 
 def load_capacity_guard(raw: Any, campaign_root: Path) -> dict[str, Any] | None:
     if raw is None:
+        if os.environ.get(_POLICY_OVERRIDE_ENV):
+            raise ValueError("capacity policy override needs an existing guard")
         return None
     if not isinstance(raw, dict):
         raise ValueError("capacity_guard must be an object")
@@ -88,11 +104,38 @@ def load_capacity_guard(raw: Any, campaign_root: Path) -> dict[str, Any] | None:
     poll = raw.get("poll_seconds")
     if not isinstance(poll, (int, float)) or isinstance(poll, bool) or not 0 < poll <= 3:
         raise ValueError("capacity_guard.poll_seconds must be within (0, 3]")
-    return {**paths, **limits, "poll_seconds": float(poll)}
+    guard = {**paths, **limits, "poll_seconds": float(poll)}
+    override_name = os.environ.get(_POLICY_OVERRIDE_ENV)
+    if override_name:
+        override_path = Path(override_name)
+        if not override_path.is_absolute() or not override_path.is_file():
+            raise ValueError("capacity policy override must be an absolute file")
+        override_sha = _sha256(override_path)
+        override = json.loads(override_path.read_text())
+        if (not isinstance(override, dict) or
+                set(override) != {"schema_version", "base_capacity_guard_sha256",
+                                  "private_max_bytes"} or
+                override["schema_version"] != 1 or
+                override["base_capacity_guard_sha256"] != _guard_digest(raw) or
+                not isinstance(override["private_max_bytes"], int) or
+                isinstance(override["private_max_bytes"], bool) or
+                override["private_max_bytes"] <= limits["private_max_bytes"]):
+            raise ValueError("capacity policy override may only raise the pinned private cap")
+        guard["private_max_bytes"] = override["private_max_bytes"]
+        guard["policy_override"] = {
+            "path": str(override_path.resolve()), "sha256": override_sha,
+            "base_capacity_guard_sha256": _guard_digest(raw),
+            "base_private_max_bytes": limits["private_max_bytes"],
+            "effective_private_max_bytes": override["private_max_bytes"]}
+    return guard
 
 
 def check_capacity(guard: dict[str, Any], campaign_root: Path,
                    phase: str) -> dict[str, Any]:
+    policy = guard.get("policy_override")
+    policy_changed = (policy is not None and
+                      (not Path(policy["path"]).is_file() or
+                       _sha256(Path(policy["path"])) != policy["sha256"]))
     sample = {"pg0_available_bytes": _available(guard["pg0_path"]),
               "root_available_bytes": _available(guard["root_path"]),
               "scratch_available_bytes": _available(guard["scratch_path"]),
@@ -101,6 +144,7 @@ def check_capacity(guard: dict[str, Any], campaign_root: Path,
               "durable_allocated_bytes": _allocated_tree(guard["durable_path"])}
     reason = None
     checks = [
+        (policy_changed, "policy_override_changed"),
         (sample["pg0_available_bytes"] <= guard["pg0_stop_max_bytes"],
          "pg0_stop_floor"),
         (sample["root_available_bytes"] <= guard["root_min_bytes"],
@@ -114,14 +158,17 @@ def check_capacity(guard: dict[str, Any], campaign_root: Path,
         (sample["durable_allocated_bytes"] >= guard["durable_max_bytes"],
          "durable_cap")]
     if phase != "running":
-        checks.insert(1, (sample["pg0_available_bytes"] <
+        checks.insert(2, (sample["pg0_available_bytes"] <
                           guard["pg0_start_min_bytes"], "pg0_start_floor"))
     for condition, label in checks:
         if condition:
             reason = label
             break
-    return {"phase": phase, "checked_utc": datetime.now(timezone.utc).isoformat(),
-            "reason": reason, "sample": sample}
+    receipt = {"phase": phase, "checked_utc": datetime.now(timezone.utc).isoformat(),
+               "reason": reason, "sample": sample}
+    if policy is not None:
+        receipt["policy_override"] = policy
+    return receipt
 
 
 def wait_with_capacity(process: subprocess.Popen, timeout_seconds: int,
