@@ -33,7 +33,7 @@ from Mallory.native_graphchecker_feedback.region_state_graph import (
 from .source_preflight import feedback_bridge
 
 SCHEMA = 1
-SCHEDULER_VERSION = 6
+SCHEDULER_VERSION = 7
 FAULT_FIELDS = ("siteId", "node", "actorEpochOrdinal", "occurrenceId",
                 "ordinal", "exceptionClass")
 SELECTOR_FIELDS = ("siteId", "node", "actorEpochOrdinal", "ordinal",
@@ -1061,7 +1061,7 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
     version = state.get("scheduler_version", 1)
     if version == 1:
         return _pick_v1(state)
-    if version not in (2, 3, 4, 5, SCHEDULER_VERSION):
+    if version not in (2, 3, 4, 5, 6, SCHEDULER_VERSION):
         raise ValueError(f"unsupported native scheduler version: {version}")
     queue = state["queue"]
     if not queue:
@@ -1127,10 +1127,18 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
             proximity = (-distance if isinstance(distance, int) and
                          not isinstance(distance, bool) and distance >= 0
                          else -10**9)
+            ordinal = item["faults"][-1].get("ordinal")
+            # An early occurrence is more likely to recur in a fresh JVM.
+            # The site may be observed near the target only on a later
+            # occurrence whose count varies with cluster startup timing.
+            recurrence = (-ordinal if isinstance(ordinal, int) and
+                          not isinstance(ordinal, bool) and ordinal > 0
+                          else -10**9)
             return (-attempts(item),
                     -state["fault_id_successes"].get(fault_id, 0),
                     {"observed_closure": 3, "pre_target_actor": 2,
                      "outside_closure": 1}.get(item["tier"], 1),
+                    *((recurrence,) if version >= 7 else ()),
                     proximity, item["novelty"], len(item["faults"]),
                     completed - item["enqueued_at"],
                     -item.get("attempt", 0), item["key"])

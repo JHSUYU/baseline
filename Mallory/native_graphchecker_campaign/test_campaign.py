@@ -845,6 +845,18 @@ class NativeQueueDiversityTest(unittest.TestCase):
         self.assertEqual(3, len(core._pick(self._state(
             [deep, shallow], completed=10, version=6))["faults"]))
 
+    def test_v7_prefers_recurrent_early_occurrence_before_proximity(self) -> None:
+        early = self._item("RPC#early", "early")
+        early["faults"][-1]["ordinal"] = 1
+        early.update(selected_target_actor=True, target_order_distance=20)
+        late = self._item("RPC#late", "late")
+        late["faults"][-1]["ordinal"] = 3
+        late.update(selected_target_actor=True, target_order_distance=1)
+        self.assertEqual("RPC#early", core._pick(self._state(
+            [early, late], version=7))["faults"][-1]["siteId"])
+        self.assertEqual("RPC#late", core._pick(self._state(
+            [early, late], version=6))["faults"][-1]["siteId"])
+
     def test_v6_actor_and_proximity_metadata_survive_checkpoint(self) -> None:
         state = self._state([], version=6)
         state["seen_plan_keys"] = []
