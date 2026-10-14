@@ -1409,7 +1409,7 @@ public final class Identity {
             return null;
         }
         if (open) {
-            OccurrenceAddress enclosing = fold();
+            OccurrenceAddress enclosing = fold(node);
             if (enclosing != null) return enclosing;
             State state = state();
             if (state.unnamed()) {
@@ -1487,10 +1487,17 @@ public final class Identity {
      * @return the occurrence this entry folded into, or null when the entry
      *         opens its own
      */
-    private static OccurrenceAddress fold() {
+    private static OccurrenceAddress fold(String nodeKey) {
         State state = state();
         Region running = state.activeRegion();
         if (running == null) return null;
+        // A nested region on another physical actor is a causal handoff,
+        // not another part of the enclosing actor's occurrence.  Keeping
+        // the enclosing address would make a target executing on that actor
+        // appear to belong to the caller (for example an in-JVM cluster
+        // test's client thread).  The call frames still state the parent
+        // edge, while the child receives its own actor-scoped address.
+        if (!running.occurrence.node().render().equals(nodeKey)) return null;
         state.regions.add(new Region(running.base));
         return running.occurrence;
     }

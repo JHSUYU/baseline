@@ -185,6 +185,9 @@ def verified_vendor() -> dict:
         raise ValueError("vendored GraphChecker sources differ from provenance")
     reviewed_runtime_adaptations = {
         "edu/uva/liftlab/graphchecker/runtime/CausynthTraceRecorder.java",
+        # A selected nested region on another registered physical actor
+        # opens its own occurrence instead of folding into its caller.
+        "edu/uva/liftlab/graphchecker/runtime/Identity.java",
         "edu/uva/liftlab/graphchecker/runtime/MessageDoors.java",
         "edu/uva/liftlab/graphchecker/runtime/RowRuntime.java",
     }
