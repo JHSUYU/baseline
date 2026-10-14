@@ -570,6 +570,41 @@ def _analysis_engine_jar(config: dict[str, Any]) -> Path:
     return path
 
 
+def _require_exact_resolver_protocol(config: dict[str, Any],
+                                     java: Path) -> dict[str, Any] | None:
+    """Reject an analysis JAR that cannot prove exact occurrence selection.
+
+    This runs during admission, before the original workload JUnit. The
+    woven/runtime engine remains a separate, unchanged source pin.
+    """
+    if (config["runner"].get("mode") != "region_state" or
+            not config["recording"].get("target_occurrence")):
+        return None
+    analyzer = _analysis_engine_jar(config)
+    dependencies = DEPENDENCIES.read_text(encoding="utf-8").strip()
+    if not dependencies:
+        raise ValueError("original GraphChecker dependency classpath is empty")
+    command = [str(java.resolve(strict=True)), "-cp",
+               os.pathsep.join((str(analyzer), dependencies)),
+               "edu.uva.liftlab.graphchecker.runtime.MalloryTargetOccurrenceResolver",
+               "--capabilities"]
+    try:
+        probe = subprocess.run(command, text=True, capture_output=True,
+                               timeout=20, check=False)
+        capabilities = json.loads(probe.stdout) if probe.returncode == 0 else None
+    except (OSError, subprocess.TimeoutExpired, json.JSONDecodeError) as failure:
+        raise ValueError("exact target resolver protocol preflight failed") from failure
+    if (not isinstance(capabilities, dict) or
+            capabilities.get("schemaVersion") != 1 or
+            capabilities.get("kind") != "MALLORY_TARGET_RESOLVER_CAPABILITIES" or
+            capabilities.get("exactRequestedOccurrenceReceiptSchemaVersion") != 2 or
+            capabilities.get("exactSelectionPolicy") !=
+            "EXACT_REQUESTED_OCCURRENCE_THEN_EARLIEST_EVENT"):
+        raise ValueError("analysis engine lacks exact occurrence receipt schema 2")
+    return {"analysis_engine_jar_sha256": _sha(analyzer),
+            "capabilities": capabilities}
+
+
 def _admit(config: dict[str, Any], root: Path) -> dict[str, Any]:
     # The Java bridge is consumed by concolic SessionReader feedback. Original
     # REGION_STATE replay uses the resolver/Recorder directly and has no bridge.
@@ -580,6 +615,10 @@ def _admit(config: dict[str, Any], root: Path) -> dict[str, Any]:
     weave_receipt = verify_existing(weave_file)
     weave = _load(weave_file)
     rec = config["recording"]
+    resolver_protocol = (_require_exact_resolver_protocol(
+        config, Path(weave["java"]))
+        if (config["runner"].get("mode") == "region_state" and
+            rec.get("target_occurrence")) else None)
     recording_fingerprint = {
         "trace_tree_sha256": _tree_sha(Path(rec["trace_dir"]).resolve(strict=True)),
         "candidate_graph_sha256": _sha(Path(rec["candidate_graph"]).resolve(strict=True)),
@@ -591,6 +630,8 @@ def _admit(config: dict[str, Any], root: Path) -> dict[str, Any]:
         "scheduler_source_sha256": _sha(_scheduler_source()),
         "engine_jar_sha256": _sha(JAR),
     }
+    if resolver_protocol is not None:
+        recording_fingerprint["resolver_protocol"] = resolver_protocol
     if "static_may_scope_map" in rec:
         may_path = Path(rec["static_may_scope_map"]).resolve(strict=True)
         may_sha = _sha(may_path)

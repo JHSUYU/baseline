@@ -186,6 +186,9 @@ class PrecomputedScheduleTest(unittest.TestCase):
         with self._pins()[0], self._pins()[1], self._pins()[2], patch.object(
                 core, "verify_existing", return_value={"verified": True}), patch.object(
                 core, "dependency_digests", return_value=[]), patch.object(
+                core, "_require_exact_resolver_protocol", return_value={
+                    "analysis_engine_jar_sha256": "fixture-engine",
+                    "capabilities": {"exactRequestedOccurrenceReceiptSchemaVersion": 2}}), patch.object(
                 core.subprocess, "run") as run:
             first = core._admit(self.config, self.root)
             second = core._admit(self.config, self.root)

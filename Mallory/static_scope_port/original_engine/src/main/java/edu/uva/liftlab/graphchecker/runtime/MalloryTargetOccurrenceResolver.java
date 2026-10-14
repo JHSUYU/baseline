@@ -33,6 +33,10 @@ public final class MalloryTargetOccurrenceResolver {
     private MalloryTargetOccurrenceResolver() { }
 
     public static void main(String[] args) throws Exception {
+        if (args.length == 1 && "--capabilities".equals(args[0])) {
+            System.out.println(capabilities());
+            return;
+        }
         Map<String, String> options = options(args);
         Path traceDir = path(options, "--trace-dir");
         File skeletons = path(options, "--region-skeletons").toFile();
@@ -59,6 +63,16 @@ public final class MalloryTargetOccurrenceResolver {
             Files.deleteIfExists(staged);
         }
         System.out.println(receipt);
+    }
+
+    static JsonObject capabilities() {
+        JsonObject receipt = new JsonObject();
+        receipt.addProperty("schemaVersion", 1);
+        receipt.addProperty("kind", "MALLORY_TARGET_RESOLVER_CAPABILITIES");
+        receipt.addProperty("exactRequestedOccurrenceReceiptSchemaVersion", 2);
+        receipt.addProperty("exactSelectionPolicy",
+                "EXACT_REQUESTED_OCCURRENCE_THEN_EARLIEST_EVENT");
+        return receipt;
     }
 
     static JsonObject resolve(Path traceDir, String test, File skeletons,

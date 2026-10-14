@@ -15,6 +15,18 @@ import org.junit.Test;
 
 public final class MalloryTargetOccurrenceResolverTest {
     @Test
+    public void advertisesExactOccurrenceReceiptBeforeTraceWork() {
+        JsonObject capabilities = MalloryTargetOccurrenceResolver.capabilities();
+        assertEquals(1, capabilities.get("schemaVersion").getAsInt());
+        assertEquals("MALLORY_TARGET_RESOLVER_CAPABILITIES",
+                capabilities.get("kind").getAsString());
+        assertEquals(2, capabilities.get(
+                "exactRequestedOccurrenceReceiptSchemaVersion").getAsInt());
+        assertEquals("EXACT_REQUESTED_OCCURRENCE_THEN_EARLIEST_EVENT",
+                capabilities.get("exactSelectionPolicy").getAsString());
+    }
+
+    @Test
     public void registeredServerOccurrenceWinsOverEarlierClientSetup() {
         JsonObject client = event(10, "CLIENT");
         JsonObject server = event(20, "NAMENODE");
