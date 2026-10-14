@@ -634,7 +634,8 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
     outside = [item for item in queue if item["tier"] == "outside_closure"]
     candidates = outside if outside and completed % 8 == 7 else queue
     selected = max(candidates, key=lambda item: (
-        (100 if item["tier"] == "observed_closure" else 15) +
+        {"observed_closure": 100, "pre_target_actor": 60,
+         "outside_closure": 15}.get(item["tier"], 15) +
         item["novelty"] + 3 * len(item["faults"]) +
         min(20, completed - item["enqueued_at"]), item["key"]))
     queue.remove(selected)
@@ -666,11 +667,18 @@ def _novelty(state: dict[str, Any], feedback: dict[str, Any]) -> int:
 def _region_doors(rows: list[dict[str, Any]], summary: dict[str, Any],
                   after_fault: dict[str, Any] | None = None
                   ) -> list[dict[str, Any]]:
-    """Mutate only actual native doors; direct target receipts earn priority."""
-    checks = {(row["occurrenceId"], row["node"], row["actorEpochOrdinal"])
-              for row in rows if row["kind"] == "TARGET_CHECK" and
-              row.get("siteId") == summary["targetSiteId"] and
-              isinstance(row.get("occurrenceId"), str)}
+    """Mutate observed doors; target-prioritized doors precede the check."""
+    checks: dict[tuple[str, int, str], int] = {}
+    actor_checks: dict[tuple[str, int], int] = {}
+    for row in rows:
+        if (row["kind"] != "TARGET_CHECK" or
+                row.get("siteId") != summary["targetSiteId"] or
+                not isinstance(row.get("occurrenceId"), str)):
+            continue
+        actor = (row["node"], row["actorEpochOrdinal"])
+        key = (*actor, row["occurrenceId"])
+        checks[key] = min(checks.get(key, row["seq"]), row["seq"])
+        actor_checks[actor] = min(actor_checks.get(actor, row["seq"]), row["seq"])
     found = []
     for row in rows:
         if row["kind"] != "FAULT_DOOR":
@@ -686,10 +694,13 @@ def _region_doors(rows: list[dict[str, Any]], summary: dict[str, Any],
             continue
         fault = {field: row[field] for field in SELECTOR_FIELDS}
         fault["sourceOccurrenceId"] = row["occurrenceId"]
-        direct = (row["occurrenceId"], row["node"],
-                  row["actorEpochOrdinal"]) in checks
+        actor = (row["node"], row["actorEpochOrdinal"])
+        direct = row["seq"] < checks.get((*actor, row["occurrenceId"]), -1)
+        before_actor_check = row["seq"] < actor_checks.get(actor, -1)
         found.append({"fault": fault, "seq": row["seq"],
-                      "tier": "observed_closure" if direct else "outside_closure"})
+                      "tier": "observed_closure" if direct else
+                              "pre_target_actor" if before_actor_check else
+                              "outside_closure"})
     return found
 
 

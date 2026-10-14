@@ -161,8 +161,11 @@ class WireTemporalProofTest(unittest.TestCase):
                   "exceptionClass": "java.io.IOException"}
                  for index, occurrence in enumerate(("target-occ", "other-occ"))]
         ranked = core._region_doors([*doors, check], summary)
-        self.assertEqual(["observed_closure", "outside_closure"],
+        self.assertEqual(["observed_closure", "pre_target_actor"],
                          [item["tier"] for item in ranked])
+        after = dict(doors[0], seq=8, ordinal=2)
+        self.assertEqual("outside_closure",
+                         core._region_doors([check, after], summary)[0]["tier"])
 
     def test_queue_door_filter_does_not_compare_actor_clocks(self) -> None:
         door = {"kind": "FAULT_DOOR", "seq": 1,
