@@ -17,6 +17,18 @@ from Mallory.native_graphchecker_dispatch import zookeeper_native_adapter as zk
 
 
 class ZooKeeperNativeAdapterTest(unittest.TestCase):
+    def test_concolic_runner_rejects_stock_java_before_preparation(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            java = Path(temporary) / "zero-vm"
+            java.write_text("#!/bin/sh\necho 'OpenJDK 64-Bit Zero VM' >&2\n")
+            java.chmod(0o755)
+            self.assertEqual(str(java), zk._zero_vm_java({"zero_vm_java": str(java)}))
+            java.write_text("#!/bin/sh\necho 'OpenJDK 64-Bit Server VM' >&2\n")
+            with self.assertRaisesRegex(ValueError, "requires a Zero VM"):
+                zk._zero_vm_java({"zero_vm_java": str(java)})
+            with self.assertRaisesRegex(ValueError, "requires zero_vm_java"):
+                zk._zero_vm_java({})
+
     def test_selected_weave_plan_is_exactly_one_original_scheduler_row(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -443,6 +455,9 @@ class ZooKeeperNativeAdapterTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             gate_file = root / "gate.json"
+            zero_vm = root / "zero-vm"
+            zero_vm.write_text("#!/bin/sh\necho 'OpenJDK 64-Bit Zero VM' >&2\n")
+            zero_vm.chmod(0o755)
             profile = root / "profile.json"
             profile.write_text(json.dumps({
                 "schema_version": 1, "mode": zk.PROFILE_MODE,
@@ -452,6 +467,7 @@ class ZooKeeperNativeAdapterTest(unittest.TestCase):
                 "source_classes": str(v1 / "inputs/classes/original"),
                 "communication_mapping": str(v1 / "inputs/communication-mappings.jsonl"),
                 "java": "/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java",
+                "zero_vm_java": str(zero_vm),
                 "analysis_classpath": [str(v1 / "inputs/classes/original")],
                 "scope_planner_classpath": [str(jar)],
                 "runtime_classpath": [str(v1 / "inputs/classes/protocol")],
@@ -560,6 +576,9 @@ class ZooKeeperNativeAdapterTest(unittest.TestCase):
             mapping.write_text("{}\n")
             java = root / "java"
             java.write_bytes(b"fixture binary")
+            zero_vm = root / "zero-vm"
+            zero_vm.write_text("#!/bin/sh\necho 'OpenJDK 64-Bit Zero VM' >&2\n")
+            zero_vm.chmod(0o755)
             gate = root / "gate.json"
             gate.write_text(json.dumps({"mode": zk.GATE_MODE,
                                         "accepted": False}))
@@ -569,6 +588,7 @@ class ZooKeeperNativeAdapterTest(unittest.TestCase):
                 "system_version": "3.8.7", "source_root": str(source),
                 "source_classes": str(classes),
                 "communication_mapping": str(mapping), "java": str(java),
+                "zero_vm_java": str(zero_vm),
                 "protocol_gate": str(gate), "analysis": {},
                 "analysis_classpath": [str(classes)],
                 "scope_planner_classpath": [str(classes)],

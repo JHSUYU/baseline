@@ -95,6 +95,22 @@ def _paths(values: object, label: str) -> list[Path]:
     return paths
 
 
+def _zero_vm_java(profile: dict) -> str:
+    """Require the custom VM before any expensive ZooKeeper preparation."""
+    value = profile.get("zero_vm_java")
+    if not isinstance(value, str) or not value:
+        raise ValueError("ZooKeeper concolic runner requires zero_vm_java")
+    path = Path(value)
+    if (not path.is_absolute() or not path.is_file() or path.is_symlink() or
+            not os.access(path, os.X_OK)):
+        raise ValueError("ZooKeeper zero_vm_java must be an executable file")
+    result = subprocess.run([str(path), "-version"], capture_output=True,
+                            text=True, timeout=15, check=False)
+    if result.returncode or "Zero VM" not in result.stdout + result.stderr:
+        raise ValueError("ZooKeeper concolic runner requires a Zero VM")
+    return str(path.resolve(strict=True))
+
+
 def _unique_class(classpath: list[Path], class_name: str) -> dict:
     relative = class_name.replace(".", "/") + ".class"
     matches = []
@@ -323,6 +339,7 @@ def _profile(request: dict, profile_file: Path) -> dict:
         path = Path(profile.get(key, ""))
         if not path.is_absolute() or not path.exists() or path.is_symlink():
             raise ValueError(f"ZooKeeper {key} is absent or mutable")
+    _zero_vm_java(profile)
     if (not isinstance(profile.get("budget"), dict) or
             not isinstance(profile.get("timeout_seconds"), int) or
             profile["timeout_seconds"] <= 0 or
@@ -825,7 +842,7 @@ def finalize_after_healthy(request_file: Path, output: Path,
                       "scheduler_jvm_args": [loop_arg],
                       "max_jobs": profile["max_jobs"]},
         "junit": {"class": junit["class"], "method": junit["method"]},
-        "runner": {"zero_vm_java": java,
+        "runner": {"zero_vm_java": _zero_vm_java(profile),
                    "mode": "concolic",
                    "main_class":
                        "edu.uva.liftlab.graphchecker.runtime.NativeJUnitMethodRunner",

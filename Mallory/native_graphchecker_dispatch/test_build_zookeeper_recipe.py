@@ -21,6 +21,9 @@ class BuildZooKeeperRecipeTest(unittest.TestCase):
             def classes(name: str) -> str:
                 return str(Path(file(name + "/Target.class")).parent)
 
+            zero_vm = Path(file("zero-vm", "#!/bin/sh\necho 'OpenJDK 64-Bit Zero VM' >&2\n"))
+            zero_vm.chmod(0o755)
+
             source = file("source/Target.java")
             source_root = str(Path(source).parent)
             original = classes("original")
@@ -49,7 +52,8 @@ class BuildZooKeeperRecipeTest(unittest.TestCase):
             profile = {
                 "mode": "original_graphchecker_zookeeper_profile",
                 "protocol_gate": str(gate_file),
-                "java": file("java"), "source_root": source_root,
+                "java": file("java"), "zero_vm_java": str(zero_vm),
+                "source_root": source_root,
                 "source_classes": original,
                 "communication_mapping": file("mapping.jsonl"),
                 "runner_source": file("NativeJUnitMethodRunner.java"),
@@ -72,6 +76,7 @@ class BuildZooKeeperRecipeTest(unittest.TestCase):
             self.assertIn(gate["static_map_path"], recipe["mapping_pins"])
             self.assertIn(profile["runtime_classpath"][0], recipe["classpath_pins"])
             self.assertIn(profile["runner_source"], recipe["pins"])
+            self.assertIn(str(zero_vm), recipe["pins"])
             Path(profile["runtime_classpath"][0]).write_text("changed", encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "changed native classpath pin"):
                 preparation.load_recipes(output, inventory)

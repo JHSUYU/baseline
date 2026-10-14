@@ -36,6 +36,7 @@ def build(profile_file: Path, inventory: Path, output: Path,
     profile = _object(profile_file)
     if profile.get("mode") != zk.PROFILE_MODE:
         raise ValueError("expected shared ZooKeeper native profile")
+    zero_vm_java = zk._zero_vm_java(profile)
     gate = _object(Path(profile["protocol_gate"]))
     if not zk._reusable_gate_claims(gate):
         raise ValueError("ZooKeeper transport gate is not accepted")
@@ -43,6 +44,7 @@ def build(profile_file: Path, inventory: Path, output: Path,
     file_paths = [
         Path(sys.executable).resolve(strict=True),
         profile_file, Path(profile["protocol_gate"]), Path(profile["java"]),
+        Path(zero_vm_java),
         Path(gate["session_reader_receipt_path"]),
         Path(gate["session_reader_verifier_source_path"]),
         Path(gate["healthy_stdout_path"]),
