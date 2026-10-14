@@ -828,6 +828,7 @@ def _audit_region_terminal(case_id: str, config_path: Path, root: Path,
         _digest(fingerprint.get(field), field)
     rows = _checkpoint_trial_refs(root, checkpoint)
     healthy_ref = rows[0][0]
+    trials = [record for record, _ in rows[1:]]
     results = []
     for index, (record, path) in enumerate(rows):
         result = _object(path)
@@ -1033,6 +1034,7 @@ def _audit_terminal(case_id: str, config_path: Path, root: Path,
     refs = _checkpoint_trial_refs(root, checkpoint)
     if refs[0][1] != healthy_path:
         raise ValueError("native healthy checkpoint result changed")
+    trials = [record for record, _ in refs[1:]]
     all_rows = [(healthy_ref, healthy, healthy_path.parent)]
     for record, path in refs[1:]:
         result = _object(path)
