@@ -98,6 +98,14 @@ class RegionChecklistTest(unittest.TestCase):
             checklist._audited_raw_target_throw(
                 result, {**record, "raw_target_throw_differential_candidate": False},
                 events, config, 0)
+        self.assertEqual((None, False), checklist._audited_raw_target_throw(
+            {"faults": [fault], "strict_injection": True}, {}, events,
+            config, None))
+        with self.assertRaisesRegex(ValueError, "raw verdict without trial"):
+            checklist._audited_raw_target_throw(
+                {"faults": [fault], "strict_injection": True,
+                 "raw_target_throw_differential_candidate": True}, {}, events,
+                config, None)
 
     def test_shared_archive_verifies_unavailable_owner_source(self) -> None:
         source = self.root / "owner-only.java"

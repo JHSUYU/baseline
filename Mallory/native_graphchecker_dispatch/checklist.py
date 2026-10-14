@@ -694,7 +694,11 @@ def _audited_raw_target_throw(result: dict, record: dict,
     selected-occurrence verdict; newer receipts must agree with event bytes.
     """
     if "raw_exact_target_throw_count" not in result:
-        if "raw_target_throw_differential_candidate" in record:
+        if (any(key in result for key in (
+                "raw_target_throw_differential_candidate",
+                "raw_target_throw_observation",
+                "healthy_raw_exact_target_throw_count")) or
+                "raw_target_throw_differential_candidate" in record):
             raise ValueError("REGION_STATE checkpoint has raw verdict without trial")
         return None, False
     count = result["raw_exact_target_throw_count"]
