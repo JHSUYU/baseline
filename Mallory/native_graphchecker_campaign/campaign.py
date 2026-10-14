@@ -782,10 +782,16 @@ def _execute_junit(config: dict[str, Any], admitted: dict[str, Any],
     env = os.environ.copy()
     env.update({"CAUSYNTH_STATIC_SCOPE_MAP": str(Path(config["recording"][
         "static_scope_map"]).resolve(strict=True)),
-                "CAUSYNTH_CONCOLIC_SESSIONS": str(iteration / "sessions"),
                 "CAUSYNTH_TRACE_OUTPUT_DIR": str(iteration / "trace"),
                 "MALLORY_NATIVE_FAULT_PLAN": str(iteration / "fault-plan.json"),
                 "MALLORY_NATIVE_FAULT_EVENTS": str(iteration / "fault-events.jsonl")})
+    if runner.get("mode", "concolic") == "concolic":
+        env["CAUSYNTH_CONCOLIC_SESSIONS"] = str(iteration / "sessions")
+    else:
+        # RowRuntime's explicit concolic publisher steals ScheduleLog's sink
+        # from the original REGION_STATE trace. Its schedule must stay beside
+        # runtime_trace.jsonl for original Resolver/Recorder validation.
+        env.pop("CAUSYNTH_CONCOLIC_SESSIONS", None)
     started = time.monotonic()
     with (trial / "stdout.log").open("wb") as stdout, (
             trial / "stderr.log").open("wb") as stderr:
