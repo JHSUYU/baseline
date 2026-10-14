@@ -96,8 +96,11 @@ and reconciles a missing queue receipt without rerunning their JUnit. Each
 audited terminal case has a separate JSON completion under
 `STATE_ROOT/.native-queue/completions/CASE-ID.json` with source location,
 native trial counts, elapsed time, and an exact bug-candidate mark. Only
-`native_tested_complete: true` is a completed fuzz check. A native-blocked
-case remains distinct. This queue does not overwrite the old 102-row TSV;
+`native_tested_complete: true` means an audited native campaign finished its
+configured fuzz budget. It does not establish target-closure coverage,
+temporal causality, or a new bug; `terminal_quality_note` records material
+coverage gaps and any pending corrected rerun. A native-blocked case remains
+distinct. This queue does not overwrite the old 102-row TSV;
 the native dispatcher `status` command can build the audited native table.
 
 A pre-JUnit static timeout can be recorded under
@@ -107,6 +110,11 @@ reports `preparation_static_timeout` with zero preparation JUnit and fault
 trials. It leaves terminal trial counts unset and
 `native_tested_complete: false`. A later bound campaign can still proceed
 from its own immutable healthy gate and checkpoint.
+
+A healthy JUnit whose original graph admission timed out can be pinned under
+`STATE_ROOT/.native-queue/admission-notes/CASE-ID.json`. The exporter verifies
+the immutable config, healthy result, exact target occurrence, and review.
+It records one preparation JUnit and zero fault trials, without terminal credit.
 
 A source-only original JUnit eligibility review can be pinned under
 `STATE_ROOT/.native-queue/eligibility-notes/CASE-ID.json`. The exporter checks
