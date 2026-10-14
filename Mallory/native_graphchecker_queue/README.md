@@ -139,6 +139,25 @@ coverage gaps and any pending corrected rerun. A native-blocked case remains
 distinct. This queue does not overwrite the old 102-row TSV;
 the native dispatcher `status` command can build the audited native table.
 
+### Bounded successor chains
+
+`python3 -m Mallory.native_graphchecker_queue.chain_completion --manifest
+CHAIN.json --output RECEIPT.json` audits a case split across independently
+checkpointed native campaigns. The manifest pins each config, checkpoint,
+terminal summary, and optional raw archive receipt by SHA-256. It also pins a
+reviewed per-case budget authority. Successors must point to the exact prior
+terminal checkpoint and summary. The verifier recomputes each fault plan ID,
+strict injection and exact target exception from durable fault events, checks
+cross-segment plan uniqueness, and sums trial time and coverage counts.
+Archived raw graph evidence goes through the queue's existing archive verifier.
+
+A chain is `complete` only after its reviewed fault-count or elapsed-time
+budget is met, every segment is terminal, and every segment has a pinned full
+frozen graph audit that agrees with the recomputed counts. An interrupted last
+segment remains `partial`, even when some of its trials are valid. The chain
+receipt is read-only evidence; queue/table promotion requires a separate
+reviewed binding and must not count a bounded chunk by itself.
+
 For a sealed campaign whose graph receipt differs under newer analysis code,
 `frozen_terminal.inspect_frozen_terminal` runs the inspector from that case's
 hash-verified Python archive in a separate process. It pins the engine JAR,
