@@ -174,6 +174,15 @@ target, and audited original SessionReader/ClosurePlanner summaries. A closed
 budget with no strict target-retained fault trial is `tested_inconclusive`.
 `native_blocked` is terminal but not a completed fuzz check.
 
+For new REGION_STATE trials, the terminal auditor also replays every exact
+target check/throw pair from the fault-event bytes. It compares the count with
+the healthy run and marks a strict post-fault increase as a candidate when the
+target is retained, even if the graph selected a different check occurrence.
+The per-trial receipt keeps this raw differential separate from the selected
+occurrence's graph and temporal verdict. A raw candidate is a source-review
+lead; it does not by itself establish a causal bug. Historical trial receipts
+without raw fields retain their original selected-target audit semantics.
+
 For a case with no suitable **original cluster JUnit**, record a reviewed
 terminal disposition in a separate JSON file, then pass `--reviews FILE` to
 both `run-next` and `status`:

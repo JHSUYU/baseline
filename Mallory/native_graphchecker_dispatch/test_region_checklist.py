@@ -58,6 +58,47 @@ class RegionChecklistTest(unittest.TestCase):
             checklist._last_fault_in_region_closure({},
                                                     {"occurrenceId": "upstream-fault"})
 
+    def test_raw_differential_is_audited_separately_from_selected_graph_throw(self) -> None:
+        config = {"target_site": "Guard#check", "target_throw": {
+            "siteId": "Guard#throw", "exceptionClass": "java.io.IOException"}}
+        fault = {"siteId": "RPC#read", "node": "dn", "actorEpochOrdinal": 0,
+                 "ordinal": 1, "exceptionClass": "java.io.IOException"}
+        door = {**fault, "kind": "FAULT_DOOR", "seq": 1,
+                "occurrenceId": "rpc-1"}
+        applied = {**door, "kind": "FAULT_APPLIED", "seq": 2}
+        check = {"kind": "TARGET_CHECK", "siteId": "Guard#check", "seq": 3,
+                 "node": "dn", "actorEpochOrdinal": 0,
+                 "occurrenceId": "other-target"}
+        thrown = {**check, "kind": "TARGET_THROW", "seq": 4,
+                  "siteId": "Guard#throw",
+                  "exceptionClass": "java.io.IOException",
+                  "actualExceptionClass": "java.io.IOException"}
+        events = [door, applied, check, thrown]
+        raw = checklist.native._raw_prefix_target_throws(
+            [fault], events, config["target_site"], config["target_throw"])
+        result = {"faults": [fault], "strict_injection": True,
+                  "raw_exact_target_throw_count": 1,
+                  "healthy_raw_exact_target_throw_count": 0,
+                  "raw_target_throw_observation": raw,
+                  "raw_exact_target_throw_after_applied_prefix": True,
+                  "raw_target_throw_differential_candidate": True}
+        record = {"raw_exact_target_throw_count": 1,
+                  "raw_target_throw_differential_candidate": True}
+        self.assertEqual((1, True), checklist._audited_raw_target_throw(
+            result, record, events, config, 0))
+        selected, _, _, _ = checklist.native._region_throw_evidence(
+            events, config["target_site"], config["target_throw"], applied,
+            {"chosen-target"})
+        self.assertEqual([], selected)
+        with self.assertRaisesRegex(ValueError, "raw exact target throw count"):
+            checklist._audited_raw_target_throw(
+                {**result, "raw_exact_target_throw_count": 2}, record,
+                events, config, 0)
+        with self.assertRaisesRegex(ValueError, "checkpoint raw target"):
+            checklist._audited_raw_target_throw(
+                result, {**record, "raw_target_throw_differential_candidate": False},
+                events, config, 0)
+
     def test_shared_archive_verifies_unavailable_owner_source(self) -> None:
         source = self.root / "owner-only.java"
         audit = self.root / "identity.json"

@@ -685,6 +685,42 @@ def _region_analysis_engine(recording: dict, fingerprint: dict,
     return path
 
 
+def _audited_raw_target_throw(result: dict, record: dict,
+                              events: list[dict[str, Any]], config: dict,
+                              healthy_count: int | None) -> tuple[int | None, bool]:
+    """Replay the all-occurrence oracle without changing graph attribution.
+
+    Older completed campaigns have no raw receipt. They retain their original
+    selected-occurrence verdict; newer receipts must agree with event bytes.
+    """
+    if "raw_exact_target_throw_count" not in result:
+        if "raw_target_throw_differential_candidate" in record:
+            raise ValueError("REGION_STATE checkpoint has raw verdict without trial")
+        return None, False
+    count = result["raw_exact_target_throw_count"]
+    if (not isinstance(count, int) or isinstance(count, bool) or count < 0 or
+            count != len(native._target_throw_observations(
+                events, config["target_site"], config["target_throw"]))):
+        raise ValueError("REGION_STATE raw exact target throw count changed")
+    faults = result["faults"]
+    raw = native._raw_prefix_target_throws(
+        faults, events, config["target_site"], config["target_throw"])
+    candidate = bool(faults and result["strict_injection"] is True and
+                     healthy_count is not None and count > healthy_count and
+                     raw["targetThrows"])
+    if (result.get("healthy_raw_exact_target_throw_count") != healthy_count or
+            result.get("raw_target_throw_observation") != raw or
+            result.get("raw_exact_target_throw_after_applied_prefix") is not
+            bool(raw["targetThrows"]) or
+            result.get("raw_target_throw_differential_candidate") is not candidate):
+        raise ValueError("REGION_STATE raw target throw differential changed")
+    if faults and (record.get("raw_exact_target_throw_count") != count or
+                   record.get("raw_target_throw_differential_candidate") is not
+                   candidate):
+        raise ValueError("REGION_STATE checkpoint raw target verdict changed")
+    return count, candidate
+
+
 def _audit_region_terminal(case_id: str, config_path: Path, root: Path,
                            checkpoint: dict, summary: dict) -> dict[str, Any]:
     config = _object(config_path)
@@ -789,6 +825,8 @@ def _audit_region_terminal(case_id: str, config_path: Path, root: Path,
         recording, fingerprint, Path(weave_receipt["engine_jar"]))
     healthy, healthy_root, _ = results[0]
     healthy_summary = _verified_region_summary(healthy_root, healthy, config, engine)
+    healthy_count, _ = _audited_raw_target_throw(
+        healthy, healthy_ref, results[0][2], config, None)
     if (healthy.get("status") != "healthy_seed" or
             healthy.get("junit_passed") is not True or
             healthy.get("return_code") != 0 or healthy.get("timed_out") is not False or
@@ -799,6 +837,8 @@ def _audit_region_terminal(case_id: str, config_path: Path, root: Path,
     strict_count = retained = strict_retained = inside_closure = throws = candidates = 0
     for trial_index, (result, trial_root, events) in enumerate(results[1:]):
         record = trials[trial_index]
+        raw_count, raw_candidate = _audited_raw_target_throw(
+            result, record, events, config, healthy_count)
         is_strict = result["strict_injection"] is True
         strict_count += is_strict
         trial_summary = _verified_region_summary(trial_root, result, config, engine)
@@ -811,9 +851,13 @@ def _audit_region_terminal(case_id: str, config_path: Path, root: Path,
         if not is_strict and result.get("status") != "unmatched":
             raise ValueError("unmatched REGION_STATE injection claimed graph result")
         if is_strict:
-            expected_delta = delta_region_state(healthy_summary, trial_summary)
+            unplanned = trial_summary.get("status") == "target_throw_unplanned"
+            expected_delta = ({"newNodeFamilies": [],
+                               "newClosureEdgeFamilies": [],
+                               "newBranchOutcomeIds": []} if unplanned else
+                              delta_region_state(healthy_summary, trial_summary))
             target_retained = bool(trial_summary.get("targetReached") and
-                                   expected_delta["targetRetained"])
+                                   (unplanned or expected_delta["targetRetained"]))
             if result.get("native_target_retained") is not target_retained:
                 raise ValueError("REGION_STATE target/graph retention changed")
             if target_retained:
@@ -834,12 +878,22 @@ def _audit_region_terminal(case_id: str, config_path: Path, root: Path,
                             record.get("post_fault_target_check_observed") is not
                             observation["observed"]):
                         raise ValueError("REGION_STATE post-fault target order changed")
-                inside = _last_fault_in_region_closure(trial_summary, last)
+                inside = (False if unplanned else
+                          _last_fault_in_region_closure(trial_summary, last))
                 if result.get("fault_in_target_closure") is not inside:
                     raise ValueError("REGION_STATE fault/target membership changed")
                 inside_closure += inside
+                selected_ids = None
+                if raw_count is not None:
+                    selected_ids = trial_summary.get("targetEvidence", {}).get(
+                        "targetCheckOccurrenceIds")
+                    if (not isinstance(selected_ids, list) or not selected_ids or
+                            any(not isinstance(identifier, str) or not identifier
+                                for identifier in selected_ids)):
+                        raise ValueError("REGION_STATE selected target check missing")
                 exact, admitted, reason, evidence = native._region_throw_evidence(
-                    events, config["target_site"], config["target_throw"], last)
+                    events, config["target_site"], config["target_throw"], last,
+                    set(selected_ids) if selected_ids is not None else None)
                 if (result.get("target_throw_rows") != exact or
                         result.get("target_exception_triggered") is not bool(exact) or
                         result.get("target_temporal_admitted") is not admitted or
@@ -849,8 +903,9 @@ def _audit_region_terminal(case_id: str, config_path: Path, root: Path,
                                                 else "needs_causal_review" if exact
                                                 else "checked")):
                     raise ValueError("REGION_STATE exact target throw/order changed")
-                throws += bool(exact)
-                candidates += result["status"] == "candidate"
+                throws += bool(exact or raw_count)
+                candidates += bool((result["status"] == "candidate" and
+                                    not unplanned) or raw_candidate)
             elif (result.get("status") != "target_lost" or
                   result.get("target_exception_triggered") or
                   (trial_summary.get("targetReached") and
