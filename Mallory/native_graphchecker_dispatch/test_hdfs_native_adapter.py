@@ -160,6 +160,8 @@ class HdfsNativeAdapterTest(unittest.TestCase):
                 self.assertEqual("verified_existing_original_pipeline",
                                  result["status"])
                 self.assertEqual(239, result["static_door_count"])
+                self.assertEqual("", (static / "original-scope/io_doors.jsonl")
+                                 .read_text())
                 self.assertNotEqual(result["check_site_id"],
                                     result["throw_site_id"])
 

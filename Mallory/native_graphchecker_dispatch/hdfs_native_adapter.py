@@ -494,10 +494,9 @@ def prepare(request_file: Path, profile_file: Path, output: Path) -> dict:
     for path in (graph, static_map, skeletons, original / "io_doors.jsonl"):
         if not path.is_file():
             raise ValueError("original GraphChecker static output incomplete")
-    with (original / "io_doors.jsonl").open(encoding="utf-8") as stream:
-        has_doors = any(line.strip() for line in stream)
-    if not has_doors:
-        raise ValueError("original GraphChecker found no typed I/O door")
+    # The original seed-backward engine may leave io_doors.jsonl empty while
+    # ScopePlanner's translated manifest contains the Soot-selected typed
+    # doors. _target_sites already required a nonempty exact manifest.
     scope_receipt = {"schema_version": 1,
         "mode": "original_graphchecker_static_scope",
         "case_id": request["case_id"], "request_sha256": _digest(request),
