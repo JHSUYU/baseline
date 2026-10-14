@@ -31,7 +31,7 @@ from Mallory.native_graphchecker_feedback.region_state_graph import (
 )
 
 SCHEMA = 1
-SCHEDULER_VERSION = 3
+SCHEDULER_VERSION = 4
 FAULT_FIELDS = ("siteId", "node", "actorEpochOrdinal", "occurrenceId",
                 "ordinal", "exceptionClass")
 SELECTOR_FIELDS = ("siteId", "node", "actorEpochOrdinal", "ordinal",
@@ -749,7 +749,7 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
     version = state.get("scheduler_version", 1)
     if version == 1:
         return _pick_v1(state)
-    if version not in (2, SCHEDULER_VERSION):
+    if version not in (2, 3, SCHEDULER_VERSION):
         raise ValueError(f"unsupported native scheduler version: {version}")
     queue = state["queue"]
     if not queue:
@@ -758,8 +758,20 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
     outside = [item for item in queue if item["tier"] == "outside_closure"]
     inside = [item for item in queue if item["tier"] != "outside_closure"]
     # Keep one of eight slots for observed doors outside the target closure.
-    candidates = (outside if outside and completed % 8 == 7
-                  else inside or outside)
+    outside_slot = bool(outside) and completed % 8 == 7
+    candidates = outside if outside_slot else inside or outside
+    if version >= 4 and not outside_slot:
+        # A target-reaching seed can reveal hundreds of descendants. If all
+        # descendants inherit its novelty, the old score selects deep plans
+        # repeatedly even when their second actor often runs before the
+        # first fault on the next JVM. Reserve one slot in four for depth;
+        # use the other slots to explore fresh one-fault identities. The
+        # outside-closure slot remains independent of this depth cadence.
+        preferred_depth = 2 if completed % 4 == 2 else 1
+        same_depth = [item for item in candidates if
+                      (len(item["faults"]) > 1) == (preferred_depth > 1)]
+        if same_depth:
+            candidates = same_depth
 
     def attempts(item: dict[str, Any]) -> int:
         return state["fault_id_attempts"].get(_fault_id(item["faults"][-1]), 0)
@@ -779,7 +791,7 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
         selected = min(candidates, key=lambda item: (
             item["enqueued_at"], attempts(item), item["key"]))
     else:
-        if inside and completed % 4 == 3:
+        if version < 4 and inside and completed % 4 == 3:
             # Preserve multi-fault exploration even with many unseen doors.
             deeper = [item for item in candidates if len(item["faults"]) > 1]
             if deeper:

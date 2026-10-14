@@ -236,8 +236,8 @@ class NativeQueueDiversityTest(unittest.TestCase):
                  "healthy": {"status": "healthy_seed"},
                  "budget": {"fault_trials": 100, "seconds": 1000,
                             "max_faults_per_trial": 4}}
-        if version == 2:
-            state.update(scheduler_version=2, fault_id_attempts={},
+        if version >= 2:
+            state.update(scheduler_version=version, fault_id_attempts={},
                          fault_id_successes={})
         return state
 
@@ -299,6 +299,33 @@ class NativeQueueDiversityTest(unittest.TestCase):
                                self._item("RPC#outside", "outside",
                                           tier="outside_closure")], completed=7)
         self.assertEqual("RPC#outside", core._pick(outside)["faults"][-1]["siteId"])
+
+    def test_v4_bounds_deep_trials_despite_inherited_closure_novelty(self) -> None:
+        # A single checked seed may yield many high-novelty two-fault plans.
+        # Their second actor can run before the first fault on the next JVM.
+        # Keep depth exploration, but leave most slots for fresh single faults.
+        for completed, expected in enumerate((1, 1, 2, 1, 1, 1, 2, 1)):
+            state = self._state([
+                self._item("RPC#single", "single", depth=1),
+                self._item("RPC#deep", "deep", depth=2, novelty=60),
+                self._item("RPC#outside", "outside", tier="outside_closure"),
+            ], completed=completed, version=4)
+            selected = core._pick(state)
+            self.assertEqual(expected, len(selected["faults"]), completed)
+            if completed == 7:
+                self.assertEqual("outside_closure", selected["tier"])
+
+        # Frozen v3 checkpoints keep their exact former selection rule.
+        prior = self._state([
+            self._item("RPC#single", "single"),
+            self._item("RPC#deep", "deep", depth=2, novelty=60),
+        ], completed=1, version=3)
+        self.assertEqual(2, len(core._pick(prior)["faults"]))
+
+    def test_v4_depth_slot_falls_back_when_no_deep_plan_exists(self) -> None:
+        state = self._state([self._item("RPC#single", "single")],
+                            completed=2, version=4)
+        self.assertEqual(1, len(core._pick(state)["faults"]))
 
     def test_closure_feedback_still_breaks_ties_within_diverse_fault_ids(self) -> None:
         state = self._state([self._item("RPC#low", "low", novelty=0),
