@@ -311,6 +311,73 @@ class NativeQueueTest(unittest.TestCase):
                                         self.state_root)
             self.assertEqual(inspect.call_count, 1)
 
+    def test_frozen_cache_rechecks_source_and_trial_evidence(self) -> None:
+        self.config["case_id"] = self.case_id
+        native_config = self.root / "frozen-native-config.json"
+        native_config.write_text(json.dumps(self.config))
+        python_root = self.root / "frozen-python"
+        python_root.mkdir()
+        archive = self.root / "frozen-source.tar"
+        archive.write_bytes(b"source archive")
+        source = {"root_path": str(python_root),
+                  "source_tar_path": str(archive),
+                  "source_tar_sha256": sha(archive),
+                  "python_sha256": {
+                      "Mallory/native_graphchecker_dispatch/checklist.py": "a" * 64}}
+        self.config_file.write_text(json.dumps({
+            "case_id": self.case_id, "campaign_python_source": source}))
+        root = self.state_root / self.case_id
+        root.mkdir()
+        state = {"case_id": self.case_id, "terminal": True,
+                 "config_sha256": sha(self.config_file)}
+        (root / "checkpoint.json").write_text(json.dumps(state))
+        (root / "summary.json").write_text(json.dumps(state))
+        trial = root / "trials/r0000/result.json"
+        trial.parent.mkdir(parents=True)
+        trial.write_text('{"status":"healthy_seed"}\n')
+        engine = self.root / "engine.jar"
+        engine.write_bytes(b"engine")
+        row = {"terminal_disposition": "tested_no_target_throw",
+               "native_tested_complete": True, "fault_trials": 0,
+               "strict_fault_trials": 0, "target_retained_fault_trials": 0,
+               "target_throw_trials": 0, "candidate_trials": 0,
+               "elapsed_seconds": 0.5}
+        completion(self.item, row, self.config_file, self.state_root,
+                   self.state_root / ".native-queue")
+        completed = (self.state_root / ".native-queue/completions" /
+                     f"{self.case_id}.json")
+        fingerprint = _terminal_fingerprint(self.item, self.config_root,
+                                            self.state_root)
+        audit = self.root / "frozen-audit.json"
+        atomic(audit, {"method": "exact_frozen_python_full_native_inspect_case",
+                       "fingerprint": fingerprint, "row": row,
+                       "source_root": str(python_root.resolve()),
+                       "source_tar_path": str(archive),
+                       "source_tar_sha256": sha(archive),
+                       "inspector_sha256": "a" * 64,
+                       "engine_jar_path": str(engine),
+                       "engine_jar_sha256": sha(engine),
+                       "trial_evidence_sha256": {str(trial.resolve()): sha(trial)}})
+        cache = self.state_root / ".native-queue/audits" / f"{self.case_id}.json"
+        atomic(cache, {"schema_version": 1, "owner": "node1",
+                       "basis": "frozen_source_full_native_inspect_case",
+                       "completion_receipt_path": str(completed),
+                       "completion_receipt_sha256": sha(completed),
+                       "frozen_audit_path": str(audit),
+                       "frozen_audit_sha256": sha(audit),
+                       "fingerprint": fingerprint, "row": row})
+        with patch("Mallory.native_graphchecker_queue.queue.pinned_campaign_python",
+                   return_value=python_root), patch(
+                "Mallory.native_graphchecker_queue.queue.inspect_case",
+                return_value=row) as inspect:
+            self.assertEqual(_cached_terminal_inspection(
+                self.item, "node1", self.config_root, self.state_root), row)
+            self.assertEqual(inspect.call_count, 0)
+            trial.write_text('{"status":"changed"}\n')
+            _cached_terminal_inspection(self.item, "node1", self.config_root,
+                                        self.state_root)
+            self.assertEqual(inspect.call_count, 1)
+
     def test_bound_region_campaign_skips_live_lock_and_adopts_native_root(self) -> None:
         native_config = self.root / "immutable-native-config.json"
         native_root = self.root / "immutable-native-state"

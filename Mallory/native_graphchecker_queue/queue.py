@@ -342,6 +342,38 @@ def _terminal_cache_path(state_root: Path, case_id: str) -> Path:
     return state_root / ".native-queue" / "audits" / f"{case_id}.json"
 
 
+def _frozen_source_cache_valid(cache: dict, fingerprint: dict,
+                               config_root: Path) -> bool:
+    """Recheck a sealed inspector's source and trial bytes before reuse."""
+    try:
+        audit_path = Path(cache["frozen_audit_path"])
+        if (not audit_path.is_absolute() or audit_path.is_symlink() or
+                sha(audit_path) != cache["frozen_audit_sha256"]):
+            return False
+        audit = obj(audit_path)
+        binding = obj(config_root / f"{fingerprint['case_id']}.json")
+        source = binding["campaign_python_source"]
+        root = pinned_campaign_python(source)
+        if (audit.get("method") != "exact_frozen_python_full_native_inspect_case" or
+                audit.get("fingerprint") != fingerprint or
+                audit.get("row") != cache.get("row") or
+                audit.get("source_root") != str(root.resolve()) or
+                audit.get("source_tar_path") != source["source_tar_path"] or
+                audit.get("source_tar_sha256") != source["source_tar_sha256"] or
+                audit.get("inspector_sha256") != source["python_sha256"][
+                    "Mallory/native_graphchecker_dispatch/checklist.py"] or
+                Path(audit["engine_jar_path"]).is_symlink() or
+                sha(Path(audit["engine_jar_path"])) != audit.get(
+                    "engine_jar_sha256") or
+                not isinstance(audit.get("trial_evidence_sha256"), dict) or
+                not audit["trial_evidence_sha256"]):
+            return False
+        return all(sha(Path(name)) == digest for name, digest in
+                   audit["trial_evidence_sha256"].items())
+    except (KeyError, OSError, ValueError, TypeError):
+        return False
+
+
 def _cached_terminal_inspection(item: dict, owner: str, config_root: Path,
                                 state_root: Path, review: dict | None = None) -> dict:
     fingerprint = _terminal_fingerprint(item, config_root, state_root)
@@ -361,12 +393,17 @@ def _cached_terminal_inspection(item: dict, owner: str, config_root: Path,
             basis = cache.get("basis")
             receipt_basis_valid = (
                 basis not in ("pinned_pilot_and_completion_receipts",
-                              "audited_promotion_receipt") or
+                              "audited_promotion_receipt",
+                              "frozen_source_full_native_inspect_case") or
                 (completed_path.is_file() and
                  sha(completed_path) == cache.get("completion_receipt_sha256") and
-                 (basis == "audited_promotion_receipt" or
+                 (basis in ("audited_promotion_receipt",
+                            "frozen_source_full_native_inspect_case") or
                   (pilot_path.is_file() and
                    sha(pilot_path) == cache.get("pilot_receipt_sha256")))))
+            if basis == "frozen_source_full_native_inspect_case":
+                receipt_basis_valid = (receipt_basis_valid and
+                    _frozen_source_cache_valid(cache, fingerprint, config_root))
             if (cache.get("fingerprint") == fingerprint and
                     cache.get("owner") == owner and
                     receipt_basis_valid and

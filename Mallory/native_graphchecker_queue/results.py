@@ -349,6 +349,12 @@ def _elapsed_basis(native_root: Path, fault_trials: int,
 def _reviewed_wall_timing(review: dict, trial_elapsed: float) -> tuple[float | None,
                                                                       float | None]:
     timing = review.get("timing")
+    if timing is None and "campaign_wall_seconds" in review:
+        timing = {"campaign_wall_seconds": review["campaign_wall_seconds"],
+                  "cumulative_trial_seconds": review.get(
+                      "cumulative_healthy_and_trial_seconds"),
+                  "static_to_terminal_wall_seconds": review.get(
+                      "static_to_terminal_wall_seconds")}
     if not isinstance(timing, dict) or "campaign_wall_seconds" not in timing:
         return None, None
     cumulative = timing.get("cumulative_trial_seconds",

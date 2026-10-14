@@ -103,6 +103,16 @@ coverage gaps and any pending corrected rerun. A native-blocked case remains
 distinct. This queue does not overwrite the old 102-row TSV;
 the native dispatcher `status` command can build the audited native table.
 
+For a sealed campaign whose graph receipt differs under newer analysis code,
+`frozen_terminal.inspect_frozen_terminal` runs the inspector from that case's
+hash-verified Python archive in a separate process. It pins the engine JAR,
+checkpoint, summary, and every trial result and graph summary used by the
+inspection. A frozen audit cache is reusable only while its completion,
+source archive, engine JAR, and trial hashes remain unchanged. An archived
+source that lacks the original inspector fails this path; a source and event
+review must then describe its own method rather than claim a frozen inspector
+run. No JUnit or fault trial is started by this audit.
+
 A pre-JUnit static timeout can be recorded under
 `STATE_ROOT/.native-queue/preparation-notes/CASE-ID.json`. The 102-row exporter
 checks the note's exact review, request, and source preflight SHA-256, then

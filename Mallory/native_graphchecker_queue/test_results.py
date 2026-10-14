@@ -331,6 +331,10 @@ class NativeResultsTest(unittest.TestCase):
                          _reviewed_wall_timing(review, 1862.14))
         with self.assertRaisesRegex(ValueError, "wall timing differs"):
             _reviewed_wall_timing(review, 1862.141)
+        source_review = {"campaign_wall_seconds": 3725.762,
+                         "cumulative_healthy_and_trial_seconds": 3198.679}
+        self.assertEqual(_reviewed_wall_timing(source_review, 3198.679),
+                         (3725.762, None))
 
     def test_exactly_102_rows_with_one_verified_native_completion(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
