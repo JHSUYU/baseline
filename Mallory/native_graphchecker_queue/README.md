@@ -101,6 +101,15 @@ trials. It leaves terminal trial counts unset and
 `native_tested_complete: false`. A later bound campaign can still proceed
 from its own immutable healthy gate and checkpoint.
 
+A source-only original JUnit eligibility review can be pinned under
+`STATE_ROOT/.native-queue/eligibility-notes/CASE-ID.json`. The exporter checks
+the exact inventory row, selected JUnit, prior source review and failed
+opt-in JUnit log, and every reviewed source file SHA-256. It reports
+`skipped_no_eligible_original_cluster_test` with zero **native queue** JUnit
+and fault trials, leaves terminal counts unset, and never grants
+`native_tested_complete`. The SOLR-40 review applies to the pinned checkout
+and current harness; fixture repair may make its original test eligible.
+
 The isolation contract requires a real system-specific port setting or a
 reviewed dynamic-port receipt. An unprepared case remains pending; no case is
 made runnable merely by this queue.

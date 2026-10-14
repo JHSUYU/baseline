@@ -122,6 +122,124 @@ def _preparation_note(item: dict, state_root: Path) -> dict[str, Any] | None:
     }
 
 
+def _eligibility_note(item: dict, inventory: Path,
+                      state_root: Path) -> dict[str, Any] | None:
+    """Verify a source-only skip without granting a native trial verdict."""
+    case_id = item["case_id"]
+    pin_path = (state_root / ".native-queue" / "eligibility-notes" /
+                f"{case_id}.json")
+    if not pin_path.is_file():
+        return None
+    pin = obj(pin_path)
+    entry = pin.get("review", {})
+    review_path = Path(entry.get("path", ""))
+    status = "no_eligible_original_cluster_test_current_checkout"
+    if (pin.get("schema_version") != 1 or pin.get("case_id") != case_id or
+            pin.get("status") != status or
+            pin.get("native_queue_junit_trials") != 0 or
+            pin.get("native_queue_fault_trials") != 0 or
+            not review_path.is_absolute() or review_path.is_symlink() or
+            not review_path.is_file() or sha(review_path) != entry.get("sha256")):
+        raise ValueError(f"native eligibility review pin changed: {case_id}")
+    review = obj(review_path)
+    inventory_pin = review.get("inventory", {})
+    row_sha = hashlib.sha256(json.dumps(item, sort_keys=True,
+                                        separators=(",", ":")).encode()).hexdigest()
+    if (review.get("schema_version") != 1 or
+            review.get("case_id") != case_id or
+            review.get("status") != status or
+            review.get("selected_original_junit") != item["workload"].get(
+                "selected_selector") or
+            review.get("native_queue_junit_trials") != 0 or
+            review.get("native_queue_fault_trials") != 0 or
+            item.get("eligibility", {}).get("may_dispatch_healthy_seed") is not False or
+            item["eligibility"].get("state") != "original_junit_skipped" or
+            inventory_pin.get("path") != str(inventory.resolve()) or
+            inventory_pin.get("sha256") != sha(inventory) or
+            inventory_pin.get("row_sha256") != row_sha or
+            review.get("target", {}).get("source_path") != item["target"][
+                "source_path"] or
+            review["target"].get("source_sha256") != item["target"][
+                "source_sha256"] or
+            review["target"].get("method") != item["target"]["function"] or
+            review["target"].get("throw_line") != item["target"][
+                "source_line"] or
+            review["target"].get("exception") != item["target"].get(
+                "target_exception") or
+            review.get("prior_opt_in_junit") != {
+                "tests": 1, "failures": 1, "target_checks": 0,
+                "target_throws": 0}):
+        raise ValueError(f"native eligibility review identity changed: {case_id}")
+    paths = {}
+    for name in ("prior_source_review", "prior_opt_in_junit_log"):
+        entry = review.get(name, {})
+        path = Path(entry.get("path", ""))
+        if (not path.is_absolute() or path.is_symlink() or
+                not path.is_file() or sha(path) != entry.get("sha256")):
+            raise ValueError(f"native eligibility {name} changed: {case_id}")
+        paths[name] = path
+    prior = obj(paths["prior_source_review"])
+    log = paths["prior_opt_in_junit_log"].read_text()
+    source_files = review.get("source_files", {})
+    expected_sources = prior.get("source_hashes", {})
+    required = {"processor", "time_test", "base_test", "lucene_annotation",
+                "category_test", "dimensional_test", "create_test",
+                "concurrent_test", "api_test", "alias_test"}
+    if (prior.get("case_id") != case_id or
+            prior.get("source_review_status") !=
+            "source_review_no_suitable_test_current_environment" or
+            prior.get("receipt_tier_assessment", {}).get(
+                "source_only_no_executable_test_justified_for_unmodified_checkout")
+            is not True or
+            prior.get("receipt_tier_assessment", {}).get(
+                "permanent_no_test_claim_justified") is not False or
+            prior.get("target", {}).get("source_sha256") != item["target"][
+                "source_sha256"] or
+            prior.get("target", {}).get("source_line") != item["target"][
+                "source_line"] or
+            prior.get("prior_attempt", {}).get("pilot_target_check_count") != 0 or
+            prior["prior_attempt"].get("junit_failures") != 1 or
+            not isinstance(source_files, dict) or
+            set(source_files) != set(expected_sources) or
+            not required.issubset(source_files) or
+            source_files["processor"].get("sha256") != item["target"][
+                "source_sha256"] or
+            source_files["time_test"].get("sha256") != item["workload"][
+                "candidates"][0]["source_sha256"] or
+            "@AwaitsFix" not in log or
+            "Can't create a configset with an unauthenticated request" not in log):
+        raise ValueError(f"native eligibility source review changed: {case_id}")
+    source_paths = []
+    for name, source in source_files.items():
+        path = Path(source.get("path", ""))
+        expected = expected_sources[name]
+        if (not path.is_absolute() or path.is_symlink() or
+                not path.is_file() or
+                not str(path).endswith(expected["path"]) or
+                source.get("sha256") != expected["sha256"] or
+                sha(path) != expected["sha256"]):
+            raise ValueError(f"native eligibility source {name} changed: {case_id}")
+        source_paths.append(str(path.resolve()))
+    return {
+        "preparation_status": status,
+        "preparation_junit_trials": 0,
+        "preparation_fault_trials": 0,
+        "preparation_review_path": str(review_path.resolve()),
+        "preparation_review_sha256": sha(review_path),
+        "preparation_note_pin_path": str(pin_path.resolve()),
+        "preparation_note_pin_sha256": sha(pin_path),
+        "preparation_note": (
+            "No target-reaching original cluster JUnit is eligible under the "
+            "pinned checkout and current harness: normal selection inherits "
+            "@AwaitsFix; one prior opt-in JUnit failed in configset setup "
+            "before routed ADD (zero target checks). No native queue JUnit "
+            "or fault trial ran; fixture repair may change eligibility."),
+        "evidence_paths": [str(review_path.resolve()), str(pin_path.resolve())] +
+                          [str(path.resolve()) for path in paths.values()] +
+                          source_paths,
+    }
+
+
 def _elapsed_basis(native_root: Path, fault_trials: int,
                    elapsed_seconds: float) -> str:
     """Attribute reported time to the native trial receipts' actual schema."""
@@ -319,6 +437,15 @@ def native_rows(inventory: Path, ownership_file: Path, config_root: Path,
             row.update(preparation)
             row["evidence_paths"].extend(evidence)
             row["native_state"] = "preparation_static_timeout"
+        eligibility = _eligibility_note(item, inventory, state_root)
+        if eligibility is not None:
+            if preparation is not None or config_file.is_file() or \
+                    checkpoint_path.is_file() or receipt_path.is_file():
+                raise ValueError(f"native eligibility note conflicts with case: {case_id}")
+            evidence = eligibility.pop("evidence_paths")
+            row.update(eligibility)
+            row["evidence_paths"].extend(evidence)
+            row["native_state"] = "skipped_no_eligible_original_cluster_test"
         if config_file.is_file():
             row["native_config_path"] = str(config_file.resolve())
             row["native_config_sha256"] = sha(config_file)

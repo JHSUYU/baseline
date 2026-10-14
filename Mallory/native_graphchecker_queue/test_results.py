@@ -18,6 +18,95 @@ from .results import (_elapsed_basis, _reviewed_exact_closure,
 
 
 class NativeResultsTest(unittest.TestCase):
+    def test_source_only_eligibility_skip_is_pinned_and_nonterminal(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            config_root, state_root, results_dir = (root / name for name in
+                                                    ("config", "state", "results"))
+            config_root.mkdir()
+            state_root.mkdir()
+            inventory = json.loads(DEFAULT_INVENTORY.read_text())
+            item = next(row for row in inventory["cases"]
+                        if row["case_id"] == "SOLR-40")
+            names = ("processor", "time_test", "base_test", "lucene_annotation",
+                     "category_test", "dimensional_test", "create_test",
+                     "concurrent_test", "api_test", "alias_test")
+            sources = {}
+            prior_sources = {}
+            for name in names:
+                path = root / f"{name}.java"
+                path.write_text(f"source {name}\n")
+                sources[name] = {"path": str(path), "sha256": sha(path)}
+                prior_sources[name] = {"path": path.name, "sha256": sha(path)}
+            item["target"]["source_sha256"] = sources["processor"]["sha256"]
+            item["workload"]["candidates"][0]["source_sha256"] = sources[
+                "time_test"]["sha256"]
+            inventory_file = root / "inventory.json"
+            inventory_file.write_text(json.dumps(inventory))
+            prior = root / "prior-review.json"
+            prior.write_text(json.dumps({
+                "case_id": "SOLR-40",
+                "source_review_status":
+                "source_review_no_suitable_test_current_environment",
+                "receipt_tier_assessment": {
+                    "source_only_no_executable_test_justified_for_unmodified_checkout":
+                    True, "permanent_no_test_claim_justified": False},
+                "target": {"source_sha256": item["target"]["source_sha256"],
+                           "source_line": item["target"]["source_line"]},
+                "prior_attempt": {"pilot_target_check_count": 0,
+                                  "junit_failures": 1},
+                "source_hashes": prior_sources}))
+            log = root / "junit-failure.txt"
+            log.write_text("@AwaitsFix; Can't create a configset with an "
+                           "unauthenticated request\n")
+            review = root / "eligibility-review.json"
+            review.write_text(json.dumps({
+                "schema_version": 1, "case_id": "SOLR-40",
+                "status": "no_eligible_original_cluster_test_current_checkout",
+                "inventory": {"path": str(inventory_file.resolve()),
+                              "sha256": sha(inventory_file),
+                              "row_sha256": hashlib.sha256(json.dumps(
+                                  item, sort_keys=True, separators=(",", ":")
+                                  ).encode()).hexdigest()},
+                "selected_original_junit": item["workload"]["selected_selector"],
+                "native_queue_junit_trials": 0, "native_queue_fault_trials": 0,
+                "target": {"source_path": item["target"]["source_path"],
+                           "source_sha256": item["target"]["source_sha256"],
+                           "method": item["target"]["function"],
+                           "throw_line": item["target"]["source_line"],
+                           "exception": item["target"]["target_exception"]},
+                "prior_opt_in_junit": {"tests": 1, "failures": 1,
+                                       "target_checks": 0, "target_throws": 0},
+                "prior_source_review": {"path": str(prior), "sha256": sha(prior)},
+                "prior_opt_in_junit_log": {"path": str(log), "sha256": sha(log)},
+                "source_files": sources}))
+            pin = state_root / ".native-queue/eligibility-notes/SOLR-40.json"
+            pin.parent.mkdir(parents=True)
+            pin.write_text(json.dumps({
+                "schema_version": 1, "case_id": "SOLR-40",
+                "status": "no_eligible_original_cluster_test_current_checkout",
+                "native_queue_junit_trials": 0, "native_queue_fault_trials": 0,
+                "review": {"path": str(review), "sha256": sha(review)}}))
+            output, _ = export_native_results(
+                inventory_file, DEFAULT_OWNERSHIP, config_root,
+                state_root, results_dir)
+            document = json.loads(output.read_text())
+            row = next(row for row in document["rows"]
+                       if row["case_id"] == "SOLR-40")
+            self.assertEqual(document["case_count"], 102)
+            self.assertEqual(document["verified_terminal_count"], 0)
+            self.assertEqual(row["native_state"],
+                             "skipped_no_eligible_original_cluster_test")
+            self.assertFalse(row["native_tested_complete"])
+            self.assertEqual(row["preparation_fault_trials"], 0)
+            self.assertIsNone(row["fault_trials"])
+            self.assertIsNone(row["completion_receipt_path"])
+            (root / "base_test.java").write_text("changed\n")
+            with self.assertRaisesRegex(ValueError,
+                                        "native eligibility source base_test changed"):
+                export_native_results(inventory_file, DEFAULT_OWNERSHIP,
+                                      config_root, state_root, results_dir)
+
     def test_static_timeout_preparation_is_pinned_but_not_completed(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
