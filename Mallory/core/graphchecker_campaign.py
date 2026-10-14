@@ -1228,6 +1228,15 @@ def validate_plan(plan: dict[str, Any],
         if "replayOccurrenceId" in fault and (not isinstance(
                 fault["replayOccurrenceId"], str) or not fault["replayOccurrenceId"]):
             raise ValueError(f"fault {index} needs a nonempty replay occurrence ID")
+        message_key = fault.get("messageReplayKey")
+        message_parent = fault.get("messageParentId")
+        if (message_key is None) != (message_parent is None) or (
+                message_key is not None and (
+                    not isinstance(message_key, str) or
+                    not isinstance(message_parent, str) or
+                    re.fullmatch(r"[0-9a-f]{64}", message_key) is None or
+                    re.fullmatch(r"[0-9a-f]{64}", message_parent) is None)):
+            raise ValueError(f"fault {index} has incomplete message replay identity")
         if door_types is not None and door_types.get(fault["siteId"]) != fault["exceptionClass"]:
             raise ValueError(f"fault {index} does not match a typed selected door")
     return faults
@@ -1336,6 +1345,11 @@ def _planned_fault_matches(fault: dict[str, Any], actual: dict[str, Any]) -> boo
     The exact occurrence remains on the applied row for graph ancestry and
     must also appear on a preceding FAULT_DOOR row in the same trial.
     """
+    if fault.get("messageReplayKey"):
+        return (actual.get("siteId") == fault["siteId"] and
+                actual.get("messageReplayKey") == fault["messageReplayKey"] and
+                actual.get("messageParentId") == fault["messageParentId"] and
+                bool(actual.get("occurrenceId")))
     if fault.get("replayOccurrenceId"):
         return (actual.get("siteId") == fault["siteId"] and
                 actual.get("node") == fault["node"] and
@@ -1343,6 +1357,15 @@ def _planned_fault_matches(fault: dict[str, Any], actual: dict[str, Any]) -> boo
                 actual.get("doorOrdinal") == fault["ordinal"] and
                 bool(actual.get("occurrenceId")))
     return _identity(actual) == _plan_identity(fault)
+
+
+def _unique_message_selectors(doors: list[dict[str, Any]]) -> set[tuple[str, str, str]]:
+    """Only a single observed door may carry a cross-actor message selector."""
+    counts = Counter((door.get("siteId"), door.get("messageReplayKey"),
+                      door.get("messageParentId")) for door in doors
+                     if door.get("messageReplayKey") and
+                     door.get("messageParentId"))
+    return {identity for identity, count in counts.items() if count == 1}
 
 
 def _strict_fault_receipt(rows: list[dict[str, Any]], faults: list[dict[str, Any]]
@@ -1360,8 +1383,15 @@ def _strict_fault_receipt(rows: list[dict[str, Any]], faults: list[dict[str, Any
     for fault, actual in zip(faults, applied):
         source = next((door for door in doors if _identity(door) == _identity(actual)
                        and door["seq"] < actual["seq"]), None)
+        message_matches = ([door for door in doors if
+                            door.get("siteId") == fault["siteId"] and
+                            door.get("messageReplayKey") == fault["messageReplayKey"] and
+                            door.get("messageParentId") == fault["messageParentId"]]
+                           if fault.get("messageReplayKey") else [])
         if (not _planned_fault_matches(fault, actual) or
+                (fault.get("messageReplayKey") and len(message_matches) != 1) or
                 (fault.get("replayOccurrenceId") and source is not None and
+                 not fault.get("messageReplayKey") and
                  source.get("replayOccurrenceId") != actual.get("replayOccurrenceId")) or
                 actual.get("exceptionClass") != fault["exceptionClass"] or
                 actual["seq"] <= previous_seq or source is None):
@@ -1491,6 +1521,7 @@ def summarize_evidence(rows: list[dict[str, Any]], graph: dict[str, Any],
         isinstance(cutoffs.get(applied[-1]["occurrenceId"]), int) and
         applied[-1]["seq"] < cutoffs[applied[-1]["occurrenceId"]])
     eligible = []
+    unique_messages = _unique_message_selectors(doors)
     for door in doors:
         cutoff = cutoffs.get(door["occurrenceId"])
         if door["occurrenceId"] in closure and isinstance(cutoff, int) and door["seq"] <= cutoff:
@@ -1507,6 +1538,10 @@ def summarize_evidence(rows: list[dict[str, Any]], graph: dict[str, Any],
             tier = "outside_closure"
         eligible.append({"siteId": door["siteId"], "node": door["node"],
                          "occurrenceId": door["occurrenceId"],
+                         **({"messageReplayKey": door["messageReplayKey"],
+                             "messageParentId": door["messageParentId"]}
+                            if (door.get("siteId"), door.get("messageReplayKey"),
+                                door.get("messageParentId")) in unique_messages else {}),
                          **({"replayOccurrenceId": door["replayOccurrenceId"]}
                             if door.get("replayOccurrenceId") else {}),
                          "ordinal": door["doorOrdinal"], "seq": door["seq"],

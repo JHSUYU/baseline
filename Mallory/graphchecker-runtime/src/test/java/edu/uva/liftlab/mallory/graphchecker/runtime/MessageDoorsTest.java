@@ -13,6 +13,32 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class MessageDoorsTest {
+    @Test public void serializedMessageScopeRestoresOuterKeyAndDoesNotLeak() {
+        Object owner = new Object();
+        MessageDoors.registerSource(owner, "test", "client", "payload-owner", 0);
+        long request = MessageDoors.beginRequest(owner, "payload");
+        try {
+            MessageDoors.FaultDoorHit before = MessageDoors.faultDoorHit("door", owner);
+            assertEquals("", before.messageReplayKey);
+            try (MessageDoors.MessagePayloadScope outer =
+                         MessageDoors.beginMessagePayload("QUEUE", "/tasks",
+                                 "one".getBytes(StandardCharsets.UTF_8))) {
+                MessageDoors.FaultDoorHit first = MessageDoors.faultDoorHit("door", owner);
+                try (MessageDoors.MessagePayloadScope inner =
+                             MessageDoors.beginMessagePayload("QUEUE", "/tasks",
+                                     "two".getBytes(StandardCharsets.UTF_8))) {
+                    MessageDoors.FaultDoorHit second = MessageDoors.faultDoorHit("door", owner);
+                    assertFalse(first.messageReplayKey.equals(second.messageReplayKey));
+                }
+                assertEquals(first.messageReplayKey,
+                        MessageDoors.faultDoorHit("door", owner).messageReplayKey);
+            }
+            assertEquals("", MessageDoors.faultDoorHit("door", owner).messageReplayKey);
+        } finally {
+            MessageDoors.endRequest(request, "payload");
+        }
+    }
+
     @Test public void transportCompletionAndReceiptAreRequiredForWireEvidence()
             throws Exception {
         Path trace = Files.createTempFile("mallory-gc-door-", ".jsonl");

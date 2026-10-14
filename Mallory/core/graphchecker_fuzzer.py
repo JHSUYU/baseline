@@ -26,6 +26,7 @@ from .resource_guard import CapacityGuardStop, check_capacity, load_capacity_gua
 SCHEMA = 1
 PLAN_FIELDS = ("siteId", "node", "occurrenceId", "ordinal", "exceptionClass")
 REPLAY_FIELD = "replayOccurrenceId"
+MESSAGE_REPLAY_FIELDS = ("messageReplayKey", "messageParentId")
 TIER_WEIGHT = {"observed_closure": 100, "static_may_observed": 55,
                "selected_scope_observed": 35, "outside_closure": 15,
                "after_target": -100}
@@ -69,7 +70,10 @@ def _plan_key(faults: list[dict[str, Any]]) -> str:
     canonical = []
     for fault in faults:
         item = dict(fault)
-        if item.get(REPLAY_FIELD):
+        if all(item.get(field) for field in MESSAGE_REPLAY_FIELDS):
+            for field in ("node", "occurrenceId", "ordinal", REPLAY_FIELD):
+                item.pop(field, None)
+        elif item.get(REPLAY_FIELD):
             item.pop("occurrenceId", None)
         canonical.append(item)
     return hashlib.sha256(json.dumps(canonical, sort_keys=True, separators=(",", ":"))
@@ -446,6 +450,9 @@ def _enqueue(state: dict[str, Any], result: dict[str, Any],
         fault = {key: door[key] for key in PLAN_FIELDS}
         if door.get(REPLAY_FIELD):
             fault[REPLAY_FIELD] = door[REPLAY_FIELD]
+        if all(door.get(field) for field in MESSAGE_REPLAY_FIELDS):
+            for field in MESSAGE_REPLAY_FIELDS:
+                fault[field] = door[field]
         faults = [*prefix, fault]
         key = _plan_key(faults)
         if key in seen:

@@ -124,6 +124,18 @@ class GraphCheckerFuzzerTest(unittest.TestCase):
         self.assertEqual(_plan_key([changed_seed]),
                          _plan_key(state["queue"][0]["faults"]))
 
+    def test_message_plan_deduplicates_across_actor_migration(self):
+        state = _new_state(self.config(), self.budget())
+        door = {**self.door(1, 1), "messageReplayKey": "a" * 64,
+                "messageParentId": "b" * 64}
+        self.assertEqual(1, _enqueue(state, self.result([], [door]), []))
+        selected = state["queue"][0]["faults"][0]
+        moved = {**selected, "node": "other#epoch0",
+                 "occurrenceId": "other-occurrence", "ordinal": 7}
+        self.assertEqual(_plan_key([selected]), _plan_key([moved]))
+        self.assertNotEqual(_plan_key([selected]), _plan_key([
+            {**moved, "messageReplayKey": "c" * 64}]))
+
     def test_summary_tracks_guard_coverage_across_trials(self):
         state = _new_state({**self.config(), "target": {
             "check_site_id": "guard-a", "check_site_ids": ["guard-a", "guard-b"]}},

@@ -32,6 +32,7 @@ public final class MessageDoors {
     private static final ThreadLocal<String> NOTIFIED = new ThreadLocal<>();
     private static final ThreadLocal<ReadHandoff> LAST_NOTIFIED_READ = new ThreadLocal<>();
     private static final ThreadLocal<OperationHint> CURRENT_OPERATION = new ThreadLocal<>();
+    private static final ThreadLocal<MessagePayloadScope> MESSAGE_PAYLOAD = new ThreadLocal<>();
     private static final AtomicLong EXCHANGES = new AtomicLong();
     private static final Map<String, AtomicLong> DOOR_ORDINALS = new ConcurrentHashMap<>();
     private static final Map<String, AtomicLong> REPLAY_SEND_ORDINALS =
@@ -280,9 +281,15 @@ public final class MessageDoors {
         }
         OccurrenceAddress occurrence = TraceRows.occurrence(owner);
         String replayOccurrenceId = TraceRows.replayOccurrenceId(occurrence);
+        MessagePayloadScope payload = MESSAGE_PAYLOAD.get();
+        JsonObject values = TraceRows.fields("siteId", siteId, "doorOrdinal", ordinal,
+                "replayOccurrenceId", replayOccurrenceId);
+        if (payload != null && occurrence != null) {
+            values.addProperty("messageReplayKey", payload.key);
+            values.addProperty("messageParentId", messageParent(occurrence));
+        }
         TraceRows.row("FAULT_DOOR", occurrence,
-                withOperation(TraceRows.fields("siteId", siteId, "doorOrdinal", ordinal,
-                        "replayOccurrenceId", replayOccurrenceId), CURRENT_OPERATION.get()));
+                withOperation(values, CURRENT_OPERATION.get()));
     }
 
     public static void faultDoor(String siteId, Object owner) {
@@ -296,17 +303,22 @@ public final class MessageDoors {
         public final String node;
         public final String siteId;
         public final long ordinal;
+        public final String messageReplayKey;
+        public final String messageParentId;
         private final OccurrenceAddress occurrence;
         private final OperationHint operation;
 
         private FaultDoorHit(OccurrenceAddress occurrence, String replayOccurrenceId,
-                             String siteId, long ordinal, OperationHint operation) {
+                             String siteId, long ordinal, String messageReplayKey,
+                             String messageParentId, OperationHint operation) {
             this.occurrence = occurrence;
             this.occurrenceId = occurrence.id();
             this.replayOccurrenceId = replayOccurrenceId;
             this.node = occurrence.node().render();
             this.siteId = siteId;
             this.ordinal = ordinal;
+            this.messageReplayKey = messageReplayKey;
+            this.messageParentId = messageParentId;
             this.operation = operation;
         }
     }
@@ -329,16 +341,23 @@ public final class MessageDoors {
         long ordinal = DOOR_ORDINALS.computeIfAbsent(key, ignored -> new AtomicLong())
                 .incrementAndGet();
         String replayOccurrenceId = TraceRows.replayOccurrenceId(occurrence);
+        MessagePayloadScope payload = MESSAGE_PAYLOAD.get();
+        String messageReplayKey = payload == null ? "" : payload.key;
+        String messageParentId = payload == null ? "" : messageParent(occurrence);
         if (empty(replayOccurrenceId)) {
             gap("REPLAY_LINEAGE_MISSING", siteId,
                     "fault door has no stable replay cause");
         }
         OperationHint operation = CURRENT_OPERATION.get();
         FaultDoorHit hit = new FaultDoorHit(occurrence, replayOccurrenceId,
-                siteId, ordinal, operation);
-        TraceRows.row("FAULT_DOOR", occurrence,
-                withOperation(TraceRows.fields("siteId", siteId, "doorOrdinal", ordinal,
-                        "replayOccurrenceId", replayOccurrenceId), operation));
+                siteId, ordinal, messageReplayKey, messageParentId, operation);
+        JsonObject values = TraceRows.fields("siteId", siteId, "doorOrdinal", ordinal,
+                "replayOccurrenceId", replayOccurrenceId);
+        if (!empty(messageReplayKey)) {
+            values.addProperty("messageReplayKey", messageReplayKey);
+            values.addProperty("messageParentId", messageParentId);
+        }
+        TraceRows.row("FAULT_DOOR", occurrence, withOperation(values, operation));
         return hit;
     }
 
@@ -348,11 +367,57 @@ public final class MessageDoors {
                     "no exact door hit or exception type");
             return;
         }
+        JsonObject values = TraceRows.fields("siteId", hit.siteId,
+                "doorOrdinal", hit.ordinal,
+                "replayOccurrenceId", hit.replayOccurrenceId,
+                "exceptionClass", exceptionClass);
+        if (!empty(hit.messageReplayKey)) {
+            values.addProperty("messageReplayKey", hit.messageReplayKey);
+            values.addProperty("messageParentId", hit.messageParentId);
+        }
         TraceRows.row("FAULT_APPLIED", hit.occurrence,
-                withOperation(TraceRows.fields("siteId", hit.siteId,
-                        "doorOrdinal", hit.ordinal,
-                        "replayOccurrenceId", hit.replayOccurrenceId,
-                        "exceptionClass", exceptionClass), hit.operation));
+                withOperation(values, hit.operation));
+    }
+
+    private static String messageParent(OccurrenceAddress occurrence) {
+        return Digest.digest("message-parent-v1\n" + occurrence.context().render()
+                + "\n" + occurrence.regionId() + "\n" + occurrence.index().render(), 0);
+    }
+
+    /** Scope a real serialized message to the calls it directly causes. */
+    public static MessagePayloadScope beginMessagePayload(String transport,
+                                                            String route, byte[] data) {
+        if (empty(transport) || empty(route) || data == null) {
+            gap("MESSAGE_PAYLOAD_UNAVAILABLE", transport, route);
+            return MessagePayloadScope.EMPTY;
+        }
+        String key = Digest.digest("message-payload-v1\n" + transport + "\n"
+                + route + "\n" + Digest.payload(data), 0);
+        MessagePayloadScope scope = new MessagePayloadScope(key, MESSAGE_PAYLOAD.get());
+        MESSAGE_PAYLOAD.set(scope);
+        return scope;
+    }
+
+    public static final class MessagePayloadScope implements AutoCloseable {
+        private static final MessagePayloadScope EMPTY = new MessagePayloadScope("", null);
+        private final String key;
+        private final MessagePayloadScope prior;
+        private boolean closed;
+
+        private MessagePayloadScope(String key, MessagePayloadScope prior) {
+            this.key = key;
+            this.prior = prior;
+        }
+
+        @Override public void close() {
+            if (this == EMPTY) return;
+            if (closed || MESSAGE_PAYLOAD.get() != this) {
+                throw new IllegalStateException("message payload scopes must close once in order");
+            }
+            closed = true;
+            if (prior == null) MESSAGE_PAYLOAD.remove();
+            else MESSAGE_PAYLOAD.set(prior);
+        }
     }
 
     public static Object captureScope() { return TraceRows.snapshot(); }

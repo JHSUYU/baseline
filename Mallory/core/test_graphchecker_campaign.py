@@ -21,6 +21,7 @@ from Mallory.core.graphchecker_campaign import (_archive_jsonl, _archive_stat,
                                                 _profile_exceeds_healthy_envelope,
                                                 _raw_target_throw_exceeds_healthy_envelope,
                                                 _strict_fault_receipt,
+                                                _unique_message_selectors,
                                                 _static_producer_frontier_sites,
                                                 _static_may_sidecar,
                                                 _trial_scratch_root,
@@ -473,6 +474,32 @@ class GraphCheckerCampaignTest(unittest.TestCase):
         _, _, _, strict, last_seq = _strict_fault_receipt(rows, [wrong])
         self.assertFalse(strict)
         self.assertIsNone(last_seq)
+
+    def test_message_replay_requires_unique_seed_and_postfault_door(self):
+        key, parent = "a" * 64, "b" * 64
+        fault = {"siteId": "queue-offer", "node": "seed#epoch0",
+                 "occurrenceId": "seed-occurrence", "replayOccurrenceId": "seed-replay",
+                 "ordinal": 1, "exceptionClass": "java.io.IOException",
+                 "messageReplayKey": key, "messageParentId": parent}
+        door = {"kind": "FAULT_DOOR", "seq": 1, "siteId": "queue-offer",
+                "node": "migrated#epoch0", "occurrenceId": "actual-occurrence",
+                "replayOccurrenceId": "other-replay", "doorOrdinal": 1,
+                "messageReplayKey": key, "messageParentId": parent}
+        applied = {**door, "kind": "FAULT_APPLIED", "seq": 2,
+                   "exceptionClass": "java.io.IOException"}
+        self.assertEqual({("queue-offer", key, parent)},
+                         _unique_message_selectors([door]))
+        self.assertEqual(set(), _unique_message_selectors([door, {**door, "seq": 3}]))
+        self.assertTrue(_strict_fault_receipt([door, applied], [fault])[3])
+        self.assertFalse(_strict_fault_receipt([door, applied, {**door, "seq": 3}],
+                                               [fault])[3])
+        self.assertFalse(_strict_fault_receipt(
+            [{**door, "messageReplayKey": "c" * 64}, applied], [fault])[3])
+        self.assertFalse(_strict_fault_receipt(
+            [{**door, "messageParentId": "c" * 64}, applied], [fault])[3])
+        validate_plan({"faults": [fault]})
+        with self.assertRaisesRegex(ValueError, "message replay identity"):
+            validate_plan({"faults": [{**fault, "messageParentId": ""}]})
 
     def test_static_producer_frontier_is_only_a_site_hint(self):
         with tempfile.TemporaryDirectory() as temporary:

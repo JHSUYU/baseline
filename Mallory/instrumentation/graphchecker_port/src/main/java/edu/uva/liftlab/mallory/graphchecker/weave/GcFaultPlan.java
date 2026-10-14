@@ -49,6 +49,13 @@ final class GcFaultPlan {
                         || fault.ordinal < 1 || empty(fault.exceptionClass)) {
                     throw new IllegalArgumentException("incomplete fault " + index + " in " + path);
                 }
+                if ((fault.messageReplayKey != null || fault.messageParentId != null)
+                        && (empty(fault.messageReplayKey) || empty(fault.messageParentId)
+                        || !fault.messageReplayKey.matches("[0-9a-f]{64}")
+                        || !fault.messageParentId.matches("[0-9a-f]{64}"))) {
+                    throw new IllegalArgumentException("invalid message replay identity "
+                            + index + " in " + path);
+                }
             }
             return new GcFaultPlan(parsed.faults);
         } catch (IOException e) {
@@ -60,13 +67,21 @@ final class GcFaultPlan {
     synchronized Throwable consume(MessageDoors.FaultDoorHit hit, String doorExceptionClass) {
         if (hit == null || next >= faults.size()) return null;
         Fault fault = faults.get(next);
-        if (!fault.siteId.equals(hit.siteId) || !fault.node.equals(hit.node)
-                || fault.ordinal.longValue() != hit.ordinal) return null;
-        // Replay selection survives trial-specific RPC correlation IDs. The
-        // trace still records the exact occurrence for causal graph joining.
-        if (!empty(fault.replayOccurrenceId)) {
-            if (!fault.replayOccurrenceId.equals(hit.replayOccurrenceId)) return null;
-        } else if (!fault.occurrenceId.equals(hit.occurrenceId)) return null;
+        if (!fault.siteId.equals(hit.siteId)) return null;
+        if (!empty(fault.messageReplayKey)) {
+            // The post-run verifier rejects a second matching door. The
+            // serialized message and structural causal parent are the only
+            // permitted cross-actor selector; ordinal is provenance only.
+            if (!fault.messageReplayKey.equals(hit.messageReplayKey)
+                    || !fault.messageParentId.equals(hit.messageParentId)) return null;
+        } else {
+            if (!fault.node.equals(hit.node)
+                    || fault.ordinal.longValue() != hit.ordinal) return null;
+            // Replay selection survives trial-specific RPC correlation IDs.
+            if (!empty(fault.replayOccurrenceId)) {
+                if (!fault.replayOccurrenceId.equals(hit.replayOccurrenceId)) return null;
+            } else if (!fault.occurrenceId.equals(hit.occurrenceId)) return null;
+        }
         if (!fault.exceptionClass.equals(doorExceptionClass)) {
             throw new IllegalStateException("fault exception class differs from selected door "
                     + hit.siteId + ": " + fault.exceptionClass + " != " + doorExceptionClass);
@@ -103,6 +118,8 @@ final class GcFaultPlan {
         String node;
         String occurrenceId;
         String replayOccurrenceId;
+        String messageReplayKey;
+        String messageParentId;
         Long ordinal;
         String exceptionClass;
     }

@@ -1,0 +1,16 @@
+diff --git a/solr/core/src/java/org/apache/solr/cloud/OverseerTaskQueue.java b/solr/core/src/java/org/apache/solr/cloud/OverseerTaskQueue.java
+--- a/solr/core/src/java/org/apache/solr/cloud/OverseerTaskQueue.java
++++ b/solr/core/src/java/org/apache/solr/cloud/OverseerTaskQueue.java
+@@ -31,2 +31,3 @@
+ import com.codahale.metrics.Timer;
++import edu.uva.liftlab.mallory.graphchecker.runtime.MessageDoors;
+ import org.apache.solr.common.SolrException;
+@@ -217,2 +218,4 @@
+       InterruptedException {
++    try (MessageDoors.MessagePayloadScope malloryMessage =
++             MessageDoors.beginMessagePayload("ZOOKEEPER", dir, data)) {
+     if (shuttingDown.get()) {
+@@ -245,2 +248,3 @@
+       pendingResponses.decrementAndGet();
++    }
+     }
