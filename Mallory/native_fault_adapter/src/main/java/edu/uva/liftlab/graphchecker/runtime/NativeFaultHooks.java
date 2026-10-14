@@ -103,7 +103,7 @@ public final class NativeFaultHooks {
         }
     }
 
-    /** Inserted immediately before the selected ATHROW, never inferred from JUnit status. */
+    /** Observes an explicit ATHROW or the caught exception of one selected call. */
     public static void targetThrow(String siteId, String expectedClass,
                                    Throwable thrown) {
         if (thrown == null || !isType(thrown, expectedClass)) return;

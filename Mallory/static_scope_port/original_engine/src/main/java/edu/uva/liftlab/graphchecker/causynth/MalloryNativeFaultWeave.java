@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import edu.uva.liftlab.graphchecker.runtime.RuntimeTraceMode;
 import soot.Body;
+import soot.Local;
 import soot.RefType;
 import soot.Scene;
 import soot.SceneTransformer;
@@ -18,6 +19,7 @@ import soot.Unit;
 import soot.VoidType;
 import soot.jimple.Jimple;
 import soot.jimple.IfStmt;
+import soot.jimple.GotoStmt;
 import soot.jimple.Stmt;
 import soot.jimple.StringConstant;
 import soot.jimple.ThrowStmt;
@@ -90,6 +92,7 @@ public final class MalloryNativeFaultWeave {
         for (JsonElement element : rows) {
             JsonObject row = element.getAsJsonObject();
             if (target && !"THROW".equals(value(row, "kind"))
+                    && !"CALL_THROW".equals(value(row, "kind"))
                     && !"BRANCH".equals(value(row, "kind"))) continue;
             sites.add(new Site(row, target));
         }
@@ -128,6 +131,11 @@ public final class MalloryNativeFaultWeave {
                 }
                 if ("THROW".equals(site.kind) ? !(unit instanceof ThrowStmt)
                         : "BRANCH".equals(site.kind) ? !(unit instanceof IfStmt)
+                        : "CALL_THROW".equals(site.kind)
+                          ? !(unit instanceof Stmt)
+                            || !((Stmt) unit).containsInvokeExpr()
+                            || !site.callee.equals(((Stmt) unit).getInvokeExpr()
+                                    .getMethodRef().getSignature())
                         : !(unit instanceof Stmt)
                           || !((Stmt) unit).containsInvokeExpr()
                           || !site.callee.equals(((Stmt) unit).getInvokeExpr()
@@ -170,6 +178,11 @@ public final class MalloryNativeFaultWeave {
                 throw new IllegalStateException("original GraphChecker dropped selected unit: "
                         + site.siteId);
             }
+            if ("CALL_THROW".equals(site.kind)) {
+                insertCalledThrowHook(site, target);
+                modified.put(body, Boolean.TRUE);
+                continue;
+            }
             Unit hook = "THROW".equals(site.kind)
                     ? Jimple.v().newInvokeStmt(Jimple.v().newStaticInvokeExpr(
                             target, StringConstant.v(site.siteId),
@@ -190,6 +203,36 @@ public final class MalloryNativeFaultWeave {
             modified.put(body, Boolean.TRUE);
         }
         for (Body body : modified.keySet()) body.validate();
+    }
+
+    /** Catch only the declared exception at one exact invocation, then rethrow unchanged. */
+    private static void insertCalledThrowHook(Site site, SootMethodRef target) {
+        Body body = site.body;
+        Unit invocation = site.unit;
+        Unit successor = body.getUnits().getSuccOf(invocation);
+        if (successor == null) throw new IllegalArgumentException(
+                "call-thrown target has no normal successor: " + site.siteId);
+        SootClass exception = Scene.v().loadClassAndSupport(site.exceptionClass);
+        if (exception == null || exception.isPhantom()) throw new IllegalArgumentException(
+                "call-thrown exception class unavailable: " + site.exceptionClass);
+        Local caught = Jimple.v().newLocal("$malloryCallThrow" + site.unitIndex,
+                RefType.v(site.exceptionClass));
+        body.getLocals().add(caught);
+        GotoStmt resume = Jimple.v().newGotoStmt(successor);
+        Unit handler = Jimple.v().newIdentityStmt(caught,
+                Jimple.v().newCaughtExceptionRef());
+        Unit report = Jimple.v().newInvokeStmt(Jimple.v().newStaticInvokeExpr(
+                target, StringConstant.v(site.siteId),
+                StringConstant.v(site.exceptionClass), caught));
+        Unit rethrow = Jimple.v().newThrowStmt(caught);
+        body.getUnits().insertAfter(resume, invocation);
+        body.getUnits().insertAfter(handler, resume);
+        body.getUnits().insertAfter(report, handler);
+        body.getUnits().insertAfter(rethrow, report);
+        // The new handler must precede an existing application catch. Its
+        // rethrow stays inside the original protected range when there is one.
+        body.getTraps().addFirst(Jimple.v().newTrap(exception,
+                invocation, resume, handler));
     }
 
     private static String value(JsonObject row, String key) {
@@ -253,7 +296,8 @@ public final class MalloryNativeFaultWeave {
             unitIndex = row.get("unitIndex").getAsInt();
             line = row.get("line").getAsInt();
             siteId = value(row, "siteId");
-            callee = target ? "" : value(row, "callee");
+            callee = target && !"CALL_THROW".equals(value(row, "kind"))
+                    ? "" : value(row, "callee");
             exceptionClass = row.has("exceptionClass")
                     ? value(row, "exceptionClass") : "java.io.IOException";
             this.kind = target ? value(row, "kind") : "DOOR";

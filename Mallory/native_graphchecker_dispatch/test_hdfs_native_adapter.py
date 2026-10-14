@@ -153,6 +153,31 @@ class HdfsNativeAdapterTest(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "ambiguous"):
                 adapter._target_sites(same_line, scope)
 
+    def test_inventory_call_thrown_target_keeps_separate_guard_and_oracle(self):
+        request = adapter.request_from_inventory(INVENTORY, "HDFS-48")
+        target = request["target"]
+        guard = target["check_sites"][0]
+        with tempfile.TemporaryDirectory() as temporary:
+            scope = Path(temporary)
+            manifest = {"targets": [
+                {"kind": "BRANCH", "clazz": target["class"],
+                 "method": target["method"], "line": guard["source_line"],
+                 "siteId": "compiled-check"},
+                {"kind": "CALL_THROW", "clazz": target["class"],
+                 "method": target["method"], "line": target["throw_line"],
+                 "siteId": target["site_id"],
+                 "exceptionClass": target["target_exception"],
+                 "callee": "<example.Checks: void checkState(boolean)>"}],
+                "doors": [{"siteId": "original-soot-door"}]}
+            (scope / "weave_manifest.json").write_text(json.dumps(manifest))
+            (scope / "analysis.json").write_text(json.dumps({
+                "targetSiteId": "compiled-check",
+                "throwSiteId": target["site_id"],
+                "analysisKind": "original_graphchecker_seed_backward"}))
+            check, thrown, _ = adapter._target_sites(request, scope)
+            self.assertEqual("compiled-check", check)
+            self.assertEqual(target["site_id"], thrown)
+
     def test_hdfs30_requires_explicit_alternate_junit_attestation(self):
         static = EVIDENCE / "mallory-hdfs30-native-static-v1"
         if not static.is_dir():
@@ -211,6 +236,8 @@ class HdfsNativeAdapterTest(unittest.TestCase):
             scope = json.loads((root / "output/static/scope-input.json").read_text())
             self.assertEqual(577, scope["target"]["check_line"])
             self.assertEqual(578, scope["target"]["throw_line"])
+            self.assertEqual(request["target"]["site_id"],
+                             scope["target"]["site_id"])
             self.assertEqual("testBlockSynchronization",
                              scope["workload"]["method"])
             self.assertNotIn("doors", scope)

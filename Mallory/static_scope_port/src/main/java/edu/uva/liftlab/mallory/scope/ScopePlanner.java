@@ -394,12 +394,22 @@ public final class ScopePlanner {
         try {
             Class<?> bridge = Class.forName("edu.uva.liftlab.graphchecker.causynth."
                     + "MalloryOriginalSeedBridge");
-            original = (JsonObject) bridge.getMethod("analyze", List.class, Path.class,
-                    String.class, int.class, String.class).invoke(null,
-                    dirs, Paths.get(directory), fatalThrow.owner.soot
-                            .getDeclaringClass().getName(),
-                    originalExceptionConstructionLine(fatalThrow),
-                    ((ThrowStmt) fatalThrow.unit).getOp().getType().toString());
+            if (fatalThrow.unit instanceof ThrowStmt) {
+                original = (JsonObject) bridge.getMethod("analyze", List.class, Path.class,
+                        String.class, int.class, String.class).invoke(null,
+                        dirs, Paths.get(directory), fatalThrow.owner.soot
+                                .getDeclaringClass().getName(),
+                        originalExceptionConstructionLine(fatalThrow),
+                        ((ThrowStmt) fatalThrow.unit).getOp().getType().toString());
+            } else {
+                original = (JsonObject) bridge.getMethod("analyzeCallThrow", List.class,
+                        Path.class, String.class, int.class, String.class,
+                        String.class).invoke(null, dirs, Paths.get(directory),
+                        fatalThrow.owner.soot.getSignature(), fatalThrow.index,
+                        ((Stmt) fatalThrow.unit).getInvokeExpr().getMethodRef()
+                                .getSignature(),
+                        string(object(config, "target"), "exception", ""));
+            }
         } catch (ReflectiveOperationException error) {
             Throwable cause = error instanceof java.lang.reflect.InvocationTargetException
                     ? ((java.lang.reflect.InvocationTargetException) error).getCause() : error;
@@ -973,15 +983,39 @@ public final class ScopePlanner {
     }
 
     private Site resolveControlledThrow(Site check, JsonObject spec) {
+        String declaredId = string(spec, "site_id", "");
         List<Site> matches = new ArrayList<>();
         for (Site candidate : check.owner.sites) {
-            if (!matchesFatalThrow(candidate, spec)
+            if ((!declaredId.isEmpty() && !candidate.id.equals(declaredId))
+                    || !matchesFatalThrow(candidate, spec)
                     || !(compoundCheckSites.isEmpty()
                          ? check.owner.guardsOf(candidate.unit).contains(check.unit)
                          : transitiveGuards(candidate).contains(check.unit))) continue;
             matches.add(candidate);
         }
         if (matches.size() == 1) return matches.get(0);
+        if (matches.isEmpty()) {
+            String exception = string(spec, "exception",
+                    string(spec, "exception_class", ""));
+            int throwLine = integer(spec, "throw_line", 0);
+            if (!exception.isEmpty() && throwLine > 0) {
+                List<Site> calls = new ArrayList<>();
+                for (Site candidate : check.owner.sites) {
+                    if ((declaredId.isEmpty() || candidate.id.equals(declaredId))
+                            && candidate.line == throwLine
+                            && candidate.unit instanceof Stmt
+                            && ((Stmt) candidate.unit).containsInvokeExpr()
+                            && callArgumentControlledBy(check, candidate)) {
+                        calls.add(candidate);
+                    }
+                }
+                if (calls.size() == 1) return calls.get(0);
+                throw new IllegalArgumentException("check branch must influence one exact "
+                        + "call-thrown exception; found=" + calls.size()
+                        + " check=" + check.id + " call=" + declaredId
+                        + " exception=" + exception);
+            }
+        }
         String exception = string(spec, "exception", string(spec, "exception_class", ""));
         int throwLine = integer(spec, "throw_line", 0);
         if (matches.size() > 1 || throwLine > 0) {
@@ -991,6 +1025,40 @@ public final class ScopePlanner {
         }
         analysisGaps.add("controlled_throw_unresolved:" + check.id + ":" + exception);
         return null;
+    }
+
+    /** A call can run on both arms while its boolean argument carries the check outcome. */
+    private boolean callArgumentControlledBy(Site check, Site call) {
+        Method method = call.owner;
+        method.flow();
+        Stmt stmt = (Stmt) call.unit;
+        for (Value argument : stmt.getInvokeExpr().getArgs()) {
+            if (argument.getType() instanceof soot.BooleanType
+                    && valueControlledBy(method, argument, call.unit, check.unit,
+                            new HashSet<String>())) return true;
+        }
+        return false;
+    }
+
+    private boolean valueControlledBy(Method method, Value value, Unit use,
+                                      Unit check, Set<String> seen) {
+        if (!(value instanceof Local)) return false;
+        String key = method.indexOf(use) + ":" + value;
+        if (!seen.add(key)) return false;
+        for (Unit definition : method.defs.getDefsOfAt((Local) value, use)) {
+            if (method.guardsOf(definition).contains(check)) return true;
+            if (definition instanceof AssignStmt) {
+                for (ValueBox input : ((AssignStmt) definition).getRightOp()
+                        .getUseBoxes()) {
+                    if (valueControlledBy(method, input.getValue(), definition,
+                            check, seen)) return true;
+                }
+                if (valueControlledBy(method,
+                        ((AssignStmt) definition).getRightOp(), definition,
+                        check, seen)) return true;
+            }
+        }
+        return false;
     }
 
     private void expand(Site site) {
@@ -2134,10 +2202,15 @@ public final class ScopePlanner {
                 ref.add(key, row.get(key));
             }
             if ("THROW_SITE".equals(role)) {
-                ref.addProperty("kind", "THROW");
                 Site oracle = fatalThrow;
-                ref.addProperty("exceptionClass", ((ThrowStmt) oracle.unit)
-                        .getOp().getType().toString());
+                ref.addProperty("kind", oracle.unit instanceof ThrowStmt
+                        ? "THROW" : "CALL_THROW");
+                ref.addProperty("exceptionClass", oracle.unit instanceof ThrowStmt
+                        ? ((ThrowStmt) oracle.unit).getOp().getType().toString()
+                        : string(object(config, "target"), "exception", ""));
+                if (!(oracle.unit instanceof ThrowStmt)) ref.addProperty("callee",
+                        ((Stmt) oracle.unit).getInvokeExpr().getMethodRef()
+                                .getSignature());
                 targets.add(ref);
             } else if ("TARGET_SITE".equals(role)) {
                 ref.addProperty("kind", "BRANCH");

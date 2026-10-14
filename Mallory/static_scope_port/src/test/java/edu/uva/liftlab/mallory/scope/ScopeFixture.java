@@ -104,4 +104,13 @@ final class ScopeFixture {
             throw new IOException("BLOCK_POOL_TARGET");
         }
     }
+
+    static void helperCheckState(boolean valid) {
+        if (!valid) throw new IllegalStateException("CALL_THROW_TARGET");
+    }
+
+    static void checkCalledState(Object first, Object second) {
+        boolean valid = first == second; // CALL_THROW_CHECK
+        helperCheckState(valid); // CALL_THROW_SITE
+    }
 }

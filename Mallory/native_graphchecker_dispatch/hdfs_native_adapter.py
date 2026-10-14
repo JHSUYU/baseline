@@ -272,7 +272,7 @@ def _target_sites(request: dict, scope: Path) -> tuple[str, str, dict]:
                 row.get("line") == chosen[0]["source_line"]]
     if len(selected) != 1:
         raise ValueError("original Soot did not uniquely resolve an inventory guard")
-    throws = [row for row in sites if row.get("kind") == "THROW" and
+    throws = [row for row in sites if row.get("kind") in ("THROW", "CALL_THROW") and
               row.get("clazz") == target["class"] and
               row.get("method") == target["method"] and
               row.get("line") == target["throw_line"] and
@@ -595,6 +595,7 @@ def prepare(request_file: Path, profile_file: Path, output: Path,
     scope_target = {"class": target["class"], "method": target["method"],
                     "line": checks[0]["source_line"],
                     "kind": "BRANCH",
+                    "site_id": target["site_id"],
                     "check_line": checks[0]["source_line"],
                     "throw_line": target["throw_line"],
                     "exception": target["target_exception"]}

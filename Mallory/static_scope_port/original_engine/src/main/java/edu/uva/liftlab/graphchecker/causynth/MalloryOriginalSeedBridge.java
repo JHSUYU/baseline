@@ -49,6 +49,51 @@ public final class MalloryOriginalSeedBridge {
                     String.join(java.io.File.pathSeparator, processDirs));
             CausynthTargetContext targetContext =
                     CausynthTargetResolver.resolve(processDirs);
+            return analyzeResolved(processDirs, outputDir, targetContext);
+        } finally {
+            restore("causynth.target.spec", oldSpec);
+            restore("causynth.output.dir", oldOut);
+            restore(LibraryReceivers.ROOTS, oldRoots);
+        }
+    }
+
+    /** Seed an exact caller invocation whose callee may raise the declared exception. */
+    public static JsonObject analyzeCallThrow(List<String> processDirs, Path outputDir,
+                                              String methodSignature, int callUnitIndex,
+                                              String calledMethod, String exceptionClass)
+            throws IOException {
+        Files.createDirectories(outputDir);
+        soot.SootMethod owner = soot.Scene.v().getMethod(methodSignature);
+        soot.Body body = owner.retrieveActiveBody();
+        soot.Unit[] units = body.getUnits().toArray(new soot.Unit[0]);
+        if (callUnitIndex < 0 || callUnitIndex >= units.length
+                || !(units[callUnitIndex] instanceof soot.jimple.Stmt)
+                || !((soot.jimple.Stmt) units[callUnitIndex]).containsInvokeExpr()
+                || !calledMethod.equals(((soot.jimple.Stmt) units[callUnitIndex])
+                        .getInvokeExpr().getMethodRef().getSignature())
+                || exceptionClass == null || exceptionClass.isEmpty()) {
+            throw new IllegalArgumentException("call-thrown target has no exact invocation: "
+                    + methodSignature + "#u" + callUnitIndex + " " + calledMethod);
+        }
+        ExceptionTargetSite site = new ExceptionTargetSite("mallory", owner,
+                callUnitIndex, calledMethod, exceptionClass);
+        String oldOut = System.getProperty("causynth.output.dir");
+        String oldRoots = System.getProperty(LibraryReceivers.ROOTS);
+        try {
+            System.setProperty("causynth.output.dir", outputDir.toString());
+            System.setProperty(LibraryReceivers.ROOTS,
+                    String.join(java.io.File.pathSeparator, processDirs));
+            return analyzeResolved(processDirs, outputDir,
+                    new CausynthTargetContext(outputDir, site));
+        } finally {
+            restore("causynth.output.dir", oldOut);
+            restore(LibraryReceivers.ROOTS, oldRoots);
+        }
+    }
+
+    private static JsonObject analyzeResolved(List<String> processDirs, Path outputDir,
+                                              CausynthTargetContext targetContext)
+            throws IOException {
             soot.SootMethod targetMethod = soot.Scene.v().getMethod(
                     targetContext.exceptionTargetSite.methodSignature);
             StringBuilder targetBody = new StringBuilder();
@@ -136,11 +181,6 @@ public final class MalloryOriginalSeedBridge {
             }
             exported.add("demandedDoors", doors);
             return exported;
-        } finally {
-            restore("causynth.target.spec", oldSpec);
-            restore("causynth.output.dir", oldOut);
-            restore(LibraryReceivers.ROOTS, oldRoots);
-        }
     }
 
     private static void restore(String name, String prior) {

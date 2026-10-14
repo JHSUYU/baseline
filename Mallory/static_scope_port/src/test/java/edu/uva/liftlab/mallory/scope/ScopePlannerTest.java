@@ -66,6 +66,27 @@ public class ScopePlannerTest {
     }
 
     @Test
+    public void exactCalledExceptionUsesBooleanCheckAndSeparateThrowOracle()
+            throws Exception {
+        int checkLine = fixtureLine("CALL_THROW_CHECK");
+        int callLine = fixtureLine("CALL_THROW_SITE");
+        JsonObject config = fixtureTarget("checkCalledState", checkLine,
+                "BRANCH", "java.lang.IllegalStateException");
+        config.getAsJsonObject("target").addProperty("throw_line", callLine);
+        JsonObject inferred = ScopePlanner.analyze(config);
+        String callId = inferred.get("throwSiteId").getAsString();
+        assertTrue(callId.contains("#u"));
+        config.getAsJsonObject("target").addProperty("site_id", callId);
+        JsonObject result = ScopePlanner.analyze(config);
+        assertEquals(callId, result.get("throwSiteId").getAsString());
+        JsonArray targets = result.getAsJsonObject("weaveManifest")
+                .getAsJsonArray("targets");
+        assertEquals(2, targets.size());
+        assertEquals("CALL_THROW", targets.get(1).getAsJsonObject()
+                .get("kind").getAsString());
+    }
+
+    @Test
     public void compoundAssertUsesOneDominatingAnchorAndKeepsEveryControl()
             throws Exception {
         int line = fixtureLine("COMPOUND_ASSERT_TARGET");

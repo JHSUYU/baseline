@@ -271,6 +271,13 @@ final class SeedBackwardStaticAnalyzer {
         result.targetResolved.put("exception", target.seedException);
         result.targetResolved.put("constructionOrdinal",
                 target.exceptionTargetSite.exceptionConstructionOrdinal);
+        if (target.exceptionTargetSite.callUnitIndex >= 0) {
+            result.targetResolved.put("targetKind", "CALL_THROW");
+            result.targetResolved.put("callUnitIndex",
+                    target.exceptionTargetSite.callUnitIndex);
+            result.targetResolved.put("calledMethod",
+                    target.exceptionTargetSite.calledMethod);
+        }
         String targetMethod = target.exceptionTargetSite.methodSignature;
         SootMethod sootTarget = concreteMethod(targetMethod);
         if (sootTarget == null || !loadMethod(sootTarget)) {
@@ -414,6 +421,10 @@ final class SeedBackwardStaticAnalyzer {
             throw new IllegalStateException(
                     "Declared target has no loaded Jimple body: " + method);
         }
+        if (target.exceptionTargetSite.callUnitIndex >= 0) {
+            initializeCalledExceptionSeed(method, facts);
+            return;
+        }
         for (int throwIndex = 0; throwIndex < facts.size(); throwIndex++) {
             Fact throwFact = facts.get(throwIndex);
             if (declaredExceptionAllocation(facts, throwIndex) == null) {
@@ -445,6 +456,41 @@ final class SeedBackwardStaticAnalyzer {
         LOG.info("Discovered {} direct throw sites for {} in {} methods",
                 discoveredExceptionSeedCount, target.seedException,
                 discoveredExceptionSeedCount == 0 ? 0 : 1);
+    }
+
+    private void initializeCalledExceptionSeed(String method, List<Fact> facts) {
+        int index = target.exceptionTargetSite.callUnitIndex;
+        if (index >= facts.size()) throw new IllegalStateException(
+                "Declared call-thrown target index is absent: "
+                        + target.exceptionTargetSite.stableIdentity());
+        Fact call = facts.get(index);
+        if (!(call.unit instanceof Stmt)
+                || !((Stmt) call.unit).containsInvokeExpr()
+                || !target.exceptionTargetSite.calledMethod.equals(
+                        ((Stmt) call.unit).getInvokeExpr()
+                                .getMethodRef().getSignature())) {
+            throw new IllegalStateException("Declared call-thrown target changed: "
+                    + target.exceptionTargetSite.stableIdentity());
+        }
+        String exceptionNode = factNode(call) + "#exception:"
+                + target.seedException;
+        Set<String> methodRelevant = relevant(method);
+        boolean seededArgument = false;
+        for (Value argument : ((Stmt) call.unit).getInvokeExpr().getArgs()) {
+            String node = canonical(method, argument.toString());
+            if (ignoreNode(node)) continue;
+            methodRelevant.add(node);
+            addEdge("exception_throw", node, exceptionNode, method, call);
+            seededArgument = true;
+        }
+        if (!seededArgument) addEdge("exception_throw", factNode(call),
+                exceptionNode, method, call);
+        forEachGuardOperand(method, call, false, (guard, node) -> {
+            methodRelevant.add(node);
+            addEdge("exception_guard", node, exceptionNode, method, guard);
+        });
+        selectedMethods.add(method);
+        discoveredExceptionSeedCount = 1;
     }
 
     /** Seeds every capture of every declared wire port. */
