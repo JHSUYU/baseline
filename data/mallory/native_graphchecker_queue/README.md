@@ -27,21 +27,52 @@ target exception with its required trial evidence. It does not assert a new
 bug. `confirmed_new_bug` remains null until independent source-level review
 provides that conclusion.
 
-The committed v2 snapshot has 102 rows and four verified terminal imports:
-ZOOKEEPER-07, HDFS-11, HDFS-29, and SOLR-01. The remaining four bound
+The committed v2 snapshot has 102 rows and five verified terminal imports:
+ZOOKEEPER-01, ZOOKEEPER-07, HDFS-11, HDFS-29, and SOLR-01. The remaining five bound
 campaigns show checkpoint observations without a terminal receipt. HDFS-11's
 separate terminal review records incomplete SASL value provenance. HDFS-29
 finished its fault budget without an exact target throw. SOLR-01 has a
 client-only static map with no proven server receive edge; its completed
 budget also has no exact target throw. A completed budget counts as tested
 without treating graph novelty or a target exception as established.
+ZOOKEEPER-01 finished 64 fault trials with 32 strict target-retained trials,
+zero strict trials inside the target closure, and no exact target throw.
 `strict_in_target_closure_trials` is audited against each original native
 trial graph and stays separate from target retention. Coverage sidecars pin
 the trial files used for that count.
 
+HBASE-01 and SOLR-05 are bound to active direct campaigns on node2 and node1,
+respectively, with pinned case-scoped source reviews of their port policies.
+The queue must honor their direct campaign locks until those processes finish.
 `promotion-v2.json` and `promotion-v2-manifest.json` record the initial
-two-completion promotion. The later terminal rows are pinned by their
-completion receipts, coverage sidecars, and this snapshot.
+two-completion promotion. Later rows are pinned by completion receipts,
+coverage sidecars, review pins, and this snapshot.
+`promotion-bind-v1.json` and `promotion-bind-v1-manifest.json` pin the current
+ten bindings, five completions, source archive, launch code, and result digest.
+
+For a newly prepared case, run the one-command promoter on its physical owner
+host after the immutable native config, healthy target gate, and port review
+are ready. It verifies the inventory throw site, native config SHA, port
+source digests, existing checkpoint identity, and queue pilot before writing
+the binding. It then runs one two-slot host wave, which skips held direct
+campaign locks and completed receipts. Use `--bind-only` while another case on
+that host awaits an independent terminal audit; then run `run-host-once.sh`
+after the audit is pinned. The HBASE-01 promotion used:
+
+```bash
+PYTHONPATH=/proj/silentfailure-PG0/ZhenyuLi/Mallory/native-102-queue-v2/python-snapshot-bind-v1 \
+python3 -m Mallory.native_graphchecker_queue.bind_and_run \
+  --case-id HBASE-01 --host node2 \
+  --native-config /proj/silentfailure-PG0/ZhenyuLi/Mallory/HBASE-01-20261014-native-v5/campaign-config.json \
+  --native-state /proj/silentfailure-PG0/ZhenyuLi/Mallory/HBASE-01-20261014-native-v5/campaign \
+  --port-review /proj/silentfailure-PG0/ZhenyuLi/Mallory/HBASE-01-20261014-native-v5/port-review.json \
+  --bind-only
+```
+
+The HDFS-29 inventory identity audit references a node0-local source file.
+Cross-host exporters verify its exact source SHA against a shared source
+archive receipt under the durable queue root if that original path is absent.
+If the original path exists but changes, the export fails.
 
 These files are distinct from the earlier custom/preliminary
 `data/mallory/graphchecker_port/final-results.tsv` and never read that table.
@@ -53,7 +84,7 @@ python3 - <<'PY'
 from pathlib import Path
 from Mallory.native_graphchecker_queue.results import export_native_results
 b = Path('/proj/silentfailure-PG0/ZhenyuLi/Mallory/native-102-queue-v2')
-export_native_results(b / 'python-snapshot-closure-v1/Mallory/cases/inventory.json',
+export_native_results(b / 'python-snapshot-bind-v1/Mallory/cases/inventory.json',
     b / 'config/ownership.json', b / 'config', b / 'state',
     Path('data/mallory/native_graphchecker_queue'))
 PY
