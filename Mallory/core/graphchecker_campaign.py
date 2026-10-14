@@ -655,15 +655,42 @@ def _exact_classpath(value: Any) -> list[str]:
 
 
 def _runtime_classpath(config: dict[str, Any]) -> list[Path | str]:
+    tracing = config.get("tracing_runtime_jar")
+    prepend = [tracing] if tracing is not None else []
     if config["explicit_soot_dependency_classpath"]:
         # Match the planner's process_dirs before its ordered dependency CP.
         # The generic weaver/runner jars are appended only after application
         # and test dependencies, so they cannot silently shadow source types.
-        return [*config["original_class_dirs"],
+        return [*prepend, *config["original_class_dirs"],
                 *config["soot_dependency_classpath"],
                 *config["test_classpath"], *config["tool_classpath"]]
-    return [*config["tool_classpath"], *config["original_class_dirs"],
+    return [*prepend, *config["tool_classpath"], *config["original_class_dirs"],
             *config["test_classpath"]]
+
+
+def _tracing_runtime_jar(value: Any, base: Path) -> Path | None:
+    """Pin a tracing-only classpath override without changing Soot's Scene CP."""
+    if value is None:
+        return None
+    if not isinstance(value, dict) or set(value) != {"path", "sha256", "trace_rows_sha256"}:
+        raise ValueError("tracing_runtime_jar needs path and two SHA-256 digests")
+    jar = _path(value["path"], base, "tracing_runtime_jar")
+    if jar.suffix != ".jar" or _sha256(jar) != value["sha256"]:
+        raise ValueError("tracing runtime JAR SHA-256 differs")
+    resource = "edu/uva/liftlab/mallory/graphchecker/runtime/TraceRows.class"
+    with zipfile.ZipFile(jar) as archive:
+        names = [name for name in archive.namelist() if name.endswith(".class")]
+        if resource not in names or not names:
+            raise ValueError("tracing runtime JAR lacks TraceRows")
+        if any(not (name.startswith("edu/uva/liftlab/mallory/graphchecker/") or
+                    name.startswith("com/google/gson/") or
+                    name.startswith("META-INF/versions/9/com/google/gson/"))
+               for name in names):
+            raise ValueError("tracing runtime JAR contains nontracing application classes")
+        actual = hashlib.sha256(archive.read(resource)).hexdigest()
+    if actual != value["trace_rows_sha256"]:
+        raise ValueError("tracing runtime TraceRows SHA-256 differs")
+    return jar
 
 
 def _runner_class_sha256(class_name: str, classpath: list[Path | str]) -> str:
@@ -905,6 +932,7 @@ def load_config(path: Path) -> dict[str, Any]:
                            directory=True)]
     tool_cp = _paths(raw.get("tool_classpath"), base, "tool_classpath")
     test_cp = _paths(raw.get("test_classpath"), base, "test_classpath")
+    tracing_runtime_jar = _tracing_runtime_jar(raw.get("tracing_runtime_jar"), base)
     explicit_soot_cp = "soot_dependency_classpath" in raw
     soot_cp = (_exact_classpath(raw["soot_dependency_classpath"])
                if explicit_soot_cp else
@@ -916,8 +944,11 @@ def load_config(path: Path) -> dict[str, Any]:
         raise ValueError("ordered Soot dependency classpath differs from static "
                          "weave manifest; supply analysis.classpath as "
                          "soot_dependency_classpath without reordering")
-    runtime_cp = ([*originals, *soot_cp, *test_cp, *tool_cp]
-                  if explicit_soot_cp else [*tool_cp, *originals, *test_cp])
+    runtime_cp = ([*([tracing_runtime_jar] if tracing_runtime_jar else []),
+                   *originals, *soot_cp, *test_cp, *tool_cp]
+                  if explicit_soot_cp else
+                  [*([tracing_runtime_jar] if tracing_runtime_jar else []),
+                   *tool_cp, *originals, *test_cp])
     graph_jar = _path(raw.get("graph_jar"), base, "graph_jar")
     cwd = _path(raw.get("cwd"), base, "cwd", directory=True)
     java = raw.get("java", "java")
@@ -943,6 +974,7 @@ def load_config(path: Path) -> dict[str, Any]:
             "weave_manifest": manifest_path, "static_scope_map": static_map,
             "static_may_scope_map": static_may_map,
             "original_class_dirs": originals, "tool_classpath": tool_cp,
+            "tracing_runtime_jar": tracing_runtime_jar,
             "test_classpath": test_cp, "graph_jar": graph_jar,
             "soot_dependency_classpath": soot_cp,
             "soot_dependency_classpath_sha256": soot_cp_sha256,

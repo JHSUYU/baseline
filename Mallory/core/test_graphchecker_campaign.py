@@ -9,6 +9,7 @@ import os
 import subprocess
 import tempfile
 import unittest
+import zipfile
 from pathlib import Path
 from unittest.mock import patch
 
@@ -30,6 +31,8 @@ from Mallory.core.graphchecker_campaign import (_archive_jsonl, _archive_stat,
                                                 _trial_verdict,
                                                 _trial_arg,
                                                 _runner_class_sha256, _verify_prepared,
+                                                _tracing_runtime_jar,
+                                                _runtime_classpath,
                                                 load_config, load_trace, prepare,
                                                 scan_window_trace, summarize_evidence,
                                                 validate_plan, verify_trial_artifacts)
@@ -37,6 +40,35 @@ from Mallory.core.graphchecker_trial import analyze_trial
 
 
 class GraphCheckerCampaignTest(unittest.TestCase):
+    def test_sha_pinned_tracing_runtime_precedes_exact_soot_cp_without_shadowing(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            jar = root / "trace.jar"
+            resource = "edu/uva/liftlab/mallory/graphchecker/runtime/TraceRows.class"
+            with zipfile.ZipFile(jar, "w") as archive:
+                archive.writestr(resource, b"pinned trace")
+            identity = {"path": str(jar),
+                        "sha256": hashlib.sha256(jar.read_bytes()).hexdigest(),
+                        "trace_rows_sha256": hashlib.sha256(b"pinned trace").hexdigest()}
+            self.assertEqual(jar, _tracing_runtime_jar(identity, root))
+            config = {"tracing_runtime_jar": jar,
+                      "explicit_soot_dependency_classpath": True,
+                      "original_class_dirs": [root / "original"],
+                      "soot_dependency_classpath": [root / "old-runtime.jar"],
+                      "test_classpath": [root / "tests"],
+                      "tool_classpath": [root / "tools"]}
+            self.assertEqual(jar, _runtime_classpath(config)[0])
+            self.assertEqual(root / "old-runtime.jar", _runtime_classpath(config)[2])
+            identity["trace_rows_sha256"] = "0" * 64
+            with self.assertRaisesRegex(ValueError, "TraceRows SHA-256"):
+                _tracing_runtime_jar(identity, root)
+            identity["trace_rows_sha256"] = hashlib.sha256(b"pinned trace").hexdigest()
+            with zipfile.ZipFile(jar, "a") as archive:
+                archive.writestr("org/apache/solr/Fake.class", b"shadow")
+            identity["sha256"] = hashlib.sha256(jar.read_bytes()).hexdigest()
+            with self.assertRaisesRegex(ValueError, "nontracing application classes"):
+                _tracing_runtime_jar(identity, root)
+
     TARGET = {"check_site_id": "check", "throw_site_id": "throw",
               "exception_class": "java.io.IOException"}
     FAULT = {"siteId": "door", "node": "nn-1#epoch0",
