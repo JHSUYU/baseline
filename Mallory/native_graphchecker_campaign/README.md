@@ -237,6 +237,22 @@ one actor, never across processes. Closure membership, an unpaired endpoint, or 
 STATE edge alone cannot prove this order; those trials remain
 `needs_causal_review`.
 
+For `region_state` trials, `native_target_retained` means that the original
+graph contains a reached target. The separate `post_fault_target_check_observed`
+field counts only selected `TARGET_CHECK` receipts appended after the last
+`FAULT_APPLIED` when the native hook's single-JVM receipt sequence is
+globally gapless; its evidence gives check counts on each side of the fault.
+If that clock cannot be verified, cross-actor order is unknown, while
+same-actor sequence comparisons remain available. A later event on another
+actor establishes observed order, not causal influence.
+The observation is `null` when no selected check receipt or a cross-actor
+ordering proof is available.
+When all selected checks precede the fault, the campaign records zero
+post-fault target checks and gives the graph delta no target-directed novelty
+score. It still retains exact eligible doors for a later fault sequence.
+A completed trial in this state does not claim that the faulted execution
+reached the check.
+
 Every trial also records `raw_exact_target_throw_after_applied_prefix` and
 `raw_target_throw_observation`. These fields retain an exact target throw
 after a verified prefix when a later planned fault misses, as well as in

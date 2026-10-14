@@ -796,7 +796,8 @@ def _audit_region_terminal(case_id: str, config_path: Path, root: Path,
             healthy_summary.get("targetThrowObserved")):
         raise ValueError("REGION_STATE healthy original JUnit/target is unverified")
     strict_count = retained = strict_retained = inside_closure = throws = candidates = 0
-    for result, trial_root, events in results[1:]:
+    for trial_index, (result, trial_root, events) in enumerate(results[1:]):
+        record = trials[trial_index]
         is_strict = result["strict_injection"] is True
         strict_count += is_strict
         trial_summary = _verified_region_summary(trial_root, result, config, engine)
@@ -821,6 +822,17 @@ def _audit_region_terminal(case_id: str, config_path: Path, root: Path,
                 strict_retained += 1
                 applied = [row for row in events if row.get("kind") == "FAULT_APPLIED"]
                 last = applied[-1] if applied else None
+                if ("post_fault_target_check_observed" in result or
+                        "post_fault_target_check_evidence" in result):
+                    observation = native._post_fault_target_checks(
+                        events, trial_summary, last)
+                    if (result.get("post_fault_target_check_observed") is not
+                            observation["observed"] or
+                            result.get("post_fault_target_check_evidence") !=
+                            observation or
+                            record.get("post_fault_target_check_observed") is not
+                            observation["observed"]):
+                        raise ValueError("REGION_STATE post-fault target order changed")
                 inside = _last_fault_in_region_closure(trial_summary, last)
                 if result.get("fault_in_target_closure") is not inside:
                     raise ValueError("REGION_STATE fault/target membership changed")

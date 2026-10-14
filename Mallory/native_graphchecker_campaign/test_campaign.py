@@ -18,6 +18,151 @@ from Mallory.native_graphchecker_campaign import campaign as core
 
 
 class NativeAdmissionLineageTest(unittest.TestCase):
+    def test_post_fault_target_observation_keeps_graph_and_time_separate(self) -> None:
+        site = "FSDirTruncateOp.truncate#u65"
+        summary = {"targetSiteId": site, "targetEvidence": {
+            "physicalActor": "nn0", "actorEpochOrdinal": 0,
+            "targetCheckOccurrenceIds": ["target-a", "target-b", "target-c"]}}
+        rows = [{"kind": "FAULT_DOOR", "seq": 1,
+                 "node": "dn1", "actorEpochOrdinal": 0,
+                 "occurrenceId": "preceding-door"}]
+        rows += [{"kind": "TARGET_CHECK", "seq": seq, "siteId": site,
+                 "node": "nn0", "actorEpochOrdinal": 0,
+                 "occurrenceId": occurrence}
+                for seq, occurrence in ((2, "target-a"),
+                                        (3, "target-b"),
+                                        (4, "target-c"))]
+        applied = {"kind": "FAULT_APPLIED", "seq": 5,
+                   "node": "dn1", "actorEpochOrdinal": 0,
+                   "occurrenceId": "closure-fault"}
+        rows.append(applied)
+        observation = core._post_fault_target_checks(rows, summary, applied)
+        self.assertFalse(observation["observed"])
+        self.assertEqual(3, observation["beforeFaultCheckCount"])
+        self.assertEqual(0, observation["afterFaultCheckCount"])
+        self.assertEqual("single_jvm_gapless_receipt_clock",
+                         observation["orderBasis"])
+        rows.append({"kind": "TARGET_CHECK", "seq": 6, "siteId": site,
+                     "node": "nn0", "actorEpochOrdinal": 0,
+                     "occurrenceId": "unselected-target"})
+        self.assertFalse(core._post_fault_target_checks(
+            rows, summary, applied)["observed"])
+        # The verified one-JVM receipt clock orders these two actors, but
+        # still does not establish a causal effect from fault to check.
+        rows.append({"kind": "TARGET_CHECK", "seq": 7, "siteId": site,
+                     "node": "nn0", "actorEpochOrdinal": 0,
+                     "occurrenceId": "target-c"})
+        observation = core._post_fault_target_checks(rows, summary, applied)
+        self.assertTrue(observation["observed"])
+        self.assertEqual(1, observation["afterFaultCheckCount"])
+        self.assertEqual(0, observation["sameActorOrderedCheckCount"])
+        self.assertEqual("unproven", observation["causalOrder"])
+        rows.append({"kind": "FAULT_APPLIED", "seq": 8,
+                     "node": "nn0", "actorEpochOrdinal": 0,
+                     "occurrenceId": "same-actor-fault"})
+        local_fault = rows[-1]
+        rows.append({"kind": "TARGET_CHECK", "seq": 9, "siteId": site,
+                     "node": "nn0", "actorEpochOrdinal": 0,
+                     "occurrenceId": "target-c"})
+        observation = core._post_fault_target_checks(rows, summary, local_fault)
+        self.assertEqual(1, observation["sameActorOrderedCheckCount"])
+        self.assertEqual("same_actor_seq_proven", observation["causalOrder"])
+        # A non-gapless file may combine clocks from different JVMs. Never
+        # infer pre-fault reach from row order in that case.
+        uncertain = [rows[1], applied]
+        observation = core._post_fault_target_checks(
+            uncertain, summary, applied)
+        self.assertIsNone(observation["observed"])
+        self.assertEqual(1, observation["unorderedCheckCount"])
+        self.assertEqual("same_actor_seq_only", observation["orderBasis"])
+        missing = core._post_fault_target_checks([applied], summary, applied)
+        self.assertIsNone(missing["observed"])
+
+    def test_pre_fault_only_target_keeps_successors_without_novelty_credit(self) -> None:
+        first = {"siteId": "IO#first", "node": "dn1",
+                 "actorEpochOrdinal": 0, "ordinal": 1,
+                 "exceptionClass": "java.io.IOException"}
+        second = {**first, "siteId": "IO#next", "ordinal": 2}
+        state = {"active": {"index": 1, "name": "r0001", "faults": [first],
+                            "key": core._plan_key([first]),
+                            "tier": "observed_closure", "novelty": 0,
+                            "attempt": 0},
+                 "elapsed_seconds": 0.0, "completed_fault_trials": 0,
+                 "trials": [], "queue": [], "seen_plan_keys": [],
+                 "fault_id_attempts": {}, "fault_id_successes": {},
+                 "seen_node_families": [], "seen_edge_families": [],
+                 "seen_branch_outcomes": [], "status": "running",
+                 "terminal": False, "scheduler_version": core.SCHEDULER_VERSION,
+                 "budget": {"fault_trials": 10, "seconds": 60,
+                            "max_faults_per_trial": 4},
+                 "healthy": {"status": "healthy_seed"}}
+        result = {"faults": [first], "elapsed_seconds": 1.0,
+                  "status": "checked", "runner_mode": "region_state",
+                  "strict_injection": True, "native_target_retained": True,
+                  "fault_in_target_closure": True,
+                  "post_fault_target_check_observed": False,
+                  "target_exception_triggered": False,
+                  "native_delta": {"newNodeFamilies": ["new-region"],
+                                   "newClosureEdgeFamilies": ["new-edge"],
+                                   "newBranchOutcomeIds": ["new-branch"]},
+                  "eligible_doors": [{"fault": second, "seq": 3,
+                                      "tier": "observed_closure",
+                                      "target_phase": "after_selected_target"}]}
+        core._accept(state, result, "r0001")
+        self.assertEqual(0, state["trials"][0]["target_closure_novelty"])
+        self.assertFalse(state["trials"][0][
+            "post_fault_target_check_observed"])
+        self.assertEqual([], state["seen_node_families"])
+        self.assertEqual(1, len(state["queue"]))
+        self.assertEqual(0, state["queue"][0]["novelty"])
+
+    def test_region_trial_does_not_infer_post_fault_reach_from_graph(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            trial = Path(directory)
+            site = "FSDirTruncateOp.truncate#u65"
+            summary = {"status": "recorded", "targetReached": True,
+                       "targetSiteId": site,
+                       "closureMembershipAuthority":
+                           "original_runtime_selected_region_finalizer",
+                       "closureOccurrenceIds": ["target", "fault"],
+                       "targetEvidence": {
+                           "physicalActor": "nn0", "actorEpochOrdinal": 0,
+                           "targetCheckOccurrenceIds": ["target"]}}
+            check = {"kind": "TARGET_CHECK", "seq": 1,
+                     "siteId": site, "node": "nn0",
+                     "actorEpochOrdinal": 0, "occurrenceId": "target"}
+            applied = {"kind": "FAULT_APPLIED", "seq": 2,
+                       "siteId": "IO#fault", "node": "dn1",
+                       "actorEpochOrdinal": 0, "occurrenceId": "fault",
+                       "ordinal": 1, "exceptionClass": "java.io.IOException"}
+            config = {"target_site": site,
+                      "target_throw": {"siteId": "FSDirTruncateOp#throw",
+                                       "exceptionClass": "java.io.IOException"},
+                      "recording": {"test_id": "TestFileTruncate#testMultipleTruncate",
+                                    "static_scope_map": "scope",
+                                    "candidate_graph": "graph",
+                                    "region_skeletons": "skeletons"}}
+            feedback = {"targetRetained": True,
+                        "newNodeFamilies": ["new-region"],
+                        "newClosureEdgeFamilies": [],
+                        "newBranchOutcomeIds": []}
+            with patch.object(core, "_region_schedule"), patch.object(
+                    core, "_analysis_engine_jar", return_value=Path("engine")), patch.object(
+                    core, "record_region_state", return_value=summary), patch.object(
+                    core, "delta_region_state", return_value=feedback):
+                result = core._run_region_trial(
+                    config, {"weave_config": {"java": "java"}}, trial,
+                    [{"siteId": "IO#fault"}], {"status": "recorded"},
+                    {"junit_passed": True}, [check, applied], True)
+            self.assertEqual("checked", result["status"])
+            self.assertTrue(result["native_target_retained"])
+            self.assertTrue(result["fault_in_target_closure"])
+            self.assertFalse(result["post_fault_target_check_observed"])
+            self.assertEqual(1, result[
+                "post_fault_target_check_evidence"]["beforeFaultCheckCount"])
+            self.assertEqual(0, result[
+                "post_fault_target_check_evidence"]["afterFaultCheckCount"])
+
     def test_value_read_from_novelty_is_independent_and_once_per_family(self) -> None:
         state = {"seen_node_families": [], "seen_edge_families": [],
                  "seen_branch_outcomes": []}

@@ -1236,6 +1236,74 @@ def _region_doors(rows: list[dict[str, Any]], summary: dict[str, Any],
     return found
 
 
+def _post_fault_target_checks(rows: list[dict[str, Any]],
+                              summary: dict[str, Any],
+                              applied: dict[str, Any] | None
+                              ) -> dict[str, Any]:
+    """Order selected checks with the native hook's verified receipt clock.
+
+    NativeFaultHooks emits one gapless sequence under a JVM-wide lock. Only
+    that verified clock can order two logical actors; otherwise use an actor's
+    own sequence and leave cross-actor checks unknown. Temporal order still
+    does not prove that one actor's fault caused another actor's check.
+    """
+    selected = summary.get("targetEvidence", {})
+    selected_ids = set(selected.get("targetCheckOccurrenceIds", []))
+    selected_actor = (selected.get("physicalActor"),
+                      selected.get("actorEpochOrdinal"))
+    applied_index = next((index for index, row in enumerate(rows)
+                          if row is applied), None)
+    if applied is not None and applied_index is None:
+        raise ValueError("last applied fault is absent from the ordered log")
+    global_clock = all(row["seq"] == index + 1
+                       for index, row in enumerate(rows))
+    before = after = unordered = 0
+    same_actor_after = 0
+    for index, row in enumerate(rows):
+        if (row.get("kind") != "TARGET_CHECK" or
+                row.get("siteId") != summary.get("targetSiteId") or
+                row.get("occurrenceId") not in selected_ids or
+                (row.get("node"), row.get("actorEpochOrdinal")) !=
+                selected_actor):
+            continue
+        if applied_index is None:
+            unordered += 1
+            continue
+        same_actor = ((row.get("node"), row.get("actorEpochOrdinal")) ==
+                      (applied.get("node"), applied.get("actorEpochOrdinal")))
+        if global_clock:
+            ordered_before = index < applied_index
+            ordered_after = index > applied_index
+        elif same_actor:
+            ordered_before = row["seq"] < applied["seq"]
+            ordered_after = row["seq"] > applied["seq"]
+        else:
+            ordered_before = ordered_after = False
+        if ordered_before:
+            before += 1
+        elif ordered_after:
+            after += 1
+            if same_actor and row["seq"] > applied["seq"]:
+                same_actor_after += 1
+        else:
+            unordered += 1
+    if after:
+        observed = True
+    elif unordered or not before:
+        observed = None
+    else:
+        observed = False
+    return {"observed": observed,
+            "beforeFaultCheckCount": before,
+            "afterFaultCheckCount": after,
+            "unorderedCheckCount": unordered,
+            "sameActorOrderedCheckCount": same_actor_after,
+            "orderBasis": ("single_jvm_gapless_receipt_clock" if global_clock
+                           else "same_actor_seq_only"),
+            "causalOrder": ("same_actor_seq_proven" if same_actor_after else
+                            "unproven")}
+
+
 def _region_throw_evidence(rows: list[dict[str, Any]], target_site: str,
                            target_throw: dict[str, str],
                            applied: dict[str, Any] | None
@@ -1695,6 +1763,9 @@ def _run_region_trial(config: dict[str, Any], admitted: dict[str, Any],
         closure_ids = set(summary["closureOccurrenceIds"])
     if last is not None:
         result["fault_in_target_closure"] = last["occurrenceId"] in closure_ids
+        post_fault = _post_fault_target_checks(events, summary, last)
+        result["post_fault_target_check_observed"] = post_fault["observed"]
+        result["post_fault_target_check_evidence"] = post_fault
     result["eligible_doors"] = ([] if summary.get("status") ==
                                 "target_throw_unplanned" else
                                 _region_doors(events, summary, last))
@@ -1735,6 +1806,8 @@ def _run_trial(config: dict[str, Any], admitted: dict[str, Any],
     result["target_exception_triggered"] = False
     result["native_target_retained"] = False
     result["fault_in_target_closure"] = False
+    result["post_fault_target_check_observed"] = False
+    result["post_fault_target_check_evidence"] = None
     result["target_temporal_admitted"] = False
     result["target_temporal_reason"] = "no_applied_fault"
     result["target_temporal_evidence"] = None
@@ -1898,6 +1971,10 @@ def _accept(state: dict[str, Any], result: dict[str, Any], name: str) -> None:
                   "native_target_retained": result["native_target_retained"],
                   "target_exception_triggered": result["target_exception_triggered"],
                   "elapsed_seconds": result["elapsed_seconds"]}
+        if (result.get("runner_mode") == "region_state" and
+                "post_fault_target_check_observed" in result):
+            record["post_fault_target_check_observed"] = result[
+                "post_fault_target_check_observed"]
         state["trials"].append(record)
         if state.get("scheduler_version", 1) >= 5:
             record["target_phase"] = active.get("target_phase", "unknown")
@@ -1935,7 +2012,13 @@ def _accept(state: dict[str, Any], result: dict[str, Any], name: str) -> None:
             record["observed_actor_successors_enqueued"] = (
                 len(state["queue"]) - before)
         if result["status"] in ("checked", "candidate"):
-            novelty = _novelty(state, result["native_delta"])
+            # A graph may retain a target that was checked only before this
+            # fault. Keep its exact descendants available for exploration,
+            # but do not reward that graph delta as post-fault target feedback.
+            novelty = (0 if result.get("runner_mode") == "region_state" and
+                       "post_fault_target_check_observed" in result and
+                       result["post_fault_target_check_observed"] is not True
+                       else _novelty(state, result["native_delta"]))
             record["target_closure_novelty"] = novelty
             _enqueue(state, result["eligible_doors"], active["faults"], novelty)
     state["active"] = None
