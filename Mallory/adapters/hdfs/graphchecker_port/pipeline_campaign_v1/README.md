@@ -8,6 +8,9 @@ choose the I/O doors, regions, value edges, and coverage sites. The campaign
 request is `campaign-request-v1.json`; `scope-input-v1.json` pins the exact
 ordered classpath and asks for `original_graphchecker_seed`,
 `original_typed_io_frontier`, and static value projection.
+`scope-input-node1-v3.json` records the fresh node1 classpath and ASM 9.4
+ordering used for the current guarded static proof; its output paths are
+local scratch and can be regenerated on another host.
 
 The source check is `BlockTokenSecretManager.retrieveDataEncryptionKey` at
 `BlockTokenSecretManager.java:552`; the `InvalidEncryptionKeyException` throw
