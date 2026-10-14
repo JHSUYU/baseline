@@ -31,6 +31,7 @@ from Mallory.native_graphchecker_feedback.region_state_graph import (
 )
 
 SCHEMA = 1
+SCHEDULER_VERSION = 2
 FAULT_FIELDS = ("siteId", "node", "actorEpochOrdinal", "occurrenceId",
                 "ordinal", "exceptionClass")
 SELECTOR_FIELDS = ("siteId", "node", "actorEpochOrdinal", "ordinal",
@@ -672,7 +673,14 @@ def _enqueue(state: dict[str, Any], doors: list[dict[str, Any]],
     state["seen_plan_keys"] = sorted(seen)
 
 
-def _pick(state: dict[str, Any]) -> dict[str, Any]:
+def _fault_id(fault: dict[str, Any]) -> str:
+    """CrashFuzz-style I/O identity, independent of actor and occurrence."""
+    return json.dumps([fault["siteId"], fault["exceptionClass"]],
+                      separators=(",", ":"), ensure_ascii=False)
+
+
+def _pick_v1(state: dict[str, Any]) -> dict[str, Any]:
+    """Frozen selection rule for checkpoints created before version 2."""
     queue = state["queue"]
     if not queue:
         raise ValueError("empty native fault queue")
@@ -686,6 +694,51 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
         item["novelty"] + 3 * len(item["faults"]) +
         min(20, completed - item["enqueued_at"]) -
         25 * item.get("attempt", 0), item["key"]))
+    queue.remove(selected)
+    return selected
+
+
+def _pick(state: dict[str, Any]) -> dict[str, Any]:
+    """Select diverse I/O sites, with explicit depth and waiting slots."""
+    version = state.get("scheduler_version", 1)
+    if version == 1:
+        return _pick_v1(state)
+    if version != SCHEDULER_VERSION:
+        raise ValueError(f"unsupported native scheduler version: {version}")
+    queue = state["queue"]
+    if not queue:
+        raise ValueError("empty native fault queue")
+    completed = state["completed_fault_trials"]
+    outside = [item for item in queue if item["tier"] == "outside_closure"]
+    inside = [item for item in queue if item["tier"] != "outside_closure"]
+    # Keep one of eight slots for observed doors outside the target closure.
+    candidates = (outside if outside and completed % 8 == 7
+                  else inside or outside)
+
+    def attempts(item: dict[str, Any]) -> int:
+        return state["fault_id_attempts"].get(_fault_id(item["faults"][-1]), 0)
+
+    def score(item: dict[str, Any]) -> tuple[Any, ...]:
+        fault_id = _fault_id(item["faults"][-1])
+        return (-attempts(item),
+                -state["fault_id_successes"].get(fault_id, 0),
+                {"observed_closure": 3, "pre_target_actor": 2,
+                 "outside_closure": 1}.get(item["tier"], 1),
+                item["novelty"], len(item["faults"]),
+                completed - item["enqueued_at"],
+                -item.get("attempt", 0), item["key"])
+
+    if inside and completed % 8 == 6:
+        # A bounded waiting slot prevents older exact plans from starving.
+        selected = min(candidates, key=lambda item: (
+            item["enqueued_at"], attempts(item), item["key"]))
+    else:
+        if inside and completed % 4 == 3:
+            # Preserve multi-fault exploration even with many unseen doors.
+            deeper = [item for item in candidates if len(item["faults"]) > 1]
+            if deeper:
+                candidates = deeper
+        selected = max(candidates, key=score)
     queue.remove(selected)
     return selected
 
@@ -1172,6 +1225,14 @@ def _accept(state: dict[str, Any], result: dict[str, Any], name: str) -> None:
                   "target_exception_triggered": result["target_exception_triggered"],
                   "elapsed_seconds": result["elapsed_seconds"]}
         state["trials"].append(record)
+        if state.get("scheduler_version", 1) == SCHEDULER_VERSION:
+            fault_id = _fault_id(active["faults"][-1])
+            attempts = state["fault_id_attempts"]
+            attempts[fault_id] = attempts.get(fault_id, 0) + 1
+            if result["strict_injection"]:
+                successes = state["fault_id_successes"]
+                successes[fault_id] = successes.get(fault_id, 0) + 1
+            record["last_fault_id"] = fault_id
         if (result["status"] == "unmatched" and
                 result.get("runner_mode") == "region_state" and
                 active.get("attempt", 0) < MAX_UNMATCHED_RETRIES):
@@ -1203,6 +1264,7 @@ def _finish_status(state: dict[str, Any]) -> None:
 def _new_state(config: dict[str, Any], config_sha: str,
                admitted: dict[str, Any]) -> dict[str, Any]:
     return {"schema_version": SCHEMA, "case_id": config["case_id"],
+            "scheduler_version": SCHEDULER_VERSION,
             "config_sha256": config_sha, "budget": config["budget"],
             "weave_receipt_sha256": _sha(Path(admitted["weave_config"][
                 "output_classes"]) / "native-original-weave-receipt.json"),
@@ -1213,6 +1275,7 @@ def _new_state(config: dict[str, Any], config_sha: str,
             "healthy": None, "trials": [], "queue": [], "seen_plan_keys": [],
             "seen_node_families": [], "seen_edge_families": [],
             "seen_branch_outcomes": [], "completed_fault_trials": 0,
+            "fault_id_attempts": {}, "fault_id_successes": {},
             "elapsed_seconds": 0.0, "active": None, "next_trial_index": 1}
 
 

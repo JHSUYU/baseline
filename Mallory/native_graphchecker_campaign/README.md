@@ -38,6 +38,16 @@ that session, compares observed target closure families and branch outcomes,
 and updates a persistent fault queue. It gives most queue slots to observed
 closure doors and reserves one in eight fault trials for doors outside it.
 
+New campaigns use scheduler version 2. The last fault's `siteId` and
+`exceptionClass` form a fault ID; physical actors and event ordinals remain in
+the exact injection selector but do not split this scheduling identity. A
+new or less-tested fault ID outranks repeated IDs before closure novelty and
+depth break ties. One in eight selections goes to the oldest waiting plan,
+and another one in eight favors a multi-fault sequence when one is queued. The outside
+closure slot is still one in eight. Attempt and successful-injection counts
+are checkpointed, so resuming does not reset diversity. Existing checkpoints
+without a scheduler version continue with their original selection rule.
+
 ## Input contract
 
 Call `run_campaign(Path("case.json"), Path("case-output"))` or run

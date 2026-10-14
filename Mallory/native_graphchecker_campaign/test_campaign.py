@@ -115,6 +115,113 @@ class NativeAdmissionLineageTest(unittest.TestCase):
         self.assertEqual("running", state["status"])
 
 
+class NativeQueueDiversityTest(unittest.TestCase):
+    """The queue should reach distinct doors without losing deep sequences."""
+
+    @staticmethod
+    def _item(site: str, key: str, *, novelty: int = 0,
+              depth: int = 1, tier: str = "observed_closure",
+              enqueued_at: int = 0) -> dict:
+        fault = {"siteId": site, "exceptionClass": "java.io.IOException"}
+        return {"faults": [dict(fault) for _ in range(depth)], "key": key,
+                "tier": tier, "novelty": novelty,
+                "enqueued_at": enqueued_at, "attempt": 0}
+
+    @staticmethod
+    def _state(items: list[dict], *, completed: int = 0,
+               version: int = 2) -> dict:
+        state = {"queue": items, "completed_fault_trials": completed,
+                 "elapsed_seconds": 0.0, "trials": [], "active": None,
+                 "status": "running", "terminal": False,
+                 "healthy": {"status": "healthy_seed"},
+                 "budget": {"fault_trials": 100, "seconds": 1000,
+                            "max_faults_per_trial": 4}}
+        if version == 2:
+            state.update(scheduler_version=2, fault_id_attempts={},
+                         fault_id_successes={})
+        return state
+
+    @staticmethod
+    def _complete(state: dict, item: dict, number: int,
+                  *, applied: bool = True) -> None:
+        name = f"r{number:04d}"
+        state["active"] = {"index": number, "name": name,
+                           "faults": item["faults"], "key": item["key"],
+                           "tier": item["tier"], "novelty": item["novelty"]}
+        core._accept(state, {"faults": item["faults"],
+                             "elapsed_seconds": 1.0,
+                             "status": "invalid_native_session",
+                             "strict_injection": applied,
+                             "native_target_retained": False,
+                             "target_exception_triggered": False}, name)
+
+    def test_fault_id_ignores_actor_but_distinguishes_exception(self) -> None:
+        first = {"siteId": "RPC#u1", "exceptionClass": "java.io.IOException",
+                 "node": "nn", "ordinal": 1}
+        same_io = dict(first, node="dn", ordinal=9)
+        different_exception = dict(first, exceptionClass="java.net.SocketException")
+        self.assertEqual(core._fault_id(first), core._fault_id(same_io))
+        self.assertNotEqual(core._fault_id(first),
+                            core._fault_id(different_exception))
+
+    def test_distinct_last_fault_sites_survive_high_novelty_duplicates_and_resume(self) -> None:
+        state = self._state([self._item("RPC#A", "a1", novelty=60),
+                             self._item("RPC#A", "a2", novelty=60),
+                             self._item("RPC#B", "b", novelty=0),
+                             self._item("RPC#C", "c", novelty=0)])
+        picked = core._pick(state)
+        self.assertEqual("RPC#A", picked["faults"][-1]["siteId"])
+        self._complete(state, picked, 1)
+        with tempfile.TemporaryDirectory() as directory:
+            checkpoint = Path(directory) / "checkpoint.json"
+            core._atomic(checkpoint, state)
+            state = core._load(checkpoint)
+        sites = [picked["faults"][-1]["siteId"]]
+        for number in (2, 3):
+            picked = core._pick(state)
+            sites.append(picked["faults"][-1]["siteId"])
+            self._complete(state, picked, number)
+        self.assertEqual({"RPC#A", "RPC#B", "RPC#C"}, set(sites))
+        self.assertEqual(1, state["fault_id_attempts"][core._fault_id(
+            {"siteId": "RPC#A", "exceptionClass": "java.io.IOException"})])
+
+    def test_wait_depth_and_outside_slots(self) -> None:
+        waiting = self._state([self._item("RPC#new", "new", novelty=60,
+                                              enqueued_at=5),
+                               self._item("RPC#old", "old", enqueued_at=0)],
+                              completed=6)
+        self.assertEqual("RPC#old", core._pick(waiting)["faults"][-1]["siteId"])
+        depth = self._state([self._item("RPC#single", "single", novelty=60),
+                             self._item("RPC#deep", "deep", depth=2)],
+                            completed=3)
+        self.assertEqual(2, len(core._pick(depth)["faults"]))
+        outside = self._state([self._item("RPC#inside", "inside"),
+                               self._item("RPC#outside", "outside",
+                                          tier="outside_closure")], completed=7)
+        self.assertEqual("RPC#outside", core._pick(outside)["faults"][-1]["siteId"])
+
+    def test_closure_feedback_still_breaks_ties_within_diverse_fault_ids(self) -> None:
+        state = self._state([self._item("RPC#low", "low", novelty=0),
+                             self._item("RPC#high", "high", novelty=7)])
+        self.assertEqual("RPC#high", core._pick(state)["faults"][-1]["siteId"])
+
+    def test_unmatched_attempt_rotates_without_claiming_success(self) -> None:
+        state = self._state([self._item("RPC#A", "a1", novelty=60),
+                             self._item("RPC#A", "a2", novelty=60),
+                             self._item("RPC#B", "b")])
+        selected = core._pick(state)
+        self._complete(state, selected, 1, applied=False)
+        self.assertEqual({}, state["fault_id_successes"])
+        self.assertEqual("RPC#B", core._pick(state)["faults"][-1]["siteId"])
+
+    def test_legacy_checkpoint_keeps_frozen_picker(self) -> None:
+        old = self._state([self._item("RPC#A", "a", novelty=60),
+                           self._item("RPC#B", "b")], version=1)
+        old["fault_id_attempts"] = {core._fault_id(
+            {"siteId": "RPC#A", "exceptionClass": "java.io.IOException"}): 99}
+        self.assertEqual("RPC#A", core._pick(old)["faults"][-1]["siteId"])
+
+
 class WireTemporalProofTest(unittest.TestCase):
     """Two exact actors; VM event IDs and receipt order are separate clocks."""
 
