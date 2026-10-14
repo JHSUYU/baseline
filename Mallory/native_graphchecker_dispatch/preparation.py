@@ -12,6 +12,7 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import signal
 import socket
 import subprocess
@@ -73,6 +74,39 @@ def _atomic_copy(source: Path, destination: Path) -> None:
     finally:
         if os.path.exists(temporary):
             os.unlink(temporary)
+
+
+def stage_original_recording_artifacts(original_scope: Path,
+                                       destination: Path,
+                                       receipt_path: Path | None = None) -> dict:
+    """Stage the three original static sidecars needed before REGION_STATE weave.
+
+    ScopePlanner's translated fault manifest is separate. The original engine
+    reads these sidecars from its output directory when it instruments runtime
+    state; it does not create them during the weave.
+    """
+    names = ("candidate_dataflow_edges.jsonl.gz", "static_scope_map.jsonl",
+             "region_skeletons.jsonl.gz")
+    if destination.exists():
+        raise ValueError("recording artifacts destination must start absent")
+    destination.mkdir(parents=True)
+    hashes = {}
+    for name in names:
+        source = original_scope / name
+        if not source.is_file() or source.is_symlink():
+            raise ValueError(f"original static sidecar is absent: {name}")
+        shutil.copy2(source, destination / name)
+        expected = _sha(source)
+        if _sha(destination / name) != expected:
+            raise ValueError(f"original static sidecar changed: {name}")
+        hashes[name] = expected
+    receipt = {"schema_version": 1,
+               "source_original_scope": str(original_scope.resolve(strict=True)),
+               "recording_artifacts": str(destination.resolve(strict=True)),
+               "sidecar_sha256": hashes}
+    if receipt_path is not None:
+        _atomic(receipt_path, receipt)
+    return receipt
 
 
 def _start_ticks(pid: int) -> str | None:

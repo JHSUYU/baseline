@@ -20,7 +20,8 @@ from pathlib import Path
 
 from Mallory.instrumentation.graphchecker_port import native_original_weave as weave
 from Mallory.native_graphchecker_campaign import campaign as native
-from .preparation import _atomic, _digest, _sha
+from .preparation import (_atomic, _digest, _sha,
+                          stage_original_recording_artifacts)
 
 
 MODE = "original_graphchecker_native_preparation"
@@ -571,6 +572,8 @@ def prepare(request_file: Path, profile_file: Path, output: Path,
                           "sha256": junit["source_sha256"]}}})
     woven = healthy / "region-state-woven"
     artifacts = healthy / "recording-artifacts"
+    stage_original_recording_artifacts(original, artifacts,
+                                       output / "recording-artifacts-staging.json")
     weave_config = {"java": java,
         "jvm_args": [f"-Xmx{profile.get('weave_heap_mb', 8192)}m"],
         "input_classes": str(process), "output_classes": str(woven),

@@ -15,6 +15,28 @@ from Mallory.native_graphchecker_dispatch import checklist, preparation as prep
 
 
 class NativePreparationTest(unittest.TestCase):
+    def test_stage_original_recording_artifacts_by_exact_bytes(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            original = root / "original"
+            original.mkdir()
+            names = ("candidate_dataflow_edges.jsonl.gz",
+                     "static_scope_map.jsonl", "region_skeletons.jsonl.gz")
+            for index, name in enumerate(names):
+                (original / name).write_bytes(bytes([index, 0, 255]))
+            output = root / "recording-artifacts"
+            receipt_path = root / "staging.json"
+            receipt = prep.stage_original_recording_artifacts(
+                original, output, receipt_path)
+            for name in names:
+                self.assertEqual((original / name).read_bytes(),
+                                 (output / name).read_bytes())
+                self.assertEqual(prep._sha(original / name),
+                                 receipt["sidecar_sha256"][name])
+            self.assertEqual(receipt, json.loads(receipt_path.read_text()))
+            with self.assertRaisesRegex(ValueError, "absent"):
+                prep.stage_original_recording_artifacts(original, output)
+
     def setUp(self) -> None:
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
