@@ -33,10 +33,10 @@ target exception with its required trial evidence. It does not assert a new
 bug. `confirmed_new_bug` remains null until independent source-level review
 provides that conclusion.
 
-The committed snapshot has 102 rows and ten verified terminal imports:
+The committed snapshot has 102 rows and eleven verified terminal imports:
 ZOOKEEPER-01, ZOOKEEPER-02, ZOOKEEPER-07, HDFS-11, HDFS-29, HDFS-30,
-HBASE-01, HBASE-02, SOLR-01, and SOLR-07. Active bound campaigns show checkpoint observations
-without a terminal receipt. HDFS-11's
+HBASE-01, HBASE-02, SOLR-01, SOLR-05, and SOLR-07. Active bound campaigns
+show checkpoint observations without a terminal receipt. HDFS-11's
 separate terminal review records incomplete SASL value provenance. HDFS-29
 finished its fault budget without an exact target throw. SOLR-01 has a
 client-only static map with no proven server receive edge; its completed
@@ -59,6 +59,12 @@ and no exact target throw. Its generated RPC port had 415 exports and zero
 imports, leaving a cross-process receive edge unproven. Both elapsed sums
 include JUnit and per-trial graph analysis.
 
+SOLR-05 finished 51 fault trials in 3648.371 cumulative seconds: 22 strict
+injections, 16 strict target-retained, 29 unmatched, six target-lost, and no
+exact target throw. Five of 16 retained faults meet the recorded target
+closure proxy, while its static manifest has no communicationPorts; no
+cross-process receive edge is proven.
+
 For the eight earlier exact-ID-audited terminal rows,
 `strict_in_target_closure_trials` counts strict
 target-retained trials whose **last applied fault occurrence ID** belongs to
@@ -73,14 +79,14 @@ to 32). Plan membership does not establish temporal causality or an exact
 target throw. All eight reviewed terminal campaigns remain without a
 confirmed new bug. Native `closureEdgeFamilies` are not interpreted as
 target-reachable edge families in this table.
-HBASE-01 and SOLR-07 retain the explicitly labelled REGION_STATE
+HBASE-01, SOLR-05, and SOLR-07 retain the explicitly labelled REGION_STATE
 same-occurrence proxy until an exact-ID frozen-evidence audit is pinned;
 their proxy counts do not establish causal closure.
 
 HDFS-28, HDFS-31, ZOOKEEPER-03, and ZOOKEEPER-05 are bound to active direct
 campaigns, each with an immutable config and isolated state. SOLR-05 has a
-terminal checkpoint and awaits independent adoption review. ZOOKEEPER-05 v5
-is the bound campaign; its earlier v3/v4 blocked states remain separate.
+verified terminal receipt. ZOOKEEPER-05 v5 is the bound campaign; its earlier
+v3/v4 blocked states remain separate.
 The queue must honor their direct campaign locks until those processes finish.
 `promotion-v2.json` and `promotion-v2-manifest.json` record the initial
 two-completion promotion. Later rows are pinned by completion receipts,
@@ -88,8 +94,9 @@ coverage sidecars, review pins, and this snapshot.
 `promotion-bind-v1.json` and `promotion-bind-v1-manifest.json` pin an earlier
 handoff. `promotion-bind-v4.json` and its manifest pin the eight-completion
 successor and exact-ID audit index. `promotion-bind-v5.json` pins the fifteen
-bindings, ten completions, v5 launcher, HBase source lineage, and this result
-snapshot.
+bindings, ten completions, v5 launcher, and HBase source lineage at the
+previous handoff. `promotion-bind-v6.json` pins the eleventh completion and
+this result snapshot.
 
 For a newly prepared case, run the one-command promoter on its physical owner
 host after the immutable native config, healthy target gate, and port review
