@@ -126,6 +126,103 @@ class ReplayControlsTest(unittest.TestCase):
                         self.assertEqual(expected, finished["status"])
                         pick.assert_not_called()
 
+    def test_cli_absolute_stop_resumes_without_checkpoint_edit(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            config_path = root / "config.json"
+            config = {"case_id": "CASE", "budget": {
+                "fault_trials": 8, "seconds": 7200,
+                "max_faults_per_trial": 4}}
+            config_path.write_text(json.dumps(config), encoding="utf-8")
+            campaign_root = root / "campaign"
+            campaign_root.mkdir()
+            weave = root / "woven"
+            weave.mkdir()
+            (weave / "native-original-weave-receipt.json").write_text("{}")
+            admitted = {"weave_config": {"output_classes": str(weave)},
+                        "origin": {"kind": "original_junit"},
+                        "zero_vm_sha256": "zero-pin",
+                        "runner_classpath_artifacts": []}
+            state = {"schema_version": core.SCHEMA, "case_id": "CASE",
+                     "config_sha256": core._sha(config_path),
+                     "budget": config["budget"],
+                     "weave_receipt_sha256": core._sha(
+                         weave / "native-original-weave-receipt.json"),
+                     "origin": admitted["origin"], "zero_vm_sha256": "zero-pin",
+                     "runner_classpath_artifacts": [],
+                     "healthy": {"status": "healthy_seed"},
+                     "completed_fault_trials": 2, "elapsed_seconds": 0.0,
+                     "queue": [self._item("next")], "active": None,
+                     "terminal": False, "status": "running"}
+            core._atomic(campaign_root / "checkpoint.json", state)
+            with (patch.object(core, "_validate_config"),
+                  patch.object(core, "_validate_local_work_root"),
+                  patch.object(core, "_validate_local_artifact_root"),
+                  patch.object(core, "_admit", return_value=admitted),
+                  patch.object(core, "_resume_active"),
+                  patch.object(core, "_pick") as pick,
+                  patch.object(core, "_verify_terminal_peer_ranking_receipts")):
+                stopped = core.run_campaign(config_path, campaign_root, 2)
+                self.assertEqual("bounded_checkpoint_stop", stopped["status"])
+                self.assertNotIn("stop_after_completed_fault_trials",
+                                 core._load(campaign_root / "checkpoint.json"))
+                pick.assert_not_called()
+                pick.side_effect = RuntimeError("next selection")
+                with self.assertRaisesRegex(RuntimeError, "next selection"):
+                    core.run_campaign(config_path, campaign_root, 3)
+                pick.assert_called_once()
+                with self.assertRaisesRegex(ValueError, "formal fault budget"):
+                    core.run_campaign(config_path, campaign_root, 9)
+
+    def test_cli_stop_preserves_predecessor_import_receipt(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            config_path = root / "config.json"
+            config = {"case_id": "CASE", "budget": {
+                "fault_trials": 8, "seconds": 7200,
+                "max_faults_per_trial": 4},
+                "predecessor_campaign": {"checkpoint": "pinned"}}
+            config_path.write_text(json.dumps(config), encoding="utf-8")
+            output = root / "campaign"
+            output.mkdir()
+            weave = root / "woven"
+            weave.mkdir()
+            (weave / "native-original-weave-receipt.json").write_text("{}")
+            admitted = {"weave_config": {"output_classes": str(weave)},
+                        "origin": {"kind": "original_junit"},
+                        "zero_vm_sha256": "zero-pin",
+                        "runner_classpath_artifacts": []}
+            imported = {"predecessor_sha256": "same-prefix",
+                        "new_actor_successor_plan_count": 4}
+            state = {"schema_version": core.SCHEMA, "case_id": "CASE",
+                     "config_sha256": core._sha(config_path),
+                     "budget": config["budget"],
+                     "weave_receipt_sha256": core._sha(
+                         weave / "native-original-weave-receipt.json"),
+                     "origin": admitted["origin"], "zero_vm_sha256": "zero-pin",
+                     "runner_classpath_artifacts": [],
+                     "predecessor_import": imported,
+                     "healthy": {"status": "healthy_seed"},
+                     "completed_fault_trials": 4, "elapsed_seconds": 0.0,
+                     "queue": [self._item("next")], "active": None,
+                     "terminal": False, "status": "running"}
+            core._atomic(output / "checkpoint.json", state)
+            core._atomic(output / "predecessor-import.json", imported)
+            with (patch.object(core, "_validate_config"),
+                  patch.object(core, "_validate_local_work_root"),
+                  patch.object(core, "_validate_local_artifact_root"),
+                  patch.object(core, "_admit", return_value=admitted),
+                  patch.object(core, "_predecessor_snapshot",
+                               return_value=({"predecessor_sha256": "same-prefix"},
+                                             None, None, None)),
+                  patch.object(core, "_resume_active"),
+                  patch.object(core, "_pick") as pick,
+                  patch.object(core, "_verify_terminal_peer_ranking_receipts")):
+                paused = core.run_campaign(config_path, output, 4)
+                self.assertEqual("bounded_checkpoint_stop", paused["status"])
+                self.assertEqual(imported, core._load(output / "predecessor-import.json"))
+                pick.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()

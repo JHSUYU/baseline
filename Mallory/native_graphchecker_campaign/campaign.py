@@ -2546,10 +2546,16 @@ def _resume_active(config: dict[str, Any], admitted: dict[str, Any],
     _atomic(root / "checkpoint.json", state)
 
 
-def run_campaign(config_path: Path, root: Path) -> dict[str, Any]:
+def run_campaign(config_path: Path, root: Path,
+                 stop_after_fault_trials: int | None = None) -> dict[str, Any]:
     config_path = config_path.resolve(strict=True)
     config = _load(config_path)
     _validate_config(config)
+    if stop_after_fault_trials is not None and (
+            not isinstance(stop_after_fault_trials, int) or
+            isinstance(stop_after_fault_trials, bool) or
+            not 0 < stop_after_fault_trials <= config["budget"]["fault_trials"]):
+        raise ValueError("stop_after_fault_trials must be within the formal fault budget")
     config_sha = _sha(config_path)
     root = root.resolve()
     root.mkdir(parents=True, exist_ok=True)
@@ -2591,6 +2597,20 @@ def run_campaign(config_path: Path, root: Path) -> dict[str, Any]:
             if config.get("predecessor_campaign") is not None:
                 _import_predecessor(config, root, state)
             _atomic(checkpoint, state)
+        saved_stop = state.get("stop_after_completed_fault_trials")
+        if (stop_after_fault_trials is not None and saved_stop is not None and
+                stop_after_fault_trials != saved_stop):
+            raise ValueError("CLI stop bound conflicts with checkpoint stop bound")
+        bounded_stop = (stop_after_fault_trials if stop_after_fault_trials is not None
+                        else saved_stop)
+        if bounded_stop is not None and (
+                not isinstance(bounded_stop, int) or isinstance(bounded_stop, bool) or
+                bounded_stop < 0):
+            raise ValueError("invalid completed fault trial stop bound")
+        if (bounded_stop is not None and
+                state["completed_fault_trials"] >= bounded_stop and
+                state["active"] is not None):
+            raise ValueError("bounded stop requires an accepted checkpoint")
         if state["terminal"]:
             _verify_terminal_peer_ranking_receipts(root, state)
             return state
@@ -2609,11 +2629,7 @@ def run_campaign(config_path: Path, root: Path) -> dict[str, Any]:
             _finish_status(state)
             if state["terminal"]:
                 break
-            bounded_stop = state.get("stop_after_completed_fault_trials")
             if bounded_stop is not None:
-                if (not isinstance(bounded_stop, int) or
-                        isinstance(bounded_stop, bool) or bounded_stop < 0):
-                    raise ValueError("invalid completed fault trial stop bound")
                 if state["completed_fault_trials"] >= bounded_stop:
                     if state["active"] is not None:
                         raise ValueError("bounded stop requires an accepted checkpoint")

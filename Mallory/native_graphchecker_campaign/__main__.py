@@ -13,8 +13,10 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--stop-after-fault-trials", type=int,
+                        help="pause at this absolute completed-fault-trial count")
     args = parser.parse_args()
-    state = run_campaign(args.config, args.output)
+    state = run_campaign(args.config, args.output, args.stop_after_fault_trials)
     print(json.dumps({"case_id": state["case_id"], "status": state["status"],
                       "completed_fault_trials": state["completed_fault_trials"],
                       "elapsed_seconds": state["elapsed_seconds"]},
