@@ -495,7 +495,17 @@ def _frozen_source_cache_valid(cache: dict, fingerprint: dict,
         binding = obj(config_root / f"{fingerprint['case_id']}.json")
         source = binding["campaign_python_source"]
         root = pinned_campaign_python(source)
-        if (audit.get("method") != "exact_frozen_python_full_native_inspect_case" or
+        from .inspector_overlay import METHOD as OVERLAY_METHOD, verify_inspector_overlay
+        overlay_pin = binding.get("inspector_overlay")
+        if overlay_pin is None:
+            overlay_valid = (audit.get("method") ==
+                             "exact_frozen_python_full_native_inspect_case" and
+                             "inspector_overlay" not in audit)
+        else:
+            overlay_valid = (audit.get("method") == OVERLAY_METHOD and
+                             audit.get("inspector_overlay") ==
+                             verify_inspector_overlay(source, root, overlay_pin))
+        if (not overlay_valid or
                 audit.get("fingerprint") != fingerprint or
                 audit.get("row") != cache.get("row") or
                 audit.get("source_root") != str(root.resolve()) or

@@ -31,7 +31,8 @@ def binding_for(item: dict, config_path: Path, state_path: Path,
                 target_source_archive: Path | None = None,
                 campaign_python_root: Path | None = None,
                 campaign_python_tar: Path | None = None,
-                raw_archive_receipt: Path | None = None) -> dict:
+                raw_archive_receipt: Path | None = None,
+                inspector_overlay_manifest: Path | None = None) -> dict:
     if (not config_path.is_absolute() or not state_path.is_absolute() or
             config_path.is_symlink() or state_path.is_symlink() or
             not config_path.is_file()):
@@ -141,6 +142,16 @@ def binding_for(item: dict, config_path: Path, state_path: Path,
             source['required_files_sha256'] = {relative: sha(java)}
         pinned_campaign_python(source)
         binding['campaign_python_source'] = source
+    if inspector_overlay_manifest is not None:
+        if (campaign_python_root is None or
+                not inspector_overlay_manifest.is_absolute() or
+                inspector_overlay_manifest.is_symlink() or
+                not inspector_overlay_manifest.is_file()):
+            raise ValueError('inspector overlay needs pinned campaign source and manifest')
+        from .inspector_overlay import verify_inspector_overlay
+        binding['inspector_overlay'] = verify_inspector_overlay(
+            binding['campaign_python_source'], campaign_python_root,
+            obj(inspector_overlay_manifest))
     if raw_archive_receipt is not None:
         if (not raw_archive_receipt.is_absolute() or
                 raw_archive_receipt.is_symlink() or
@@ -381,6 +392,7 @@ def promote(*, root: Path, case_id: str, native_config: Path,
             epoch_receipt: Path | None = None,
             epoch_receipt_sha256: str | None = None,
             raw_archive_receipt: Path | None = None,
+            inspector_overlay_manifest: Path | None = None,
             frozen_terminal_audit: Path | None = None,
             shared_port_evidence: Path | None = None,
             dispatch: bool = True) -> dict:
@@ -462,7 +474,8 @@ def promote(*, root: Path, case_id: str, native_config: Path,
                               target_source_archive=target_source_archive,
                               campaign_python_root=campaign_python_root,
                               campaign_python_tar=campaign_python_tar,
-                              raw_archive_receipt=raw_archive_receipt)
+                              raw_archive_receipt=raw_archive_receipt,
+                              inspector_overlay_manifest=inspector_overlay_manifest)
         for other_path in config_root.glob('*.json'):
             if other_path.stem in ('ownership', case_id):
                 continue
@@ -582,6 +595,7 @@ def main() -> None:
     parser.add_argument('--inventory-epoch-receipt', type=Path)
     parser.add_argument('--inventory-epoch-sha256')
     parser.add_argument('--raw-archive-receipt', type=Path)
+    parser.add_argument('--inspector-overlay-manifest', type=Path)
     parser.add_argument('--frozen-terminal-audit', type=Path)
     parser.add_argument('--shared-port-evidence', type=Path)
     parser.add_argument('--bind-only', action='store_true')
@@ -606,6 +620,7 @@ def main() -> None:
         epoch_receipt=args.inventory_epoch_receipt,
         epoch_receipt_sha256=args.inventory_epoch_sha256,
         raw_archive_receipt=args.raw_archive_receipt,
+        inspector_overlay_manifest=args.inspector_overlay_manifest,
         frozen_terminal_audit=args.frozen_terminal_audit,
         shared_port_evidence=args.shared_port_evidence,
         dispatch=not args.bind_only), sort_keys=True))

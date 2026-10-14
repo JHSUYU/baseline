@@ -1,6 +1,7 @@
 """Exact identity and case-scoped port review tests for native promotion."""
 
 import hashlib
+import difflib
 import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -11,6 +12,7 @@ from Mallory.native_graphchecker_dispatch.checklist import _verify_alternate_jun
 from .bind_and_run import (attach_shared_port_evidence, binding_for, extend_profile, promote,
                            swap_unbound_reservation)
 from .queue import pinned_campaign_python, validate_isolation
+from .inspector_overlay import MODULE
 
 
 def write(path: Path, value: dict) -> None:
@@ -18,6 +20,61 @@ def write(path: Path, value: dict) -> None:
 
 
 class BindAndRunTest(unittest.TestCase):
+    def test_binding_embeds_only_reviewed_inspector_overlay(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            config_path = root / "config.json"
+            config_path.write_text(json.dumps({
+                "case_id": "HBASE-01", "runner": {"mode": "region_state"},
+                "target_site": "<C: void f()>#u1",
+                "target_throw": {"siteId": "<C: void f()>#u2",
+                                 "exceptionClass": "E"},
+                "junit": {"class": "OriginalTest", "method": "testCase"}}))
+            state = root / "campaign"
+            state.mkdir()
+            source = root / "source"
+            original = source / MODULE
+            original.parent.mkdir(parents=True)
+            base = "def inspect_case():\n    return False\n"
+            revised = "def inspect_case():\n    return True\n"
+            original.write_text(base)
+            archive = root / "source.tar"
+            archive.write_bytes(b"source fixture")
+            patched = root / "patched.py"
+            patched.write_text(revised)
+            diff = root / "patch.diff"
+            diff.write_text("".join(difflib.unified_diff(
+                base.splitlines(keepends=True), revised.splitlines(keepends=True),
+                fromfile=f"a/{MODULE}", tofile=f"b/{MODULE}")))
+            manifest = root / "overlay.json"
+            write(manifest, {"schema_version": 1, "module": MODULE,
+                             "base_sha256": hashlib.sha256(base.encode()).hexdigest(),
+                             "patched_path": str(patched),
+                             "patched_sha256": hashlib.sha256(
+                                 revised.encode()).hexdigest(),
+                             "diff_path": str(diff),
+                             "diff_sha256": hashlib.sha256(
+                                 diff.read_bytes()).hexdigest(),
+                             "changed_symbols": ["inspect_case"]})
+            item = {"case_id": "HBASE-01", "system": "hbase",
+                    "target": {"site_id": "<C: void f()>#u2",
+                               "target_exception": "E"},
+                    "workload": {"test_class": "OriginalTest",
+                                 "test_method": "testCase"}}
+            with patch("Mallory.native_graphchecker_queue.bind_and_run._validate_config"):
+                binding = binding_for(
+                    item, config_path, state, campaign_python_root=source,
+                    campaign_python_tar=archive,
+                    inspector_overlay_manifest=manifest)
+                self.assertEqual(binding["inspector_overlay"]["diff_sha256"],
+                                 hashlib.sha256(diff.read_bytes()).hexdigest())
+                diff.write_text(diff.read_text() + "tamper\n")
+                with self.assertRaisesRegex(ValueError, "diff bytes changed"):
+                    binding_for(item, config_path, state,
+                                campaign_python_root=source,
+                                campaign_python_tar=archive,
+                                inspector_overlay_manifest=manifest)
+
     def test_shared_port_source_fallback_keeps_original_pin_fail_closed(self):
         with TemporaryDirectory() as directory:
             root = Path(directory)

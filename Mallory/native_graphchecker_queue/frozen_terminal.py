@@ -23,6 +23,7 @@ from Mallory.native_graphchecker_dispatch.checklist import (
 from .queue import (_pinned_engine_root, _terminal_fingerprint, atomic, obj,
                     _frozen_source_cache_valid, pinned_campaign_python, sha)
 from .raw_archive import pinned_archives, verify_trial_evidence
+from .inspector_overlay import METHOD as OVERLAY_METHOD, verify_inspector_overlay
 
 
 _INSPECT = """
@@ -35,10 +36,31 @@ row = inspect_case(request['item'], request['owner'],
 print(json.dumps(row, sort_keys=True))
 """
 
+_INSPECT_OVERLAY = """
+import importlib.abc, importlib.util, json, sys
+from pathlib import Path
+request = json.load(sys.stdin)
+module_name = 'Mallory.native_graphchecker_dispatch.checklist'
+overlay_path = Path(request['overlay_path'])
+class InspectorOnlyFinder(importlib.abc.MetaPathFinder):
+    def find_spec(self, fullname, path=None, target=None):
+        if fullname == module_name:
+            return importlib.util.spec_from_file_location(fullname, overlay_path)
+sys.meta_path.insert(0, InspectorOnlyFinder())
+from Mallory.native_graphchecker_dispatch import checklist
+if Path(checklist.__file__).resolve() != overlay_path.resolve():
+    raise RuntimeError('reviewed inspector overlay was not loaded')
+row = checklist.inspect_case(request['item'], request['owner'],
+                             Path(request['config_root']),
+                             Path(request['state_root']))
+print(json.dumps(row, sort_keys=True))
+"""
+
 
 def _project_binding(item: dict, entry: Path, native_config: dict) -> dict:
     """Remove only a later shared-source field unknown to older inspectors."""
     binding = copy.deepcopy(obj(entry))
+    binding.pop("inspector_overlay", None)
     alternate = binding.get("alternate_original_junit")
     if alternate is None:
         return binding
@@ -179,6 +201,9 @@ def inspect_frozen_terminal(item: dict, owner: str, config_root: Path,
     if inspector_key not in source.get("python_sha256", {}):
         raise ValueError("frozen source lacks original native inspector")
     python_root = pinned_campaign_python(source)
+    overlay_pin = binding.get("inspector_overlay")
+    overlay = (verify_inspector_overlay(source, python_root, overlay_pin)
+               if overlay_pin is not None else None)
     config_file, native_root = _native_case_files(item, config_root, state_root)
     engine_root = _pinned_engine_root(config_file)
     fingerprint = _terminal_fingerprint(item, config_root, state_root)
@@ -190,16 +215,30 @@ def inspect_frozen_terminal(item: dict, owner: str, config_root: Path,
         projected_path = Path(temp) / f"{case_id}.json"
         projected_path.write_text(json.dumps(projected, sort_keys=True) + "\n")
         projected_sha = sha(projected_path)
+        overlay_copy = None
+        if overlay:
+            # The subprocess reads these exact verified bytes even if the
+            # reviewed source path changes while graph analysis is running.
+            overlay_copy = Path(temp) / "reviewed-checklist.py"
+            overlay_copy.write_bytes(Path(overlay["patched_path"]).read_bytes())
+            if sha(overlay_copy) != overlay["patched_sha256"]:
+                raise ValueError("inspector overlay changed before execution")
         environment = os.environ.copy()
         environment.update(PYTHONPATH=str(python_root),
                            MALLORY_NATIVE_ENGINE_ROOT=str(engine_root),
                            PYTHONDONTWRITEBYTECODE="1")
-        command = [sys.executable, "-c", _INSPECT]
-        proc = subprocess.run(command, input=json.dumps({
+        command = [sys.executable, "-c", _INSPECT_OVERLAY if overlay else _INSPECT]
+        request = {
             "item": item, "owner": owner, "config_root": temp,
-            "state_root": str(state_root)}), text=True, capture_output=True,
+            "state_root": str(state_root)}
+        if overlay:
+            request["overlay_path"] = str(overlay_copy)
+        proc = subprocess.run(command, input=json.dumps(request),
+            text=True, capture_output=True,
             cwd=temp, env=environment, timeout=3600, check=True)
         row = json.loads(proc.stdout)
+    if overlay and verify_inspector_overlay(source, python_root, overlay_pin) != overlay:
+        raise ValueError("inspector overlay changed during full inspection")
     if (row.get("native_tested_complete") is not True or
             row.get("terminal_disposition") not in (
                 "tested_candidate", "tested_no_target_throw") or
@@ -222,7 +261,8 @@ def inspect_frozen_terminal(item: dict, owner: str, config_root: Path,
         raise ValueError("terminal inputs changed during frozen inspection")
     jar = engine_root / "target/mallory-original-graphchecker-seed-1.0-SNAPSHOT.jar"
     receipt = {"schema_version": 1,
-            "method": "exact_frozen_python_full_native_inspect_case",
+            "method": (OVERLAY_METHOD if overlay else
+                       "exact_frozen_python_full_native_inspect_case"),
             "case_id": case_id, "owner": owner,
             "fingerprint": fingerprint,
             "source_root": str(python_root.resolve()),
@@ -234,6 +274,8 @@ def inspect_frozen_terminal(item: dict, owner: str, config_root: Path,
             "projected_binding_sha256": projected_sha,
             "trial_evidence_sha256": trial_hashes,
             "row": row}
+    if overlay:
+        receipt["inspector_overlay"] = overlay
     if local_artifacts is not None:
         receipt["local_artifact_attestation"] = local_artifacts
     if raw_pin is not None:
