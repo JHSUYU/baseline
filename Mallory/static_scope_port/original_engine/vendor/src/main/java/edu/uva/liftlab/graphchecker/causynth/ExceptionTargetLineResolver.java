@@ -5,9 +5,14 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.LineNumberNode;
-import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
+import org.objectweb.asm.tree.VarInsnNode;
+import org.objectweb.asm.tree.analysis.Analyzer;
+import org.objectweb.asm.tree.analysis.AnalyzerException;
+import org.objectweb.asm.tree.analysis.Frame;
+import org.objectweb.asm.tree.analysis.SourceInterpreter;
+import org.objectweb.asm.tree.analysis.SourceValue;
 import soot.ArrayType;
 import soot.BooleanType;
 import soot.ByteType;
@@ -32,8 +37,12 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.stream.Collectors;
@@ -42,7 +51,9 @@ import java.util.stream.Collectors;
  * The exception target a case declares by source line:
  * {@code exception_target: <name> <binary class name> <line> [<thrown type>]}.
  *
- * <p>The site is the one {@code throw new T(...)} javac compiled at that line
+ * <p>The site is the exception {@code NEW T} javac compiled at that line
+ * whose object reaches an explicit {@code ATHROW}, directly or through local
+ * stores and loads. A same-method throw of another object is insufficient.
  * of the class or of a class nested in it.  A lambda body is a method of its
  * enclosing class ({@code lambda$m$N}) and an anonymous class is {@code C$N};
  * both keep the source's LineNumberTable, and neither keeps a type annotation
@@ -143,13 +154,13 @@ final class ExceptionTargetLineResolver {
             }
         }
         if (found.isEmpty()) {
-            throw new IOException("TARGET_LINE_UNRESOLVED: no throw new at "
+            throw new IOException("TARGET_LINE_UNRESOLVED: no matching throw at "
                     + target.render() + " in " + target.className
                     + " or its nested classes (" + target.name + ")");
         }
         if (found.size() > 1) {
             throw new IOException("TARGET_LINE_AMBIGUOUS: " + found.size()
-                    + " throw new at " + target.render() + " ("
+                    + " matching throws at " + target.render() + " ("
                     + target.name + ")"
                     + (target.thrownType.isEmpty()
                     ? "; state the thrown type" : "") + ": "
@@ -159,16 +170,13 @@ final class ExceptionTargetLineResolver {
         return found.get(0);
     }
 
-    /**
-     * Every {@code NEW T} at the line that its own {@code T.<init>} hands
-     * straight to {@code ATHROW} -- javac's {@code throw new T(args)},
-     * whatever the arguments construct -- with its ordinal among the
-     * method's {@code NEW T}s.
-     */
+    /** Every target-line {@code NEW T} whose exact object reaches ATHROW. */
     private static void collect(ClassNode owner, MethodNode method,
                                 TargetLine target,
-                                List<ExceptionTargetSite> found) {
+                                List<ExceptionTargetSite> found)
+            throws IOException {
         Map<String, Integer> ordinals = new HashMap<>();
+        Map<TypeInsnNode, Integer> candidates = new LinkedHashMap<>();
         int line = -1;
         for (AbstractInsnNode instruction = method.instructions.getFirst();
              instruction != null; instruction = instruction.getNext()) {
@@ -181,40 +189,103 @@ final class ExceptionTargetLineResolver {
             }
             TypeInsnNode creation = (TypeInsnNode) instruction;
             int ordinal = ordinals.merge(creation.desc, 1, Integer::sum) - 1;
-            if (line == target.line && target.throwsType(creation.desc)
-                    && thrownOnConstruction(creation)) {
+            if (line == target.line && target.throwsType(creation.desc)) {
+                candidates.put(creation, ordinal);
+            }
+        }
+        if (candidates.isEmpty()) {
+            return;
+        }
+        Frame<SourceValue>[] frames;
+        try {
+            frames = new Analyzer<>(new SourceInterpreter()).analyze(
+                    owner.name, method);
+        } catch (AnalyzerException exception) {
+            throw new IOException("TARGET_LINE_UNRESOLVED: bytecode use-def "
+                    + "analysis failed for " + owner.name + "#" + method.name,
+                    exception);
+        }
+        Map<AbstractInsnNode, Integer> positions = new IdentityHashMap<>();
+        for (int index = 0; index < method.instructions.size(); index++) {
+            positions.put(method.instructions.get(index), index);
+        }
+        Set<TypeInsnNode> thrown = new LinkedHashSet<>();
+        for (AbstractInsnNode instruction = method.instructions.getFirst();
+             instruction != null; instruction = instruction.getNext()) {
+            if (instruction.getOpcode() != Opcodes.ATHROW) {
+                continue;
+            }
+            Frame<SourceValue> before = frames[positions.get(instruction)];
+            if (before == null || before.getStackSize() == 0) {
+                continue;
+            }
+            Set<TypeInsnNode> origins = origins(before.getStack(
+                    before.getStackSize() - 1), frames, positions,
+                    new LinkedHashSet<AbstractInsnNode>());
+            // A merged throw that may receive another object is ambiguous.
+            if (origins != null && origins.size() == 1) {
+                thrown.add(origins.iterator().next());
+            }
+        }
+        for (Map.Entry<TypeInsnNode, Integer> candidate : candidates.entrySet()) {
+            TypeInsnNode creation = candidate.getKey();
+            if (thrown.contains(creation)) {
                 found.add(new ExceptionTargetSite(target.name,
                         owner.name.replace('/', '.'), method.name,
                         method.desc, "", creation.desc.replace('/', '.'),
-                        ordinal));
+                        candidate.getValue()));
             }
         }
     }
 
-    /** Whether the {@code <init>} matching this NEW is followed by ATHROW. */
-    private static boolean thrownOnConstruction(TypeInsnNode creation) {
-        int nested = 0;
-        for (AbstractInsnNode instruction = creation.getNext();
-             instruction != null; instruction = instruction.getNext()) {
-            if (instruction.getOpcode() == Opcodes.NEW
-                    && creation.desc.equals(
-                    ((TypeInsnNode) instruction).desc)) {
-                nested++;
-            } else if (instruction.getOpcode() == Opcodes.INVOKESPECIAL
-                    && creation.desc.equals(
-                    ((MethodInsnNode) instruction).owner)
-                    && "<init>".equals(((MethodInsnNode) instruction).name)) {
-                if (nested-- == 0) {
-                    AbstractInsnNode next = instruction.getNext();
-                    // Labels, line numbers and frames are not instructions.
-                    while (next != null && next.getOpcode() < 0) {
-                        next = next.getNext();
-                    }
-                    return next != null && next.getOpcode() == Opcodes.ATHROW;
+    /** Trace only alias-preserving bytecode operations; fail closed otherwise. */
+    private static Set<TypeInsnNode> origins(SourceValue value,
+            Frame<SourceValue>[] frames,
+            Map<AbstractInsnNode, Integer> positions,
+            Set<AbstractInsnNode> active) {
+        if (value == null || value.insns.isEmpty()) {
+            return null;
+        }
+        Set<TypeInsnNode> result = new LinkedHashSet<>();
+        for (AbstractInsnNode producer : value.insns) {
+            if (!active.add(producer)) {
+                return null;
+            }
+            try {
+                int opcode = producer.getOpcode();
+                if (opcode == Opcodes.NEW) {
+                    result.add((TypeInsnNode) producer);
+                    continue;
                 }
+                Integer position = positions.get(producer);
+                Frame<SourceValue> before = position == null ? null
+                        : frames[position];
+                if (before == null) {
+                    return null;
+                }
+                SourceValue prior;
+                if (opcode == Opcodes.ALOAD) {
+                    prior = before.getLocal(((VarInsnNode) producer).var);
+                } else if (opcode == Opcodes.ASTORE || opcode == Opcodes.DUP
+                        || opcode == Opcodes.CHECKCAST) {
+                    if (before.getStackSize() == 0) {
+                        return null;
+                    }
+                    prior = before.getStack(before.getStackSize() - 1);
+                } else {
+                    return null;
+                }
+                Set<TypeInsnNode> preceding = origins(prior, frames,
+                        positions, active);
+                if (preceding == null) {
+                    return null;
+                }
+                result.addAll(preceding);
+            } finally {
+                active.remove(producer);
             }
         }
-        return false;
+        return result;
     }
 
     /** {@code C.class} and every {@code C$*.class} of the inputs. */
