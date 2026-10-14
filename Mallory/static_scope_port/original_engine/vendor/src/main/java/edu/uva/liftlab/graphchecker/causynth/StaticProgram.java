@@ -17,6 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableSet;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Function;
@@ -441,10 +442,12 @@ public final class StaticProgram {
             RegionRow skeleton) {
         Map<String, List<Map<String, Object>>> byMethod =
                 new LinkedHashMap<>();
+        Map<String, NavigableSet<Integer>> evidenceByMethod =
+                new LinkedHashMap<>();
         for (Map<String, Object> loop : skeleton.retainedLoops) {
             String owner = text(loop.get("enclosingMethod"));
             if (owner.isEmpty() || !serviceLoopCandidate(skeleton, loop,
-                    owner)) {
+                    owner, evidenceByMethod)) {
                 continue;
             }
             byMethod.computeIfAbsent(owner,
@@ -468,7 +471,9 @@ public final class StaticProgram {
      */
     private boolean serviceLoopCandidate(RegionRow skeleton,
                                          Map<String, Object> loop,
-                                         String owner) {
+                                         String owner,
+                                         Map<String, NavigableSet<Integer>>
+                                                 evidenceByMethod) {
         String classification = text(loop.get(
                 LoopBoundPolicy.LOOP_CLASSIFICATION));
         if (LoopBoundPolicy.LOOP_CONDITION_BOUNDED.equals(classification)) {
@@ -477,19 +482,22 @@ public final class StaticProgram {
         if (!LoopBoundPolicy.LOOP_FIXED_COUNT_INDEXED.equals(classification)) {
             return false;
         }
-        Set<String> calledInLoop = new LinkedHashSet<>();
-        for (Map<String, Object> edge : regionGraphInMethod(
-                skeleton.regionId, owner)) {
-            if (!loopContains(loop, number(edge.get("unitIndex"), -1))) {
-                continue;
-            }
-            String callee = invocationTarget(edge);
-            if (!callee.isEmpty()) calledInLoop.add(callee);
-            if ("HEAP_WRITE".equals(text(edge.get("transferKind")))
-                    && declaredField(text(edge.get("toCell")))) {
-                return true;
-            }
-        }
+        int header = loopHeaderUnitIndex(text(loop.get(
+                LoopBoundPolicy.RUNTIME_LOOP_ID)));
+        if (header < 0) return false;
+        NavigableSet<Integer> evidence = evidenceByMethod.computeIfAbsent(
+                owner, method -> serviceLoopEvidence(skeleton, method));
+        Integer first = evidence.ceiling(header);
+        // All later evidence is beyond the end if the first is.  Keep the
+        // original containment rule for the latch and control-site boundary.
+        return first != null && loopContains(loop, first);
+    }
+
+    /** Unit positions that can establish fixed-count service work. */
+    private NavigableSet<Integer> serviceLoopEvidence(RegionRow skeleton,
+                                                       String owner) {
+        NavigableSet<Integer> evidence = new TreeSet<>();
+        Set<String> definitions = new LinkedHashSet<>();
         for (Map<String, Object> port : skeleton.communicationPorts) {
             String definition = text(port.get(CommunicationCatalogContract
                     .PORT_DEFINITION_METHOD));
@@ -499,16 +507,22 @@ public final class StaticProgram {
                     .PORT_FRAME_METHOD)))) {
                 continue;
             }
-            if (calledInLoop.contains(definition)) {
-                return true;
-            }
-            if (owner.equals(definition) && loopContains(loop, number(
-                    port.get(CommunicationCatalogContract
-                            .PORT_DEFINITION_UNIT_INDEX), -1))) {
-                return true;
+            definitions.add(definition);
+            if (owner.equals(definition)) {
+                evidence.add(number(port.get(CommunicationCatalogContract
+                        .PORT_DEFINITION_UNIT_INDEX), -1));
             }
         }
-        return false;
+        for (Map<String, Object> edge : regionGraphInMethod(
+                skeleton.regionId, owner)) {
+            int unit = number(edge.get("unitIndex"), -1);
+            if (("HEAP_WRITE".equals(text(edge.get("transferKind")))
+                    && declaredField(text(edge.get("toCell"))))
+                    || definitions.contains(invocationTarget(edge))) {
+                evidence.add(unit);
+            }
+        }
+        return evidence;
     }
 
     /** The published loop body a re-rooted region names. */
