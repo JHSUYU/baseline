@@ -188,6 +188,21 @@ class WireTemporalProofTest(unittest.TestCase):
         self.assertEqual("outside_closure",
                          core._region_doors([check, after], summary)[0]["tier"])
 
+    def test_region_mutation_uses_global_observed_order_after_fault(self) -> None:
+        summary = {"targetSiteId": "Keys#check#u3"}
+        earlier = {"kind": "FAULT_DOOR", "seq": 100,
+                   "siteId": "RPC#earlier", "node": "peer-a",
+                   "actorEpochOrdinal": 0, "occurrenceId": "a",
+                   "ordinal": 1, "exceptionClass": "java.io.IOException"}
+        applied = {"kind": "FAULT_APPLIED", "seq": 2,
+                   "siteId": "RPC#first", "node": "peer-b",
+                   "actorEpochOrdinal": 0, "occurrenceId": "b",
+                   "ordinal": 1, "exceptionClass": "java.io.IOException"}
+        later = dict(earlier, siteId="RPC#later", seq=101)
+        doors = core._region_doors([earlier, applied, later], summary, applied)
+        self.assertEqual(["RPC#later"],
+                         [item["fault"]["siteId"] for item in doors])
+
     def test_region_schedule_copies_only_one_original_session(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             trial = Path(directory)

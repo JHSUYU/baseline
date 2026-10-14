@@ -672,6 +672,12 @@ def _region_doors(rows: list[dict[str, Any]], summary: dict[str, Any],
                   after_fault: dict[str, Any] | None = None
                   ) -> list[dict[str, Any]]:
     """Mutate observed doors; target-prioritized doors precede the check."""
+    after_index = None
+    if after_fault is not None:
+        after_index = next((index for index, row in enumerate(rows)
+                            if row is after_fault), None)
+        if after_index is None:
+            raise ValueError("last applied fault is absent from the ordered log")
     checks: dict[tuple[str, int, str], int] = {}
     actor_checks: dict[tuple[str, int], int] = {}
     for row in rows:
@@ -684,8 +690,13 @@ def _region_doors(rows: list[dict[str, Any]], summary: dict[str, Any],
         checks[key] = min(checks.get(key, row["seq"]), row["seq"])
         actor_checks[actor] = min(actor_checks.get(actor, row["seq"]), row["seq"])
     found = []
-    for row in rows:
+    for index, row in enumerate(rows):
         if row["kind"] != "FAULT_DOOR":
+            continue
+        # Sidecar appends are serialized. A second fault can only be added at
+        # a door observed after the last applied fault in that same run.
+        # Per-actor seq values cannot order two different actors.
+        if after_index is not None and index <= after_index:
             continue
         if (after_fault is not None and
                 (row.get("node"), row.get("actorEpochOrdinal")) ==
