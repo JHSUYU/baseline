@@ -291,18 +291,34 @@ public final class ConcolicScheduler {
     }
 
     /** The helper branch deciding the target guard {@code guardSiteId}, as
-     *  the TARGET_SITE rows state it, or null. */
+     *  the TARGET_SITE rows state it, or null. A constant helper-return arm
+     *  whose verdict is the opposite of the fatal guard arm cannot reach the
+     *  declared target. Remove only those proven incompatible arms before
+     *  requiring a unique decider; an open arm remains eligible. */
     static StaticScopeMap.Guard fatalDecider(StaticScopeMap map,
                                              String guardSiteId) {
+        Boolean fatal = fatalArm(map, guardSiteId);
         for (StaticScopeMap.Site target : map.targetSites()) {
             List<StaticScopeMap.Guard> deciders =
                     target.guardDeciders.get(guardSiteId);
             if (deciders == null || deciders.isEmpty()) continue;
-            if (deciders.size() != 1) {
-                throw new IllegalStateException("ambiguous target guard deciders for "
-                        + guardSiteId + ": " + deciders.size());
+            if (fatal == null) {
+                throw new IllegalStateException("missing fatal arm for decider "
+                        + guardSiteId);
             }
-            return deciders.get(0);
+            List<StaticScopeMap.Guard> compatible = new ArrayList<>();
+            for (StaticScopeMap.Guard decider : deciders) {
+                if (decider.verdict() == null
+                        || fatal.equals(decider.verdict())) {
+                    compatible.add(decider);
+                }
+            }
+            if (compatible.size() != 1) {
+                throw new IllegalStateException("ambiguous target guard deciders for "
+                        + guardSiteId + ": " + compatible.size()
+                        + " compatible of " + deciders.size());
+            }
+            return compatible.get(0);
         }
         return null;
     }
