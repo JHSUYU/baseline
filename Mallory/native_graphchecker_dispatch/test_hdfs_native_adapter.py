@@ -145,6 +145,37 @@ class HdfsNativeAdapterTest(unittest.TestCase):
                              scope["workload"]["method"])
             self.assertNotIn("doors", scope)
 
+    def test_static_reuse_requires_exact_original_command_and_copies_bytes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root / "prior/static"
+            destination = root / "next/static"
+            for name in ("original-scope", "static-scope"):
+                (source / name).mkdir(parents=True)
+                (source / name / "output.jsonl").write_text(name)
+            (source.parent / "commands").mkdir()
+            (source.parent / "commands/static.stderr").write_text("closed\n")
+            source_input = {"case_id": "HDFS-32", "analysis": {
+                "original_engine_output_dir": str(source / "original-scope")}}
+            (source / "scope-input.json").write_text(json.dumps(source_input))
+            prior_command = ["java", "ScopePlanner", str(source / "scope-input.json"),
+                             str(source / "static-scope")]
+            (source.parent / "commands/static.json").write_text(json.dumps({
+                "argv": prior_command}))
+            expected_input = {"case_id": "HDFS-32", "analysis": {
+                "original_engine_output_dir": str(destination / "original-scope")}}
+            new_command = ["java", "ScopePlanner", str(destination / "scope-input.json"),
+                           str(destination / "static-scope")]
+            destination.mkdir(parents=True)
+            adapter._reuse_static(source, destination, expected_input,
+                                  new_command, root / "next")
+            self.assertEqual("original-scope", (destination /
+                             "original-scope/output.jsonl").read_text())
+            self.assertTrue((root / "next/static-reuse-receipt.json").is_file())
+            with self.assertRaisesRegex(ValueError, "differs"):
+                adapter._reuse_static(source, root / "other", expected_input,
+                                      ["changed", *new_command[1:]], root / "other")
+
     def test_frozen_hdfs29_and_30_original_pipeline_read_only(self):
         for number in (29, 30):
             with self.subTest(case=number):

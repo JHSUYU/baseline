@@ -13,6 +13,12 @@ Scheduler; and native campaign config validation. The THROW site and exception
 remain a separate oracle from the guard. Each command, receipt, and output is
 written under a new output root. A failed gate leaves its evidence in place.
 
+If a later gate fails after static ScopePlanner completed, a fresh preparation
+can pass `--reuse-static-root /absolute/prior/output/static`. The adapter
+checks the original static command and request input, copies the completed
+static trees byte for byte, and writes `static-reuse-receipt.json`. This avoids
+repeating the static scan while preserving the failed attempt.
+
 ```bash
 export MALLORY_NATIVE_ENGINE_ROOT=/absolute/pinned/engine-source
 python3 -m Mallory.native_graphchecker_dispatch.hdfs_native_adapter request \

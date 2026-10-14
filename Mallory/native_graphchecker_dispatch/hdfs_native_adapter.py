@@ -12,6 +12,7 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -352,6 +353,38 @@ def _run(stage: str, command: list[str], root: Path, timeout: int,
         raise ValueError(f"original GraphChecker {stage} failed: {result.returncode}")
 
 
+def _reuse_static(source: Path, destination: Path, expected_input: dict,
+                  expected_command: list[str], output: Path) -> None:
+    """Copy an exact completed static result after verifying input and bytes."""
+    source = source.resolve(strict=True)
+    prior_input = _object(source / "scope-input.json")
+    prior_input["analysis"]["original_engine_output_dir"] = expected_input[
+        "analysis"]["original_engine_output_dir"]
+    command = _object(source.parent / "commands/static.json")["argv"]
+    if (prior_input != expected_input or
+            command[:-2] != expected_command[:-2] or
+            command[-2:] != [str(source / "scope-input.json"),
+                            str(source / "static-scope")]):
+        raise ValueError("static reuse input or original command differs")
+    hashes = {}
+    for name in ("original-scope", "static-scope"):
+        origin = source / name
+        if not origin.is_dir() or origin.is_symlink():
+            raise ValueError("static reuse source is incomplete")
+        before = weave.file_tree_digest(origin)
+        shutil.copytree(origin, destination / name, symlinks=False)
+        after = weave.file_tree_digest(destination / name)
+        if before != after:
+            raise ValueError("static reuse changed original GraphChecker bytes")
+        hashes[name] = before
+    _atomic(output / "static-reuse-receipt.json", {
+        "schema_version": 1, "source_static_root": str(source),
+        "source_input_sha256": _sha(source / "scope-input.json"),
+        "source_command_sha256": _sha(source.parent / "commands/static.json"),
+        "source_stderr_sha256": _sha(source.parent / "commands/static.stderr"),
+        "copied_tree_sha256": hashes})
+
+
 def _profile(request: dict, path: Path) -> dict:
     profile = _object(path)
     if (profile.get("schema_version") != 1 or
@@ -445,7 +478,8 @@ def _profile(request: dict, path: Path) -> dict:
     return profile
 
 
-def prepare(request_file: Path, profile_file: Path, output: Path) -> dict:
+def prepare(request_file: Path, profile_file: Path, output: Path,
+            reuse_static_root: Path | None = None) -> dict:
     """Run static scope, fault-capable REGION_STATE JUnit and original planning."""
     request = _object(request_file)
     profile = _profile(request, profile_file)
@@ -481,12 +515,17 @@ def prepare(request_file: Path, profile_file: Path, output: Path) -> dict:
     if FORBIDDEN_PROFILE.intersection(scope_input["analysis"]):
         raise ValueError("HDFS analysis profile selects a fault site")
     _atomic(static / "scope-input.json", scope_input)
-    _run("static", [java, f"-Xmx{profile.get('static_heap_mb', 8192)}m",
+    static_command = [java, f"-Xmx{profile.get('static_heap_mb', 8192)}m",
         f"-Dcausynth.communication.mappings={profile['communication_mappings']}",
         "-cp", os.pathsep.join(profile["planner_classpath"]),
         "edu.uva.liftlab.mallory.scope.ScopePlanner",
-        str(static / "scope-input.json"), str(scope)], output,
-        profile.get("static_timeout_seconds", 1800))
+        str(static / "scope-input.json"), str(scope)]
+    if reuse_static_root is None:
+        _run("static", static_command, output,
+             profile.get("static_timeout_seconds", 1800))
+    else:
+        _reuse_static(reuse_static_root, static, scope_input,
+                      static_command, output)
     check, throw, manifest = _target_sites(request, scope)
     graph = original / "candidate_dataflow_edges.jsonl.gz"
     static_map = original / "static_scope_map.jsonl"
@@ -702,12 +741,14 @@ def main() -> None:
     parser.add_argument("--healthy-root", type=Path)
     parser.add_argument("--request", type=Path)
     parser.add_argument("--profile", type=Path)
+    parser.add_argument("--reuse-static-root", type=Path)
     parser.add_argument("--out", type=Path)
     args = parser.parse_args()
     if args.command == "prepare":
         if args.request is None or args.profile is None or args.out is None:
             parser.error("prepare requires request, profile, and out")
-        print(json.dumps(prepare(args.request, args.profile, args.out),
+        print(json.dumps(prepare(args.request, args.profile, args.out,
+                                 args.reuse_static_root),
                          sort_keys=True))
         return
     if args.inventory is None or args.case_id is None:
