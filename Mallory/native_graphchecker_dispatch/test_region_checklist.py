@@ -118,13 +118,17 @@ class RegionChecklistTest(unittest.TestCase):
         graph_fixture.setUp()
         self.addCleanup(graph_fixture.doCleanups)
 
-        def fixture_plan_ids(_path, _jar, plans):
+        def fixture_plan_projection(path, _jar):
             # The synthetic fixture pins occurrence IDs directly; its
             # engine.jar is deliberately not a compiled GraphChecker engine.
-            # Only the external ID conversion is replaced. Both summaries
-            # still traverse the real graph and receipt validation logic.
-            return {("exact-runtime-check" if row["regionId"] == fixture.ACTIVATION
-                     else "exact-receiver"): row for row in plans}
+            # Replace only Java's plan projection. Both summaries still
+            # traverse the real graph and validate the real receipts.
+            rows = [json.loads(line) for line in path.read_text().splitlines()]
+            plans = rows[1:]
+            identifiers = {
+                ("exact-runtime-check" if row["regionId"] == fixture.ACTIVATION
+                 else "exact-receiver"): row for row in plans}
+            return len(rows[0].get("gaps", [])), plans, identifiers
 
         original = graph_fixture._case("recorded")
         trial = self.root / "r0001"
@@ -149,7 +153,7 @@ class RegionChecklistTest(unittest.TestCase):
                           "region_skeletons": str(graph_fixture.skeletons)},
         }
         with patch("Mallory.native_graphchecker_feedback.region_state_graph."
-                   "_plan_identity_rows", side_effect=fixture_plan_ids):
+                   "_plan_projection", side_effect=fixture_plan_projection):
             summary = summarize_region_state(
                 trace, plan, receipt, events, graph_fixture.scope,
                 graph_fixture.graph, graph_fixture.skeletons, fixture.SITE,
