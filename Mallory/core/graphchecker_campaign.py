@@ -9,6 +9,7 @@ the old Mallory Probe event file is never an injection or target oracle.
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 import gzip
 import hashlib
 import json
@@ -71,6 +72,76 @@ def _target_throw_count(rows: list[dict[str, Any]], target: dict[str, Any]) -> i
                bool(row.get("occurrenceId")) for row in rows)
 
 
+def _target_throw_profiles(rows: list[dict[str, Any]],
+                           target: dict[str, Any]) -> dict[str, int] | None:
+    """Count bounded structural profiles; None means an older, unprofiled trace.
+
+    An all-or-nothing result prevents a partly instrumented healthy run from
+    making an otherwise ordinary throw appear novel.
+    """
+    matched = [row for row in rows if row.get("kind") == "TARGET_THROW" and
+               row.get("siteId") == target["throw_site_id"] and
+               row.get("exceptionClass") == target["exception_class"] and
+               bool(row.get("occurrenceId"))]
+    if any(row.get("fingerprintVersion") != 1 or not re.fullmatch(
+            r"[0-9a-f]{64}", str(row.get("structuralFingerprint", "")))
+           for row in matched):
+        return None
+    return dict(Counter(row["structuralFingerprint"] for row in matched))
+
+
+def _static_producer_frontier_sites(static_scope_map: Path,
+                                    graph: dict[str, Any]) -> set[tuple[str, str]]:
+    """Bound exploratory doors to producers on a static MAY path to target.
+
+    A returned site is a scheduling hint only. This function never constructs
+    an observed causal edge or changes the target-throw oracle.
+    """
+    relations = graph.get("staticMayRelations", [])
+    if not isinstance(relations, list):
+        raise ValueError("GraphChecker static MAY relations are invalid")
+    producers = set()
+    for relation in relations:
+        if not isinstance(relation, dict):
+            raise ValueError("GraphChecker static MAY relation is invalid")
+        if relation.get("kind") in {"STATIC_STATE", "STATIC_WIRE"}:
+            region = relation.get("producerRegionId")
+            if isinstance(region, str) and region:
+                producers.add(region)
+    if not producers:
+        return set()
+    result = set()
+    with static_scope_map.open(encoding="utf-8") as source:
+        for line in source:
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            if (not isinstance(row, dict) or
+                    row.get("kind") != "STATIC_SCOPE_SITE" or
+                    not isinstance(row.get("role"), str)):
+                raise ValueError("invalid static scope site row")
+            if (row["role"] == "DOOR_SITE" and
+                    row.get("regionId") in producers and
+                    isinstance(row.get("siteId"), str) and row["siteId"]):
+                result.add((row["regionId"], row["siteId"]))
+    return result
+
+
+def _profile_exceeds_healthy_envelope(
+        rows: list[dict[str, Any]], causal_seqs: list[int],
+        target: dict[str, Any], healthy_profiles: list[dict[str, int]]) -> bool:
+    """Require a causal throw whose profile exceeds every healthy seed."""
+    if not healthy_profiles or not causal_seqs:
+        return False
+    observed = _target_throw_profiles(rows, target)
+    if observed is None:
+        return False
+    causal = {row["structuralFingerprint"] for row in rows
+              if row.get("seq") in causal_seqs}
+    return any(observed.get(profile, 0) > max(
+        seed.get(profile, 0) for seed in healthy_profiles) for profile in causal)
+
+
 def _prior_trace_metadata(prior_trace: Path, target: dict[str, Any],
                           case_id: str) -> tuple[int, str, str | None]:
     """Reuse a prior trial's sealed oracle count; scan old receipts unchanged.
@@ -120,6 +191,23 @@ def _prior_trace_metadata(prior_trace: Path, target: dict[str, Any],
     digest, _ = _trace_digest(prior_trace)
     archive_digest = _sha256(prior_trace) if prior_trace.suffix == ".gz" else None
     return _target_throw_count(rows, target), digest, archive_digest
+
+
+def _prior_trace_profiles(prior_trace: Path, target: dict[str, Any]) -> dict[str, int] | None:
+    """Read profiles only after _prior_trace_metadata verified this archive."""
+    receipt = prior_trace.parent / "result.json"
+    if receipt.is_file():
+        profiles = _json(receipt).get("target_throw_profiles_for_differential")
+        if profiles is None:
+            return None
+        if (not isinstance(profiles, dict) or len(profiles) > 1024 or
+                any(not re.fullmatch(r"[0-9a-f]{64}", str(key)) or
+                    not isinstance(value, int) or isinstance(value, bool) or value < 0
+                    for key, value in profiles.items())):
+            raise ValueError("prior target-throw profile metadata is invalid")
+        return profiles
+    rows, _ = scan_window_trace(prior_trace, selected_kinds={"TARGET_THROW"})
+    return _target_throw_profiles(rows, target)
 
 
 def _tree_sha256(root: Path) -> str:
@@ -1027,7 +1115,9 @@ def _planned_fault_matches(fault: dict[str, Any], actual: dict[str, Any]) -> boo
 
 def summarize_evidence(rows: list[dict[str, Any]], graph: dict[str, Any],
                        target: dict[str, Any], faults: list[dict[str, Any]],
-                       door_types: dict[str, str] | None = None) -> dict[str, Any]:
+                       door_types: dict[str, str] | None = None,
+                       producer_frontier_sites: set[tuple[str, str]] | None = None
+                       ) -> dict[str, Any]:
     """Return strict runtime identity, exact target oracle, and door tiers."""
     check_sites = _configured_check_sites(target)
     if graph.get("schemaVersion") != SCHEMA or graph.get("targetSite") != (
@@ -1132,6 +1222,10 @@ def summarize_evidence(rows: list[dict[str, Any]], graph: dict[str, Any],
                             if door.get("replayOccurrenceId") else {}),
                          "ordinal": door["doorOrdinal"], "seq": door["seq"],
                          "tier": tier,
+                         "static_producer_frontier": bool(
+                             (door.get("regionId"), door["siteId"]) in
+                             (producer_frontier_sites or set()) and
+                             tier != "observed_closure"),
                          "exceptionClass": (door_types or {}).get(door["siteId"])})
     return {"strict_injection": strict, "applied_faults": len(applied),
             "actual_fault_occurrence_ids": [row["occurrenceId"] for row in matched]
@@ -1169,6 +1263,9 @@ def summarize_evidence(rows: list[dict[str, Any]], graph: dict[str, Any],
             "causal_closure_edges": graph.get("closureEdgeIds", []),
             "closure_coverage_sites": graph.get("closureCoverageSiteIds", []),
             "static_may_observed_door_sites": sorted(may_sites),
+            "static_producer_frontier_doors": [
+                {"regionId": region, "siteId": site}
+                for region, site in sorted(producer_frontier_sites or set())],
             "selected_scope_observed_door_sites": sorted({
                 door["siteId"] for door in eligible
                 if door["tier"] == "selected_scope_observed"}),
@@ -1176,13 +1273,25 @@ def summarize_evidence(rows: list[dict[str, Any]], graph: dict[str, Any],
 
 
 def _trial_verdict(evidence: dict[str, Any], faults: list[dict[str, Any]],
-                   prior_throw_count: int | None) -> tuple[str, bool]:
+                   prior_throw_count: int | None,
+                   target: dict[str, Any] | None = None,
+                   healthy_profiles: list[dict[str, int]] | None = None
+                   ) -> tuple[str, bool]:
     """Keep an exact post-fault throw distinct from injection-specific evidence."""
     triggered = bool(evidence["target_exception_triggered"])
     specific = bool(evidence["injection_specific_target_reached"])
     throw_specific = bool(evidence.get("injection_specific_target_throw"))
-    differential = bool(throw_specific and triggered and prior_throw_count is not None and
-                        len(evidence["target_throw_rows_after_fault"]) > prior_throw_count)
+    if target is not None and healthy_profiles is not None:
+        differential = bool(throw_specific and triggered and
+                            _profile_exceeds_healthy_envelope(
+                                evidence["target_throw_rows_after_fault"],
+                                evidence["target_throw_seqs_in_fault_closure"],
+                                target, healthy_profiles))
+    else:
+        differential = bool(throw_specific and triggered and
+                            prior_throw_count is not None and
+                            len(evidence["target_throw_rows_after_fault"]) >
+                            prior_throw_count)
     if differential:
         return "candidate", True
     if triggered and not throw_specific:
@@ -1200,7 +1309,8 @@ def _trial_verdict(evidence: dict[str, Any], faults: list[dict[str, Any]],
 
 
 def run_trial(config: dict[str, Any], prepared: Path, trial: Path,
-              plan: dict[str, Any], prior_trace: Path | None = None) -> dict[str, Any]:
+              plan: dict[str, Any], prior_trace: Path | None = None,
+              healthy_seed_traces: list[Path] | None = None) -> dict[str, Any]:
     """Execute one fresh JVM and write a self-contained, replayable receipt."""
     woven = _verify_prepared(config, prepared)
     door_types = _door_types(_json(prepared / "weave-manifest.json"))
@@ -1208,9 +1318,27 @@ def run_trial(config: dict[str, Any], prepared: Path, trial: Path,
     prior_throw_count = None
     prior_digest = None
     prior_archive_digest = None
+    healthy_profiles: list[dict[str, int]] | None = []
+    healthy_seed_digests: list[str] = []
     if prior_trace is not None:
         prior_throw_count, prior_digest, prior_archive_digest = _prior_trace_metadata(
             prior_trace, config["target"], config["case_id"])
+        profile = _prior_trace_profiles(prior_trace, config["target"])
+        if profile is None:
+            healthy_profiles = None
+        else:
+            healthy_profiles.append(profile)
+        healthy_seed_digests.append(prior_digest)
+    for seed in healthy_seed_traces or []:
+        count, digest, _ = _prior_trace_metadata(
+            seed, config["target"], config["case_id"])
+        prior_throw_count = max(prior_throw_count or 0, count)
+        profile = _prior_trace_profiles(seed, config["target"])
+        if profile is None:
+            healthy_profiles = None
+        elif healthy_profiles is not None:
+            healthy_profiles.append(profile)
+        healthy_seed_digests.append(digest)
     trial.mkdir(parents=True, exist_ok=False)
     native_plan = trial / "fault-plan.json"
     _write_json(native_plan, {"faults": faults})
@@ -1279,6 +1407,7 @@ def run_trial(config: dict[str, Any], prepared: Path, trial: Path,
         "prior_trace_sha256": prior_digest,
         "prior_trace_archive_sha256": prior_archive_digest,
         "prior_seed_target_throw_count": prior_throw_count,
+        "healthy_seed_trace_sha256s": healthy_seed_digests,
         "static_scope_map_sha256": _sha256(config["static_scope_map"]),
         "weave_receipt_sha256": _sha256(prepared / "weave-receipt.json"),
         "trial_cwd_template_sha256": config["trial_cwd_template_sha256"],
@@ -1290,6 +1419,8 @@ def run_trial(config: dict[str, Any], prepared: Path, trial: Path,
         rows, window_count = scan_window_trace(raw_trace, trace)
         phase_seconds["window_scan"] = round(time.monotonic() - phase_started, 3)
         result["target_throw_count_for_differential"] = _target_throw_count(
+            rows, config["target"])
+        result["target_throw_profiles_for_differential"] = _target_throw_profiles(
             rows, config["target"])
         result["target_throw_count_scope"] = {
             "site_id": config["target"]["throw_site_id"],
@@ -1303,9 +1434,12 @@ def run_trial(config: dict[str, Any], prepared: Path, trial: Path,
         phase_seconds["graph_analysis"] = round(time.monotonic() - phase_started, 3)
         phase_started = time.monotonic()
         evidence = summarize_evidence(rows, graph, config["target"], faults,
-                                      door_types)
+                                      door_types,
+                                      _static_producer_frontier_sites(
+                                          config["static_scope_map"], graph))
         triggered = evidence["target_exception_triggered"]
-        status, candidate = _trial_verdict(evidence, faults, prior_throw_count)
+        status, candidate = _trial_verdict(evidence, faults, prior_throw_count,
+                                           config["target"], healthy_profiles)
         result.update({"status": status,
                        "graphchecker_feedback": graph, "evidence": evidence,
                        "window_rows": window_count,
@@ -1372,13 +1506,16 @@ def main(argv: list[str] | None = None) -> int:
             command.add_argument("--prepared", type=Path, required=True)
             command.add_argument("--plan", type=Path, required=True)
             command.add_argument("--prior-trace", type=Path)
+            command.add_argument("--healthy-seed-trace", action="append", type=Path,
+                                 default=[])
     args = parser.parse_args(argv)
     config = load_config(args.config)
     if args.mode == "prepare":
         prepare(config, args.out.resolve())
     else:
         result = run_trial(config, args.prepared.resolve(), args.out.resolve(),
-                           _json(args.plan), args.prior_trace)
+                           _json(args.plan), args.prior_trace,
+                           args.healthy_seed_trace)
         print(json.dumps({"status": result["status"],
                           "target_exception_candidate": result["target_exception_candidate"],
                           "result": str((args.out / "result.json").resolve())}))

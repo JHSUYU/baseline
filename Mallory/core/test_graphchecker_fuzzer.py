@@ -161,6 +161,59 @@ class GraphCheckerFuzzerTest(unittest.TestCase):
         self.assertEqual("outside_closure", _pick(state["queue"], 17, state)[
             "tier"])
 
+    def test_static_producer_fault_can_extend_once_without_causal_credit(self):
+        state = _new_state(self.config(), self.budget())
+        first_door = self.door(2, 1, "static_may_observed", "rpc-reply")
+        first = {key: first_door[key] for key in
+                 ("siteId", "node", "occurrenceId", "ordinal", "exceptionClass")}
+        state["active"] = {"index": 1, "name": "r0001", "faults": [first],
+                           "selection_tier": "static_may_observed",
+                           "static_producer_frontier": True}
+        closure = self.door(6, 2, "observed_closure", "target-io")
+        unrelated = self.door(7, 3, "outside_closure", "unrelated-io")
+        faulted = self.result([first], [closure, unrelated])
+        faulted["evidence"]["injection_specific_target_reached"] = False
+        _accept_result(state, "r0001", faulted)
+        self.assertEqual(0, state["trials"][0]["target_closure_novelty"])
+        self.assertEqual("checked", state["trials"][0]["status"])
+        self.assertFalse(state["trials"][0]["target_exception_candidate"])
+        self.assertEqual(1, state["producer_frontier_continuations_enqueued"])
+        self.assertEqual(1, len(state["queue"]))
+        continuation = _pick(state["queue"], 7, state)
+        self.assertTrue(continuation["producer_frontier_continuation"])
+        self.assertEqual(["rpc-reply", "target-io"],
+                         [fault["siteId"] for fault in continuation["faults"]])
+        self.assertEqual("observed_closure", continuation["tier"])
+
+    def test_static_producer_continuation_requires_retained_target(self):
+        state = _new_state(self.config(), self.budget())
+        first_door = self.door(2, 1, "static_may_observed", "rpc-reply")
+        first = {key: first_door[key] for key in
+                 ("siteId", "node", "occurrenceId", "ordinal", "exceptionClass")}
+        state["active"] = {"index": 1, "name": "r0001", "faults": [first],
+                           "static_producer_frontier": True}
+        faulted = self.result([first], [self.door(6, 2)])
+        faulted["evidence"]["injection_specific_target_reached"] = False
+        faulted["evidence"]["post_fault_target_reached"] = False
+        _accept_result(state, "r0001", faulted)
+        self.assertEqual([], state["queue"])
+        self.assertEqual(0, state["producer_frontier_continuations_enqueued"])
+
+    def test_static_producer_continuation_queue_is_bounded(self):
+        state = _new_state(self.config(), self.budget())
+        first = {key: self.door(2, 1, "static_may_observed", "rpc-reply")[key]
+                 for key in ("siteId", "node", "occurrenceId", "ordinal",
+                             "exceptionClass")}
+        state["active"] = {"index": 1, "name": "r0001", "faults": [first],
+                           "static_producer_frontier": True}
+        doors = [self.door(5 + index, 2 + index, site=f"io-{index}")
+                 for index in range(16)]
+        faulted = self.result([first], doors)
+        faulted["evidence"]["injection_specific_target_reached"] = False
+        _accept_result(state, "r0001", faulted)
+        self.assertEqual(8, len(state["queue"]))
+        self.assertEqual(8, state["producer_frontier_continuations_enqueued"])
+
     def test_v3_target_loss_does_not_penalize_another_logical_node(self):
         state = _new_state(self.config(), self.budget())
         nn = self.door(1, 1, site="shared-site")

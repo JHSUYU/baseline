@@ -16,6 +16,9 @@ from Mallory.core.graphchecker_campaign import (_archive_jsonl, _archive_stat,
                                                 _archive_trace_pair, _trace_digest,
                                                 _prior_trace_metadata,
                                                 _target_throw_count,
+                                                _target_throw_profiles,
+                                                _profile_exceeds_healthy_envelope,
+                                                _static_producer_frontier_sites,
                                                 _trial_scratch_root,
                                                 _validate_scratch_root,
                                                 _check_woven_major,
@@ -214,6 +217,49 @@ class GraphCheckerCampaignTest(unittest.TestCase):
         self.assertTrue(evidence["injection_specific_target_throw"])
         self.assertEqual(("candidate", True),
                          _trial_verdict(evidence, [self.FAULT], 0))
+
+    def test_profile_envelope_needs_a_causal_excess_over_every_healthy_seed(self):
+        rows = self.rows()
+        expected = "a" * 64
+        novel = "b" * 64
+        rows[5].update(fingerprintVersion=1, structuralFingerprint=expected)
+        evidence = summarize_evidence(rows, self.graph(), self.TARGET,
+                                      [self.FAULT])
+        self.assertEqual({expected: 1}, _target_throw_profiles(rows, self.TARGET))
+        self.assertFalse(_profile_exceeds_healthy_envelope(
+            evidence["target_throw_rows_after_fault"], [6], self.TARGET,
+            [{expected: 1}, {expected: 1}]))
+        self.assertEqual(("needs_differential_review", False),
+                         _trial_verdict(evidence, [self.FAULT], 1,
+                                        self.TARGET,
+                                        [{expected: 1}, {expected: 1}]))
+        rows[5]["structuralFingerprint"] = novel
+        evidence = summarize_evidence(rows, self.graph(), self.TARGET,
+                                      [self.FAULT])
+        self.assertEqual(("candidate", True),
+                         _trial_verdict(evidence, [self.FAULT], 1,
+                                        self.TARGET,
+                                        [{expected: 1}, {expected: 1}]))
+        self.assertEqual(("needs_differential_review", False),
+                         _trial_verdict(evidence, [self.FAULT], 1,
+                                        self.TARGET,
+                                        [{expected: 1}, {novel: 1}]))
+        rows[5].pop("fingerprintVersion")
+        self.assertIsNone(_target_throw_profiles(rows, self.TARGET))
+
+    def test_static_producer_frontier_is_only_a_site_hint(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "static.jsonl"
+            path.write_text("".join(json.dumps({
+                "kind": "STATIC_SCOPE_SITE", "role": "DOOR_SITE",
+                "regionId": region, "siteId": site}) + "\n" for region, site in (
+                    ("producer", "rpc-reply"), ("unrelated", "other-rpc"))))
+            graph = {"staticMayRelations": [{
+                "kind": "STATIC_STATE", "producerRegionId": "producer",
+                "consumerRegionId": "target", "carrier": "key-map"}]}
+            self.assertEqual({("producer", "rpc-reply")},
+                             _static_producer_frontier_sites(path, graph))
+            self.assertEqual(set(), _static_producer_frontier_sites(path, {}))
 
     def test_real_hdfs_target_row_shape_is_counted_without_attribution(self):
         # HDFS-29 healthy raw trace has this exact selected TARGET_CHECK

@@ -34,6 +34,7 @@ BOOTSTRAP_MAX_FAULTS = 3
 BOOTSTRAP_MAX_TRIALS = 128
 MAX_QUEUE = 5000
 MAX_UNMATCHED_RETRIES = 2
+MAX_PRODUCER_FRONTIER_CONTINUATIONS = 8
 
 
 def _now() -> str:
@@ -120,6 +121,18 @@ def _retention_score(item: dict[str, Any], completed: int,
 def _pick(queue: list[dict[str, Any]], completed: int,
           state: dict[str, Any] | None = None) -> dict[str, Any]:
     if state is not None and state.get("scheduler_version", 1) >= 3:
+        # Spend a bounded, periodic slot on a second fault after a strict
+        # static-producer fault retained the target. This is exploration,
+        # never evidence that the producer belongs to the observed closure.
+        if completed % 8 == 7:
+            continuation = [item for item in queue if item.get(
+                "producer_frontier_continuation")]
+            if continuation:
+                selected = max(continuation, key=lambda item: (
+                    _retention_score(item, completed, state),
+                    -item["enqueued_at"], item["key"]))
+                queue.remove(selected)
+                return selected
         # Static MAY and selected scope have periodic slots; one of eighteen
         # is reserved for outside closure when that queue is nonempty.
         outside = [item for item in queue if item["tier"] == "outside_closure"]
@@ -298,7 +311,9 @@ def _enqueue(state: dict[str, Any], result: dict[str, Any],
              prefix: list[dict[str, Any]], *, bootstrap: bool = False,
              bootstrap_novelty: int = 0,
              bootstrap_new_sites: set[str] | None = None,
-             target_novelty: int | None = None) -> int:
+             target_novelty: int | None = None,
+             producer_frontier_continuation: bool = False,
+             max_added: int | None = None) -> int:
     evidence = result.get("evidence", {})
     if bootstrap and (state.get("scheduler_version", 1) < 4 or
                       evidence.get("target_reached") or
@@ -314,6 +329,8 @@ def _enqueue(state: dict[str, Any], result: dict[str, Any],
     groups: dict[tuple[str, str, str], list[dict[str, Any]]] = {}
     for door in evidence.get("eligible_doors", []):
         tier = door.get("tier")
+        if producer_frontier_continuation and tier != "observed_closure":
+            continue
         if bootstrap and tier not in ("static_may_observed",
                                       "selected_scope_observed"):
             # A target-absent run has no observed target closure. Static MAY
@@ -352,6 +369,8 @@ def _enqueue(state: dict[str, Any], result: dict[str, Any],
                       _novelty(result) if state.get("scheduler_version", 1) < 5
                       else 0)
     for door in ordered:
+        if max_added is not None and added >= max_added:
+            break
         if len(state["queue"]) >= MAX_QUEUE:
             break
         tier = door["tier"]
@@ -364,6 +383,9 @@ def _enqueue(state: dict[str, Any], result: dict[str, Any],
             continue
         seen.add(key)
         item = {"key": key, "faults": faults, "tier": tier,
+                "static_producer_frontier": bool(door.get(
+                    "static_producer_frontier", False)),
+                "producer_frontier_continuation": producer_frontier_continuation,
                 "novelty": (min(60, bootstrap_novelty +
                                 (15 if door["siteId"] in (
                                     bootstrap_new_sites or set()) else 0))
@@ -409,6 +431,7 @@ def _new_state(config: dict[str, Any], budget: dict[str, int]) -> dict[str, Any]
             "last_fault_site_attempts": {}, "last_fault_site_strict": {},
             "last_fault_actor_site_attempts": {},
             "site_target_retention": {},
+            "producer_frontier_continuations_enqueued": 0,
             "target_site_rows": config.get("target_site_rows", []),
             "status": "running", "terminal": False,
             "started_at": _now(), "updated_at": _now(),
@@ -456,6 +479,8 @@ def _accept_result(state: dict[str, Any], name: str,
     if active["index"] > 0:
         record["selection_tier"] = active.get("selection_tier")
         record["selection_score"] = active.get("selection_score")
+        record["producer_frontier_continuation"] = active.get(
+            "producer_frontier_continuation", False)
         record["parent_target_retained"] = active.get("parent_target_retained", False)
         record["parent_graph_delta"] = active.get("parent_graph_delta", 0)
         if state.get("scheduler_version", 1) >= 4:
@@ -544,6 +569,10 @@ def _accept_result(state: dict[str, Any], name: str,
                 state["queue"].append({
                     "key": key, "faults": active["faults"],
                     "tier": active.get("selection_tier", "outside_closure"),
+                    "static_producer_frontier": active.get(
+                        "static_producer_frontier", False),
+                    "producer_frontier_continuation": active.get(
+                        "producer_frontier_continuation", False),
                     "novelty": -10 * (count + 1),
                     "enqueued_at": state["completed_fault_trials"],
                     "bootstrap_seed": active.get("bootstrap_seed", False),
@@ -552,6 +581,20 @@ def _accept_result(state: dict[str, Any], name: str,
                 "injection_specific_target_reached"):
             _enqueue(state, result, active["faults"],
                      target_novelty=target_novelty)
+        elif (len(active["faults"]) == 1 and
+              active.get("static_producer_frontier") and
+              evidence.get("strict_injection") and
+              evidence.get("post_fault_target_reached") and
+              evidence.get("target_reached")):
+            remaining = MAX_PRODUCER_FRONTIER_CONTINUATIONS - int(state.get(
+                "producer_frontier_continuations_enqueued", 0))
+            if remaining > 0:
+                added = _enqueue(state, result, active["faults"],
+                                 target_novelty=0,
+                                 producer_frontier_continuation=True,
+                                 max_added=remaining)
+                state["producer_frontier_continuations_enqueued"] = (
+                    MAX_PRODUCER_FRONTIER_CONTINUATIONS - remaining + added)
     state["active"] = None
     state["updated_at"] = _now()
     state["terminal"] = state["status"] != "running"
@@ -644,6 +687,8 @@ def _finish(state: dict[str, Any], root: Path) -> dict[str, Any]:
                    "last_fault_actor_site_attempts": state.get(
                        "last_fault_actor_site_attempts", {}),
                    "site_target_retention": state.get("site_target_retention", {}),
+            "producer_frontier_continuations_enqueued": state.get(
+                "producer_frontier_continuations_enqueued", 0),
                    "completed_fault_trials": state["completed_fault_trials"],
                    "trial_elapsed_seconds": state["trial_elapsed_seconds"],
                    "healthy": state["healthy"],
@@ -751,6 +796,10 @@ def run_campaign(config_path: Path, root: Path) -> dict[str, Any]:
                                "faults": selected["faults"],
                                "selection_tier": selected["tier"],
                                "selection_score": selected_score,
+                               "static_producer_frontier": selected.get(
+                                   "static_producer_frontier", False),
+                               "producer_frontier_continuation": selected.get(
+                                   "producer_frontier_continuation", False),
                                "parent_target_retained": selected.get(
                                    "parent_target_retained", False),
                                "parent_graph_delta": selected.get("parent_graph_delta", 0),

@@ -152,9 +152,13 @@ public final class MessageDoors {
     public static void targetThrow(String siteId, Object owner,
                                    Throwable thrown) {
         OccurrenceAddress occurrence = TraceRows.occurrence(owner);
-        TraceRows.row("TARGET_THROW", occurrence,
-                TraceRows.fields("siteId", siteId, "exceptionClass",
-                        thrown == null ? "" : thrown.getClass().getName()));
+        JsonObject values = TraceRows.fields("siteId", siteId, "exceptionClass",
+                thrown == null ? "" : thrown.getClass().getName());
+        JsonObject fingerprint = TargetThrowFingerprint.fields(
+                siteId, occurrence, owner, thrown);
+        for (Map.Entry<String, com.google.gson.JsonElement> entry :
+                fingerprint.entrySet()) values.add(entry.getKey(), entry.getValue());
+        TraceRows.row("TARGET_THROW", occurrence, values);
     }
 
     public static void coverage(String siteId, Object owner) {
