@@ -1593,9 +1593,16 @@ public final class StaticScopeMap {
                 new LinkedHashMap<String, List<Site>>();
         for (Site site : ofRole(WRITE_SITE,
                 named -> !named.regionId.isEmpty())) {
-            for (String location : new String[]{site.cell, site.carrier}) {
-                if (location.isEmpty()) continue;
-                byCell.computeIfAbsent(location,
+            if (!site.cell.isEmpty()) {
+                byCell.computeIfAbsent(site.cell,
+                        key -> new ArrayList<Site>()).add(site);
+            }
+            // A direct field store names the same location as its carrier.
+            // The demand walk must inspect that site once at the location;
+            // keeping two copies repeats every writer comparison and guard.
+            if (!site.carrier.isEmpty()
+                    && !site.carrier.equals(site.cell)) {
+                byCell.computeIfAbsent(site.carrier,
                         key -> new ArrayList<Site>()).add(site);
             }
         }
