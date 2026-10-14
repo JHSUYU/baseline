@@ -394,6 +394,7 @@ public final class ScopePlanner {
             else System.setProperty("causynth.loop.default.bound", previousLoopBound);
         }
         Set<Method> held = new LinkedHashSet<>();
+        Map<String, String> firstRegionByMethod = new LinkedHashMap<>();
         for (JsonElement name : original.getAsJsonArray("traceMethods")) {
             Method method = methods.get(name.getAsString());
             if (method != null && materializedClasses.contains(
@@ -402,6 +403,8 @@ public final class ScopePlanner {
         for (JsonElement item : original.getAsJsonArray("regions")) {
             JsonObject region = item.getAsJsonObject();
             for (JsonElement name : region.getAsJsonArray("methods")) {
+                firstRegionByMethod.putIfAbsent(name.getAsString(),
+                        string(region, "regionId", ""));
                 Method method = methods.get(name.getAsString());
                 if (method != null && materializedClasses.contains(
                         method.soot.getDeclaringClass().getName())) held.add(method);
@@ -474,11 +477,41 @@ public final class ScopePlanner {
                 continue;
             }
             JsonObject door = row("DOOR_SITE", site, "", ref.getSignature());
-            String region = originalRegionHolding(original, site.owner.soot.getSignature());
+            String region = firstRegionByMethod.getOrDefault(
+                    site.owner.soot.getSignature(), "");
             if (!region.isEmpty()) door.addProperty("regionId", region);
             addOriginal(rows, seen, door);
         }
+        // GraphChecker's demanded doors are value-slice facts.  A fault
+        // campaign also needs I/O boundaries along the selected execution
+        // regions: an RPC failure can change a later value without the I/O
+        // call itself being a data dependency of the target.  This opt-in
+        // expansion stays inside GraphChecker's trace/region methods and is
+        // explicitly a static MAY set, not an observed causal edge.
+        int supplementalDoors = 0;
+        if (analysis.has("original_typed_io_frontier")
+                && analysis.get("original_typed_io_frontier").getAsBoolean()) {
+            for (Method method : held) {
+                if (isInstrumentationHelper(method)) continue;
+                for (Site site : method.sites) {
+                    Stmt stmt = (Stmt) site.unit;
+                    if (!stmt.containsInvokeExpr()) continue;
+                    SootMethodRef ref = stmt.getInvokeExpr().getMethodRef();
+                    if (!isIoDoor(ref)) continue;
+                    JsonObject door = row("DOOR_SITE", site, "", ref.getSignature());
+                    String region = firstRegionByMethod.getOrDefault(
+                            method.soot.getSignature(), "");
+                    if (!region.isEmpty()) door.addProperty("regionId", region);
+                    door.addProperty("selectionSource", "ORIGINAL_SELECTED_METHOD_IO_FRONTIER");
+                    door.addProperty("staticMayOnly", true);
+                    int before = rows.size();
+                    addOriginal(rows, seen, door);
+                    if (rows.size() != before) supplementalDoors++;
+                }
+            }
+        }
         Map<String, Port> originalPorts = new LinkedHashMap<>();
+        int parameterPortAnchors = 0;
         for (JsonElement item : original.getAsJsonArray("regions")) {
             JsonObject region = item.getAsJsonObject();
             JsonArray catalog = region.has("communicationPorts")
@@ -494,6 +527,12 @@ public final class ScopePlanner {
                     if (index >= 0) siteId = method + "#u" + index;
                 }
                 Site site = exactSite(siteId);
+                boolean parameterAnchor = false;
+                if (site == null && "METHOD_PARAMETER".equals(
+                        string(capture, "outputCaptureKind", ""))) {
+                    site = originalParameterSite(capture);
+                    parameterAnchor = site != null;
+                }
                 if (portId.isEmpty() || site == null) {
                     analysisGaps.add("original_graphchecker_port_unmapped:" + portId + ":" + siteId);
                     continue;
@@ -508,6 +547,12 @@ public final class ScopePlanner {
                 JsonObject mapped = row("OUT".equals(side) ? "EXPORT_SITE" : "IMPORT_SITE",
                         site, "", portId);
                 mapped.addProperty("regionId", string(region, "regionId", ""));
+                if (parameterAnchor) {
+                    mapped.addProperty("selectionSource", "ORIGINAL_METHOD_PARAMETER_CAPTURE");
+                    mapped.addProperty("captureArgumentIndex",
+                            integer(capture, "argumentIndex", -1));
+                    parameterPortAnchors++;
+                }
                 addOriginal(rows, seen, mapped);
             }
         }
@@ -541,6 +586,10 @@ public final class ScopePlanner {
         result.add("scopeSites", scope);
         result.add("weaveManifest", manifest);
         result.add("originalGraphChecker", original);
+        JsonObject translation = new JsonObject();
+        translation.addProperty("supplementalTypedIoDoors", supplementalDoors);
+        translation.addProperty("methodParameterPortAnchors", parameterPortAnchors);
+        result.add("scopeTranslation", translation);
         JsonArray gaps = new JsonArray();
         for (String gap : analysisGaps) gaps.add(gap);
         result.add("analysisGaps", gaps);
@@ -561,15 +610,27 @@ public final class ScopePlanner {
         }
     }
 
-    private static String originalRegionHolding(JsonObject original, String method) {
-        for (JsonElement item : original.getAsJsonArray("regions")) {
-            JsonObject region = item.getAsJsonObject();
-            for (JsonElement member : region.getAsJsonArray("methods")) {
-                if (method.equals(member.getAsString()))
-                    return string(region, "regionId", "");
-            }
+    /** Map a wire catalog formal capture to its exact original Jimple identity. */
+    private Site originalParameterSite(JsonObject capture) {
+        Method method = methods.get(string(capture, "definitionMethod", ""));
+        int parameter = integer(capture, "argumentIndex", -1);
+        if (method == null || parameter < 0
+                || parameter >= method.soot.getParameterCount()) return null;
+        int index = originalParameterUnitIndex(method.body, parameter);
+        return index < 0 ? null : method.sites.get(index);
+    }
+
+    static int originalParameterUnitIndex(Body body, int parameter) {
+        if (parameter < 0) return -1;
+        int index = 0;
+        for (Unit unit : body.getUnits()) {
+            if (!(unit instanceof IdentityStmt)) { index++; continue; }
+            Value right = ((IdentityStmt) unit).getRightOp();
+            if (right instanceof ParameterRef
+                    && ((ParameterRef) right).getIndex() == parameter) return index;
+            index++;
         }
-        return "";
+        return -1;
     }
 
     /** GraphChecker declares the NEW's source line, while Mallory's oracle is THROW. */

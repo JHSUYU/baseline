@@ -58,6 +58,14 @@ compares lambda names across independent Soot scenes.
 The opt-in original GraphChecker seed uses its `wjtp` phase and Scene
 normalization (`SharedInitializationSplitter`, sorted locals, one Soot thread)
 for its site indices. The default Mallory bytecode weaver keeps `jtp` indices.
+For fault campaigns, `analysis.original_typed_io_frontier=true` adds typed
+I/O calls in methods selected by the original trace and region planner,
+including when the original value slice demands no door. These are static MAY
+fault sites (`selectionSource=ORIGINAL_SELECTED_METHOD_IO_FRONTIER`,
+`staticMayOnly=true`); runtime observations still decide which were reached.
+Original communication captures of kind `METHOD_PARAMETER` are mapped to
+their exact Jimple `ParameterRef` identity by `argumentIndex`, retaining the
+original port ID. `analysis.json.scopeTranslation` reports both additions.
 
 Outputs:
 
@@ -65,12 +73,13 @@ Outputs:
   `(role, site, cell/port)`. Roles are `TARGET_SITE` (the check branch),
   `THROW_SITE` (the fatal oracle), `REGION_SITE`, `READ_SITE`, `WRITE_SITE`,
   `DOOR_SITE`, `EXPORT_SITE`, and `IMPORT_SITE`.
-  Every row has `siteId` (`<Soot method>#uN`), `unitIndex` (jtp-entry Jimple
-  index), `vmSite`, class/method/descriptor, line, region ID, and guards.
+  Every row has `siteId` (`<Soot method>#uN`), `unitIndex` (exact Jimple
+  index from the selected `jtp` or original `wjtp` path), `vmSite`,
+  class/method/descriptor, line, region ID, and guards.
   State rows name a declared field in `cell`; port rows name `portId`.
 * `weave_manifest.json`: `regions`, `frames`, `targets`, `coverage`, `doors`,
   `stateCandidates`, and `rpcPorts`. The weave selects target/door/state units
-  by the jtp-entry Jimple `unitIndex`; both the branch and throw are targets.
+  by that phase's Jimple `unitIndex`; both the branch and throw are targets.
   Door entries carry `exceptionClass`, defaulting to `java.io.IOException`.
   `stateCandidates` request observation;
   they do not assert a read/write version match. A region's `sourceOwner` is

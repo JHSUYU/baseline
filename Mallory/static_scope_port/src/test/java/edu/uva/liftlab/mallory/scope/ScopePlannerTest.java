@@ -8,18 +8,56 @@ import org.junit.Test;
 import soot.PackManager;
 import soot.Scene;
 import soot.SootClass;
+import soot.SootMethod;
+import soot.Unit;
+import soot.IntType;
+import soot.RefType;
+import soot.VoidType;
+import soot.Modifier;
+import soot.Local;
+import soot.jimple.IdentityStmt;
+import soot.jimple.ParameterRef;
+import soot.jimple.Jimple;
+import soot.jimple.JimpleBody;
 import soot.options.Options;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertTrue;
 
 public class ScopePlannerTest {
+    @Test
+    public void originalMethodParameterCaptureResolvesExactJimpleIdentity() throws Exception {
+        SootClass owner = new SootClass("fixture.OriginalParameterCapture");
+        SootMethod method = new SootMethod("receive",
+                Arrays.asList(IntType.v(), RefType.v("java.lang.String")),
+                VoidType.v(), Modifier.STATIC);
+        owner.addMethod(method);
+        JimpleBody body = Jimple.v().newBody(method);
+        body.getUnits().add(Jimple.v().newNopStmt());
+        Local first = Jimple.v().newLocal("first", IntType.v());
+        Local second = Jimple.v().newLocal("second", RefType.v("java.lang.String"));
+        body.getLocals().add(first);
+        body.getLocals().add(second);
+        body.getUnits().add(Jimple.v().newIdentityStmt(first,
+                Jimple.v().newParameterRef(IntType.v(), 0)));
+        body.getUnits().add(Jimple.v().newIdentityStmt(second,
+                Jimple.v().newParameterRef(RefType.v("java.lang.String"), 1)));
+        assertEquals(1, ScopePlanner.originalParameterUnitIndex(body, 0));
+        int index = ScopePlanner.originalParameterUnitIndex(body, 1);
+        assertEquals(2, index);
+        Unit identity = body.getUnits().toArray(new Unit[0])[index];
+        assertTrue(identity instanceof IdentityStmt);
+        assertEquals(1, ((ParameterRef) ((IdentityStmt) identity).getRightOp()).getIndex());
+        assertEquals(-1, ScopePlanner.originalParameterUnitIndex(body, 2));
+    }
+
     @Test
     public void graphCheckerRegionPortSelectsRealFixtureDoorWithoutChangingDefault()
             throws Exception {
