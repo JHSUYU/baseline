@@ -814,14 +814,17 @@ def _novelty(state: dict[str, Any], feedback: dict[str, Any]) -> int:
 def _region_doors(rows: list[dict[str, Any]], summary: dict[str, Any],
                   after_fault: dict[str, Any] | None = None
                   ) -> list[dict[str, Any]]:
-    """Mutate observed doors; target-prioritized doors precede the check."""
+    """Mutate doors admitted by the original target demand closure."""
+    if summary.get("closureMembershipAuthority") != (
+            "original_runtime_selected_region_finalizer"):
+        raise ValueError("REGION_STATE summary lacks original closure authority")
+    closure_ids = set(summary["closureOccurrenceIds"])
     after_index = None
     if after_fault is not None:
         after_index = next((index for index, row in enumerate(rows)
                             if row is after_fault), None)
         if after_index is None:
             raise ValueError("last applied fault is absent from the ordered log")
-    checks: dict[tuple[str, int, str], int] = {}
     actor_checks: dict[tuple[str, int], int] = {}
     for row in rows:
         if (row["kind"] != "TARGET_CHECK" or
@@ -829,8 +832,6 @@ def _region_doors(rows: list[dict[str, Any]], summary: dict[str, Any],
                 not isinstance(row.get("occurrenceId"), str)):
             continue
         actor = (row["node"], row["actorEpochOrdinal"])
-        key = (*actor, row["occurrenceId"])
-        checks[key] = min(checks.get(key, row["seq"]), row["seq"])
         actor_checks[actor] = min(actor_checks.get(actor, row["seq"]), row["seq"])
     found = []
     for index, row in enumerate(rows):
@@ -853,7 +854,7 @@ def _region_doors(rows: list[dict[str, Any]], summary: dict[str, Any],
         fault = {field: row[field] for field in SELECTOR_FIELDS}
         fault["sourceOccurrenceId"] = row["occurrenceId"]
         actor = (row["node"], row["actorEpochOrdinal"])
-        direct = row["seq"] < checks.get((*actor, row["occurrenceId"]), -1)
+        direct = row["occurrenceId"] in closure_ids
         before_actor_check = row["seq"] < actor_checks.get(actor, -1)
         found.append({"fault": fault, "seq": row["seq"],
                       "tier": "observed_closure" if direct else
@@ -1082,13 +1083,19 @@ def _run_region_trial(config: dict[str, Any], admitted: dict[str, Any],
                                   "newBranchOutcomeIds": []}
     applied = [row for row in events if row["kind"] == "FAULT_APPLIED"]
     last = applied[-1] if applied else None
-    checks = {row["occurrenceId"] for row in events if
-              row["kind"] == "TARGET_CHECK" and
-              row.get("siteId") == config["target_site"] and
-              isinstance(row.get("occurrenceId"), str)}
+    if summary.get("status") == "target_throw_unplanned":
+        # The exact throw is still evidence, but no original plan was emitted.
+        closure_ids: set[str] = set()
+    else:
+        if summary.get("closureMembershipAuthority") != (
+                "original_runtime_selected_region_finalizer"):
+            raise ValueError("REGION_STATE summary lacks original closure authority")
+        closure_ids = set(summary["closureOccurrenceIds"])
     if last is not None:
-        result["fault_in_target_closure"] = last["occurrenceId"] in checks
-    result["eligible_doors"] = _region_doors(events, summary, last)
+        result["fault_in_target_closure"] = last["occurrenceId"] in closure_ids
+    result["eligible_doors"] = ([] if summary.get("status") ==
+                                "target_throw_unplanned" else
+                                _region_doors(events, summary, last))
     throws, admitted_temporal, reason, evidence = _region_throw_evidence(
         events, config["target_site"], config["target_throw"], last)
     result["target_exception_triggered"] = bool(throws)

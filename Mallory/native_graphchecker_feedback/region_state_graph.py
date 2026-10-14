@@ -13,6 +13,7 @@ import json
 import os
 import re
 import subprocess
+import fcntl
 from pathlib import Path
 from typing import Any
 
@@ -22,6 +23,8 @@ from Mallory.instrumentation.graphchecker_port.native_original_weave import (
 
 SCHEMA = 1
 REGION_IN_ENDPOINT = re.compile(r"/region/(REGION\.[^/]+)/")
+PLAN_ID_CLASS = "edu.uva.liftlab.mallory.nativefeedback.RegionPlanIdsMain"
+PLAN_ID_SOURCE = Path(__file__).with_name("RegionPlanIdsMain.java")
 
 
 def _sha(path: Path) -> str:
@@ -47,6 +50,48 @@ def _rows(path: Path):
                 if not isinstance(row, dict):
                     raise ValueError(f"non-object trace row {path}:{number}")
                 yield row
+
+
+def _plan_identity_rows(plan_path: Path, engine_jar: Path,
+                        plans: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    """Join Finalizer's selected occurrences using original GraphChecker IDs.
+
+    The REGION_STATE trace has no SessionReader ActivationRows. Its original
+    RuntimeSelectedRegionFinalizer plan is the admitted target demand closure;
+    OccurrenceAddress, not a Python approximation of its hash, names members.
+    """
+    jar_sha = _sha(engine_jar)
+    classes = PLAN_ID_SOURCE.parent / "target" / f"region-plan-ids-{jar_sha[:16]}"
+    compiled = classes / "edu/uva/liftlab/mallory/nativefeedback/RegionPlanIdsMain.class"
+    dependencies = DEPENDENCIES.read_text(encoding="utf-8").strip()
+    classpath = f"{engine_jar}:{dependencies}"
+    classes.mkdir(parents=True, exist_ok=True)
+    with (classes / ".build.lock").open("w") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        if not compiled.is_file() or compiled.stat().st_mtime < PLAN_ID_SOURCE.stat().st_mtime:
+            subprocess.run(["javac", "-cp", classpath, "-d", str(classes),
+                            str(PLAN_ID_SOURCE)], check=True, timeout=120,
+                           stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    before = _sha(plan_path)
+    output = subprocess.run(["java", "-cp", f"{classes}:{classpath}",
+                             PLAN_ID_CLASS, str(plan_path)], check=True,
+                            timeout=120, text=True, capture_output=True).stdout
+    if _sha(engine_jar) != jar_sha or _sha(plan_path) != before:
+        raise ValueError("original plan or GraphChecker engine changed during ID join")
+    by_address = {row["occurrenceId"]: row for row in plans}
+    if len(by_address) != len(plans):
+        raise ValueError("original Finalizer plan repeats an occurrence address")
+    by_id: dict[str, dict[str, Any]] = {}
+    for line in output.splitlines():
+        identifier, separator, address = line.partition("\t")
+        if not separator or not identifier or address not in by_address:
+            raise ValueError("GraphChecker returned an unknown plan occurrence")
+        if identifier in by_id:
+            raise ValueError("original Finalizer plan has colliding occurrence IDs")
+        by_id[identifier] = by_address[address]
+    if len(by_id) != len(plans):
+        raise ValueError("GraphChecker omitted a Finalizer plan occurrence")
+    return by_id
 
 
 def _source_actor(source_key: str) -> tuple[str, int]:
@@ -244,10 +289,15 @@ def summarize_region_state(
              "CONCOLIC_REGION_PLAN"]
     if len(plans) != len(plan_rows) - 1 or not plans:
         raise ValueError("original Recorder plan has invalid rows")
+    original_jar = (engine_jar or JAR).resolve(strict=True)
+    closure_by_id = _plan_identity_rows(plan_path, original_jar, plans)
     by_occurrence = {row["occurrenceId"]: row for row in plans}
     selected = by_occurrence.get(target["selectedOccurrenceAddress"])
     if selected is None:
         raise ValueError("original Recorder plan lost the exact target occurrence")
+    if not any(closure_by_id.get(identifier) is selected for identifier in
+               target["targetCheckOccurrenceIds"]):
+        raise ValueError("original Finalizer plan omitted the exact target check")
     if receipt["targetRegionId"] != selected["regionId"] and receipt[
             "targetRegionId"] not in selected.get("foldedRegionIds", []):
         raise ValueError("target check region is outside its selected activation")
@@ -290,6 +340,17 @@ def summarize_region_state(
     edge_families = set()
     closure_edges = set()
     paired = unmapped = ambiguous = 0
+
+    def endpoint_owner(endpoint: str) -> dict[str, Any] | None:
+        # Original Endpoint.render() appends /site:<site>/sidx:<index>/att:<n>
+        # to the exact occurrence address. The site cannot contain '/', so
+        # the final /site: delimiter names the producer without a scan over
+        # every member in the Finalizer plan.
+        address, delimiter, _ = endpoint.rpartition("/site:")
+        if not delimiter:
+            return None
+        return by_occurrence.get(address)
+
     for key, pair in exchanges.items():
         for received in pair["EXCHANGE_RECEIVE"]:
             candidates = [sent for sent in pair["EXCHANGE_SEND"] if
@@ -311,7 +372,8 @@ def summarize_region_state(
                                          destination["regionId"])
             family = f"{key[0]}|{key[3]}|{source_family}->{destination_family}"
             edge_families.add(family)
-            if source_family in node_families and destination_family in node_families:
+            if (endpoint_owner(sent.get("producerEndpoint") or "") is not None
+                    and destination["occurrenceId"] in by_occurrence):
                 closure_edges.add(family)
     selected_family = _family(selected["sourceKey"], selected["regionId"])
     throws = _target_throws(fault_events, target_throw,
@@ -326,6 +388,18 @@ def summarize_region_state(
               "targetActivationRegionId": selected["regionId"],
               "targetNodeFamily": selected_family,
               "targetEvidence": {**target, "targetThrowRows": throws},
+              "closureMembershipAuthority":
+                  "original_runtime_selected_region_finalizer",
+              "closureOccurrenceIds": sorted(closure_by_id),
+              "closureMembers": sorted(({
+                  "occurrenceId": identifier,
+                  "occurrenceAddress": plan["occurrenceId"],
+                  "regionId": plan["regionId"],
+                  "sourceKey": plan["sourceKey"],
+                  "admissionBasis": plan.get("admissionBasis", ""),
+                  "demandDepth": plan.get("demandDepth"),
+              } for identifier, plan in closure_by_id.items()),
+                  key=lambda row: row["occurrenceId"]),
               "nodeFamilies": sorted(node_families),
               "edgeFamilies": sorted(edge_families),
               "closureEdgeFamilies": sorted(closure_edges),

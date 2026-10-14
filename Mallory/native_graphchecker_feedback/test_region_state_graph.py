@@ -9,7 +9,7 @@ from unittest.mock import patch
 from pathlib import Path
 
 from Mallory.native_graphchecker_feedback.region_state_graph import (
-    _closed_inputs, delta_region_state, record_region_state,
+    JAR, _closed_inputs, delta_region_state, record_region_state,
     summarize_region_state,
 )
 
@@ -78,7 +78,7 @@ class RegionStateGraphTest(unittest.TestCase):
             {"event": "EXCHANGE_SEND", "seq": 4, "callId": 10,
              "sourceKey": source, "transport": "TEST_RPC", "half": "REQUEST",
              "correlationId": "message-1", "attemptId": "1", "spanId": 50,
-             "producerEndpoint": f"{source}/region/{ACTIVATION}/site:SEND"},
+             "producerEndpoint": f"{occurrence}/site:SEND"},
             {"event": "EXCHANGE_RECEIVE", "seq": 5, "callId": 20,
              "sourceKey": "nn2#epoch0", "transport": "TEST_RPC", "half": "REQUEST",
              "correlationId": "message-1", "attemptId": "1",
@@ -131,10 +131,15 @@ class RegionStateGraphTest(unittest.TestCase):
                 "events": events}
 
     def _summarize(self, case: dict) -> dict:
-        return summarize_region_state(
-            case["trace"], case["plan"], case["receipt"], case["events"],
-            self.scope, self.graph, self.skeletons, SITE,
-            engine_jar=self.engine)
+        def original_ids(_path, _jar, plans):
+            return {("exact-runtime-check" if row["regionId"] == ACTIVATION
+                     else "exact-receiver"): row for row in plans}
+        with patch("Mallory.native_graphchecker_feedback.region_state_graph."
+                   "_plan_identity_rows", side_effect=original_ids):
+            return summarize_region_state(
+                case["trace"], case["plan"], case["receipt"], case["events"],
+                self.scope, self.graph, self.skeletons, SITE,
+                engine_jar=self.engine)
 
     def test_observed_exchange_branch_and_actor_switch_delta(self) -> None:
         healthy = self._summarize(self._case("healthy"))
@@ -144,6 +149,10 @@ class RegionStateGraphTest(unittest.TestCase):
         self.assertEqual(2, healthy["counts"]["regionPlanRows"])
         self.assertEqual(1, len(healthy["edgeFamilies"]))
         self.assertEqual(1, len(healthy["closureEdgeFamilies"]))
+        self.assertEqual("original_runtime_selected_region_finalizer",
+                         healthy["closureMembershipAuthority"])
+        self.assertEqual(["exact-receiver", "exact-runtime-check"],
+                         healthy["closureOccurrenceIds"])
         self.assertIn(f"{SITE}|false", healthy["branchOutcomeIds"])
         delta = delta_region_state(healthy, fault)
         self.assertEqual("compared", delta["status"])
@@ -151,6 +160,23 @@ class RegionStateGraphTest(unittest.TestCase):
         self.assertTrue(delta["targetActorChanged"])
         self.assertIn("nn3/relation/REGION.recovery", delta["newNodeFamilies"])
         self.assertIn("Recovery#u4|true", delta["newBranchOutcomeIds"])
+
+    def test_same_region_family_does_not_admit_different_exact_endpoint(self) -> None:
+        case = self._case("different-sender-occurrence")
+        trace = case["trace"] / "runtime_trace.jsonl"
+        rows = [json.loads(line) for line in trace.read_text().splitlines()]
+        send = next(row for row in rows if row["event"] == "EXCHANGE_SEND")
+        send["producerEndpoint"] = (
+            "nn1#epoch1/region/REGION.targetAct/ctx:another-instance/site:SEND")
+        write_jsonl(trace, rows)
+        receipt = json.loads(case["receipt"].read_text())
+        receipt["runtimeTraceSha256"] = _closed_inputs(
+            case["trace"], self.scope, self.graph, self.skeletons)[
+                "runtimeTraceSha256"]
+        case["receipt"].write_text(json.dumps(receipt) + "\n")
+        summary = self._summarize(case)
+        self.assertEqual(1, len(summary["edgeFamilies"]))
+        self.assertEqual([], summary["closureEdgeFamilies"])
 
     def test_target_receipt_and_loss_are_fail_closed(self) -> None:
         case = self._case("healthy")
@@ -209,7 +235,8 @@ class RegionStateGraphTest(unittest.TestCase):
     def test_real_zk07_recordings_if_available(self) -> None:
         base = Path("/dev/shm/mallory-native-zk07-regionfault-v1")
         static = Path("/dev/shm/mallory-zk07-wjtp-fixed-v1/original")
-        if not (base / "healthy/graph/recorded/concolic_region_plan.jsonl").is_file():
+        if not ((base / "healthy/graph/recorded/concolic_region_plan.jsonl").is_file()
+                and JAR.is_file()):
             self.skipTest("isolated ZK07 recording fixture is unavailable")
         target = "<org.apache.zookeeper.server.quorum.Learner: long registerWithLeader(int)>#u51"
         summaries = {}

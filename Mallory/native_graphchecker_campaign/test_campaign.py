@@ -410,8 +410,11 @@ class WireTemporalProofTest(unittest.TestCase):
         self.assertEqual("cross_occurrence_order_unproved", reason)
         self.assertIsNone(evidence)
 
-    def test_region_door_priority_uses_exact_target_occurrence(self) -> None:
-        summary = {"targetSiteId": "Keys#check#u3"}
+    def test_region_door_priority_uses_original_exact_closure_membership(self) -> None:
+        summary = {"targetSiteId": "Keys#check#u3",
+                   "closureMembershipAuthority":
+                       "original_runtime_selected_region_finalizer",
+                   "closureOccurrenceIds": ["target-occ", "other-occ"]}
         check = {"kind": "TARGET_CHECK", "seq": 7,
                  "siteId": summary["targetSiteId"], "node": "dn",
                  "actorEpochOrdinal": 1, "occurrenceId": "target-occ"}
@@ -419,16 +422,23 @@ class WireTemporalProofTest(unittest.TestCase):
                   "siteId": "RPC#dn", "node": "dn", "actorEpochOrdinal": 1,
                   "occurrenceId": occurrence, "ordinal": 1,
                   "exceptionClass": "java.io.IOException"}
-                 for index, occurrence in enumerate(("target-occ", "other-occ"))]
+                 for index, occurrence in enumerate(("target-occ", "other-occ",
+                                                      "outside-occ"))]
         ranked = core._region_doors([*doors, check], summary)
-        self.assertEqual(["observed_closure", "pre_target_actor"],
+        self.assertEqual(["observed_closure", "observed_closure",
+                          "pre_target_actor"],
                          [item["tier"] for item in ranked])
         after = dict(doors[0], seq=8, ordinal=2)
-        self.assertEqual("outside_closure",
+        self.assertEqual("observed_closure",
                          core._region_doors([check, after], summary)[0]["tier"])
+        with self.assertRaisesRegex(ValueError, "original closure authority"):
+            core._region_doors([*doors, check], {"targetSiteId": "Keys#check#u3"})
 
     def test_region_mutation_uses_global_observed_order_after_fault(self) -> None:
-        summary = {"targetSiteId": "Keys#check#u3"}
+        summary = {"targetSiteId": "Keys#check#u3",
+                   "closureMembershipAuthority":
+                       "original_runtime_selected_region_finalizer",
+                   "closureOccurrenceIds": ["a"]}
         earlier = {"kind": "FAULT_DOOR", "seq": 100,
                    "siteId": "RPC#earlier", "node": "peer-a",
                    "actorEpochOrdinal": 0, "occurrenceId": "a",
