@@ -79,6 +79,8 @@ public final class StaticProgram {
     // Indexes, each built once
 
     private Map<String, List<Map<String, Object>>> graphEdgesByRegion;
+    private Map<String, Map<String, List<Map<String, Object>>>>
+            graphEdgesByRegionAndMethod;
     private Map<String, List<String>> skeletonRegionIdsByMethod;
     private Map<String, List<Map<String, Object>>> activationsByRegion;
     private Map<String, List<String>> regionIdsByMethod;
@@ -143,6 +145,26 @@ public final class StaticProgram {
 
     List<Map<String, Object>> regionGraph(String regionId) {
         return edgesByRegion().getOrDefault(regionId,
+                Collections.<Map<String, Object>>emptyList());
+    }
+
+    /** Edges in one region and method, retaining the input graph's row order. */
+    List<Map<String, Object>> regionGraphInMethod(String regionId,
+                                                   String method) {
+        if (graphEdgesByRegionAndMethod == null) {
+            graphEdgesByRegionAndMethod = new LinkedHashMap<>();
+        }
+        Map<String, List<Map<String, Object>>> byMethod =
+                graphEdgesByRegionAndMethod.get(regionId);
+        if (byMethod == null) {
+            byMethod = new LinkedHashMap<>();
+            for (Map<String, Object> edge : regionGraph(regionId)) {
+                byMethod.computeIfAbsent(text(edge.get("method")),
+                        ignored -> new ArrayList<>()).add(edge);
+            }
+            graphEdgesByRegionAndMethod.put(regionId, byMethod);
+        }
+        return byMethod.getOrDefault(method,
                 Collections.<Map<String, Object>>emptyList());
     }
 
@@ -456,9 +478,9 @@ public final class StaticProgram {
             return false;
         }
         Set<String> calledInLoop = new LinkedHashSet<>();
-        for (Map<String, Object> edge : regionGraph(skeleton.regionId)) {
-            if (!owner.equals(text(edge.get("method")))
-                    || !loopContains(loop, number(edge.get("unitIndex"), -1))) {
+        for (Map<String, Object> edge : regionGraphInMethod(
+                skeleton.regionId, owner)) {
+            if (!loopContains(loop, number(edge.get("unitIndex"), -1))) {
                 continue;
             }
             String callee = invocationTarget(edge);
