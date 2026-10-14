@@ -102,6 +102,7 @@ def build(*, engine_jar: Path | None = None, force: bool = False) -> Path:
 def summarize(iteration: Path, target_site: str, output: Path, *,
               exact_occurrence_id: str | None = None,
               static_scope_map: Path | None = None,
+              target_check_receipts: Path | None = None,
               max_tasks: int = 256,
               engine_jar: Path | None = None) -> dict[str, Any]:
     """Read one trial session, bind one exact target, and extract native plan.
@@ -117,12 +118,16 @@ def summarize(iteration: Path, target_site: str, output: Path, *,
         raise ValueError("max_tasks must be positive")
     if static_scope_map is not None and not static_scope_map.is_file():
         raise FileNotFoundError(static_scope_map)
+    if target_check_receipts is not None and not target_check_receipts.is_file():
+        raise FileNotFoundError(target_check_receipts)
     selected_jar = _engine_jar(engine_jar)
     jar_sha = _sha256(selected_jar)
     session_sha = _session_digest(iteration)
     scope_sha = _sha256(static_scope_map) if static_scope_map else ""
     bundle_sha = _scope_digest(static_scope_map) if static_scope_map else ""
     bridge_sha = _sha256(HERE / "NativeFeedbackMain.java")
+    receipts_sha = (_sha256(target_check_receipts)
+                    if target_check_receipts is not None else "")
     classes = build(engine_jar=selected_jar)
     output.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix=".native-summary-",
@@ -133,7 +138,8 @@ def summarize(iteration: Path, target_site: str, output: Path, *,
                    "-cp", f"{classes}:{_classpath(selected_jar)}", JAVA_CLASS,
                    str(iteration), str(static_scope_map) if static_scope_map else "-",
                    target_site, exact_occurrence_id or "-", str(max_tasks),
-                   str(raw_output)]
+                   str(raw_output),
+                   str(target_check_receipts) if target_check_receipts else "-"]
         subprocess.run(command, check=True, timeout=300,
                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         value = json.loads(raw_output.read_text(encoding="utf-8"))
@@ -143,6 +149,8 @@ def summarize(iteration: Path, target_site: str, output: Path, *,
         raise ValueError("native session changed during analysis")
     if static_scope_map and _scope_digest(static_scope_map) != bundle_sha:
         raise ValueError("static scope map changed during native analysis")
+    if target_check_receipts and _sha256(target_check_receipts) != receipts_sha:
+        raise ValueError("target check receipts changed during native analysis")
     if value.get("schemaVersion") != 1 or value.get("targetSiteId") != target_site:
         raise ValueError("native session extractor returned a different target")
     if exact_occurrence_id is not None and (
@@ -153,6 +161,7 @@ def summarize(iteration: Path, target_site: str, output: Path, *,
     value["staticScopeMapSha256"] = scope_sha
     value["staticScopeBundleSha256"] = bundle_sha
     value["bridgeSourceSha256"] = bridge_sha
+    value["targetCheckReceiptsSha256"] = receipts_sha
     value["maxTasks"] = max_tasks
     _write_atomic_json(output, value)
     return value
@@ -203,6 +212,7 @@ def list_native_targets(iteration: Path, target_site: str, *,
 def summarize_target_set(iteration: Path, target_site: str, output: Path, *,
                          static_scope_map: Path,
                          actor_names: set[str] | None = None,
+                         target_check_receipts: Path | None = None,
                          max_tasks: int = 256,
                          engine_jar: Path | None = None) -> dict[str, Any]:
     """Plan every matching native target separately, then union only feedback.
@@ -217,6 +227,8 @@ def summarize_target_set(iteration: Path, target_site: str, output: Path, *,
         raise ValueError("max_tasks must be positive")
     if not static_scope_map.is_file():
         raise FileNotFoundError(static_scope_map)
+    if target_check_receipts is not None and not target_check_receipts.is_file():
+        raise FileNotFoundError(target_check_receipts)
     if actor_names is not None and (not isinstance(actor_names, set) or
                                     not all(isinstance(name, str) and name
                                             for name in actor_names)):
@@ -227,6 +239,8 @@ def summarize_target_set(iteration: Path, target_site: str, output: Path, *,
     scope_sha = _sha256(static_scope_map)
     bundle_sha = _scope_digest(static_scope_map)
     bridge_sha = _sha256(HERE / "NativeFeedbackMain.java")
+    receipts_sha = (_sha256(target_check_receipts)
+                    if target_check_receipts is not None else "")
     classes = build(engine_jar=selected_jar)
     output.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix=".native-target-set-",
@@ -241,7 +255,8 @@ def summarize_target_set(iteration: Path, target_site: str, output: Path, *,
                    "--target-set", str(iteration), str(static_scope_map),
                    target_site, str(max_tasks),
                    str(actors_path) if actor_names is not None else "-",
-                   str(raw_output)]
+                   str(raw_output),
+                   str(target_check_receipts) if target_check_receipts else "-"]
         subprocess.run(command, check=True, timeout=1800,
                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         extracted = json.loads(raw_output.read_text(encoding="utf-8"))
@@ -251,6 +266,8 @@ def summarize_target_set(iteration: Path, target_site: str, output: Path, *,
         raise ValueError("native session changed during analysis")
     if _scope_digest(static_scope_map) != bundle_sha:
         raise ValueError("static scope map changed during native analysis")
+    if target_check_receipts and _sha256(target_check_receipts) != receipts_sha:
+        raise ValueError("target check receipts changed during native analysis")
     if extracted.get("schemaVersion") != 1 or extracted.get("targetSiteId") != target_site:
         raise ValueError("native target-set extractor returned a different target")
     selected = extracted.get("targets")
@@ -266,7 +283,7 @@ def summarize_target_set(iteration: Path, target_site: str, output: Path, *,
     }) != len(selected):
         raise ValueError("native target-set extractor conflated occurrences")
     if not selected:
-        raise NoNativeTargetError("no reached native target occurrence matches site/actor selection",
+        raise NoNativeTargetError("no exact reached target occurrence matches site/actor selection",
                                   site_target_rows_seen=site_rows_seen)
     for item, one in zip(selected, per_target):
         if (not isinstance(item, dict) or not isinstance(one, dict) or
@@ -279,12 +296,25 @@ def summarize_target_set(iteration: Path, target_site: str, output: Path, *,
                 (actor_names is not None and item["nodeName"] not in actor_names)):
             raise ValueError("native target occurrence changed during extraction")
         rows = one.get("targetRows")
+        receipts = one.get("targetReachReceipts")
         members = one.get("closureMembers")
-        if not isinstance(rows, list) or not any(
-                row.get("occurrenceId") == item["occurrenceId"]
-                and row.get("reachedAnchor") is True
-                for row in rows if isinstance(row, dict)):
-            raise ValueError("native target plan lacks exact reached target row")
+        if not isinstance(rows, list) or not isinstance(receipts, list):
+            raise ValueError("native target plan lacks target evidence lists")
+        native_reached = any(row.get("occurrenceId") == item["occurrenceId"]
+                             and row.get("reachedAnchor") is True
+                             for row in rows if isinstance(row, dict))
+        receipt_reached = any(row.get("occurrenceId") == item["occurrenceId"]
+                              and row.get("reachedAnchor") is True
+                              for row in receipts if isinstance(row, dict))
+        if not native_reached and not receipt_reached:
+            raise ValueError("native target plan lacks exact reach evidence")
+        if (one.get("targetEvidenceKind") == "external_target_check"
+                and (not receipt_reached or native_reached
+                     or one.get("symbolicPredicateAvailable") is not False)):
+            raise ValueError("external reach must not claim native predicate")
+        if (one.get("targetEvidenceKind") == "native_target_row"
+                and not native_reached):
+            raise ValueError("native target plan lacks reached target row")
         if not isinstance(members, list) or not any(
                 row.get("occurrenceId") == item["occurrenceId"]
                 for row in members if isinstance(row, dict)):
@@ -294,16 +324,19 @@ def summarize_target_set(iteration: Path, target_site: str, output: Path, *,
         one["staticScopeMapSha256"] = scope_sha
         one["staticScopeBundleSha256"] = bundle_sha
         one["bridgeSourceSha256"] = bridge_sha
+        one["targetCheckReceiptsSha256"] = receipts_sha
         one["maxTasks"] = max_tasks
     for key in ("engineJarSha256", "staticScopeMapSha256",
                 "staticScopeBundleSha256", "bridgeSourceSha256",
-                "maxTasks", "method", "targetSiteId", "nativeSessionSha256"):
+                "targetCheckReceiptsSha256", "maxTasks", "method",
+                "targetSiteId", "nativeSessionSha256"):
         if len({json.dumps(item[key], sort_keys=True) for item in per_target}) != 1:
             raise ValueError(f"native target set has mixed {key}")
     members: dict[str, dict[str, Any]] = {}
     edges: dict[str, dict[str, Any]] = {}
     coverage: set[str] = set()
     rows: list[dict[str, Any]] = []
+    reach_receipts: list[dict[str, Any]] = []
     gaps: list[dict[str, Any]] = []
     truncated: set[str] = set()
     for one in per_target:
@@ -314,6 +347,7 @@ def summarize_target_set(iteration: Path, target_site: str, output: Path, *,
             edges[identity] = edge
         coverage.update(one["branchCoverage"])
         rows.extend(one["targetRows"])
+        reach_receipts.extend(one["targetReachReceipts"])
         gaps.extend(one["gaps"])
         truncated.update(one["truncated"])
     first = per_target[0]
@@ -326,6 +360,11 @@ def summarize_target_set(iteration: Path, target_site: str, output: Path, *,
         "targetRegionIds": sorted({one["targetRegionId"] for one in per_target}),
         "targetOccurrenceIds": sorted(one["targetOccurrenceId"] for one in per_target),
         "targetRows": rows,
+        "targetReachReceipts": reach_receipts,
+        "targetEvidenceKinds": sorted({one["targetEvidenceKind"]
+                                       for one in per_target}),
+        "symbolicPredicateAvailable": all(
+            one["symbolicPredicateAvailable"] for one in per_target),
         "unreachedTargetRows": unreached_rows,
         "perTargetOccurrences": per_target,
         "closureMembers": sorted(members.values(), key=lambda row: row["occurrenceId"]),
@@ -337,6 +376,7 @@ def summarize_target_set(iteration: Path, target_site: str, output: Path, *,
         "staticScopeMapSha256": first["staticScopeMapSha256"],
         "staticScopeBundleSha256": first["staticScopeBundleSha256"],
         "bridgeSourceSha256": first["bridgeSourceSha256"],
+        "targetCheckReceiptsSha256": first["targetCheckReceiptsSha256"],
         "nativeSessionSha256": first["nativeSessionSha256"],
         "maxTasks": max_tasks,
     }
@@ -381,9 +421,10 @@ def _observed_edges(summary: dict[str, Any]) -> set[str]:
 def delta(healthy: dict[str, Any], trial: dict[str, Any]) -> dict[str, Any]:
     """Compute target-family novelty while preserving each run's exact anchors.
 
-    Every target occurrence must appear in that run's target rows and native
-    closure. Cross-run exact IDs may differ; a changed actor/region family or
-    a trial without the target is rejected.
+    Every target occurrence must have exact native reach evidence or a validated
+    external TARGET_CHECK receipt, and appear in its native closure. Cross-run
+    exact IDs may differ; a changed actor/region family or a trial without the
+    target is rejected.
     """
     for key in ("schemaVersion", "method", "targetSiteId", "targetSetMode",
                 "engineJarSha256", "staticScopeMapSha256",
@@ -432,10 +473,14 @@ def delta(healthy: dict[str, Any], trial: dict[str, Any]) -> dict[str, Any]:
                 raise ValueError(f"{label} conflates distinct target occurrences")
             for item in separate:
                 anchor = item["targetOccurrenceId"]
-                if not any(row.get("occurrenceId") == anchor
-                           and row.get("reachedAnchor") is True
-                           for row in item.get("targetRows", [])
-                           if isinstance(row, dict)) or not any(
+                if not (any(row.get("occurrenceId") == anchor
+                            and row.get("reachedAnchor") is True
+                            for row in item.get("targetRows", [])
+                            if isinstance(row, dict)) or any(
+                        row.get("occurrenceId") == anchor
+                        and row.get("reachedAnchor") is True
+                        for row in item.get("targetReachReceipts", [])
+                        if isinstance(row, dict))) or not any(
                         row.get("occurrenceId") == anchor
                         for row in item.get("closureMembers", [])
                         if isinstance(row, dict)):
@@ -443,10 +488,14 @@ def delta(healthy: dict[str, Any], trial: dict[str, Any]) -> dict[str, Any]:
     for label, summary in (("healthy", healthy), ("trial", trial)):
         anchors = healthy_anchors if label == "healthy" else trial_anchors
         targets = summary.get("targetRows")
-        if not isinstance(targets, list) or not all(any(
-                isinstance(row, dict) and row.get("occurrenceId") == anchor
-                for row in targets) for anchor in anchors):
-            raise ValueError(f"{label} lacks exact target row")
+        receipts = summary.get("targetReachReceipts", [])
+        if not isinstance(targets, list) or not isinstance(receipts, list) or not all(
+                any(isinstance(row, dict) and row.get("occurrenceId") == anchor
+                    and row.get("reachedAnchor") is True for row in targets)
+                or any(isinstance(row, dict) and row.get("occurrenceId") == anchor
+                       and row.get("reachedAnchor") is True for row in receipts)
+                for anchor in anchors):
+            raise ValueError(f"{label} lacks exact target reach evidence")
         members = summary.get("closureMembers")
         if not isinstance(members, list) or not all(any(
                 isinstance(row, dict) and row.get("occurrenceId") == anchor

@@ -2,8 +2,9 @@
 
 This opt-in module reads **one landed native GraphChecker session per trial**.
 It calls the original `SessionReader`, `Corpus`, `Branches`, and
-`ClosurePlanner` from Mallory's source-built GraphChecker port. The resulting
-closure members and flip sites are original planner results. It reports
+`ClosurePlanner` from Mallory's source-built GraphChecker port. In native
+target mode, closure members and flip sites are original planner results.
+In external reach mode, the explicit fallback described below may apply. It reports
 recorded `WIRE` export/attach pairs, exact `STATE` write-version/read pairs,
 and explicit `MESSAGE_START` activation anchors *within* those members.
 `MESSAGE_START` is a control edge, not a value handoff. The output does not
@@ -81,6 +82,37 @@ and at least one common target region; actors can move after failover.
 Runtime fault matching must still use the exact event identity within its
 own run.
 
+For a REGION_STATE run where GraphChecker's `TargetRow` is absent or none
+reached the anchor, pass the original `NativeFaultHooks` event file:
+
+```python
+summary = summarize_target_set(
+    Path("/path/to/fault/iteration"), "exact#target#site#1",
+    Path("/tmp/fault-native-summary.json"),
+    static_scope_map=Path("/path/to/static_scope_map.jsonl"),
+    target_check_receipts=Path("/path/to/fault/iteration/fault-events.jsonl"))
+```
+
+The external `TARGET_CHECK` must state an exact GraphChecker occurrence ID,
+physical node, actor epoch, base site, numbered anchor site, and ordinal.
+That ID must name an observed native `ActivationRow` with the same node and
+epoch. Repeated identical activation rows are one occurrence; conflicting
+identities fail. The bridge leaves original `TargetRow` entries untouched and
+places validated reach evidence in `targetReachReceipts` with
+`targetEvidenceKind=external_target_check` and
+`symbolicPredicateAvailable=false`. The requested site may be the base check
+site or one numbered anchor; the receipt itself must prove their exact
+relationship.
+
+If original `ClosurePlanner` includes the exact anchor, its plan remains the
+closure. If it omits an externally proven activation, the bridge computes a
+separately labeled reach-only backward closure over recorded native `WIRE`,
+`STATE`, and `MESSAGE_START` edges. The output states
+`closureConstruction=observed_edge_backward_from_receipt`, retains
+`originalPlannerMemberIds` and `originalPlannerTargetIncluded`, and never
+manufactures a predicate, target row, value handoff, or state writer. An
+external check with no matching native activation cannot anchor a graph.
+
 For reproducible runs, pass `engine_jar=Path("/path/to/pinned-engine.jar")` to
 both calls. The bridge records the exact engine, static map, static map plus
 neighboring region skeleton, bridge source, and native session digests in the
@@ -106,6 +138,10 @@ Run focused tests after building the original engine:
 ```bash
 python3 -m unittest Mallory.native_graphchecker_feedback.test_feedback -v
 GC_NATIVE_FIXTURE=/path/to/unchanged-junit-fixture \
+GC_NATIVE_ENGINE_JAR=/path/to/pinned-engine.jar \
+  python3 -m unittest Mallory.native_graphchecker_feedback.test_feedback -v
+# Optional recorded ZooKeeper concolic session with external TARGET_CHECK:
+GC_NATIVE_ZK07_V2=/path/to/recorded-zk07-campaign \
 GC_NATIVE_ENGINE_JAR=/path/to/pinned-engine.jar \
   python3 -m unittest Mallory.native_graphchecker_feedback.test_feedback -v
 ```

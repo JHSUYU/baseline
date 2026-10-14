@@ -1,13 +1,16 @@
 package edu.uva.liftlab.mallory.nativefeedback;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import edu.uva.liftlab.graphchecker.contract.ActivationRow;
 import edu.uva.liftlab.graphchecker.contract.AttachRow;
 import edu.uva.liftlab.graphchecker.contract.DecisionRow;
 import edu.uva.liftlab.graphchecker.contract.Endpoint;
 import edu.uva.liftlab.graphchecker.contract.ExportRow;
 import edu.uva.liftlab.graphchecker.contract.GapRow;
+import edu.uva.liftlab.graphchecker.contract.NodeId;
 import edu.uva.liftlab.graphchecker.contract.OccurrenceAddress;
 import edu.uva.liftlab.graphchecker.contract.ReadRow;
 import edu.uva.liftlab.graphchecker.contract.SessionReader;
@@ -101,7 +104,8 @@ public final class NativeFeedbackMain {
                                 OccurrenceAddress producer,
                                 OccurrenceAddress consumer,
                                 String site, Map<String, Object> evidence) {
-        if (!closure.contains(producer.id()) || !closure.contains(consumer.id())) {
+        if (closure != null && (!closure.contains(producer.id())
+                || !closure.contains(consumer.id()))) {
             return;
         }
         Map<String, Object> edge = row("type", type,
@@ -130,6 +134,119 @@ public final class NativeFeedbackMain {
                 "phiTerm", target.phiTerm());
     }
 
+    private static boolean matchesNativeSite(String requested, String anchor) {
+        if (requested.equals(anchor)) return true;
+        if (!anchor.startsWith(requested + "#")) return false;
+        String suffix = anchor.substring(requested.length() + 1);
+        return suffix.matches("[1-9][0-9]*");
+    }
+
+    private static final class TargetSelection {
+        final Map<String, OccurrenceAddress> occurrences = new LinkedHashMap<>();
+        final Map<String, List<Map<String, Object>>> receipts = new LinkedHashMap<>();
+        final boolean external;
+        final int nativeRowsSeen;
+        int unmatchedReceipts;
+
+        TargetSelection(boolean external, int nativeRowsSeen) {
+            this.external = external;
+            this.nativeRowsSeen = nativeRowsSeen;
+        }
+    }
+
+    private static String receiptText(JsonObject row, String field) {
+        JsonElement value = row.get(field);
+        if (value == null || !value.isJsonPrimitive()
+                || !value.getAsJsonPrimitive().isString()
+                || value.getAsString().isEmpty()) {
+            throw new IllegalArgumentException("TARGET_CHECK lacks " + field);
+        }
+        return value.getAsString();
+    }
+
+    private static int receiptNumber(JsonObject row, String field, int minimum) {
+        JsonElement value = row.get(field);
+        if (value == null || !value.isJsonPrimitive()
+                || !value.getAsJsonPrimitive().isNumber()) {
+            throw new IllegalArgumentException("TARGET_CHECK lacks integer " + field);
+        }
+        int number = value.getAsInt();
+        if (number < minimum || !Integer.toString(number).equals(value.getAsString())) {
+            throw new IllegalArgumentException("TARGET_CHECK invalid " + field);
+        }
+        return number;
+    }
+
+    /** Native reached rows win; an exact external receipt can anchor a rowless run. */
+    private static TargetSelection selectTargets(SessionReader session,
+                                                  String site, Path receiptPath)
+            throws Exception {
+        List<TargetRow> nativeRows = new ArrayList<>();
+        for (TargetRow target : session.targets()) {
+            if (matchesNativeSite(site, target.anchorSiteId())) nativeRows.add(target);
+        }
+        boolean reached = false;
+        for (TargetRow target : nativeRows) reached |= target.reachedAnchor();
+        TargetSelection selected = new TargetSelection(receiptPath != null && !reached,
+                nativeRows.size());
+        if (!selected.external) {
+            for (TargetRow target : nativeRows) {
+                if (receiptPath == null || target.reachedAnchor()) {
+                    selected.occurrences.put(target.occurrence().id(),
+                            target.occurrence());
+                }
+            }
+            return selected;
+        }
+        if (!Files.isRegularFile(receiptPath)) {
+            throw new IllegalArgumentException("TARGET_CHECK receipt file missing: "
+                    + receiptPath);
+        }
+        Map<String, OccurrenceAddress> activations = new LinkedHashMap<>();
+        for (ActivationRow activation : session.activations()) {
+            OccurrenceAddress prior = activations.putIfAbsent(
+                    activation.occurrence().id(), activation.occurrence());
+            if (prior != null && !prior.equals(activation.occurrence())) {
+                throw new IllegalArgumentException(
+                        "conflicting activations for exact occurrence ID");
+            }
+        }
+        JsonParser parser = new JsonParser();
+        for (String line : Files.readAllLines(receiptPath, StandardCharsets.UTF_8)) {
+            if (line.trim().isEmpty()) continue;
+            JsonObject row = parser.parse(line).getAsJsonObject();
+            if (!"TARGET_CHECK".equals(row.has("kind")
+                    ? row.get("kind").getAsString() : "")) continue;
+            String anchorSite = row.has("targetAnchorSiteId")
+                    ? row.get("targetAnchorSiteId").getAsString() : "";
+            if (!matchesNativeSite(site, anchorSite)) continue;
+            String checkSite = receiptText(row, "siteId");
+            String occurrenceId = receiptText(row, "occurrenceId");
+            String node = receiptText(row, "node");
+            int epoch = receiptNumber(row, "actorEpochOrdinal", 0);
+            int ordinal = receiptNumber(row, "ordinal", 1);
+            int seq = receiptNumber(row, "seq", 0);
+            if (!(checkSite + "#" + ordinal).equals(anchorSite)
+                    || !(site.equals(checkSite) || site.equals(anchorSite))) {
+                throw new IllegalArgumentException("TARGET_CHECK anchor site mismatch");
+            }
+            OccurrenceAddress occurrence = activations.get(occurrenceId);
+            if (occurrence == null || !NodeId.of(node, epoch).equals(
+                    occurrence.node())) {
+                selected.unmatchedReceipts++;
+                continue;
+            }
+            selected.occurrences.put(occurrenceId, occurrence);
+            selected.receipts.computeIfAbsent(occurrenceId, ignored ->
+                    new ArrayList<Map<String, Object>>()).add(row(
+                    "kind", "TARGET_CHECK", "seq", seq, "siteId", checkSite,
+                    "targetAnchorSiteId", anchorSite, "occurrenceId", occurrenceId,
+                    "node", node, "actorEpochOrdinal", epoch,
+                    "ordinal", ordinal, "reachedAnchor", true));
+        }
+        return selected;
+    }
+
     private static SessionReader readSession(Path iteration) throws Exception {
         List<SessionReader> sessions = SessionReader.readAll(iteration,
                 Collections.<SessionReader>emptyList());
@@ -148,15 +265,20 @@ public final class NativeFeedbackMain {
     private static Map<String, Object> analyze(SessionReader session,
                                                 Corpus corpus, StaticScopeMap scope,
                                                 String site, String expected,
+                                                TargetSelection selected,
                                                 int maxTasks) throws Exception {
         Set<OccurrenceAddress> matching = new LinkedHashSet<>();
         List<Map<String, Object>> targetRows = new ArrayList<>();
+        for (OccurrenceAddress candidate : selected.occurrences.values()) {
+            if (expected.equals("-") || expected.equals(candidate.id())) {
+                matching.add(candidate);
+            }
+        }
         for (TargetRow target : session.targets()) {
-            if (!site.equals(target.anchorSiteId())) continue;
-            if (!expected.equals("-") && !expected.equals(target.occurrence().id())) {
+            if (!matchesNativeSite(site, target.anchorSiteId())) continue;
+            if (!matching.contains(target.occurrence())) {
                 continue;
             }
-            matching.add(target.occurrence());
             targetRows.add(targetEvidence(target));
         }
         if (matching.size() != 1) {
@@ -164,6 +286,18 @@ public final class NativeFeedbackMain {
                     + "native occurrence; found " + matching.size());
         }
         OccurrenceAddress anchor = matching.iterator().next();
+        List<Map<String, Object>> reachReceipts = selected.receipts.getOrDefault(
+                anchor.id(), Collections.<Map<String, Object>>emptyList());
+        boolean symbolicPredicateAvailable = false;
+        if (!selected.external) {
+            for (Map<String, Object> targetRow : targetRows) {
+                if (Boolean.TRUE.equals(targetRow.get("reachedAnchor"))
+                        && targetRow.get("phiTerm") instanceof String
+                        && !((String) targetRow.get("phiTerm")).isEmpty()) {
+                    symbolicPredicateAvailable = true;
+                }
+            }
+        }
         List<GapRow> branchGaps = new ArrayList<>();
         Branches branches = Branches.of(corpus,
                 Collections.singletonList(anchor), branchGaps);
@@ -185,12 +319,18 @@ public final class NativeFeedbackMain {
                         "flipSites", plan.flipSites.get(task.taskId())));
             }
         }
-        if (!closure.contains(anchor.id())) {
+        boolean observedFallback = selected.external && !closure.contains(anchor.id());
+        if (!closure.contains(anchor.id()) && !observedFallback) {
             throw new IllegalStateException("native closure omitted exact target occurrence");
         }
+        List<String> originalPlannerMemberIds = new ArrayList<>(closure);
+        Set<String> edgeFilter = observedFallback ? null : closure;
         Set<String> activated = new HashSet<>();
+        Map<String, OccurrenceAddress> activatedAddresses = new LinkedHashMap<>();
         for (ActivationRow activation : session.activations()) {
             activated.add(activation.occurrence().id());
+            activatedAddresses.put(activation.occurrence().id(),
+                    activation.occurrence());
         }
         List<Map<String, Object>> edges = new ArrayList<>();
         Map<String, List<ExportRow>> exports = new HashMap<>();
@@ -212,7 +352,7 @@ public final class NativeFeedbackMain {
             // leave the particular value ambiguous without further evidence.
             if (paired.size() != 1) continue;
             ExportRow export = paired.get(0);
-            addEdge(edges, closure, "WIRE", producer.occurrence(),
+            addEdge(edges, edgeFilter, "WIRE", producer.occurrence(),
                     attach.endpoint().occurrence(), attach.endpoint().site(),
                     row("exportSeq", export.seq(), "attachSeq", attach.seq(),
                             "producerEndpointId", producer.id(),
@@ -234,7 +374,7 @@ public final class NativeFeedbackMain {
                         : "")) {
                 continue;
             }
-            addEdge(edges, closure, "MESSAGE_START", producer.occurrence(),
+            addEdge(edges, edgeFilter, "MESSAGE_START", producer.occurrence(),
                     activation.occurrence(), producer.site(),
                     row("anchorProducerEndpointId", producer.id(),
                             "activationTaskId", activation.taskId()));
@@ -257,7 +397,7 @@ public final class NativeFeedbackMain {
             if (!write.endpoint().occurrence().node().equals(
                     read.endpoint().occurrence().node())
                     || write.seq() > read.seq()) continue;
-            addEdge(edges, closure, "STATE", write.endpoint().occurrence(),
+            addEdge(edges, edgeFilter, "STATE", write.endpoint().occurrence(),
                     read.endpoint().occurrence(), read.endpoint().site(),
                     row("writeSeq", write.seq(), "readSeq", read.seq(),
                             "location", locationKey(read),
@@ -269,6 +409,41 @@ public final class NativeFeedbackMain {
                 (String) edge.get("type")).thenComparing(edge ->
                 (String) edge.get("producerOccurrenceId")).thenComparing(edge ->
                 (String) edge.get("consumerOccurrenceId")));
+        if (observedFallback) {
+            // Reach-only fallback: the exact external receipt names an
+            // activation, and only recorded typed edges can lead into it.
+            // Original planner output remains separately visible below.
+            Set<String> backward = new LinkedHashSet<>();
+            backward.add(anchor.id());
+            boolean grew;
+            do {
+                grew = false;
+                for (Map<String, Object> edge : edges) {
+                    String producer = (String) edge.get("producerOccurrenceId");
+                    String consumer = (String) edge.get("consumerOccurrenceId");
+                    if (backward.contains(consumer)
+                            && activatedAddresses.containsKey(producer)) {
+                        grew |= backward.add(producer);
+                    }
+                }
+            } while (grew);
+            closure.clear();
+            members.clear();
+            for (String id : backward) {
+                OccurrenceAddress occurrence = activatedAddresses.get(id);
+                if (occurrence == null) continue;
+                closure.add(id);
+                members.add(row("occurrenceId", id,
+                        "occurrence", occurrence.render(),
+                        "node", occurrence.node().render(),
+                        "regionId", occurrence.regionId(),
+                        "family", family(occurrence),
+                        "why", "OBSERVED_EDGE_BACKWARD_FROM_EXACT_RECEIPT",
+                        "flipSites", Collections.emptyList()));
+            }
+            edges.removeIf(edge -> !closure.contains(edge.get("producerOccurrenceId"))
+                    || !closure.contains(edge.get("consumerOccurrenceId")));
+        }
         Set<String> coverage = new LinkedHashSet<>();
         List<Map<String, Object>> decisions = new ArrayList<>();
         for (DecisionRow decision : session.decisions()) {
@@ -301,7 +476,17 @@ public final class NativeFeedbackMain {
                 "targetNodeName", anchor.node().node(),
                 "targetRegionId", anchor.regionId(),
                 "targetFamily", site + "\n" + family(anchor),
+                "targetEvidenceKind", selected.external
+                        ? "external_target_check" : "native_target_row",
+                "symbolicPredicateAvailable", symbolicPredicateAvailable,
                 "targetRows", targetRows,
+                "targetReachReceipts", reachReceipts,
+                "closureConstruction", observedFallback
+                        ? "observed_edge_backward_from_receipt"
+                        : "original_closure_planner",
+                "originalPlannerMemberIds", originalPlannerMemberIds,
+                "originalPlannerTargetIncluded", originalPlannerMemberIds.contains(
+                        anchor.id()),
                 "closureMembers", members,
                 "observedEdgesWithinClosure", edges,
                 "branchObservationsWithinClosure", decisions,
@@ -315,12 +500,14 @@ public final class NativeFeedbackMain {
 
     private static Map<String, Object> analyze(Path iteration, Path scopePath,
                                                 String site, String expected,
+                                                Path receiptPath,
                                                 int maxTasks) throws Exception {
         SessionReader session = readSession(iteration);
         Corpus corpus = Corpus.read(iteration, null);
         StaticScopeMap scope = scopePath == null ? StaticScopeMap.empty()
                 : StaticScopeMap.read(scopePath);
-        return analyze(session, corpus, scope, site, expected, maxTasks);
+        return analyze(session, corpus, scope, site, expected,
+                selectTargets(session, site, receiptPath), maxTasks);
     }
 
     private static void write(Path output, Object result) throws Exception {
@@ -333,22 +520,22 @@ public final class NativeFeedbackMain {
 
     private static List<Map<String, Object>> listTargets(Path iteration,
                                                           String site) throws Exception {
-        return listTargets(readSession(iteration), site);
+        return listTargets(selectTargets(readSession(iteration), site, null), site);
     }
 
-    private static List<Map<String, Object>> listTargets(SessionReader session,
+    private static List<Map<String, Object>> listTargets(TargetSelection selection,
                                                           String site) {
         Map<String, Map<String, Object>> found = new LinkedHashMap<>();
-        for (TargetRow target : session.targets()) {
-            if (!site.equals(target.anchorSiteId())) continue;
-            OccurrenceAddress occurrence = target.occurrence();
+        for (OccurrenceAddress occurrence : selection.occurrences.values()) {
             found.putIfAbsent(occurrence.id(), row(
                     "occurrenceId", occurrence.id(),
                     "occurrence", occurrence.render(),
                     "nodeName", occurrence.node().node(),
                     "node", occurrence.node().render(),
                     "regionId", occurrence.regionId(),
-                    "targetFamily", site + "\n" + family(occurrence)));
+                    "targetFamily", site + "\n" + family(occurrence),
+                    "targetEvidenceKind", selection.external
+                            ? "external_target_check" : "native_target_row"));
         }
         List<Map<String, Object>> result = new ArrayList<>(found.values());
         result.sort(Comparator.comparing(item -> (String) item.get("occurrenceId")));
@@ -356,14 +543,19 @@ public final class NativeFeedbackMain {
     }
 
     private static Map<String, Object> analyzeTargetSet(Path iteration,
-            Path scopePath, String site, int maxTasks, Path actorsPath)
+            Path scopePath, String site, int maxTasks, Path actorsPath,
+            Path receiptPath)
             throws Exception {
         SessionReader session = readSession(iteration);
-        List<Map<String, Object>> listed = listTargets(session, site);
+        TargetSelection targetSelection = selectTargets(session, site, receiptPath);
+        List<Map<String, Object>> listed = listTargets(targetSelection, site);
         Set<String> reached = new LinkedHashSet<>();
+        if (targetSelection.external) {
+            reached.addAll(targetSelection.occurrences.keySet());
+        }
         List<Map<String, Object>> unreachedRows = new ArrayList<>();
         for (TargetRow target : session.targets()) {
-            if (!site.equals(target.anchorSiteId())) continue;
+            if (!matchesNativeSite(site, target.anchorSiteId())) continue;
             if (target.reachedAnchor()) {
                 reached.add(target.occurrence().id());
             } else {
@@ -386,10 +578,16 @@ public final class NativeFeedbackMain {
         List<Map<String, Object>> selected = new ArrayList<>();
         boolean actorRowsSeen = false;
         Set<String> actorOccurrenceIds = new HashSet<>();
+        for (TargetRow target : session.targets()) {
+            if (!matchesNativeSite(site, target.anchorSiteId())
+                    || (actors != null && !actors.contains(
+                        target.occurrence().node().node()))) continue;
+            actorRowsSeen = true;
+            actorOccurrenceIds.add(target.occurrence().id());
+        }
         for (Map<String, Object> item : listed) {
             if (actors != null && !actors.contains(item.get("nodeName"))) continue;
             actorRowsSeen = true;
-            actorOccurrenceIds.add((String) item.get("occurrenceId"));
             if (reached.contains(item.get("occurrenceId"))) {
                 selected.add(item);
             }
@@ -407,7 +605,8 @@ public final class NativeFeedbackMain {
             return row("schemaVersion", 1, "targetSiteId", site,
                     "targets", selected, "perTargetOccurrences",
                     Collections.emptyList(), "siteTargetRowsSeen", actorRowsSeen,
-                    "unreachedTargetRows", unreachedRows);
+                    "unreachedTargetRows", unreachedRows,
+                    "unmatchedExternalReceipts", targetSelection.unmatchedReceipts);
         }
         Corpus corpus = Corpus.read(iteration, null);
         StaticScopeMap scope = scopePath == null ? StaticScopeMap.empty()
@@ -415,7 +614,8 @@ public final class NativeFeedbackMain {
         List<Map<String, Object>> plans = new ArrayList<>();
         for (Map<String, Object> item : selected) {
             Map<String, Object> plan = analyze(session, corpus, scope, site,
-                    (String) item.get("occurrenceId"), maxTasks);
+                    (String) item.get("occurrenceId"), targetSelection,
+                    maxTasks);
             if (!item.get("targetFamily").equals(plan.get("targetFamily"))) {
                 throw new IllegalStateException("native target family changed during analysis");
             }
@@ -424,11 +624,13 @@ public final class NativeFeedbackMain {
         return row("schemaVersion", 1, "targetSiteId", site,
                 "targets", selected, "perTargetOccurrences", plans,
                 "siteTargetRowsSeen", actorRowsSeen,
-                "unreachedTargetRows", unreachedRows);
+                "unreachedTargetRows", unreachedRows,
+                "unmatchedExternalReceipts", targetSelection.unmatchedReceipts);
     }
 
     public static void main(String[] args) throws Exception {
-        if (args.length == 7 && "--target-set".equals(args[0])) {
+        if ((args.length == 7 || args.length == 8)
+                && "--target-set".equals(args[0])) {
             requireSourceBuiltOriginalClasses();
             Path scope = "-".equals(args[2]) ? null : Paths.get(args[2]);
             if (scope != null && !Files.isRegularFile(scope)) {
@@ -439,8 +641,10 @@ public final class NativeFeedbackMain {
                 throw new IllegalArgumentException("MAX_TASKS must be positive");
             }
             Path actors = "-".equals(args[5]) ? null : Paths.get(args[5]);
+            Path receipts = args.length == 8 && !"-".equals(args[7])
+                    ? Paths.get(args[7]) : null;
             write(Paths.get(args[6]), analyzeTargetSet(Paths.get(args[1]),
-                    scope, args[3], maxTasks, actors));
+                    scope, args[3], maxTasks, actors, receipts));
             return;
         }
         if (args.length == 4 && "--list-targets".equals(args[0])) {
@@ -450,7 +654,7 @@ public final class NativeFeedbackMain {
                     "targets", listTargets(Paths.get(args[1]), args[2])));
             return;
         }
-        if (args.length != 6) {
+        if (args.length != 6 && args.length != 7) {
             throw new IllegalArgumentException("usage: NativeFeedbackMain ITERATION "
                     + "SCOPE_MAP_OR_DASH TARGET_SITE EXACT_OCCURRENCE_ID_OR_DASH "
                     + "MAX_TASKS OUTPUT_JSON");
@@ -463,8 +667,10 @@ public final class NativeFeedbackMain {
         }
         int maxTasks = Integer.parseInt(args[4]);
         if (maxTasks <= 0) throw new IllegalArgumentException("MAX_TASKS must be positive");
+        Path receipts = args.length == 7 && !"-".equals(args[6])
+                ? Paths.get(args[6]) : null;
         Map<String, Object> result = analyze(iteration, scope, args[2],
-                args[3], maxTasks);
+                args[3], receipts, maxTasks);
         write(Paths.get(args[5]), result);
     }
 }

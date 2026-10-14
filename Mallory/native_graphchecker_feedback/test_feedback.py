@@ -30,7 +30,8 @@ def summary() -> dict:
         "targetOccurrenceId": "exact-actor-target",
         "targetFamily": "T#1\ndn0\nREGION.target",
         "targetRegionId": "REGION.target",
-        "targetRows": [{"occurrenceId": "exact-actor-target"}],
+        "targetRows": [{"occurrenceId": "exact-actor-target",
+                        "reachedAnchor": True}],
         "closureMembers": [{"occurrenceId": "exact-actor-target",
                             "family": "dn0#epoch0\nREGION.target"}],
         "observedEdgesWithinClosure": [],
@@ -65,11 +66,11 @@ class DeltaTest(unittest.TestCase):
         healthy = summary()
         trial = copy.deepcopy(healthy)
         trial["targetRows"] = []
-        with self.assertRaisesRegex(ValueError, "exact target row"):
+        with self.assertRaisesRegex(ValueError, "exact target reach evidence"):
             delta(healthy, trial)
         trial = copy.deepcopy(healthy)
         trial["targetOccurrenceId"] = "other-request"
-        with self.assertRaisesRegex(ValueError, "exact target row"):
+        with self.assertRaisesRegex(ValueError, "exact target reach evidence"):
             delta(healthy, trial)
 
     def test_cross_run_occurrence_shift_keeps_each_run_exact(self) -> None:
@@ -144,10 +145,102 @@ class NativeUnmodifiedJUnitIntegrationTest(unittest.TestCase):
                              for edge in result["observedEdgesWithinClosure"]))
 
 
+@unittest.skipUnless(os.environ.get("GC_NATIVE_ZK07_V2"),
+                     "set GC_NATIVE_ZK07_V2 to the recorded ZK07 campaign root")
+class NativeExternalReceiptIntegrationTest(unittest.TestCase):
+    def test_real_native_graph_keeps_reach_and_planner_limits_separate(self) -> None:
+        root = Path(os.environ["GC_NATIVE_ZK07_V2"])
+        config = json.loads((root / "campaign-config.json").read_text(
+            encoding="utf-8"))
+        iteration = root / "campaign/trials/r0000/iteration-native"
+        site = config["target_site"] + "#1"
+        engine_jar = (Path(os.environ["GC_NATIVE_ENGINE_JAR"])
+                      if os.environ.get("GC_NATIVE_ENGINE_JAR") else None)
+        with tempfile.TemporaryDirectory() as scratch:
+            result = summarize_target_set(
+                iteration, site, Path(scratch) / "summary.json",
+                static_scope_map=Path(config["recording"]["static_scope_map"]),
+                target_check_receipts=iteration / "fault-events.jsonl",
+                engine_jar=engine_jar)
+        self.assertEqual({"2817a635626dd66b", "318e5854806a634d"},
+                         set(result["targetOccurrenceIds"]))
+        self.assertEqual(["external_target_check"], result["targetEvidenceKinds"])
+        self.assertFalse(result["symbolicPredicateAvailable"])
+        self.assertEqual(1, len(result["observedEdgesWithinClosure"]))
+        self.assertEqual({"original_closure_planner",
+                          "observed_edge_backward_from_receipt"},
+                         {item["closureConstruction"] for item in
+                          result["perTargetOccurrences"]})
+
+
 @unittest.skipUnless((ENGINE / "target" /
                       "mallory-original-graphchecker-seed-1.0-SNAPSHOT.jar").is_file(),
                      "build Mallory original GraphChecker engine first")
 class NativeTypedEdgeIntegrationTest(unittest.TestCase):
+    def test_external_target_check_anchors_without_symbolic_predicate(self) -> None:
+        engine_jar = (Path(os.environ["GC_NATIVE_ENGINE_JAR"])
+                      if os.environ.get("GC_NATIVE_ENGINE_JAR") else None)
+        classes = build(engine_jar=engine_jar)
+        classpath = f"{classes}:{_classpath(engine_jar)}"
+        subprocess.run(["javac", "-cp", classpath, "-d", str(classes),
+                        str(HERE / "SyntheticNativeSession.java")], check=True,
+                       timeout=120, capture_output=True)
+        generator = ["java", "-cp", classpath,
+                     "edu.uva.liftlab.mallory.nativefeedback.SyntheticNativeSession"]
+        site = "Keys#check#u3#1"
+        with tempfile.TemporaryDirectory() as scratch:
+            root = Path(scratch)
+            unreached = root / "unreached"
+            rowless = root / "rowless"
+            bad = root / "bad"
+            subprocess.run(generator + [str(unreached), "--receipt-target",
+                                        "--unreached-target"], check=True,
+                           timeout=30, capture_output=True)
+            subprocess.run(generator + [str(rowless), "--receipt-target",
+                                        "--no-target-row"], check=True,
+                           timeout=30, capture_output=True)
+            subprocess.run(generator + [str(bad), "--receipt-target",
+                                        "--no-target-row"], check=True,
+                           timeout=30, capture_output=True)
+            first = summarize_target_set(
+                unreached, site, root / "unreached.json",
+                static_scope_map=unreached / "static_scope_map.jsonl",
+                target_check_receipts=unreached / "fault-events.jsonl",
+                engine_jar=engine_jar)
+            second = summarize_target_set(
+                rowless, site, root / "rowless.json",
+                static_scope_map=rowless / "static_scope_map.jsonl",
+                target_check_receipts=rowless / "fault-events.jsonl",
+                engine_jar=engine_jar)
+            base_site = summarize_target_set(
+                rowless, "Keys#check#u3", root / "base-site.json",
+                static_scope_map=rowless / "static_scope_map.jsonl",
+                target_check_receipts=rowless / "fault-events.jsonl",
+                engine_jar=engine_jar)
+            bad_receipt = bad / "fault-events.jsonl"
+            wrong = json.loads(bad_receipt.read_text(encoding="utf-8"))
+            wrong["actorEpochOrdinal"] = 1
+            bad_receipt.write_text(json.dumps(wrong) + "\n", encoding="utf-8")
+            with self.assertRaises(NoNativeTargetError):
+                summarize_target_set(
+                    bad, site, root / "bad.json",
+                    static_scope_map=bad / "static_scope_map.jsonl",
+                    target_check_receipts=bad_receipt,
+                    engine_jar=engine_jar)
+        for value in (first, second):
+            self.assertEqual(["external_target_check"], value["targetEvidenceKinds"])
+            self.assertFalse(value["symbolicPredicateAvailable"])
+            self.assertEqual(1, len(value["targetReachReceipts"]))
+            self.assertEqual(value["targetOccurrenceIds"],
+                             [value["targetReachReceipts"][0]["occurrenceId"]])
+            self.assertTrue(any(row["occurrenceId"] == value["targetOccurrenceIds"][0]
+                                for row in value["closureMembers"]))
+        self.assertFalse(first["targetRows"][0]["reachedAnchor"])
+        self.assertEqual([], second["targetRows"])
+        self.assertEqual(second["targetOccurrenceIds"],
+                         base_site["targetOccurrenceIds"])
+        self.assertEqual(0, delta(first, second)["newClosureNodes"])
+
     def test_source_built_closure_uses_exact_wire_state_and_start_rows(self) -> None:
         engine_jar = (Path(os.environ["GC_NATIVE_ENGINE_JAR"])
                       if os.environ.get("GC_NATIVE_ENGINE_JAR") else None)

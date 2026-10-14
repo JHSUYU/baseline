@@ -40,6 +40,9 @@ public final class SyntheticNativeSession {
         boolean secondTargetUnreached = Arrays.asList(args).contains(
                 "--second-target-unreached");
         boolean targetUnreached = Arrays.asList(args).contains("--unreached-target");
+        boolean receiptTarget = Arrays.asList(args).contains("--receipt-target");
+        boolean noTargetRow = Arrays.asList(args).contains("--no-target-row");
+        String targetSite = receiptTarget ? "Keys#check#u3#1" : "Keys#check#u3";
         boolean directTargetWire = Arrays.asList(args).contains(
                 "--direct-target-wire");
         SessionDir dir = SessionDir.of(iteration, "seed").create();
@@ -93,15 +96,29 @@ public final class SyntheticNativeSession {
         RowCodec.writeAll(dir.reads(), Collections.singletonList(
                 ReadRow.of("seed", 4L, stateIn, location, 5L, "M_READ", "I", "1")),
                 RowCodec::writeRead);
-        java.util.List<TargetRow> targets = new java.util.ArrayList<>(
-                Collections.singletonList(TargetRow.of("seed", 5L, target,
-                        "Keys#check#u3", "(= M_READ 0)", false,
-                        !targetUnreached)));
+        java.util.List<TargetRow> targets = new java.util.ArrayList<>();
+        if (!noTargetRow) {
+            targets.add(TargetRow.of("seed", 5L, target, targetSite,
+                    "(= M_READ 0)", false, !targetUnreached));
+        }
         if (secondTarget) {
-            targets.add(TargetRow.of("seed", 6L, targetTwo, "Keys#check#u3",
+            targets.add(TargetRow.of("seed", 6L, targetTwo, targetSite,
                     "(= 1 0)", false, !secondTargetUnreached));
         }
         RowCodec.writeAll(dir.targets(), targets, RowCodec::writeTarget);
+        if (receiptTarget) {
+            JsonObject receipt = new JsonObject();
+            receipt.addProperty("kind", "TARGET_CHECK");
+            receipt.addProperty("seq", 7);
+            receipt.addProperty("siteId", "Keys#check#u3");
+            receipt.addProperty("targetAnchorSiteId", targetSite);
+            receipt.addProperty("occurrenceId", target.id());
+            receipt.addProperty("node", "dn");
+            receipt.addProperty("actorEpochOrdinal", 0);
+            receipt.addProperty("ordinal", 1);
+            RowCodec.writeJsonl(iteration.resolve("fault-events.jsonl"),
+                    Collections.singletonList(receipt));
+        }
         JsonObject constant = new JsonObject();
         constant.addProperty("_type", "ConstExpr");
         constant.addProperty("_exp", "C_I_1");
@@ -122,7 +139,7 @@ public final class SyntheticNativeSession {
         scope.addProperty("kind", "STATIC_SCOPE_SITE");
         scope.addProperty("role", "TARGET_SITE");
         scope.addProperty("regionId", "R.target");
-        scope.addProperty("siteId", "Keys#check#u3");
+        scope.addProperty("siteId", targetSite);
         RowCodec.writeJsonl(iteration.resolve("static_scope_map.jsonl"),
                 Collections.singletonList(scope));
     }
