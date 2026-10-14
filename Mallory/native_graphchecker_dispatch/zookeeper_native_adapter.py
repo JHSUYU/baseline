@@ -826,21 +826,25 @@ def finalize_after_healthy(request_file: Path, output: Path,
         "edu.uva.liftlab.graphchecker.runtime.CausynthTraceRecorder",
         "--trace-dir", str(trace), "--test", junit["selector"],
         "--target", target_arg, "--target-occurrence", selector], output, 300)
-    _run(_fresh_command_stage(output, "original-scheduler"),
-         [java, loop_arg, "-cp", _original_cp([]),
-        "edu.uva.liftlab.graphchecker.plan.ConcolicScheduler",
-        "--region-plan", str(recorded / "concolic_region_plan.jsonl"),
-        "--candidate-graph", str(graph), "--static-scope-map", str(scope),
-        "--output-dir", str(scheduled), "--max-jobs", str(profile["max_jobs"]),
-        "--target-occurrence", selector], output, 300)
-    plan = scheduled / "execution_task_plan.jsonl"
-    task = select_target_task(plan, occurrence)
-    selected_plan = output / _fresh_name(output, "selected-task-plan.jsonl")
-    select_exact_task_row(plan, task["taskId"], selected_plan)
-    branch = task["targetBranch"]
     mode = _campaign_mode(profile)
-    anchor = (f"{branch['siteId']}#{branch['occurrence']}"
-              if mode == "concolic" else identity["original_guard_site_id"])
+    task = None
+    selected_plan = None
+    if mode == "concolic":
+        _run(_fresh_command_stage(output, "original-scheduler"),
+             [java, loop_arg, "-cp", _original_cp([]),
+            "edu.uva.liftlab.graphchecker.plan.ConcolicScheduler",
+            "--region-plan", str(recorded / "concolic_region_plan.jsonl"),
+            "--candidate-graph", str(graph), "--static-scope-map", str(scope),
+            "--output-dir", str(scheduled), "--max-jobs", str(profile["max_jobs"]),
+            "--target-occurrence", selector], output, 300)
+        plan = scheduled / "execution_task_plan.jsonl"
+        task = select_target_task(plan, occurrence)
+        selected_plan = output / _fresh_name(output, "selected-task-plan.jsonl")
+        select_exact_task_row(plan, task["taskId"], selected_plan)
+        branch = task["targetBranch"]
+        anchor = f"{branch['siteId']}#{branch['occurrence']}"
+    else:
+        anchor = identity["original_guard_site_id"]
     weave_file = output / _fresh_name(output, "native-weave.json")
     woven_classes = output / _fresh_name(output, "native-classes")
     weave_config = {
@@ -858,6 +862,7 @@ def finalize_after_healthy(request_file: Path, output: Path,
             "args": ["{woven_classes}", _cp(extra)]},
         "timeout_seconds": 1800}
     if mode == "concolic":
+        assert task is not None and selected_plan is not None
         weave_config.update(task_plan=str(selected_plan), task_id=task["taskId"])
     else:
         artifacts = output / _fresh_name(output, "region-weave-artifacts")
@@ -890,6 +895,8 @@ def finalize_after_healthy(request_file: Path, output: Path,
         "runner": _campaign_runner(profile, runner_cp, loop_arg),
         "budget": profile["budget"],
         "timeout_seconds": profile["timeout_seconds"]}
+    if mode == "region_state":
+        config["recording"]["admission_mode"] = "region_state_no_schedule"
     native._validate_config(config)
     _atomic(output / "case.json", config)
     proof = {
