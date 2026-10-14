@@ -139,6 +139,7 @@ class NativeAdmissionLineageTest(unittest.TestCase):
                       "target_throw": {"siteId": "FSDirTruncateOp#throw",
                                        "exceptionClass": "java.io.IOException"},
                       "recording": {"test_id": "TestFileTruncate#testMultipleTruncate",
+                                    "target_occurrence": "nn0#epoch0/region/selected",
                                     "static_scope_map": "scope",
                                     "candidate_graph": "graph",
                                     "region_skeletons": "skeletons"}}
@@ -148,13 +149,15 @@ class NativeAdmissionLineageTest(unittest.TestCase):
                         "newBranchOutcomeIds": []}
             with patch.object(core, "_region_schedule"), patch.object(
                     core, "_analysis_engine_jar", return_value=Path("engine")), patch.object(
-                    core, "record_region_state", return_value=summary), patch.object(
+                    core, "record_region_state", return_value=summary) as recorder, patch.object(
                     core, "delta_region_state", return_value=feedback):
                 result = core._run_region_trial(
                     config, {"weave_config": {"java": "java"}}, trial,
                     [{"siteId": "IO#fault"}], {"status": "recorded"},
                     {"junit_passed": True}, [check, applied], True)
             self.assertEqual("checked", result["status"])
+            self.assertEqual("nn0#epoch0/region/selected",
+                             recorder.call_args.kwargs["target_occurrence"])
             self.assertTrue(result["native_target_retained"])
             self.assertTrue(result["fault_in_target_closure"])
             self.assertFalse(result["post_fault_target_check_observed"])

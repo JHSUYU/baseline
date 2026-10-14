@@ -91,6 +91,27 @@ class RegionStateGraphTest(unittest.TestCase):
             record_region_state(case["trace"], self.root / "invalid-heap",
                                 heap_mb=0, **arguments)
 
+    def test_exact_target_occurrence_reaches_resolver_and_never_falls_back(self) -> None:
+        case = self._case("exact-occurrence")
+        class MissingPinnedOccurrence:
+            returncode = 2
+            stdout = ""
+            stderr = "TARGET_OCCURRENCE_NOT_OBSERVED: selected-late"
+
+        output = self.root / "exact-output"
+        with patch("Mallory.native_graphchecker_feedback.region_state_graph.subprocess.run",
+                   return_value=MissingPinnedOccurrence()):
+            summary = record_region_state(
+                case["trace"], output, test_id="fixture", target_site=SITE,
+                fault_events=case["events"], static_scope_map=self.scope,
+                candidate_graph=self.graph, region_skeletons=self.skeletons,
+                engine_jar=self.engine, target_occurrence="selected-late")
+        command = json.loads((output / "resolver-command.json").read_text())
+        self.assertEqual("selected-late",
+                         command[command.index("--target-occurrence") + 1])
+        self.assertEqual("target_absent", summary["status"])
+        self.assertFalse(summary["targetReached"])
+
     def test_original_resolver_output_uses_physical_local_directory(self) -> None:
         case = self._case("linked-output")
         local = self.root / "host-local-graph"
@@ -193,6 +214,7 @@ class RegionStateGraphTest(unittest.TestCase):
             rows = [json.loads(line) for line in path.read_text().splitlines()]
             plans = rows[1:]
             ids = {("exact-runtime-check" if row["regionId"] == ACTIVATION
+                    else "other-runtime-check" if row["regionId"] == "REGION.other"
                     else "exact-receiver"): row for row in plans}
             return len(rows[0].get("gaps", [])), plans, ids
         with patch("Mallory.native_graphchecker_feedback.region_state_graph."
@@ -201,6 +223,54 @@ class RegionStateGraphTest(unittest.TestCase):
                 case["trace"], case["plan"], case["receipt"], case["events"],
                 self.scope, self.graph, self.skeletons, SITE,
                 engine_jar=self.engine)
+
+    def test_version_two_receipt_binds_exact_requested_occurrence(self) -> None:
+        case = self._case("version-two-exact")
+        receipt = json.loads(case["receipt"].read_text())
+        receipt.update({
+            "schemaVersion": 2,
+            "selectionPolicy": "EXACT_REQUESTED_OCCURRENCE_THEN_EARLIEST_EVENT",
+            "requestedOccurrenceAddress": receipt["selectedOccurrenceAddress"],
+            "reachedEvents": [{"eventSeq": receipt["selectedEventSeq"],
+                                "callId": receipt["selectedCallId"],
+                                "occurrenceAddress": receipt[
+                                    "selectedOccurrenceAddress"]}],
+        })
+        case["receipt"].write_text(json.dumps(receipt) + "\n")
+        self.assertTrue(self._summarize(case)["targetReached"])
+        receipt["requestedOccurrenceAddress"] = "another/region/activation"
+        case["receipt"].write_text(json.dumps(receipt) + "\n")
+        with self.assertRaisesRegex(ValueError, "requested target"):
+            self._summarize(case)
+
+    def test_same_actor_and_local_ordinal_do_not_alias_other_activation(self) -> None:
+        case = self._case("same-actor-distinct-activation")
+        receipt = json.loads(case["receipt"].read_text())
+        receipt.update({
+            "schemaVersion": 2,
+            "selectionPolicy": "EXACT_REQUESTED_OCCURRENCE_THEN_EARLIEST_EVENT",
+            "requestedOccurrenceAddress": receipt["selectedOccurrenceAddress"],
+            "reachedEvents": [{"eventSeq": receipt["selectedEventSeq"],
+                                "callId": receipt["selectedCallId"],
+                                "occurrenceAddress": receipt[
+                                    "selectedOccurrenceAddress"]}],
+        })
+        case["receipt"].write_text(json.dumps(receipt) + "\n")
+        other = "nn1#epoch1/region/REGION.other/ctx:fixture"
+        with case["plan"].open("a") as out:
+            out.write(json.dumps({"kind": "CONCOLIC_REGION_PLAN",
+                                  "occurrenceId": other,
+                                  "regionId": "REGION.other",
+                                  "sourceKey": "nn1#epoch1",
+                                  "rootCallId": 11}) + "\n")
+        with case["events"].open("a") as out:
+            out.write(json.dumps({"kind": "TARGET_CHECK", "seq": 9,
+                                  "siteId": SITE, "node": "nn1",
+                                  "actorEpochOrdinal": 1, "ordinal": 1,
+                                  "occurrenceId": "other-runtime-check"}) + "\n")
+        summary = self._summarize(case)
+        self.assertEqual(["exact-runtime-check"],
+                         summary["targetEvidence"]["targetCheckOccurrenceIds"])
 
     def _store_read_case(self, name: str, *, read_version: str = "/x@17",
                          include_writer: bool = True, read_seq: int = 9) -> dict:

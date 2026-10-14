@@ -1,8 +1,11 @@
 package edu.uva.liftlab.graphchecker.runtime;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import com.google.gson.JsonObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -26,7 +29,29 @@ public final class MalloryTargetOccurrenceResolverTest {
         JsonObject row = new JsonObject();
         row.addProperty("eventSeq", seq);
         row.addProperty("sourceRole", role);
+        row.addProperty("occurrenceAddress", "occurrence-" + seq);
         return row;
+    }
+
+    @Test
+    public void exactRequestedOccurrenceOverridesDefaultEarliestWithoutFallback()
+            throws Exception {
+        List<JsonObject> events = new ArrayList<>();
+        for (int index = 0; index < 75; index++) {
+            events.add(event(index + 1L, "DATANODE"));
+        }
+        assertEquals(1L, MalloryTargetOccurrenceResolver.selectOccurrence(
+                events).get("eventSeq").getAsLong());
+        assertEquals(28L, MalloryTargetOccurrenceResolver.selectOccurrence(
+                events, "occurrence-28").get("eventSeq").getAsLong());
+        try {
+            MalloryTargetOccurrenceResolver.selectOccurrence(events,
+                    "absent-occurrence");
+            fail("an exact target must not silently fall back to another one");
+        } catch (IOException expected) {
+            assertTrue(expected.getMessage().startsWith(
+                    "TARGET_OCCURRENCE_NOT_OBSERVED:"));
+        }
     }
 
     @Test

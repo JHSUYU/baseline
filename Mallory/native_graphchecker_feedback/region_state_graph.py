@@ -182,10 +182,16 @@ def _closed_inputs(trace_dir: Path, scope: Path, graph: Path,
 def _validate_target(receipt: dict[str, Any], pins: dict[str, str],
                      branches: list[dict[str, Any]], calls: dict[int, dict[str, Any]],
                      target_site: str, fault_events: Path) -> dict[str, Any]:
-    if (receipt.get("schemaVersion") != 1 or
+    version = receipt.get("schemaVersion")
+    if (version not in (1, 2) or
             receipt.get("kind") != "MALLORY_OBSERVED_TARGET_OCCURRENCE" or
             receipt.get("checkSiteId") != target_site):
         raise ValueError("original resolver selected another target")
+    if version == 2 and (receipt.get("selectionPolicy") !=
+                         "EXACT_REQUESTED_OCCURRENCE_THEN_EARLIEST_EVENT" or
+                         receipt.get("requestedOccurrenceAddress") !=
+                         receipt.get("selectedOccurrenceAddress")):
+        raise ValueError("original resolver did not retain requested target")
     for field in ("traceManifestSha256", "runtimeTraceSha256", "scheduleSha256",
                   "scopeMapSha256", "candidateGraphSha256",
                   "regionSkeletonsSha256"):
@@ -202,11 +208,30 @@ def _validate_target(receipt: dict[str, Any], pins: dict[str, str],
             "selectedOccurrenceAddress"].split("/region/", 1)[0]:
         raise ValueError("selected target branch actor differs from occurrence")
     actor, epoch = _source_actor(call["sourceKey"])
-    earlier = [row for row in branches if row.get("siteId") == target_site
-               and row.get("seq", 0) <= receipt["selectedEventSeq"] and
-               calls.get(row.get("callId", -1), {}).get("sourceKey") ==
-               call["sourceKey"]]
-    ordinal = len(earlier)
+    if version == 2:
+        # NativeFaultHooks counts a check within its causal occurrence, not
+        # across all DataXceiver/RPC activations on the same physical actor.
+        # The resolver already records the exact owner of every healthy
+        # branch. Derive the local ordinal from that receipt before matching
+        # a TARGET_CHECK row. Actor-wide ordinal would reject later targets.
+        reached = receipt.get("reachedEvents")
+        if not isinstance(reached, list) or not any(
+                row.get("eventSeq") == receipt["selectedEventSeq"] and
+                row.get("callId") == receipt["selectedCallId"] and
+                row.get("occurrenceAddress") == receipt["selectedOccurrenceAddress"]
+                for row in reached if isinstance(row, dict)):
+            raise ValueError("exact resolver receipt omits selected branch")
+        ordinal = sum(1 for row in reached if isinstance(row, dict) and
+                      row.get("occurrenceAddress") == receipt[
+                          "selectedOccurrenceAddress"] and
+                      isinstance(row.get("eventSeq"), int) and
+                      row["eventSeq"] <= receipt["selectedEventSeq"])
+    else:
+        earlier = [row for row in branches if row.get("siteId") == target_site
+                   and row.get("seq", 0) <= receipt["selectedEventSeq"] and
+                   calls.get(row.get("callId", -1), {}).get("sourceKey") ==
+                   call["sourceKey"]]
+        ordinal = len(earlier)
     checks = [row for row in _rows(fault_events) if row.get("kind") ==
               "TARGET_CHECK" and row.get("siteId") == target_site and
               row.get("node") == actor and row.get("actorEpochOrdinal") == epoch
@@ -349,9 +374,15 @@ def summarize_region_state(
     selected = by_occurrence.get(target["selectedOccurrenceAddress"])
     if selected is None:
         raise ValueError("original Recorder plan lost the exact target occurrence")
-    if not any(closure_by_id.get(identifier) is selected for identifier in
-               target["targetCheckOccurrenceIds"]):
+    exact_check_ids = sorted(identifier for identifier in
+                             target["targetCheckOccurrenceIds"] if
+                             closure_by_id.get(identifier) is selected)
+    if not exact_check_ids:
         raise ValueError("original Finalizer plan omitted the exact target check")
+    # Physical actor and local ordinal are necessary but not sufficient when
+    # one actor creates multiple activations. The original plan maps hook
+    # occurrence IDs to their exact containing GraphChecker activation.
+    target["targetCheckOccurrenceIds"] = exact_check_ids
     if receipt["targetRegionId"] != selected["regionId"] and receipt[
             "targetRegionId"] not in selected.get("foldedRegionIds", []):
         raise ValueError("target check region is outside its selected activation")
@@ -663,12 +694,16 @@ def record_region_state(
         java: Path = Path("/usr/lib/jvm/java-8-openjdk-amd64/bin/java"),
         loop_bound: int = 3, timeout_seconds: int = 300,
         heap_mb: int = 3072,
+        target_occurrence: str | None = None,
         target_throw: dict[str, str] | None = None) -> dict[str, Any]:
     """Run original resolver and Recorder once for one fresh CLOSED trace."""
     if (loop_bound <= 0 or timeout_seconds <= 0 or
             not isinstance(heap_mb, int) or isinstance(heap_mb, bool) or
             not 0 < heap_mb <= 65536):
         raise ValueError("positive loop bound, timeout, and bounded heap are required")
+    if target_occurrence is not None and (not isinstance(target_occurrence, str)
+                                          or not target_occurrence):
+        raise ValueError("target occurrence must be a nonempty exact address")
     trace_dir = trace_dir.resolve(strict=True)
     output_dir.mkdir(parents=True, exist_ok=True)
     # The durable trial may expose this local output through a symlink.
@@ -692,15 +727,22 @@ def record_region_state(
                 "--static-scope-map", str(scope),
                 "--candidate-graph", str(graph),
                 "--check-site-id", target_site, "--output", str(receipt_file)]
+    if target_occurrence is not None:
+        resolver.extend(("--target-occurrence", target_occurrence))
     (output_dir / "resolver-command.json").write_text(json.dumps(resolver) + "\n")
     resolved = subprocess.run(resolver, text=True, capture_output=True,
                               timeout=timeout_seconds)
     (output_dir / "resolver.stdout").write_text(resolved.stdout)
     (output_dir / "resolver.stderr").write_text(resolved.stderr)
     if resolved.returncode != 0:
-        if "TARGET_CHECK_NOT_OBSERVED" in resolved.stderr:
-            result = _fatal_unplanned(trace_dir, fault_events, target_site,
-                                      target_throw, before, engine_jar)
+        if ("TARGET_CHECK_NOT_OBSERVED" in resolved.stderr or
+                "TARGET_OCCURRENCE_NOT_OBSERVED" in resolved.stderr):
+            # Another target activation must not replace an exact pinned one.
+            # A throw-only run is retained separately by the fault-event
+            # oracle, but does not establish this activation's causal graph.
+            result = (None if "TARGET_OCCURRENCE_NOT_OBSERVED" in resolved.stderr
+                      else _fatal_unplanned(trace_dir, fault_events, target_site,
+                                            target_throw, before, engine_jar))
             if result is None:
                 result = {"schemaVersion": SCHEMA,
                           "backend": "original_region_state",
@@ -716,6 +758,13 @@ def record_region_state(
         raise RuntimeError("original target resolver failed: " +
                            resolved.stderr[-2000:])
     receipt = _json(receipt_file)
+    if target_occurrence is not None and (
+            receipt.get("schemaVersion") != 2 or
+            receipt.get("selectionPolicy") !=
+            "EXACT_REQUESTED_OCCURRENCE_THEN_EARLIEST_EVENT" or
+            receipt.get("requestedOccurrenceAddress") != target_occurrence or
+            receipt.get("selectedOccurrenceAddress") != target_occurrence):
+        raise ValueError("original resolver ignored exact requested occurrence")
     plan_dir = output_dir / "recorded"
     target_arg = ",".join((str(graph), str(scope), str(skeletons),
                            str(plan_dir)))

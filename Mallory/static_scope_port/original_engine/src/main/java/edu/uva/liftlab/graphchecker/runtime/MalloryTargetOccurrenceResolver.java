@@ -23,10 +23,11 @@ import java.util.Set;
 
 /**
  * Mallory adapter around the source-built GraphChecker recorder. It selects
- * the earliest healthy occurrence which actually evaluated the inventory
- * check, using GraphChecker's own CLOSED trace reader and region activation
- * planner. A folded target region is addressed by its containing activation.
- * No ordinal or source-line guess is made.
+ * an observed occurrence which actually evaluated the inventory check, using
+ * GraphChecker's own CLOSED trace reader and region activation planner. A
+ * caller may pin an exact occurrence address; otherwise the registered source
+ * and earliest event policy applies. A folded target region is addressed by
+ * its containing activation. No ordinal or source-line guess is made.
  */
 public final class MalloryTargetOccurrenceResolver {
     private MalloryTargetOccurrenceResolver() { }
@@ -41,9 +42,10 @@ public final class MalloryTargetOccurrenceResolver {
         String test = required(options, "--test");
         String check = options.get("--check-site-id");
         String throwSite = options.get("--throw-site-id");
+        String requestedOccurrence = options.get("--target-occurrence");
 
         JsonObject receipt = resolve(traceDir, test, skeletons, scope, graph,
-                check, throwSite);
+                check, throwSite, requestedOccurrence);
         Files.createDirectories(output.toAbsolutePath().getParent());
         Path staged = Files.createTempFile(output.toAbsolutePath().getParent(),
                 ".target-occurrence-", ".json");
@@ -68,6 +70,14 @@ public final class MalloryTargetOccurrenceResolver {
     static JsonObject resolve(Path traceDir, String test, File skeletons,
                               File scopeFile, File graph, String check,
                               String throwSite)
+            throws Exception {
+        return resolve(traceDir, test, skeletons, scopeFile, graph, check,
+                throwSite, null);
+    }
+
+    static JsonObject resolve(Path traceDir, String test, File skeletons,
+                              File scopeFile, File graph, String check,
+                              String throwSite, String requestedOccurrence)
             throws Exception {
         Path traceFile = traceDir.resolve("runtime_trace.jsonl");
         Path scheduleFile = traceDir.resolve("schedule.jsonl");
@@ -179,9 +189,11 @@ public final class MalloryTargetOccurrenceResolver {
         if (eligible.isEmpty()) {
             throw new IOException("TARGET_CHECK_NOT_OBSERVED: " + check);
         }
-        JsonObject selectedEvent = selectOccurrence(eligible);
+        JsonObject selectedEvent = selectOccurrence(eligible,
+                requestedOccurrence);
         JsonObject receipt = new JsonObject();
-        receipt.addProperty("schemaVersion", 1);
+        receipt.addProperty("schemaVersion",
+                requestedOccurrence == null ? 1 : 2);
         receipt.addProperty("kind", "MALLORY_OBSERVED_TARGET_OCCURRENCE");
         receipt.addProperty("test", test);
         receipt.addProperty("checkSiteId", check);
@@ -191,8 +203,11 @@ public final class MalloryTargetOccurrenceResolver {
         }
         receipt.addProperty("fatalOutcome", fatal);
         receipt.addProperty("observationKind", "NONFATAL_BRANCH_OUTCOME");
-        receipt.addProperty("selectionPolicy",
-                "PREFER_REGISTERED_NON_CLIENT_SOURCE_THEN_EARLIEST");
+        receipt.addProperty("selectionPolicy", requestedOccurrence == null
+                ? "PREFER_REGISTERED_NON_CLIENT_SOURCE_THEN_EARLIEST"
+                : "EXACT_REQUESTED_OCCURRENCE_THEN_EARLIEST_EVENT");
+        if (requestedOccurrence != null) receipt.addProperty(
+                "requestedOccurrenceAddress", requestedOccurrence);
         receipt.addProperty("selectedOccurrenceAddress",
                 selectedEvent.get("occurrenceAddress").getAsString());
         receipt.addProperty("selectedEventSeq",
@@ -219,13 +234,30 @@ public final class MalloryTargetOccurrenceResolver {
      * or case-specific occurrence ordinal. Preserve every candidate above.
      */
     static JsonObject selectOccurrence(List<JsonObject> eligible) {
+        try {
+            return selectOccurrence(eligible, null);
+        } catch (IOException failure) {
+            throw new IllegalArgumentException(failure);
+        }
+    }
+
+    static JsonObject selectOccurrence(List<JsonObject> eligible,
+                                       String requestedOccurrence)
+            throws IOException {
+        if (requestedOccurrence != null && requestedOccurrence.isEmpty()) {
+            throw new IllegalArgumentException("empty requested occurrence");
+        }
         JsonObject best = null;
         for (JsonObject row : eligible) {
+            if (requestedOccurrence != null && !requestedOccurrence.equals(
+                    row.get("occurrenceAddress").getAsString())) continue;
             if (best == null || occurrenceRank(row) < occurrenceRank(best)
                     || occurrenceRank(row) == occurrenceRank(best)
                     && row.get("eventSeq").getAsLong()
                             < best.get("eventSeq").getAsLong()) best = row;
         }
+        if (best == null && requestedOccurrence != null) throw new IOException(
+                "TARGET_OCCURRENCE_NOT_OBSERVED: " + requestedOccurrence);
         return best;
     }
 

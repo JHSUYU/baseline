@@ -1813,6 +1813,7 @@ def _run_region_trial(config: dict[str, Any], admitted: dict[str, Any],
             loop_bound=loop_bound,
             timeout_seconds=recording.get("graph_analysis_timeout_seconds", 300),
             heap_mb=recording.get("graph_analysis_heap_mb", 3072),
+            target_occurrence=recording.get("target_occurrence"),
             target_throw=config["target_throw"])
     except (ValueError, FileNotFoundError, subprocess.SubprocessError,
             OSError, RuntimeError) as failure:
