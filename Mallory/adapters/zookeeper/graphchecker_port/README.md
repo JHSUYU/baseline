@@ -1,5 +1,10 @@
 # ZooKeeper causal protocol adapter for the Mallory baseline
 
+> Historical protocol audit only. The custom-runtime adapter and its commands
+> have been retired. Current preparation uses
+> `Mallory/adapters/zookeeper/native_graphchecker_port/`, which owns the
+> source-built GraphChecker protocol hooks and unchanged-JUnit runner.
+
 This adapter is a **port inside `Mallory/`**, based on the ZooKeeper unit-test
 branch of GraphChecker (`cf74a2e1d`, `66d9ff8ae`, `4d87a7c24`). It depends on
 the Mallory-owned `mallory-graphchecker-runtime` module, not on a GraphChecker

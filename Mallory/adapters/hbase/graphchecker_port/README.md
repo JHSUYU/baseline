@@ -1,5 +1,11 @@
 # HBase 2.6.6 GraphChecker protocol port
 
+> Historical protocol audit only. The custom-runtime installer and source
+> copies described below have been retired. Current preparation uses
+> `Mallory/adapters/hbase/native_graphchecker_port/`, whose checked source
+> anchors and bridge implementations are self-contained. The commands below
+> document the earlier experiment and are no longer an executable entrypoint.
+
 This overlay installs source hooks for the original HBase MiniCluster JUnit
 tests. It is confined to `Mallory/adapters/hbase/graphchecker_port` until
 explicitly applied to an isolated HBase 2.6.6 checkout. It does not reuse the

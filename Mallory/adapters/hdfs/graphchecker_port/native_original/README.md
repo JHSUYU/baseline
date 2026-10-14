@@ -10,8 +10,10 @@ original HDFS JUnit source and selected method are unchanged.
 overlay, compiles the bridge against an original GraphChecker engine JAR, and
 puts the new classes ahead of that overlay on the trial classpath. The build
 refuses to overwrite output and records hashes for the engine, ordered
-classpath, source, and compiled classes. The generated bridge is derived from
-the adjacent generic HDFS bridge with three checked transformations:
+classpath, source, and compiled classes. The native bridge source is pinned in
+`templates/` independently of the earlier custom runtime. Its SHA-256 is
+checked against the reviewed output of the former generated bridge. The bridge
+applies three reviewed behaviors:
 
 1. Route its source, asynchronous handoff, and IPC calls through
    `NativeHdfsDoors` and the original GraphChecker runtime.

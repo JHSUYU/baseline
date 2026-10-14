@@ -11,8 +11,7 @@ from pathlib import Path
 
 
 HERE = Path(__file__).resolve().parent
-PORT = HERE.parent
-BRIDGE = PORT / "src/main/java/org/apache/hadoop/ipc/MalloryEmbeddedIpcBridge.java"
+BRIDGE = HERE / "templates/MalloryEmbeddedIpcBridge.java"
 
 
 def digest(path):
@@ -20,26 +19,7 @@ def digest(path):
 
 
 def source_bridge():
-    source = BRIDGE.read_text()
-    old_import = "import edu.uva.liftlab.mallory.graphchecker.runtime.MessageDoors;"
-    assert source.count(old_import) == 1
-    source = source.replace(old_import,
-                            "import org.apache.hadoop.ipc.NativeHdfsDoors;")
-    source = source.replace("MessageDoors.", "NativeHdfsDoors.")
-    old_request = "if (outbound.active()) REQUESTS.put(key(correlation, attempt), transfer);"
-    old_response = "if (outbound.active()) RESPONSES.put(key, transfer);"
-    assert source.count(old_request) == 1
-    assert source.count(old_response) == 1
-    source = source.replace(old_request,
-                            "REQUESTS.put(key(correlation, attempt), transfer);")
-    source = source.replace(old_response, "RESPONSES.put(key, transfer);")
-    old_prepare = ("correlation, attempt, NativeHdfsDoors.RESPONSE, "
-                   "server, scope);")
-    assert source.count(old_prepare) == 1
-    source = source.replace(old_prepare,
-                            "correlation, attempt, NativeHdfsDoors.RESPONSE, "
-                            "server, scope, field(rawCall, \"rv\"));")
-    return source
+    return BRIDGE.read_text(encoding="utf-8")
 
 
 def main():
