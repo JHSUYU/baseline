@@ -737,6 +737,50 @@ class GraphCheckerFuzzerTest(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "closure novelty checkpoint"):
                     run_campaign(config_file, root)
 
+    def test_wave_pause_preserves_immutable_successor_checkpoint(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            config_file = root / "config.json"
+            config_file.write_text("{}")
+            (root / "prepared").mkdir()
+            (root / "prepared" / "weave-receipt.json").write_text("{}")
+            state = _new_state(self.config(), self.budget())
+            state["healthy"] = {"name": "r0000"}
+            state["completed_fault_trials"] = 1
+            state["next_trial_index"] = 2
+            _enqueue(state, self.result([], [self.door(1, 1)]), [])
+            (root / "checkpoint.json").write_text(json.dumps(state))
+
+            def complete_selected(current, *_):
+                if current["active"] is not None:
+                    current["completed_fault_trials"] += 1
+                    current["active"] = None
+
+            with patch("Mallory.core.graphchecker_fuzzer.load_config",
+                       return_value=self.config()), patch(
+                       "Mallory.core.graphchecker_fuzzer._budget",
+                       return_value=self.budget()), patch(
+                       "Mallory.core.graphchecker_fuzzer._verify_recorded_evidence"), patch(
+                       "Mallory.core.graphchecker_fuzzer._resume_active",
+                       side_effect=complete_selected) as runner:
+                paused = run_campaign(config_file, root, stop_after_fault_trials=1)
+                self.assertEqual("running", paused["status"])
+                self.assertFalse(paused["terminal"])
+                self.assertEqual(1, paused["completed_fault_trials"])
+                self.assertEqual(1, len(paused["queue"]))
+                self.assertEqual(self.budget(), paused["budget"])
+                self.assertEqual("config-sha", paused["config_sha256"])
+                self.assertFalse((root / "summary.json").exists())
+                self.assertEqual(1, runner.call_count)  # no fault trial in wave one
+
+                successor = run_campaign(config_file, root,
+                                         stop_after_fault_trials=2)
+                self.assertEqual(2, successor["completed_fault_trials"])
+                self.assertEqual(self.budget(), successor["budget"])
+                self.assertEqual("config-sha", successor["config_sha256"])
+                self.assertEqual(2, json.loads((root / "checkpoint.json").read_text())[
+                    "completed_fault_trials"])
+
 
 if __name__ == "__main__":
     unittest.main()

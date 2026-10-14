@@ -719,9 +719,16 @@ def _finish(state: dict[str, Any], root: Path) -> dict[str, Any]:
     return state
 
 
-def run_campaign(config_path: Path, root: Path) -> dict[str, Any]:
+def run_campaign(config_path: Path, root: Path,
+                 stop_after_fault_trials: int | None = None) -> dict[str, Any]:
     config = load_config(config_path)
     budget = _budget(config_path)
+    if (stop_after_fault_trials is not None and
+            (not isinstance(stop_after_fault_trials, int) or
+             isinstance(stop_after_fault_trials, bool) or
+             stop_after_fault_trials <= 0 or
+             stop_after_fault_trials > budget["fault_trials"])):
+        raise ValueError("stop_after_fault_trials must be within the immutable budget")
     root = root.resolve()
     root.mkdir(parents=True, exist_ok=True)
     with (root / ".campaign.lock").open("a+") as lock:
@@ -777,6 +784,15 @@ def run_campaign(config_path: Path, root: Path) -> dict[str, Any]:
                     state["trial_elapsed_seconds"] >= budget["seconds"] or
                     not state["queue"]):
                 break
+            if (stop_after_fault_trials is not None and
+                    state["completed_fault_trials"] >= stop_after_fault_trials):
+                # A bounded wave pauses only between trials. The queue,
+                # budget, config hash, and nonterminal checkpoint remain the
+                # exact successor state for a later invocation.
+                state["updated_at"] = _now()
+                state["terminal"] = False
+                _write_json(checkpoint, state)
+                return state
             selected = _pick(state["queue"], state["completed_fault_trials"], state)
             selected_score = (
                 _retention_score(selected, state["completed_fault_trials"], state)
@@ -814,11 +830,18 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", required=True, type=Path)
     parser.add_argument("--out", required=True, type=Path)
+    parser.add_argument("--stop-after-fault-trials", type=int,
+                        help="pause after this cumulative fault-trial count; "
+                             "preserve the nonterminal checkpoint for resume")
     args = parser.parse_args(argv)
-    state = run_campaign(args.config, args.out)
-    print(json.dumps({"case_id": state["case_id"], "status": state["status"],
+    state = run_campaign(args.config, args.out, args.stop_after_fault_trials)
+    paused = (state["status"] == "running" and args.stop_after_fault_trials is not None
+              and state["completed_fault_trials"] >= args.stop_after_fault_trials)
+    print(json.dumps({"case_id": state["case_id"],
+                      "status": "paused_wave" if paused else state["status"],
                       "completed_fault_trials": state["completed_fault_trials"],
-                      "summary": str((args.out / "summary.json").resolve())}))
+                      "summary": (str((args.out / "summary.json").resolve())
+                                  if (args.out / "summary.json").is_file() else None)}))
     return 0
 
 
