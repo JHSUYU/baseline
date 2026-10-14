@@ -190,6 +190,7 @@ def verified_vendor() -> dict:
         "edu/uva/liftlab/graphchecker/runtime/Identity.java",
         "edu/uva/liftlab/graphchecker/runtime/MessageDoors.java",
         "edu/uva/liftlab/graphchecker/runtime/RowRuntime.java",
+        "edu/uva/liftlab/graphchecker/runtime/RuntimeRegionPlanner.java",
     }
     for row in sources:
         copied = ENGINE / "vendor" / "src" / "main" / "java" / row["path"]
