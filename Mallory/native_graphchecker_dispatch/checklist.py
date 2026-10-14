@@ -1071,6 +1071,34 @@ def load_reviews(path: Path | None, case_ids: set[str]) -> dict[str, dict]:
     return reviews
 
 
+def _audited_elapsed_basis(root: Path, fault_trials: int,
+                           elapsed_seconds: float) -> str:
+    """Name the sealed trial time only after checking its actual breakdown."""
+    paths = sorted((root / "trials").glob("r*/result.json"))
+    if (len(paths) != fault_trials + 1 or
+            any(path.parent.name != f"r{index:04d}" for index, path in
+                enumerate(paths))):
+        raise ValueError("native elapsed basis lacks exact trial receipts")
+    rows = [_object(path) for path in paths]
+    if round(sum(float(row["elapsed_seconds"]) for row in rows), 3) != round(
+            float(elapsed_seconds), 3):
+        raise ValueError("native elapsed seconds differ from trial receipts")
+    breakdown = ["junit_elapsed_seconds" in row and
+                 "analysis_elapsed_seconds" in row for row in rows]
+    if all(breakdown):
+        for row in rows:
+            if abs(float(row["elapsed_seconds"]) -
+                   float(row["junit_elapsed_seconds"]) -
+                   float(row["analysis_elapsed_seconds"])) > 0.002:
+                raise ValueError("native JUnit/analysis time breakdown changed")
+        return "sum_native_trial_elapsed_seconds_including_graph_analysis"
+    if not any(breakdown) and all(
+            "junit_elapsed_seconds" not in row and
+            "analysis_elapsed_seconds" not in row for row in rows):
+        return "sum_native_junit_execution_seconds_legacy"
+    raise ValueError("native trial elapsed accounting changed within campaign")
+
+
 def inspect_case(item: dict, owner: str, config_root: Path, state_root: Path,
                  no_junit: dict | None = None) -> dict[str, Any]:
     case_id = item["case_id"]
@@ -1104,7 +1132,7 @@ def inspect_case(item: dict, owner: str, config_root: Path, state_root: Path,
         "strict_target_retained_fault_trials": 0,
         "strict_in_target_closure_trials": 0,
         "target_throw_trials": 0, "candidate_trials": 0,
-        "elapsed_seconds": "", "elapsed_basis": "cumulative_junit_seconds",
+        "elapsed_seconds": "", "elapsed_basis": None,
         "evidence": "", "reason": "",
     }
     if no_junit and not native_state_exists:
@@ -1189,6 +1217,8 @@ def inspect_case(item: dict, owner: str, config_root: Path, state_root: Path,
         audited = auditor(config["case_id"], config_file, case_root, checkpoint,
                           _object(case_root / "summary.json"))
         row.update(audited)
+        row["elapsed_basis"] = _audited_elapsed_basis(
+            case_root, row["fault_trials"], row["elapsed_seconds"])
     except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError,
             subprocess.CalledProcessError) as failure:
         row.update(terminal_disposition="receipt_error", status="blocked",

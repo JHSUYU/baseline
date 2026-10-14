@@ -24,6 +24,27 @@ class RegionChecklistTest(unittest.TestCase):
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name)
 
+    def test_elapsed_basis_includes_original_graph_analysis(self) -> None:
+        trials = self.root / "trials"
+        for name, junit, analysis in (("r0000", 1.0, 1.5),
+                                      ("r0001", 2.0, 2.0)):
+            directory = trials / name
+            directory.mkdir(parents=True)
+            (directory / "result.json").write_text(json.dumps({
+                "elapsed_seconds": junit + analysis,
+                "junit_elapsed_seconds": junit,
+                "analysis_elapsed_seconds": analysis,
+            }))
+        self.assertEqual(
+            "sum_native_trial_elapsed_seconds_including_graph_analysis",
+            checklist._audited_elapsed_basis(self.root, 1, 6.5))
+        result = trials / "r0001/result.json"
+        changed = json.loads(result.read_text())
+        changed["analysis_elapsed_seconds"] = 1.9
+        result.write_text(json.dumps(changed))
+        with self.assertRaisesRegex(ValueError, "breakdown changed"):
+            checklist._audited_elapsed_basis(self.root, 1, 6.5)
+
     def test_fault_membership_uses_original_closure_not_check_occurrence(self) -> None:
         # A causally upstream fault and the check are different occurrences.
         # The old receipt inspector compared those two IDs directly and
