@@ -36,3 +36,38 @@ weave manifest, candidate dataflow edge gzip, and region skeleton gzip were
 also byte-identical. The wall-time difference is one pair of complete Soot
 runs; it is not a precise estimate of the isolated `holders()` speedup or a
 guarantee that a larger SOLR-05 scan completes within its time cap.
+
+## SOLR-05 559-class scale run
+
+The original 559-class scan used frozen input
+`/proj/silentfailure-PG0/mallory/solr05-native-register-bounded-v1/static-input.json`
+(SHA-256 `956b1d5a9eaa9d9a2618d17b9878ae77d1bed691c2523a714056c5173d8d6ceb`).
+Its pinned original engine's `StaticScopeMap.class` is byte-identical to the
+rebuilt baseline class (SHA-256
+`e4843094c94050629a1d350b8b2d091caa68601291419bfd7e5ddd5881b3e3ef`).
+The original run reached the 1,200-second cap at 1,200.556 seconds and did
+not publish a manifest. Its 8-minute stack was in
+`StaticScopeMap.holders → addRootSite`; the 16-minute stack was still in
+`StaticScopeMap.holders → add`.
+
+The separate memo-engine run changed only the invoked engine JAR and its
+output and temporary directories. It retained the same frozen Soot
+classpath, application classes, target, communication map, planner JAR,
+heap, and 1,200-second cap. It completed with exit code 0 in 673.695 seconds
+and peak sampled child RSS of 6,365,044 KiB. By 8 minutes it had passed
+`StaticScopeMap.sites()` and written the original scope artifact; its sampled
+stack had moved to subsequent `LatentFaults/FaultPropagation` processing.
+The complete command, timed receipt, and 2-, 5-, and 8-minute stack samples
+are under
+`/proj/silentfailure-PG0/ZhenyuLi/mallory-static-scope-ownership-benchmark/solr05-559-optimized/`.
+
+The completed run emitted 63,296 original static scope rows (SHA-256
+`cb2d108ca8a0fb3f7d9dc719151f96ef2d6183b59d7e1324db6adf09693c0d33`),
+17,321 translated rows (SHA-256
+`a4d96dde18a09a92aeba28df7584f7d280dcde7ae1e00740fa5bc7cc159afe41`),
+and a manifest (SHA-256
+`9efa2b160f47d7811a0e73989a3a669b0075881d8d50e2abf01e113f0137b753`)
+with 1,564 regions, two targets, 287 typed doors, and one RPC port. Since
+the original large run timed out before publishing its scope, large-case
+row-by-row equivalence is unavailable; the complete 119-class pair above is
+the equivalence check.
