@@ -243,6 +243,14 @@ def inputs(config_file: Path):
     for part in extra.split(os.pathsep):
         if part and "GraphChecker/target/" in Path(part).as_posix():
             raise ValueError("live GraphChecker/target artifact is forbidden")
+    tool_classpath = config.get("tool_classpath")
+    if tool_classpath is not None:
+        if not isinstance(tool_classpath, str) or not tool_classpath:
+            raise ValueError("tool_classpath must name Java tool dependencies")
+        for part in tool_classpath.split(os.pathsep):
+            if (not part or "GraphChecker/target/" in Path(part).as_posix()):
+                raise ValueError("invalid tool_classpath entry")
+        dependency_digests(tool_classpath)
     post_weave_spec(config)
     native_fault = config.get("native_fault_manifest")
     if native_fault is not None:
@@ -273,7 +281,8 @@ def run(config_file: Path) -> dict:
     output.mkdir(parents=True, exist_ok=True)
     extra = config["dependency_classpath"]
     classpath = os.pathsep.join(filter(None, (str(JAR),
-                                             engine["dependency_classpath"], extra)))
+                                             engine["dependency_classpath"],
+                                             config.get("tool_classpath"), extra)))
     mode = config.get("weave_mode", "concolic")
     command = [str(Path(config["java"]).resolve(strict=True)),
                *config.get("jvm_args", [])]
@@ -345,6 +354,9 @@ def run(config_file: Path) -> dict:
     if config.get("native_fault_manifest"):
         receipt["native_fault_manifest_sha256"] = digest(
             Path(config["native_fault_manifest"]).resolve(strict=True))
+    if config.get("tool_classpath"):
+        receipt["tool_classpath_artifacts"] = dependency_digests(
+            config["tool_classpath"])
     if config.get("communication_mappings"):
         receipt["communication_mappings_sha256"] = digest(
             Path(config["communication_mappings"]).resolve(strict=True))
@@ -385,6 +397,11 @@ def verify_existing(config_file: Path) -> dict:
     if config.get("native_fault_manifest"):
         observed["native_fault_manifest_sha256"] = digest(
             Path(config["native_fault_manifest"]).resolve(strict=True))
+    if config.get("tool_classpath"):
+        observed["tool_classpath_artifacts"] = dependency_digests(
+            config["tool_classpath"])
+    elif receipt.get("tool_classpath_artifacts") is not None:
+        raise ValueError("unexpected Java tool dependencies in receipt")
     if config.get("communication_mappings"):
         observed["communication_mappings_sha256"] = digest(
             Path(config["communication_mappings"]).resolve(strict=True))
