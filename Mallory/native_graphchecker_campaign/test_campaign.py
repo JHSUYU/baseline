@@ -18,6 +18,17 @@ from Mallory.native_graphchecker_campaign import campaign as core
 
 
 class NativeAdmissionLineageTest(unittest.TestCase):
+    def test_trial_elapsed_includes_graph_analysis(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            trial = Path(directory)
+            result = {"elapsed_seconds": 2.0}
+            with patch.object(core.time, "monotonic", return_value=13.5):
+                saved = core._save_trial_result(trial, result, 10.0)
+            self.assertEqual(3.5, saved["elapsed_seconds"])
+            self.assertEqual(2.0, saved["junit_elapsed_seconds"])
+            self.assertEqual(1.5, saved["analysis_elapsed_seconds"])
+            self.assertEqual(saved, core._load(trial / "result.json"))
+
     def test_selected_skeletons_need_not_equal_static_weave_input(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

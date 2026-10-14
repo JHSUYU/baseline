@@ -963,6 +963,7 @@ def _run_trial(config: dict[str, Any], admitted: dict[str, Any],
                healthy: dict[str, Any] | None) -> dict[str, Any]:
     _verify_pins(config, admitted)
     trial.mkdir(parents=True, exist_ok=False)
+    trial_started = time.monotonic()
     execution = _execute_junit(config, admitted, trial, faults)
     iteration = trial / "iteration-native"
     result: dict[str, Any] = {"schema_version": SCHEMA, "case_id": config["case_id"],
@@ -987,14 +988,12 @@ def _run_trial(config: dict[str, Any], admitted: dict[str, Any],
     except ValueError as failure:
         result["status"] = "invalid_fault_receipt"
         result["analysis_error"] = str(failure)
-        _atomic(trial / "result.json", result)
-        return result
+        return _save_trial_result(trial, result, trial_started)
     result["strict_injection"] = bool(faults and strict)
     if config["runner"].get("mode") == "region_state":
         result = _run_region_trial(config, admitted, trial, faults, healthy,
                                    result, events, strict)
-        _atomic(trial / "result.json", result)
-        return result
+        return _save_trial_result(trial, result, trial_started)
     if not result["junit_passed"] and not faults:
         result["status"] = "blocked_healthy_junit"
     else:
@@ -1089,6 +1088,16 @@ def _run_trial(config: dict[str, Any], admitted: dict[str, Any],
             result["status"] = ("blocked_healthy_native_session" if not faults
                                 else "invalid_native_session")
             result["analysis_error"] = str(failure)
+    return _save_trial_result(trial, result, trial_started)
+
+
+def _save_trial_result(trial: Path, result: dict[str, Any],
+                       trial_started: float) -> dict[str, Any]:
+    junit_seconds = result["elapsed_seconds"]
+    total_seconds = round(time.monotonic() - trial_started, 3)
+    result["junit_elapsed_seconds"] = junit_seconds
+    result["analysis_elapsed_seconds"] = round(max(0.0, total_seconds - junit_seconds), 3)
+    result["elapsed_seconds"] = total_seconds
     _atomic(trial / "result.json", result)
     return result
 
