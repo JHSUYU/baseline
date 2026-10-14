@@ -31,6 +31,7 @@ public final class MessageDoors {
     private static final ThreadLocal<Inbound> CURRENT = new ThreadLocal<>();
     private static final ThreadLocal<String> NOTIFIED = new ThreadLocal<>();
     private static final ThreadLocal<ReadHandoff> LAST_NOTIFIED_READ = new ThreadLocal<>();
+    private static final ThreadLocal<OperationHint> CURRENT_OPERATION = new ThreadLocal<>();
     private static final AtomicLong EXCHANGES = new AtomicLong();
     private static final Map<String, AtomicLong> DOOR_ORDINALS = new ConcurrentHashMap<>();
     private static final Map<String, AtomicLong> REPLAY_SEND_ORDINALS =
@@ -44,6 +45,77 @@ public final class MessageDoors {
     private static final Map<String, Boolean> COVERAGE_SEEN = new ConcurrentHashMap<>();
 
     private MessageDoors() { }
+
+    /** Optional, bounded request metadata for trace review; never part of replay identity. */
+    public static OperationScope operationScope(String method, String path, String action) {
+        OperationHint prior = CURRENT_OPERATION.get();
+        CURRENT_OPERATION.set(new OperationHint(method, path, action));
+        return new OperationScope(prior);
+    }
+
+    public static final class OperationScope implements AutoCloseable {
+        private final OperationHint prior;
+        private boolean closed;
+
+        private OperationScope(OperationHint prior) { this.prior = prior; }
+
+        @Override public void close() {
+            if (closed) return;
+            closed = true;
+            if (prior == null) CURRENT_OPERATION.remove();
+            else CURRENT_OPERATION.set(prior);
+        }
+    }
+
+    private static final class OperationHint {
+        final String method;
+        final String path;
+        final String action;
+
+        OperationHint(String method, String path, String action) {
+            this.method = boundedToken(method, 16);
+            this.path = boundedPath(path);
+            this.action = boundedToken(action, 32);
+        }
+
+        JsonObject addTo(JsonObject fields) {
+            if (!method.isEmpty()) fields.addProperty("operationMethod", method);
+            if (!path.isEmpty()) fields.addProperty("operationPath", path);
+            if (!action.isEmpty()) fields.addProperty("operationAction", action);
+            return fields;
+        }
+    }
+
+    private static String boundedToken(String value, int max) {
+        if (value == null || value.isEmpty() || value.length() > max) return "";
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            if (!((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')
+                    || (c >= '0' && c <= '9') || c == '_' || c == '-')) return "";
+        }
+        return value;
+    }
+
+    private static String boundedPath(String value) {
+        if (value == null || !value.startsWith("/") || value.startsWith("//")) return "";
+        int end = value.length();
+        int query = value.indexOf('?');
+        int fragment = value.indexOf('#');
+        if (query >= 0) end = Math.min(end, query);
+        if (fragment >= 0) end = Math.min(end, fragment);
+        if (end > 128) return "";
+        for (int i = 0; i < end; i++) {
+            char c = value.charAt(i);
+            if (!((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')
+                    || (c >= '0' && c <= '9') || c == '/' || c == '_'
+                    || c == '-' || c == '.' || c == '~' || c == '%')) return "";
+        }
+        return value.substring(0, end);
+    }
+
+    private static JsonObject withOperation(JsonObject fields, OperationHint hint) {
+        return hint == null ? fields : hint.addTo(fields);
+    }
 
     public static void startRecording() {
         TraceRows.beginGapWindow();
@@ -209,8 +281,8 @@ public final class MessageDoors {
         OccurrenceAddress occurrence = TraceRows.occurrence(owner);
         String replayOccurrenceId = TraceRows.replayOccurrenceId(occurrence);
         TraceRows.row("FAULT_DOOR", occurrence,
-                TraceRows.fields("siteId", siteId, "doorOrdinal", ordinal,
-                        "replayOccurrenceId", replayOccurrenceId));
+                withOperation(TraceRows.fields("siteId", siteId, "doorOrdinal", ordinal,
+                        "replayOccurrenceId", replayOccurrenceId), CURRENT_OPERATION.get()));
     }
 
     public static void faultDoor(String siteId, Object owner) {
@@ -225,15 +297,17 @@ public final class MessageDoors {
         public final String siteId;
         public final long ordinal;
         private final OccurrenceAddress occurrence;
+        private final OperationHint operation;
 
         private FaultDoorHit(OccurrenceAddress occurrence, String replayOccurrenceId,
-                             String siteId, long ordinal) {
+                             String siteId, long ordinal, OperationHint operation) {
             this.occurrence = occurrence;
             this.occurrenceId = occurrence.id();
             this.replayOccurrenceId = replayOccurrenceId;
             this.node = occurrence.node().render();
             this.siteId = siteId;
             this.ordinal = ordinal;
+            this.operation = operation;
         }
     }
 
@@ -259,11 +333,12 @@ public final class MessageDoors {
             gap("REPLAY_LINEAGE_MISSING", siteId,
                     "fault door has no stable replay cause");
         }
+        OperationHint operation = CURRENT_OPERATION.get();
         FaultDoorHit hit = new FaultDoorHit(occurrence, replayOccurrenceId,
-                siteId, ordinal);
+                siteId, ordinal, operation);
         TraceRows.row("FAULT_DOOR", occurrence,
-                TraceRows.fields("siteId", siteId, "doorOrdinal", ordinal,
-                        "replayOccurrenceId", replayOccurrenceId));
+                withOperation(TraceRows.fields("siteId", siteId, "doorOrdinal", ordinal,
+                        "replayOccurrenceId", replayOccurrenceId), operation));
         return hit;
     }
 
@@ -274,10 +349,10 @@ public final class MessageDoors {
             return;
         }
         TraceRows.row("FAULT_APPLIED", hit.occurrence,
-                TraceRows.fields("siteId", hit.siteId,
+                withOperation(TraceRows.fields("siteId", hit.siteId,
                         "doorOrdinal", hit.ordinal,
                         "replayOccurrenceId", hit.replayOccurrenceId,
-                        "exceptionClass", exceptionClass));
+                        "exceptionClass", exceptionClass), hit.operation));
     }
 
     public static Object captureScope() { return TraceRows.snapshot(); }
@@ -465,14 +540,15 @@ public final class MessageDoors {
         }
         String trace = Base64.getUrlEncoder().withoutPadding().encodeToString(
                 header.toString().getBytes(StandardCharsets.UTF_8));
+        OperationHint operation = CURRENT_OPERATION.get();
         Outbound result = new Outbound(correlationId, attemptId, trace, "",
-                transport, half, endpoint);
+                transport, half, endpoint, operation);
         PREPARED.put(trace, result);
         TraceRows.row("WIRE_PREPARED", endpoint.occurrence(),
-                TraceRows.fields("producer", endpoint.id(),
+                withOperation(TraceRows.fields("producer", endpoint.id(),
                         "producerEndpointId", endpoint.id(),
                         "transport", transport, "correlationId", correlationId,
-                        "attemptId", attemptId, "half", half));
+                        "attemptId", attemptId, "half", half), operation));
         return result;
     }
 
@@ -500,12 +576,12 @@ public final class MessageDoors {
             outbound.sent = true;
             Endpoint endpoint = outbound.endpoint;
             TraceRows.row("EXPORT", endpoint.occurrence(),
-                    TraceRows.fields("producer", endpoint.id(),
+                    withOperation(TraceRows.fields("producer", endpoint.id(),
                             "producerEndpointId", endpoint.id(),
                             "transport", outbound.transport,
                             "correlationId", outbound.correlationId,
                             "attemptId", outbound.attemptId,
-                            "half", outbound.half));
+                            "half", outbound.half), outbound.operation));
         }
     }
 
@@ -779,7 +855,7 @@ public final class MessageDoors {
     }
 
     public static final class Outbound {
-        static final Outbound EMPTY = new Outbound("", "", "", "", "", "", null);
+        static final Outbound EMPTY = new Outbound("", "", "", "", "", "", null, null);
         public final String correlationId;
         public final String attemptId;
         public final String trace;
@@ -787,11 +863,12 @@ public final class MessageDoors {
         private final String transport;
         private final String half;
         private final Endpoint endpoint;
+        private final OperationHint operation;
         private boolean sent;
 
         private Outbound(String correlationId, String attemptId, String trace,
                          String symbolic, String transport, String half,
-                         Endpoint endpoint) {
+                         Endpoint endpoint, OperationHint operation) {
             this.correlationId = correlationId;
             this.attemptId = attemptId;
             this.trace = trace;
@@ -799,6 +876,7 @@ public final class MessageDoors {
             this.transport = transport;
             this.half = half;
             this.endpoint = endpoint;
+            this.operation = operation;
         }
 
         public boolean active() { return endpoint != null; }
