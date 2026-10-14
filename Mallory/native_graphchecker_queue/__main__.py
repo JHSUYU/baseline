@@ -8,10 +8,10 @@ from pathlib import Path
 
 from Mallory.native_graphchecker_dispatch.checklist import (
     DEFAULT_INVENTORY, DEFAULT_OWNERSHIP, _native_case_files,
-    inspect_case, load_inventory,
-    load_ownership,
+    load_inventory, load_ownership,
 )
-from .queue import (MAX_SLOTS, atomic, completion, obj, physical_host,
+from .queue import (MAX_SLOTS, _cached_terminal_inspection, atomic, completion,
+                    obj, physical_host,
                     pilot_receipt, run_host, run_worker, sha,
                     validate_isolation)
 
@@ -81,7 +81,8 @@ def main() -> None:
                             min_memory_gib=args.min_memory_gib,
                             min_state_gib=args.min_state_gib,
                             min_scratch_gib=args.min_scratch_gib)
-        row = inspect_case(item, args.host, args.config_root, args.state_root)
+        row = _cached_terminal_inspection(item, args.host, args.config_root,
+                                          args.state_root)
         if row["native_tested_complete"] is not True:
             raise RuntimeError("pilot did not complete an audited native fuzz budget")
         completion(item, row, config_file, args.state_root,

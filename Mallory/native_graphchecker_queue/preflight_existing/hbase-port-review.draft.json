@@ -1,0 +1,20 @@
+{
+  "case_id": "HBASE-02",
+  "hbase_cluster_default_ports_zero": true,
+  "mode": "source_reviewed_random_retry",
+  "original_junit": "org.apache.hadoop.hbase.client.TestConnectionImplementation#testMetaLookupThreadPoolCreated",
+  "reviewed_source_sha256": {
+    "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6/hbase-server/src/main/java/org/apache/hadoop/hbase/LocalHBaseCluster.java": "3e9865e035bc5782e90404fae93cd47c37ccf4b2621923c73b56f5fcbc1ed5cb",
+    "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6/hbase-server/src/test/java/org/apache/hadoop/hbase/HBaseTestingUtility.java": "6c8e5bf0053fce4dcac27594a73e9bb4173d14e52bb296dffef7c0bdea6cab45",
+    "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6/hbase-server/src/test/java/org/apache/hadoop/hbase/client/TestConnectionImplementation.java": "78dd18f5eaaf36ae9f2cad8538ca8536b857624a2fd9e0c81dd785951837342a",
+    "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6/hbase-zookeeper/src/main/java/org/apache/hadoop/hbase/zookeeper/MiniZooKeeperCluster.java": "3080ce5839e0ecb38915bf2161c6d9fc1ae8eee7c96faaec4d8b7dbca18fe9de"
+  },
+  "schema_version": 1,
+  "scope": "This unchanged JUnit starts HBaseTestingUtility MiniCluster; HBaseTestingUtility defaults LocalHBaseCluster random ports, LocalHBaseCluster changes default master/region/info ports to 0, and MiniZooKeeperCluster selects random nonzero port with BindException retry. Does not attest unrelated HBase tests.",
+  "system": "hbase",
+  "zk_bind_exception_retry": true,
+  "zk_random_port_range": [
+    49152,
+    65279
+  ]
+}

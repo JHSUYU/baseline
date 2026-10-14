@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "systems": {
+    "hbase": {
+      "ports": {
+        "evidence": {
+          "/dev/shm/mallory-native-existing-bindings/Mallory/native_graphchecker_queue/preflight_existing/hbase-port-review.draft.json": "cd2f75b549938159ce78b359ad87a28757633c93891135608ba263dc972eb724",
+          "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6/hbase-server/src/main/java/org/apache/hadoop/hbase/LocalHBaseCluster.java": "3e9865e035bc5782e90404fae93cd47c37ccf4b2621923c73b56f5fcbc1ed5cb",
+          "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6/hbase-server/src/test/java/org/apache/hadoop/hbase/HBaseTestingUtility.java": "6c8e5bf0053fce4dcac27594a73e9bb4173d14e52bb296dffef7c0bdea6cab45",
+          "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6/hbase-server/src/test/java/org/apache/hadoop/hbase/client/TestConnectionImplementation.java": "78dd18f5eaaf36ae9f2cad8538ca8536b857624a2fd9e0c81dd785951837342a",
+          "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6/hbase-zookeeper/src/main/java/org/apache/hadoop/hbase/zookeeper/MiniZooKeeperCluster.java": "3080ce5839e0ecb38915bf2161c6d9fc1ae8eee7c96faaec4d8b7dbca18fe9de"
+        },
+        "mode": "random_retry",
+        "receipt": "/dev/shm/mallory-native-existing-bindings/Mallory/native_graphchecker_queue/preflight_existing/hbase-port-review.draft.json"
+      },
+      "required_jvm_args": [
+        "-Dbuild.test.dir={trial_workdir}"
+      ]
+    },
+    "hdfs": {
+      "ports": {
+        "evidence": {
+          "/dev/shm/mallory-native-existing-bindings/Mallory/native_graphchecker_queue/preflight_existing/hdfs-port-review.draft.json": "775df19e37690daeb6daa3adb26d9cb0417ccdb1a73e339ded45172d29779b48",
+          "/proj/silentfailure-PG0/ZhenyuLi/mallory-hdfs11-native-campaign-v2/node0-isolation-proof.json": "736b47133b80ddc8f066cb926cf87b024a193543fea0caa6d0a5d7d10a14025f",
+          "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/MiniDFSCluster.java": "2583c9c9f0ad1912cfc00ba1da5b154617306bdf1b8cc5b4d658dd7c68a23338",
+          "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/balancer/TestBalancer.java": "a28781e73436795b0c785f41c9ecb9fda46b85f1ccf23b3655ca3343b695cde0"
+        },
+        "mode": "ephemeral",
+        "receipt": "/dev/shm/mallory-native-existing-bindings/Mallory/native_graphchecker_queue/preflight_existing/hdfs-port-review.draft.json"
+      },
+      "required_jvm_args": [
+        "-Dtest.build.data={trial_workdir}"
+      ]
+    },
+    "solr": {
+      "ports": {
+        "evidence": {
+          "/dev/shm/mallory-native-existing-bindings/Mallory/native_graphchecker_queue/preflight_existing/solr-port-review.draft.json": "9ed3b40f119b3bcd80507a43f26d76e58043f1f71b21de7c2f73fe09997b101e",
+          "/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4/solr/core/src/java/org/apache/solr/client/solrj/embedded/JettyConfig.java": "4c1a927e7529d4a7b2abf545ab967684fd7a3747f74a8a7165d1751afe57aa16",
+          "/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4/solr/solrj/src/test/org/apache/solr/client/solrj/impl/CloudHttp2SolrClientTest.java": "1772a1d7d06a8fcf9d2a5d545c8e9bb0778b27bdfe2c1248b07606062bb395c7",
+          "/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4/solr/test-framework/src/java/org/apache/solr/cloud/MiniSolrCloudCluster.java": "fb17d78db3f1235a53cf3de98d0ed2f5365bd1d9d5d1a46e31c7ada7ed990047",
+          "/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4/solr/test-framework/src/java/org/apache/solr/cloud/SolrCloudTestCase.java": "8e08ceeb073437c2412fe2e8804ad9ddb7629d1fe602933ad88e77321042bfbc",
+          "/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4/solr/test-framework/src/java/org/apache/solr/cloud/ZkTestServer.java": "037cc285e8485e4a2032c0a4505d319503aae43723ba4a3cf9f64a80db255561"
+        },
+        "mode": "ephemeral",
+        "receipt": "/dev/shm/mallory-native-existing-bindings/Mallory/native_graphchecker_queue/preflight_existing/solr-port-review.draft.json"
+      },
+      "required_jvm_args": [
+        "-Dsolr.log.dir={trial_workdir}"
+      ]
+    },
+    "zookeeper": {
+      "ports": {
+        "cases": {
+          "ZOOKEEPER-01": {
+            "count": 1346,
+            "required_jvm_args": [
+              "-Dzookeeper.junit.threadid=1"
+            ],
+            "start": 11221
+          },
+          "ZOOKEEPER-02": {
+            "count": 1346,
+            "required_jvm_args": [
+              "-Dzookeeper.junit.threadid=2"
+            ],
+            "start": 12567
+          },
+          "ZOOKEEPER-03": {
+            "count": 1346,
+            "required_jvm_args": [
+              "-Dzookeeper.junit.threadid=3"
+            ],
+            "start": 13913
+          },
+          "ZOOKEEPER-04": {
+            "count": 1346,
+            "required_jvm_args": [
+              "-Dzookeeper.junit.threadid=4"
+            ],
+            "start": 15259
+          },
+          "ZOOKEEPER-05": {
+            "count": 1346,
+            "required_jvm_args": [
+              "-Dzookeeper.junit.threadid=5"
+            ],
+            "start": 16605
+          },
+          "ZOOKEEPER-06": {
+            "count": 1346,
+            "required_jvm_args": [
+              "-Dzookeeper.junit.threadid=6"
+            ],
+            "start": 17951
+          },
+          "ZOOKEEPER-07": {
+            "count": 1346,
+            "required_jvm_args": [
+              "-Dzookeeper.junit.threadid=14"
+            ],
+            "start": 28719
+          },
+          "ZOOKEEPER-08": {
+            "count": 1346,
+            "required_jvm_args": [
+              "-Dzookeeper.junit.threadid=8"
+            ],
+            "start": 20643
+          },
+          "ZOOKEEPER-09": {
+            "count": 1346,
+            "required_jvm_args": [
+              "-Dzookeeper.junit.threadid=9"
+            ],
+            "start": 21989
+          },
+          "ZOOKEEPER-10": {
+            "count": 1346,
+            "required_jvm_args": [
+              "-Dzookeeper.junit.threadid=10"
+            ],
+            "start": 23335
+          },
+          "ZOOKEEPER-11": {
+            "count": 1346,
+            "required_jvm_args": [
+              "-Dzookeeper.junit.threadid=11"
+            ],
+            "start": 24681
+          },
+          "ZOOKEEPER-12": {
+            "count": 1346,
+            "required_jvm_args": [
+              "-Dzookeeper.junit.threadid=12"
+            ],
+            "start": 26027
+          },
+          "ZOOKEEPER-13": {
+            "count": 1346,
+            "required_jvm_args": [
+              "-Dzookeeper.junit.threadid=13"
+            ],
+            "start": 27373
+          }
+        },
+        "evidence": {
+          "/proj/silentfailure-PG0/ZhenyuLi/Mallory/ZOOKEEPER-native-system-queue-v1/evidence/PortAssignment.java": "b46a3cc9992eada9b0b8e43e70a91324c01a538c183773629e50b5d2fb4e40db"
+        },
+        "mode": "assigned"
+      },
+      "required_jvm_args": [
+        "-Dtest.junit.threads=16"
+      ]
+    }
+  }
+}

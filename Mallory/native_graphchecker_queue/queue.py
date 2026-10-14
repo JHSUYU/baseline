@@ -20,7 +20,6 @@ import time
 from pathlib import Path
 from typing import Any, Callable
 
-from Mallory.native_graphchecker_campaign.campaign import run_campaign
 from Mallory.native_graphchecker_dispatch.checklist import (
     DEFAULT_INVENTORY, DEFAULT_OWNERSHIP, _native_case_files,
     inspect_case, load_inventory,
@@ -163,9 +162,10 @@ def completion(item: dict, row: dict, config_file: Path, state_root: Path,
 
 def _contains_trial_dir(config: dict[str, Any]) -> bool:
     args = config.get("runner", {}).get("jvm_args", [])
-    data_keys = ("build.test.dir", "test.build.data.basedirectory",
-                 "hadoop.tmp.dir", "solr.solr.home", "solr.data.dir",
-                 "test.data.dir", "derby.system.home")
+    data_keys = ("build.test.dir", "test.build.data",
+                 "test.build.data.basedirectory", "hadoop.tmp.dir",
+                 "hadoop.log.dir", "solr.solr.home", "solr.data.dir",
+                 "solr.log.dir", "test.data.dir", "derby.system.home")
     for arg in args:
         for key in ("java.io.tmpdir", *data_keys):
             if arg.startswith(f"-D{key}=") and arg != f"-D{key}={{trial_workdir}}":
@@ -181,7 +181,9 @@ def validate_isolation(profile: dict[str, Any], system: str, case_id: str,
 
     Ephemeral policy requires reviewed evidence that every service listener
     binds port zero. Assigned policy requires unique per-case ranges and the
-    exact JVM settings that select them. These are explicit launch contracts;
+    exact JVM settings that select them. Random-retry is limited to a pinned
+    HBase JUnit/source review of nonzero ZooKeeper selection with bind retry.
+    These are explicit launch contracts;
     the queue cannot infer a workload's bind behavior from JUnit success.
     """
     if profile.get("schema_version") != 1:
@@ -190,8 +192,9 @@ def validate_isolation(profile: dict[str, Any], system: str, case_id: str,
     if not isinstance(system_policy, dict):
         raise ValueError(f"missing port isolation policy for {system}")
     ports = system_policy.get("ports")
-    if not isinstance(ports, dict) or ports.get("mode") not in ("ephemeral", "assigned"):
-        raise ValueError("port policy must be ephemeral or assigned")
+    if not isinstance(ports, dict) or ports.get("mode") not in (
+            "ephemeral", "assigned", "random_retry"):
+        raise ValueError("port policy must be ephemeral, assigned, or random_retry")
     evidence = ports.get("evidence")
     if not isinstance(evidence, dict) or not evidence:
         raise ValueError("port policy lacks pinned source evidence")
@@ -218,6 +221,24 @@ def validate_isolation(profile: dict[str, Any], system: str, case_id: str,
                 receipt.get("all_listeners_bind_port_zero") is not True):
             raise ValueError("dynamic-port receipt does not attest this system")
         return {"mode": "ephemeral", "evidence": evidence}
+    if ports["mode"] == "random_retry":
+        receipt_path = Path(ports.get("receipt", ""))
+        if (system != "hbase" or not receipt_path.is_absolute() or
+                not receipt_path.is_file() or str(receipt_path) not in evidence):
+            raise ValueError("HBase random-retry requires pinned source review")
+        receipt = obj(receipt_path)
+        if (receipt.get("schema_version") != 1 or
+                receipt.get("system") != system or
+                receipt.get("case_id") != case_id or
+                receipt.get("mode") != "source_reviewed_random_retry" or
+                receipt.get("zk_random_port_range") != [49152, 65279] or
+                receipt.get("zk_bind_exception_retry") is not True or
+                receipt.get("hbase_cluster_default_ports_zero") is not True or
+                receipt.get("reviewed_source_sha256") != {
+                    name: digest for name, digest in evidence.items()
+                    if name != str(receipt_path)}):
+            raise ValueError("HBase random-retry review does not cover this JUnit")
+        return {"mode": "random_retry", "evidence": evidence}
     assignments = ports.get("cases")
     if not isinstance(assignments, dict) or case_id not in assignments:
         raise ValueError(f"missing assigned port range for {case_id}")
@@ -261,6 +282,73 @@ def _resources(state_root: Path, scratch_root: Path,
         raise RuntimeError("native queue scratch floor not met")
 
 
+def _terminal_fingerprint(item: dict, config_root: Path,
+                          state_root: Path) -> dict[str, Any] | None:
+    """Pin the files that define a terminal native checkpoint."""
+    config_file, root = _native_case_files(item, config_root, state_root)
+    checkpoint_path = root / "checkpoint.json"
+    summary_path = root / "summary.json"
+    if not checkpoint_path.is_file() or not summary_path.is_file():
+        return None
+    checkpoint = obj(checkpoint_path)
+    summary = obj(summary_path)
+    config_sha = sha(config_file)
+    if (checkpoint.get("terminal") is not True or
+            summary.get("terminal") is not True or
+            checkpoint.get("case_id") != obj(config_file).get("case_id") or
+            summary.get("case_id") != checkpoint.get("case_id") or
+            checkpoint.get("config_sha256") != config_sha or
+            summary.get("config_sha256") != config_sha):
+        return None
+    entry = config_root / f"{item['case_id']}.json"
+    return {"case_id": item["case_id"], "native_root": str(root.resolve()),
+            "inventory_row_sha256": hashlib.sha256(json.dumps(
+                item, sort_keys=True, separators=(",", ":")).encode()).hexdigest(),
+            "config_sha256": config_sha,
+            "checkpoint_sha256": sha(checkpoint_path),
+            "summary_sha256": sha(summary_path),
+            "binding_sha256": sha(entry) if entry != config_file else None}
+
+
+def _terminal_cache_path(state_root: Path, case_id: str) -> Path:
+    return state_root / ".native-queue" / "audits" / f"{case_id}.json"
+
+
+def _cached_terminal_inspection(item: dict, owner: str, config_root: Path,
+                                state_root: Path, review: dict | None = None) -> dict:
+    fingerprint = _terminal_fingerprint(item, config_root, state_root)
+    if fingerprint is None:
+        return inspect_case(item, owner, config_root, state_root, review)
+    if review is not None:
+        fingerprint["review_sha256"] = hashlib.sha256(json.dumps(
+            review, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+    cache_path = _terminal_cache_path(state_root, item["case_id"])
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
+    with cache_path.with_suffix(".lock").open("a+") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        if cache_path.is_file():
+            cache = obj(cache_path)
+            pilot_path = Path(cache.get("pilot_receipt_path", ""))
+            completed_path = Path(cache.get("completion_receipt_path", ""))
+            receipt_basis_valid = (
+                cache.get("basis") != "pinned_pilot_and_completion_receipts" or
+                (pilot_path.is_file() and completed_path.is_file() and
+                 sha(pilot_path) == cache.get("pilot_receipt_sha256") and
+                 sha(completed_path) == cache.get("completion_receipt_sha256")))
+            if (cache.get("fingerprint") == fingerprint and
+                    cache.get("owner") == owner and
+                    receipt_basis_valid and
+                    cache.get("row", {}).get("terminal_disposition") in TERMINAL):
+                return cache["row"]
+        row = inspect_case(item, owner, config_root, state_root, review)
+        if (row.get("terminal_disposition") in TERMINAL and
+                _terminal_fingerprint(item, config_root, state_root) == fingerprint):
+            atomic(cache_path, {"schema_version": 1, "owner": owner,
+                                "basis": "full_native_inspect_case",
+                                "fingerprint": fingerprint, "row": row})
+        return row
+
+
 def pilot_receipt(path: Path, inventory: Path, ownership_file: Path,
                   config_root: Path, state_root: Path, cases: list[dict],
                   owners: dict[str, str], isolation_file: Path) -> dict[str, Any]:
@@ -273,9 +361,6 @@ def pilot_receipt(path: Path, inventory: Path, ownership_file: Path,
             receipt.get("ownership_sha256") != sha(ownership_file) or
             receipt.get("isolation_sha256") != sha(isolation_file)):
         raise ValueError("native pilot receipt identity changed")
-    row = inspect_case(item, owners[case_id], config_root, state_root)
-    if row["native_tested_complete"] is not True:
-        raise ValueError("native pilot is not an audited completed fuzz check")
     config_file, native_root = _native_case_files(item, config_root, state_root)
     if ((state_root / ".native-queue" / "invalid-overlap" /
          f"{case_id}.json").exists() or port_conflict_logs(native_root)):
@@ -286,7 +371,79 @@ def pilot_receipt(path: Path, inventory: Path, ownership_file: Path,
             receipt.get("summary_sha256") != sha(summary) or
             (entry != config_file and receipt.get("binding_sha256") != sha(entry))):
         raise ValueError("native pilot evidence changed")
+    fingerprint = _terminal_fingerprint(item, config_root, state_root)
+    if (fingerprint is None or
+            fingerprint["config_sha256"] != receipt["config_sha256"] or
+            fingerprint["summary_sha256"] != receipt["summary_sha256"]):
+        raise ValueError("native pilot terminal checkpoint changed")
+    completed_path = (state_root / ".native-queue" / "completions" /
+                      f"{case_id}.json")
+    if completed_path.is_file():
+        completed = obj(completed_path)
+        if (completed.get("case_id") != case_id or
+                completed.get("method") != "original_native_graphchecker_campaign" or
+                completed.get("native_tested_complete") is not True or
+                completed.get("terminal_disposition") not in TERMINAL or
+                completed.get("config_sha256") != fingerprint["config_sha256"] or
+                completed.get("summary_sha256") != fingerprint["summary_sha256"] or
+                completed.get("summary_path") != str(summary.resolve()) or
+                (entry != config_file and completed.get("binding_sha256") !=
+                 fingerprint["binding_sha256"])):
+            raise ValueError("native pilot completion receipt changed")
+        cache_path = _terminal_cache_path(state_root, case_id)
+        if not cache_path.is_file():
+            row = {key: completed[key] for key in (
+                "terminal_disposition", "native_tested_complete", "fault_trials",
+                "strict_fault_trials", "target_retained_fault_trials",
+                "target_throw_trials", "candidate_trials", "elapsed_seconds")}
+            atomic(cache_path, {"schema_version": 1, "owner": owners[case_id],
+                                "basis": "pinned_pilot_and_completion_receipts",
+                                "pilot_receipt_path": str(path.resolve()),
+                                "pilot_receipt_sha256": sha(path),
+                                "completion_receipt_path": str(completed_path.resolve()),
+                                "completion_receipt_sha256": sha(completed_path),
+                                "fingerprint": fingerprint, "row": row})
+    row = _cached_terminal_inspection(item, owners[case_id], config_root,
+                                      state_root)
+    if row["native_tested_complete"] is not True:
+        raise ValueError("native pilot is not an audited completed fuzz check")
     return receipt
+
+
+def _pinned_engine_root(config_file: Path) -> Path:
+    """Resolve the source-built engine recorded by this immutable weave."""
+    config = obj(config_file)
+    weave = obj(Path(config["native_weave_config"]))
+    receipt = obj(Path(weave["output_classes"]) /
+                  "native-original-weave-receipt.json")
+    jar = Path(receipt["engine_jar"])
+    if (not jar.is_absolute() or jar.is_symlink() or
+            jar.name != "mallory-original-graphchecker-seed-1.0-SNAPSHOT.jar" or
+            jar.parent.name != "target" or
+            sha(jar) != receipt.get("engine_jar_sha256")):
+        raise ValueError("native weave engine JAR pin changed")
+    root = jar.parent.parent
+    if root.is_symlink():
+        raise ValueError("native engine root is a symlink")
+    return root
+
+
+def _pinned_campaign_command(config_file: Path, root: Path) -> list[str]:
+    return [sys.executable, "-m", "Mallory.native_graphchecker_campaign",
+            "--config", str(config_file), "--output", str(root)]
+
+
+def run_pinned_campaign(config_file: Path, root: Path) -> dict[str, Any]:
+    """Resume one native campaign in a fresh Python process with its engine."""
+    engine_root = _pinned_engine_root(config_file)
+    env = os.environ.copy()
+    env["MALLORY_NATIVE_ENGINE_ROOT"] = str(engine_root)
+    result = subprocess.run(
+        _pinned_campaign_command(config_file, root),
+        cwd=Path(__file__).resolve().parents[2], env=env,
+        text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        check=True)
+    return json.loads(result.stdout)
 
 
 def run_worker(*, host: str, slot: int, slots: int, inventory: Path,
@@ -295,7 +452,7 @@ def run_worker(*, host: str, slot: int, slots: int, inventory: Path,
                reviews: Path | None = None, only_case: str | None = None,
                min_memory_gib: float = 12, min_state_gib: float = 2,
                min_scratch_gib: float = 4,
-               runner: Callable[[Path, Path], dict] = run_campaign) -> dict[str, Any]:
+               runner: Callable[[Path, Path], dict] = run_pinned_campaign) -> dict[str, Any]:
     physical_host(host)
     if not 1 <= slots <= MAX_SLOTS or not 0 <= slot < slots:
         raise ValueError("native queue supports one or two slots per host")
@@ -325,8 +482,8 @@ def run_worker(*, host: str, slot: int, slots: int, inventory: Path,
             binding_file = config_root / f"{case_id}.json"
             if config_file == binding_file:
                 binding_file = None
-            row = inspect_case(item, host, config_root, state_root,
-                               reviewed.get(case_id))
+            row = _cached_terminal_inspection(item, host, config_root,
+                                              state_root, reviewed.get(case_id))
             if row["terminal_disposition"] in TERMINAL:
                 validate_isolation(profile, item["system"], case_id,
                                    obj(config_file),
@@ -344,8 +501,8 @@ def run_worker(*, host: str, slot: int, slots: int, inventory: Path,
                     fcntl.flock(case_lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
                 except BlockingIOError:
                     continue
-                row = inspect_case(item, host, config_root, state_root,
-                                   reviewed.get(case_id))
+                row = _cached_terminal_inspection(item, host, config_root,
+                                                  state_root, reviewed.get(case_id))
                 if row["terminal_disposition"] not in ("ready", "resumable"):
                     continue
                 if _campaign_running(root):
@@ -375,8 +532,9 @@ def run_worker(*, host: str, slot: int, slots: int, inventory: Path,
                 os.environ["TMPDIR"] = str(scratch.resolve())
                 try:
                     runner(config_file, root)
-                    after = inspect_case(item, host, config_root, state_root,
-                                         reviewed.get(case_id))
+                    after = _cached_terminal_inspection(
+                        item, host, config_root, state_root,
+                        reviewed.get(case_id))
                     if sha(isolation_file) != attempt["isolation_sha256"]:
                         raise ValueError("native isolation profile changed during campaign")
                     validate_isolation(profile, item["system"], case_id,
@@ -423,7 +581,7 @@ def run_host(*, host: str, slots: int, pilot: Path, inventory: Path,
         case_id = item["case_id"]
         if owners[case_id] != host:
             continue
-        row = inspect_case(item, host, config_root, state_root)
+        row = _cached_terminal_inspection(item, host, config_root, state_root)
         if row["terminal_disposition"] not in ("ready", "resumable"):
             continue
         config_file, _ = _native_case_files(item, config_root, state_root)

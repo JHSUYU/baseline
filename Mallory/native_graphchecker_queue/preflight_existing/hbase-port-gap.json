@@ -1,0 +1,12 @@
+{
+  "case_id": "HBASE-02",
+  "evidence": {
+    "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6/hbase-server/src/main/java/org/apache/hadoop/hbase/LocalHBaseCluster.java": "3e9865e035bc5782e90404fae93cd47c37ccf4b2621923c73b56f5fcbc1ed5cb",
+    "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6/hbase-server/src/test/java/org/apache/hadoop/hbase/HBaseTestingUtility.java": "6c8e5bf0053fce4dcac27594a73e9bb4173d14e52bb296dffef7c0bdea6cab45",
+    "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6/hbase-zookeeper/src/main/java/org/apache/hadoop/hbase/zookeeper/MiniZooKeeperCluster.java": "3080ce5839e0ecb38915bf2161c6d9fc1ae8eee7c96faaec4d8b7dbca18fe9de"
+  },
+  "reason": "MiniZooKeeperCluster chooses a random nonzero port in 49152..65279 and retries on BindException; prior queue profile only accepted all-zero or assigned disjoint ranges. No immutable config argument selects an assigned HBase ZooKeeper range.",
+  "schema_version": 1,
+  "status": "addressed_in_branch_by_case_specific_source_review",
+  "system": "hbase"
+}

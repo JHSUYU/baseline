@@ -7,6 +7,7 @@ import hashlib
 import fcntl
 import multiprocessing
 import os
+import sys
 import tempfile
 import time
 import unittest
@@ -16,7 +17,9 @@ from unittest.mock import patch
 from Mallory.native_graphchecker_dispatch.checklist import (
     DEFAULT_INVENTORY, DEFAULT_OWNERSHIP, load_inventory, load_ownership,
 )
-from .queue import completion, run_worker, sha, validate_isolation
+from .queue import (_cached_terminal_inspection, completion, pilot_receipt,
+                    run_worker, sha,
+                    validate_isolation)
 
 
 class NativeQueueTest(unittest.TestCase):
@@ -75,6 +78,41 @@ class NativeQueueTest(unittest.TestCase):
             validate_isolation(self.profile, "hbase", self.case_id,
                                self.config, self.owners, "node1")
 
+    def test_hdfs_solr_trial_data_properties_and_hbase_random_retry(self) -> None:
+        for property_name in ("test.build.data", "solr.log.dir"):
+            config = {"runner": {"jvm_args": [
+                "-Djava.io.tmpdir={trial_workdir}",
+                f"-D{property_name}={{trial_workdir}}",
+                "-Dhbase.test.port=0"]}}
+            self.assertEqual(validate_isolation(
+                {"schema_version": 1, "systems": {"hbase": self.profile[
+                    "systems"]["hbase"]}}, "hbase", self.case_id,
+                config, self.owners, "node1")["mode"], "ephemeral")
+            config["runner"]["jvm_args"][-1] = f"-D{property_name}=/tmp/shared"
+            with self.assertRaisesRegex(ValueError, "isolated tmpdir"):
+                validate_isolation(self.profile, "hbase", self.case_id,
+                                   config, self.owners, "node1")
+
+        source = self.root / "MiniZooKeeperCluster.java"
+        source.write_text("pinned source fixture\n")
+        receipt = self.root / "review.json"
+        receipt.write_text(json.dumps({
+            "schema_version": 1, "system": "hbase", "case_id": self.case_id,
+            "mode": "source_reviewed_random_retry",
+            "zk_random_port_range": [49152, 65279],
+            "zk_bind_exception_retry": True,
+            "hbase_cluster_default_ports_zero": True,
+            "reviewed_source_sha256": {str(source): sha(source)}}))
+        ports = self.profile["systems"]["hbase"]["ports"]
+        ports.update(mode="random_retry", receipt=str(receipt),
+                     evidence={str(source): sha(source), str(receipt): sha(receipt)})
+        self.assertEqual(validate_isolation(self.profile, "hbase", self.case_id,
+                                            self.config, self.owners,
+                                            "node1")["mode"], "random_retry")
+        with self.assertRaisesRegex(ValueError, "does not cover this JUnit"):
+            validate_isolation(self.profile, "hbase", "HBASE-02",
+                               self.config, self.owners, "node1")
+
     def test_resume_uses_terminal_receipt_without_second_run(self) -> None:
         calls = []
 
@@ -116,6 +154,89 @@ class NativeQueueTest(unittest.TestCase):
         self.assertEqual(receipt["target_site"], self.item["target"]["site_id"])
         self.assertEqual(len(list((self.state_root / ".native-queue/attempts" /
                                    self.case_id).glob("*.json"))), 1)
+
+    def test_pilot_receipt_seeds_terminal_cache_and_rejects_changed_summary(self) -> None:
+        self.config["case_id"] = self.case_id
+        self.config_file.write_text(json.dumps(self.config))
+        native_root = self.state_root / self.case_id
+        native_root.mkdir()
+        checkpoint = {"case_id": self.case_id, "config_sha256": sha(self.config_file),
+                      "terminal": True, "status": "complete_trial_budget"}
+        (native_root / "checkpoint.json").write_text(json.dumps(checkpoint))
+        (native_root / "summary.json").write_text(json.dumps(checkpoint))
+        row = {"terminal_disposition": "tested_no_target_throw",
+               "native_tested_complete": True, "fault_trials": 1,
+               "strict_fault_trials": 1, "target_retained_fault_trials": 1,
+               "target_throw_trials": 0, "candidate_trials": 0,
+               "elapsed_seconds": 1.0}
+        completion(self.item, row, self.config_file, self.state_root,
+                   self.state_root / ".native-queue")
+        pilot = self.root / "pilot.json"
+        pilot.write_text(json.dumps({
+            "schema_version": 1, "passed": True, "case_id": self.case_id,
+            "host": "node1", "inventory_sha256": sha(DEFAULT_INVENTORY),
+            "ownership_sha256": sha(DEFAULT_OWNERSHIP),
+            "isolation_sha256": sha(self.isolation),
+            "config_sha256": sha(self.config_file),
+            "summary_sha256": sha(native_root / "summary.json")}))
+        with patch("Mallory.native_graphchecker_queue.queue.physical_host"), patch(
+                "Mallory.native_graphchecker_queue.queue.inspect_case",
+                side_effect=AssertionError("terminal JUnit was re-audited")):
+            pilot_receipt(pilot, DEFAULT_INVENTORY, DEFAULT_OWNERSHIP,
+                          self.config_root, self.state_root, self.cases,
+                          self.owners, self.isolation)
+            result = run_worker(
+                host="node1", slot=0, slots=1, inventory=DEFAULT_INVENTORY,
+                ownership_file=DEFAULT_OWNERSHIP,
+                config_root=self.config_root, state_root=self.state_root,
+                scratch_root=self.scratch_root, isolation_file=self.isolation,
+                only_case=self.case_id, min_memory_gib=0, min_state_gib=0,
+                min_scratch_gib=0,
+                runner=lambda *_: self.fail("terminal campaign was rerun"))
+            self.assertEqual(result["completed"], 0)
+        cache = json.loads((self.state_root / ".native-queue/audits" /
+                            f"{self.case_id}.json").read_text())
+        self.assertEqual(cache["basis"], "pinned_pilot_and_completion_receipts")
+        self.assertEqual(cache["fingerprint"]["checkpoint_sha256"],
+                         sha(native_root / "checkpoint.json"))
+        (native_root / "summary.json").write_text(json.dumps({**checkpoint,
+                                                               "changed": True}))
+        with self.assertRaisesRegex(ValueError, "pilot evidence changed"):
+            pilot_receipt(pilot, DEFAULT_INVENTORY, DEFAULT_OWNERSHIP,
+                          self.config_root, self.state_root, self.cases,
+                          self.owners, self.isolation)
+
+    def test_terminal_cache_invalidates_on_checkpoint_summary_or_config_change(self) -> None:
+        self.config["case_id"] = self.case_id
+        self.config_file.write_text(json.dumps(self.config))
+        native_root = self.state_root / self.case_id
+        native_root.mkdir()
+        state = {"case_id": self.case_id, "terminal": True,
+                 "config_sha256": sha(self.config_file)}
+        checkpoint = native_root / "checkpoint.json"
+        summary = native_root / "summary.json"
+        checkpoint.write_text(json.dumps(state))
+        summary.write_text(json.dumps(state))
+        row = {"terminal_disposition": "tested_no_target_throw",
+               "native_tested_complete": True}
+        with patch("Mallory.native_graphchecker_queue.queue.inspect_case",
+                   return_value=row) as inspect:
+            for _ in range(2):
+                self.assertEqual(_cached_terminal_inspection(
+                    self.item, "node1", self.config_root, self.state_root), row)
+            self.assertEqual(inspect.call_count, 1)
+            checkpoint.write_text(json.dumps({**state, "checkpoint_edit": 1}))
+            _cached_terminal_inspection(self.item, "node1", self.config_root,
+                                        self.state_root)
+            self.assertEqual(inspect.call_count, 2)
+            summary.write_text(json.dumps({**state, "summary_edit": 1}))
+            _cached_terminal_inspection(self.item, "node1", self.config_root,
+                                        self.state_root)
+            self.assertEqual(inspect.call_count, 3)
+            self.config_file.write_text(json.dumps({**self.config, "config_edit": 1}))
+            _cached_terminal_inspection(self.item, "node1", self.config_root,
+                                        self.state_root)
+            self.assertEqual(inspect.call_count, 4)
 
     def test_bound_region_campaign_skips_live_lock_and_adopts_native_root(self) -> None:
         native_config = self.root / "immutable-native-config.json"
@@ -308,6 +429,108 @@ class NativeQueueTest(unittest.TestCase):
         receipts = self.state_root / ".native-queue/completions"
         self.assertTrue((receipts / f"{self.case_id}.json").exists())
         self.assertTrue((receipts / f"{second_id}.json").exists())
+
+    def test_two_resumptions_use_distinct_pinned_engine_processes(self) -> None:
+        case_ids = ("HBASE-01", "HBASE-02")
+        starts = self.root / "starts"
+        starts.mkdir()
+        script = self.root / "fake_native_campaign.py"
+        script.write_text(
+            "import json, os, pathlib, sys, time\n"
+            "config = json.loads(pathlib.Path(sys.argv[1]).read_text())\n"
+            "root = pathlib.Path(sys.argv[2])\n"
+            "assert os.environ['MALLORY_NATIVE_ENGINE_ROOT'] == "
+            "config['expected_engine_root']\n"
+            "start = pathlib.Path(config['start_dir']) / config['case_id']\n"
+            "start.write_text(os.environ['MALLORY_NATIVE_ENGINE_ROOT'] + "
+            "'\\n' + os.environ['TMPDIR'])\n"
+            "deadline = time.monotonic() + 8\n"
+            "while len(list(start.parent.iterdir())) < 2:\n"
+            "    assert time.monotonic() < deadline\n"
+            "    time.sleep(.02)\n"
+            "(root / 'checkpoint.json').write_text('{\"terminal\":true}\\n')\n"
+            "(root / 'summary.json').write_text('{\"terminal\":true}\\n')\n"
+            "print(json.dumps({'case_id': config['case_id'], 'status': 'complete'}))\n")
+        policy = self.profile["systems"]["hbase"]
+        policy["required_jvm_args"] = []
+        policy["ports"] = {"mode": "assigned",
+                           "evidence": policy["ports"]["evidence"],
+                           "cases": {case_id: {
+                               "start": 21000 + 100 * slot, "count": 100,
+                               "required_jvm_args": [
+                                   f"-Dhbase.test.port={21000 + 100 * slot}"]}
+                               for slot, case_id in enumerate(case_ids)}}
+        self.isolation.write_text(json.dumps(self.profile))
+        for slot, case_id in enumerate(case_ids):
+            engine = self.root / f"engine-{slot}"
+            target = engine / "target"
+            target.mkdir(parents=True)
+            jar = target / "mallory-original-graphchecker-seed-1.0-SNAPSHOT.jar"
+            jar.write_bytes(f"engine-{slot}".encode())
+            output = self.root / f"woven-{slot}"
+            output.mkdir()
+            (output / "native-original-weave-receipt.json").write_text(
+                json.dumps({"engine_jar": str(jar),
+                            "engine_jar_sha256": sha(jar)}))
+            weave = self.root / f"weave-{slot}.json"
+            weave.write_text(json.dumps({"output_classes": str(output)}))
+            (self.config_root / f"{case_id}.json").write_text(json.dumps({
+                "case_id": case_id, "native_weave_config": str(weave),
+                "expected_engine_root": str(engine), "start_dir": str(starts),
+                "runner": {"jvm_args": [
+                    "-Djava.io.tmpdir={trial_workdir}",
+                    "-Dbuild.test.dir={trial_workdir}",
+                    f"-Dhbase.test.port={21000 + 100 * slot}"]},
+                "junit": {"class": "OriginalTest", "method": "testOriginal"}}))
+            native_root = self.state_root / case_id
+            native_root.mkdir()
+            (native_root / "checkpoint.json").write_text('{"terminal":false}\n')
+
+        def inspect(item, owner, config_root, state_root, review=None):
+            done = (state_root / item["case_id"] / "summary.json").exists()
+            return {"terminal_disposition": "tested_no_target_throw" if done
+                    else "resumable", "native_tested_complete": done,
+                    "fault_trials": 1 if done else 0,
+                    "strict_fault_trials": 1 if done else 0,
+                    "target_retained_fault_trials": 1 if done else 0,
+                    "target_throw_trials": 0, "candidate_trials": 0,
+                    "elapsed_seconds": 1.0 if done else 0}
+
+        args = dict(host="node1", slots=2, inventory=DEFAULT_INVENTORY,
+                    ownership_file=DEFAULT_OWNERSHIP,
+                    config_root=self.config_root, state_root=self.state_root,
+                    scratch_root=self.scratch_root,
+                    isolation_file=self.isolation,
+                    min_memory_gib=0, min_state_gib=0,
+                    min_scratch_gib=0)
+        context = multiprocessing.get_context("fork")
+
+        def worker(slot, case_id):
+            run_worker(slot=slot, only_case=case_id, **args)
+
+        command = lambda config_file, root: [
+            sys.executable, str(script), str(config_file), str(root)]
+        with patch("Mallory.native_graphchecker_queue.queue.physical_host"), patch(
+                "Mallory.native_graphchecker_queue.queue.inspect_case",
+                side_effect=inspect), patch(
+                "Mallory.native_graphchecker_queue.queue._pinned_campaign_command",
+                side_effect=command):
+            processes = [context.Process(target=worker, args=(slot, case_id))
+                         for slot, case_id in enumerate(case_ids)]
+            for process in processes:
+                process.start()
+            for process in processes:
+                process.join(timeout=15)
+            self.assertEqual([process.exitcode for process in processes], [0, 0])
+            for slot, case_id in enumerate(case_ids):
+                observed = (starts / case_id).read_text().splitlines()
+                self.assertEqual(observed[0], str(self.root / f"engine-{slot}"))
+                self.assertEqual(observed[1], str(self.scratch_root / case_id))
+                self.assertTrue((self.state_root / ".native-queue/completions" /
+                                 f"{case_id}.json").exists())
+                self.assertEqual(run_worker(slot=slot, only_case=case_id,
+                                            **args)["completed"], 0)
+            self.assertEqual(len(list(starts.iterdir())), 2)
 
 
 if __name__ == "__main__":
