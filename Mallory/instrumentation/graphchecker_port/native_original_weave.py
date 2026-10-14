@@ -221,6 +221,17 @@ def inputs(config_file: Path):
     missing = [key for key in required if not config.get(key)]
     if missing:
         raise ValueError("missing native weave inputs: " + ", ".join(missing))
+    weave_mode = config.get("weave_mode", "concolic")
+    if weave_mode not in ("concolic", "region_state"):
+        raise ValueError("weave_mode must be concolic or region_state")
+    if weave_mode == "region_state":
+        artifacts = config.get("recording_artifacts")
+        if not isinstance(artifacts, str) or not artifacts:
+            raise ValueError("region_state weave requires recording_artifacts")
+    jvm_args = config.get("jvm_args", [])
+    if (not isinstance(jvm_args, list) or
+            not all(isinstance(arg, str) and arg.startswith("-X") for arg in jvm_args)):
+        raise ValueError("jvm_args must be a list of -X Java VM options")
     verified_vendor()
     source = Path(config["input_classes"]).resolve(strict=True)
     output = Path(config["output_classes"]).resolve()
@@ -263,13 +274,20 @@ def run(config_file: Path) -> dict:
     extra = config["dependency_classpath"]
     classpath = os.pathsep.join(filter(None, (str(JAR),
                                              engine["dependency_classpath"], extra)))
-    command = [
-        str(Path(config["java"]).resolve(strict=True)),
-        "-Dcausynth.instrument.concolic=true",
-        f"-Dcausynth.concolic.task.plan={plan}",
-        f"-Dcausynth.concolic.task.id={config['task_id']}",
-        f"-Dcausynth.region.skeletons={skeletons}",
-    ]
+    mode = config.get("weave_mode", "concolic")
+    command = [str(Path(config["java"]).resolve(strict=True)),
+               *config.get("jvm_args", [])]
+    if mode == "concolic":
+        command.extend(("-Dcausynth.instrument.concolic=true",
+                        f"-Dcausynth.concolic.task.plan={plan}",
+                        f"-Dcausynth.concolic.task.id={config['task_id']}"))
+    else:
+        artifacts = Path(config["recording_artifacts"]).resolve()
+        if artifacts == output or artifacts == source:
+            raise ValueError("recording_artifacts must be a separate directory")
+        command.extend(("-Dcausynth.trace.mode=region-state",
+                        f"-Dcausynth.output.dir={artifacts}"))
+    command.append(f"-Dcausynth.region.skeletons={skeletons}")
     if config.get("native_fault_manifest"):
         command.append("-Dmallory.native.fault.manifest=" + str(
             Path(config["native_fault_manifest"]).resolve(strict=True)))
@@ -303,7 +321,7 @@ def run(config_file: Path) -> dict:
                        timeout=int(post.get("timeout_seconds", 180)))
     receipt = {
         "schema_version": 1,
-        "mode": "mallory_vendored_original_graphchecker_concolic_weave",
+        "mode": "mallory_vendored_original_graphchecker_" + mode + "_weave",
         "config_sha256": digest(config_file),
         "upstream_revision": REVISION,
         "engine_jar": str(JAR),
@@ -333,6 +351,9 @@ def run(config_file: Path) -> dict:
     if config.get("process_dirs"):
         receipt["process_dir_artifacts"] = dependency_digests(os.pathsep.join(
             config["process_dirs"]))
+    if mode == "region_state":
+        receipt["recording_artifacts_sha256"] = file_tree_digest(
+            Path(config["recording_artifacts"]).resolve(strict=True))
     receipt_file = output / "native-original-weave-receipt.json"
     temporary = receipt_file.with_suffix(".json.tmp")
     temporary.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n")
@@ -369,6 +390,12 @@ def verify_existing(config_file: Path) -> dict:
             Path(config["communication_mappings"]).resolve(strict=True))
     elif receipt.get("communication_mappings_sha256") is not None:
         raise ValueError("unexpected communication mappings in receipt")
+    mode = config.get("weave_mode", "concolic")
+    if mode == "region_state":
+        observed["recording_artifacts_sha256"] = file_tree_digest(
+            Path(config["recording_artifacts"]).resolve(strict=True))
+    elif receipt.get("recording_artifacts_sha256") is not None:
+        raise ValueError("unexpected recording artifacts in receipt")
     if config.get("process_dirs"):
         observed["process_dir_artifacts"] = dependency_digests(os.pathsep.join(
             config["process_dirs"]))
@@ -387,7 +414,7 @@ def verify_existing(config_file: Path) -> dict:
             raise ValueError("post-weave adapter changed")
     if (receipt.get("schema_version") != 1 or
             receipt.get("mode") !=
-            "mallory_vendored_original_graphchecker_concolic_weave" or
+            "mallory_vendored_original_graphchecker_" + mode + "_weave" or
             receipt.get("upstream_revision") != REVISION or
             receipt.get("input_classes") != str(source) or
             receipt.get("output_classes") != str(output)):
