@@ -323,6 +323,86 @@ def _eligibility_note(item: dict, inventory: Path,
     }
 
 
+def _eligibility_supersession(item: dict, state_root: Path,
+                             old_note: dict[str, Any] | None
+                             ) -> dict[str, Any] | None:
+    """Reopen a source-only skip after an independently pinned healthy JUnit.
+
+    The old review stays on disk and is validated by ``_eligibility_note``.
+    This receipt only changes scheduling eligibility; it never counts a native
+    fault trial or claims a target exception.
+    """
+    case_id = item["case_id"]
+    path = (state_root / ".native-queue" / "eligibility-supersessions" /
+            f"{case_id}.json")
+    if not path.is_file():
+        return None
+    if old_note is None:
+        raise ValueError(f"native eligibility supersession lacks old review: {case_id}")
+    receipt = obj(path)
+    if (receipt.get("schema_version") != 1 or
+            receipt.get("case_id") != case_id or
+            receipt.get("status") != "healthy_original_junit_reopens_case" or
+            receipt.get("superseded_pin_sha256") !=
+            old_note["preparation_note_pin_sha256"]):
+        raise ValueError(f"native eligibility supersession identity changed: {case_id}")
+    files: dict[str, Path] = {}
+    for name in ("healthy_result", "healthy_trial", "junit_receipt",
+                 "test_source", "target_source"):
+        entry = receipt.get(name, {})
+        source = Path(entry.get("path", ""))
+        if (not source.is_absolute() or source.is_symlink() or
+                not source.is_file() or sha(source) != entry.get("sha256")):
+            raise ValueError(f"native eligibility supersession {name} changed: {case_id}")
+        files[name] = source
+    healthy = obj(files["healthy_result"])
+    trial = obj(files["healthy_trial"])
+    junit = obj(files["junit_receipt"])
+    target = healthy.get("target", {})
+    expected_junit = item["workload"].get("selected_selector")
+    if (healthy.get("case_id") != case_id or
+            healthy.get("cluster_test") != expected_junit or
+            healthy.get("calibration_only") is not True or
+            healthy.get("healthy_seed_valid") is not True or
+            healthy.get("fault_trials_completed") != 0 or
+            healthy.get("target_node_named") is not True or
+            healthy.get("healthy_eligible_doors", 0) < 1 or
+            healthy.get("runtime_attestation", {}).get("valid") is not True or
+            target.get("source_path") != item["target"]["source_path"] or
+            target.get("source_line") != item["target"]["source_line"] or
+            target.get("exception_class") != item["target"].get(
+                "target_exception") or
+            trial.get("case_id") != case_id or
+            trial.get("trial_id") != 0 or
+            trial.get("junit_receipt_sha256") != sha(files["junit_receipt"]) or
+            trial.get("plan") != [] or
+            junit.get("status") != "passed" or
+            junit.get("tests") != 1 or
+            any(junit.get(key) != 0 for key in
+                ("failures", "errors", "skipped", "assumption_failures")) or
+            sha(files["test_source"]) != item["workload"]["candidates"][0][
+                "source_sha256"] or
+            sha(files["target_source"]) != item["target"]["source_sha256"]):
+        raise ValueError(f"native eligibility supersession healthy evidence changed: {case_id}")
+    checks = [row for row in healthy.get("trials", []) if
+              row.get("trial_id") == 0 and row.get("target_reached") is True]
+    if len(checks) != 1 or checks[0].get("eligible_doors_before_target", 0) < 1:
+        raise ValueError(f"native eligibility supersession has no target path: {case_id}")
+    return {
+        "preparation_status": "healthy_original_junit_reopens_case",
+        "preparation_junit_trials": 0,
+        "preparation_fault_trials": 0,
+        "preparation_review_path": str(path.resolve()),
+        "preparation_review_sha256": sha(path),
+        "preparation_note": (
+            "Later unchanged original cluster JUnit passed, reached the exact "
+            "target and observed pre-target doors. The old source-only skip "
+            "is superseded; native queue preparation and fault trials remain."),
+        "evidence_paths": [str(path.resolve()), *old_note["evidence_paths"],
+                           *(str(source.resolve()) for source in files.values())],
+    }
+
+
 def _elapsed_basis(native_root: Path, fault_trials: int,
                    elapsed_seconds: float) -> str:
     """Attribute reported time to the native trial receipts' actual schema."""
@@ -578,14 +658,23 @@ def native_rows(inventory: Path, ownership_file: Path, config_root: Path,
             row["native_state"] = "preparation_healthy_graph_blocked"
         eligibility = _eligibility_note(item, inventory, state_root)
         if eligibility is not None:
+            supersession = _eligibility_supersession(item, state_root,
+                                                    eligibility)
             if preparation is not None or admission is not None or \
-                    config_file.is_file() or \
-                    checkpoint_path.is_file() or receipt_path.is_file():
+                    (supersession is None and
+                     (config_file.is_file() or checkpoint_path.is_file() or
+                      receipt_path.is_file())):
                 raise ValueError(f"native eligibility note conflicts with case: {case_id}")
             evidence = eligibility.pop("evidence_paths")
             row.update(eligibility)
             row["evidence_paths"].extend(evidence)
-            row["native_state"] = "skipped_no_eligible_original_cluster_test"
+            if supersession is None:
+                row["native_state"] = "skipped_no_eligible_original_cluster_test"
+            else:
+                evidence = supersession.pop("evidence_paths")
+                row.update(supersession)
+                row["evidence_paths"].extend(evidence)
+                row["native_state"] = "not_completed"
         if config_file.is_file():
             row["native_config_path"] = str(config_file.resolve())
             row["native_config_sha256"] = sha(config_file)

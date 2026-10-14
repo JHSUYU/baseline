@@ -178,6 +178,61 @@ class NativeResultsTest(unittest.TestCase):
             self.assertEqual(row["preparation_fault_trials"], 0)
             self.assertIsNone(row["fault_trials"])
             self.assertIsNone(row["completion_receipt_path"])
+            healthy = root / "healthy-result.json"
+            healthy.write_text(json.dumps({
+                "case_id": "SOLR-40", "cluster_test": item["workload"][
+                    "selected_selector"], "calibration_only": True,
+                "healthy_seed_valid": True, "fault_trials_completed": 0,
+                "target_node_named": True, "healthy_eligible_doors": 1,
+                "runtime_attestation": {"valid": True},
+                "target": {"source_path": item["target"]["source_path"],
+                           "source_line": item["target"]["source_line"],
+                           "exception_class": item["target"][
+                               "target_exception"]},
+                "trials": [{"trial_id": 0, "target_reached": True,
+                            "eligible_doors_before_target": 1}]}))
+            junit = root / "junit-receipt.json"
+            junit.write_text(json.dumps({
+                "status": "passed", "tests": 1, "failures": 0, "errors": 0,
+                "skipped": 0, "assumption_failures": 0}))
+            trial = root / "healthy-trial.json"
+            trial.write_text(json.dumps({
+                "case_id": "SOLR-40", "trial_id": 0, "plan": [],
+                "junit_receipt_sha256": sha(junit)}))
+            supersession = (state_root / ".native-queue" /
+                            "eligibility-supersessions/SOLR-40.json")
+            supersession.parent.mkdir(parents=True)
+            files = {name: {"path": str(path.resolve()),
+                            "sha256": sha(path)} for name, path in (
+                ("healthy_result", healthy), ("healthy_trial", trial),
+                ("junit_receipt", junit),
+                ("test_source", root / "time_test.java"),
+                ("target_source", root / "processor.java"))}
+            supersession.write_text(json.dumps({
+                "schema_version": 1, "case_id": "SOLR-40",
+                "status": "healthy_original_junit_reopens_case",
+                "superseded_pin_sha256": sha(pin), **files}))
+            reopened, _ = export_native_results(
+                inventory_file, DEFAULT_OWNERSHIP, config_root,
+                state_root, results_dir)
+            reopened_doc = json.loads(reopened.read_text())
+            reopened_row = next(row for row in reopened_doc["rows"]
+                                if row["case_id"] == "SOLR-40")
+            self.assertEqual(reopened_doc["verified_terminal_count"], 0)
+            self.assertEqual(reopened_row["native_state"], "not_completed")
+            self.assertFalse(reopened_row["native_tested_complete"])
+            self.assertEqual(reopened_row["preparation_status"],
+                             "healthy_original_junit_reopens_case")
+            self.assertIsNone(reopened_row["fault_trials"])
+            bad = json.loads(supersession.read_text())
+            bad["healthy_result"]["sha256"] = "0" * 64
+            supersession.write_text(json.dumps(bad))
+            with self.assertRaisesRegex(ValueError,
+                                        "supersession healthy_result changed"):
+                export_native_results(inventory_file, DEFAULT_OWNERSHIP,
+                                      config_root, state_root, results_dir)
+            bad["healthy_result"]["sha256"] = sha(healthy)
+            supersession.write_text(json.dumps(bad))
             copied_inventory = root / "inventory-copy.json"
             copied_inventory.write_bytes(inventory_file.read_bytes())
             copied, _ = export_native_results(
