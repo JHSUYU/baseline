@@ -190,8 +190,9 @@ def _admission_note(item: dict, state_root: Path) -> dict[str, Any] | None:
         "preparation_note": (
             f"Original JUnit passed and reached the exact target guard "
             f"{review['rawTargetCheckCount']} times in "
-            f"{review['junitElapsedSeconds']:g}s; original Recorder graph "
-            f"timed out after {review['analysisElapsedSeconds']:g}s. "
+            f"{review['junitElapsedSeconds']:g}s; original analysis stage "
+            f"took {review['analysisElapsedSeconds']:g}s, including the "
+            "Recorder timeout configured at 1800s. "
             "No formal fault trial ran; no target throw or bug claim."),
         "evidence_paths": [str(path.resolve()) for path in paths.values()] +
                           [str(pin_path.resolve())],

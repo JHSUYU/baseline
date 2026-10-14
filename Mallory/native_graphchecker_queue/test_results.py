@@ -83,6 +83,10 @@ class NativeResultsTest(unittest.TestCase):
                              "preparation_healthy_graph_blocked")
             self.assertEqual(row["preparation_junit_trials"], 1)
             self.assertEqual(row["preparation_fault_trials"], 0)
+            self.assertIn("analysis stage took 2100.29s", row[
+                "preparation_note"])
+            self.assertIn("Recorder timeout configured at 1800s", row[
+                "preparation_note"])
             self.assertFalse(row["native_tested_complete"])
             self.assertIsNone(row["fault_trials"])
             review.write_text(review.read_text() + " ")
