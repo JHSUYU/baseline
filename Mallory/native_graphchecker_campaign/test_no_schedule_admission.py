@@ -85,6 +85,46 @@ class NoScheduleAdmissionTest(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "cached native recording"):
                 core._admit(self.config, self.root)
 
+    def test_pinned_analysis_engine_is_separate_from_woven_engine(self) -> None:
+        analyzer = self.root / "optimized-analyzer.jar"
+        analyzer.write_bytes(b"optimized original region analyzer")
+        self.config["recording"].update({
+            "analysis_engine_jar": str(analyzer),
+            "analysis_engine_sha256": core._sha(analyzer),
+        })
+        core._validate_config(self.config)
+        with (patch.object(core, "JAR", self.jar),
+              patch.object(core, "_scheduler_source", return_value=self.jar),
+              patch.object(core, "verify_existing", return_value={"verified": True}),
+              patch.object(core, "dependency_digests", return_value=[])):
+            self.assertEqual(analyzer, core._analysis_engine_jar(self.config))
+            core._admit(self.config, self.root)
+            admitted = core._load(self.root / "recording-admission.json")
+            self.assertEqual(core._sha(self.jar), admitted[
+                "recording_fingerprint"]["engine_jar_sha256"])
+            self.assertEqual(core._sha(analyzer), admitted[
+                "recording_fingerprint"]["analysis_engine_sha256"])
+            analyzer.write_bytes(b"mutated analyzer")
+            with self.assertRaisesRegex(ValueError, "analysis engine SHA-256 mismatch"):
+                core._admit(self.config, self.root)
+
+    def test_analysis_engine_requires_region_mode_and_complete_pin(self) -> None:
+        self.assertEqual(core.JAR, core._analysis_engine_jar(self.config))
+        self.config["recording"]["analysis_engine_jar"] = str(self.root / "analyzer.jar")
+        with self.assertRaisesRegex(ValueError, "analysis engine requires"):
+            core._validate_config(self.config)
+        self.config["recording"]["analysis_engine_sha256"] = "0" * 64
+        self.config["runner"]["mode"] = "concolic"
+        with self.assertRaisesRegex(ValueError, "analysis engine requires"):
+            core._validate_config(self.config)
+        self.config["runner"]["mode"] = "region_state"
+        self.config["recording"]["analysis_engine_jar"] = None
+        with self.assertRaisesRegex(ValueError, "absolute path"):
+            core._validate_config(self.config)
+        self.config["recording"]["analysis_engine_jar"] = "relative.jar"
+        with self.assertRaisesRegex(ValueError, "absolute path"):
+            core._validate_config(self.config)
+
     def test_no_schedule_rejects_concolic_runner_and_woven_task(self) -> None:
         self.config["runner"]["mode"] = "concolic"
         with self.assertRaisesRegex(ValueError, "requires REGION_STATE"):

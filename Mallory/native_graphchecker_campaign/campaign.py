@@ -129,6 +129,21 @@ def _validate_config(config: dict[str, Any]) -> None:
     admission_mode = recording.get("admission_mode", "scheduled")
     if admission_mode not in ("scheduled", "region_state_no_schedule"):
         raise ValueError("unknown original recording admission mode")
+    analysis_jar = recording.get("analysis_engine_jar")
+    analysis_sha = recording.get("analysis_engine_sha256")
+    has_analysis_jar = "analysis_engine_jar" in recording
+    has_analysis_sha = "analysis_engine_sha256" in recording
+    if (has_analysis_jar != has_analysis_sha or
+            (has_analysis_jar and
+             (not isinstance(config.get("runner"), dict) or
+              config["runner"].get("mode") != "region_state"))):
+        raise ValueError("analysis engine requires a REGION_STATE path and SHA-256 pin")
+    if has_analysis_jar and (
+            not isinstance(analysis_jar, str) or
+            not Path(analysis_jar).is_absolute() or
+            not isinstance(analysis_sha, str) or
+            not SHA256_HEX.fullmatch(analysis_sha)):
+        raise ValueError("analysis engine requires an absolute path and SHA-256 pin")
     heap_mb = recording.get("graph_analysis_heap_mb", 3072)
     if (not isinstance(heap_mb, int) or isinstance(heap_mb, bool) or
             not 0 < heap_mb <= 65536):
@@ -373,6 +388,17 @@ def _feedback_required(config: dict[str, Any]) -> bool:
     return config["runner"].get("mode", "concolic") == "concolic"
 
 
+def _analysis_engine_jar(config: dict[str, Any]) -> Path:
+    """Pin the optional region analyzer separately from the woven trace engine."""
+    recording = config["recording"]
+    if "analysis_engine_jar" not in recording:
+        return JAR
+    path = Path(recording["analysis_engine_jar"]).resolve(strict=True)
+    if not path.is_file() or _sha(path) != recording["analysis_engine_sha256"]:
+        raise ValueError("analysis engine SHA-256 mismatch")
+    return path
+
+
 def _admit(config: dict[str, Any], root: Path) -> dict[str, Any]:
     # The Java bridge is consumed by concolic SessionReader feedback. Original
     # REGION_STATE replay uses the resolver/Recorder directly and has no bridge.
@@ -394,6 +420,11 @@ def _admit(config: dict[str, Any], root: Path) -> dict[str, Any]:
         "scheduler_source_sha256": _sha(_scheduler_source()),
         "engine_jar_sha256": _sha(JAR),
     }
+    if "analysis_engine_jar" in rec:
+        analyzer = _analysis_engine_jar(config)
+        recording_fingerprint["analysis_engine_jar"] = str(analyzer)
+        recording_fingerprint["analysis_engine_sha256"] = rec[
+            "analysis_engine_sha256"]
     if rec.get("admission_mode") == "region_state_no_schedule":
         recording_fingerprint["admission_mode"] = "region_state_no_schedule"
     if feedback_source is not None:
@@ -1215,7 +1246,8 @@ def _run_region_trial(config: dict[str, Any], admitted: dict[str, Any],
             static_scope_map=Path(recording["static_scope_map"]),
             candidate_graph=Path(recording["candidate_graph"]),
             region_skeletons=Path(recording["region_skeletons"]),
-            engine_jar=JAR, java=Path(admitted["weave_config"]["java"]),
+            engine_jar=_analysis_engine_jar(config),
+            java=Path(admitted["weave_config"]["java"]),
             loop_bound=loop_bound,
             timeout_seconds=recording.get("graph_analysis_timeout_seconds", 300),
             heap_mb=recording.get("graph_analysis_heap_mb", 3072),

@@ -25,6 +25,13 @@ the fresh `r0000` JUnit must then pass and reach the exact target, and its
 original Resolver, Recorder, and Finalizer graph must succeed before any fault
 enters the queue. Every fault trial uses those same original graph stages.
 Existing scheduled REGION_STATE and concolic checkpoint semantics are unchanged.
+An optional `recording.analysis_engine_jar` with
+`recording.analysis_engine_sha256` may select a source-built compatible
+GraphChecker JAR for the per-trial REGION_STATE Resolver and Recorder. This
+does not change the original JAR or receipt used to verify the woven class
+tree. Admission and each trial verify the analyzer's SHA-256; the analyzer
+path and digest are stored separately in the admission fingerprint. Without
+these keys, the original woven engine is also the analyzer.
 The source-built engine must contain the original scheduler;
 the older seed engine that omits it cannot pass admission. In particular, old
 ZooKeeper pilot static artifacts with synthetic lambda names are not accepted
