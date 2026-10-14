@@ -22,8 +22,12 @@ from typing import Any
 
 from Mallory.native_graphchecker_campaign import campaign as native
 from Mallory.native_graphchecker_feedback.feedback import _session_digest, delta
+from Mallory.native_graphchecker_feedback.region_state_graph import (
+    _closed_inputs, _fatal_unplanned, delta_region_state,
+    summarize_region_state,
+)
 from Mallory.instrumentation.graphchecker_port.native_original_weave import (
-    class_tree_digest, file_tree_digest,
+    class_tree_digest, dependency_digests, file_tree_digest,
 )
 
 HERE = Path(__file__).resolve().parent
@@ -80,6 +84,35 @@ def _same_checkpoint_summary(checkpoint: dict, summary: dict) -> None:
                 if key not in ("queue", "seen_plan_keys", "active")}
     if summary != expected:
         raise ValueError("native summary differs from terminal checkpoint")
+
+
+def _native_case_files(item: dict, config_root: Path,
+                       state_root: Path) -> tuple[Path, Path]:
+    """Resolve an explicit, pinned inventory-to-native campaign binding."""
+    case_id = item["case_id"]
+    entry = config_root / f"{case_id}.json"
+    if not entry.is_file():
+        return entry, state_root / case_id
+    document = _object(entry)
+    if document.get("mode") != "native_region_state_case_binding":
+        return entry, state_root / case_id
+    native_id = document.get("native_case_id")
+    config = Path(document.get("native_config_path", ""))
+    root = Path(document.get("native_state_path", ""))
+    row_sha = hashlib.sha256(json.dumps(
+        item, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+    if (document.get("schema_version") != 1 or
+            document.get("inventory_case_id") != case_id or
+            document.get("inventory_row_sha256") != row_sha or
+            not isinstance(native_id, str) or
+            not native_id.startswith(case_id + "-native-") or
+            not config.is_absolute() or not root.is_absolute() or
+            config.is_symlink() or root.is_symlink() or
+            _sha(config) != document.get("native_config_sha256") or
+            _object(config).get("case_id") != native_id or
+            _object(config).get("runner", {}).get("mode") != "region_state"):
+        raise ValueError("native REGION_STATE case binding changed identity or inputs")
+    return config, root
 
 
 def verify_preparation_receipt(item: dict, config_file: Path,
@@ -180,6 +213,67 @@ def verify_preparation_receipt(item: dict, config_file: Path,
     return receipt
 
 
+def _verify_region_weave(config_file: Path) -> dict:
+    """Check the immutable source-built REGION_STATE weave without rerunning it."""
+    config = _object(config_file)
+    weave_file = Path(config["native_weave_config"])
+    weave = _object(weave_file)
+    output = Path(weave["output_classes"])
+    receipt = _object(output / "native-original-weave-receipt.json")
+    engine = Path(receipt["engine_jar"])
+    engine_root = engine.parent.parent
+    engine_receipt = _object(engine.parent / "native-original-engine-receipt.json")
+    sources = [engine_root / "pom.xml", engine_root / "UPSTREAM_SOURCES.json"]
+    sources.extend(sorted((engine_root / "src/main/java").rglob("*.java")))
+    sources.extend(sorted((engine_root / "vendor/src/main/java").rglob("*.java")))
+    sources.extend(sorted((engine_root / "vendor/src/main/resources").rglob("*")))
+    sources.extend(sorted((engine_root / "src/main/resources").rglob("*")))
+    source_hash = hashlib.sha256()
+    for path in sources:
+        if path.is_file():
+            source_hash.update(path.relative_to(engine_root).as_posix().encode())
+            source_hash.update(b"\0")
+            source_hash.update(bytes.fromhex(_sha(path)))
+    if (engine_receipt.get("schema_version") != 1 or
+            engine_receipt.get("upstream_revision") != receipt.get(
+                "upstream_revision") or
+            engine_receipt.get("source_tree_sha256") != source_hash.hexdigest() or
+            engine_receipt.get("engine_jar_sha256") != _sha(engine) or
+            engine_receipt.get("dependency_artifacts") != dependency_digests(
+                engine_receipt["dependency_classpath"])):
+        raise ValueError("source-built original REGION_STATE engine changed")
+    checks = {
+        "config_sha256": _sha(weave_file),
+        "engine_jar_sha256": _sha(engine),
+        "engine_receipt_sha256": _sha(engine.parent /
+                                      "native-original-engine-receipt.json"),
+        "input_classes_sha256": class_tree_digest(Path(weave["input_classes"])),
+        "output_classes_sha256": class_tree_digest(output),
+        "region_skeletons_sha256": _sha(Path(weave["region_skeletons"])),
+        "native_fault_manifest_sha256": _sha(Path(weave["native_fault_manifest"])),
+        "recording_artifacts_sha256": file_tree_digest(
+            Path(weave["recording_artifacts"])),
+        "dependency_classpath_sha256": hashlib.sha256(
+            weave["dependency_classpath"].encode()).hexdigest(),
+    }
+    for field, value in checks.items():
+        if receipt.get(field) != value:
+            raise ValueError(f"native REGION_STATE weave pin changed: {field}")
+    if (receipt.get("schema_version") != 1 or
+            receipt.get("mode") !=
+            "mallory_vendored_original_graphchecker_region_state_weave" or
+            receipt.get("output_classes") != str(output) or
+            receipt.get("input_classes") != weave["input_classes"] or
+            receipt.get("dependency_artifacts") != dependency_digests(
+                weave["dependency_classpath"])):
+        raise ValueError("native REGION_STATE weave identity/dependencies changed")
+    for optional, field in (("task_plan", "task_plan_sha256"),
+                            ("communication_mappings", "communication_mappings_sha256")):
+        if optional in weave and receipt.get(field) != _sha(Path(weave[optional])):
+            raise ValueError(f"native REGION_STATE weave pin changed: {field}")
+    return receipt
+
+
 def _verified_native_summary(path: Path, iteration: Path, result: dict,
                              config: dict, admission: dict) -> dict:
     summary = _object(path)
@@ -218,6 +312,228 @@ def _verified_native_summary(path: Path, iteration: Path, result: dict,
                                           or summary["maxTasks"] <= 0):
         raise ValueError("native closure planning limit is invalid")
     return summary
+
+
+def _verified_region_summary(trial: Path, result: dict, config: dict,
+                             engine: Path) -> dict | None:
+    path = trial / "native-summary.json"
+    if not path.is_file():
+        if result.get("native_session_sha256") is not None:
+            raise ValueError("REGION_STATE summary hash without summary")
+        return None
+    summary = _object(path)
+    if (summary != _object(trial / "original-graph/summary.json") or
+            result.get("native_session_sha256") != _sha(path) or
+            summary.get("schemaVersion") != 1 or
+            summary.get("backend") != "original_region_state" or
+            summary.get("targetSiteId") != config["target_site"]):
+        raise ValueError("original REGION_STATE summary identity changed")
+    iteration = trial / "iteration-native"
+    trace = iteration / "trace"
+    recording = config["recording"]
+    scope = Path(recording["static_scope_map"])
+    graph = Path(recording["candidate_graph"])
+    skeletons = Path(recording["region_skeletons"])
+    events = iteration / "fault-events.jsonl"
+    pins = _closed_inputs(trace, scope, graph, skeletons)
+    lineage = _object(trial / "schedule-lineage.json")
+    source = Path(lineage["source"])
+    expected_sources = ([trace / "schedule.jsonl"] if lineage.get("copied") is False
+                        else sorted((iteration / "sessions").glob("*/schedule.jsonl")))
+    if (source not in expected_sources or
+            (lineage.get("copied") is True and len(expected_sources) != 1) or
+            lineage.get("source_sha256") != _sha(source) or
+            lineage.get("destination_sha256") != _sha(trace / "schedule.jsonl") or
+            lineage["source_sha256"] != lineage["destination_sha256"]):
+        raise ValueError("original REGION_STATE schedule lineage changed")
+    original = trial / "original-graph"
+    if summary.get("status") == "recorded":
+        recomputed = summarize_region_state(
+            trace, original / "recorded/concolic_region_plan.jsonl",
+            original / "target-occurrence.json", events, scope, graph,
+            skeletons, config["target_site"], engine_jar=engine,
+            target_throw=config["target_throw"])
+        recomputed["provenance"]["extractor"] = (
+            "invoked_original_resolver_and_recorder")
+    elif summary.get("status") == "target_throw_unplanned":
+        recomputed = _fatal_unplanned(trace, events, config["target_site"],
+                                      config["target_throw"], pins, engine)
+    elif summary.get("status") == "target_absent":
+        recomputed = {"schemaVersion": 1, "backend": "original_region_state",
+                      "targetSiteId": config["target_site"],
+                      "targetReached": False, "targetThrowObserved": False,
+                      "status": "target_absent", "nodeFamilies": [],
+                      "edgeFamilies": [], "closureEdgeFamilies": [],
+                      "branchOutcomeIds": [], "provenance": pins}
+    else:
+        raise ValueError("unknown original REGION_STATE summary status")
+    if summary != recomputed:
+        raise ValueError("original REGION_STATE graph or target receipt changed")
+    ids = summary.get("targetEvidence", {}).get("targetCheckOccurrenceIds", [])
+    if result.get("native_target_occurrence_ids") != ids:
+        raise ValueError("REGION_STATE target occurrence IDs changed")
+    return summary
+
+
+def _audit_region_terminal(case_id: str, config_path: Path, root: Path,
+                           checkpoint: dict, summary: dict) -> dict[str, Any]:
+    config = _object(config_path)
+    if (config.get("case_id") != case_id or
+            checkpoint.get("schema_version") != 1 or
+            checkpoint.get("case_id") != case_id or
+            checkpoint.get("terminal") is not True or
+            checkpoint.get("config_sha256") != _sha(config_path) or
+            checkpoint.get("budget") != config.get("budget")):
+        raise ValueError("native REGION_STATE checkpoint identity/config mismatch")
+    _same_checkpoint_summary(checkpoint, summary)
+    weave_receipt = _verify_region_weave(config_path)
+    weave = _object(Path(config["native_weave_config"]))
+    receipt_path = Path(weave["output_classes"]) / "native-original-weave-receipt.json"
+    recording = config["recording"]
+    admission = _object(root / "recording-admission.json")
+    fingerprint = admission.get("recording_fingerprint", {})
+    origin = admission.get("origin", {})
+    expected = {
+        "engine_jar_sha256": weave_receipt["engine_jar_sha256"],
+        "weave_config_sha256": _sha(Path(config["native_weave_config"])),
+        "weave_receipt_sha256": _sha(receipt_path),
+        "static_scope_map_sha256": _sha(Path(recording["static_scope_map"])),
+        "candidate_graph_sha256": _sha(Path(recording["candidate_graph"])),
+        "region_skeletons_sha256": _sha(Path(recording["region_skeletons"])),
+    }
+    if (admission.get("schema_version") != 1 or not isinstance(origin, dict) or
+            checkpoint.get("origin") != origin or
+            checkpoint.get("weave_receipt_sha256") != _sha(receipt_path) or
+            any(fingerprint.get(key) != value for key, value in expected.items()) or
+            origin.get("recording_manifest_sha256") != _sha(
+                Path(recording["trace_dir"]) / "streaming_trace_manifest.json") or
+            origin.get("static_scope_map_sha256") != expected[
+                "static_scope_map_sha256"] or
+            origin.get("scheduler_source_sha256") != fingerprint.get(
+                "scheduler_source_sha256")):
+        raise ValueError("REGION_STATE admission differs from original pinned inputs")
+    for field in ("recording_plan_sha256", "scheduler_source_sha256"):
+        _digest(origin.get(field), field)
+    for field in ("engine_jar_sha256", "trace_tree_sha256",
+                  "scheduler_source_sha256"):
+        _digest(fingerprint.get(field), field)
+    trials = checkpoint.get("trials")
+    healthy_ref = checkpoint.get("healthy")
+    if (not isinstance(trials, list) or
+            checkpoint.get("completed_fault_trials") != len(trials) or
+            not isinstance(healthy_ref, dict) or healthy_ref.get("name") != "r0000"):
+        raise ValueError("REGION_STATE healthy seed or trial count missing")
+    rows = [healthy_ref, *trials]
+    results = []
+    for index, record in enumerate(rows):
+        name = f"r{index:04d}"
+        path = _inside(root, record.get("result", ""))
+        if record.get("name") != name or path != root / "trials" / name / "result.json":
+            raise ValueError("REGION_STATE trial order/path changed")
+        result = _object(path)
+        if (result.get("schema_version") != 1 or result.get("case_id") != case_id or
+                result.get("runner_mode") != "region_state" or
+                result.get("status") != record.get("status") or
+                (index and any(result.get(key) != record.get(key) for key in
+                               ("strict_injection", "native_target_retained",
+                                "target_exception_triggered", "elapsed_seconds")))):
+            raise ValueError("REGION_STATE trial differs from checkpoint")
+        faults = result.get("faults")
+        if not isinstance(faults, list) or (index == 0 and faults) or (
+                index > 0 and not faults):
+            raise ValueError("REGION_STATE trial fault plan missing")
+        iteration = path.parent / "iteration-native"
+        if _object(iteration / "fault-plan.json").get("faults") != faults:
+            raise ValueError("REGION_STATE fault plan changed")
+        events_path = iteration / "fault-events.jsonl"
+        if result.get("fault_events_sha256") != (
+                _sha(events_path) if events_path.is_file() else None):
+            raise ValueError("REGION_STATE native event bytes changed")
+        events = native._rows(events_path)
+        strict, _ = native._strict_faults(faults, events)
+        if result.get("strict_injection") is not bool(faults and strict):
+            raise ValueError("REGION_STATE exact fault receipt changed")
+        results.append((result, path.parent, events))
+    elapsed = checkpoint.get("elapsed_seconds")
+    if (not isinstance(elapsed, (int, float)) or isinstance(elapsed, bool) or
+            elapsed < 0 or round(sum(float(row[0]["elapsed_seconds"])
+                                     for row in results), 3) != elapsed):
+        raise ValueError("REGION_STATE elapsed time differs from trial receipts")
+    engine = Path(weave_receipt["engine_jar"])
+    healthy, healthy_root, _ = results[0]
+    healthy_summary = _verified_region_summary(healthy_root, healthy, config, engine)
+    if (healthy.get("status") != "healthy_seed" or
+            healthy.get("junit_passed") is not True or
+            healthy.get("return_code") != 0 or healthy.get("timed_out") is not False or
+            not healthy.get("native_target_retained") or
+            healthy_summary is None or not healthy_summary.get("targetReached") or
+            healthy_summary.get("targetThrowObserved")):
+        raise ValueError("REGION_STATE healthy original JUnit/target is unverified")
+    strict_count = retained = strict_retained = throws = candidates = 0
+    for result, trial_root, events in results[1:]:
+        is_strict = result["strict_injection"] is True
+        strict_count += is_strict
+        trial_summary = _verified_region_summary(trial_root, result, config, engine)
+        if trial_summary is None:
+            if (result.get("native_target_retained") or
+                    result.get("target_exception_triggered") or
+                    result.get("status") not in ("unmatched", "invalid_native_session")):
+                raise ValueError("REGION_STATE missing graph claimed as result")
+            continue
+        if not is_strict and result.get("status") != "unmatched":
+            raise ValueError("unmatched REGION_STATE injection claimed graph result")
+        if is_strict:
+            expected_delta = delta_region_state(healthy_summary, trial_summary)
+            target_retained = bool(trial_summary.get("targetReached") and
+                                   expected_delta["targetRetained"])
+            if result.get("native_target_retained") is not target_retained:
+                raise ValueError("REGION_STATE target/graph retention changed")
+            if target_retained:
+                if result.get("native_delta") != expected_delta:
+                    raise ValueError("REGION_STATE graph delta changed")
+                retained += 1
+                strict_retained += 1
+                applied = [row for row in events if row.get("kind") == "FAULT_APPLIED"]
+                last = applied[-1] if applied else None
+                checks = {row.get("occurrenceId") for row in events if
+                          row.get("kind") == "TARGET_CHECK" and
+                          row.get("siteId") == config["target_site"]}
+                if result.get("fault_in_target_closure") is not bool(
+                        last and last.get("occurrenceId") in checks):
+                    raise ValueError("REGION_STATE fault/target membership changed")
+                exact, admitted, reason, evidence = native._region_throw_evidence(
+                    events, config["target_site"], config["target_throw"], last)
+                if (result.get("target_throw_rows") != exact or
+                        result.get("target_exception_triggered") is not bool(exact) or
+                        result.get("target_temporal_admitted") is not admitted or
+                        result.get("target_temporal_reason") != reason or
+                        result.get("target_temporal_evidence") != evidence or
+                        result.get("status") != ("candidate" if exact and admitted
+                                                else "needs_causal_review" if exact
+                                                else "checked")):
+                    raise ValueError("REGION_STATE exact target throw/order changed")
+                throws += bool(exact)
+                candidates += result["status"] == "candidate"
+            elif (result.get("status") != "target_lost" or
+                  result.get("target_exception_triggered") or
+                  (trial_summary.get("targetReached") and
+                   result.get("native_delta") != expected_delta) or
+                  (not trial_summary.get("targetReached") and
+                   result.get("native_delta") is not None)):
+                raise ValueError("REGION_STATE target loss claimed as coverage")
+    status = checkpoint.get("status")
+    if status not in FINISHED or len(trials) < 1:
+        raise ValueError("REGION_STATE terminal campaign lacks completed fault budget")
+    disposition = ("tested_candidate" if candidates else
+                   "tested_inconclusive" if strict_retained == 0 else
+                   "tested_no_target_throw")
+    return {"terminal_disposition": disposition, "native_tested_complete": True,
+            "fault_trials": len(trials), "strict_fault_trials": strict_count,
+            "target_retained_fault_trials": retained,
+            "strict_target_retained_fault_trials": strict_retained,
+            "target_throw_trials": throws, "candidate_trials": candidates,
+            "elapsed_seconds": elapsed, "status": status,
+            "evidence": str(root / "summary.json")}
 
 
 def _audit_terminal(case_id: str, config_path: Path, root: Path,
@@ -458,8 +774,13 @@ def inspect_case(item: dict, owner: str, config_root: Path, state_root: Path,
                  no_junit: dict | None = None) -> dict[str, Any]:
     case_id = item["case_id"]
     target, workload = item["target"], item["workload"]
-    config_file = config_root / f"{case_id}.json"
-    case_root = state_root / case_id
+    try:
+        config_file, case_root = _native_case_files(item, config_root, state_root)
+    except (OSError, ValueError, KeyError, TypeError) as failure:
+        return {"case_id": case_id, "owner": owner,
+                "terminal_disposition": "receipt_error",
+                "native_tested_complete": False, "reason": str(failure),
+                "status": "blocked", "evidence": str(config_root / f"{case_id}.json")}
     native_state_exists = any((case_root / name).exists() for name in
                               ("checkpoint.json", "summary.json",
                                "recording-admission.json", "trials"))
@@ -511,9 +832,11 @@ def inspect_case(item: dict, owner: str, config_root: Path, state_root: Path,
         return row
     try:
         config = _object(config_file)
-        if config.get("case_id") != case_id or config.get("junit") != {
+        bound = config_file != config_root / f"{case_id}.json"
+        if ((not bound and config.get("case_id") != case_id) or
+                config.get("junit") != {
                 "class": workload.get("test_class"),
-                "method": workload.get("test_method")}:
+                "method": workload.get("test_method")}):
             raise ValueError("native config does not use inventory's original JUnit")
         native._validate_config(config)
         inventory_method = target.get("site_id", "").split("#", 1)[0]
@@ -524,7 +847,11 @@ def inspect_case(item: dict, owner: str, config_root: Path, state_root: Path,
                 config["target_throw"]["exceptionClass"] != target[
                     "target_exception"]):
             raise ValueError("native target exception differs from inventory")
-        verify_preparation_receipt(item, config_file, case_root)
+        region = config["runner"].get("mode") == "region_state"
+        if region:
+            _verify_region_weave(config_file)
+        else:
+            verify_preparation_receipt(item, config_file, case_root)
         row["native_target_site"] = config["target_site"]
         if not checkpoint_file.exists():
             if any((case_root / name).exists() for name in
@@ -534,7 +861,7 @@ def inspect_case(item: dict, owner: str, config_root: Path, state_root: Path,
             return row
         checkpoint = _object(checkpoint_file)
         if (checkpoint.get("schema_version") != 1 or
-                checkpoint.get("case_id") != case_id or
+                checkpoint.get("case_id") != config["case_id"] or
                 checkpoint.get("config_sha256") != _sha(config_file)):
             raise ValueError("native checkpoint changed identity/config")
         if checkpoint.get("terminal") is False:
@@ -547,8 +874,9 @@ def inspect_case(item: dict, owner: str, config_root: Path, state_root: Path,
             return row
         if checkpoint.get("terminal") is not True:
             raise ValueError("native checkpoint terminal field is invalid")
-        audited = _audit_terminal(case_id, config_file, case_root, checkpoint,
-                                  _object(case_root / "summary.json"))
+        auditor = _audit_region_terminal if region else _audit_terminal
+        audited = auditor(config["case_id"], config_file, case_root, checkpoint,
+                          _object(case_root / "summary.json"))
         row.update(audited)
     except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError) as failure:
         row.update(terminal_disposition="receipt_error", status="blocked",
@@ -647,7 +975,7 @@ def run_next(inventory: Path, ownership: Path, config_root: Path,
                                no_junit.get(case_id))
             if row["terminal_disposition"] not in ("ready", "resumable"):
                 continue
-            root = state_root / case_id
+            config_file, root = _native_case_files(item, config_root, state_root)
             root.mkdir(parents=True, exist_ok=True)
             with (root / ".dispatch.lock").open("a+") as case_lock:
                 try:
@@ -659,7 +987,7 @@ def run_next(inventory: Path, ownership: Path, config_root: Path,
                                    no_junit.get(case_id))
                 if now["terminal_disposition"] not in ("ready", "resumable"):
                     continue
-                runner(config_root / f"{case_id}.json", root)
+                runner(config_file, root)
                 return inspect_case(item, host, config_root, state_root,
                                     no_junit.get(case_id))
         return {"host": host, "status": "no_runnable_native_case"}
