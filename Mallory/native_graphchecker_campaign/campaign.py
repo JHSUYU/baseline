@@ -31,7 +31,7 @@ from Mallory.native_graphchecker_feedback.region_state_graph import (
 )
 
 SCHEMA = 1
-SCHEDULER_VERSION = 2
+SCHEDULER_VERSION = 3
 FAULT_FIELDS = ("siteId", "node", "actorEpochOrdinal", "occurrenceId",
                 "ordinal", "exceptionClass")
 SELECTOR_FIELDS = ("siteId", "node", "actorEpochOrdinal", "ordinal",
@@ -437,6 +437,52 @@ def _strict_faults(faults: list[dict[str, Any]], rows: list[dict[str, Any]]
     return True, applied[-1]["seq"] if applied else None
 
 
+def _unmatched_actor_successors(
+        faults: list[dict[str, Any]], rows: list[dict[str, Any]]
+        ) -> tuple[int, list[dict[str, Any]]]:
+    """Rebase a missing fault on an observed actor after a proven prefix.
+
+    The receipt file is an append-only interleaving. Its row order locates
+    doors after the last applied fault; per-actor ``seq`` values cannot order
+    events from different actors. A successor still uses the full exact
+    selector, and the old occurrence ID is retained only as provenance.
+    """
+    applied_positions = [index for index, row in enumerate(rows)
+                         if row["kind"] == "FAULT_APPLIED"]
+    prefix_size = len(applied_positions)
+    if not faults or prefix_size >= len(faults):
+        return 0, []
+    valid_prefix, _ = _strict_faults(faults[:prefix_size], rows)
+    if not valid_prefix:
+        return 0, []
+    missing = faults[prefix_size]
+    after_index = applied_positions[-1] if applied_positions else -1
+    missing_actor = (missing["node"], missing["actorEpochOrdinal"])
+    successors = []
+    seen = set()
+    for index, row in enumerate(rows):
+        if index <= after_index or row["kind"] != "FAULT_DOOR":
+            continue
+        if (row.get("siteId"), row.get("exceptionClass")) != (
+                missing["siteId"], missing["exceptionClass"]):
+            continue
+        if (row.get("node"), row.get("actorEpochOrdinal")) == missing_actor:
+            continue
+        try:
+            _fault_identity(row, applied=True)
+        except ValueError:
+            continue
+        fault = {field: row[field] for field in SELECTOR_FIELDS}
+        fault["sourceOccurrenceId"] = row["occurrenceId"]
+        key = _plan_key([*faults[:prefix_size], fault])
+        if key in seen:
+            continue
+        seen.add(key)
+        successors.append({"fault": fault, "seq": row["seq"],
+                           "tier": "outside_closure"})
+    return prefix_size, successors
+
+
 def _exact_throws(rows: list[dict[str, Any]], summary: dict[str, Any],
                   target: dict[str, str], last_fault_seq: int | None
                   ) -> list[dict[str, Any]]:
@@ -703,7 +749,7 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
     version = state.get("scheduler_version", 1)
     if version == 1:
         return _pick_v1(state)
-    if version != SCHEDULER_VERSION:
+    if version not in (2, SCHEDULER_VERSION):
         raise ValueError(f"unsupported native scheduler version: {version}")
     queue = state["queue"]
     if not queue:
@@ -1090,6 +1136,10 @@ def _run_trial(config: dict[str, Any], admitted: dict[str, Any],
         return _save_trial_result(trial, result, trial_started)
     result["strict_injection"] = bool(faults and strict)
     if config["runner"].get("mode") == "region_state":
+        if faults and not strict:
+            prefix_size, successors = _unmatched_actor_successors(faults, events)
+            result["applied_prefix_count"] = prefix_size
+            result["observed_actor_successors"] = successors
         result = _run_region_trial(config, admitted, trial, faults, healthy,
                                    result, events, strict)
         return _save_trial_result(trial, result, trial_started)
@@ -1225,7 +1275,7 @@ def _accept(state: dict[str, Any], result: dict[str, Any], name: str) -> None:
                   "target_exception_triggered": result["target_exception_triggered"],
                   "elapsed_seconds": result["elapsed_seconds"]}
         state["trials"].append(record)
-        if state.get("scheduler_version", 1) == SCHEDULER_VERSION:
+        if state.get("scheduler_version", 1) >= 2:
             fault_id = _fault_id(active["faults"][-1])
             attempts = state["fault_id_attempts"]
             attempts[fault_id] = attempts.get(fault_id, 0) + 1
@@ -1242,6 +1292,19 @@ def _accept(state: dict[str, Any], result: dict[str, Any], name: str) -> None:
                 "enqueued_at": state["completed_fault_trials"],
                 "attempt": active.get("attempt", 0) + 1})
             record["retry_enqueued"] = active.get("attempt", 0) + 1
+        if (state.get("scheduler_version", 1) >= 3 and
+                result["status"] == "unmatched" and
+                result.get("runner_mode") == "region_state"):
+            prefix_size = result.get("applied_prefix_count", 0)
+            successors = result.get("observed_actor_successors", [])
+            if (not isinstance(prefix_size, int) or isinstance(prefix_size, bool)
+                    or not 0 <= prefix_size < len(active["faults"]) or
+                    not isinstance(successors, list)):
+                raise ValueError("invalid unmatched actor successor receipt")
+            before = len(state["queue"])
+            _enqueue(state, successors, active["faults"][:prefix_size], 0)
+            record["observed_actor_successors_enqueued"] = (
+                len(state["queue"]) - before)
         if result["status"] in ("checked", "candidate"):
             novelty = _novelty(state, result["native_delta"])
             record["target_closure_novelty"] = novelty

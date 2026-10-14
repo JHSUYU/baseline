@@ -38,15 +38,22 @@ that session, compares observed target closure families and branch outcomes,
 and updates a persistent fault queue. It gives most queue slots to observed
 closure doors and reserves one in eight fault trials for doors outside it.
 
-New campaigns use scheduler version 2. The last fault's `siteId` and
+New campaigns use scheduler version 3. The last fault's `siteId` and
 `exceptionClass` form a fault ID; physical actors and event ordinals remain in
 the exact injection selector but do not split this scheduling identity. A
 new or less-tested fault ID outranks repeated IDs before closure novelty and
 depth break ties. One in eight selections goes to the oldest waiting plan,
 and another one in eight favors a multi-fault sequence when one is queued. The outside
 closure slot is still one in eight. Attempt and successful-injection counts
-are checkpointed, so resuming does not reset diversity. Existing checkpoints
-without a scheduler version continue with their original selection rule.
+are checkpointed, so resuming does not reset diversity. When a REGION_STATE
+trial misses its exact selector, version 3 verifies any already applied prefix
+against its original door receipts, then offers alternate actors observed at
+the missing fault's same `siteId` and `exceptionClass` after that prefix.
+These are new exact plans with their observed node, epoch, and ordinal; the
+old occurrence ID remains provenance only. The append-only receipt row order
+is used across actors because their local `seq` numbers are incomparable.
+Unobserved doors generate no successors. Version 1 and version 2 checkpoints
+retain their previous selection and mutation rules.
 
 ## Input contract
 

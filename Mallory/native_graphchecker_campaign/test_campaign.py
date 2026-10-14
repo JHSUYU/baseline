@@ -115,6 +115,106 @@ class NativeAdmissionLineageTest(unittest.TestCase):
         self.assertEqual("running", state["status"])
 
 
+class ObservedActorSuccessorTest(unittest.TestCase):
+    """An unmatched actor can supply a new exact selector, never a loose one."""
+
+    @staticmethod
+    def _fault(site: str, node: str, ordinal: int = 1) -> dict:
+        return {"siteId": site, "node": node, "actorEpochOrdinal": 0,
+                "ordinal": ordinal, "exceptionClass": "java.io.IOException"}
+
+    @classmethod
+    def _row(cls, kind: str, site: str, node: str, seq: int,
+             occurrence: str, ordinal: int = 1) -> dict:
+        return {**cls._fault(site, node, ordinal), "kind": kind, "seq": seq,
+                "occurrenceId": occurrence}
+
+    def test_successor_uses_append_order_and_verified_prefix(self) -> None:
+        planned = [self._fault("RPC#first", "dn1"),
+                   self._fault("RPC#missing", "dn1")]
+        rows = [self._row("FAULT_DOOR", "RPC#first", "dn1", 1, "first"),
+                # This actor's higher local seq is still before the applied
+                # prefix in the append-only file and must be excluded.
+                self._row("FAULT_DOOR", "RPC#missing", "dn2", 90, "early"),
+                self._row("FAULT_APPLIED", "RPC#first", "dn1", 2, "first"),
+                self._row("FAULT_DOOR", "RPC#missing", "dn3", 1, "later"),
+                self._row("FAULT_DOOR", "RPC#missing", "dn3", 1, "duplicate"),
+                self._row("FAULT_DOOR", "RPC#missing", "dn1", 3, "planned"),
+                self._row("FAULT_DOOR", "RPC#other", "dn4", 1, "wrong")]
+        prefix, successors = core._unmatched_actor_successors(planned, rows)
+        self.assertEqual(1, prefix)
+        self.assertEqual(1, len(successors))
+        self.assertEqual("dn3", successors[0]["fault"]["node"])
+        self.assertEqual("later", successors[0]["fault"]["sourceOccurrenceId"])
+        self.assertEqual("outside_closure", successors[0]["tier"])
+        self.assertEqual((False, None), core._strict_faults(planned, rows))
+        successor_plan = [planned[0], successors[0]["fault"]]
+        successor_rows = [rows[0], rows[2], rows[3],
+                          self._row("FAULT_APPLIED", "RPC#missing", "dn3",
+                                    2, "later")]
+        self.assertTrue(core._strict_faults(successor_plan, successor_rows)[0])
+
+    def test_invalid_applied_prefix_and_absent_door_yield_no_successor(self) -> None:
+        planned = [self._fault("RPC#first", "dn1"),
+                   self._fault("RPC#missing", "dn1")]
+        wrong_prefix = [self._row("FAULT_DOOR", "RPC#first", "dn2", 1, "x"),
+                        self._row("FAULT_APPLIED", "RPC#first", "dn2", 2, "x"),
+                        self._row("FAULT_DOOR", "RPC#missing", "dn3", 3, "y")]
+        self.assertEqual((0, []), core._unmatched_actor_successors(
+            planned, wrong_prefix))
+        no_matching_site = [self._row("FAULT_DOOR", "RPC#first", "dn1", 1, "x"),
+                            self._row("FAULT_APPLIED", "RPC#first", "dn1", 2,
+                                      "x"),
+                            self._row("FAULT_DOOR", "RPC#other", "dn3", 1,
+                                      "y")]
+        self.assertEqual((1, []), core._unmatched_actor_successors(
+            planned, no_matching_site))
+
+    def test_v3_enqueues_once_and_v2_checkpoint_keeps_old_rule(self) -> None:
+        planned = [self._fault("RPC#first", "dn1"),
+                   self._fault("RPC#missing", "dn1")]
+        replacement = {**self._fault("RPC#missing", "dn3"),
+                       "sourceOccurrenceId": "observed"}
+        successor = {"fault": replacement, "seq": 1,
+                     "tier": "outside_closure"}
+
+        def state(version: int) -> dict:
+            item = {"index": 1, "name": "r0001", "faults": planned,
+                    "key": core._plan_key(planned), "tier": "outside_closure",
+                    "novelty": 0, "attempt": 0}
+            return {"scheduler_version": version, "active": item,
+                    "elapsed_seconds": 0.0, "completed_fault_trials": 0,
+                    "trials": [], "queue": [], "seen_plan_keys": [item["key"]],
+                    "fault_id_attempts": {}, "fault_id_successes": {},
+                    "status": "running", "terminal": False,
+                    "budget": {"fault_trials": 10, "seconds": 60,
+                               "max_faults_per_trial": 4},
+                    "healthy": {"status": "healthy_seed"}}
+
+        result = {"faults": planned, "elapsed_seconds": 1.0,
+                  "status": "unmatched", "runner_mode": "region_state",
+                  "strict_injection": False, "native_target_retained": False,
+                  "target_exception_triggered": False,
+                  "applied_prefix_count": 1,
+                  "observed_actor_successors": [successor, successor]}
+        current = state(3)
+        core._accept(current, result, "r0001")
+        generated = [x for x in current["queue"] if x["faults"][-1]["node"] ==
+                     "dn3"]
+        self.assertEqual(1, len(generated))
+        self.assertEqual(planned[0], generated[0]["faults"][0])
+        self.assertEqual(1, current["trials"][0][
+            "observed_actor_successors_enqueued"])
+        self.assertEqual(1, current["trials"][0]["retry_enqueued"])
+        self.assertEqual(1, current["fault_id_attempts"][core._fault_id(
+            planned[-1])])
+        previous = state(2)
+        core._accept(previous, result, "r0001")
+        self.assertEqual(1, len(previous["queue"]))
+        self.assertNotIn("observed_actor_successors_enqueued",
+                         previous["trials"][0])
+
+
 class NativeQueueDiversityTest(unittest.TestCase):
     """The queue should reach distinct doors without losing deep sequences."""
 
