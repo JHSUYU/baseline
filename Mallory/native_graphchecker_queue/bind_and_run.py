@@ -128,7 +128,7 @@ def promote(*, root: Path, case_id: str, native_config: Path,
             campaign_python_tar: Path | None = None,
             dispatch: bool = True) -> dict:
     physical_host(host)
-    inventory = root / 'python-snapshot-bind-v3/Mallory/cases/inventory.json'
+    inventory = root / 'python-snapshot-bind-v4/Mallory/cases/inventory.json'
     ownership = root / 'config/ownership.json'
     config_root = root / 'config'
     state_root = root / 'state'
