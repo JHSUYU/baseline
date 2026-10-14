@@ -27,29 +27,27 @@ target exception with its required trial evidence. It does not assert a new
 bug. `confirmed_new_bug` remains null until independent source-level review
 provides that conclusion.
 
-The committed snapshot has 102 rows and one verified terminal import,
-ZOOKEEPER-07. HDFS-11 is budget terminal and awaiting queue adoption; its
-separate terminal review records 24 trials, 15 strict target-retained trials,
-and no new closure-edge families or target throw. This export does not upgrade
-that result to a high-quality check or a bug candidate.
+The committed v2 snapshot has 102 rows and two verified terminal imports:
+ZOOKEEPER-07 and HDFS-11. Six other bound campaigns show live checkpoint
+observations without a terminal receipt. HDFS-11's separate terminal review
+records 24 trials, 15 strict target-retained trials, incomplete SASL value
+provenance, and no new closure-edge families or target throw. Its completed
+time budget is recorded without upgrading the graph result to a candidate.
+`promotion-v2.json` and `promotion-v2-manifest.json` pin the durable runtime,
+all eight binding digests, the pilot, two completions, and this snapshot.
 
 These files are distinct from the earlier custom/preliminary
 `data/mallory/graphchecker_port/final-results.tsv` and never read that table.
 
-Regenerate from an explicitly selected queue state and binding root:
+Regenerate from the promoted durable queue state:
 
 ```bash
 python3 - <<'PY'
 from pathlib import Path
 from Mallory.native_graphchecker_queue.results import export_native_results
-export_native_results(
-    Path('Mallory/cases/inventory.json'),
-    Path('Mallory/native_graphchecker_queue/preflight_existing/native-ownership.draft.json'),
-    Path('Mallory/native_graphchecker_queue/preflight_existing/bindings'),
-    Path('/proj/silentfailure-PG0/ZhenyuLi/Mallory/ZOOKEEPER-native-system-queue-v1/state'),
+b = Path('/proj/silentfailure-PG0/ZhenyuLi/Mallory/native-102-queue-v2')
+export_native_results(b / 'python-snapshot/Mallory/cases/inventory.json',
+    b / 'config/ownership.json', b / 'config', b / 'state',
     Path('data/mallory/native_graphchecker_queue'))
 PY
 ```
-
-The preflight binding/profile paths remain branch-local drafts; use a durable
-promotion path for actual worker launch.
