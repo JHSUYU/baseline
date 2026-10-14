@@ -832,6 +832,163 @@ class WireTemporalProofTest(unittest.TestCase):
                 self.assertIsNone(proof)
 
 
+class NativeLocalWorkRootTest(unittest.TestCase):
+    """Host-local JUnit data must not move durable campaign evidence."""
+
+    def setUp(self) -> None:
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.local = self.root / "host-local"
+        self.local.mkdir()
+        mount_patch = patch.object(core, "_filesystem_mount",
+                                   return_value=(Path("/mnt/scratch"), "ext4"))
+        mount_patch.start()
+        self.addCleanup(mount_patch.stop)
+        self.campaign = self.root / "durable-campaign"
+        self.campaign.mkdir()
+        self.classes = self.root / "woven"
+        self.classes.mkdir()
+        (self.classes / "native-original-weave-receipt.json").write_text("{}\n")
+        self.engine = self.root / "engine.jar"
+        self.engine.write_bytes(b"fixture jar")
+        self.dependencies = self.root / "dependencies.txt"
+        self.dependencies.write_text(str(self.engine))
+        (self.root / "scope.jsonl").write_text("{}\n")
+        self.java = self.root / "fake-zero-java"
+        self.java.write_text(
+            "#!/usr/bin/env python3\n"
+            "import json, os\n"
+            "from pathlib import Path\n"
+            "Path('cwd.json').write_text(json.dumps({'cwd': os.getcwd()}))\n"
+            "trace = Path(os.environ['CAUSYNTH_TRACE_OUTPUT_DIR'])\n"
+            "trace.mkdir(parents=True, exist_ok=True)\n"
+            "(trace / 'row.jsonl').write_text('durable trace\\n')\n")
+        self.java.chmod(0o755)
+        self.config = {
+            "case_id": "FIXTURE-LOCAL", "target_site": "Keys#check#u3",
+            "target_throw": {"siteId": "Keys#throw#u4",
+                             "exceptionClass": "java.io.IOException"},
+            "native_weave_config": str(self.root / "weave.json"),
+            "recording": {"trace_dir": str(self.root / "recording"),
+                          "test_id": "OriginalTest#testOperation",
+                          "target_name": "fixture",
+                          "candidate_graph": str(self.root / "graph.jsonl"),
+                          "static_scope_map": str(self.root / "scope.jsonl"),
+                          "region_skeletons": str(self.root / "regions.jsonl"),
+                          "max_jobs": 1},
+            "junit": {"class": "OriginalTest", "method": "testOperation"},
+            "runner": {"zero_vm_java": str(self.java),
+                       "main_class": "UnusedMain", "classpath": [],
+                       "mode": "region_state",
+                       "local_work_root": str(self.local),
+                       "jvm_args": ["-Dbuild.test.dir={trial_workdir}"]},
+            "budget": {"fault_trials": 1, "seconds": 60,
+                       "max_faults_per_trial": 1},
+            "timeout_seconds": 30}
+        self.admitted = {"weave_config": {"output_classes": str(self.classes)},
+                         "origin": {"fixture": True},
+                         "zero_vm_sha256": "fixture-java",
+                         "runner_classpath_artifacts": []}
+
+    def test_only_junit_workdir_moves_and_attempts_are_isolated(self) -> None:
+        core._validate_config(self.config)
+        core._validate_local_work_root(self.config, self.campaign)
+        with patch.object(core, "JAR", self.engine), patch.object(
+                core, "DEPENDENCIES", self.dependencies):
+            first = self.campaign / "trials/r0001"
+            first.mkdir(parents=True)
+            self.assertEqual(0, core._execute_junit(
+                self.config, self.admitted, first, [])["return_code"])
+            receipt = core._load(first / "process.json")
+            old_workdir = Path(receipt["junit_workdir"])
+            self.assertTrue(old_workdir.is_relative_to(self.local))
+            self.assertFalse(old_workdir.is_relative_to(self.campaign))
+            self.assertEqual(str(old_workdir), json.loads(
+                (old_workdir / "cwd.json").read_text())["cwd"])
+            self.assertTrue((first / "iteration-native/fault-plan.json").is_file())
+            self.assertTrue((first / "iteration-native/trace/row.jsonl").is_file())
+            self.assertFalse((first / "iteration-native/workdir").exists())
+
+            # A stopped attempt can retain its local data while the same
+            # trial name receives a fresh cwd after checkpoint recovery.
+            self.assertEqual(0, core._execute_junit(
+                self.config, self.admitted, first, [])["return_code"])
+            retry = Path(core._load(first / "process.json")["junit_workdir"])
+            self.assertNotEqual(old_workdir, retry)
+            self.assertTrue((old_workdir / "cwd.json").is_file())
+            second_campaign = self.root / "another-campaign"
+            second = second_campaign / "trials/r0001"
+            second.mkdir(parents=True)
+            self.assertEqual(0, core._execute_junit(
+                self.config, self.admitted, second, [])["return_code"])
+            separate = Path(core._load(second / "process.json")["junit_workdir"])
+            self.assertNotEqual(retry.parent, separate.parent)
+
+    def test_root_validation_rejects_shared_or_nested_paths(self) -> None:
+        invalid = json.loads(json.dumps(self.config))
+        invalid["runner"]["local_work_root"] = "relative/work"
+        with self.assertRaisesRegex(ValueError, "absolute path"):
+            core._validate_config(invalid)
+        invalid["runner"]["local_work_root"] = str(self.campaign / "scratch")
+        with self.assertRaisesRegex(ValueError, "separate"):
+            core._validate_local_work_root(invalid, self.campaign)
+        with patch.object(core, "_filesystem_mount",
+                          return_value=(Path("/mnt/scratch"), "nfs4")):
+            with self.assertRaisesRegex(ValueError, "host-local"):
+                core._validate_local_work_root(self.config, self.campaign)
+        with patch.object(core, "_filesystem_mount",
+                          return_value=(Path("/"), "ext3")):
+            with self.assertRaisesRegex(ValueError, "host-local"):
+                core._validate_local_work_root(self.config, self.campaign)
+
+    def test_interrupted_trial_preserves_old_attempt_and_retries_fresh(self) -> None:
+        old_trial = self.campaign / "trials/r0000"
+        old_trial.mkdir(parents=True)
+        old_workdir = core._junit_workdir(self.config, old_trial)
+        (old_workdir / "partial.txt").write_text("incomplete JUnit data\n")
+        core._atomic(old_trial / "process.json", {
+            "pid": 987654321, "start_ticks": "1",
+            "junit_workdir": str(old_workdir)})
+        state = {"active": {"index": 0, "name": "r0000", "faults": []}}
+        rerun_paths = []
+
+        def rerun(config, admitted, trial, faults, healthy):
+            trial.mkdir()
+            rerun_paths.append(core._junit_workdir(config, trial))
+            core._atomic(trial / "result.json", {"faults": []})
+            return {"faults": []}
+
+        with patch.object(core, "_start_ticks", return_value=None), patch.object(
+                core, "_run_trial", side_effect=rerun), patch.object(core, "_accept"):
+            core._resume_active(self.config, self.admitted, self.campaign, state)
+        self.assertEqual(1, len(rerun_paths))
+        self.assertNotEqual(old_workdir, rerun_paths[0])
+        self.assertTrue((old_workdir / "partial.txt").is_file())
+        self.assertTrue((self.campaign /
+                         "interrupted/r0000-attempt1/process.json").is_file())
+        self.assertTrue((old_trial / "result.json").is_file())
+        self.assertTrue((self.campaign / "checkpoint.json").is_file())
+
+    def test_resume_keeps_config_sha_pin_for_local_root(self) -> None:
+        config_file = self.root / "case.json"
+        config_file.write_text(json.dumps(self.config))
+        core._validate_local_work_root(self.config, self.campaign)
+        state = core._new_state(self.config, core._sha(config_file), self.admitted)
+        state["terminal"] = True
+        state["status"] = "complete_queue"
+        core._atomic(self.campaign / "checkpoint.json", state)
+        with patch.object(core, "_admit", return_value=self.admitted):
+            self.assertEqual("complete_queue", core.run_campaign(
+                config_file, self.campaign)["status"])
+            changed = json.loads(json.dumps(self.config))
+            changed["runner"]["local_work_root"] = str(self.root / "other-local")
+            (self.root / "other-local").mkdir()
+            config_file.write_text(json.dumps(changed))
+            with self.assertRaisesRegex(ValueError, "checkpoint inputs changed"):
+                core.run_campaign(config_file, self.campaign)
+
+
 class NativeCampaignFixtureTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:

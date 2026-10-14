@@ -172,6 +172,12 @@ def _validate_config(config: dict[str, Any]) -> None:
                      item == "{trial_result_file}")
                     for item in runner.get("args_before_test", []))):
         raise ValueError("native campaign requires bounded Zero VM JUnit runner")
+    local_work_root = runner.get("local_work_root")
+    if local_work_root is not None and (
+            not isinstance(local_work_root, str) or
+            not local_work_root or
+            not Path(local_work_root).is_absolute()):
+        raise ValueError("runner.local_work_root must be an absolute path")
     marker = runner.get("result_marker")
     if marker is not None and (not isinstance(marker, str) or
                                not re.fullmatch(r"[A-Z][A-Z0-9_]*", marker)):
@@ -1125,6 +1131,63 @@ def _trial_jvm_args(runner: dict[str, Any], workdir: Path) -> list[str]:
             for arg in runner.get("jvm_args", [])]
 
 
+def _filesystem_mount(path: Path) -> tuple[Path, str]:
+    """Find the Linux mount containing an existing work root."""
+    resolved = path.resolve()
+    nearest = resolved
+    while not nearest.exists():
+        nearest = nearest.parent
+    best: tuple[int, Path, str] | None = None
+    with Path("/proc/self/mountinfo").open(encoding="utf-8") as stream:
+        for line in stream:
+            before, separator, after = line.partition(" - ")
+            if not separator:
+                continue
+            fields = before.split()
+            if len(fields) < 5:
+                continue
+            mount = Path(re.sub(r"\\([0-7]{3})", lambda match:
+                            chr(int(match.group(1), 8)), fields[4]))
+            if nearest == mount or mount in nearest.parents:
+                depth = len(mount.parts)
+                if best is None or depth > best[0]:
+                    best = (depth, mount, after.split()[0])
+    if best is None:
+        raise ValueError(f"cannot identify filesystem for {path}")
+    return best[1], best[2]
+
+
+def _validate_local_work_root(config: dict[str, Any], campaign: Path) -> None:
+    configured = config["runner"].get("local_work_root")
+    if configured is None:
+        return
+    root = Path(configured).resolve()
+    campaign = campaign.resolve()
+    if root == campaign or campaign in root.parents or root in campaign.parents:
+        raise ValueError("local JUnit work root must be separate from campaign output")
+    if not root.is_dir():
+        raise ValueError("runner.local_work_root must already exist as a directory")
+    mount, fs_type = _filesystem_mount(root)
+    if mount == Path("/") or fs_type.lower().startswith("nfs"):
+        raise ValueError("runner.local_work_root must be on a host-local filesystem")
+
+
+def _junit_workdir(config: dict[str, Any], trial: Path) -> Path:
+    """Give each attempt a fresh cwd; leave all receipts in the campaign."""
+    configured = config["runner"].get("local_work_root")
+    if configured is None:
+        workdir = trial / "iteration-native" / "workdir"
+        workdir.mkdir(parents=True)
+        return workdir
+    campaign = trial.parent.parent.resolve()
+    _validate_local_work_root(config, campaign)
+    namespace = hashlib.sha256((str(campaign) + "\0" + config["case_id"])
+                               .encode("utf-8")).hexdigest()[:24]
+    parent = Path(configured).resolve() / namespace
+    parent.mkdir(parents=True, exist_ok=True)
+    return Path(tempfile.mkdtemp(prefix=f"{trial.name}-attempt-", dir=parent))
+
+
 def _runner_prefix(runner: dict[str, Any], iteration: Path) -> list[str]:
     return [str(iteration / "junit-result.json") if arg == "{trial_result_file}"
             else arg for arg in runner.get("args_before_test", [])]
@@ -1161,8 +1224,7 @@ def _execute_junit(config: dict[str, Any], admitted: dict[str, Any],
                    trial: Path, faults: list[dict[str, Any]]) -> dict[str, Any]:
     """Run the same unchanged JUnit method in a fresh Zero VM."""
     iteration = trial / "iteration-native"
-    workdir = iteration / "workdir"
-    workdir.mkdir(parents=True)
+    workdir = _junit_workdir(config, trial)
     _atomic(iteration / "fault-plan.json", {"faults": faults})
     weave = admitted["weave_config"]
     runner = config["runner"]
@@ -1197,9 +1259,12 @@ def _execute_junit(config: dict[str, Any], admitted: dict[str, Any],
             trial / "stderr.log").open("wb") as stderr:
         process = subprocess.Popen(argv, cwd=workdir, env=env, stdout=stdout,
                                    stderr=stderr, start_new_session=True)
-        _atomic(trial / "process.json", {"pid": process.pid,
-                                        "start_ticks": _start_ticks(process.pid),
-                                        "argv": argv, "started_at": time.time()})
+        process_receipt = {"pid": process.pid,
+                           "start_ticks": _start_ticks(process.pid),
+                           "argv": argv, "started_at": time.time()}
+        if runner.get("local_work_root") is not None:
+            process_receipt["junit_workdir"] = str(workdir)
+        _atomic(trial / "process.json", process_receipt)
         try:
             code = process.wait(timeout=config["timeout_seconds"])
             timed_out = False
@@ -1804,6 +1869,7 @@ def run_campaign(config_path: Path, root: Path) -> dict[str, Any]:
     config_sha = _sha(config_path)
     root = root.resolve()
     root.mkdir(parents=True, exist_ok=True)
+    _validate_local_work_root(config, root)
     with (root / ".campaign.lock").open("a+") as lock:
         try:
             fcntl.flock(lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)

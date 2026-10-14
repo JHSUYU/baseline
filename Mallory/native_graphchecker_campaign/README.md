@@ -129,6 +129,7 @@ the following shape (paths are absolute in an actual campaign):
     "zero_vm_java": "/path/to/zero-vm/bin/java",
     "main_class": "JUnit runner main class",
     "classpath": ["/path/to/test-classes", "/path/to/dependencies.jar"],
+    "local_work_root": "/mnt/mallory-scratch/junit",
     "jvm_args": []
   },
   "budget": {"fault_trials": 32, "seconds": 7200,
@@ -143,6 +144,20 @@ task ID comes from the pinned weave configuration, never from a refusal log.
 In `runner.jvm_args`, `{trial_workdir}` expands to that trial's fresh work
 directory, for example with `-Djava.io.tmpdir={trial_workdir}` and
 `-Dbuild.test.dir={trial_workdir}` for JUnit cluster data.
+`runner.local_work_root` is optional and applies only to new campaigns whose
+config includes it. It must be an existing absolute directory on a separate
+host-local mount; NFS, an unmounted directory on the root filesystem, and a
+path inside the campaign output are rejected. The mount is checked again at
+every trial, so losing the scratch mount cannot silently fill `/`. Each campaign and
+each trial attempt receives a separate directory beneath that root. The JUnit
+process uses it as its current directory, and `{trial_workdir}` resolves there.
+The exact path is retained in `process.json`. Fault plans, trace, original
+graph, stdout/stderr, trial result, and checkpoint stay in the campaign output
+directory. Local work directories are retained for diagnosis; after a trial
+result and checkpoint are durable, they may be pruned separately. If local
+scratch disappears during an incomplete trial, normal resume retries that
+trial in a new directory. Changing `local_work_root` in a running campaign
+changes the config SHA and is rejected by checkpoint validation.
 
 The fault adapter is a separate contract. It reads `MALLORY_NATIVE_FAULT_PLAN`
 and writes monotone JSONL events to `MALLORY_NATIVE_FAULT_EVENTS`. A plan item
