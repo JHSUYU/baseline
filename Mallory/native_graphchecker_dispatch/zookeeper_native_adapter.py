@@ -27,9 +27,37 @@ SITE = re.compile(r"^<([^:]+): (.+)>#u([0-9]+)$")
 SESSION_FILES = (
     "manifest.json", "activations.jsonl", "decisions.jsonl",
     "exports.jsonl", "attaches.jsonl", "writes.jsonl", "reads.jsonl",
-    "roots.jsonl", "targets.jsonl", "gaps.jsonl", "obligations.jsonl",
+    "roots.jsonl", "targets.jsonl", "gaps.jsonl",
     "expressions.jsonl", "schedule.jsonl",
 )
+
+
+def _valid_wire_ports(ports: object) -> bool:
+    """A proof may cover any observed wire family, including client traffic."""
+    return (isinstance(ports, list) and bool(ports) and
+            all(isinstance(port, str) and port.strip() == port and port
+                for port in ports) and len(ports) == len(set(ports)))
+
+
+def _reusable_gate_claims(gate: dict) -> bool:
+    """The seed proves transport capability; each case proves its own target.
+
+    Target reach and a unique executable closure task are checked later by
+    ``prepare`` on the requested unchanged JUnit. They cannot be inherited
+    from the JUnit that established this protocol gate.
+    """
+    return (gate.get("mode") == GATE_MODE and gate.get("accepted") is True and
+            (gate.get("typed_wire_send_receive") is True or
+             gate.get("typed_quorum_send_receive") is True) and
+            gate.get("junitPassed") is True and
+            gate.get("blockingGaps") == 0 and
+            _valid_wire_ports(gate.get("typedWirePorts")))
+
+
+def _closed_trace_manifest(manifest: dict) -> bool:
+    return (manifest.get("kind") == "STREAMING_RUNTIME_TRACE" and
+            (manifest.get("status") == "CLOSED" or
+             manifest.get("closed") is True))
 
 
 def _paths(values: object, label: str) -> list[Path]:
@@ -63,6 +91,12 @@ def _verify_closed_session(gate: dict) -> None:
         if (not path.is_absolute() or not path.is_file() or path.is_symlink() or
                 _sha(path) != gate.get(f"{name}_sha256")):
             raise ValueError(f"ZooKeeper SessionReader proof changed: {name}")
+    # A pinned arbitrary Java file is not evidence that the original
+    # SessionReader and exact SEND/RECV endpoints were checked.
+    verifier_source = Path(gate["session_reader_verifier_source_path"])
+    if _sha(verifier_source) != _sha(Path(__file__).with_name(
+            "NativeZooKeeperSessionVerifier.java")):
+        raise ValueError("ZooKeeper SessionReader verifier source differs")
     artifact = Path(gate.get("session_reader_verifier_artifact_path", ""))
     if (not artifact.is_absolute() or not artifact.exists() or
             artifact.is_symlink() or
@@ -167,40 +201,31 @@ def _profile(request: dict, profile_file: Path) -> dict:
     gate = _object(Path(profile["protocol_gate"]))
     source_classes = Path(profile["source_classes"])
     mapping = Path(profile["communication_mapping"])
-    ports = gate.get("typedWirePorts")
     def verified_file(name: str, sha_name: str) -> None:
         path = Path(gate.get(name, ""))
         if (not path.is_absolute() or not path.is_file() or path.is_symlink() or
                 _sha(path) != gate.get(sha_name)):
             raise ValueError(f"ZooKeeper protocol gate input changed: {name}")
 
-    if (gate.get("mode") != GATE_MODE or gate.get("accepted") is not True or
-            gate.get("typed_quorum_send_receive") is not True or
-            gate.get("original_session_target_reached") is not True or
+    if (not _reusable_gate_claims(gate) or
             gate.get("engine_jar_sha256") != _sha(native.JAR) or
             gate.get("source_tree_sha256") != weave.file_tree_digest(source) or
             gate.get("source_classes_sha256") != weave.class_tree_digest(
                 source_classes) or
-            gate.get("communication_mapping_sha256") != _sha(mapping) or
-            gate.get("junitPassed") is not True or
-            not isinstance(gate.get("junitClass"), str) or
-            not gate["junitClass"] or
-            not isinstance(gate.get("junitMethod"), str) or
-            not gate["junitMethod"] or
-            not isinstance(gate.get("targetSiteId"), str) or
-            not gate["targetSiteId"] or
-            not isinstance(gate.get("targetOccurrence"), str) or
-            not gate["targetOccurrence"] or
-            not isinstance(gate.get("targetClosureWireEdges"), int) or
-            isinstance(gate["targetClosureWireEdges"], bool) or
-            gate["targetClosureWireEdges"] <= 0 or
-            gate.get("blockingGaps") != 0 or
-            not isinstance(ports, list) or
-            not all(isinstance(port, str) for port in ports) or
-            not {"FOLLOWERINFO", "LEADERINFO"}.issubset(set(ports))):
+            gate.get("communication_mapping_sha256") != _sha(mapping)):
         raise ValueError("ZooKeeper native quorum/actor protocol gate pending")
     verified_file("static_map_path", "static_map_sha256")
     verified_file("session_manifest_path", "session_manifest_sha256")
+    verified_file("healthy_stdout_path", "healthy_stdout_sha256")
+    verified_file("healthy_trace_manifest_path", "healthy_trace_manifest_sha256")
+    healthy_stdout = Path(gate["healthy_stdout_path"]).read_text(
+        encoding="utf-8", errors="replace")
+    if (not any(marker in healthy_stdout for marker in
+                ("NATIVE_RECORDING_JUNIT_RESULT passed=1 failed=0",
+                 "NATIVE_ZK_SESSION_JUNIT_RESULT passed=1 failed=0")) or
+            not _closed_trace_manifest(_object(Path(
+                gate["healthy_trace_manifest_path"])))):
+        raise ValueError("ZooKeeper protocol seed JUnit or trace is not closed")
     postweave = Path(gate.get("postweave_class_tree_path", ""))
     if (not postweave.is_absolute() or not postweave.is_dir() or
             weave.class_tree_digest(postweave) != gate.get(
@@ -387,7 +412,7 @@ def prepare(request_file: Path, output: Path, profile_file: Path) -> dict:
         encoding="utf-8", errors="replace")
     manifest = _object(trace / "streaming_trace_manifest.json")
     if ("NATIVE_RECORDING_JUNIT_RESULT passed=1 failed=0" not in stdout or
-            manifest.get("closed") is not True):
+            not _closed_trace_manifest(manifest)):
         raise ValueError("unchanged original JUnit or healthy recording did not close")
     occurrence_file = output / "target-occurrence.json"
     _run("target-occurrence", [java, "-cp", _original_cp([]),

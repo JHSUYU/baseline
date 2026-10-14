@@ -136,7 +136,9 @@ def _audit_zookeeper_recipe_pins(recipe: dict) -> None:
             raise ValueError(f"ZooKeeper {kind} input omitted from recipe pins: {value}")
 
     for value in (Path(__file__).with_name("zookeeper_native_adapter.py"),
-                  Path(__file__).with_name("NativeZooKeeperCombinedPostWeave.java")):
+                  Path(__file__).with_name("build_zookeeper_protocol_gate.py"),
+                  Path(__file__).with_name("NativeZooKeeperCombinedPostWeave.java"),
+                  Path(__file__).with_name("NativeZooKeeperSessionVerifier.java")):
         require("file", str(value.resolve(strict=True)))
     for key in ("java", "protocol_gate"):
         require("file", profile.get(key))
@@ -154,7 +156,8 @@ def _audit_zookeeper_recipe_pins(recipe: dict) -> None:
             else:
                 require("classpath", value)
     for key in ("session_reader_receipt_path",
-                "session_reader_verifier_source_path"):
+                "session_reader_verifier_source_path",
+                "healthy_stdout_path", "healthy_trace_manifest_path"):
         require("file", gate.get(key))
     require("source", gate.get("session_dir_path"))
     require("classes", gate.get("postweave_class_tree_path"))

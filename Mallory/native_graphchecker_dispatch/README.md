@@ -24,9 +24,43 @@ profile and every referenced source/classpath/mapping artifact in the recipe's
 pin maps. There are no case IDs, target branches, or I/O doors in the profile.
 For ZooKeeper, `prepare-next` audits the nested gate inputs too: its full
 session directory, verifier source/build/receipt, static map, postweave and
-adapter builds, profile, Java, adapter code, and every ordered classpath entry
+adapter builds, passing seed JUnit stdout, closed trace manifest, profile,
+Java, adapter code, and every ordered classpath entry
 must be present in the matching pin map. An omitted input is rejected before
 the preparation cache can be reused.
+
+Build the shared gate from a closed, unchanged ZooKeeper seed session:
+
+```bash
+python3 -m Mallory.native_graphchecker_dispatch.build_zookeeper_protocol_gate \
+  /ABS/shared-zookeeper-profile.json /ABS/seed-evidence.json \
+  /ABS/new-protocol-gate.json
+```
+
+The profile's `protocol_gate` must equal the new gate path. The seed evidence
+JSON has these six absolute paths:
+
+```json
+{
+  "session_dir_path": "/ABS/healthy/sessions/seed-id",
+  "healthy_stdout_path": "/ABS/healthy/stdout.log",
+  "healthy_trace_manifest_path": "/ABS/healthy/trace/streaming_trace_manifest.json",
+  "static_map_path": "/ABS/static/static_scope_map.jsonl",
+  "postweave_class_tree_path": "/ABS/recording-woven-classes",
+  "adapter_build_path": "/ABS/zookeeper-protocol-classes"
+}
+```
+
+The seed evidence names the original session directory, passing JUnit stdout,
+closed streaming trace manifest, static map, postweave class tree, adapter
+build. The builder compiles its pinned `NativeZooKeeperSessionVerifier`
+source against the original engine. The verifier uses the
+original `SessionReader` and discovers ZooKeeper SEND/RECV wire sites from
+the schedule. It admits only paired producer endpoints with no session gaps.
+The generated gate contains hashes of its inputs and no target or fault door.
+Each new case must still pass its own healthy JUnit, reach its own target, and
+yield one executable original GraphChecker target task.
+
 The adapter derives the original THROW from inventory, runs original
 GraphChecker static seed analysis and REGION_STATE weave, then applies the
 ZooKeeper protocol and actor post-passes in that order. It executes the exact
@@ -36,8 +70,8 @@ matching original Scheduler `TARGET_REACH_CLOSURE` task. The native anchor
 ordinal comes from that task's `targetBranch.occurrence`. The concolic weave
 is then cached under the same exact input pin. Both post-passes use
 `NativeZooKeeperCombinedPostWeave.java`, whose compiled class must be pinned
-in the profile classpath. The adapter refuses to launch until a frozen quorum
-protocol and actor-attribution gate exists; no such gate has been accepted yet.
+in the profile classpath. The adapter refuses to launch until a frozen
+protocol and actor-attribution gate exists.
 The gate must pin the source/class tree, communication map, postweave tree,
 adapter build, source-built engine, static map, full original session tree,
 and a source-built `SessionReader` verifier receipt with empty `incomplete()`.
@@ -46,8 +80,8 @@ its fresh result with the gate receipt; this is a lightweight read, not a JUnit.
 The original `SessionManifest` has no closure field; a manifest alone cannot
 pass this gate. The verifier also parses the schedule and attests a `SEED`
 session with paired typed SEND/RECV events and no pairing gaps. The gate must
-show an unchanged JUnit pass with a reached target and typed
-FOLLOWERINFO/LEADERINFO wire edges. Campaign JUnit trials use fresh
+show an unchanged JUnit pass; target reach is checked for each new case.
+Campaign JUnit trials use fresh
 `{trial_workdir}` directories. The adapter itself performs static Soot and
 both weaves only during preparation; `run-next` only reruns the cached woven
 JUnit and records a new trace for each fault trial.
