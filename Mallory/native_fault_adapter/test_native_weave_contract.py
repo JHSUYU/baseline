@@ -16,6 +16,51 @@ SPEC.loader.exec_module(native)
 
 
 class NativeFaultWeaveContractTest(unittest.TestCase):
+    def test_region_state_weaves_without_a_preexisting_concolic_task(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source, output, library, artifacts = (root / name for name in
+                                                  ("source", "woven", "library", "recording"))
+            for path in (source, library, artifacts):
+                path.mkdir()
+            (source / "Fixture.class").write_bytes(b"original")
+            (library / "Library.class").write_bytes(b"dependency")
+            (artifacts / "recording.jsonl").write_text('{"source":"original"}\n')
+            skeletons = root / "regions.jsonl"
+            skeletons.write_text('{"id":"region"}\n')
+            java = root / "java"
+            java.write_bytes(b"pinned java")
+            engine = root / "engine.jar"
+            engine.write_bytes(b"pinned engine")
+            engine_receipt = root / "engine-receipt.json"
+            engine_receipt.write_text('{}\n')
+            config = {"weave_mode": "region_state",
+                      "input_classes": str(source), "output_classes": str(output),
+                      "region_skeletons": str(skeletons),
+                      "recording_artifacts": str(artifacts),
+                      "dependency_classpath": str(library), "java": str(java)}
+            config_file = root / "weave.json"
+            config_file.write_text(json.dumps(config))
+
+            def weave(command, **_kwargs):
+                self.assertFalse(any("causynth.concolic.task" in arg
+                                     for arg in command))
+                (output / "Fixture.class").write_bytes(b"woven")
+
+            with patch.object(native, "JAR", engine), patch.object(
+                    native, "ENGINE_RECEIPT", engine_receipt), patch.object(
+                    native, "verify_engine", return_value={"dependency_classpath": ""}), patch.object(
+                    native, "verified_vendor"), patch.object(
+                    native.subprocess, "run", side_effect=weave):
+                receipt = native.run(config_file)
+                self.assertNotIn("task_id", receipt)
+                self.assertNotIn("task_plan_sha256", receipt)
+                self.assertEqual(receipt, native.verify_existing(config_file))
+                changed = dict(config, task_id="fabricated")
+                config_file.write_text(json.dumps(changed))
+                with self.assertRaisesRegex(ValueError, "both task_plan and task_id"):
+                    native.inputs(config_file)
+
     def test_pretrial_verification_pins_manifest_without_reweaving(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

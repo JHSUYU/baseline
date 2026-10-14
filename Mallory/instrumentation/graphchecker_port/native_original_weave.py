@@ -216,18 +216,22 @@ def verified_vendor() -> dict:
 def inputs(config_file: Path):
     config_file = config_file.resolve(strict=True)
     config = json.loads(config_file.read_text())
-    required = ("input_classes", "output_classes", "task_plan", "task_id",
-                "region_skeletons", "dependency_classpath", "java")
-    missing = [key for key in required if not config.get(key)]
-    if missing:
-        raise ValueError("missing native weave inputs: " + ", ".join(missing))
     weave_mode = config.get("weave_mode", "concolic")
     if weave_mode not in ("concolic", "region_state"):
         raise ValueError("weave_mode must be concolic or region_state")
+    required = ("input_classes", "output_classes", "region_skeletons",
+                "dependency_classpath", "java")
+    if weave_mode == "concolic":
+        required += ("task_plan", "task_id")
+    missing = [key for key in required if not config.get(key)]
+    if missing:
+        raise ValueError("missing native weave inputs: " + ", ".join(missing))
     if weave_mode == "region_state":
         artifacts = config.get("recording_artifacts")
         if not isinstance(artifacts, str) or not artifacts:
             raise ValueError("region_state weave requires recording_artifacts")
+        if bool(config.get("task_plan")) != bool(config.get("task_id")):
+            raise ValueError("region_state weave needs both task_plan and task_id or neither")
     jvm_args = config.get("jvm_args", [])
     if (not isinstance(jvm_args, list) or
             not all(isinstance(arg, str) and arg.startswith("-X") for arg in jvm_args)):
@@ -235,7 +239,8 @@ def inputs(config_file: Path):
     verified_vendor()
     source = Path(config["input_classes"]).resolve(strict=True)
     output = Path(config["output_classes"]).resolve()
-    plan = Path(config["task_plan"]).resolve(strict=True)
+    plan = (Path(config["task_plan"]).resolve(strict=True)
+            if config.get("task_plan") else None)
     skeletons = Path(config["region_skeletons"]).resolve(strict=True)
     if not source.is_dir() or output == source or source in output.parents:
         raise ValueError("input_classes must be a separate class directory")
@@ -336,7 +341,6 @@ def run(config_file: Path) -> dict:
         "engine_jar": str(JAR),
         "engine_jar_sha256": digest(JAR),
         "engine_receipt_sha256": digest(ENGINE_RECEIPT),
-        "task_plan_sha256": digest(plan),
         "region_skeletons_sha256": digest(skeletons),
         "input_classes_sha256": class_tree_digest(source),
         "output_classes_sha256": class_tree_digest(output),
@@ -347,10 +351,12 @@ def run(config_file: Path) -> dict:
         "input_classes": str(source),
         "output_classes": str(output),
         "java_sha256": digest(Path(config["java"]).resolve(strict=True)),
-        "task_id": config["task_id"],
         "post_weave": post_receipt,
         "original_hook_families": ["root", "branch", "state", "work_handoff"],
     }
+    if plan is not None:
+        receipt["task_plan_sha256"] = digest(plan)
+        receipt["task_id"] = config["task_id"]
     if config.get("native_fault_manifest"):
         receipt["native_fault_manifest_sha256"] = digest(
             Path(config["native_fault_manifest"]).resolve(strict=True))
@@ -384,7 +390,6 @@ def verify_existing(config_file: Path) -> dict:
         "config_sha256": digest(config_file),
         "engine_jar_sha256": digest(JAR),
         "engine_receipt_sha256": digest(ENGINE_RECEIPT),
-        "task_plan_sha256": digest(plan),
         "region_skeletons_sha256": digest(skeletons),
         "input_classes_sha256": class_tree_digest(source),
         "output_classes_sha256": class_tree_digest(output),
@@ -394,6 +399,11 @@ def verify_existing(config_file: Path) -> dict:
         "dependency_artifacts": dependency_digests(config["dependency_classpath"]),
         "java_sha256": digest(Path(config["java"]).resolve(strict=True)),
     }
+    if plan is not None:
+        observed["task_plan_sha256"] = digest(plan)
+    elif (receipt.get("task_plan_sha256") is not None or
+          receipt.get("task_id") is not None):
+        raise ValueError("unexpected concolic task in task-free region weave receipt")
     if config.get("native_fault_manifest"):
         observed["native_fault_manifest_sha256"] = digest(
             Path(config["native_fault_manifest"]).resolve(strict=True))
@@ -439,7 +449,7 @@ def verify_existing(config_file: Path) -> dict:
     for field, value in observed.items():
         if receipt.get(field) != value:
             raise ValueError(f"immutable native weave input changed: {field}")
-    if receipt.get("task_id") != config["task_id"]:
+    if plan is not None and receipt.get("task_id") != config["task_id"]:
         raise ValueError("native weave task id changed")
     return receipt
 

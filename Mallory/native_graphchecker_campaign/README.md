@@ -5,18 +5,19 @@ This is an isolated, opt-in campaign driver. It does not modify the frozen
 
 ## Admission and one-time instrumentation
 
-An external preparation step runs the original GraphChecker `REGION_STATE`
-recording weave on the unmodified JUnit and closes its trace. It runs the
-original `CausynthTraceRecorder` and `ConcolicScheduler` to derive
-`execution_task_plan.jsonl` from the healthy execution. The original
-`CausynthPipeline` then weaves a separate class tree once for that selected
-task. The `native_original_weave.py` receipt pins that class tree, task plan,
-source-built engine, weave dependencies, and Java executable. The campaign
+For `REGION_STATE`, the original `CausynthPipeline` weaves a class tree once
+without a concolic task. The unmodified JUnit then produces a closed healthy
+trace; the original `CausynthTraceRecorder` and `ConcolicScheduler` derive
+`execution_task_plan.jsonl` from that trace. Concolic mode still requires a
+recorded task plan and task ID at weave time. The `native_original_weave.py`
+receipt pins the woven class tree, source-built engine, dependencies, Java
+executable, and any concolic task supplied to the weave. The campaign
 checkpoint also pins the JUnit runner classpath and Zero VM executable.
 
 At campaign admission this driver verifies the immutable weave receipt,
-re-runs the original recorder and scheduler, and requires byte-identical
-scheduled tasks and selected region skeletons. It refuses a manually written
+re-runs the original recorder and scheduler, pins the generated schedule, and
+checks selected region skeletons. Concolic mode additionally requires the
+woven task to match a generated schedule row. It refuses a manually written
 task occurrence. The source-built engine must contain the original scheduler;
 the older seed engine that omits it cannot pass admission. In particular, old
 ZooKeeper pilot static artifacts with synthetic lambda names are not accepted
@@ -29,7 +30,8 @@ causes refusal. Recorder and scheduler run once for that immutable input set;
 they do not run at each resume or trial.
 
 Every trial starts a fresh Zero VM process on the same JUnit class and method,
-using the same woven classes, task plan, and task ID. There is no trial-time
+using the same woven classes. Concolic mode also reuses its task plan and task
+ID. There is no trial-time
 Soot or weave. Each process emits a fresh native session. The driver invokes
 `Mallory.native_graphchecker_feedback.summarize_target_set` and `delta` on
 that session, compares observed target closure families and branch outcomes,

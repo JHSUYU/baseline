@@ -75,6 +75,9 @@ class NativeAdmissionLineageTest(unittest.TestCase):
             self.assertEqual(core._sha(index), receipt["recording_index_sha256"])
             self.assertNotEqual(receipt["recording_plan_sha256"],
                                 receipt["unused_weave_task_plan_sha256"])
+            task_free = core._region_state_plan_lineage(fresh, index, None)
+            self.assertEqual(core._sha(fresh), task_free["recording_plan_sha256"])
+            self.assertNotIn("unused_weave_task_plan_sha256", task_free)
             with self.assertRaisesRegex(ValueError, "full schedule"):
                 core._task_plan_lineage(fresh, woven, "TASK.A")
 

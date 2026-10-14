@@ -223,7 +223,7 @@ def _task_plan_lineage(full_plan: Path, woven_plan: Path,
 
 
 def _region_state_plan_lineage(full_plan: Path, index: Path,
-                               woven_plan: Path) -> dict[str, Any]:
+                               woven_plan: Path | None) -> dict[str, Any]:
     """Pin the recorder schedule without comparing an unused weave task.
 
     REGION_STATE runs do not publish a concolic task to the JVM. The original
@@ -237,10 +237,12 @@ def _region_state_plan_lineage(full_plan: Path, index: Path,
                        not isinstance(row.get("taskId"), str) or
                        not row["taskId"] for row in rows):
         raise ValueError("original scheduler produced no valid task")
-    return {"recording_plan_sha256": _sha(full_plan),
-            "recording_index_sha256": _sha(index),
-            "recording_plan_task_count": len(rows),
-            "unused_weave_task_plan_sha256": _sha(woven_plan)}
+    lineage = {"recording_plan_sha256": _sha(full_plan),
+               "recording_index_sha256": _sha(index),
+               "recording_plan_task_count": len(rows)}
+    if woven_plan is not None:
+        lineage["unused_weave_task_plan_sha256"] = _sha(woven_plan)
+    return lineage
 
 
 def _verify_recording_plan(config: dict[str, Any], weave: dict[str, Any],
@@ -255,7 +257,10 @@ def _verify_recording_plan(config: dict[str, Any], weave: dict[str, Any],
     rec = config["recording"]
     admission_timeout = rec.get("admission_timeout_seconds", 300)
     analysis_heap = f"-Xmx{rec.get('graph_analysis_heap_mb', 3072)}m"
-    planned = Path(weave["task_plan"]).resolve(strict=True)
+    planned = (Path(weave["task_plan"]).resolve(strict=True)
+               if weave.get("task_plan") else None)
+    if config["runner"].get("mode") != "region_state" and planned is None:
+        raise ValueError("concolic campaign requires a woven task plan")
     scope = Path(rec["static_scope_map"]).resolve(strict=True)
     skeletons = Path(rec["region_skeletons"]).resolve(strict=True)
     woven_skeletons = Path(weave["region_skeletons"]).resolve(strict=True)
@@ -303,6 +308,7 @@ def _verify_recording_plan(config: dict[str, Any], weave: dict[str, Any],
         if config["runner"].get("mode") == "region_state":
             task_plan_lineage = _region_state_plan_lineage(generated, index, planned)
         else:
+            assert planned is not None
             task_plan_lineage = _task_plan_lineage(generated, planned, weave["task_id"])
         skeleton_lineage = _skeleton_lineage(
             skeletons, woven_skeletons, output / "region_skeletons.jsonl")
