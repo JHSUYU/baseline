@@ -1105,6 +1105,5 @@ class NativeCampaignFixtureTest(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "admission inputs changed"):
                 core._admit(self.config, output)
 
-
 if __name__ == "__main__":
     unittest.main()

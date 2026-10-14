@@ -6,9 +6,15 @@ import zipfile
 from pathlib import Path
 
 from Mallory.native_graphchecker_campaign.source_preflight import feedback_bridge
+from Mallory.native_graphchecker_campaign.campaign import _feedback_required
 
 
 class FeedbackSourcePreflightTest(unittest.TestCase):
+    def test_only_concolic_session_feedback_requires_java_bridge(self) -> None:
+        self.assertTrue(_feedback_required({"runner": {"mode": "concolic"}}))
+        self.assertTrue(_feedback_required({"runner": {}}))
+        self.assertFalse(_feedback_required({"runner": {"mode": "region_state"}}))
+
     def test_rejects_incomplete_archive_before_junit(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

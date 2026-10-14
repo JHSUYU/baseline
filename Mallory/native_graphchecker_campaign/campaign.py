@@ -344,8 +344,16 @@ def _verify_recording_plan(config: dict[str, Any], weave: dict[str, Any],
             **skeleton_lineage}
 
 
+def _feedback_required(config: dict[str, Any]) -> bool:
+    return config["runner"].get("mode", "concolic") == "concolic"
+
+
 def _admit(config: dict[str, Any], root: Path) -> dict[str, Any]:
-    feedback_source = feedback_bridge(Path(__file__).resolve().parents[2], JAR)
+    # The Java bridge is consumed by concolic SessionReader feedback. Original
+    # REGION_STATE replay uses the resolver/Recorder directly and has no bridge.
+    feedback_source = (feedback_bridge(Path(__file__).resolve().parents[2], JAR)
+                       if _feedback_required(config)
+                       else None)
     weave_file = Path(config["native_weave_config"]).resolve(strict=True)
     weave_receipt = verify_existing(weave_file)
     weave = _load(weave_file)
@@ -360,8 +368,9 @@ def _admit(config: dict[str, Any], root: Path) -> dict[str, Any]:
                                      / "native-original-weave-receipt.json"),
         "scheduler_source_sha256": _sha(_scheduler_source()),
         "engine_jar_sha256": _sha(JAR),
-        "feedback_source": feedback_source,
     }
+    if feedback_source is not None:
+        recording_fingerprint["feedback_source"] = feedback_source
     admission = root / "recording-admission.json"
     if admission.is_file():
         cached = _load(admission)
