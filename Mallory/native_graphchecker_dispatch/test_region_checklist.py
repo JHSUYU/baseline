@@ -24,6 +24,19 @@ class RegionChecklistTest(unittest.TestCase):
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name)
 
+    def test_fault_membership_uses_original_closure_not_check_occurrence(self) -> None:
+        # A causally upstream fault and the check are different occurrences.
+        # The old receipt inspector compared those two IDs directly and
+        # rejected a valid target-closure fault.
+        graph = {"closureOccurrenceIds": ["upstream-fault", "target-check"]}
+        self.assertTrue(checklist._last_fault_in_region_closure(
+            graph, {"occurrenceId": "upstream-fault"}))
+        self.assertFalse(checklist._last_fault_in_region_closure(
+            graph, {"occurrenceId": "unrelated-fault"}))
+        with self.assertRaisesRegex(ValueError, "target closure is missing"):
+            checklist._last_fault_in_region_closure({},
+                                                    {"occurrenceId": "upstream-fault"})
+
     def test_shared_archive_verifies_unavailable_owner_source(self) -> None:
         source = self.root / "owner-only.java"
         audit = self.root / "identity.json"

@@ -648,6 +648,16 @@ def _verified_region_summary(trial: Path, result: dict, config: dict,
     return summary
 
 
+def _last_fault_in_region_closure(summary: dict, last_fault: dict | None) -> bool:
+    """Use the original Finalizer's occurrence closure, not target checks."""
+    closure = summary.get("closureOccurrenceIds")
+    if (not isinstance(closure, list) or
+            any(not isinstance(occurrence, str) or not occurrence
+                for occurrence in closure)):
+        raise ValueError("REGION_STATE original target closure is missing")
+    return bool(last_fault and last_fault.get("occurrenceId") in closure)
+
+
 def _audit_region_terminal(case_id: str, config_path: Path, root: Path,
                            checkpoint: dict, summary: dict) -> dict[str, Any]:
     config = _object(config_path)
@@ -784,10 +794,7 @@ def _audit_region_terminal(case_id: str, config_path: Path, root: Path,
                 strict_retained += 1
                 applied = [row for row in events if row.get("kind") == "FAULT_APPLIED"]
                 last = applied[-1] if applied else None
-                checks = {row.get("occurrenceId") for row in events if
-                          row.get("kind") == "TARGET_CHECK" and
-                          row.get("siteId") == config["target_site"]}
-                inside = bool(last and last.get("occurrenceId") in checks)
+                inside = _last_fault_in_region_closure(trial_summary, last)
                 if result.get("fault_in_target_closure") is not inside:
                     raise ValueError("REGION_STATE fault/target membership changed")
                 inside_closure += inside
