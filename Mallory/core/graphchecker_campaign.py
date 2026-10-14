@@ -365,7 +365,9 @@ def _archive_workdir(workdir: Path, trial: Path) -> dict[str, Any]:
 
 
 def _archive_jsonl(path: Path, output: Path) -> dict[str, Any]:
-    """Seal one durable gzip artifact before removing its plain source."""
+    """Seal one durable gzip artifact before removing its source."""
+    if path.suffix == ".gz":
+        return _archive_precompressed_jsonl(path, output)
     archived = output / (path.name + ".gz")
     temporary = archived.with_name("." + archived.name + ".tmp")
     if archived.exists() or temporary.exists():
@@ -394,6 +396,36 @@ def _archive_jsonl(path: Path, output: Path) -> dict[str, Any]:
                 "bytes": archived.stat().st_size,
                 "content_sha256": observed_digest,
                 "content_bytes": observed_size}
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def _archive_precompressed_jsonl(path: Path, output: Path) -> dict[str, Any]:
+    """Preserve a graph emitted directly as gzip, verifying both byte layers."""
+    archived = output / path.name
+    temporary = archived.with_name("." + archived.name + ".tmp")
+    if archived.exists() or temporary.exists():
+        raise FileExistsError(f"GraphChecker graph archive already exists: {archived}")
+    source_stat = _archive_stat(path)
+    compressed_digest = _sha256(path)
+    content_digest, content_size = _trace_digest(path)
+    if _archive_stat(path) != source_stat:
+        raise ValueError(f"GraphChecker compressed graph changed during hash: {path}")
+    try:
+        with path.open("rb") as source, temporary.open("wb") as target:
+            shutil.copyfileobj(source, target, length=1024 * 1024)
+            target.flush()
+            os.fsync(target.fileno())
+        if _archive_stat(path) != source_stat:
+            raise ValueError(f"GraphChecker compressed graph changed during copy: {path}")
+        temporary.replace(archived)
+        if (_sha256(archived) != compressed_digest or
+                _trace_digest(archived) != (content_digest, content_size)):
+            raise ValueError(f"GraphChecker compressed graph archive changed: {archived}")
+        path.unlink()
+        return {"path": archived.name, "encoding": "gzip",
+                "sha256": compressed_digest, "bytes": archived.stat().st_size,
+                "content_sha256": content_digest, "content_bytes": content_size}
     finally:
         temporary.unlink(missing_ok=True)
 
@@ -828,6 +860,9 @@ def load_config(path: Path) -> dict[str, Any]:
     if (isinstance(graph_heap_mb, bool) or not isinstance(graph_heap_mb, int)
             or graph_heap_mb < 256 or graph_heap_mb > 32768):
         raise ValueError("graph_heap_mb must be an integer between 256 and 32768")
+    graph_output_gzip = raw.get("graph_output_gzip", False)
+    if not isinstance(graph_output_gzip, bool):
+        raise ValueError("graph_output_gzip must be a Boolean")
     scratch_root = (_validate_scratch_root(raw["scratch_root"])
                     if "scratch_root" in raw else None)
     manifest_path = _path(raw.get("weave_manifest"), base, "weave_manifest")
@@ -883,6 +918,7 @@ def load_config(path: Path) -> dict[str, Any]:
             "junit": junit, "target": target,
             "target_site_rows": target_site_rows, "timeout_seconds": timeout,
             "graph_heap_mb": graph_heap_mb,
+            "graph_output_gzip": graph_output_gzip,
             "weave_manifest": manifest_path, "static_scope_map": static_map,
             "static_may_scope_map": static_may_map,
             "original_class_dirs": originals, "tool_classpath": tool_cp,
@@ -1582,7 +1618,8 @@ def run_trial(config: dict[str, Any], prepared: Path, trial: Path,
         phase_started = time.monotonic()
         graph = analyze_trial(scratch, anchor, prior_trace, config["graph_jar"],
                               config["static_scope_map"],
-                              config.get("graph_heap_mb", 6144))
+                              config.get("graph_heap_mb", 6144),
+                              config.get("graph_output_gzip", False))
         phase_seconds["graph_analysis"] = round(time.monotonic() - phase_started, 3)
         static_may = None
         if config["static_may_scope_map"] is not None:
@@ -1639,7 +1676,8 @@ def run_trial(config: dict[str, Any], prepared: Path, trial: Path,
                 artifacts[name] = _archive_jsonl(source, trial)
                 phase_seconds[f"archive_{name}"] = round(
                     time.monotonic() - phase_started, 3)
-    graph_source = scratch / "graphchecker-graph.jsonl"
+    graph_source = scratch / ("graphchecker-graph.jsonl.gz" if config.get(
+        "graph_output_gzip", False) else "graphchecker-graph.jsonl")
     if graph_source.is_file():
         phase_started = time.monotonic()
         artifacts["graph"] = _archive_jsonl(graph_source, trial)

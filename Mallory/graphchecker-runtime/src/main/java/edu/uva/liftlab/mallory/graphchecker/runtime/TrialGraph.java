@@ -11,6 +11,8 @@ import java.io.BufferedWriter;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,6 +30,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * The WaveGraph NODE/WIRE/STATE join, adapted to Mallory's raw JUnit rows.
@@ -1018,8 +1021,11 @@ public final class TrialGraph {
         // rows. Keep only the graph itself in memory; serializing every row
         // into a second list of strings can exhaust an otherwise sufficient
         // graph heap before feedback is produced.
-        try (BufferedWriter output = Files.newBufferedWriter(graphFile,
-                StandardCharsets.UTF_8)) {
+        try (OutputStream file = Files.newOutputStream(graphFile);
+             OutputStream encoded = graphFile.toString().endsWith(".gz")
+                     ? new GZIPOutputStream(file) : file;
+             BufferedWriter output = new BufferedWriter(new OutputStreamWriter(
+                     encoded, StandardCharsets.UTF_8))) {
             for (JsonObject node : nodes.values()) {
                 output.write(node.toString());
                 output.newLine();

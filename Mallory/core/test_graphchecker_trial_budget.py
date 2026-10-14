@@ -53,6 +53,25 @@ class GraphBuilderBudgetTest(unittest.TestCase):
                         ValueError, "graph_heap_mb"):
                     analyze_trial(Path(temp), "target", graph_heap_mb=value)
 
+    def test_graph_builder_can_write_direct_gzip(self):
+        with tempfile.TemporaryDirectory() as temp:
+            trial = Path(temp)
+            (trial / "graphchecker-trace.jsonl").write_text("{}\n")
+            jar = trial / "graph.jar"
+            jar.write_bytes(b"fixture")
+            observed = {}
+
+            def fake_run(command, **options):
+                observed["graph_path"] = command[5]
+                (trial / "graphchecker-feedback.json").write_text(json.dumps({
+                    "schemaVersion": 1, "targetSite": "target"}))
+
+            with patch("Mallory.core.graphchecker_trial.subprocess.run",
+                       side_effect=fake_run):
+                analyze_trial(trial, "target", jar=jar, graph_output_gzip=True)
+            self.assertEqual(str(trial / "graphchecker-graph.jsonl.gz"),
+                             observed["graph_path"])
+
 
 if __name__ == "__main__":
     unittest.main()

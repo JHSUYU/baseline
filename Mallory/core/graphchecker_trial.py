@@ -127,15 +127,19 @@ def _healthy_summary(prior_trace: Path, sites: list[str], jar: Path,
 def analyze_trial(trial: Path, target_site: str | list[str], prior_trace: Path | None = None,
                   jar: Path | None = None,
                   static_scope_map: Path | None = None,
-                  graph_heap_mb: int = 6144) -> dict[str, Any]:
+                  graph_heap_mb: int = 6144,
+                  graph_output_gzip: bool = False) -> dict[str, Any]:
     if (isinstance(graph_heap_mb, bool) or not isinstance(graph_heap_mb, int)
             or graph_heap_mb < 256 or graph_heap_mb > 32768):
         raise ValueError("graph_heap_mb must be an integer between 256 and 32768")
+    if not isinstance(graph_output_gzip, bool):
+        raise ValueError("graph_output_gzip must be a Boolean")
     selected_jar = (jar or runtime_jar()).resolve()
     if not selected_jar.is_file():
         raise FileNotFoundError(f"build Mallory/graphchecker-runtime first: {selected_jar}")
     trace = trial / "graphchecker-trace.jsonl"
-    graph = trial / "graphchecker-graph.jsonl"
+    graph = trial / ("graphchecker-graph.jsonl.gz" if graph_output_gzip
+                     else "graphchecker-graph.jsonl")
     feedback = trial / "graphchecker-feedback.json"
     if prior_trace is not None and not prior_trace.is_file():
         raise FileNotFoundError(f"prior GraphChecker trace missing: {prior_trace}")

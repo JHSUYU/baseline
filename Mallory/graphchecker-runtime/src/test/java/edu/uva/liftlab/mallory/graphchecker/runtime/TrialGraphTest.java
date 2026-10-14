@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import static org.junit.Assert.assertEquals;
@@ -77,6 +78,17 @@ public class TrialGraphTest {
         legacy.write(oldGraph);
         compressed.write(compactGraph);
         assertEquals(Files.readAllLines(oldGraph), Files.readAllLines(compactGraph));
+        Path gzipGraph = Files.createTempFile("mallory-compact-", ".jsonl.gz");
+        compressed.write(gzipGraph);
+        try (GZIPInputStream input = new GZIPInputStream(
+                Files.newInputStream(gzipGraph))) {
+            java.io.ByteArrayOutputStream restored = new java.io.ByteArrayOutputStream();
+            byte[] buffer = new byte[8192];
+            int read;
+            while ((read = input.read(buffer)) >= 0) restored.write(buffer, 0, read);
+            assertEquals(new String(Files.readAllBytes(compactGraph), StandardCharsets.UTF_8),
+                    new String(restored.toByteArray(), StandardCharsets.UTF_8));
+        }
     }
 
     @Test public void compactPathWithoutPriorExactActivationFailsClosed()

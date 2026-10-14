@@ -612,6 +612,26 @@ class GraphCheckerCampaignTest(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "changed window_trace"):
                 verify_trial_artifacts(trial, result)
 
+    def test_direct_gzip_graph_archive_keeps_one_compression_layer(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            scratch = root / "scratch"
+            output = root / "trial"
+            scratch.mkdir()
+            output.mkdir()
+            graph = scratch / "graphchecker-graph.jsonl.gz"
+            content = b'{"kind":"NODE","occurrenceId":"n1"}\n'
+            with gzip.open(graph, "wb") as stream:
+                stream.write(content)
+            receipt = _archive_jsonl(graph, output)
+            self.assertFalse(graph.exists())
+            self.assertEqual("graphchecker-graph.jsonl.gz", receipt["path"])
+            self.assertEqual(hashlib.sha256(content).hexdigest(),
+                             receipt["content_sha256"])
+            self.assertEqual(len(content), receipt["content_bytes"])
+            self.assertEqual((receipt["content_sha256"], receipt["content_bytes"]),
+                             _trace_digest(output / receipt["path"]))
+
     def test_identical_traces_share_verified_gzip_but_resume_checks_both(self):
         with tempfile.TemporaryDirectory() as temp:
             trial = Path(temp)
@@ -881,6 +901,15 @@ class GraphCheckerCampaignTest(unittest.TestCase):
             config = load_config(config_path)
             self.assertIsNone(config["scratch_root"])
             self.assertEqual(6144, config["graph_heap_mb"])
+            self.assertFalse(config["graph_output_gzip"])
+            raw["graph_output_gzip"] = True
+            config_path.write_text(json.dumps(raw))
+            self.assertTrue(load_config(config_path)["graph_output_gzip"])
+            raw["graph_output_gzip"] = "yes"
+            config_path.write_text(json.dumps(raw))
+            with self.assertRaisesRegex(ValueError, "graph_output_gzip"):
+                load_config(config_path)
+            raw.pop("graph_output_gzip")
             raw["graph_heap_mb"] = 12288
             config_path.write_text(json.dumps(raw))
             self.assertEqual(12288, load_config(config_path)["graph_heap_mb"])
