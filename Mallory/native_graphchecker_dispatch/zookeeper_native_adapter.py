@@ -24,6 +24,10 @@ from .preparation import _atomic, _digest, _object, _sha
 PROFILE_MODE = "original_graphchecker_zookeeper_profile"
 GATE_MODE = "original_graphchecker_zookeeper_protocol_gate"
 SITE = re.compile(r"^<([^:]+): (.+)>#u([0-9]+)$")
+METHOD = re.compile(r"^([^ ]+) ([^(]+)\(([^)]*)\)$")
+PRIMITIVE = {"void": "V", "boolean": "Z", "byte": "B", "char": "C",
+             "short": "S", "int": "I", "long": "J", "float": "F",
+             "double": "D"}
 SESSION_FILES = (
     "manifest.json", "activations.jsonl", "decisions.jsonl",
     "exports.jsonl", "attaches.jsonl", "writes.jsonl", "reads.jsonl",
@@ -261,6 +265,79 @@ def _target(request: dict) -> tuple[str, str, int]:
     return clazz, method, line
 
 
+def _jvm_type(name: str) -> str:
+    dimensions = 0
+    while name.endswith("[]"):
+        dimensions += 1
+        name = name[:-2]
+    if name not in PRIMITIVE and not re.fullmatch(r"[\w.$]+", name):
+        raise ValueError("inventory method has an invalid Java type")
+    if name == "void" and dimensions:
+        raise ValueError("void arrays are invalid")
+    value = PRIMITIVE.get(name, "L" + name.replace(".", "/") + ";")
+    return "[" * dimensions + value
+
+
+def _inventory_descriptor(site_id: str) -> tuple[str, str, str]:
+    site = SITE.fullmatch(site_id)
+    if not site:
+        raise ValueError("inventory target lacks a Soot unit identity")
+    method = METHOD.fullmatch(site.group(2))
+    if not method:
+        raise ValueError("inventory target method signature is invalid")
+    parameters = [] if not method.group(3) else method.group(3).split(",")
+    descriptor = "(" + "".join(_jvm_type(name.strip()) for name in parameters)
+    descriptor += ")" + _jvm_type(method.group(1))
+    return site.group(1), method.group(2), descriptor
+
+
+def resolve_original_target(request: dict, report: dict, manifest: dict,
+                            source_classes: Path) -> dict:
+    """Bind an inventory throw to one unit in the original compiled class.
+
+    Older inventory unit numbers may refer to a class with manual hooks. The
+    original Soot scan chooses the executed class's unit, then this check
+    requires its exact method descriptor, source throw line, and exception.
+    """
+    target = request["target"]
+    clazz, method, descriptor = _inventory_descriptor(target["site_id"])
+    if _target(request) != (clazz, method, target["source_line"]):
+        raise ValueError("inventory method and source identity differ")
+    class_file = source_classes / (clazz.replace(".", "/") + ".class")
+    if not class_file.is_file():
+        raise ValueError("original target class is absent")
+    candidates = [row for row in manifest.get("targets", [])
+                  if row.get("clazz") == clazz and
+                  row.get("method") == method and
+                  row.get("descriptor") == descriptor and
+                  row.get("kind") == "THROW" and
+                  row.get("line") == target["source_line"] and
+                  row.get("exceptionClass") == target["target_exception"]]
+    if len(candidates) != 1 or candidates[0].get("siteId") != report.get(
+            "throwSiteId"):
+        raise ValueError("original Soot did not select one matching target throw")
+    guards = [row for row in manifest.get("targets", [])
+              if row.get("clazz") == clazz and
+              row.get("method") == method and
+              row.get("descriptor") == descriptor and
+              row.get("kind") == "BRANCH" and
+              row.get("siteId") == report.get("targetSiteId")]
+    if len(guards) != 1 or not isinstance(guards[0].get("line"), int) or (
+            guards[0]["line"] > target["source_line"]):
+        raise ValueError("original Soot did not select one controlling guard")
+    return {
+        "inventory_throw_site_id": target["site_id"],
+        "inventory_compiled_throw_site": target.get("compiled_throw_site"),
+        "original_throw_site_id": candidates[0]["siteId"],
+        "original_guard_site_id": guards[0]["siteId"],
+        "original_guard_source_line": guards[0]["line"],
+        "original_throw_source_line": candidates[0]["line"],
+        "method_descriptor": descriptor,
+        "exception_class": target["target_exception"],
+        "original_class_sha256": _sha(class_file),
+    }
+
+
 def _cp(paths: list[Path]) -> str:
     return os.pathsep.join(str(path.resolve(strict=True)) for path in paths)
 
@@ -339,11 +416,13 @@ def prepare(request_file: Path, output: Path, profile_file: Path) -> dict:
                     str(scope_input), str(scope_out)], output, 1800)
     report = _object(scope_out / "analysis.json")
     if (report.get("analysisKind") != "original_graphchecker_seed_backward" or
-            report.get("throwSiteId") != request["target"]["site_id"] or
             report.get("sootDependencyClasspathSha256") != hashlib.sha256(
                 _cp(analysis_cp).encode("utf-8")).hexdigest() or
             weave.class_tree_digest(source_classes) != process_classes_sha):
         raise ValueError("Soot scope did not resolve the inventory throw")
+    identity = resolve_original_target(request, report,
+                                       _object(scope_out / "weave_manifest.json"),
+                                       source_classes)
     graph = original / "candidate_dataflow_edges.jsonl.gz"
     scope = original / "static_scope_map.jsonl"
     skeletons = original / "region_skeletons.jsonl.gz"
@@ -353,6 +432,7 @@ def prepare(request_file: Path, output: Path, profile_file: Path) -> dict:
     _atomic(output / "static-scope-receipt.json", {
         "schema_version": 1, "mode": "original_graphchecker_static_scope",
         "case_id": request["case_id"], "request_sha256": _digest(request),
+        "target_identity": identity,
         "analysis_kind": report["analysisKind"],
         "analysis_path": str(scope_out / "analysis.json"),
         "analysis_sha256": _sha(scope_out / "analysis.json"),
@@ -367,15 +447,20 @@ def prepare(request_file: Path, output: Path, profile_file: Path) -> dict:
         "static_scope_map_sha256": _sha(scope),
         "region_skeletons_sha256": _sha(skeletons)})
     recorded_classes = output / "recording-classes"
+    static_artifacts = {str(path): _sha(path)
+                        for path in (graph, scope, skeletons)}
     _run("region-state-weave", [
         java, f"-Dcausynth.communication.mappings={map_file}",
         "-Dcausynth.trace.mode=region-state",
         f"-Dcausynth.region.skeletons={skeletons}",
-        f"-Dcausynth.output.dir={output / 'recording-artifacts'}",
+        f"-Dcausynth.output.dir={original}",
         "-cp", _original_cp(extra),
         "edu.uva.liftlab.graphchecker.GraphCheckerMain", "-i",
         str(source_classes), "-x", _cp(extra), "-o", str(recorded_classes)],
         output, 1800)
+    if any(_sha(Path(path)) != digest
+           for path, digest in static_artifacts.items()):
+        raise ValueError("recording weave changed its static GraphChecker inputs")
     if weave.class_tree_digest(source_classes) != process_classes_sha:
         raise ValueError("recording weave preimage changed since static Soot analysis")
     post = _paths(profile["post_weave_classpath"], "post_weave_classpath")
@@ -463,7 +548,7 @@ def prepare(request_file: Path, output: Path, profile_file: Path) -> dict:
         raise ValueError("concolic weave preimage differs from static Soot analysis")
     config = {
         "case_id": request["case_id"], "target_site": anchor,
-        "target_throw": {"siteId": request["target"]["site_id"],
+        "target_throw": {"siteId": identity["original_throw_site_id"],
                          "exceptionClass": request["target"]["target_exception"]},
         "native_weave_config": str(weave_file),
         "recording": {"trace_dir": str(trace), "test_id": junit["selector"],
@@ -487,6 +572,7 @@ def prepare(request_file: Path, output: Path, profile_file: Path) -> dict:
     proof = {
         "schema_version": 1, "mode": "original_graphchecker_native_adapter",
         "case_id": request["case_id"], "request_sha256": _digest(request),
+        "target_identity": identity,
         "original_cluster_junit_verified": True,
         "scope_generated_by_original_graphchecker": True,
         "recording_closed": True,

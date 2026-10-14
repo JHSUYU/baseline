@@ -368,7 +368,6 @@ def _validate_output(item: dict, request: dict, output: Path,
             config["target_throw"]["exceptionClass"] != request["target"][
                 "target_exception"]):
         raise ValueError("native adapter output changed inventory target/JUnit")
-    verify_target_occurrence(proof, config, output, request["target"]["site_id"])
     scope_path = Path(proof.get("static_scope_receipt_path", ""))
     recording_path = Path(proof.get("recording_weave_receipt_path", ""))
     if not scope_path.is_file() or not recording_path.is_file():
@@ -419,6 +418,21 @@ def _validate_output(item: dict, request: dict, output: Path,
                 "ordered_analysis_classpath_sha256"] or
             class_tree_digest(process_path) != static_preimage):
         raise ValueError("static Soot process classes/classpath identity differs")
+    expected_throw_site = request["target"]["site_id"]
+    if item["system"] == "zookeeper":
+        from .zookeeper_native_adapter import resolve_original_target
+        manifest = _object(analysis_path.with_name("weave_manifest.json"))
+        identity = resolve_original_target(request, analysis_report, manifest,
+                                           process_path)
+        if (scope.get("target_identity") != identity or
+                proof.get("target_identity") != identity or
+                config["target_throw"]["siteId"] != identity[
+                    "original_throw_site_id"] or
+                config["target_site"].split("#", 1)[0] != identity[
+                    "original_guard_site_id"].split("#", 1)[0]):
+            raise ValueError("ZooKeeper inventory/original Soot identity differs")
+        expected_throw_site = identity["original_throw_site_id"]
+    verify_target_occurrence(proof, config, output, expected_throw_site)
     if (recording.get("schema_version") != 1 or
             recording.get("mode") != "original_graphchecker_region_state_weave" or
             recording.get("case_id") != item["case_id"] or

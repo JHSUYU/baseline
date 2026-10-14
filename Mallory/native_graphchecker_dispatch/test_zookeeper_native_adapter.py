@@ -15,6 +15,51 @@ from Mallory.native_graphchecker_dispatch import zookeeper_native_adapter as zk
 
 
 class ZooKeeperNativeAdapterTest(unittest.TestCase):
+    def test_original_target_resolver_handles_unit_shift_but_rejects_ambiguity(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            classes = Path(temporary)
+            clazz = "org.apache.zookeeper.server.SessionTrackerImpl"
+            class_file = classes / "org/apache/zookeeper/server/SessionTrackerImpl.class"
+            class_file.parent.mkdir(parents=True)
+            class_file.write_bytes(b"original compiled class")
+            inventory_id = f"<{clazz}: void setOwner(long,java.lang.Object)>#u12"
+            original_id = f"<{clazz}: void setOwner(long,java.lang.Object)>#u15"
+            guard_id = f"<{clazz}: void setOwner(long,java.lang.Object)>#u9"
+            request = {"target": {
+                "site_id": inventory_id,
+                "function": clazz + ".setOwner(long,java.lang.Object)",
+                "source_line": 330,
+                "target_exception":
+                    "org.apache.zookeeper.KeeperException$SessionExpiredException",
+                "compiled_throw_site": "legacy@334:throw:1",
+            }}
+            guard = {"clazz": clazz, "method": "setOwner",
+                     "descriptor": "(JLjava/lang/Object;)V", "kind": "BRANCH",
+                     "line": 329, "siteId": guard_id}
+            thrown = {"clazz": clazz, "method": "setOwner",
+                      "descriptor": "(JLjava/lang/Object;)V", "kind": "THROW",
+                      "line": 330, "siteId": original_id,
+                      "exceptionClass": request["target"]["target_exception"]}
+            report = {"throwSiteId": original_id, "targetSiteId": guard_id}
+            identity = zk.resolve_original_target(
+                request, report, {"targets": [guard, thrown]}, classes)
+            self.assertEqual(inventory_id, identity["inventory_throw_site_id"])
+            self.assertEqual(original_id, identity["original_throw_site_id"])
+            self.assertEqual("(JLjava/lang/Object;)V", identity["method_descriptor"])
+            self.assertEqual(zk._sha(class_file), identity["original_class_sha256"])
+            with self.assertRaisesRegex(ValueError, "one matching target throw"):
+                zk.resolve_original_target(request, report,
+                                           {"targets": [guard, thrown, dict(thrown)]},
+                                           classes)
+            with self.assertRaisesRegex(ValueError, "one matching target throw"):
+                zk.resolve_original_target(request, report,
+                                           {"targets": [guard, {
+                                               **thrown, "exceptionClass": "wrong"}]},
+                                           classes)
+            with self.assertRaisesRegex(ValueError, "one controlling guard"):
+                zk.resolve_original_target(request, report,
+                                           {"targets": [thrown]}, classes)
+
     def test_recipe_cache_pins_nested_gate_session_and_classpaths(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
