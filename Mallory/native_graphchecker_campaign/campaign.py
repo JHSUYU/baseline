@@ -126,9 +126,15 @@ def _validate_config(config: dict[str, Any]) -> None:
             (not isinstance(recording["target_occurrence"], str) or
              not recording["target_occurrence"])):
         raise ValueError("recording target_occurrence must be an exact ID")
+    precomputed = recording.get("precomputed_schedule")
+    if precomputed is not None and (not isinstance(precomputed, str) or
+                                    not Path(precomputed).is_absolute()):
+        raise ValueError("precomputed schedule receipt must be an absolute path")
     admission_mode = recording.get("admission_mode", "scheduled")
     if admission_mode not in ("scheduled", "region_state_no_schedule"):
         raise ValueError("unknown original recording admission mode")
+    if precomputed is not None and admission_mode != "scheduled":
+        raise ValueError("task-free admission cannot reuse a scheduled plan")
     analysis_jar = recording.get("analysis_engine_jar")
     analysis_sha = recording.get("analysis_engine_sha256")
     has_analysis_jar = "analysis_engine_jar" in recording
@@ -307,6 +313,141 @@ def _region_state_plan_lineage(full_plan: Path, index: Path,
     return lineage
 
 
+def _precomputed_command(config: dict[str, Any], receipt: Path,
+                         main_class: str, program_args: list[str],
+                         jvm_properties: list[str]) -> str:
+    """Check the *executed* original JVM command, not an asserted plan label.
+
+    Heap size may differ between preparation and admission. All properties,
+    classpath entries, GraphChecker arguments, and their order must agree.
+    """
+    argv = _load(receipt).get("argv")
+    if not isinstance(argv, list) or not all(isinstance(arg, str) for arg in argv):
+        raise ValueError("precomputed GraphChecker command has no argv")
+    java = str(Path(_load(Path(config["native_weave_config"]))["java"]))
+    classpath = f"{JAR}:{DEPENDENCIES.read_text(encoding='utf-8').strip()}"
+    if not argv or Path(argv[0]).resolve(strict=True) != Path(java).resolve(strict=True):
+        raise ValueError("precomputed GraphChecker Java executable differs")
+    try:
+        cp_index = argv.index("-cp")
+    except ValueError as error:
+        raise ValueError("precomputed GraphChecker classpath is missing") from error
+    jvm = argv[1:cp_index]
+    if (not all(arg.startswith("-Xmx") or arg.startswith("-D") for arg in jvm) or
+            [arg for arg in jvm if arg.startswith("-D")] != jvm_properties or
+            argv[cp_index + 1:] != [classpath, main_class, *program_args]):
+        raise ValueError("precomputed GraphChecker command differs from admission")
+    return _sha(receipt)
+
+
+def _precomputed_body(config: dict[str, Any], recorded: Path,
+                      scheduled: Path, recorder_command: Path,
+                      scheduler_command: Path) -> dict[str, Any]:
+    """Bind reusable plan bytes to the unchanged CLOSED trace and arguments."""
+    rec = config["recording"]
+    trace = Path(rec["trace_dir"]).resolve(strict=True)
+    graph = Path(rec["candidate_graph"]).resolve(strict=True)
+    scope = Path(rec["static_scope_map"]).resolve(strict=True)
+    skeletons = Path(rec["region_skeletons"]).resolve(strict=True)
+    recorded, scheduled = recorded.resolve(strict=True), scheduled.resolve(strict=True)
+    recorder_command = recorder_command.resolve(strict=True)
+    scheduler_command = scheduler_command.resolve(strict=True)
+    plan = recorded / "concolic_region_plan.jsonl"
+    selected = recorded / "region_skeletons.jsonl"
+    generated = scheduled / "execution_task_plan.jsonl"
+    index = scheduled / "runtime_workflow_schedule_index.json"
+    closed = _closed_inputs(trace, scope, graph, skeletons)
+    _scheduler_source()
+    recorder_args = ["--trace-dir", str(trace), "--test", rec["test_id"],
+                     "--target", f"{rec['target_name']}={graph},{scope},{skeletons},{recorded}"]
+    scheduler_args = ["--region-plan", str(plan),
+                      "--candidate-graph", str(graph),
+                      "--static-scope-map", str(scope),
+                      "--output-dir", str(scheduled),
+                      "--max-jobs", str(rec["max_jobs"])]
+    if rec.get("target_occurrence"):
+        recorder_args.extend(("--target-occurrence", rec["target_occurrence"]))
+        scheduler_args.extend(("--target-occurrence", rec["target_occurrence"]))
+    commands = {
+        "recorder": _precomputed_command(config, recorder_command,
+            "edu.uva.liftlab.graphchecker.runtime.CausynthTraceRecorder",
+            recorder_args, rec.get("recorder_jvm_args", [])),
+        "scheduler": _precomputed_command(config, scheduler_command,
+            "edu.uva.liftlab.graphchecker.plan.ConcolicScheduler",
+            scheduler_args, rec.get("scheduler_jvm_args", [])),
+    }
+    weave = _load(Path(config["native_weave_config"]).resolve(strict=True))
+    woven_skeletons = Path(weave["region_skeletons"]).resolve(strict=True)
+    if _sha(woven_skeletons) != closed["regionSkeletonsSha256"]:
+        raise ValueError("precomputed GraphChecker skeletons differ from weave")
+    return {"schema_version": 1, "closed_inputs": closed,
+            "test_id": rec["test_id"], "target_name": rec["target_name"],
+            "target_occurrence": rec.get("target_occurrence"),
+            "max_jobs": rec["max_jobs"],
+            "recorder_jvm_args": rec.get("recorder_jvm_args", []),
+            "scheduler_jvm_args": rec.get("scheduler_jvm_args", []),
+            "engine_jar_sha256": _sha(JAR),
+            "dependencies_sha256": _sha(DEPENDENCIES),
+            "java_sha256": _sha(Path(weave["java"]).resolve(strict=True)),
+            "scheduler_source_sha256": _sha(_scheduler_source()),
+            "recorded": str(recorded), "scheduled": str(scheduled),
+            "recorder_command": str(recorder_command),
+            "scheduler_command": str(scheduler_command),
+            "command_sha256": commands,
+            "artifacts_sha256": {
+                "region_plan": _sha(plan),
+                "selected_skeletons": _sha(selected),
+                "execution_task_plan": _sha(generated),
+                "schedule_index": _sha(index)}}
+
+
+def seal_precomputed_schedule(config: dict[str, Any], recorded: Path,
+                              scheduled: Path, recorder_command: Path,
+                              scheduler_command: Path, receipt: Path) -> dict[str, Any]:
+    """Seal successful preparation output for later same-trace admission."""
+    if receipt.exists():
+        raise ValueError("precomputed schedule receipt already exists")
+    if config["recording"].get("admission_mode", "scheduled") != "scheduled":
+        raise ValueError("task-free admission has no schedule to seal")
+    body = _precomputed_body(config, recorded, scheduled, recorder_command,
+                             scheduler_command)
+    _atomic(receipt, body)
+    return body
+
+
+def _verified_precomputed_origin(config: dict[str, Any], weave: dict[str, Any]
+                                 ) -> dict[str, Any]:
+    receipt = Path(config["recording"]["precomputed_schedule"]).resolve(strict=True)
+    value = _load(receipt)
+    actual = _precomputed_body(config, Path(value["recorded"]),
+                               Path(value["scheduled"]),
+                               Path(value["recorder_command"]),
+                               Path(value["scheduler_command"]))
+    if value != actual:
+        raise ValueError("precomputed GraphChecker schedule inputs or outputs changed")
+    rec = config["recording"]
+    recorded, scheduled = Path(value["recorded"]), Path(value["scheduled"])
+    generated = scheduled / "execution_task_plan.jsonl"
+    index = scheduled / "runtime_workflow_schedule_index.json"
+    planned = Path(weave["task_plan"]).resolve(strict=True) if weave.get(
+        "task_plan") else None
+    if config["runner"].get("mode") == "region_state":
+        lineage = _region_state_plan_lineage(generated, index, planned)
+    else:
+        if planned is None:
+            raise ValueError("concolic campaign requires a woven task plan")
+        lineage = _task_plan_lineage(generated, planned, weave["task_id"])
+    return {"recording_manifest_sha256": value["closed_inputs"][
+                "traceManifestSha256"],
+            **lineage,
+            "scheduler_source_sha256": value["scheduler_source_sha256"],
+            "static_scope_map_sha256": value["closed_inputs"]["scopeMapSha256"],
+            **_skeleton_lineage(Path(rec["region_skeletons"]),
+                                Path(weave["region_skeletons"]),
+                                recorded / "region_skeletons.jsonl"),
+            "precomputed_schedule_receipt_sha256": _sha(receipt)}
+
+
 def _verify_recording_plan(config: dict[str, Any], weave: dict[str, Any],
                            campaign_root: Path) -> dict[str, Any]:
     """Bind original recording provenance; schedule unless explicitly task-free.
@@ -345,6 +486,8 @@ def _verify_recording_plan(config: dict[str, Any], weave: dict[str, Any],
                 "closed_inputs": closed,
                 "static_scope_map_sha256": closed["scopeMapSha256"],
                 "static_skeletons_sha256": closed["regionSkeletonsSha256"]}
+    if rec.get("precomputed_schedule"):
+        return _verified_precomputed_origin(config, weave)
     admission_scratch = campaign_root
     if config["runner"].get("local_artifact_root") is not None:
         _validate_local_artifact_root(config, campaign_root)
@@ -443,6 +586,10 @@ def _admit(config: dict[str, Any], root: Path) -> dict[str, Any]:
             "analysis_engine_sha256"]
     if rec.get("admission_mode") == "region_state_no_schedule":
         recording_fingerprint["admission_mode"] = "region_state_no_schedule"
+    if rec.get("precomputed_schedule"):
+        receipt = Path(rec["precomputed_schedule"]).resolve(strict=True)
+        recording_fingerprint["precomputed_schedule"] = str(receipt)
+        recording_fingerprint["precomputed_schedule_sha256"] = _sha(receipt)
     if feedback_source is not None:
         recording_fingerprint["feedback_source"] = feedback_source
     admission = root / "recording-admission.json"
@@ -453,6 +600,9 @@ def _admit(config: dict[str, Any], root: Path) -> dict[str, Any]:
                 not isinstance(cached.get("origin"), dict)):
             raise ValueError("cached native recording admission inputs changed")
         origin = cached["origin"]
+        if rec.get("precomputed_schedule") and origin != (
+                _verified_precomputed_origin(config, weave)):
+            raise ValueError("cached precomputed GraphChecker schedule changed")
     else:
         origin = _verify_recording_plan(config, weave, root)
         _atomic(admission, {"schema_version": SCHEMA,

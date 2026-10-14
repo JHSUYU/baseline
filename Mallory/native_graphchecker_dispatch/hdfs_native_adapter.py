@@ -807,6 +807,12 @@ def prepare(request_file: Path, profile_file: Path, output: Path,
                                 "-Dhadoop.log.dir={trial_workdir}"]},
         "budget": profile["budget"],
         "timeout_seconds": profile.get("junit_timeout_seconds", 600)}
+    receipt = healthy / "precomputed-schedule.json"
+    native.seal_precomputed_schedule(
+        config, recorded, scheduled,
+        output / "commands/original-recorder.json",
+        output / "commands/original-scheduler.json", receipt)
+    config["recording"]["precomputed_schedule"] = str(receipt)
     native._validate_config(config)
     _atomic(healthy / "campaign-config.json", config)
     _atomic(output / "case.json", config)

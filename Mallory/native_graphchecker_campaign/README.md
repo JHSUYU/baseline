@@ -25,6 +25,16 @@ the fresh `r0000` JUnit must then pass and reach the exact target, and its
 original Resolver, Recorder, and Finalizer graph must succeed before any fault
 enters the queue. Every fault trial uses those same original graph stages.
 Existing scheduled REGION_STATE and concolic checkpoint semantics are unchanged.
+For a scheduled preparation that already ran Recorder and Scheduler on the
+same CLOSED trace, `seal_precomputed_schedule` can seal their actual JVM
+command receipts and output paths. Set `recording.precomputed_schedule` to
+the absolute seal path. Admission then verifies the trace and static input
+hashes, source-built engine, Java executable, commands, plan, selected
+skeletons, schedule, and weave task before using those exact bytes. Resuming
+rechecks the plan artifacts. HDFS preparation emits this seal for new cases;
+existing campaign configs keep their original behavior. This skips the
+duplicate admission Recorder and Scheduler, while `r0000` still executes a
+fresh unchanged JUnit and builds its own graph.
 An optional `recording.analysis_engine_jar` with
 `recording.analysis_engine_sha256` may select a source-built compatible
 GraphChecker JAR for the per-trial REGION_STATE Resolver and Recorder. This
