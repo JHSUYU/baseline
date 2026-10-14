@@ -386,10 +386,13 @@ def record_region_state(
         region_skeletons: Path, engine_jar: Path = JAR,
         java: Path = Path("/usr/lib/jvm/java-8-openjdk-amd64/bin/java"),
         loop_bound: int = 3, timeout_seconds: int = 300,
+        heap_mb: int = 3072,
         target_throw: dict[str, str] | None = None) -> dict[str, Any]:
     """Run original resolver and Recorder once for one fresh CLOSED trace."""
-    if loop_bound <= 0 or timeout_seconds <= 0:
-        raise ValueError("positive loop bound and timeout are required")
+    if (loop_bound <= 0 or timeout_seconds <= 0 or
+            not isinstance(heap_mb, int) or isinstance(heap_mb, bool) or
+            not 0 < heap_mb <= 65536):
+        raise ValueError("positive loop bound, timeout, and bounded heap are required")
     trace_dir = trace_dir.resolve(strict=True)
     output_dir.mkdir(parents=True, exist_ok=True)
     scope, graph, skeletons = (path.resolve(strict=True) for path in (
@@ -399,7 +402,8 @@ def record_region_state(
     before = _closed_inputs(trace_dir, scope, graph, skeletons)
     classpath = os.pathsep.join((str(engine_jar),
                                  DEPENDENCIES.read_text(encoding="utf-8").strip()))
-    base = [str(java), "-Xmx3g", f"-Dcausynth.loop.default.bound={loop_bound}",
+    base = [str(java), f"-Xmx{heap_mb}m",
+            f"-Dcausynth.loop.default.bound={loop_bound}",
             "-cp", classpath]
     receipt_file = output_dir / "target-occurrence.json"
     resolver = [*base,

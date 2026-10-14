@@ -37,6 +37,26 @@ class RegionStateGraphTest(unittest.TestCase):
         for path in (self.scope, self.graph, self.skeletons, self.engine):
             path.write_text("pinned fixture\n")
 
+    def test_configured_graph_heap_is_used_for_original_resolver(self) -> None:
+        case = self._case("heap")
+        class FailedResolver:
+            returncode = 2
+            stdout = ""
+            stderr = "TARGET_CHECK_NOT_OBSERVED"
+        arguments = dict(test_id="fixture", target_site=SITE,
+                         fault_events=case["events"], static_scope_map=self.scope,
+                         candidate_graph=self.graph, region_skeletons=self.skeletons,
+                         engine_jar=self.engine)
+        with patch("Mallory.native_graphchecker_feedback.region_state_graph.subprocess.run",
+                   return_value=FailedResolver()):
+            record_region_state(case["trace"], self.root / "heap-output",
+                                heap_mb=8192, **arguments)
+        command = json.loads((self.root / "heap-output/resolver-command.json").read_text())
+        self.assertIn("-Xmx8192m", command)
+        with self.assertRaisesRegex(ValueError, "bounded heap"):
+            record_region_state(case["trace"], self.root / "invalid-heap",
+                                heap_mb=0, **arguments)
+
     def _case(self, name: str, *, target_actor: str = "nn1",
               new_region: bool = False) -> dict:
         root = self.root / name

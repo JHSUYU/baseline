@@ -122,6 +122,10 @@ def _validate_config(config: dict[str, Any]) -> None:
             (not isinstance(recording["target_occurrence"], str) or
              not recording["target_occurrence"])):
         raise ValueError("recording target_occurrence must be an exact ID")
+    heap_mb = recording.get("graph_analysis_heap_mb", 3072)
+    if (not isinstance(heap_mb, int) or isinstance(heap_mb, bool) or
+            not 0 < heap_mb <= 65536):
+        raise ValueError("graph_analysis_heap_mb must be within 1..65536")
     junit = config.get("junit")
     if not isinstance(junit, dict) or not all(
             isinstance(junit.get(key), str) and junit[key]
@@ -933,6 +937,7 @@ def _run_region_trial(config: dict[str, Any], admitted: dict[str, Any],
             region_skeletons=Path(recording["region_skeletons"]),
             engine_jar=JAR, java=Path(admitted["weave_config"]["java"]),
             loop_bound=loop_bound, timeout_seconds=300,
+            heap_mb=recording.get("graph_analysis_heap_mb", 3072),
             target_throw=config["target_throw"])
     except (ValueError, FileNotFoundError, subprocess.SubprocessError,
             OSError, RuntimeError) as failure:
