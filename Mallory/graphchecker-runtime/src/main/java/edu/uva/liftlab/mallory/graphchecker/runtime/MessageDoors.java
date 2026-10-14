@@ -605,6 +605,12 @@ public final class MessageDoors {
         stored(transport, key, owner, null);
     }
 
+    /** File a successful write under the exact version returned by its API. */
+    public static void storedVersionedValue(String transport, String key,
+                                            Object owner) {
+        stored(transport, key, owner);
+    }
+
     /** Key must include the store's actual version, observed after success. */
     public static void stored(String transport, String key, Object owner,
                               byte[] data) {

@@ -115,7 +115,7 @@ public class MessageDoorsTest {
                 "closureEdgeFamilies").toString().contains("HANDOFF"));
 
         long versionWrite = MessageDoors.beginRequest(sender, "two-file-versions");
-        MessageDoors.stored("FILE", "/epoch#v1", sender);
+        MessageDoors.storedVersionedValue("FILE", "/epoch#v1", sender);
         MessageDoors.stored("FILE", "/epoch.tmp#v2", sender);
         MessageDoors.endRequest(versionWrite, "two-file-versions");
         long versionRead = MessageDoors.beginRequest(receiver, "read-file-versions");
