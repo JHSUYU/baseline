@@ -14,6 +14,10 @@ from .queue import (MAX_SLOTS, _cached_terminal_inspection, atomic, completion,
                     obj, physical_host,
                     pilot_receipt, run_host, run_worker, sha,
                     validate_isolation)
+from .results import export_native_results
+
+DEFAULT_RESULTS_DIR = (Path(__file__).resolve().parents[2] /
+                       "data/mallory/native_graphchecker_queue")
 
 
 def main() -> None:
@@ -25,6 +29,7 @@ def main() -> None:
     parser.add_argument("--config-root", type=Path, required=True)
     parser.add_argument("--state-root", type=Path, required=True)
     parser.add_argument("--scratch-root", type=Path, required=True)
+    parser.add_argument("--results-dir", type=Path, default=DEFAULT_RESULTS_DIR)
     parser.add_argument("--isolation", type=Path, required=True)
     parser.add_argument("--reviews", type=Path)
     parser.add_argument("--slots", type=int, default=MAX_SLOTS)
@@ -47,6 +52,7 @@ def main() -> None:
                          ownership_file=args.ownership,
                          config_root=args.config_root, state_root=args.state_root,
                          scratch_root=args.scratch_root,
+                         results_dir=args.results_dir,
                          isolation_file=args.isolation, reviews=args.reviews,
                          min_memory_gib=args.min_memory_gib,
                          min_state_gib=args.min_state_gib,
@@ -76,6 +82,7 @@ def main() -> None:
                             inventory=args.inventory, ownership_file=args.ownership,
                             config_root=args.config_root, state_root=args.state_root,
                             scratch_root=args.scratch_root,
+                            results_dir=args.results_dir,
                             isolation_file=args.isolation, reviews=args.reviews,
                             only_case=args.case_id,
                             min_memory_gib=args.min_memory_gib,
@@ -88,6 +95,8 @@ def main() -> None:
         completion(item, row, config_file, args.state_root,
                    args.state_root / ".native-queue", native_root=native_root,
                    binding_file=binding_file)
+        export_native_results(args.inventory, args.ownership, args.config_root,
+                              args.state_root, args.results_dir)
         receipt = {"schema_version": 1, "passed": True,
                    "case_id": args.case_id, "host": args.host,
                    "inventory_sha256": sha(args.inventory),
@@ -109,6 +118,7 @@ def main() -> None:
                         inventory=args.inventory, ownership_file=args.ownership,
                         config_root=args.config_root, state_root=args.state_root,
                         scratch_root=args.scratch_root,
+                        results_dir=args.results_dir,
                         isolation_file=args.isolation, reviews=args.reviews,
                         min_memory_gib=args.min_memory_gib,
                         min_state_gib=args.min_state_gib,

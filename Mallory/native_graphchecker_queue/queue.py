@@ -446,9 +446,19 @@ def run_pinned_campaign(config_file: Path, root: Path) -> dict[str, Any]:
     return json.loads(result.stdout)
 
 
+def _publish_results_if_requested(results_dir: Path | None, inventory: Path,
+                                  ownership_file: Path, config_root: Path,
+                                  state_root: Path) -> None:
+    if results_dir is not None:
+        from .results import export_native_results
+        export_native_results(inventory, ownership_file, config_root,
+                              state_root, results_dir)
+
+
 def run_worker(*, host: str, slot: int, slots: int, inventory: Path,
                ownership_file: Path, config_root: Path, state_root: Path,
                scratch_root: Path, isolation_file: Path,
+               results_dir: Path | None = None,
                reviews: Path | None = None, only_case: str | None = None,
                min_memory_gib: float = 12, min_state_gib: float = 2,
                min_scratch_gib: float = 4,
@@ -490,6 +500,9 @@ def run_worker(*, host: str, slot: int, slots: int, inventory: Path,
                                    owners, host)
                 completion(item, row, config_file, state_root, queue_root,
                            native_root=root, binding_file=binding_file)
+                _publish_results_if_requested(results_dir, inventory,
+                                              ownership_file, config_root,
+                                              state_root)
                 continue
             if row["terminal_disposition"] not in ("ready", "resumable"):
                 continue
@@ -544,6 +557,9 @@ def run_worker(*, host: str, slot: int, slots: int, inventory: Path,
                     result = completion(item, after, config_file, state_root,
                                         queue_root, native_root=root,
                                         binding_file=binding_file)
+                    _publish_results_if_requested(results_dir, inventory,
+                                                  ownership_file, config_root,
+                                                  state_root)
                     attempt.update(status="complete", ended_at=time.time(),
                                    completion_path=str(queue_root / "completions" /
                                                        f"{case_id}.json"))
@@ -566,6 +582,7 @@ def run_worker(*, host: str, slot: int, slots: int, inventory: Path,
 def run_host(*, host: str, slots: int, pilot: Path, inventory: Path,
              ownership_file: Path, config_root: Path, state_root: Path,
              scratch_root: Path, isolation_file: Path,
+             results_dir: Path | None = None,
              reviews: Path | None = None,
              min_memory_gib: float = 12, min_state_gib: float = 2,
              min_scratch_gib: float = 4) -> list[int]:
@@ -603,6 +620,8 @@ def run_host(*, host: str, slots: int, pilot: Path, inventory: Path,
                 "--min-scratch-gib", str(min_scratch_gib)]
         if reviews:
             argv.extend(("--reviews", str(reviews)))
+        if results_dir is not None:
+            argv.extend(("--results-dir", str(results_dir)))
         argv.extend(("--pilot-receipt", str(pilot)))
         processes.append(subprocess.Popen(argv,
                                           cwd=Path(__file__).resolve().parents[2]))

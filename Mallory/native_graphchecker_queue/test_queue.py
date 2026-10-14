@@ -190,10 +190,14 @@ class NativeQueueTest(unittest.TestCase):
                 ownership_file=DEFAULT_OWNERSHIP,
                 config_root=self.config_root, state_root=self.state_root,
                 scratch_root=self.scratch_root, isolation_file=self.isolation,
+                results_dir=self.root / "native-results",
                 only_case=self.case_id, min_memory_gib=0, min_state_gib=0,
                 min_scratch_gib=0,
                 runner=lambda *_: self.fail("terminal campaign was rerun"))
             self.assertEqual(result["completed"], 0)
+        published = json.loads((self.root / "native-results" /
+                                "native-102-results.json").read_text())
+        self.assertEqual(published["verified_terminal_count"], 1)
         cache = json.loads((self.state_root / ".native-queue/audits" /
                             f"{self.case_id}.json").read_text())
         self.assertEqual(cache["basis"], "pinned_pilot_and_completion_receipts")
