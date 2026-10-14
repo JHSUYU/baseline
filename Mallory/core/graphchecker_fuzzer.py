@@ -29,7 +29,7 @@ REPLAY_FIELD = "replayOccurrenceId"
 TIER_WEIGHT = {"observed_closure": 100, "static_may_observed": 55,
                "selected_scope_observed": 35, "outside_closure": 15,
                "after_target": -100}
-SCHEDULER_VERSION = 5
+SCHEDULER_VERSION = 7
 BOOTSTRAP_POLICY_VERSION = 1
 CLOSURE_NOVELTY_POLICY_VERSION = 1
 BOOTSTRAP_MAX_FAULTS = 3
@@ -37,6 +37,10 @@ BOOTSTRAP_MAX_TRIALS = 128
 MAX_QUEUE = 5000
 MAX_UNMATCHED_RETRIES = 2
 MAX_PRODUCER_FRONTIER_CONTINUATIONS = 8
+WEAK_TARGET_RETAINED_POLICY_VERSION = 1
+RETENTION_FEEDBACK_POLICY_VERSION = 1
+MAX_WEAK_TARGET_RETAINED_CONTINUATIONS = 8
+MAX_WEAK_CONTINUATIONS_PER_PREFIX = 2
 
 
 def _now() -> str:
@@ -72,12 +76,30 @@ def _plan_key(faults: list[dict[str, Any]]) -> str:
                           .encode("utf-8")).hexdigest()
 
 
-def _actor_site_key(fault: dict[str, Any]) -> str:
-    """Group retries by logical node and site, independent of reboot epoch."""
+def _logical_actor(fault: dict[str, Any]) -> str:
+    """Keep one actor identity across its observed reboot epochs."""
     node = fault["node"]
     base, marker, epoch = node.rpartition("#epoch")
-    logical_node = base if marker and epoch.isdigit() else node
-    return json.dumps([logical_node, fault["siteId"]], separators=(",", ":"))
+    return base if marker and epoch.isdigit() else node
+
+
+def _actor_site_key(fault: dict[str, Any]) -> str:
+    """Group retries by logical node and site, independent of reboot epoch."""
+    return json.dumps([_logical_actor(fault), fault["siteId"]],
+                      separators=(",", ":"))
+
+
+def _actor_target_retention(state: dict[str, Any]) -> dict[str, dict[str, int]]:
+    """Credit only strict faults followed by a reachable exact target."""
+    history: dict[str, dict[str, int]] = {}
+    for trial in state.get("trials", []):
+        if not trial.get("strict_injection") or not trial.get("faults"):
+            continue
+        actor = _logical_actor(trial["faults"][-1])
+        counts = history.setdefault(actor, {"preserved": 0, "lost": 0})
+        counts["preserved" if trial.get("post_fault_target_reached") else
+               "lost"] += 1
+    return history
 
 
 def _live_process(trial: Path) -> bool:
@@ -103,7 +125,7 @@ def _score(item: dict[str, Any], completed: int) -> float:
 
 def _retention_score(item: dict[str, Any], completed: int,
                      state: dict[str, Any]) -> float:
-    """Bounded feedback; all fault sequences remain eligible for exploration."""
+    """Bounded feedback; repeated target loss lowers priority, never eligibility."""
     actor_site = _actor_site_key(item["faults"][-1])
     history = state.get("site_target_retention", {}).get(actor_site, {})
     preserved = int(history.get("preserved", 0))
@@ -111,25 +133,58 @@ def _retention_score(item: dict[str, Any], completed: int,
     productive = int(history.get("productive", 0))
     attempts = int(state.get("last_fault_actor_site_attempts", {}).get(
         actor_site, 0))
+    actor_history = _actor_target_retention(state).get(
+        _logical_actor(item["faults"][-1]), {})
+    actor_preserved = int(actor_history.get("preserved", 0))
+    actor_lost = int(actor_history.get("lost", 0))
     parent_delta = int(item.get("parent_graph_delta", 0))
     parent_bonus = (24 if parent_delta > 0 else 8) if item.get(
         "parent_target_retained") else 0
-    # A repeated call at one actor/site may disappear on replay when the
-    # first fault changes a retry or cache path. Favor distinct observed
-    # doors slightly while retaining same-site multi-fault sequences.
+    # Preserve the v5 queue's distinct-site ranking on resume. Newer queues
+    # use target-retention evidence to rank actors instead.
     distinct_actor_sites = len({_actor_site_key(fault)
                                 for fault in item["faults"]})
-    diversity_bonus = min(16, 8 * max(0, distinct_actor_sites - 1))
+    diversity_bonus = (min(16, 8 * max(0, distinct_actor_sites - 1))
+                       if state.get("scheduler_version", 1) <= 5 else 0)
     return (_score(item, completed) + parent_bonus + min(20, 5 * preserved)
             + min(15, 5 * productive)
             + diversity_bonus
             - min(40, 10 * max(0, lost - preserved))
-            - min(18, 3 * attempts))
+            - min(18, 3 * attempts)
+            + min(20, 10 * actor_preserved)
+            - min(60, 8 * max(0, actor_lost - actor_preserved))
+            - (80 if item.get("weak_target_retained_continuation") else 0))
 
 
 def _pick(queue: list[dict[str, Any]], completed: int,
           state: dict[str, Any] | None = None) -> dict[str, Any]:
     if state is not None and state.get("scheduler_version", 1) >= 3:
+        if state.get("scheduler_version", 1) >= 6 and completed % 6 == 4:
+            weak = [item for item in queue if item.get(
+                "weak_target_retained_continuation")]
+            if weak:
+                selected = max(weak, key=lambda item: (
+                    _retention_score(item, completed, state),
+                    -item["enqueued_at"], item["key"]))
+                queue.remove(selected)
+                return selected
+        if state.get("scheduler_version", 1) >= 7 and completed % 3 == 1:
+            # Reserve one third of selections for actors whose strict faults
+            # have actually left the exact target reachable. The remaining
+            # slots keep the normal closure/MAY and outside exploration.
+            actor_history = _actor_target_retention(state)
+            viable = [(item, actor_history.get(_logical_actor(item["faults"][-1]),
+                                               {"preserved": 0, "lost": 0}))
+                      for item in queue]
+            retained = [(item, counts) for item, counts in viable
+                        if counts["preserved"] > 0]
+            if retained:
+                selected = max(retained, key=lambda pair: (
+                    pair[1]["preserved"] - pair[1]["lost"],
+                    _retention_score(pair[0], completed, state),
+                    -pair[0]["enqueued_at"], pair[0]["key"]))[0]
+                queue.remove(selected)
+                return selected
         # Spend a bounded, periodic slot on a second fault after a strict
         # static-producer fault retained the target. This is exploration,
         # never evidence that the producer belongs to the observed closure.
@@ -322,6 +377,7 @@ def _enqueue(state: dict[str, Any], result: dict[str, Any],
              bootstrap_new_sites: set[str] | None = None,
              target_novelty: int | None = None,
              producer_frontier_continuation: bool = False,
+             weak_target_retained_continuation: bool = False,
              max_added: int | None = None) -> int:
     evidence = result.get("evidence", {})
     if bootstrap and (state.get("scheduler_version", 1) < 4 or
@@ -339,6 +395,10 @@ def _enqueue(state: dict[str, Any], result: dict[str, Any],
     for door in evidence.get("eligible_doors", []):
         tier = door.get("tier")
         if producer_frontier_continuation and tier != "observed_closure":
+            continue
+        if (weak_target_retained_continuation and tier not in
+                ("observed_closure", "static_may_observed",
+                 "selected_scope_observed")):
             continue
         if bootstrap and tier not in ("static_may_observed",
                                       "selected_scope_observed"):
@@ -395,6 +455,10 @@ def _enqueue(state: dict[str, Any], result: dict[str, Any],
                 "static_producer_frontier": bool(door.get(
                     "static_producer_frontier", False)),
                 "producer_frontier_continuation": producer_frontier_continuation,
+                "weak_target_retained_continuation":
+                    weak_target_retained_continuation,
+                "causal_review_status": ("needs_causal_review" if
+                    weak_target_retained_continuation else None),
                 "novelty": (min(60, bootstrap_novelty +
                                 (15 if door["siteId"] in (
                                     bootstrap_new_sites or set()) else 0))
@@ -441,6 +505,12 @@ def _new_state(config: dict[str, Any], budget: dict[str, int]) -> dict[str, Any]
             "last_fault_actor_site_attempts": {},
             "site_target_retention": {},
             "producer_frontier_continuations_enqueued": 0,
+            "weak_target_retained_policy_version":
+                WEAK_TARGET_RETAINED_POLICY_VERSION,
+            "retention_feedback_policy_version":
+                RETENTION_FEEDBACK_POLICY_VERSION,
+            "weak_target_retained_continuations_enqueued": 0,
+            "scheduler_source_sha256": _sha256(Path(__file__)),
             "target_site_rows": config.get("target_site_rows", []),
             "status": "running", "terminal": False,
             "started_at": _now(), "updated_at": _now(),
@@ -492,6 +562,9 @@ def _accept_result(state: dict[str, Any], name: str,
         record["selection_score"] = active.get("selection_score")
         record["producer_frontier_continuation"] = active.get(
             "producer_frontier_continuation", False)
+        record["weak_target_retained_continuation"] = active.get(
+            "weak_target_retained_continuation", False)
+        record["causal_review_status"] = active.get("causal_review_status")
         record["parent_target_retained"] = active.get("parent_target_retained", False)
         record["parent_graph_delta"] = active.get("parent_graph_delta", 0)
         if state.get("scheduler_version", 1) >= 4:
@@ -606,6 +679,21 @@ def _accept_result(state: dict[str, Any], name: str,
                                  max_added=remaining)
                 state["producer_frontier_continuations_enqueued"] = (
                     MAX_PRODUCER_FRONTIER_CONTINUATIONS - remaining + added)
+        if (state.get("scheduler_version", 1) >= 6 and
+              state.get("healthy_target_reached") is True and
+              len(active["faults"]) == 1 and
+              evidence.get("strict_injection") and
+              evidence.get("post_fault_target_reached") and
+              evidence.get("target_reached") and
+              not evidence.get("injection_specific_target_reached")):
+            remaining = (MAX_WEAK_TARGET_RETAINED_CONTINUATIONS - int(
+                state.get("weak_target_retained_continuations_enqueued", 0)))
+            if remaining > 0:
+                added = _enqueue(
+                    state, result, active["faults"], target_novelty=0,
+                    weak_target_retained_continuation=True,
+                    max_added=min(MAX_WEAK_CONTINUATIONS_PER_PREFIX, remaining))
+                state["weak_target_retained_continuations_enqueued"] += added
     state["active"] = None
     state["updated_at"] = _now()
     state["terminal"] = state["status"] != "running"
@@ -663,6 +751,94 @@ def _verify_recorded_evidence(state: dict[str, Any], root: Path) -> None:
         if result.get("case_id") != state["case_id"] or result.get("fault_plan") != record["faults"]:
             raise ValueError(f"checkpoint trial receipt changed: {path}")
         verify_trial_artifacts(path.parent, result)
+
+
+def _migrate_weak_target_retained_policy(state: dict[str, Any], root: Path,
+                                         checkpoint: Path) -> None:
+    """Resume a paused v5 queue, adding bounded successors from recorded trials."""
+    version = state.get("scheduler_version", 1)
+    if version >= 6:
+        if state.get("weak_target_retained_policy_version") != (
+                WEAK_TARGET_RETAINED_POLICY_VERSION):
+            raise ValueError("campaign weak-target scheduler pin changed")
+        return
+    if version < 5 or (version == 5 and state.get("status") != "running"):
+        return
+    if version != 5 or state.get("active"):
+        raise ValueError("weak-target scheduler migration requires paused v5 campaign")
+    old_sha = _sha256(checkpoint)
+    state["scheduler_version"] = 6
+    state["weak_target_retained_policy_version"] = (
+        WEAK_TARGET_RETAINED_POLICY_VERSION)
+    state["weak_target_retained_continuations_enqueued"] = 0
+    state["scheduler_source_sha256"] = _sha256(Path(__file__))
+    imported = []
+    for record in state["trials"]:
+        result = _json(root / record["result"])
+        evidence = result.get("evidence", {})
+        if (state.get("healthy_target_reached") is not True or
+                len(record["faults"]) != 1 or
+                not evidence.get("strict_injection") or
+                not evidence.get("target_reached") or
+                not evidence.get("post_fault_target_reached") or
+                evidence.get("injection_specific_target_reached")):
+            continue
+        remaining = (MAX_WEAK_TARGET_RETAINED_CONTINUATIONS -
+                     state["weak_target_retained_continuations_enqueued"])
+        if remaining <= 0:
+            break
+        added = _enqueue(state, result, record["faults"], target_novelty=0,
+                         weak_target_retained_continuation=True,
+                         max_added=min(MAX_WEAK_CONTINUATIONS_PER_PREFIX, remaining))
+        state["weak_target_retained_continuations_enqueued"] += added
+        imported.append({"trial": record["name"], "successors": added})
+    state["updated_at"] = _now()
+    _write_json(checkpoint, state)
+    _write_json(root / "scheduler-migration-v5-to-v6.json", {
+        "schema_version": 1, "kind": "weak_target_retained_policy_migration",
+        "old_scheduler_version": 5, "new_scheduler_version": 6,
+        "old_checkpoint_sha256": old_sha,
+        "new_checkpoint_sha256": _sha256(checkpoint),
+        "scheduler_source_sha256": state["scheduler_source_sha256"],
+        "completed_fault_trials_preserved": state["completed_fault_trials"],
+        "imported": imported, "created_at": state["updated_at"]})
+
+
+def _migrate_retention_feedback_policy(state: dict[str, Any], root: Path,
+                                       checkpoint: Path) -> None:
+    version = state.get("scheduler_version", 1)
+    if version == 7:
+        if (state.get("retention_feedback_policy_version") !=
+                RETENTION_FEEDBACK_POLICY_VERSION or
+                state.get("scheduler_source_sha256") != _sha256(Path(__file__))):
+            raise ValueError("campaign retention scheduler pin changed")
+        return
+    if version < 6 or (version == 6 and state.get("status") != "running"):
+        return
+    if version != 6 or state.get("active"):
+        raise ValueError("retention scheduler migration requires paused v6 campaign")
+    old_source = state.get("scheduler_source_sha256")
+    if (not isinstance(old_source, str) or len(old_source) != 64 or
+            any(char not in "0123456789abcdef" for char in old_source)):
+        raise ValueError("v6 scheduler source digest is missing")
+    old_sha = _sha256(checkpoint)
+    state["scheduler_version"] = 7
+    state["retention_feedback_policy_version"] = (
+        RETENTION_FEEDBACK_POLICY_VERSION)
+    state["scheduler_source_sha256"] = _sha256(Path(__file__))
+    state["updated_at"] = _now()
+    _write_json(checkpoint, state)
+    _write_json(root / "scheduler-migration-v6-to-v7.json", {
+        "schema_version": 1, "kind": "target_retention_feedback_migration",
+        "old_scheduler_version": 6, "new_scheduler_version": 7,
+        "old_checkpoint_sha256": old_sha,
+        "new_checkpoint_sha256": _sha256(checkpoint),
+        "old_scheduler_source_sha256": old_source,
+        "new_scheduler_source_sha256": state["scheduler_source_sha256"],
+        "completed_fault_trials_preserved": state["completed_fault_trials"],
+        "queue_length_preserved": len(state["queue"]),
+        "actor_target_retention": _actor_target_retention(state),
+        "created_at": state["updated_at"]})
 
 
 def _admit_capacity(state: dict[str, Any], checkpoint: Path,
@@ -733,6 +909,10 @@ def _finish(state: dict[str, Any], root: Path) -> dict[str, Any]:
                    "site_target_retention": state.get("site_target_retention", {}),
             "producer_frontier_continuations_enqueued": state.get(
                 "producer_frontier_continuations_enqueued", 0),
+                   "weak_target_retained_policy_version": state.get(
+                       "weak_target_retained_policy_version"),
+                   "weak_target_retained_continuations_enqueued": state.get(
+                       "weak_target_retained_continuations_enqueued", 0),
                    "completed_fault_trials": state["completed_fault_trials"],
                    "trial_elapsed_seconds": state["trial_elapsed_seconds"],
                    "healthy": state["healthy"],
@@ -825,6 +1005,8 @@ def run_campaign(config_path: Path, root: Path,
                             values != sorted(set(values))):
                         raise ValueError(f"invalid target closure novelty checkpoint: {field}")
             _verify_recorded_evidence(state, root)
+            _migrate_weak_target_retained_policy(state, root, checkpoint)
+            _migrate_retention_feedback_policy(state, root, checkpoint)
         else:
             state = _new_state(config, budget)
             state["additional_healthy_seed_pins"] = healthy_seed_pins
@@ -887,6 +1069,10 @@ def run_campaign(config_path: Path, root: Path,
                                    "static_producer_frontier", False),
                                "producer_frontier_continuation": selected.get(
                                    "producer_frontier_continuation", False),
+                               "weak_target_retained_continuation": selected.get(
+                                   "weak_target_retained_continuation", False),
+                               "causal_review_status": selected.get(
+                                   "causal_review_status"),
                                "parent_target_retained": selected.get(
                                    "parent_target_retained", False),
                                "parent_graph_delta": selected.get("parent_graph_delta", 0),

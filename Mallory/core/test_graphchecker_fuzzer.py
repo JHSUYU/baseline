@@ -12,6 +12,8 @@ from unittest.mock import patch
 from Mallory.core.graphchecker_campaign import _archive_jsonl, _trial_verdict
 from Mallory.core.graphchecker_fuzzer import (_accept_result, _admit_capacity,
                                              _enqueue, _finish,
+                                             _migrate_weak_target_retained_policy,
+                                             _migrate_retention_feedback_policy,
                                              _pause_running_jvm,
                                              _actor_site_key, _plan_key,
                                              _retention_score,
@@ -139,8 +141,9 @@ class GraphCheckerFuzzerTest(unittest.TestCase):
         self.assertEqual("selected_scope_observed",
                          _pick(state["queue"], 5, state)["tier"])
 
-    def test_multifault_diversity_hint_preserves_same_site_exploration(self):
+    def test_v5_multifault_diversity_hint_preserves_same_site_exploration(self):
         state = _new_state(self.config(), self.budget())
+        state["scheduler_version"] = 5
         first = self.door(1, 1, site="first")
         repeated = {**self.door(2, 1, site="first"),
                     "node": "nn-1#epoch1"}
@@ -151,15 +154,12 @@ class GraphCheckerFuzzerTest(unittest.TestCase):
                     "tier": "observed_closure", "novelty": novelty,
                     "enqueued_at": 0}
 
-        # Reboot epochs do not turn one actor/site into a new fault door.
         same_site = item(repeated, 4)
         distinct_site = item(distinct, 0)
         self.assertEqual(4, _retention_score(distinct_site, 0, state)
                          - _retention_score(same_site, 0, state))
         self.assertEqual("second", _pick([same_site, distinct_site], 0, state)[
             "faults"][-1]["siteId"])
-        # Diversity changes priority only; sufficient coverage feedback can
-        # still select a repeated site in a multi-fault sequence.
         self.assertEqual("first", _pick([item(repeated, 12),
                                           distinct_site], 0, state)[
             "faults"][-1]["siteId"])
@@ -236,6 +236,96 @@ class GraphCheckerFuzzerTest(unittest.TestCase):
         _accept_result(state, "r0001", faulted)
         self.assertEqual([], state["queue"])
         self.assertEqual(0, state["producer_frontier_continuations_enqueued"])
+
+    def test_weak_retained_target_adds_bounded_review_successors(self):
+        state = _new_state(self.config(), self.budget())
+        state["healthy_target_reached"] = True
+        first = {key: self.door(2, 1)[key] for key in
+                 ("siteId", "node", "occurrenceId", "ordinal", "exceptionClass")}
+        state["active"] = {"index": 1, "name": "r0001", "faults": [first]}
+        doors = [self.door(6 + i, 2 + i, "selected_scope_observed", f"io-{i}")
+                 for i in range(5)]
+        doors.append(self.door(20, 9, "outside_closure", "outside"))
+        result = self.result([first], doors)
+        result["evidence"]["injection_specific_target_reached"] = False
+        _accept_result(state, "r0001", result)
+        self.assertEqual(2, state["weak_target_retained_continuations_enqueued"])
+        self.assertEqual(2, len(state["queue"]))
+        self.assertTrue(all(len(item["faults"]) == 2 and item[
+            "causal_review_status"] == "needs_causal_review" for item in state["queue"]))
+        selected = _pick(state["queue"], 4, state)
+        self.assertTrue(selected["weak_target_retained_continuation"])
+
+    def test_paused_v5_migration_keeps_completed_trials_and_is_single_use(self):
+        state = _new_state(self.config(), self.budget())
+        state["scheduler_version"] = 5
+        state["healthy_target_reached"] = True
+        state.pop("weak_target_retained_policy_version")
+        state.pop("weak_target_retained_continuations_enqueued")
+        state.pop("scheduler_source_sha256")
+        first = {key: self.door(2, 1)[key] for key in
+                 ("siteId", "node", "occurrenceId", "ordinal", "exceptionClass")}
+        result = self.result([first], [self.door(6, 2)])
+        result["evidence"]["injection_specific_target_reached"] = False
+        state["trials"] = [{"name": "r0001", "result": "trials/r0001/result.json",
+                            "faults": [first]}]
+        state["completed_fault_trials"] = 1
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            (root / "trials" / "r0001").mkdir(parents=True)
+            (root / "trials" / "r0001" / "result.json").write_text(
+                json.dumps(result))
+            checkpoint = root / "checkpoint.json"
+            checkpoint.write_text(json.dumps(state))
+            _migrate_weak_target_retained_policy(state, root, checkpoint)
+            self.assertEqual(6, state["scheduler_version"])
+            self.assertEqual(1, state["completed_fault_trials"])
+            self.assertEqual(1, state["weak_target_retained_continuations_enqueued"])
+            migrated = json.loads((root / "scheduler-migration-v5-to-v6.json").read_text())
+            self.assertEqual(1, migrated["completed_fault_trials_preserved"])
+            _migrate_weak_target_retained_policy(state, root, checkpoint)
+            self.assertEqual(1, len(state["queue"]))
+
+    def test_v7_retained_actor_quota_preserves_exploration(self):
+        state = _new_state(self.config(), self.budget())
+        dn = {**self.door(1, 1, site="dn-sasl"), "node": "dn-1#epoch0"}
+        nn = {**self.door(2, 2, "selected_scope_observed", "nn-rpc"),
+              "node": "nn-1#epoch0"}
+        _enqueue(state, self.result([], [dn, nn]), [])
+        for index in range(4):
+            state["trials"].append({"faults": [dn], "strict_injection": True,
+                                    "post_fault_target_reached": False})
+        state["trials"].append({"faults": [nn], "strict_injection": True,
+                                "post_fault_target_reached": True})
+        self.assertEqual("nn-rpc", _pick(state["queue"], 16, state)[
+            "faults"][-1]["siteId"])
+        self.assertEqual("dn-sasl", _pick(state["queue"], 17, state)[
+            "faults"][-1]["siteId"])
+
+    def test_paused_v6_retention_migration_preserves_queue_and_trials(self):
+        state = _new_state(self.config(), self.budget())
+        state["scheduler_version"] = 6
+        state.pop("retention_feedback_policy_version")
+        state["scheduler_source_sha256"] = "a" * 64
+        state["completed_fault_trials"] = 2
+        state["trials"] = [{"faults": [self.door(1, 1)],
+                            "strict_injection": True,
+                            "post_fault_target_reached": False}]
+        state["queue"] = [{"key": "queued"}]
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            checkpoint = root / "checkpoint.json"
+            checkpoint.write_text(json.dumps(state))
+            _migrate_retention_feedback_policy(state, root, checkpoint)
+            self.assertEqual(7, state["scheduler_version"])
+            self.assertEqual(2, state["completed_fault_trials"])
+            self.assertEqual([{"key": "queued"}], state["queue"])
+            receipt = json.loads((root / "scheduler-migration-v6-to-v7.json")
+                                 .read_text())
+            self.assertEqual("a" * 64, receipt["old_scheduler_source_sha256"])
+            self.assertEqual(2, receipt["completed_fault_trials_preserved"])
+            _migrate_retention_feedback_policy(state, root, checkpoint)
+            self.assertEqual(1, len(state["queue"]))
 
     def test_static_producer_continuation_queue_is_bounded(self):
         state = _new_state(self.config(), self.budget())
