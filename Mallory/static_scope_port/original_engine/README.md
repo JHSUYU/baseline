@@ -22,7 +22,8 @@ by compiling those entry sources with GraphChecker's source tree on
 and copied SHA-256 digests are in `UPSTREAM_SOURCES.json`. The vendored files
 with Mallory adaptations are `SeedBackwardStaticAnalyzer`,
 `ConcolicScheduler`, `GraphCheckerMain`, `RuntimeSelectedRegionFinalizer`,
-and `CausynthTraceRecorder`; the manifest records their exact hashes. The former
+`CausynthTraceRecorder`, and `RuntimeRegionPlanner`; the manifest records their
+exact hashes. The former
 names its own class rather than
 `CausynthPipeline` as the SLF4J logger category, and upgrades a discovered
 protobuf message from Soot `HIERARCHY` to `SIGNATURES` before enumerating its
@@ -35,6 +36,12 @@ lists explicitly. No guard is selected arbitrarily.
 The additional changes support the opt-in native fault weave, an
 order-preserving runtime aggregation speedup, and package-private reuse of
 the original CLOSED trace and selected-skeleton readers.
+The exercised-skeleton selection pass omits signatures because it reads only
+region IDs and observed anchors. The full planning pass computes the same
+signature bytes after sorting references to recorded events, so a large trace
+does not retain one formatted String per event per activation.
+The failure-directed demand walk caches repeated incoming-edge queries in a
+bounded map; its edge order and admitted closure remain unchanged.
 The original `runtime.Listings` and `runtime.Randoms` are copied byte for
 byte as well: `CausynthPipeline` rewrites application calls to these helpers
 in REGION_STATE weave, so the woven original JUnit needs both classes at run

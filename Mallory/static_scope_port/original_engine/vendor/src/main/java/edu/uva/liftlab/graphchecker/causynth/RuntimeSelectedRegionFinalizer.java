@@ -17,6 +17,7 @@ import edu.uva.liftlab.graphchecker.plan.SiteId;
 import edu.uva.liftlab.graphchecker.plan.StaticScopeMap;
 
 import java.io.IOException;
+import java.util.AbstractMap;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -2056,6 +2057,29 @@ public final class RuntimeSelectedRegionFinalizer {
      * SymbolicInputSelection's decision at PLAN.
      */
     private static final class RegionDemandIndex {
+        // The demand walk asks the same (occurrence, cell) repeatedly while
+        // deciding movable writers. Graph adjacency and observed methods do
+        // not change after construction. Keep a bounded cache so large
+        // MiniCluster graphs do not rescan the same incoming edges, without
+        // retaining an unbounded number of closure queries.
+        private static final int EDGE_LOOKUP_CACHE_SIZE = 8192;
+        private final Map<Map.Entry<String, String>, List<String>>
+                localIncomingCache = edgeLookupCache();
+        private final Map<Map.Entry<String, String>, List<String>>
+                guardIncomingCache = edgeLookupCache();
+
+        private static Map<Map.Entry<String, String>, List<String>>
+        edgeLookupCache() {
+            return new LinkedHashMap<Map.Entry<String, String>, List<String>>(
+                    EDGE_LOOKUP_CACHE_SIZE, 0.75f, true) {
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<
+                        Map.Entry<String, String>, List<String>> eldest) {
+                    return size() > EDGE_LOOKUP_CACHE_SIZE;
+                }
+            };
+        }
+
         /** Every observed occurrence's performed regions, own first. */
         private final Map<String, List<String>> regionsByOccurrence =
                 new LinkedHashMap<>();
@@ -2355,9 +2379,17 @@ public final class RuntimeSelectedRegionFinalizer {
         private List<String> edgesInto(
                 Map<String, Map<String, Set<String>>> edges,
                 String occurrenceId, String cell) {
+            Map<Map.Entry<String, String>, List<String>> cache =
+                    edges == localIncoming
+                            ? localIncomingCache : guardIncomingCache;
+            Map.Entry<String, String> key =
+                    new AbstractMap.SimpleImmutableEntry<>(
+                            occurrenceId, cell);
+            List<String> cached = cache.get(key);
+            if (cached != null) return cached;
             Set<String> ran = methodsByOccurrence.getOrDefault(occurrenceId,
                     Collections.<String>emptySet());
-            List<String> incoming = new ArrayList<>();
+            Set<String> incoming = new LinkedHashSet<>();
             for (String regionId : regionsByOccurrence.getOrDefault(
                     occurrenceId, Collections.<String>emptyList())) {
                 for (Map.Entry<String, Set<String>> from : edges.getOrDefault(
@@ -2370,7 +2402,10 @@ public final class RuntimeSelectedRegionFinalizer {
                     }
                 }
             }
-            return incoming;
+            List<String> result = Collections.unmodifiableList(
+                    new ArrayList<>(incoming));
+            cache.put(key, result);
+            return result;
         }
 
         private static void add(Map<String, Map<String, Set<String>>> target,

@@ -34,7 +34,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.AbstractMap;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -89,6 +88,19 @@ public final class RuntimeRegionPlanner {
                                     List<ProtocolEvent> protocolEvents,
                                     Set<String> declaredSites,
                                     Map<String, String> fieldCalls) {
+        return planSkeletonGraph(skeletons, methods, runtimeEvents,
+                fieldEvents, protocolEvents, declaredSites, fieldCalls, true);
+    }
+
+    /** The exercised-only pass selects skeletons but never reads a digest. */
+    static Result planSkeletonGraph(List<StaticProgram.RegionRow> skeletons,
+                                    List<MethodEvent> methods,
+                                    List<RuntimeEvent> runtimeEvents,
+                                    List<FieldAccessEvent> fieldEvents,
+                                    List<ProtocolEvent> protocolEvents,
+                                    Set<String> declaredSites,
+                                    Map<String, String> fieldCalls,
+                                    boolean stampSignature) {
         TraceIndex trace = new TraceIndex(methods, runtimeEvents,
                 fieldEvents, protocolEvents);
         Result result = new Result();
@@ -173,7 +185,9 @@ public final class RuntimeRegionPlanner {
         stampFoldedRegionEntries(foldedRoots, foldOwners, activationByCall,
                 trace);
         stampFieldOwners(activationByCall.values(), trace, fieldCalls);
-        stampSignatures(activationByCall.values(), trace);
+        if (stampSignature) {
+            stampSignatures(activationByCall.values(), trace);
+        }
         result.runtimeInstances.addAll(activationByCall.values());
         stampRecordedExchanges(result, trace, protocolEvents);
         return result;
@@ -247,55 +261,36 @@ public final class RuntimeRegionPlanner {
     private static void stampSignatures(
             Collection<Map<String, Object>> activations, TraceIndex trace) {
         for (Map<String, Object> activation : activations) {
-            List<Map.Entry<Long, String>> events = new ArrayList<>();
+            // Sort the original event objects before encoding. Holding the
+            // formatted String for every event until after sort used memory
+            // proportional to the full text of each occurrence, which is
+            // substantial for MiniCluster traces. Sequence and emission
+            // order are exactly the same as the former (seq, String) rows.
+            List<SignatureEvent> events = new ArrayList<>();
             for (Long call : MapFields.longValues(
                     activation.get("callIds"))) {
                 MethodEvent entered = trace.methodByCall.get(call);
                 if (entered != null) {
-                    events.add(new AbstractMap.SimpleEntry<>(
-                            entered.seq, "M " + entered.method + " "
-                                    + entered.objectId));
+                    events.add(new SignatureEvent(entered.seq, entered));
                 }
                 for (RuntimeEvent event : trace.runtimeByCall.getOrDefault(
                         call, Collections.<RuntimeEvent>emptyList())) {
-                    events.add(new AbstractMap.SimpleEntry<>(
-                            event.seq, "R " + event.kind + " "
-                                    + event.siteId + " "
-                                    + event.declaredCallee + " "
-                                    + event.argumentIndex + " "
-                                    + event.runtimeType + " "
-                                    + event.objectId + " "
-                                    + event.primitiveValue + " "
-                                    + event.outcome + " "
-                                    + event.successorIndex + " "
-                                    + event.branchKind + " "
-                                    + event.switchCaseKeys));
+                    events.add(new SignatureEvent(event.seq, event));
                 }
                 for (FieldAccessEvent event : trace.fieldsByCall.getOrDefault(
                         call, Collections.<FieldAccessEvent>emptyList())) {
-                    events.add(new AbstractMap.SimpleEntry<>(
-                            event.seq, "F " + event.kind + " "
-                                    + event.siteId + " " + event.field + " "
-                                    + event.receiverObjectId + " "
-                                    + event.valueObjectId + " "
-                                    + event.primitiveValue + " "
-                                    + event.version));
+                    events.add(new SignatureEvent(event.seq, event));
                 }
                 for (ProtocolEvent event : trace.protocolByCall.getOrDefault(
                         call, Collections.<ProtocolEvent>emptyList())) {
-                    events.add(new AbstractMap.SimpleEntry<>(
-                            event.seq, "P " + event.direction + " "
-                                    + event.transport + " "
-                                    + event.exchangeLeg() + " "
-                                    + event.declaredCallee + " "
-                                    + event.producerEndpointId));
+                    events.add(new SignatureEvent(event.seq, event));
                 }
             }
             if (events.isEmpty()) continue;
-            events.sort(Map.Entry.comparingByKey());
+            events.sort(Comparator.comparingLong(event -> event.seq));
             MessageDigest digest = sha256();
-            for (Map.Entry<Long, String> event : events) {
-                digest.update((event.getValue() + "\n").getBytes(
+            for (SignatureEvent event : events) {
+                digest.update((event.line() + "\n").getBytes(
                         StandardCharsets.UTF_8));
             }
             StringBuilder hex = new StringBuilder();
@@ -305,9 +300,47 @@ public final class RuntimeRegionPlanner {
             activation.put(RuntimeSelectedRegionFinalizer.SIGNATURE,
                     hex.toString());
             activation.put(RuntimeSelectedRegionFinalizer.FIRST_SEQ,
-                    events.get(0).getKey());
+                    events.get(0).seq);
             activation.put(RuntimeSelectedRegionFinalizer.LAST_SEQ,
-                    events.get(events.size() - 1).getKey());
+                    events.get(events.size() - 1).seq);
+        }
+    }
+
+    /** An ordered event is formatted only when fed into its digest. */
+    private static final class SignatureEvent {
+        private final long seq;
+        private final Object value;
+
+        private SignatureEvent(long seq, Object value) {
+            this.seq = seq;
+            this.value = value;
+        }
+
+        private String line() {
+            if (value instanceof MethodEvent) {
+                MethodEvent event = (MethodEvent) value;
+                return "M " + event.method + " " + event.objectId;
+            }
+            if (value instanceof RuntimeEvent) {
+                RuntimeEvent event = (RuntimeEvent) value;
+                return "R " + event.kind + " " + event.siteId + " "
+                        + event.declaredCallee + " " + event.argumentIndex
+                        + " " + event.runtimeType + " " + event.objectId
+                        + " " + event.primitiveValue + " " + event.outcome
+                        + " " + event.successorIndex + " " + event.branchKind
+                        + " " + event.switchCaseKeys;
+            }
+            if (value instanceof FieldAccessEvent) {
+                FieldAccessEvent event = (FieldAccessEvent) value;
+                return "F " + event.kind + " " + event.siteId + " "
+                        + event.field + " " + event.receiverObjectId + " "
+                        + event.valueObjectId + " " + event.primitiveValue
+                        + " " + event.version;
+            }
+            ProtocolEvent event = (ProtocolEvent) value;
+            return "P " + event.direction + " " + event.transport + " "
+                    + event.exchangeLeg() + " " + event.declaredCallee
+                    + " " + event.producerEndpointId;
         }
     }
 
