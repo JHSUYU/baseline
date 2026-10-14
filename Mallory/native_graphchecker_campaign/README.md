@@ -38,7 +38,7 @@ that session, compares observed target closure families and branch outcomes,
 and updates a persistent fault queue. It gives most queue slots to observed
 closure doors and reserves one in eight fault trials for doors outside it.
 
-New campaigns use scheduler version 3. The last fault's `siteId` and
+New campaigns use scheduler version 4. The last fault's `siteId` and
 `exceptionClass` form a fault ID; physical actors and event ordinals remain in
 the exact injection selector but do not split this scheduling identity. A
 new or less-tested fault ID outranks repeated IDs before closure novelty and
@@ -46,7 +46,7 @@ depth break ties. One in eight selections goes to the oldest waiting plan,
 and another one in eight favors a multi-fault sequence when one is queued. The outside
 closure slot is still one in eight. Attempt and successful-injection counts
 are checkpointed, so resuming does not reset diversity. When a REGION_STATE
-trial misses its exact selector, version 3 verifies any already applied prefix
+trial misses its exact selector, versions 3 and 4 verify any already applied prefix
 against its original door receipts, then offers alternate actors observed at
 the missing fault's same `siteId` and `exceptionClass` after that prefix.
 These are new exact plans with their observed node, epoch, and ordinal; the
@@ -54,6 +54,35 @@ old occurrence ID remains provenance only. The append-only receipt row order
 is used across actors because their local `seq` numbers are incomparable.
 Unobserved doors generate no successors. Version 1 and version 2 checkpoints
 retain their previous selection and mutation rules.
+
+## Terminal successor campaigns
+
+An additional campaign may continue an exhausted queue under a newer generic
+scheduler without changing or restarting the terminal source campaign. Use a
+new output directory and add `predecessor_campaign` to the new config. Generate
+its exact pins from the completed source:
+
+```python
+from pathlib import Path
+from Mallory.native_graphchecker_campaign.campaign import build_predecessor_pins
+
+pins = build_predecessor_pins(Path("/absolute/source-config.json"),
+                              Path("/absolute/source-output"))
+# Add pins as the successor config's "predecessor_campaign" value.
+```
+
+The pins contain absolute paths and SHA-256 hashes for the source config,
+checkpoint, and summary, plus aggregates over its exact tested plan keys,
+per-trial result files, and unmatched native fault receipts. Import refuses an
+active, inconsistent, or mutated source. It requires the same original JUnit,
+target, runner, static scope, weave, recorder origin, and fault-depth limit;
+the successor may set a fresh time and trial budget. A fresh healthy JUnit runs
+in the new directory. The successor keeps the source's untested queue and
+feedback, removes every completed exact plan (including old unmatched retries),
+and derives new exact actor alternatives only from the pinned unmatched
+receipts. The source's completed trials do not count against the new budget.
+`predecessor-import.json` records the import lineage and counts. Every resume
+rechecks the predecessor hashes and refuses changed source evidence.
 
 ## Input contract
 

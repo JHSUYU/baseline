@@ -215,6 +215,151 @@ class ObservedActorSuccessorTest(unittest.TestCase):
                          previous["trials"][0])
 
 
+class TerminalSuccessorImportTest(unittest.TestCase):
+    """A new queue reuses a terminal campaign without replaying tested plans."""
+
+    @staticmethod
+    def _fault(site: str, node: str) -> dict:
+        return {"siteId": site, "node": node, "actorEpochOrdinal": 0,
+                "ordinal": 1, "exceptionClass": "java.io.IOException"}
+
+    def _fixture(self, root: Path) -> tuple[Path, Path, dict]:
+        source = root / "source"
+        source.mkdir()
+        config_path = root / "source-config.json"
+        config = {
+            "case_id": "SOLR-TEST", "target_site": "T#u1",
+            "target_throw": {"siteId": "T#u2",
+                             "exceptionClass": "java.io.IOException"},
+            "target_actor_names": [], "native_weave_config": "/tmp/weave.json",
+            "recording": {"trace_dir": "/tmp/trace", "test_id": "Test#method",
+                          "target_name": "native", "candidate_graph": "/tmp/graph",
+                          "static_scope_map": "/tmp/scope",
+                          "region_skeletons": "/tmp/skeletons",
+                          "max_jobs": 32},
+            "junit": {"class": "Test", "method": "method"},
+            "runner": {"zero_vm_java": "/tmp/java", "main_class": "JUnitMain",
+                       "classpath": ["/tmp/test-classes"], "mode": "region_state"},
+            "budget": {"fault_trials": 10, "seconds": 100,
+                       "max_faults_per_trial": 4},
+            "timeout_seconds": 30}
+        core._atomic(config_path, config)
+        first = self._fault("RPC#first", "node1")
+        missing = self._fault("RPC#second", "node1")
+        alternate = self._fault("RPC#second", "node2")
+        pending = self._fault("RPC#third", "node3")
+        checked = [first]
+        unmatched = [first, missing]
+        plans = [checked, unmatched, [pending]]
+        keys = [core._plan_key(plan) for plan in plans]
+        for name, status, faults in (("r0001", "checked", checked),
+                                     ("r0002", "unmatched", unmatched)):
+            trial = source / "trials" / name
+            trial.mkdir(parents=True)
+            result = {"case_id": "SOLR-TEST", "status": status,
+                      "faults": faults, "runner_mode": "region_state"}
+            if status == "unmatched":
+                event_file = trial / "iteration-native" / "fault-events.jsonl"
+                event_file.parent.mkdir()
+                rows = [
+                    {**first, "kind": "FAULT_DOOR", "seq": 1,
+                     "occurrenceId": "first"},
+                    {**first, "kind": "FAULT_APPLIED", "seq": 2,
+                     "occurrenceId": "first"},
+                    {**alternate, "kind": "FAULT_DOOR", "seq": 1,
+                     "occurrenceId": "later"}]
+                event_file.write_text("".join(json.dumps(row) + "\n"
+                                              for row in rows), encoding="utf-8")
+                result["fault_events_sha256"] = core._sha(event_file)
+            core._atomic(trial / "result.json", result)
+        state = {
+            "schema_version": core.SCHEMA, "case_id": "SOLR-TEST",
+            "config_sha256": core._sha(config_path), "terminal": True,
+            "active": None, "status": "complete_time_budget",
+            "healthy": {"status": "healthy_seed", "name": "r0000"},
+            "budget": config["budget"], "weave_receipt_sha256": "a" * 64,
+            "zero_vm_sha256": "b" * 64,
+            "origin": {"static_scope_map_sha256": "c" * 64},
+            "runner_classpath_artifacts": [{"sha256": "d" * 64}],
+            "seen_plan_keys": sorted(keys),
+            "queue": [{"faults": plan, "key": key, "tier": "outside_closure",
+                       "novelty": 0, "enqueued_at": 2, "attempt": 1}
+                      for plan, key in ((unmatched, keys[1]), ([pending], keys[2]))],
+            "trials": [{"name": name, "status": status,
+                        "result": f"trials/{name}/result.json"}
+                       for name, status in (("r0001", "checked"),
+                                            ("r0002", "unmatched"))],
+            "completed_fault_trials": 2, "seen_node_families": ["old-node"],
+            "seen_edge_families": ["old-edge"],
+            "seen_branch_outcomes": [], "fault_id_attempts": {},
+            "fault_id_successes": {}}
+        core._atomic(source / "checkpoint.json", state)
+        core._atomic(source / "summary.json", {
+            key: value for key, value in state.items()
+            if key not in ("queue", "seen_plan_keys", "active")})
+        return config_path, source, state
+
+    def test_hash_pinned_terminal_import_skips_checked_and_unmatched_plans(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            config_path, source, old = self._fixture(root)
+            pins = core.build_predecessor_pins(config_path, source)
+            config = core._load(config_path)
+            config["predecessor_campaign"] = pins
+            core._validate_config(config)
+            successor = root / "successor"
+            successor.mkdir()
+            state = {"budget": config["budget"],
+                     "weave_receipt_sha256": old["weave_receipt_sha256"],
+                     "zero_vm_sha256": old["zero_vm_sha256"],
+                     "origin": old["origin"],
+                     "runner_classpath_artifacts": old["runner_classpath_artifacts"],
+                     "seen_plan_keys": [], "queue": [],
+                     "seen_node_families": [], "seen_edge_families": [],
+                     "seen_branch_outcomes": [], "fault_id_attempts": {},
+                     "fault_id_successes": {}, "completed_fault_trials": 0}
+            core._import_predecessor(config, successor, state)
+            old_tested = {core._plan_key(core._load(
+                source / item["result"])["faults"]) for item in old["trials"]}
+            queued = {item["key"] for item in state["queue"]}
+            self.assertFalse(queued & old_tested)
+            self.assertEqual(2, len(queued))  # Pending plus observed actor successor.
+            self.assertEqual(2, state["predecessor_import"][
+                "tested_plan_count"])
+            self.assertEqual(1, state["predecessor_import"][
+                "new_actor_successor_plan_count"])
+            self.assertEqual(["old-node"], state["seen_node_families"])
+            self.assertEqual(state["predecessor_import"], core._load(
+                successor / "predecessor-import.json"))
+
+    def test_changed_result_and_different_junit_fail_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            config_path, source, old = self._fixture(root)
+            config = core._load(config_path)
+            config["predecessor_campaign"] = core.build_predecessor_pins(
+                config_path, source)
+            with self.assertRaisesRegex(ValueError, "junit differs"):
+                changed = {**config, "junit": {"class": "Test", "method": "other"}}
+                core._predecessor_snapshot(changed, root / "successor", old)
+            result = source / "trials" / "r0001" / "result.json"
+            result.write_text(result.read_text() + " ", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "receipt hash changed"):
+                core._predecessor_snapshot(config, root / "successor", old)
+
+    def test_active_predecessor_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            config_path, source, state = self._fixture(root)
+            state["terminal"] = False
+            core._atomic(source / "checkpoint.json", state)
+            core._atomic(source / "summary.json", {
+                key: value for key, value in state.items()
+                if key not in ("queue", "seen_plan_keys", "active")})
+            with self.assertRaisesRegex(ValueError, "completed campaign"):
+                core.build_predecessor_pins(config_path, source)
+
+
 class NativeQueueDiversityTest(unittest.TestCase):
     """The queue should reach distinct doors without losing deep sequences."""
 

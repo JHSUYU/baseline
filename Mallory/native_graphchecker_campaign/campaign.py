@@ -12,6 +12,7 @@ import fcntl
 import hashlib
 import json
 import os
+import re
 import shutil
 import signal
 import subprocess
@@ -38,6 +39,7 @@ SELECTOR_FIELDS = ("siteId", "node", "actorEpochOrdinal", "ordinal",
                    "exceptionClass")
 MAX_FAULTS = 10
 MAX_UNMATCHED_RETRIES = 2
+SHA256_HEX = re.compile(r"[0-9a-f]{64}\Z")
 
 
 def _sha(path: Path) -> str:
@@ -166,6 +168,24 @@ def _validate_config(config: dict[str, Any]) -> None:
     if (not isinstance(config.get("timeout_seconds"), int) or
             config["timeout_seconds"] <= 0):
         raise ValueError("native campaign needs positive per-trial timeout_seconds")
+    predecessor = config.get("predecessor_campaign")
+    if predecessor is not None:
+        names = ("config", "checkpoint", "summary")
+        derived = ("tested_plan_keys_sha256", "source_result_tree_sha256",
+                   "source_unmatched_event_tree_sha256")
+        if (not isinstance(predecessor, dict) or
+                set(predecessor) != ({name for item in names
+                                      for name in (item, item + "_sha256")} |
+                                     set(derived)) or
+                any(not isinstance(predecessor[name], str) or
+                    not predecessor[name].startswith("/") or
+                    not isinstance(predecessor[name + "_sha256"], str) or
+                    not SHA256_HEX.fullmatch(predecessor[name + "_sha256"])
+                    for name in names) or
+                any(not isinstance(predecessor[name], str) or
+                    not SHA256_HEX.fullmatch(predecessor[name])
+                    for name in derived)):
+            raise ValueError("predecessor_campaign needs exact paths and SHA-256 pins")
 
 
 def _scheduler_source() -> Path:
@@ -1361,6 +1381,202 @@ def _new_state(config: dict[str, Any], config_sha: str,
             "elapsed_seconds": 0.0, "active": None, "next_trial_index": 1}
 
 
+def _predecessor_snapshot(config: dict[str, Any], root: Path,
+                          state: dict[str, Any], *, verify_derived: bool = True
+                          ) -> tuple[dict[str, Any], list[dict[str, Any]],
+                                     list[tuple[list[dict[str, Any]],
+                                                list[dict[str, Any]]]], set[str]]:
+    """Read a terminal campaign as immutable, exact successor input.
+
+    A source checkpoint includes untested queued plans as well as tested plan
+    keys. Preserve the queue, but exclude every completed exact plan from the
+    successor. Rebuild actor-drift plans only from hash-checked native receipts.
+    """
+    pins = config["predecessor_campaign"]
+    paths = {name: Path(pins[name]).resolve(strict=True)
+             for name in ("config", "checkpoint", "summary")}
+    for name, path in paths.items():
+        if not path.is_file() or _sha(path) != pins[name + "_sha256"]:
+            raise ValueError(f"predecessor {name} SHA-256 mismatch")
+    source_root = paths["checkpoint"].parent
+    if (source_root == root.resolve() or
+            paths["checkpoint"].name != "checkpoint.json" or
+            paths["summary"] != source_root / "summary.json"):
+        raise ValueError("predecessor must be a distinct terminal campaign root")
+    source_config = _load(paths["config"])
+    source = _load(paths["checkpoint"])
+    summary = _load(paths["summary"])
+    if (source.get("schema_version") != SCHEMA or
+            source.get("config_sha256") != pins["config_sha256"] or
+            source.get("case_id") != config["case_id"] or
+            source.get("terminal") is not True or
+            source.get("active") is not None or
+            source.get("status") not in ("complete_trial_budget",
+                                         "complete_time_budget",
+                                         "complete_queue") or
+            not isinstance(source.get("healthy"), dict) or
+            source["healthy"].get("status") != "healthy_seed" or
+            summary != {key: value for key, value in source.items()
+                        if key not in ("queue", "seen_plan_keys", "active")}):
+        raise ValueError("predecessor is not a consistent completed campaign")
+    # A new budget and scheduler are legitimate; workload, target, bytecode,
+    # static scope, and original recorder identity must remain exact.
+    for name in ("case_id", "target_site", "target_throw",
+                 "target_actor_names", "native_weave_config", "recording",
+                 "junit", "runner", "timeout_seconds"):
+        if source_config.get(name) != config.get(name):
+            raise ValueError(f"predecessor {name} differs from successor")
+    for name in ("weave_receipt_sha256", "origin", "zero_vm_sha256",
+                 "runner_classpath_artifacts"):
+        if source.get(name) != state.get(name):
+            raise ValueError(f"predecessor {name} pin differs from successor")
+    if (source.get("budget", {}).get("max_faults_per_trial") !=
+            state["budget"]["max_faults_per_trial"]):
+        raise ValueError("predecessor and successor fault-depth limits differ")
+
+    seen = source.get("seen_plan_keys")
+    queue = source.get("queue")
+    trials = source.get("trials")
+    if (not isinstance(seen, list) or not isinstance(queue, list) or
+            not isinstance(trials, list) or
+            len(trials) != source.get("completed_fault_trials") or
+            any(not isinstance(key, str) or not SHA256_HEX.fullmatch(key)
+                for key in seen) or len(set(seen)) != len(seen)):
+        raise ValueError("predecessor plan index is malformed")
+    seen_set = set(seen)
+
+    def plan_key(faults: Any) -> str:
+        if (not isinstance(faults, list) or not 1 <= len(faults) <=
+                state["budget"]["max_faults_per_trial"]):
+            raise ValueError("predecessor exact fault sequence is invalid")
+        for fault in faults:
+            if (not isinstance(fault, dict) or
+                    any(not isinstance(fault.get(field), str) or not fault[field]
+                        for field in ("siteId", "node", "exceptionClass")) or
+                    not isinstance(fault.get("actorEpochOrdinal"), int) or
+                    isinstance(fault["actorEpochOrdinal"], bool) or
+                    fault["actorEpochOrdinal"] < 0 or
+                    not isinstance(fault.get("ordinal"), int) or
+                    isinstance(fault["ordinal"], bool) or fault["ordinal"] <= 0):
+                raise ValueError("predecessor exact fault selector is malformed")
+        return _plan_key(faults)
+
+    tested: set[str] = set()
+    result_digest = hashlib.sha256()
+    event_digest = hashlib.sha256()
+    successors = []
+    trial_names = set()
+    for item in trials:
+        if not isinstance(item, dict):
+            raise ValueError("predecessor trial record is malformed")
+        name = item.get("name")
+        if (not isinstance(name, str) or not re.fullmatch(r"r[0-9]{4,}", name)
+                or name in trial_names or
+                item.get("result") != f"trials/{name}/result.json"):
+            raise ValueError("predecessor trial path is invalid")
+        trial_names.add(name)
+        result_file = source_root / item["result"]
+        if result_file.resolve(strict=True) != result_file:
+            raise ValueError("predecessor trial result must not be a symlink")
+        result = _load(result_file)
+        if (result.get("case_id") != config["case_id"] or
+                result.get("status") != item.get("status") or
+                not isinstance(result.get("faults"), list) or
+                not result["faults"]):
+            raise ValueError("predecessor trial result disagrees with checkpoint")
+        key = plan_key(result["faults"])
+        if key not in seen_set:
+            raise ValueError("predecessor tested plan is absent from plan index")
+        tested.add(key)
+        result_digest.update(item["result"].encode("utf-8") + b"\0")
+        result_digest.update(bytes.fromhex(_sha(result_file)))
+        if result["status"] == "unmatched" and result.get(
+                "runner_mode") == "region_state":
+            events_file = source_root / "trials" / name / "iteration-native" / "fault-events.jsonl"
+            if (events_file.resolve(strict=True) != events_file or
+                    _sha(events_file) != result.get("fault_events_sha256")):
+                raise ValueError("predecessor native fault receipts changed")
+            event_digest.update(events_file.relative_to(source_root).as_posix()
+                                .encode("utf-8") + b"\0")
+            event_digest.update(bytes.fromhex(_sha(events_file)))
+            rows = _rows(events_file)
+            prefix, alternatives = _unmatched_actor_successors(
+                result["faults"], rows)
+            if alternatives:
+                successors.append((result["faults"][:prefix], alternatives))
+
+    imported_queue = []
+    queue_keys = set()
+    for item in queue:
+        if not isinstance(item, dict) or not isinstance(item.get("faults"), list):
+            raise ValueError("predecessor pending plan is malformed")
+        key = plan_key(item["faults"])
+        if (key != item.get("key") or key not in seen_set or
+                key in queue_keys):
+            raise ValueError("predecessor pending plan index disagrees")
+        queue_keys.add(key)
+        if key not in tested:
+            imported_queue.append({**item, "enqueued_at": 0, "attempt": 0})
+
+    receipt = {
+        "schema_version": 1, "source_root": str(source_root),
+        "source_pins": {name: pins[name + "_sha256"]
+                        for name in ("config", "checkpoint", "summary")},
+        "source_status": source["status"],
+        "source_completed_fault_trials": len(trials),
+        "source_seen_plan_count": len(seen),
+        "tested_plan_keys_sha256": hashlib.sha256("\n".join(sorted(tested))
+                                                   .encode("ascii")).hexdigest(),
+        "tested_plan_count": len(tested),
+        "source_result_tree_sha256": result_digest.hexdigest(),
+        "source_unmatched_event_tree_sha256": event_digest.hexdigest(),
+        "pending_untested_plan_count": len(imported_queue),
+        "observed_actor_successor_groups": len(successors),
+    }
+    if verify_derived and any(receipt[name] != pins[name] for name in (
+            "tested_plan_keys_sha256", "source_result_tree_sha256",
+            "source_unmatched_event_tree_sha256")):
+        raise ValueError("predecessor tested-plan or trial receipt hash changed")
+    return receipt, imported_queue, successors, seen_set
+
+
+def build_predecessor_pins(config_path: Path, terminal_root: Path) -> dict[str, str]:
+    """Build reviewable SHA pins for a completed campaign; never mutate it."""
+    config_path = config_path.resolve(strict=True)
+    terminal_root = terminal_root.resolve(strict=True)
+    paths = {"config": config_path,
+             "checkpoint": terminal_root / "checkpoint.json",
+             "summary": terminal_root / "summary.json"}
+    pins = {name: str(path) for name, path in paths.items()}
+    pins.update({name + "_sha256": _sha(path) for name, path in paths.items()})
+    prospective = _load(config_path)
+    prospective["predecessor_campaign"] = pins
+    source = _load(paths["checkpoint"])
+    receipt, _, _, _ = _predecessor_snapshot(
+        prospective, terminal_root.parent, source, verify_derived=False)
+    for name in ("tested_plan_keys_sha256", "source_result_tree_sha256",
+                 "source_unmatched_event_tree_sha256"):
+        pins[name] = receipt[name]
+    return pins
+
+
+def _import_predecessor(config: dict[str, Any], root: Path,
+                        state: dict[str, Any]) -> None:
+    receipt, queue, successors, seen = _predecessor_snapshot(config, root, state)
+    source = _load(Path(config["predecessor_campaign"]["checkpoint"]))
+    state["seen_plan_keys"] = sorted(seen)
+    state["queue"] = queue
+    for name in ("seen_node_families", "seen_edge_families",
+                 "seen_branch_outcomes", "fault_id_attempts", "fault_id_successes"):
+        state[name] = source.get(name, {} if name.startswith("fault_id_") else [])
+    before = len(state["queue"])
+    for prefix, alternatives in successors:
+        _enqueue(state, alternatives, prefix, 0)
+    receipt["new_actor_successor_plan_count"] = len(state["queue"]) - before
+    state["predecessor_import"] = receipt
+    _atomic(root / "predecessor-import.json", receipt)
+
+
 def _resume_active(config: dict[str, Any], admitted: dict[str, Any],
                    root: Path, state: dict[str, Any]) -> None:
     active = state["active"]
@@ -1430,8 +1646,20 @@ def run_campaign(config_path: Path, root: Path) -> dict[str, Any]:
                     state.get("runner_classpath_artifacts") != admitted[
                         "runner_classpath_artifacts"]):
                 raise ValueError("native checkpoint inputs changed")
+            if config.get("predecessor_campaign") is not None:
+                receipt, _, _, _ = _predecessor_snapshot(config, root, state)
+                saved = state.get("predecessor_import")
+                if (not isinstance(saved, dict) or
+                        {key: value for key, value in saved.items()
+                         if key != "new_actor_successor_plan_count"} != receipt or
+                        _load(root / "predecessor-import.json") != saved):
+                    raise ValueError("predecessor import receipt changed")
+            elif "predecessor_import" in state:
+                raise ValueError("native checkpoint unexpectedly imports a predecessor")
         else:
             state = _new_state(config, config_sha, admitted)
+            if config.get("predecessor_campaign") is not None:
+                _import_predecessor(config, root, state)
             _atomic(checkpoint, state)
         if state["terminal"]:
             return state
