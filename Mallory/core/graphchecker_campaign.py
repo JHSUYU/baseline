@@ -794,7 +794,7 @@ def _manifest_target(manifest: dict[str, Any], target: dict[str, Any]) -> list[d
         raise ValueError("weave manifest has no target sites")
     throw = [row for row in targets if isinstance(row, dict)
              and row.get("siteId") == target["throw_site_id"]
-             and row.get("kind") == "THROW"]
+             and row.get("kind") in {"THROW", "CALL_THROW"}]
     if len(throw) != 1 or throw[0].get("exceptionClass") != target["exception_class"]:
         raise ValueError("exact target throw site/type is absent or ambiguous in weave manifest")
     selected = [throw[0]]

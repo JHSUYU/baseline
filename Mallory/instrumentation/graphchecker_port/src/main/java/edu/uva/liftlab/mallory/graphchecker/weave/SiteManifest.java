@@ -57,8 +57,12 @@ public final class SiteManifest {
             if (empty(target.siteId)) throw new IllegalArgumentException("missing target siteId");
             if (target.line <= 0) throw new IllegalArgumentException("target requires source line");
             if (!"BRANCH".equals(target.kind) && !"SWITCH".equals(target.kind)
-                    && !"THROW".equals(target.kind)) {
-                throw new IllegalArgumentException("target kind must be BRANCH, SWITCH or THROW");
+                    && !"THROW".equals(target.kind)
+                    && !"CALL_THROW".equals(target.kind)) {
+                throw new IllegalArgumentException("target kind must be BRANCH, SWITCH, THROW or CALL_THROW");
+            }
+            if ("CALL_THROW".equals(target.kind) && empty(target.callee)) {
+                throw new IllegalArgumentException("CALL_THROW target needs exact callee");
             }
         }
         for (Coverage site : coverage) {
@@ -118,6 +122,8 @@ public final class SiteManifest {
         public int line;
         public String siteId;
         public String exceptionClass;
+        /** Exact invocation identity for a call that throws or returns a thrown value. */
+        public String callee;
     }
 
     public static final class Coverage extends MethodSite {

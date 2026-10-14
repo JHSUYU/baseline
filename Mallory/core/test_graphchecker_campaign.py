@@ -26,6 +26,7 @@ from Mallory.core.graphchecker_campaign import (_archive_jsonl, _archive_stat,
                                                 _validate_scratch_root,
                                                 _check_woven_major,
                                                 _door_types, _runner, _tree_sha256,
+                                                _manifest_target,
                                                 _trial_verdict,
                                                 _trial_arg,
                                                 _runner_class_sha256, _verify_prepared,
@@ -41,6 +42,18 @@ class GraphCheckerCampaignTest(unittest.TestCase):
     FAULT = {"siteId": "door", "node": "nn-1#epoch0",
              "occurrenceId": "occ-A", "ordinal": 1,
              "exceptionClass": "java.io.IOException"}
+
+    def test_exact_factory_call_throw_requires_unique_manifest_identity(self):
+        manifest = {"targets": [
+            {"kind": "BRANCH", "siteId": "check"},
+            {"kind": "CALL_THROW", "siteId": "factory",
+             "exceptionClass": "java.lang.IllegalStateException"}]}
+        target = {"check_site_id": "check", "throw_site_id": "factory",
+                  "exception_class": "java.lang.IllegalStateException"}
+        self.assertEqual(2, len(_manifest_target(manifest, target)))
+        manifest["targets"].append(dict(manifest["targets"][1]))
+        with self.assertRaisesRegex(ValueError, "absent or ambiguous"):
+            _manifest_target(manifest, target)
 
     def test_prior_trace_receipt_reuses_exact_throw_count_without_decoding(self):
         with tempfile.TemporaryDirectory() as temporary:

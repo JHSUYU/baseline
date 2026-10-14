@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import soot.ArrayType;
@@ -22,6 +25,8 @@ import soot.Unit;
 import soot.Value;
 import soot.VoidType;
 import soot.jimple.IdentityStmt;
+import soot.jimple.AssignStmt;
+import soot.jimple.GotoStmt;
 import soot.jimple.InvokeExpr;
 import soot.jimple.IfStmt;
 import soot.jimple.IntConstant;
@@ -49,6 +54,12 @@ public final class SootSiteWeaver extends BodyTransformer {
     private static final Pattern SOOT_LAMBDA_SUFFIX = Pattern.compile(
             "(\\$lambda_[A-Za-z0-9_$]*__)\\d+(?=:)");
     private final SiteManifest manifest;
+    private final Map<String, List<SiteManifest.Region>> regionsByMethod;
+    private final Map<String, List<SiteManifest.Target>> targetsByMethod;
+    private final Map<String, List<SiteManifest.Coverage>> coverageByMethod;
+    private final Map<String, List<SiteManifest.Frames>> framesByMethod;
+    private final Map<String, List<SiteManifest.Door>> doorsByMethod;
+    private final Map<String, List<SiteManifest.StateCandidate>> statesByMethod;
     private final AtomicInteger matchedRegions = new AtomicInteger();
     private final AtomicInteger matchedTargets = new AtomicInteger();
     private final AtomicInteger matchedCoverage = new AtomicInteger();
@@ -56,7 +67,27 @@ public final class SootSiteWeaver extends BodyTransformer {
     private final AtomicInteger matchedDoors = new AtomicInteger();
     private final AtomicInteger matchedStateCandidates = new AtomicInteger();
 
-    public SootSiteWeaver(SiteManifest manifest) { this.manifest = manifest; }
+    public SootSiteWeaver(SiteManifest manifest) {
+        this.manifest = manifest;
+        regionsByMethod = index(manifest.regions);
+        targetsByMethod = index(manifest.targets);
+        coverageByMethod = index(manifest.coverage);
+        framesByMethod = index(manifest.frames);
+        doorsByMethod = index(manifest.doors);
+        statesByMethod = index(manifest.stateCandidates);
+    }
+
+    private static String key(String clazz, String method, String descriptor) {
+        return clazz + '\u0000' + method + '\u0000' + descriptor;
+    }
+
+    private static <T extends SiteManifest.MethodSite> Map<String, List<T>> index(List<T> sites) {
+        Map<String, List<T>> result = new HashMap<>();
+        for (T site : sites) result.computeIfAbsent(
+                key(site.clazz, site.method, site.descriptor), ignored -> new ArrayList<>())
+                .add(site);
+        return result;
+    }
 
     public void verifyAllSites() {
         if (matchedRegions.get() != manifest.regions.size()
@@ -83,30 +114,14 @@ public final class SootSiteWeaver extends BodyTransformer {
         normalizeApplicationTraps(body, method);
         String className = method.getDeclaringClass().getName();
         String descriptor = descriptor(method);
-        List<SiteManifest.Region> regions = new ArrayList<>();
-        List<SiteManifest.Target> targets = new ArrayList<>();
-        List<SiteManifest.Coverage> coverage = new ArrayList<>();
-        List<SiteManifest.Frames> frames = new ArrayList<>();
-        List<SiteManifest.Door> doors = new ArrayList<>();
-        List<SiteManifest.StateCandidate> stateCandidates = new ArrayList<>();
-        for (SiteManifest.Region site : manifest.regions) {
-            if (site.matches(className, method.getName(), descriptor)) regions.add(site);
-        }
-        for (SiteManifest.Target site : manifest.targets) {
-            if (site.matches(className, method.getName(), descriptor)) targets.add(site);
-        }
-        for (SiteManifest.Coverage site : manifest.coverage) {
-            if (site.matches(className, method.getName(), descriptor)) coverage.add(site);
-        }
-        for (SiteManifest.Frames site : manifest.frames) {
-            if (site.matches(className, method.getName(), descriptor)) frames.add(site);
-        }
-        for (SiteManifest.Door site : manifest.doors) {
-            if (site.matches(className, method.getName(), descriptor)) doors.add(site);
-        }
-        for (SiteManifest.StateCandidate site : manifest.stateCandidates) {
-            if (site.matches(className, method.getName(), descriptor)) stateCandidates.add(site);
-        }
+        String methodKey = key(className, method.getName(), descriptor);
+        List<SiteManifest.Region> regions = regionsByMethod.getOrDefault(methodKey, Collections.emptyList());
+        List<SiteManifest.Target> targets = targetsByMethod.getOrDefault(methodKey, Collections.emptyList());
+        List<SiteManifest.Coverage> coverage = coverageByMethod.getOrDefault(methodKey, Collections.emptyList());
+        List<SiteManifest.Frames> frames = framesByMethod.getOrDefault(methodKey, Collections.emptyList());
+        List<SiteManifest.Door> doors = doorsByMethod.getOrDefault(methodKey, Collections.emptyList());
+        List<SiteManifest.StateCandidate> stateCandidates = statesByMethod.getOrDefault(
+                methodKey, Collections.emptyList());
         if (regions.isEmpty() && targets.isEmpty() && coverage.isEmpty()
                 && frames.isEmpty() && doors.isEmpty() && stateCandidates.isEmpty()) return;
         if (regions.size() > 1) throw new IllegalArgumentException(
@@ -241,6 +256,14 @@ public final class SootSiteWeaver extends BodyTransformer {
                     if (method.isConstructor() && originalPositions.get(unit) < entryIndex)
                         body.getUnits().insertBefore(preInitGap(target.siteId, "TARGET"), unit);
                     else weaveThrow(body, (ThrowStmt) unit, target, receiver);
+                    matches++;
+                } else if ("CALL_THROW".equals(target.kind)
+                        && unit instanceof Stmt && ((Stmt) unit).containsInvokeExpr()
+                        && sameCallee(((Stmt) unit).getInvokeExpr().getMethodRef().getSignature(),
+                                target.callee)) {
+                    if (method.isConstructor() && originalPositions.get(unit) < entryIndex)
+                        body.getUnits().insertBefore(preInitGap(target.siteId, "TARGET"), unit);
+                    else weaveCallThrow(body, unit, original, target, receiver);
                     matches++;
                 }
             }
@@ -424,6 +447,53 @@ public final class SootSiteWeaver extends BodyTransformer {
                 StringConstant.v(site.exceptionClass == null ? "" : site.exceptionClass),
                 thrown.getOp()));
         body.getUnits().insertBefore(record, thrown);
+    }
+
+    /** Report a factory-return throw at its actual throw, or a call exception at its call. */
+    private static void weaveCallThrow(Body body, Unit invocation, Unit[] original,
+                                       SiteManifest.Target site, Value receiver) {
+        InvokeExpr call = ((Stmt) invocation).getInvokeExpr();
+        SootClass exception = Scene.v().loadClassAndSupport(site.exceptionClass);
+        if (exception == null || exception.isPhantom()) throw new IllegalArgumentException(
+                "CALL_THROW exception unavailable: " + site.exceptionClass);
+        boolean returnsException = !(call.getType() instanceof VoidType)
+                && Scene.v().getOrMakeFastHierarchy().canStoreType(
+                        call.getType(), RefType.v("java.lang.Throwable"));
+        if (returnsException) {
+            if (!(invocation instanceof AssignStmt)) throw new IllegalArgumentException(
+                    "CALL_THROW factory result is not assigned: " + site.siteId);
+            int index = java.util.Arrays.asList(original).indexOf(invocation);
+            if (index < 0 || index + 1 >= original.length
+                    || !(original[index + 1] instanceof ThrowStmt)
+                    || !((ThrowStmt) original[index + 1]).getOp().equivTo(
+                            ((AssignStmt) invocation).getLeftOp())) {
+                throw new IllegalArgumentException(
+                        "CALL_THROW factory result has no unique immediate throw: "
+                                + site.siteId);
+            }
+            weaveThrow(body, (ThrowStmt) original[index + 1], site, receiver);
+            return;
+        }
+        Unit successor = body.getUnits().getSuccOf(invocation);
+        if (successor == null) throw new IllegalArgumentException(
+                "CALL_THROW invocation has no successor: " + site.siteId);
+        Local caught = Jimple.v().newLocal("$malloryCallThrow" + body.getLocals().size(),
+                RefType.v(site.exceptionClass));
+        body.getLocals().add(caught);
+        GotoStmt resume = Jimple.v().newGotoStmt(successor);
+        Unit handler = Jimple.v().newIdentityStmt(caught, Jimple.v().newCaughtExceptionRef());
+        Unit report = Jimple.v().newInvokeStmt(Jimple.v().newStaticInvokeExpr(
+                ref("targetThrow", VoidType.v(), RefType.v("java.lang.String"),
+                        RefType.v("java.lang.Object"), RefType.v("java.lang.String"),
+                        RefType.v("java.lang.Throwable")),
+                StringConstant.v(site.siteId), receiver,
+                StringConstant.v(site.exceptionClass), caught));
+        Unit rethrow = Jimple.v().newThrowStmt(caught);
+        body.getUnits().insertAfter(resume, invocation);
+        body.getUnits().insertAfter(handler, resume);
+        body.getUnits().insertAfter(report, handler);
+        body.getUnits().insertAfter(rethrow, report);
+        body.getTraps().addFirst(Jimple.v().newTrap(exception, invocation, resume, handler));
     }
 
     private static void weaveCallFrames(Body body, SootMethod method,
