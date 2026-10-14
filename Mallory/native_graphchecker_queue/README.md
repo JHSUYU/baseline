@@ -1,5 +1,41 @@
 # Two-slot native GraphChecker queue
 
+## HDFS-40 v15 inventory epoch
+
+The original v14 inventory and its 102-row result table stay immutable after
+handoff. The v15 epoch pins the original inventory SHA-256 `4966dae6...`, the
+corrected SHA-256 `6ed7d079...`, and the single HDFS-40 mapping change from
+`@131:branch:12` to `@137:branch:14`. `stage_v15` acquires the three host
+leases, promotion lock, and v14 results lock, then freezes **all** v14
+completion receipt hashes and the exact v14 table SHA-256 in
+`inventory-epoch-receipt.json`. It requires the original 18 completed case IDs
+and includes every additional case finished before handoff. It refuses an
+active worker/controller or disagreement between the table and receipts.
+`load_queue_inventory` reconstructs the corrected inventory in memory and
+verifies its full SHA-256 and frozen v14 evidence. Every other row, the old
+pilot's base inventory pin, and the SOLR-40 eligibility review remain on v14
+bytes.
+
+The migration is opt-in. Both `run-host` and `worker` require
+`--inventory-epoch-receipt` and `--inventory-epoch-sha256` together. The base
+`--inventory` remains the old v14 file. Use a separate `results-v15` directory;
+the exporter refuses to overwrite the v14 `results` table and records both
+inventory hashes plus each row's epoch and row SHA-256. An old completion
+receipt with a changed SHA-256 makes v15 fail closed. HDFS-40 binding uses the
+corrected row SHA-256 and its own source-backed guard/throw identity proof.
+
+After the v14 controllers and workers stop, `stage_v15` can copy the small config,
+ownership, isolation, pilot, and base-inventory controls to a fresh
+`native-102-queue-v15...` directory. It references the existing durable state
+root, verifies the frozen completions, and does not copy or rewrite their
+receipts or the old result table. Use the generated epoch receipt path and its
+SHA-256 from `handoff-receipt.json` for all v15 operations. Deploy this
+committed v15 Python source as a
+pinned snapshot before running the queue. `bind_and_run` accepts a separate
+v15 root, the shared state root, and the copied `pilot-v15.json`; it refuses
+HDFS-40 promotion without the epoch receipt. Promotion still requires the
+usual exact native config, JUnit, isolation, and target identity evidence.
+
 This queue runs the **native** `Mallory.native_graphchecker_campaign` for the
 original 102-case inventory. It never reads Mallory's older custom campaign
 results. Each host runs at most two worker processes. A worker takes a shared

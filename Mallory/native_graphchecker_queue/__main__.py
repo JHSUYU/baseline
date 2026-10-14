@@ -8,8 +8,9 @@ from pathlib import Path
 
 from Mallory.native_graphchecker_dispatch.checklist import (
     DEFAULT_INVENTORY, DEFAULT_OWNERSHIP, _native_case_files,
-    load_inventory, load_ownership,
+    load_ownership,
 )
+from .inventory_epoch import load_queue_inventory
 from .queue import (MAX_SLOTS, _cached_terminal_inspection, atomic, completion,
                     obj, physical_host,
                     pilot_receipt, run_host, run_worker, sha,
@@ -25,6 +26,8 @@ def main() -> None:
     parser.add_argument("command", choices=("pilot", "run-host", "worker"))
     parser.add_argument("--host", choices=("node0", "node1", "node2"), required=True)
     parser.add_argument("--inventory", type=Path, default=DEFAULT_INVENTORY)
+    parser.add_argument("--inventory-epoch-receipt", type=Path)
+    parser.add_argument("--inventory-epoch-sha256")
     parser.add_argument("--ownership", type=Path, default=DEFAULT_OWNERSHIP)
     parser.add_argument("--config-root", type=Path, required=True)
     parser.add_argument("--state-root", type=Path, required=True)
@@ -54,6 +57,8 @@ def main() -> None:
                          scratch_root=args.scratch_root,
                          results_dir=args.results_dir,
                          isolation_file=args.isolation, reviews=args.reviews,
+                         epoch_receipt=args.inventory_epoch_receipt,
+                         epoch_receipt_sha256=args.inventory_epoch_sha256,
                          min_memory_gib=args.min_memory_gib,
                          min_state_gib=args.min_state_gib,
                          min_scratch_gib=args.min_scratch_gib)
@@ -62,9 +67,13 @@ def main() -> None:
         if any(code != 0 for code in codes):
             raise SystemExit(1)
         return
-    cases, by_id = load_inventory(args.inventory)
+    cases, by_id, _ = load_queue_inventory(
+        args.inventory, args.state_root, args.inventory_epoch_receipt,
+        args.inventory_epoch_sha256)
     owners = load_ownership(args.ownership, set(by_id))
     if args.command == "pilot":
+        if args.inventory_epoch_receipt is not None:
+            parser.error("v15 reuses the existing v14 pilot; do not republish it")
         if not args.case_id or args.pilot_receipt is None:
             parser.error("pilot requires --case-id and --pilot-receipt")
         item = next((item for item in cases if item["case_id"] == args.case_id), None)
@@ -122,7 +131,9 @@ def main() -> None:
                         isolation_file=args.isolation, reviews=args.reviews,
                         min_memory_gib=args.min_memory_gib,
                         min_state_gib=args.min_state_gib,
-                        min_scratch_gib=args.min_scratch_gib)
+                        min_scratch_gib=args.min_scratch_gib,
+                        epoch_receipt=args.inventory_epoch_receipt,
+                        epoch_receipt_sha256=args.inventory_epoch_sha256)
     print(json.dumps(result, sort_keys=True))
 
 

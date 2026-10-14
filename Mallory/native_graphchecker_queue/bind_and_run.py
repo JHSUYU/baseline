@@ -12,8 +12,9 @@ from pathlib import Path
 from Mallory.native_graphchecker_campaign.campaign import _validate_config
 from Mallory.native_graphchecker_dispatch.checklist import (
     _native_case_files, _verify_alternate_junit, inspect_case,
-    load_inventory, load_ownership,
+    load_ownership,
 )
+from .inventory_epoch import load_queue_inventory
 from .queue import (atomic, obj, physical_host, pilot_receipt, run_host,
                     sha, validate_isolation)
 
@@ -303,6 +304,8 @@ def swap_unbound_reservation(original: dict, extended: dict, *,
 
 def promote(*, root: Path, case_id: str, native_config: Path,
             native_state: Path, host: str,
+            shared_state_root: Path | None = None,
+            pilot_receipt_path: Path | None = None,
             port_review: Path | None = None,
             reservation_swap_with: str | None = None,
             unbound_reservation_review: Path | None = None,
@@ -315,15 +318,32 @@ def promote(*, root: Path, case_id: str, native_config: Path,
             target_source_archive: Path | None = None,
             campaign_python_root: Path | None = None,
             campaign_python_tar: Path | None = None,
+            epoch_receipt: Path | None = None,
+            epoch_receipt_sha256: str | None = None,
             dispatch: bool = True) -> dict:
     physical_host(host)
+    if root.name.startswith('native-102-queue-v15') and epoch_receipt is None:
+        raise ValueError('v15 promotion requires the explicit inventory epoch')
+    if case_id == 'HDFS-40' and epoch_receipt is None:
+        raise ValueError('HDFS-40 promotion requires the explicit v15 inventory epoch')
+    if (epoch_receipt is not None and
+            not root.name.startswith('native-102-queue-v15')):
+        raise ValueError('v15 promotion requires an isolated v15 queue root')
     inventory = root / 'python-snapshot-bind-v4/Mallory/cases/inventory.json'
     ownership = root / 'config/ownership.json'
     config_root = root / 'config'
-    state_root = root / 'state'
+    state_root = shared_state_root or root / 'state'
     profile_path = root / 'evidence/isolation.json'
-    pilot = state_root / '.native-queue/pilot-ZOOKEEPER-07.json'
-    cases, by_id = load_inventory(inventory)
+    pilot = pilot_receipt_path or (state_root /
+                                   '.native-queue/pilot-ZOOKEEPER-07.json')
+    if epoch_receipt is not None:
+        if (shared_state_root is None or pilot_receipt_path is None or
+                not pilot.is_relative_to(root) or
+                not state_root.is_absolute()):
+            raise ValueError('v15 promotion requires a separate pilot and '
+                             'explicit shared state root')
+    cases, by_id, epoch = load_queue_inventory(
+        inventory, state_root, epoch_receipt, epoch_receipt_sha256)
     item = next((row for row in cases if row['case_id'] == case_id), None)
     if item is None:
         raise ValueError('case is absent from canonical 102-row inventory')
@@ -444,13 +464,19 @@ def promote(*, root: Path, case_id: str, native_config: Path,
             atomic(migration_path, migration)
             receipt['port_reservation_swap_path'] = str(migration_path)
             receipt['port_reservation_swap_sha256'] = sha(migration_path)
+        if epoch is not None:
+            receipt['inventory_epoch'] = epoch
         atomic(queue_root / 'promotions' / f'{case_id}.json', receipt)
     if dispatch:
         receipt['worker_exit_codes'] = run_host(
             host=host, slots=2, pilot=pilot, inventory=inventory,
             ownership_file=ownership, config_root=config_root,
             state_root=state_root, scratch_root=root / 'scratch',
-            isolation_file=profile_path, results_dir=root / 'results')
+            isolation_file=profile_path,
+            results_dir=(root / 'results-v15' if epoch is not None else
+                         root / 'results'),
+            epoch_receipt=epoch_receipt,
+            epoch_receipt_sha256=epoch_receipt_sha256)
     return receipt
 
 
@@ -461,6 +487,8 @@ def main() -> None:
     parser.add_argument('--host', choices=('node0','node1','node2'), required=True)
     parser.add_argument('--native-config', type=Path, required=True)
     parser.add_argument('--native-state', type=Path, required=True)
+    parser.add_argument('--shared-state-root', type=Path)
+    parser.add_argument('--pilot-receipt-path', type=Path)
     parser.add_argument('--port-review', type=Path)
     parser.add_argument('--reservation-swap-with')
     parser.add_argument('--unbound-reservation-review', type=Path)
@@ -473,11 +501,15 @@ def main() -> None:
     parser.add_argument('--target-source-archive', type=Path)
     parser.add_argument('--campaign-python-root', type=Path)
     parser.add_argument('--campaign-python-tar', type=Path)
+    parser.add_argument('--inventory-epoch-receipt', type=Path)
+    parser.add_argument('--inventory-epoch-sha256')
     parser.add_argument('--bind-only', action='store_true')
     args = parser.parse_args()
     print(json.dumps(promote(
         root=args.root, case_id=args.case_id, host=args.host,
         native_config=args.native_config, native_state=args.native_state,
+        shared_state_root=args.shared_state_root,
+        pilot_receipt_path=args.pilot_receipt_path,
         port_review=args.port_review,
         reservation_swap_with=args.reservation_swap_with,
         unbound_reservation_review=args.unbound_reservation_review,
@@ -490,6 +522,8 @@ def main() -> None:
         target_source_archive=args.target_source_archive,
         campaign_python_root=args.campaign_python_root,
         campaign_python_tar=args.campaign_python_tar,
+        epoch_receipt=args.inventory_epoch_receipt,
+        epoch_receipt_sha256=args.inventory_epoch_sha256,
         dispatch=not args.bind_only), sort_keys=True))
 
 

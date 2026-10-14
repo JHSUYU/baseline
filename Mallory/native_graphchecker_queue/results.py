@@ -13,10 +13,12 @@ from pathlib import Path
 from typing import Any
 
 from Mallory.native_graphchecker_dispatch.checklist import (
-    _native_case_files, load_inventory, load_ownership,
+    _native_case_files, load_ownership,
 )
 from .queue import _terminal_fingerprint, obj, sha
 from .coverage import coverage_path, read_coverage
+from .inventory_epoch import (_row_sha, load_queue_inventory,
+                              require_epoch_results_dir)
 
 FIELDS = (
     "case_id", "system", "system_version", "owner", "native_state",
@@ -457,8 +459,11 @@ def _reviewed_exact_closure(case_id: str, native_root: Path, state_root: Path,
 
 
 def native_rows(inventory: Path, ownership_file: Path, config_root: Path,
-                state_root: Path) -> list[dict[str, Any]]:
-    cases, by_id = load_inventory(inventory)
+                state_root: Path, epoch_receipt: Path | None = None,
+                epoch_receipt_sha256: str | None = None) -> list[dict[str, Any]]:
+    cases, by_id, epoch = load_queue_inventory(inventory, state_root,
+                                               epoch_receipt,
+                                               epoch_receipt_sha256)
     owners = load_ownership(ownership_file, set(by_id))
     if len(cases) != 102:
         raise ValueError("native result export requires the 102-case inventory")
@@ -518,6 +523,10 @@ def native_rows(inventory: Path, ownership_file: Path, config_root: Path,
             "completion_receipt_path": None,
             "completion_receipt_sha256": None, "evidence_paths": [],
         }
+        if epoch is not None:
+            row["inventory_row_sha256"] = _row_sha(item)
+            row["inventory_epoch"] = ("v15-corrected" if case_id ==
+                                      epoch["amended_case_id"] else "v14-unchanged")
         preparation = _preparation_note(item, state_root)
         if preparation is not None:
             evidence = preparation.pop("evidence_paths")
@@ -701,12 +710,18 @@ def _replace_text(path: Path, contents: str) -> None:
 
 def export_native_results(inventory: Path, ownership_file: Path,
                           config_root: Path, state_root: Path,
-                          results_dir: Path) -> tuple[Path, Path]:
+                          results_dir: Path, epoch_receipt: Path | None = None,
+                          epoch_receipt_sha256: str | None = None
+                          ) -> tuple[Path, Path]:
+    _, _, epoch = load_queue_inventory(inventory, state_root,
+                                       epoch_receipt, epoch_receipt_sha256)
+    require_epoch_results_dir(results_dir, state_root, epoch)
     results_dir.mkdir(parents=True, exist_ok=True)
     with (results_dir / ".native-results.lock").open("a+") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
-        rows = native_rows(inventory, ownership_file, config_root, state_root)
-        document = {"schema_version": 1,
+        rows = native_rows(inventory, ownership_file, config_root, state_root,
+                           epoch_receipt, epoch_receipt_sha256)
+        document = {"schema_version": 2 if epoch is not None else 1,
                     "method": "original_native_graphchecker_campaign",
                     "inventory_sha256": sha(inventory),
                     "ownership_sha256": sha(ownership_file),
@@ -714,15 +729,19 @@ def export_native_results(inventory: Path, ownership_file: Path,
                     "verified_terminal_count": sum(
                         row["native_state"] == "verified_terminal" for row in rows),
                     "rows": rows}
+        if epoch is not None:
+            document["inventory_epoch"] = epoch
         tsv_stream = io.StringIO()
-        writer = csv.DictWriter(tsv_stream, fieldnames=FIELDS, delimiter="\t",
+        fieldnames = (FIELDS + ("inventory_row_sha256", "inventory_epoch")
+                      if epoch is not None else FIELDS)
+        writer = csv.DictWriter(tsv_stream, fieldnames=fieldnames, delimiter="\t",
                                 lineterminator="\n")
         writer.writeheader()
         for row in rows:
             writer.writerow({key: json.dumps(row[key], sort_keys=True)
                              if isinstance(row[key], (dict, list)) else
                              "" if row[key] is None else row[key]
-                             for key in FIELDS})
+                             for key in fieldnames})
         json_path = results_dir / "native-102-results.json"
         tsv_path = results_dir / "native-102-results.tsv"
         _replace_text(json_path, json.dumps(document, sort_keys=True,

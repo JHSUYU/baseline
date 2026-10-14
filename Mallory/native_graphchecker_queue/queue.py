@@ -22,9 +22,10 @@ from typing import Any, Callable
 
 from Mallory.native_graphchecker_dispatch.checklist import (
     DEFAULT_INVENTORY, DEFAULT_OWNERSHIP, _native_case_files,
-    inspect_case, load_inventory,
+    inspect_case,
     load_ownership, load_reviews,
 )
+from .inventory_epoch import load_queue_inventory, require_epoch_results_dir
 
 HOSTS = ("node0", "node1", "node2")
 MAX_SLOTS = 2
@@ -567,11 +568,14 @@ def run_pinned_campaign(config_file: Path, root: Path) -> dict[str, Any]:
 
 def _publish_results_if_requested(results_dir: Path | None, inventory: Path,
                                   ownership_file: Path, config_root: Path,
-                                  state_root: Path) -> None:
+                                  state_root: Path,
+                                  epoch_receipt: Path | None = None,
+                                  epoch_receipt_sha256: str | None = None) -> None:
     if results_dir is not None:
         from .results import export_native_results
         export_native_results(inventory, ownership_file, config_root,
-                              state_root, results_dir)
+                              state_root, results_dir, epoch_receipt,
+                              epoch_receipt_sha256)
 
 
 def run_worker(*, host: str, slot: int, slots: int, inventory: Path,
@@ -581,11 +585,15 @@ def run_worker(*, host: str, slot: int, slots: int, inventory: Path,
                reviews: Path | None = None, only_case: str | None = None,
                min_memory_gib: float = 12, min_state_gib: float = 2,
                min_scratch_gib: float = 4,
+               epoch_receipt: Path | None = None,
+               epoch_receipt_sha256: str | None = None,
                runner: Callable[[Path, Path], dict] = run_pinned_campaign) -> dict[str, Any]:
     physical_host(host)
     if not 1 <= slots <= MAX_SLOTS or not 0 <= slot < slots:
         raise ValueError("native queue supports one or two slots per host")
-    cases, by_id = load_inventory(inventory)
+    cases, by_id, epoch = load_queue_inventory(
+        inventory, state_root, epoch_receipt, epoch_receipt_sha256)
+    require_epoch_results_dir(results_dir, state_root, epoch)
     owners = load_ownership(ownership_file, set(by_id))
     reviewed = load_reviews(reviews, set(by_id))
     if only_case is not None and (only_case not in by_id or owners[only_case] != host):
@@ -617,12 +625,16 @@ def run_worker(*, host: str, slot: int, slots: int, inventory: Path,
                 validate_isolation(profile, item["system"], case_id,
                                    obj(config_file),
                                    owners, host)
-                completion(item, row, config_file, state_root, queue_root,
-                           native_root=root, binding_file=binding_file,
-                           config_root=config_root)
+                # The copied v15 binding has the same bytes but a new path.
+                # Reissuing a v14 receipt would change its binding_path.
+                if epoch is None or case_id not in epoch["legacy_case_ids"]:
+                    completion(item, row, config_file, state_root, queue_root,
+                               native_root=root, binding_file=binding_file,
+                               config_root=config_root)
                 _publish_results_if_requested(results_dir, inventory,
                                               ownership_file, config_root,
-                                              state_root)
+                                              state_root, epoch_receipt,
+                                              epoch_receipt_sha256)
                 continue
             if row["terminal_disposition"] not in ("ready", "resumable"):
                 continue
@@ -698,7 +710,8 @@ def run_worker(*, host: str, slot: int, slots: int, inventory: Path,
                                         config_root=config_root)
                     _publish_results_if_requested(results_dir, inventory,
                                                   ownership_file, config_root,
-                                                  state_root)
+                                                  state_root, epoch_receipt,
+                                                  epoch_receipt_sha256)
                     attempt.update(status="complete", ended_at=time.time(),
                                    completion_path=str(queue_root / "completions" /
                                                        f"{case_id}.json"))
@@ -733,11 +746,15 @@ def run_host(*, host: str, slots: int, pilot: Path, inventory: Path,
              results_dir: Path | None = None,
              reviews: Path | None = None,
              min_memory_gib: float = 12, min_state_gib: float = 2,
-             min_scratch_gib: float = 4) -> list[int]:
+             min_scratch_gib: float = 4,
+             epoch_receipt: Path | None = None,
+             epoch_receipt_sha256: str | None = None) -> list[int]:
     physical_host(host)
     if not 1 <= slots <= MAX_SLOTS:
         raise ValueError("native queue supports at most two slots per host")
-    cases, by_id = load_inventory(inventory)
+    cases, by_id, epoch = load_queue_inventory(
+        inventory, state_root, epoch_receipt, epoch_receipt_sha256)
+    require_epoch_results_dir(results_dir, state_root, epoch)
     owners = load_ownership(ownership_file, set(by_id))
     pilot_receipt(pilot, inventory, ownership_file, config_root, state_root,
                   cases, owners, isolation_file)
@@ -770,6 +787,9 @@ def run_host(*, host: str, slots: int, pilot: Path, inventory: Path,
             argv.extend(("--reviews", str(reviews)))
         if results_dir is not None:
             argv.extend(("--results-dir", str(results_dir)))
+        if epoch_receipt is not None:
+            argv.extend(("--inventory-epoch-receipt", str(epoch_receipt),
+                         "--inventory-epoch-sha256", epoch_receipt_sha256))
         argv.extend(("--pilot-receipt", str(pilot)))
         processes.append(subprocess.Popen(argv,
                                           cwd=Path(__file__).resolve().parents[2]))

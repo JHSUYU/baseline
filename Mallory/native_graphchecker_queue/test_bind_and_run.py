@@ -8,7 +8,7 @@ import unittest
 from unittest.mock import patch
 
 from Mallory.native_graphchecker_dispatch.checklist import _verify_alternate_junit
-from .bind_and_run import (binding_for, extend_profile,
+from .bind_and_run import (binding_for, extend_profile, promote,
                            swap_unbound_reservation)
 from .queue import pinned_campaign_python, validate_isolation
 
@@ -84,6 +84,20 @@ class BindAndRunTest(unittest.TestCase):
             write(config / 'ZOOKEEPER-09.json', {})
             with self.assertRaisesRegex(ValueError, 'unbound same-host'):
                 swap_unbound_reservation(old, changed, **args)
+
+    def test_hdfs40_promotion_requires_isolated_v15_epoch(self):
+        with patch("Mallory.native_graphchecker_queue.bind_and_run.physical_host"):
+            with self.assertRaisesRegex(ValueError, "explicit v15"):
+                promote(root=Path("/tmp/native-102-queue-v2"),
+                        case_id="HDFS-40", native_config=Path("/tmp/config"),
+                        native_state=Path("/tmp/state"), host="node0",
+                        dispatch=False)
+            with self.assertRaisesRegex(ValueError, "isolated v15"):
+                promote(root=Path("/tmp/native-102-queue-v2"),
+                        case_id="HDFS-40", native_config=Path("/tmp/config"),
+                        native_state=Path("/tmp/state"), host="node0",
+                        epoch_receipt=Path("/tmp/epoch"),
+                        epoch_receipt_sha256="0" * 64, dispatch=False)
 
     def test_alternate_junit_shared_source_works_on_nonowner_host(self):
         with TemporaryDirectory() as directory:
