@@ -16,6 +16,18 @@ EVIDENCE = Path("/proj/silentfailure-PG0/ZhenyuLi")
 
 
 class HdfsNativeAdapterTest(unittest.TestCase):
+    def test_parameterized_original_junit_selector_keeps_source_method(self):
+        self.assertEqual(
+            ("org.apache.hadoop.hdfs.TestEncryptedTransfer",
+             "testEncryptedReadDefaultAlgorithmCipherSuite[0]"),
+            adapter._selector("org.apache.hadoop.hdfs.TestEncryptedTransfer#"
+                              "testEncryptedReadDefaultAlgorithmCipherSuite[0]"))
+        self.assertEqual("testEncryptedReadDefaultAlgorithmCipherSuite",
+                         adapter._source_method(
+                             "testEncryptedReadDefaultAlgorithmCipherSuite[0]"))
+        with self.assertRaisesRegex(ValueError, "selector"):
+            adapter._selector("org.apache.hadoop.hdfs.TestEncryptedTransfer#test[-1]")
+
     def test_inventory_request_binds_compiled_check_and_distinct_throw(self):
         rows = json.loads(INVENTORY.read_text())["cases"]
         item = next(row for row in rows if row["case_id"] == "HDFS-29")
@@ -172,6 +184,18 @@ class HdfsNativeAdapterTest(unittest.TestCase):
             self.assertEqual("original-scope", (destination /
                              "original-scope/output.jsonl").read_text())
             self.assertTrue((root / "next/static-reuse-receipt.json").is_file())
+            variant_input = json.loads(json.dumps(expected_input))
+            variant_input["workload"] = {"class": "OriginalTest",
+                                         "method": "testCase[0]"}
+            (source / "scope-input.json").write_text(json.dumps({
+                **source_input, "workload": {"class": "OriginalTest",
+                                              "method": "testCase"}}))
+            variant = root / "variant/static"
+            variant.mkdir(parents=True)
+            adapter._reuse_static(source, variant, variant_input,
+                                  new_command, root / "variant")
+            receipt = json.loads((root / "variant/static-reuse-receipt.json").read_text())
+            self.assertTrue(receipt["same_source_method_parameter_variant"])
             with self.assertRaisesRegex(ValueError, "differs"):
                 adapter._reuse_static(source, root / "other", expected_input,
                                       ["changed", *new_command[1:]], root / "other")

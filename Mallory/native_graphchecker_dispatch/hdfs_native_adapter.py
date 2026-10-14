@@ -42,9 +42,14 @@ def _selector(value: str) -> tuple[str, str]:
     if not isinstance(value, str) or value.count("#") != 1:
         raise ValueError("JUnit selector must name one original method")
     clazz, method = value.split("#")
-    if not clazz or not method or not re.fullmatch(r"[\w$]+", method):
+    if not clazz or not method or not re.fullmatch(
+            r"[\w$]+(?:\[(?:0|[1-9]\d*)\])?", method):
         raise ValueError("invalid original JUnit selector")
     return clazz, method
+
+
+def _source_method(method: str) -> str:
+    return method.split("[", 1)[0]
 
 
 def _source_file(root: Path, relative: str, digest: str) -> Path:
@@ -359,6 +364,18 @@ def _reuse_static(source: Path, destination: Path, expected_input: dict,
     """Copy an exact completed static result after verifying input and bytes."""
     source = source.resolve(strict=True)
     prior_input = _object(source / "scope-input.json")
+    prior_workload = prior_input.get("workload", {})
+    expected_workload = expected_input.get("workload", {})
+    same_source_method = (bool(prior_workload.get("class")) and
+        bool(prior_workload.get("method")) and
+        prior_workload.get("class") ==
+        expected_workload.get("class") and
+        _source_method(prior_workload.get("method", "")) ==
+        _source_method(expected_workload.get("method", "")))
+    if same_source_method:
+        # ScopePlanner does not consume workload metadata; JUnit parameter
+        # instances share the same compiled source method and static scope.
+        prior_input["workload"] = expected_workload
     prior_input["analysis"]["original_engine_output_dir"] = expected_input[
         "analysis"]["original_engine_output_dir"]
     command = _object(source.parent / "commands/static.json")["argv"]
@@ -383,6 +400,10 @@ def _reuse_static(source: Path, destination: Path, expected_input: dict,
         "source_input_sha256": _sha(source / "scope-input.json"),
         "source_command_sha256": _sha(source.parent / "commands/static.json"),
         "source_stderr_sha256": _sha(source.parent / "commands/static.stderr"),
+        "same_source_method_parameter_variant": (same_source_method and
+            prior_workload != expected_workload),
+        "source_workload": prior_workload,
+        "requested_workload": expected_workload,
         "copied_tree_sha256": hashes})
 
 
@@ -466,7 +487,8 @@ def _profile(request: dict, path: Path) -> dict:
     junit = request["original_junit"]
     original_junit = _source_file(source, junit["source_path"],
                                   junit["source_sha256"])
-    if f"{junit['method']}(" not in original_junit.read_text(encoding="utf-8"):
+    source_method = _source_method(junit["method"])
+    if f"{source_method}(" not in original_junit.read_text(encoding="utf-8"):
         raise ValueError("selected original JUnit method is absent from source")
     if alternate and _sha(Path(alternate["path"])) != alternate["sha256"]:
         raise ValueError("alternate original JUnit attestation changed")
