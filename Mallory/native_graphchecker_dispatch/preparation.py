@@ -237,7 +237,7 @@ def build_request(item: dict, inventory: Path) -> dict:
             workload.get("selected_selector") !=
             f"{workload['test_class']}#{workload['test_method']}"):
         raise ValueError("inventory lacks an exact original JUnit selector")
-    return {
+    request = {
         "schema_version": 1, "mode": MODE,
         "case_id": item["case_id"], "system": item["system"],
         "system_version": item["system_version"],
@@ -264,6 +264,37 @@ def build_request(item: dict, inventory: Path) -> dict:
             "source_root": build.get("cwd"), "module": build.get("module"),
         },
     }
+    if item["system"] == "hdfs":
+        # HDFS ScopePlanner needs the compiled guard mapping as well as the
+        # THROW identity. Preserve every inventory branch; Soot still chooses
+        # the actual unit and discovers all I/O doors.
+        function = target["function"].split("(", 1)[0]
+        if "." not in function:
+            raise ValueError("HDFS inventory target function is not qualified")
+        clazz, method = function.rsplit(".", 1)
+        checks = []
+        for site in mapping.get("check_sites", []):
+            match = re.search(r"@(\d+):branch:(\d+)$", site)
+            if not match:
+                raise ValueError("HDFS inventory guard lacks compiled mapping")
+            checks.append({"source_line": int(match.group(1)),
+                           "branch_ordinal": int(match.group(2)),
+                           "mapping": site})
+        if not checks or len({row["mapping"] for row in checks}) != len(checks):
+            raise ValueError("HDFS inventory guard mapping is empty or duplicated")
+        candidates = [row for row in workload.get("candidates", [])
+                      if row.get("selector") == workload["selected_selector"]
+                      and row.get("source_path") == workload.get("test_source_path")]
+        if len(candidates) != 1:
+            raise ValueError("HDFS selected original JUnit source is ambiguous")
+        request["target"].update(
+            {"class": clazz, "method": method, "check_sites": checks,
+             "throw_line": mapping.get("selected_source_line") or
+             target["source_line"]})
+        request["original_junit"]["source_sha256"] = candidates[0][
+            "source_sha256"]
+        request["alternate_junit_attestation"] = None
+    return request
 
 
 def verify_target_occurrence(proof: dict, config: dict, output: Path,
