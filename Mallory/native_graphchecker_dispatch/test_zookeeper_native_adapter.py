@@ -1,12 +1,14 @@
 """Pure receipt selection tests; no ZooKeeper process or Soot scan."""
 
 import json
+import gzip
 import shutil
 import subprocess
 import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
+import zipfile
 
 from Mallory.native_graphchecker_dispatch import checklist
 from Mallory.native_graphchecker_dispatch import preparation
@@ -15,6 +17,114 @@ from Mallory.native_graphchecker_dispatch import zookeeper_native_adapter as zk
 
 
 class ZooKeeperNativeAdapterTest(unittest.TestCase):
+    def test_preflight_pins_all_entrypoints_and_catches_missing_dependency(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            paths = {key: root / key for key in zk.REQUIRED_CLASSES}
+            for key, names in zk.REQUIRED_CLASSES.items():
+                paths[key].mkdir()
+                for name in names:
+                    if name == "soot.G":
+                        continue
+                    target = paths[key] / (name.replace(".", "/") + ".class")
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    target.write_bytes(name.encode())
+            engine = root / "engine.jar"
+            engine.write_bytes(b"verified engine")
+            dependency = root / "soot.jar"
+            with zipfile.ZipFile(dependency, "w") as archive:
+                archive.writestr("soot/G.class", b"soot implementation")
+            dependencies = root / "dependencies.txt"
+            dependencies.write_text(str(dependency), encoding="utf-8")
+            sources = {}
+            for key in ("runner_source", "post_weave_source"):
+                sources[key] = root / (key + ".java")
+                sources[key].write_text(key, encoding="utf-8")
+            profile = {**{key: [str(value)] for key, value in paths.items()},
+                       **{key: str(value) for key, value in sources.items()}}
+            with patch.object(zk.weave, "verify_engine", return_value={
+                    "source_tree_sha256": "source pin"}), \
+                    patch.object(zk.native, "JAR", engine), \
+                    patch.object(zk.native, "DEPENDENCIES", dependencies):
+                receipt = zk.preflight_execution_classes(profile)
+                self.assertEqual(sum(map(len, zk.REQUIRED_CLASSES.values())),
+                                 len(receipt["classes"]))
+                self.assertEqual(zk._sha(sources["runner_source"]),
+                                 receipt["sources"]["runner_source"]["sha256"])
+                duplicate = root / "duplicate"
+                duplicate_file = duplicate / (
+                    "edu/uva/liftlab/mallory/scope/ScopePlanner.class")
+                duplicate_file.parent.mkdir(parents=True)
+                duplicate_file.write_bytes(b"duplicate")
+                with self.assertRaisesRegex(ValueError, "resolve once"):
+                    zk.preflight_execution_classes({**profile,
+                        "scope_planner_classpath": [str(paths[
+                            "scope_planner_classpath"]), str(duplicate)]})
+                dependency.unlink()
+                with self.assertRaisesRegex(ValueError, "soot.G"):
+                    zk.preflight_execution_classes(profile)
+
+    def test_static_sidecar_preflight_requires_readable_pinned_outputs(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            original, scope = root / "original", root / "scope"
+            original.mkdir()
+            scope.mkdir()
+            for name in ("candidate_dataflow_edges.jsonl.gz",
+                         "region_skeletons.jsonl.gz"):
+                with gzip.open(original / name, "wb") as stream:
+                    stream.write(b'{"edge":1}\n')
+            (original / "static_scope_map.jsonl").write_text(
+                '{"scope":1}\n', encoding="utf-8")
+            (scope / "weave_manifest.json").write_text(
+                '{"targets":[]}', encoding="utf-8")
+            receipt = zk.preflight_static_sidecars(original, scope)
+            self.assertEqual(4, len(receipt["sidecars"]))
+            (original / "region_skeletons.jsonl.gz").write_bytes(b"bad gzip")
+            with self.assertRaisesRegex(ValueError, "invalid: region_skeletons"):
+                zk.preflight_static_sidecars(original, scope)
+
+    def test_generic_junit_runner_is_source_pinned_and_resolves_once(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root / "NativeJUnitMethodRunner.java"
+            canonical = (Path(zk.__file__).resolve().parents[1] /
+                         "native_graphchecker_fixture/NativeJUnitMethodRunner.java")
+            source.write_bytes(canonical.read_bytes())
+            classes = root / "classes"
+            class_file = classes / (
+                "edu/uva/liftlab/graphchecker/runtime/NativeJUnitMethodRunner.class")
+            class_file.parent.mkdir(parents=True)
+            class_file.write_bytes(b"compiled")
+            profile = {"runner_source": str(source),
+                       "runner_classpath": [str(classes)]}
+            zk._verify_generic_runner(profile)
+            with self.assertRaisesRegex(ValueError, "resolve once"):
+                zk._verify_generic_runner({**profile,
+                    "runner_classpath": [str(classes), str(classes)]})
+            source.write_text("changed", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "source changed"):
+                zk._verify_generic_runner(profile)
+
+    def test_combined_postweave_is_source_pinned_and_resolves_once(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root / "NativeZooKeeperCombinedPostWeave.java"
+            canonical = Path(zk.__file__).resolve().with_name(source.name)
+            source.write_bytes(canonical.read_bytes())
+            classes = root / "classes"
+            class_file = classes / (
+                "edu/uva/liftlab/mallory/nativecampaign/"
+                "NativeZooKeeperCombinedPostWeave.class")
+            class_file.parent.mkdir(parents=True)
+            class_file.write_bytes(b"compiled")
+            profile = {"post_weave_source": str(source),
+                       "post_weave_classpath": [str(classes)]}
+            zk._verify_postweave(profile)
+            class_file.unlink()
+            with self.assertRaisesRegex(ValueError, "resolve once"):
+                zk._verify_postweave(profile)
+
     def test_original_target_resolver_handles_unit_shift_but_rejects_ambiguity(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             classes = Path(temporary)
@@ -103,6 +213,10 @@ class ZooKeeperNativeAdapterTest(unittest.TestCase):
                     paths["session-reader.json"], paths["verifier.java"],
                     paths["healthy.stdout"], paths["trace-manifest.json"],
                     str(Path(zk.__file__).resolve()),
+                    str(Path(zk.__file__).with_name(
+                        "run_zookeeper_native_adapter.py").resolve()),
+                    str(Path(zk.__file__).with_name("preparation.py").resolve()),
+                    str(Path(zk.__file__).with_name("checklist.py").resolve()),
                     str(Path(zk.__file__).with_name(
                         "build_zookeeper_protocol_gate.py").resolve()),
                     str(Path(zk.__file__).with_name(

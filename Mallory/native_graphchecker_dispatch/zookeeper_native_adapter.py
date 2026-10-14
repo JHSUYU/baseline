@@ -10,11 +10,13 @@ from __future__ import annotations
 
 import json
 import hashlib
+import gzip
 import os
 import re
 import subprocess
 import sys
 import tempfile
+import zipfile
 from pathlib import Path
 
 from Mallory.instrumentation.graphchecker_port import native_original_weave as weave
@@ -34,6 +36,25 @@ SESSION_FILES = (
     "roots.jsonl", "targets.jsonl", "gaps.jsonl",
     "expressions.jsonl", "schedule.jsonl",
 )
+REQUIRED_CLASSES = {
+    "scope_planner_classpath": (
+        "edu.uva.liftlab.mallory.scope.ScopePlanner",
+        "edu.uva.liftlab.graphchecker.GraphCheckerMain",
+        "edu.uva.liftlab.graphchecker.runtime.MalloryTargetOccurrenceResolver",
+        "edu.uva.liftlab.graphchecker.runtime.CausynthTraceRecorder",
+        "edu.uva.liftlab.graphchecker.plan.ConcolicScheduler",
+    ),
+    "runner_classpath": (
+        "edu.uva.liftlab.graphchecker.runtime.NativeRecordingJUnitMethodRunner",
+        "edu.uva.liftlab.graphchecker.runtime.NativeJUnitMethodRunner",
+    ),
+    "post_weave_classpath": (
+        "edu.uva.liftlab.mallory.nativecampaign.NativeZooKeeperCombinedPostWeave",
+        "edu.uva.liftlab.graphchecker.causynth.NativeZooKeeperProtocolWeaveMain",
+        "edu.uva.liftlab.mallory.nativebinding.NativeZooKeeperActorWeave",
+        "soot.G",
+    ),
+}
 
 
 def _valid_wire_ports(ports: object) -> bool:
@@ -72,6 +93,130 @@ def _paths(values: object, label: str) -> list[Path]:
            for path in paths):
         raise ValueError(f"{label} has an absent or mutable path")
     return paths
+
+
+def _unique_class(classpath: list[Path], class_name: str) -> dict:
+    relative = class_name.replace(".", "/") + ".class"
+    matches = []
+    for path in classpath:
+        data = None
+        if path.is_dir():
+            candidate = path / relative
+            if candidate.is_file() and not candidate.is_symlink():
+                data = candidate.read_bytes()
+        elif path.is_file() and zipfile.is_zipfile(path):
+            with zipfile.ZipFile(path) as archive:
+                if relative in archive.namelist():
+                    data = archive.read(relative)
+        if data is not None:
+            matches.append({"class": class_name, "classpath_entry": str(path),
+                            "class_sha256": hashlib.sha256(data).hexdigest()})
+    if len(matches) != 1:
+        raise ValueError(f"ZooKeeper preflight class must resolve once: {class_name}")
+    return matches[0]
+
+
+def preflight_execution_classes(profile: dict) -> dict:
+    """Check the Java entry points before an expensive static/weave pass."""
+    for name in ("runner_source", "post_weave_source"):
+        if not profile.get(name):
+            raise ValueError(f"ZooKeeper preflight requires pinned {name}")
+    engine = weave.verify_engine()
+    class_rows = []
+    for key, names in REQUIRED_CLASSES.items():
+        classpath = _paths(profile.get(key), key)
+        if key == "post_weave_classpath":
+            # The protocol postweave uses Soot. The original source-built
+            # engine's verified dependency classpath is part of this JVM.
+            classpath = [Path(native.JAR), *map(Path,
+                native.DEPENDENCIES.read_text(encoding="utf-8").strip().split(
+                    os.pathsep)), *classpath]
+        class_rows.extend(_unique_class(classpath, name) for name in names)
+    return {"schema_version": 1,
+            "mode": "original_graphchecker_zookeeper_class_preflight",
+            "engine_jar_sha256": _sha(native.JAR),
+            "engine_source_tree_sha256": engine["source_tree_sha256"],
+            "sources": {name: {"path": profile[name],
+                               "sha256": _sha(Path(profile[name]))}
+                        for name in ("runner_source", "post_weave_source")},
+            "classes": class_rows}
+
+
+def preflight_static_sidecars(original: Path, scope_out: Path) -> dict:
+    """Fail before weaving if the original Soot sidecars are incomplete."""
+    files = {
+        "candidate_graph": original / "candidate_dataflow_edges.jsonl.gz",
+        "static_scope_map": original / "static_scope_map.jsonl",
+        "region_skeletons": original / "region_skeletons.jsonl.gz",
+        "weave_manifest": scope_out / "weave_manifest.json",
+    }
+    pins = {}
+    for label, path in files.items():
+        if not path.is_file() or path.is_symlink() or path.stat().st_size == 0:
+            raise ValueError(f"ZooKeeper static sidecar missing: {label}")
+        if path.suffix == ".gz":
+            try:
+                with gzip.open(path, "rb") as stream:
+                    first = stream.readline()
+                if not first:
+                    raise ValueError("empty gzip")
+            except (OSError, EOFError, ValueError) as exc:
+                raise ValueError(f"ZooKeeper static sidecar invalid: {label}") from exc
+        elif label == "weave_manifest":
+            manifest = _object(path)
+            if not isinstance(manifest.get("targets"), list):
+                raise ValueError("ZooKeeper static sidecar invalid: weave_manifest")
+        pins[label] = {"path": str(path), "sha256": _sha(path)}
+    return {"schema_version": 1,
+            "mode": "original_graphchecker_zookeeper_static_preflight",
+            "sidecars": pins}
+
+
+def _verify_generic_runner(profile: dict) -> None:
+    source_name = profile.get("runner_source")
+    if not source_name:
+        return
+    source = Path(source_name)
+    canonical = (Path(__file__).resolve().parents[1] /
+                 "native_graphchecker_fixture/NativeJUnitMethodRunner.java")
+    if (not source.is_absolute() or not source.is_file() or
+            source.is_symlink() or _sha(source) != _sha(canonical)):
+        raise ValueError("ZooKeeper generic JUnit runner source changed")
+    relative = "edu/uva/liftlab/graphchecker/runtime/NativeJUnitMethodRunner.class"
+    matches = []
+    for path in _paths(profile.get("runner_classpath"), "runner_classpath"):
+        if path.is_dir() and (path / relative).is_file():
+            matches.append(path)
+        elif path.is_file() and zipfile.is_zipfile(path):
+            with zipfile.ZipFile(path) as archive:
+                if relative in archive.namelist():
+                    matches.append(path)
+    if len(matches) != 1:
+        raise ValueError("ZooKeeper generic JUnit runner must resolve once")
+
+
+def _verify_postweave(profile: dict) -> None:
+    source_name = profile.get("post_weave_source")
+    if not source_name:
+        return
+    source = Path(source_name)
+    canonical = Path(__file__).resolve().with_name(
+        "NativeZooKeeperCombinedPostWeave.java")
+    if (not source.is_absolute() or not source.is_file() or
+            source.is_symlink() or _sha(source) != _sha(canonical)):
+        raise ValueError("ZooKeeper combined postweave source changed")
+    relative = "edu/uva/liftlab/mallory/nativecampaign/NativeZooKeeperCombinedPostWeave.class"
+    matches = []
+    for path in _paths(profile.get("post_weave_classpath"),
+                       "post_weave_classpath"):
+        if path.is_dir() and (path / relative).is_file():
+            matches.append(path)
+        elif path.is_file() and zipfile.is_zipfile(path):
+            with zipfile.ZipFile(path) as archive:
+                if relative in archive.namelist():
+                    matches.append(path)
+    if len(matches) != 1:
+        raise ValueError("ZooKeeper combined postweave must resolve once")
 
 
 def _verify_closed_session(gate: dict) -> None:
@@ -191,6 +336,8 @@ def _profile(request: dict, profile_file: Path) -> dict:
             any(arg.startswith(("-Djava.io.tmpdir=", "-Dbuild.test.dir="))
                 for arg in runner_args)):
         raise ValueError("ZooKeeper runner args must preserve fresh trial directories")
+    _verify_generic_runner(profile)
+    _verify_postweave(profile)
     source = Path(profile["source_root"])
     target = request["target"]
     source_file = (source / target["source_path"]).resolve(strict=True)
@@ -384,9 +531,11 @@ def _original_cp(extra: list[Path]) -> str:
 def prepare(request_file: Path, output: Path, profile_file: Path) -> dict:
     request = _object(request_file)
     profile = _profile(request, profile_file)
+    class_preflight = preflight_execution_classes(profile)
     if output.exists() and any(output.iterdir()):
         raise ValueError("native adapter output must start empty")
     output.mkdir(parents=True, exist_ok=True)
+    _atomic(output / "class-preflight.json", class_preflight)
     clazz, method, line = _target(request)
     source_classes = Path(profile["source_classes"]).resolve(strict=True)
     process_classes_sha = weave.class_tree_digest(source_classes)
@@ -426,13 +575,18 @@ def prepare(request_file: Path, output: Path, profile_file: Path) -> dict:
     graph = original / "candidate_dataflow_edges.jsonl.gz"
     scope = original / "static_scope_map.jsonl"
     skeletons = original / "region_skeletons.jsonl.gz"
-    for path in (graph, scope, skeletons, scope_out / "weave_manifest.json"):
-        if not path.is_file():
-            raise ValueError("original GraphChecker static output incomplete")
+    sidecar_preflight = preflight_static_sidecars(original, scope_out)
+    _atomic(output / "static-sidecar-preflight.json", sidecar_preflight)
     _atomic(output / "static-scope-receipt.json", {
         "schema_version": 1, "mode": "original_graphchecker_static_scope",
         "case_id": request["case_id"], "request_sha256": _digest(request),
         "target_identity": identity,
+        "class_preflight_path": str(output / "class-preflight.json"),
+        "class_preflight_sha256": _sha(output / "class-preflight.json"),
+        "static_sidecar_preflight_path": str(
+            output / "static-sidecar-preflight.json"),
+        "static_sidecar_preflight_sha256": _sha(
+            output / "static-sidecar-preflight.json"),
         "analysis_kind": report["analysisKind"],
         "analysis_path": str(scope_out / "analysis.json"),
         "analysis_sha256": _sha(scope_out / "analysis.json"),
@@ -447,6 +601,9 @@ def prepare(request_file: Path, output: Path, profile_file: Path) -> dict:
         "static_scope_map_sha256": _sha(scope),
         "region_skeletons_sha256": _sha(skeletons)})
     recorded_classes = output / "recording-classes"
+    # The original REGION_STATE pass writes its static-input digest beside
+    # woven classes before Soot creates the output tree.
+    recorded_classes.mkdir()
     static_artifacts = {str(path): _sha(path)
                         for path in (graph, scope, skeletons)}
     _run("region-state-weave", [
@@ -464,7 +621,7 @@ def prepare(request_file: Path, output: Path, profile_file: Path) -> dict:
     if weave.class_tree_digest(source_classes) != process_classes_sha:
         raise ValueError("recording weave preimage changed since static Soot analysis")
     post = _paths(profile["post_weave_classpath"], "post_weave_classpath")
-    _run("recording-postweave", [java, "-cp", _cp(post),
+    _run("recording-postweave", [java, "-cp", _original_cp(post),
         "edu.uva.liftlab.mallory.nativecampaign.NativeZooKeeperCombinedPostWeave",
         str(recorded_classes), _cp(extra)], output, 600)
     _atomic(output / "recording-weave-receipt.json", {
@@ -536,7 +693,7 @@ def prepare(request_file: Path, output: Path, profile_file: Path) -> dict:
         "region_skeletons": str(recorded / "region_skeletons.jsonl"),
         "dependency_classpath": _cp(extra),
         "native_fault_manifest": str(scope_out / "weave_manifest.json"),
-        "post_weave": {"classpath": _cp(post),
+        "post_weave": {"classpath": _original_cp(post),
             "main_class":
                 "edu.uva.liftlab.mallory.nativecampaign.NativeZooKeeperCombinedPostWeave",
             "args": ["{woven_classes}", _cp(extra)]},
@@ -574,6 +731,12 @@ def prepare(request_file: Path, output: Path, profile_file: Path) -> dict:
         "case_id": request["case_id"], "request_sha256": _digest(request),
         "target_identity": identity,
         "original_cluster_junit_verified": True,
+        "class_preflight_path": str(output / "class-preflight.json"),
+        "class_preflight_sha256": _sha(output / "class-preflight.json"),
+        "static_sidecar_preflight_path": str(
+            output / "static-sidecar-preflight.json"),
+        "static_sidecar_preflight_sha256": _sha(
+            output / "static-sidecar-preflight.json"),
         "scope_generated_by_original_graphchecker": True,
         "recording_closed": True,
         "junit": {"class": junit["class"], "method": junit["method"]},

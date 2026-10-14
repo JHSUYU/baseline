@@ -170,12 +170,19 @@ def _audit_zookeeper_recipe_pins(recipe: dict) -> None:
             raise ValueError(f"ZooKeeper {kind} input omitted from recipe pins: {value}")
 
     for value in (Path(__file__).with_name("zookeeper_native_adapter.py"),
+                  Path(__file__).with_name("run_zookeeper_native_adapter.py"),
+                  Path(__file__).with_name("preparation.py"),
+                  Path(__file__).with_name("checklist.py"),
                   Path(__file__).with_name("build_zookeeper_protocol_gate.py"),
                   Path(__file__).with_name("NativeZooKeeperCombinedPostWeave.java"),
                   Path(__file__).with_name("NativeZooKeeperSessionVerifier.java")):
         require("file", str(value.resolve(strict=True)))
     for key in ("java", "protocol_gate"):
         require("file", profile.get(key))
+    if profile.get("runner_source"):
+        require("file", profile["runner_source"])
+    if profile.get("post_weave_source"):
+        require("file", profile["post_weave_source"])
     require("source", profile.get("source_root"))
     require("classes", profile.get("source_classes"))
     require("mapping", profile.get("communication_mapping"))
@@ -454,7 +461,36 @@ def _validate_output(item: dict, request: dict, output: Path,
         raise ValueError("static Soot process classes/classpath identity differs")
     expected_throw_site = request["target"]["site_id"]
     if item["system"] == "zookeeper":
-        from .zookeeper_native_adapter import resolve_original_target
+        from .zookeeper_native_adapter import (REQUIRED_CLASSES,
+                                               resolve_original_target)
+        for name, mode in (("class_preflight",
+                            "original_graphchecker_zookeeper_class_preflight"),
+                           ("static_sidecar_preflight",
+                            "original_graphchecker_zookeeper_static_preflight")):
+            path = Path(scope.get(f"{name}_path", ""))
+            digest = scope.get(f"{name}_sha256")
+            if (not path.is_file() or path.is_symlink() or
+                    proof.get(f"{name}_path") != str(path) or
+                    proof.get(f"{name}_sha256") != digest or
+                    _sha(path) != digest or _object(path).get("mode") != mode):
+                raise ValueError(f"ZooKeeper native {name} receipt differs")
+        class_rows = _object(Path(scope["class_preflight_path"])).get("classes")
+        required_count = sum(len(names) for names in REQUIRED_CLASSES.values())
+        if (not isinstance(class_rows, list) or
+                len(class_rows) != required_count or
+                len({row.get("class") for row in class_rows}) != required_count or
+                any(not re.fullmatch(r"[0-9a-f]{64}",
+                                     str(row.get("class_sha256", "")))
+                    for row in class_rows)):
+            raise ValueError("ZooKeeper native Java class preflight is incomplete")
+        sidecars = _object(Path(scope["static_sidecar_preflight_path"])).get(
+            "sidecars")
+        if (not isinstance(sidecars, dict) or
+                set(sidecars) != {"candidate_graph", "static_scope_map",
+                                  "region_skeletons", "weave_manifest"} or
+                any(_sha(Path(row.get("path", ""))) != row.get("sha256")
+                    for row in sidecars.values())):
+            raise ValueError("ZooKeeper native static sidecar preflight differs")
         manifest = _object(analysis_path.with_name("weave_manifest.json"))
         identity = resolve_original_target(request, analysis_report, manifest,
                                            process_path)

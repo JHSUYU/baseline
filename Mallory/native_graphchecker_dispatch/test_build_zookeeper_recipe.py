@@ -52,6 +52,7 @@ class BuildZooKeeperRecipeTest(unittest.TestCase):
                 "java": file("java"), "source_root": source_root,
                 "source_classes": original,
                 "communication_mapping": file("mapping.jsonl"),
+                "runner_source": file("NativeJUnitMethodRunner.java"),
                 "analysis_classpath": [original],
                 "scope_planner_classpath": [file("scope.jar")],
                 "runtime_classpath": [file("runtime.jar")],
@@ -70,6 +71,7 @@ class BuildZooKeeperRecipeTest(unittest.TestCase):
             self.assertIn(postweave, recipe["class_tree_pins"])
             self.assertIn(gate["static_map_path"], recipe["mapping_pins"])
             self.assertIn(profile["runtime_classpath"][0], recipe["classpath_pins"])
+            self.assertIn(profile["runner_source"], recipe["pins"])
             Path(profile["runtime_classpath"][0]).write_text("changed", encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "changed native classpath pin"):
                 preparation.load_recipes(output, inventory)

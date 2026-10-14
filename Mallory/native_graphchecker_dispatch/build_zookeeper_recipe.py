@@ -48,11 +48,17 @@ def build(profile_file: Path, inventory: Path, output: Path,
         Path(gate["healthy_stdout_path"]),
         Path(gate["healthy_trace_manifest_path"]),
         here / "zookeeper_native_adapter.py",
+        here / "run_zookeeper_native_adapter.py",
+        here / "preparation.py", here / "checklist.py",
         here / "build_zookeeper_protocol_gate.py",
         here / "build_zookeeper_recipe.py",
         here / "NativeZooKeeperCombinedPostWeave.java",
         here / "NativeZooKeeperSessionVerifier.java",
     ]
+    if profile.get("runner_source"):
+        file_paths.append(Path(profile["runner_source"]))
+    if profile.get("post_weave_source"):
+        file_paths.append(Path(profile["post_weave_source"]))
     source_paths = [Path(profile["source_root"]),
                     Path(gate["session_dir_path"])]
     class_paths = [Path(profile["source_classes"]),
@@ -69,8 +75,8 @@ def build(profile_file: Path, inventory: Path, output: Path,
     # directory digest is inserted in classpath_pins for the same path.
     class_names = {str(path) for path in class_paths}
     recipe = {
-        "argv": [str(Path(sys.executable).resolve(strict=True)), "-m",
-                 "Mallory.native_graphchecker_dispatch.zookeeper_native_adapter",
+        "argv": [str(Path(sys.executable).resolve(strict=True)),
+                 str(here / "run_zookeeper_native_adapter.py"),
                  str(profile_file), "{request}", "{output}"],
         "pins": {str(path): _pin(str(path)) for path in file_paths},
         "source_tree_pins": {str(path): _pin(str(path))
