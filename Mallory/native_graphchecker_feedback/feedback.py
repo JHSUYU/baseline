@@ -16,9 +16,12 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+from Mallory.native_graphchecker_feedback.build_cache import component_root
+
 
 HERE = Path(__file__).resolve().parent
-ENGINE = HERE.parent / "static_scope_port" / "original_engine"
+ENGINE = Path(os.environ.get("MALLORY_NATIVE_ENGINE_ROOT") or
+              HERE.parent / "static_scope_port" / "original_engine")
 JAVA_CLASS = "edu.uva.liftlab.mallory.nativefeedback.NativeFeedbackMain"
 
 
@@ -86,10 +89,11 @@ def build(*, engine_jar: Path | None = None, force: bool = False) -> Path:
     """Compile only this bridge; pinned original sources stay in their module."""
     source = HERE / "NativeFeedbackMain.java"
     digest = _sha256(_engine_jar(engine_jar))
-    output = HERE / "target" / f"classes-{digest[:16]}"
+    cache = component_root("native-feedback", HERE / "target")
+    output = cache / f"classes-{digest[:16]}"
     clazz = output / "edu/uva/liftlab/mallory/nativefeedback/NativeFeedbackMain.class"
     output.parent.mkdir(parents=True, exist_ok=True)
-    with (output.parent / f".build-{digest[:16]}.lock").open("w") as lock:
+    with (cache / f".build-{digest[:16]}.lock").open("w") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
         if force or not clazz.is_file() or clazz.stat().st_mtime < source.stat().st_mtime:
             output.mkdir(parents=True, exist_ok=True)

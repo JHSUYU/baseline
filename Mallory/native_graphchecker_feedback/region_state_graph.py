@@ -23,6 +23,7 @@ from Mallory.instrumentation.graphchecker_port.native_original_weave import (
     DEPENDENCIES, JAR,
 )
 from Mallory.native_graphchecker_feedback.artifacts import region_plan_path
+from Mallory.native_graphchecker_feedback.build_cache import component_root
 
 SCHEMA = 1
 REGION_IN_ENDPOINT = re.compile(r"/region/(REGION\.[^/]+)/")
@@ -61,7 +62,8 @@ def _plan_helper_output(plan_path: Path, engine_jar: Path,
                         *, project: bool = False) -> str:
     """Run the pinned GraphChecker address parser over an unchanged plan."""
     jar_sha = _sha(engine_jar)
-    classes = PLAN_ID_SOURCE.parent / "target" / f"region-plan-ids-{jar_sha[:16]}"
+    classes = (component_root("region-plan-ids", PLAN_ID_SOURCE.parent / "target") /
+               f"region-plan-ids-{jar_sha[:16]}")
     compiled = classes / "edu/uva/liftlab/mallory/nativefeedback/RegionPlanIdsMain.class"
     dependencies = DEPENDENCIES.read_text(encoding="utf-8").strip()
     classpath = f"{engine_jar}:{dependencies}"

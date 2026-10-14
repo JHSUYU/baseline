@@ -1097,6 +1097,24 @@ def _pick_v1(state: dict[str, Any]) -> dict[str, Any]:
 
 def _pick(state: dict[str, Any]) -> dict[str, Any]:
     """Select diverse I/O sites, with explicit depth and waiting slots."""
+    # Retry an exact, previously selected plan after an infrastructure
+    # failure. The caller checkpoints the chosen active plan before running
+    # its JUnit, so a crash cannot silently skip this replay.
+    required = state.get("required_replay_plan_keys")
+    if required is not None:
+        if (not isinstance(required, list) or
+                any(not isinstance(key, str) or not key for key in required) or
+                len(required) != len(set(required))):
+            raise ValueError("invalid required replay plan keys")
+        if required:
+            queue = state["queue"]
+            matches = [item for item in queue if item["key"] == required[0]]
+            if len(matches) != 1:
+                raise ValueError("required replay plan is missing from queue")
+            selected = matches[0]
+            queue.remove(selected)
+            required.pop(0)
+            return selected
     version = state.get("scheduler_version", 1)
     if version == 1:
         return _pick_v1(state)
@@ -2581,10 +2599,26 @@ def run_campaign(config_path: Path, root: Path) -> dict[str, Any]:
             state["active"] = {"index": 0, "name": "r0000", "faults": []}
             _atomic(checkpoint, state)
         _resume_active(config, admitted, root, state)
+        # A bounded stop is a durable pause, not a terminal disposition.
+        # Re-evaluate the formal budget when the same checkpoint is resumed.
+        if state["status"] == "bounded_checkpoint_stop" and not state["terminal"]:
+            if state["active"] is not None:
+                raise ValueError("bounded stop requires an accepted checkpoint")
+            state["status"] = "running"
         while not state["terminal"]:
             _finish_status(state)
             if state["terminal"]:
                 break
+            bounded_stop = state.get("stop_after_completed_fault_trials")
+            if bounded_stop is not None:
+                if (not isinstance(bounded_stop, int) or
+                        isinstance(bounded_stop, bool) or bounded_stop < 0):
+                    raise ValueError("invalid completed fault trial stop bound")
+                if state["completed_fault_trials"] >= bounded_stop:
+                    if state["active"] is not None:
+                        raise ValueError("bounded stop requires an accepted checkpoint")
+                    state["status"] = "bounded_checkpoint_stop"
+                    break
             if state["active"] is None:
                 selected = _pick(state)
                 index = state["next_trial_index"]
