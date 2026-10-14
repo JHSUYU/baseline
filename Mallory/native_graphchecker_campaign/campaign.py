@@ -136,6 +136,8 @@ def _validate_config(config: dict[str, Any]) -> None:
                      item == "{trial_result_file}")
                     for item in runner.get("args_before_test", []))):
         raise ValueError("native campaign requires bounded Zero VM JUnit runner")
+    if runner.get("mode", "concolic") not in ("concolic", "region_state"):
+        raise ValueError("runner mode must be concolic or region_state")
     budget = config.get("budget")
     if (not isinstance(budget, dict) or any(
             not isinstance(budget.get(key), int) or isinstance(budget[key], bool)
@@ -661,6 +663,16 @@ def _runner_prefix(runner: dict[str, Any], iteration: Path) -> list[str]:
             else arg for arg in runner.get("args_before_test", [])]
 
 
+def _mode_jvm_args(runner: dict[str, Any], weave: dict[str, Any],
+                   iteration: Path, junit: dict[str, str]) -> list[str]:
+    if runner.get("mode", "concolic") == "region_state":
+        return ["-Dcausynth.trace.mode=region-state",
+                f"-Dcausynth.trace.test={junit['class']}#{junit['method']}"]
+    return [f"-Dcausynth.concolic.task.plan={Path(weave['task_plan']).resolve(strict=True)}",
+            f"-Dcausynth.concolic.task.id={weave['task_id']}",
+            f"-Dcausynth.concolic.results={iteration / 'vm-result.json'}"]
+
+
 def _execute_junit(config: dict[str, Any], admitted: dict[str, Any],
                    trial: Path, faults: list[dict[str, Any]]) -> dict[str, Any]:
     """Run the same unchanged JUnit method in a fresh Zero VM."""
@@ -679,9 +691,7 @@ def _execute_junit(config: dict[str, Any], admitted: dict[str, Any],
         str(JAR.resolve(strict=True)),
         DEPENDENCIES.read_text(encoding="utf-8").strip()))
     argv = [str(Path(runner["zero_vm_java"]).resolve(strict=True)),
-            f"-Dcausynth.concolic.task.plan={Path(weave['task_plan']).resolve(strict=True)}",
-            f"-Dcausynth.concolic.task.id={weave['task_id']}",
-            f"-Dcausynth.concolic.results={iteration / 'vm-result.json'}",
+            *_mode_jvm_args(runner, weave, iteration, config["junit"]),
             *jvm_args, "-cp", cp, runner["main_class"],
             *_runner_prefix(runner, iteration),
             config["junit"]["class"], config["junit"]["method"]]

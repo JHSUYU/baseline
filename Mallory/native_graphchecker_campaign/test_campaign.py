@@ -54,6 +54,13 @@ class NativeAdmissionLineageTest(unittest.TestCase):
             {"args_before_test": ["{trial_result_file}"]}, Path("/tmp/trial"))
         self.assertEqual(["/tmp/trial/junit-result.json"], prefix)
 
+    def test_region_state_trial_omits_symbolic_task_publication(self) -> None:
+        args = core._mode_jvm_args(
+            {"mode": "region_state"}, {}, Path("/tmp/trial"),
+            {"class": "ExampleTest", "method": "testOperation"})
+        self.assertEqual(["-Dcausynth.trace.mode=region-state",
+                          "-Dcausynth.trace.test=ExampleTest#testOperation"], args)
+
 
 class WireTemporalProofTest(unittest.TestCase):
     """Two exact actors; VM event IDs and receipt order are separate clocks."""
