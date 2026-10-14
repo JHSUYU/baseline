@@ -101,7 +101,11 @@ public final class NativeHdfsSaslDoors {
       return;
     }
     Object anchor = new Object();
-    MalloryOriginalHdfsSourceRoots.aliasCurrent(anchor);
+    if (!MalloryOriginalHdfsSourceRoots.aliasCurrent(anchor)) {
+      // The existing native bridge registers DataNode.saslClient as an owner.
+      // Keep it when a standalone handshake has no thread-local source.
+      anchor = owner;
+    }
     CLIENT.set(new ClientExchange("hdfs-sasl-" + UUID.randomUUID(), anchor,
         MessageDoors.setAside()));
   }
@@ -113,7 +117,9 @@ public final class NativeHdfsSaslDoors {
       return;
     }
     Object anchor = new Object();
-    MalloryOriginalHdfsSourceRoots.aliasCurrent(anchor);
+    if (!MalloryOriginalHdfsSourceRoots.aliasCurrent(anchor)) {
+      anchor = owner;
+    }
     SERVER.set(new ServerExchange(anchor, MessageDoors.setAside()));
   }
 

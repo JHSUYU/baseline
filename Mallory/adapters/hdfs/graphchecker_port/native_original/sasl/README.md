@@ -31,6 +31,9 @@ of SHA-256 of the original `DataStreamer.src` and a per-path run ordinal.
 HDFS allows one writer lease per path at a time; the ordinal distinguishes a
 later reopen or append in the same JVM. If an existing source already owns
 the thread, the streamer and handshake anchors inherit that exact source.
+For a standalone handshake with no current thread source, the adapter retains
+the preexisting registered `saslClient` or `saslServer` owner instead of
+replacing it with an unregistered temporary anchor.
 The adapter records a blocking gap if `src` is unavailable and does not
 invent a source. This source attribution bridge lives in the original engine's
 `MalloryOriginalHdfsSourceRoots`, outside its upstream vendor tree.
