@@ -14,7 +14,7 @@ import org.junit.platform.launcher.listeners.TestExecutionSummary;
 public final class NativeRecordingJUnitMethodRunner {
     private NativeRecordingJUnitMethodRunner() { }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ClassNotFoundException {
         if (args.length != 2) {
             throw new IllegalArgumentException("expected JUnit class and method");
         }
