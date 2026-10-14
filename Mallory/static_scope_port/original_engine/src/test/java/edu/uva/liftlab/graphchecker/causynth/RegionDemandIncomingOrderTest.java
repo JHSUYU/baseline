@@ -3,6 +3,7 @@ package edu.uva.liftlab.graphchecker.causynth;
 import edu.uva.liftlab.graphchecker.plan.StaticScopeMap;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -77,6 +78,18 @@ public final class RegionDemandIncomingOrderTest {
                 guards.invoke(index, "o3", "G"));
         assertEquals(Collections.emptyList(),
                 guards.invoke(index, "o4", "G"));
+
+        // Both bounded caches must evict these first queries.  Rebuilding
+        // their shared region projection must keep the same source order and
+        // the later-edge OR that makes X and P live in o1.
+        for (int i = 0; i < 8200; i++) {
+            incoming.invoke(index, "o1", "unused-" + i);
+        }
+        Field projection = type.getDeclaredField("localRegionProjection");
+        projection.setAccessible(true);
+        assertEquals(4096, ((Map<?, ?>) projection.get(index)).size());
+        assertEquals(Arrays.asList("X", "Y", "Z"),
+                incoming.invoke(index, "o1", "C"));
     }
 
     private static StaticProgram.RegionRow skeleton(String id,

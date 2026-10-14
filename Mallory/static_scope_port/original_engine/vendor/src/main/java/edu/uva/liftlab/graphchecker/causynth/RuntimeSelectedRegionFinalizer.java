@@ -2062,10 +2062,18 @@ public final class RuntimeSelectedRegionFinalizer {
         // MiniCluster graphs do not rescan the same incoming edges, without
         // retaining an unbounded number of closure queries.
         private static final int EDGE_LOOKUP_CACHE_SIZE = 8192;
+        private static final int REGION_PROJECTION_CACHE_SIZE = 4096;
         private final Map<Map.Entry<String, String>, List<String>>
                 localIncomingCache = edgeLookupCache();
         private final Map<Map.Entry<String, String>, List<String>>
                 guardIncomingCache = edgeLookupCache();
+        /** Region and cell -> each source in first edge order, with all
+         * methods that can carry it.  Shared by the observed occurrences of
+         * that region; bounded separately from their final edge results. */
+        private final Map<Map.Entry<String, String>, List<SourceMethods>>
+                localRegionProjection = regionProjectionCache();
+        private final Map<Map.Entry<String, String>, List<SourceMethods>>
+                guardRegionProjection = regionProjectionCache();
 
         private static Map<Map.Entry<String, String>, List<String>>
         edgeLookupCache() {
@@ -2077,6 +2085,29 @@ public final class RuntimeSelectedRegionFinalizer {
                     return size() > EDGE_LOOKUP_CACHE_SIZE;
                 }
             };
+        }
+
+        private static Map<Map.Entry<String, String>, List<SourceMethods>>
+        regionProjectionCache() {
+            return new LinkedHashMap<Map.Entry<String, String>,
+                    List<SourceMethods>>(
+                    REGION_PROJECTION_CACHE_SIZE, 0.75f, true) {
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<
+                        Map.Entry<String, String>, List<SourceMethods>> eldest) {
+                    return size() > REGION_PROJECTION_CACHE_SIZE;
+                }
+            };
+        }
+
+        private static final class SourceMethods {
+            private final String cell;
+            private final Set<String> methods;
+
+            private SourceMethods(String cell, Set<String> methods) {
+                this.cell = cell;
+                this.methods = Collections.unmodifiableSet(methods);
+            }
         }
 
         /** Every observed occurrence's performed regions, own first. */
@@ -2404,22 +2435,13 @@ public final class RuntimeSelectedRegionFinalizer {
             for (String regionId : regionsByOccurrence.getOrDefault(
                     occurrenceId, Collections.<String>emptyList())) {
                 if (!selectedRegions.contains(regionId)) continue;
-                Set<String> held = skeletonMethodsByRegion.getOrDefault(
-                        regionId, Collections.<String>emptySet());
-                // Insert each source at its first edge in this region, even
-                // if a later edge is the one whose method ran.  Filtering
-                // rows by ran first would change the original result order.
-                Map<String, Boolean> fromRan = new LinkedHashMap<>();
-                for (Map<String, Object> edge : candidates) {
-                    String method = text(edge.get("method"));
-                    if (!held.contains(method)) continue;
-                    String from = text(edge.get("fromCell"));
-                    if (Boolean.TRUE.equals(fromRan.get(from))) continue;
-                    fromRan.put(from, ran.contains(method));
-                }
-                for (Map.Entry<String, Boolean> from : fromRan.entrySet()) {
-                    if (from.getValue()) {
-                        incoming.add(from.getKey());
+                for (SourceMethods source : projectedSources(edges, candidates,
+                        regionId, cell)) {
+                    for (String method : source.methods) {
+                        if (ran.contains(method)) {
+                            incoming.add(source.cell);
+                            break;
+                        }
                     }
                 }
             }
@@ -2427,6 +2449,40 @@ public final class RuntimeSelectedRegionFinalizer {
                     new ArrayList<>(incoming));
             cache.put(key, result);
             return result;
+        }
+
+        /** The first source order of a region is independent of which
+         * occurrence ran it.  Retain every method for that source: a later
+         * edge can make a source live without changing its first position. */
+        private List<SourceMethods> projectedSources(
+                Map<String, List<Map<String, Object>>> edges,
+                List<Map<String, Object>> candidates,
+                String regionId, String cell) {
+            Map<Map.Entry<String, String>, List<SourceMethods>> cache =
+                    edges == localIncoming
+                            ? localRegionProjection : guardRegionProjection;
+            Map.Entry<String, String> key =
+                    new AbstractMap.SimpleImmutableEntry<>(regionId, cell);
+            List<SourceMethods> cached = cache.get(key);
+            if (cached != null) return cached;
+            Set<String> held = skeletonMethodsByRegion.getOrDefault(regionId,
+                    Collections.<String>emptySet());
+            Map<String, Set<String>> methodsBySource = new LinkedHashMap<>();
+            for (Map<String, Object> edge : candidates) {
+                String method = text(edge.get("method"));
+                if (!held.contains(method)) continue;
+                String from = text(edge.get("fromCell"));
+                methodsBySource.computeIfAbsent(from,
+                        ignored -> new LinkedHashSet<>()).add(method);
+            }
+            List<SourceMethods> result = new ArrayList<>();
+            for (Map.Entry<String, Set<String>> source
+                    : methodsBySource.entrySet()) {
+                result.add(new SourceMethods(source.getKey(), source.getValue()));
+            }
+            List<SourceMethods> projected = Collections.unmodifiableList(result);
+            cache.put(key, projected);
+            return projected;
         }
 
     }
