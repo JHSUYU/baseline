@@ -18,6 +18,20 @@ from Mallory.native_graphchecker_campaign import campaign as core
 
 
 class NativeAdmissionLineageTest(unittest.TestCase):
+    def test_value_read_from_novelty_is_independent_and_once_per_family(self) -> None:
+        state = {"seen_node_families": [], "seen_edge_families": [],
+                 "seen_branch_outcomes": []}
+        feedback = {"newNodeFamilies": [], "newClosureEdgeFamilies": [],
+                    "newBranchOutcomeIds": [],
+                    "newValueReadFromEdgeFamilies": [
+                        "ZOOKEEPER|READ_FROM|writer/relation/REGION.a"
+                        "->reader/relation/REGION.b"]}
+        self.assertEqual(2, core._novelty(state, feedback))
+        self.assertEqual(0, core._novelty(state, feedback))
+        self.assertEqual([], state["seen_edge_families"])
+        self.assertEqual(feedback["newValueReadFromEdgeFamilies"], state[
+            "seen_value_read_from_families"])
+
     def test_role_boundary_novelty_is_independent_and_once_per_family(self) -> None:
         state = {"seen_node_families": [], "seen_edge_families": [],
                  "seen_branch_outcomes": []}

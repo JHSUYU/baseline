@@ -940,6 +940,17 @@ def _novelty(state: dict[str, Any], feedback: dict[str, Any]) -> int:
         new = set(boundaries) - seen
         state["seen_context_boundary_families"] = sorted(seen | set(boundaries))
         score += 2 * len(new)
+        # An exact ZooKeeper version read is a data dependency, separate
+        # from an activation/watch edge. Its novelty guides the next trial,
+        # while fault eligibility remains the original Finalizer plan.
+        reads = feedback.get("newValueReadFromEdgeFamilies", [])
+        if not isinstance(reads, list) or not all(
+                isinstance(value, str) and value for value in reads):
+            raise ValueError("native delta has invalid value read-from edges")
+        seen = set(state.setdefault("seen_value_read_from_families", []))
+        new = set(reads) - seen
+        state["seen_value_read_from_families"] = sorted(seen | set(reads))
+        score += 2 * len(new)
     return min(60, score)
 
 
@@ -1509,6 +1520,7 @@ def _new_state(config: dict[str, Any], config_sha: str,
             "healthy": None, "trials": [], "queue": [], "seen_plan_keys": [],
             "seen_node_families": [], "seen_edge_families": [],
             "seen_context_boundary_families": [],
+            "seen_value_read_from_families": [],
             "seen_branch_outcomes": [], "completed_fault_trials": 0,
             "fault_id_attempts": {}, "fault_id_successes": {},
             "elapsed_seconds": 0.0, "active": None, "next_trial_index": 1}
@@ -1701,6 +1713,7 @@ def _import_predecessor(config: dict[str, Any], root: Path,
     state["queue"] = queue
     for name in ("seen_node_families", "seen_edge_families",
                  "seen_context_boundary_families",
+                 "seen_value_read_from_families",
                  "seen_branch_outcomes", "fault_id_attempts", "fault_id_successes"):
         state[name] = source.get(name, {} if name.startswith("fault_id_") else [])
     before = len(state["queue"])

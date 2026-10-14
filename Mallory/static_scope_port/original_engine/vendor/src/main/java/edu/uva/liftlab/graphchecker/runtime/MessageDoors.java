@@ -50,6 +50,9 @@ public final class MessageDoors {
      */
     private static final Map<String, Outbound> STORED =
             new ConcurrentHashMap<String, Outbound>();
+    /** Writes whose API returned the exact committed version, not a later read. */
+    private static final Map<String, Outbound> EXACT_VALUE_STORED =
+            new ConcurrentHashMap<String, Outbound>();
     /**
      * The writes to a shared store in flight ({@link #storing}), by
      * transport and token.  Guarded by itself; every {@link #storeEnded}
@@ -506,13 +509,28 @@ public final class MessageDoors {
      * @param key the location and the version this write made
      */
     public static void stored(String transport, String key, Object owner) {
+        stored(transport, key, owner, false);
+    }
+
+    /** File a store write whose successful API result names its exact version. */
+    public static void storedVersionedValue(String transport, String key,
+                                            Object owner) {
+        stored(transport, key, owner, true);
+    }
+
+    private static void stored(String transport, String key, Object owner,
+                               boolean exactVersion) {
         // In flight until filed, whatever bracket the adapter opened: the
         // SEND and the producer it mints take the concolic VM milliseconds.
         long store = storing(transport, location(key));
         try {
             Outbound message = outbound(transport, key, "1", REQUEST, owner,
                     null);
-            if (message.active()) STORED.put(transport + "\n" + key, message);
+            if (message.active()) {
+                String identity = transport + "\n" + key;
+                STORED.put(identity, message);
+                if (exactVersion) EXACT_VALUE_STORED.put(identity, message);
+            }
         } finally {
             storeEnded(transport, store);
         }
@@ -553,9 +571,18 @@ public final class MessageDoors {
      */
     public static void fetched(String transport, String key, Object owner) {
         String kind = NOTIFIED.get();
-        if (kind == null) return;
+        if (kind == null) {
+            // A polling read has observed an exact store version, but has
+            // not received a notification. Record that value relation
+            // without installing the writer's causal context or symbolic
+            // payload in the reader's thread.
+            observedStoreRead(transport, key, owner,
+                    STORED.get(transport + "\n" + key));
+            return;
+        }
         Outbound message = filed(transport, key);
         if (message == null) return;
+        observedStoreRead(transport, key, owner, message);
         NOTIFIED.remove();
         endInbound(true);
         SymbolicMessageEnvelope.clearInbound();
@@ -575,6 +602,17 @@ public final class MessageDoors {
             SymbolicMessageEnvelope.installInbound(message.symbolic);
         }
         CURRENT.set(new Inbound(token, key, "1", REQUEST));
+    }
+
+    /** An exact, already filed store version read, independent of activation. */
+    private static void observedStoreRead(String transport, String key,
+                                          Object owner, Outbound message) {
+        if (message == null || message.trace.isEmpty() ||
+                EXACT_VALUE_STORED.get(transport + "\n" + key) != message) return;
+        String producer = Interactions.sender(transport, key, REQUEST);
+        if (producer.isEmpty()) return;
+        CausynthTraceRecorder.observedStoreVersionRead(transport, key,
+                message.attemptId, owner, producer);
     }
 
     /**

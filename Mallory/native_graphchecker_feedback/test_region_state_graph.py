@@ -142,6 +142,65 @@ class RegionStateGraphTest(unittest.TestCase):
                 self.scope, self.graph, self.skeletons, SITE,
                 engine_jar=self.engine)
 
+    def _store_read_case(self, name: str, *, read_version: str = "/x@17",
+                         include_writer: bool = True, read_seq: int = 9) -> dict:
+        case = self._case(name)
+        trace = case["trace"] / "runtime_trace.jsonl"
+        rows = [json.loads(line) for line in trace.read_text().splitlines()]
+        producer_address = f"nn1#epoch1/region/{ACTIVATION}/ctx:fixture/site:STORE"
+        if include_writer:
+            rows.append({"event": "EXCHANGE_SEND", "seq": 8, "callId": 10,
+                         "sourceKey": "nn1#epoch1", "transport": "ZOOKEEPER",
+                         "correlationId": "/x@17", "attemptId": "1",
+                         "half": "REQUEST", "producerEndpointId": "writer-17",
+                         "producerEndpoint": producer_address})
+        rows.append({"event": "STORE_VERSION_READ", "seq": read_seq,
+                     "callId": 20, "sourceKey": "nn2#epoch0",
+                     "transport": "ZOOKEEPER", "correlationId": read_version,
+                     "attemptId": "1", "half": "REQUEST",
+                     "producerEndpointId": "writer-17"})
+        write_jsonl(trace, rows)
+        receipt = json.loads(case["receipt"].read_text())
+        receipt.update(_closed_inputs(case["trace"], self.scope, self.graph,
+                                      self.skeletons))
+        case["receipt"].write_text(json.dumps(receipt) + "\n")
+        return case
+
+    def test_exact_store_version_read_adds_only_typed_data_edge(self) -> None:
+        case = self._store_read_case("exact-store-read")
+        summary = self._summarize(case)
+        self.assertEqual(1, summary["counts"]["observedStoreVersionReads"])
+        self.assertEqual(1, summary["counts"]["matchedStoreVersionReads"])
+        self.assertEqual([
+            "ZOOKEEPER|READ_FROM|nn1/relation/REGION.targetAct"
+            "->nn2/relation/REGION.receiver"
+        ], summary["valueReadFromEdgeFamilies"])
+        self.assertEqual(1, len(summary["edgeFamilies"]))
+        self.assertEqual(1, len(summary["closureEdgeFamilies"]))
+        self.assertEqual(["exact-receiver", "exact-runtime-check"],
+                         summary["closureOccurrenceIds"])
+
+        healthy = self._summarize(self._case("no-store-read"))
+        delta = delta_region_state(healthy, summary)
+        self.assertEqual(summary["valueReadFromEdgeFamilies"],
+                         delta["newValueReadFromEdgeFamilies"])
+        self.assertEqual([], delta["newClosureEdgeFamilies"])
+        self.assertEqual([], delta_region_state(summary, summary)[
+            "newValueReadFromEdgeFamilies"])
+        legacy = dict(healthy)
+        legacy.pop("valueReadFromEdgeFamilies")
+        self.assertEqual([], delta_region_state(legacy, summary)[
+            "newValueReadFromEdgeFamilies"])
+
+    def test_store_read_needs_same_filed_version_and_prior_writer(self) -> None:
+        for name, options in (("different-version", {"read_version": "/x@18"}),
+                              ("no-writer", {"include_writer": False}),
+                              ("read-before-write", {"read_seq": 7})):
+            with self.subTest(name=name):
+                summary = self._summarize(self._store_read_case(name, **options))
+                self.assertEqual([], summary["valueReadFromEdgeFamilies"])
+                self.assertEqual(0, summary["counts"]["matchedStoreVersionReads"])
+
     def test_observed_exchange_branch_and_actor_switch_delta(self) -> None:
         healthy = self._summarize(self._case("healthy"))
         fault = self._summarize(self._case("fault", target_actor="nn3",

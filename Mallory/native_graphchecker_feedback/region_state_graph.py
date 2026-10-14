@@ -242,6 +242,7 @@ def _fatal_unplanned(trace_dir: Path, fault_events: Path,
                                    "targetThrowRows": throws},
                 "nodeFamilies": [], "edgeFamilies": [],
                 "contextBoundaryEdgeFamilies": [],
+                "valueReadFromEdgeFamilies": [],
                 "closureEdgeFamilies": [], "branchOutcomeIds": [],
                 "provenance": {**pins, "faultEventsSha256": _sha(fault_events),
                                "engineJarSha256": _sha(engine_jar)}}
@@ -266,6 +267,7 @@ def summarize_region_state(
     calls: dict[int, dict[str, Any]] = {}
     branches: list[dict[str, Any]] = []
     exchange_rows: list[dict[str, Any]] = []
+    store_read_rows: list[dict[str, Any]] = []
     trace_count = 0
     for row in _rows(trace_dir / "runtime_trace.jsonl"):
         trace_count += 1
@@ -283,6 +285,10 @@ def summarize_region_state(
                 "half", "spanId", "remoteParentSpanId", "producerEndpoint",
                 "producerEndpointId",
                 "sourceKey")})
+        elif event == "STORE_VERSION_READ":
+            store_read_rows.append({key: row.get(key) for key in (
+                "seq", "callId", "transport", "correlationId", "attemptId",
+                "half", "producerEndpointId", "sourceKey")})
     receipt = _json(target_receipt)
     target = _validate_target(receipt, pins, branches, calls, target_site,
                               fault_events)
@@ -363,8 +369,10 @@ def summarize_region_state(
                              row["producerEndpointId"])
     edge_families = set()
     context_boundary_edges = set()
+    value_read_from_edges = set()
     closure_edges = set()
     paired = unmapped = ambiguous = anchor_mapped = context_boundary_paired = 0
+    matched_store_reads = 0
 
     def endpoint_owner(endpoint: str) -> dict[str, Any] | None:
         # Original Endpoint.render() appends /site:<site>/sidx:<index>/att:<n>
@@ -461,6 +469,50 @@ def summarize_region_state(
                 if (endpoint_owner(sent.get("producerEndpoint") or "") is not None
                         and destination["occurrenceId"] in by_occurrence):
                     closure_edges.add(family)
+    # A successful store read observes a value, not a message delivery.
+    # Match the exact version and this run's producer endpoint. Only a
+    # unique, earlier SEND inside a selected Finalizer occurrence can form a
+    # typed region-to-region data edge. This does not admit new occurrence
+    # IDs to the target closure or install the writer's activation context.
+    store_sends: dict[tuple[str, ...], list[dict[str, Any]]] = {}
+    for row in exchange_rows:
+        if row["event"] != "EXCHANGE_SEND":
+            continue
+        key = tuple(str(row.get(field) or "") for field in (
+            "transport", "correlationId", "attemptId", "half",
+            "producerEndpointId"))
+        if all(key):
+            store_sends.setdefault(key, []).append(row)
+    for read in store_read_rows:
+        key = tuple(str(read.get(field) or "") for field in (
+            "transport", "correlationId", "attemptId", "half",
+            "producerEndpointId"))
+        if not all(key) or key[0] != "ZOOKEEPER" or key[3] != "REQUEST":
+            continue
+        matches = store_sends.get(key, [])
+        if len(matches) != 1:
+            continue
+        sent = matches[0]
+        if not (isinstance(sent.get("seq"), int) and
+                isinstance(read.get("seq"), int) and
+                sent["seq"] < read["seq"]):
+            continue
+        # The exact-version read-from relation is observable even when its
+        # writer or reader is outside selected target regions.
+        matched_store_reads += 1
+        producer = endpoint_owner(sent.get("producerEndpoint") or "")
+        consumer = owner(read.get("callId") or 0)
+        if (producer is None or consumer is None or
+                producer["sourceKey"] != sent.get("sourceKey") or
+                consumer["sourceKey"] != read.get("sourceKey") or
+                not isinstance(calls.get(producer["rootCallId"], {}).get("seq"), int)
+                or not isinstance(calls.get(consumer["rootCallId"], {}).get("seq"), int)
+                or calls[producer["rootCallId"]]["seq"] > sent["seq"] or
+                calls[consumer["rootCallId"]]["seq"] > read["seq"]):
+            continue
+        value_read_from_edges.add(
+            f"{key[0]}|READ_FROM|{_family(producer['sourceKey'], producer['regionId'])}"
+            f"->{_family(consumer['sourceKey'], consumer['regionId'])}")
     selected_family = _family(selected["sourceKey"], selected["regionId"])
     throws = _target_throws(fault_events, target_throw,
                             target["physicalActor"],
@@ -489,12 +541,16 @@ def summarize_region_state(
               "nodeFamilies": sorted(node_families),
               "edgeFamilies": sorted(edge_families),
               "contextBoundaryEdgeFamilies": sorted(context_boundary_edges),
+              "valueReadFromEdgeFamilies": sorted(value_read_from_edges),
               "closureEdgeFamilies": sorted(closure_edges),
               "branchOutcomeIds": sorted(branch_outcomes),
               "counts": {"traceRows": trace_count, "regionPlanRows": len(plans),
                          "pairedExchangeEvents": paired,
                          "anchorMappedPairedExchanges": anchor_mapped,
                          "contextBoundaryPairedExchanges": context_boundary_paired,
+                         "observedStoreVersionReads": len(store_read_rows),
+                         "matchedStoreVersionReads": matched_store_reads,
+                         "selectedValueReadFromEdges": len(value_read_from_edges),
                          "unmappedPairedExchanges": unmapped,
                          "ambiguousExchangeReceives": ambiguous,
                          "catalogGaps": len(plan_rows[0].get("gaps", []))},
@@ -530,6 +586,7 @@ def delta_region_state(healthy: dict[str, Any], faulted: dict[str, Any]
         return {"status": "target_lost", "targetRetained": False,
                 "newNodeFamilies": [], "newEdgeFamilies": [],
                 "newContextBoundaryEdgeFamilies": [],
+                "newValueReadFromEdgeFamilies": [],
                 "newClosureEdgeFamilies": [], "newBranchOutcomeIds": []}
     result: dict[str, Any] = {"status": "compared", "targetRetained": True,
                               "targetActorChanged": faulted.get(
@@ -537,10 +594,11 @@ def delta_region_state(healthy: dict[str, Any], faulted: dict[str, Any]
     for field, out in (("nodeFamilies", "newNodeFamilies"),
                        ("edgeFamilies", "newEdgeFamilies"),
                        ("contextBoundaryEdgeFamilies", "newContextBoundaryEdgeFamilies"),
+                       ("valueReadFromEdgeFamilies", "newValueReadFromEdgeFamilies"),
                        ("closureEdgeFamilies", "newClosureEdgeFamilies"),
                        ("branchOutcomeIds", "newBranchOutcomeIds")):
-        if field == "contextBoundaryEdgeFamilies" and (field not in healthy or
-                                                          field not in faulted):
+        if field in ("contextBoundaryEdgeFamilies", "valueReadFromEdgeFamilies") and (
+                field not in healthy or field not in faulted):
             # A campaign started before this typed observation has no
             # healthy baseline for it. Do not award novelty for a boundary
             # that may already have been present in that healthy execution.

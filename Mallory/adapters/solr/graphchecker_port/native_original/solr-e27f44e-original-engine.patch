@@ -411,7 +411,7 @@ index 123edb6..2244bbd 100644
      }
 +    if (MALLORY_CLUSTER && written != null) {
 +      malloryWrittenPayload(data);
-+      MessageDoors.stored("ZOOKEEPER", malloryVersionKey(path, written), this);
++      MessageDoors.storedVersionedValue("ZOOKEEPER", malloryVersionKey(path, written), this);
 +    }
 +    return written;
    }

@@ -929,6 +929,49 @@ public final class CausynthTraceRecorder {
         }
     }
 
+    /**
+     * States a value read from one exact store version. This is not a
+     * received message: it neither anchors the reader's causal context nor
+     * enters the schedule. A graph may join it to the matching SEND only by
+     * the version key and this run's producer endpoint identity.
+     */
+    static void observedStoreVersionRead(String transport, String versionKey,
+                                         String attemptId, Object localOwner,
+                                         String producerEndpointId) {
+        if (Text.safe(transport).isEmpty() || Text.safe(versionKey).isEmpty()
+                || Text.safe(producerEndpointId).isEmpty()) return;
+        initialize();
+        if (contextOnlyConcolicReplay || !RecordingWindow.opened()) return;
+        RuntimeTraceContext.View context =
+                RuntimeTraceContext.exchange(localOwner, null);
+        Thread thread = Thread.currentThread();
+        ActiveCall call = ACTIVE_CALLS.get().peek();
+        synchronized (LOCK) {
+            writeTraceRow(
+                    "schemaVersion", 3,
+                    "event", "STORE_VERSION_READ",
+                    "seq", EVENT_COUNTER.incrementAndGet(),
+                    "transport", transport,
+                    "correlationId", versionKey,
+                    "attemptId", attemptId,
+                    "half", MessageDoors.REQUEST,
+                    "producerEndpointId", producerEndpointId,
+                    "threadName", thread.getName(),
+                    "tid", thread.getId(),
+                    "method", call == null ? "" : call.method,
+                    "callId", call == null ? 0L : call.callId,
+                    "laneId", context.laneId,
+                    "spanId", context.spanId,
+                    "sourceKind", sourceKind(context.source),
+                    "sourceRole", sourceRole(context.source),
+                    "sourceId", sourceId(context.source),
+                    "sourceEpoch", sourceEpoch(context.source),
+                    "sourceKey", sourceKey(context.source),
+                    "requestKey", context.requestKey,
+                    "requestApi", context.requestApi);
+        }
+    }
+
     /** Registers one stable cluster/application source for trace discovery. */
     public static void registerSource(Object anchor, String kind,
                                       String role, String sourceId,
