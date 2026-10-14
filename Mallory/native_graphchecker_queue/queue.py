@@ -207,10 +207,47 @@ def validate_isolation(profile: dict[str, Any], system: str, case_id: str,
     evidence = ports.get("evidence")
     if not isinstance(evidence, dict) or not evidence:
         raise ValueError("port policy lacks pinned source evidence")
+    fallback_receipts = ports.get("shared_evidence_receipts", [])
+    fallbacks = ports.get("shared_evidence_fallbacks", {})
+    if (not isinstance(fallback_receipts, list) or
+            not isinstance(fallbacks, dict) or
+            (bool(fallback_receipts) != bool(fallbacks))):
+        raise ValueError("shared port evidence fallback is incomplete")
+    reconstructed = {}
+    for receipt_name in fallback_receipts:
+        receipt_path = Path(receipt_name)
+        if (not receipt_path.is_absolute() or receipt_path.is_symlink() or
+                not receipt_path.is_file() or
+                evidence.get(receipt_name) != sha(receipt_path)):
+            raise ValueError("shared port evidence receipt changed")
+        receipt = obj(receipt_path)
+        if (receipt.get("schema_version") != 1 or
+                receipt.get("kind") != "native_shared_port_evidence_fallback" or
+                receipt.get("system") != system or
+                not isinstance(receipt.get("replacements"), list) or
+                not receipt["replacements"]):
+            raise ValueError("shared port evidence receipt is invalid")
+        for replacement in receipt["replacements"]:
+            if not isinstance(replacement, dict) or set(replacement) != {
+                    "original_path", "sha256", "shared_path"}:
+                raise ValueError("shared port evidence replacement is invalid")
+            original = replacement["original_path"]
+            shared = replacement["shared_path"]
+            expected = replacement["sha256"]
+            if (original in reconstructed or evidence.get(original) != expected or
+                    not isinstance(shared, str) or not Path(shared).is_absolute() or
+                    Path(shared).is_symlink() or not Path(shared).is_file() or
+                    sha(Path(shared)) != expected):
+                raise ValueError("shared port source evidence changed")
+            reconstructed[original] = {"path": shared, "sha256": expected}
+    if reconstructed != fallbacks:
+        raise ValueError("shared port evidence fallback differs from receipts")
     for name, expected in evidence.items():
         path = Path(name)
-        if (not path.is_absolute() or not path.is_file() or path.is_symlink() or
-                not isinstance(expected, str) or sha(path) != expected):
+        if (not path.is_absolute() or path.is_symlink() or
+                not isinstance(expected, str) or
+                (path.is_file() and sha(path) != expected) or
+                (not path.is_file() and name not in fallbacks)):
             raise ValueError(f"port isolation evidence changed: {name}")
     if not _contains_trial_dir(config):
         raise ValueError("JUnit needs isolated tmpdir and cluster data directory")

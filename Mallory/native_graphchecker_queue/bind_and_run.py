@@ -233,6 +233,55 @@ def extend_profile(profile: dict, system: str, case_id: str,
     return copied
 
 
+def attach_shared_port_evidence(profile: dict, original: dict,
+                                receipt_path: Path, *, system: str,
+                                case_id: str, host: str,
+                                config_sha256: str,
+                                original_sha256: str) -> dict:
+    """Keep old source pins while making exact copies usable on another host."""
+    if (not receipt_path.is_absolute() or receipt_path.is_symlink() or
+            not receipt_path.is_file()):
+        raise ValueError('shared port evidence needs an immutable receipt')
+    receipt = obj(receipt_path)
+    replacements = receipt.get('replacements')
+    if (receipt.get('schema_version') != 1 or
+            receipt.get('kind') != 'native_shared_port_evidence_fallback' or
+            receipt.get('system') != system or receipt.get('case_id') != case_id or
+            receipt.get('host') != host or
+            receipt.get('native_config_sha256') != config_sha256 or
+            receipt.get('previous_isolation_sha256') != original_sha256 or
+            not isinstance(replacements, list) or not replacements):
+        raise ValueError('shared port evidence receipt differs from promotion')
+    old_evidence = original['systems'][system]['ports']['evidence']
+    copied = json.loads(json.dumps(profile))
+    ports = copied['systems'][system]['ports']
+    fallbacks = ports.setdefault('shared_evidence_fallbacks', {})
+    receipts = ports.setdefault('shared_evidence_receipts', [])
+    if str(receipt_path) in receipts:
+        raise ValueError('shared port evidence receipt already attached')
+    for replacement in replacements:
+        if not isinstance(replacement, dict) or set(replacement) != {
+                'original_path', 'sha256', 'shared_path'}:
+            raise ValueError('shared port evidence replacement is invalid')
+        original_path = replacement['original_path']
+        shared_path = Path(replacement['shared_path'])
+        digest = replacement['sha256']
+        source = Path(original_path)
+        if (old_evidence.get(original_path) != digest or
+                ports['evidence'].get(original_path) != digest or
+                original_path in fallbacks or
+                not source.is_absolute() or source.is_symlink() or
+                (source.is_file() and sha(source) != digest) or
+                not shared_path.is_absolute() or shared_path.is_symlink() or
+                not shared_path.is_file() or sha(shared_path) != digest):
+            raise ValueError('shared port source differs from original evidence')
+        fallbacks[original_path] = {'path': str(shared_path),
+                                    'sha256': digest}
+    receipts.append(str(receipt_path))
+    ports['evidence'][str(receipt_path)] = sha(receipt_path)
+    return copied
+
+
 def swap_unbound_reservation(original: dict, extended: dict, *,
                              case_id: str, displaced_case_id: str,
                              host: str, ownership: dict[str, str],
@@ -320,6 +369,7 @@ def promote(*, root: Path, case_id: str, native_config: Path,
             campaign_python_tar: Path | None = None,
             epoch_receipt: Path | None = None,
             epoch_receipt_sha256: str | None = None,
+            shared_port_evidence: Path | None = None,
             dispatch: bool = True) -> dict:
     physical_host(host)
     if root.name.startswith('native-102-queue-v15') and epoch_receipt is None:
@@ -370,6 +420,12 @@ def promote(*, root: Path, case_id: str, native_config: Path,
         original_profile = obj(profile_path)
         profile = extend_profile(original_profile, item['system'], case_id,
                                  port_review, sha(native_config))
+        if shared_port_evidence is not None:
+            profile = attach_shared_port_evidence(
+                profile, original_profile, shared_port_evidence,
+                system=item['system'], case_id=case_id, host=host,
+                config_sha256=sha(native_config),
+                original_sha256=sha(profile_path))
         migration = None
         if reservation_swap_with is not None:
             if item['system'] != 'zookeeper' or port_review is None:
@@ -503,6 +559,7 @@ def main() -> None:
     parser.add_argument('--campaign-python-tar', type=Path)
     parser.add_argument('--inventory-epoch-receipt', type=Path)
     parser.add_argument('--inventory-epoch-sha256')
+    parser.add_argument('--shared-port-evidence', type=Path)
     parser.add_argument('--bind-only', action='store_true')
     args = parser.parse_args()
     print(json.dumps(promote(
@@ -524,6 +581,7 @@ def main() -> None:
         campaign_python_tar=args.campaign_python_tar,
         epoch_receipt=args.inventory_epoch_receipt,
         epoch_receipt_sha256=args.inventory_epoch_sha256,
+        shared_port_evidence=args.shared_port_evidence,
         dispatch=not args.bind_only), sort_keys=True))
 
 

@@ -8,7 +8,7 @@ import unittest
 from unittest.mock import patch
 
 from Mallory.native_graphchecker_dispatch.checklist import _verify_alternate_junit
-from .bind_and_run import (binding_for, extend_profile, promote,
+from .bind_and_run import (attach_shared_port_evidence, binding_for, extend_profile, promote,
                            swap_unbound_reservation)
 from .queue import pinned_campaign_python, validate_isolation
 
@@ -18,6 +18,69 @@ def write(path: Path, value: dict) -> None:
 
 
 class BindAndRunTest(unittest.TestCase):
+    def test_shared_port_source_fallback_keeps_original_pin_fail_closed(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            original = root / 'other-host/MiniDFSCluster.java'
+            shared = root / 'shared/MiniDFSCluster.java'
+            shared.parent.mkdir()
+            shared.write_text('unchanged original port-zero source\n')
+            digest = hashlib.sha256(shared.read_bytes()).hexdigest()
+            case_source = root / 'shared/TestOriginal.java'
+            case_source.write_text('unchanged original JUnit\n')
+            case_digest = hashlib.sha256(case_source.read_bytes()).hexdigest()
+            review = root / 'port-review.json'
+            write(review, {'schema_version': 1, 'system': 'hdfs',
+                           'case_id': 'HDFS-21',
+                           'all_listeners_bind_port_zero': True,
+                           'evidence': {str(case_source): case_digest}})
+            profile = {'schema_version': 1, 'systems': {'hdfs': {
+                'required_jvm_args': [], 'ports': {
+                    'mode': 'ephemeral',
+                    'evidence': {str(original): digest}}}}}
+            extended = extend_profile(profile, 'hdfs', 'HDFS-21', review)
+            receipt = root / 'shared-port-evidence.json'
+            write(receipt, {'schema_version': 1,
+                            'kind': 'native_shared_port_evidence_fallback',
+                            'system': 'hdfs', 'case_id': 'HDFS-21',
+                            'host': 'node1',
+                            'native_config_sha256': 'c' * 64,
+                            'previous_isolation_sha256': 'd' * 64,
+                            'replacements': [{
+                                'original_path': str(original),
+                                'sha256': digest,
+                                'shared_path': str(shared)}]})
+            attached = attach_shared_port_evidence(
+                extended, profile, receipt, system='hdfs',
+                case_id='HDFS-21', host='node1',
+                config_sha256='c' * 64, original_sha256='d' * 64)
+            self.assertEqual(profile['systems']['hdfs']['ports']['evidence'],
+                             {str(original): digest})
+            self.assertIn(str(original), attached['systems']['hdfs'][
+                'ports']['evidence'])
+            config = {'runner': {'jvm_args': [
+                '-Djava.io.tmpdir={trial_workdir}',
+                '-Dtest.build.data={trial_workdir}']}}
+            self.assertEqual('ephemeral', validate_isolation(
+                attached, 'hdfs', 'HDFS-21', config,
+                {'HDFS-21': 'node1'}, 'node1')['mode'])
+            shared.write_text('changed source\n')
+            with self.assertRaisesRegex(ValueError, 'shared port source evidence changed'):
+                validate_isolation(attached, 'hdfs', 'HDFS-21', config,
+                                   {'HDFS-21': 'node1'}, 'node1')
+            shared.write_text('unchanged original port-zero source\n')
+            original.parent.mkdir()
+            original.write_text('different local source\n')
+            with self.assertRaisesRegex(ValueError, 'port isolation evidence changed'):
+                validate_isolation(attached, 'hdfs', 'HDFS-21', config,
+                                   {'HDFS-21': 'node1'}, 'node1')
+            original.unlink()
+            with self.assertRaisesRegex(ValueError, 'already attached'):
+                attach_shared_port_evidence(
+                    attached, profile, receipt, system='hdfs',
+                    case_id='HDFS-21', host='node1',
+                    config_sha256='c' * 64, original_sha256='d' * 64)
+
     def test_assigned_port_swap_requires_review_and_unbound_case(self):
         with TemporaryDirectory() as directory:
             root = Path(directory)
