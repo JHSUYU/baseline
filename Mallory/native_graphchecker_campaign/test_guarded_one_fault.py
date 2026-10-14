@@ -70,6 +70,9 @@ class GuardedOneFaultTest(unittest.TestCase):
             config.write_text(json.dumps({"case_id": "CASE", "budget": {
                 "fault_trials": 8}, "runner": {"local_artifact_root": str(raw)}}))
             args = self._args(pg0, config, output, raw)
+            campaign._atomic(output / "checkpoint.json", {
+                "completed_fault_trials": 0, "active": {"index": 1,
+                    "name": "r0001", "key": "pending-fault"}, "terminal": False})
 
             class CompletedChild:
                 pid = 1
@@ -100,6 +103,9 @@ class GuardedOneFaultTest(unittest.TestCase):
                   as popen):
                 first = guard.run_one(args)
                 self.assertEqual("accepted_one", first["status"])
+                self.assertEqual("pending-fault", campaign._load(
+                    output / "one-fault-intents" / "trial-0004.json")
+                    ["starting_active_key"])
                 self.assertEqual(1, first["completed_fault_trials"])
                 self.assertIn("--stop-after-fault-trials", popen.call_args.args[0])
                 second = guard.run_one(args)

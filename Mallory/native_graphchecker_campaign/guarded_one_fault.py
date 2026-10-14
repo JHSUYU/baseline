@@ -200,13 +200,20 @@ def run_one(args: argparse.Namespace) -> dict:
                 raise ValueError("one-fault intent pins changed")
             if completed < intent["start_completed"] or completed > intent["stop_after"]:
                 raise ValueError("checkpoint escaped one-fault intent bound")
+            if (completed == intent["start_completed"] and
+                    intent.get("starting_active_key") is not None and
+                    (state is None or state.get("active") is None or
+                     state["active"].get("key") != intent["starting_active_key"])):
+                raise ValueError("pending fault plan changed during one-fault attempt")
         else:
-            if state and (state["terminal"] or state["active"] is not None):
-                raise ValueError("new one-fault intent requires a nonterminal accepted checkpoint")
+            if state and state["terminal"]:
+                raise ValueError("new one-fault intent requires a nonterminal checkpoint")
             if completed >= config["budget"]["fault_trials"]:
                 raise ValueError("formal fault budget exhausted")
             intent = {**pins, "start_completed": completed,
                       "stop_after": completed + 1,
+                      "starting_active_key": (state["active"].get("key")
+                                              if state and state["active"] else None),
                       "raw_baseline_bytes": _allocated(raw_namespace),
                       "created_utc": datetime.now(timezone.utc).isoformat()}
             campaign._atomic(intent_path, intent)
