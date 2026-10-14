@@ -684,7 +684,8 @@ def _tracing_runtime_jar(value: Any, base: Path) -> Path | None:
             raise ValueError("tracing runtime JAR lacks TraceRows")
         if any(not (name.startswith("edu/uva/liftlab/mallory/graphchecker/") or
                     name.startswith("com/google/gson/") or
-                    name.startswith("META-INF/versions/9/com/google/gson/"))
+                    name.startswith("META-INF/versions/9/com/google/gson/") or
+                    name == "META-INF/versions/9/module-info.class")
                for name in names):
             raise ValueError("tracing runtime JAR contains nontracing application classes")
         actual = hashlib.sha256(archive.read(resource)).hexdigest()
