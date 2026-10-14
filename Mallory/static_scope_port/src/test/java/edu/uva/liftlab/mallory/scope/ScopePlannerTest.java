@@ -496,6 +496,29 @@ public class ScopePlannerTest {
                         + "SharedInitializationSplitter.java")));
     }
 
+    interface LazilyResolvedInterface { }
+
+    @Test
+    public void protobufAncestryResolvesDanglingInterfacesBeforeHierarchyQueries()
+            throws Exception {
+        soot.G.reset();
+        Options.v().set_prepend_classpath(true);
+        Options.v().set_allow_phantom_refs(true);
+        Options.v().set_soot_classpath("target/test-classes");
+        SootClass dangling = new SootClass(LazilyResolvedInterface.class.getName(),
+                soot.Modifier.INTERFACE);
+        Scene.v().addClass(dangling);
+        dangling.setResolvingLevel(SootClass.DANGLING);
+        assertEquals(SootClass.DANGLING, dangling.resolvingLevel());
+
+        java.lang.reflect.Method classify = ScopePlanner.class.getDeclaredMethod(
+                "generatedProtobufClass", SootClass.class);
+        classify.setAccessible(true);
+        assertTrue(!(Boolean) classify.invoke(null, dangling));
+        assertTrue(Scene.v().getSootClass(dangling.getName()).resolvingLevel()
+                >= SootClass.HIERARCHY);
+    }
+
     private static java.util.Set<String> lambdaNames(JsonObject scope) {
         java.util.Set<String> names = new java.util.HashSet<>();
         for (JsonElement entry : scope.getAsJsonArray("scopeSites")) {

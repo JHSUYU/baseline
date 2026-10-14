@@ -1109,8 +1109,20 @@ public final class ScopePlanner {
             String name = next.getName();
             if (!seen.add(name)) continue;
             if (name.contains(".protobuf.GeneratedMessage")) return true;
-            if (next.hasSuperclass()) pending.add(next.getSuperclass());
-            pending.addAll(next.getInterfaces());
+            // A referenced interface may still be DANGLING even when its jar
+            // is present on Soot's classpath.  Hierarchy queries on that
+            // placeholder throw instead of resolving it lazily.  If Soot
+            // cannot resolve a parent, keep the class in the analysis: only
+            // a proven protobuf ancestry justifies summarizing its body.
+            try {
+                next = Scene.v().forceResolve(name, SootClass.HIERARCHY);
+                if (next == null || next.resolvingLevel() < SootClass.HIERARCHY
+                        || next.isPhantom()) return false;
+                if (next.hasSuperclass()) pending.add(next.getSuperclass());
+                pending.addAll(next.getInterfaces());
+            } catch (RuntimeException unresolved) {
+                return false;
+            }
         }
         return false;
     }
