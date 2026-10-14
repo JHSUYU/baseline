@@ -880,6 +880,15 @@ class GraphCheckerCampaignTest(unittest.TestCase):
             config_path.write_text(json.dumps(raw))
             config = load_config(config_path)
             self.assertIsNone(config["scratch_root"])
+            self.assertEqual(6144, config["graph_heap_mb"])
+            raw["graph_heap_mb"] = 12288
+            config_path.write_text(json.dumps(raw))
+            self.assertEqual(12288, load_config(config_path)["graph_heap_mb"])
+            raw["graph_heap_mb"] = True
+            config_path.write_text(json.dumps(raw))
+            with self.assertRaisesRegex(ValueError, "graph_heap_mb"):
+                load_config(config_path)
+            raw.pop("graph_heap_mb")
             raw["scratch_root"] = str(root)
             config_path.write_text(json.dumps(raw))
             self.assertEqual(root, load_config(config_path)["scratch_root"])

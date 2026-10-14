@@ -823,6 +823,10 @@ def load_config(path: Path) -> dict[str, Any]:
     timeout = raw.get("timeout_seconds", 600)
     if not isinstance(timeout, int) or isinstance(timeout, bool) or timeout <= 0:
         raise ValueError("timeout_seconds must be positive")
+    graph_heap_mb = raw.get("graph_heap_mb", 6144)
+    if (isinstance(graph_heap_mb, bool) or not isinstance(graph_heap_mb, int)
+            or graph_heap_mb < 256 or graph_heap_mb > 32768):
+        raise ValueError("graph_heap_mb must be an integer between 256 and 32768")
     scratch_root = (_validate_scratch_root(raw["scratch_root"])
                     if "scratch_root" in raw else None)
     manifest_path = _path(raw.get("weave_manifest"), base, "weave_manifest")
@@ -877,6 +881,7 @@ def load_config(path: Path) -> dict[str, Any]:
             "case_id": raw.get("case_id"),
             "junit": junit, "target": target,
             "target_site_rows": target_site_rows, "timeout_seconds": timeout,
+            "graph_heap_mb": graph_heap_mb,
             "weave_manifest": manifest_path, "static_scope_map": static_map,
             "static_may_scope_map": static_may_map,
             "original_class_dirs": originals, "tool_classpath": tool_cp,
@@ -1561,7 +1566,8 @@ def run_trial(config: dict[str, Any], prepared: Path, trial: Path,
             check_sites[0] if check_sites else config["target"]["throw_site_id"])
         phase_started = time.monotonic()
         graph = analyze_trial(scratch, anchor, prior_trace, config["graph_jar"],
-                              config["static_scope_map"])
+                              config["static_scope_map"],
+                              config.get("graph_heap_mb", 6144))
         phase_seconds["graph_analysis"] = round(time.monotonic() - phase_started, 3)
         static_may = None
         if config["static_may_scope_map"] is not None:

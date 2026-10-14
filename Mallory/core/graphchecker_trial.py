@@ -26,6 +26,11 @@ SUMMARY_FIELDS = ("summaryVersion", "targetSites", "nodeFamilies",
                   "edgeFamilies", "coverageSites")
 
 
+def _heap_option(graph_heap_mb: int) -> str:
+    return (f"-Xmx{graph_heap_mb // 1024}g" if graph_heap_mb % 1024 == 0
+            else f"-Xmx{graph_heap_mb}m")
+
+
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as stream:
@@ -68,7 +73,8 @@ def _supports_healthy_summary(jar: Path) -> bool:
         probe.stdout.strip() == b"mallory-healthy-summary-v1")
 
 
-def _healthy_summary(prior_trace: Path, sites: list[str], jar: Path) -> Path:
+def _healthy_summary(prior_trace: Path, sites: list[str], jar: Path,
+                     graph_heap_mb: int = 6144) -> Path:
     """Cache only exact prior-closure novelty facts; retain the original gzip."""
     trace_sha = _sha256(prior_trace)
     jar_sha = _sha256(jar)
@@ -95,7 +101,7 @@ def _healthy_summary(prior_trace: Path, sites: list[str], jar: Path) -> Path:
                                      delete=False) as temporary:
         temporary_path = Path(temporary.name)
     try:
-        subprocess.run(["java", "-Xmx6g", "-jar", str(jar), "--healthy-summary",
+        subprocess.run(["java", _heap_option(graph_heap_mb), "-jar", str(jar), "--healthy-summary",
                         str(prior_trace), str(temporary_path), target_arg],
                        check=True, timeout=300, stdout=subprocess.DEVNULL,
                        stderr=subprocess.PIPE)
@@ -120,7 +126,11 @@ def _healthy_summary(prior_trace: Path, sites: list[str], jar: Path) -> Path:
 
 def analyze_trial(trial: Path, target_site: str | list[str], prior_trace: Path | None = None,
                   jar: Path | None = None,
-                  static_scope_map: Path | None = None) -> dict[str, Any]:
+                  static_scope_map: Path | None = None,
+                  graph_heap_mb: int = 6144) -> dict[str, Any]:
+    if (isinstance(graph_heap_mb, bool) or not isinstance(graph_heap_mb, int)
+            or graph_heap_mb < 256 or graph_heap_mb > 32768):
+        raise ValueError("graph_heap_mb must be an integer between 256 and 32768")
     selected_jar = (jar or runtime_jar()).resolve()
     if not selected_jar.is_file():
         raise FileNotFoundError(f"build Mallory/graphchecker-runtime first: {selected_jar}")
@@ -139,7 +149,8 @@ def analyze_trial(trial: Path, target_site: str | list[str], prior_trace: Path |
         prior_input = prior_trace
         if prior_trace is not None and prior_trace.suffix == ".gz":
             if _supports_healthy_summary(selected_jar):
-                cached = _healthy_summary(prior_trace, sites, selected_jar)
+                cached = _healthy_summary(prior_trace, sites, selected_jar,
+                                          graph_heap_mb)
                 prior_input = trial / "prior.summary.json"
                 shutil.copyfile(cached, prior_input)
                 if _sha256(cached) != _sha256(prior_input):
@@ -151,7 +162,7 @@ def analyze_trial(trial: Path, target_site: str | list[str], prior_trace: Path |
                 with gzip.open(prior_trace, "rb") as source, prior_input.open("wb") as target:
                     shutil.copyfileobj(source, target, length=1024 * 1024)
         target_arg = json.dumps(sites) if len(sites) > 1 else sites[0]
-        command = ["java", "-Xmx6g", "-jar", str(selected_jar), str(trace), str(graph),
+        command = ["java", _heap_option(graph_heap_mb), "-jar", str(selected_jar), str(trace), str(graph),
                    str(feedback), target_arg]
         if prior_input is not None or static_scope_map is not None:
             command.append(str(prior_input) if prior_input is not None else "-")

@@ -7,6 +7,7 @@ import edu.uva.liftlab.mallory.graphchecker.contract.ExecutionIndex;
 import edu.uva.liftlab.mallory.graphchecker.contract.OccurrenceAddress;
 
 import java.io.IOException;
+import java.io.BufferedWriter;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -1011,12 +1012,23 @@ public final class TrialGraph {
     }
 
     public void write(Path graphFile) throws IOException {
-        List<String> rows = new ArrayList<>();
-        for (JsonObject node : nodes.values()) rows.add(node.toString());
-        for (JsonObject edge : edges.values()) rows.add(edge.toString());
         Path parent = graphFile.toAbsolutePath().getParent();
         if (parent != null) Files.createDirectories(parent);
-        Files.write(graphFile, rows, StandardCharsets.UTF_8);
+        // A large cluster trace can contain hundreds of thousands of graph
+        // rows. Keep only the graph itself in memory; serializing every row
+        // into a second list of strings can exhaust an otherwise sufficient
+        // graph heap before feedback is produced.
+        try (BufferedWriter output = Files.newBufferedWriter(graphFile,
+                StandardCharsets.UTF_8)) {
+            for (JsonObject node : nodes.values()) {
+                output.write(node.toString());
+                output.newLine();
+            }
+            for (JsonObject edge : edges.values()) {
+                output.write(edge.toString());
+                output.newLine();
+            }
+        }
     }
 
     private String nodeFamily(String id) {
