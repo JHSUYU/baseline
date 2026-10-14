@@ -103,7 +103,7 @@ def _score(item: dict[str, Any], completed: int) -> float:
 
 def _retention_score(item: dict[str, Any], completed: int,
                      state: dict[str, Any]) -> float:
-    """Bounded feedback; repeated target loss lowers priority, never eligibility."""
+    """Bounded feedback; all fault sequences remain eligible for exploration."""
     actor_site = _actor_site_key(item["faults"][-1])
     history = state.get("site_target_retention", {}).get(actor_site, {})
     preserved = int(history.get("preserved", 0))
@@ -114,8 +114,15 @@ def _retention_score(item: dict[str, Any], completed: int,
     parent_delta = int(item.get("parent_graph_delta", 0))
     parent_bonus = (24 if parent_delta > 0 else 8) if item.get(
         "parent_target_retained") else 0
+    # A repeated call at one actor/site may disappear on replay when the
+    # first fault changes a retry or cache path. Favor distinct observed
+    # doors slightly while retaining same-site multi-fault sequences.
+    distinct_actor_sites = len({_actor_site_key(fault)
+                                for fault in item["faults"]})
+    diversity_bonus = min(16, 8 * max(0, distinct_actor_sites - 1))
     return (_score(item, completed) + parent_bonus + min(20, 5 * preserved)
             + min(15, 5 * productive)
+            + diversity_bonus
             - min(40, 10 * max(0, lost - preserved))
             - min(18, 3 * attempts))
 

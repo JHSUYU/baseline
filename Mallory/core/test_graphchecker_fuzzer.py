@@ -139,6 +139,31 @@ class GraphCheckerFuzzerTest(unittest.TestCase):
         self.assertEqual("selected_scope_observed",
                          _pick(state["queue"], 5, state)["tier"])
 
+    def test_multifault_diversity_hint_preserves_same_site_exploration(self):
+        state = _new_state(self.config(), self.budget())
+        first = self.door(1, 1, site="first")
+        repeated = {**self.door(2, 1, site="first"),
+                    "node": "nn-1#epoch1"}
+        distinct = self.door(2, 1, site="second")
+
+        def item(last, novelty):
+            return {"key": last["siteId"], "faults": [first, last],
+                    "tier": "observed_closure", "novelty": novelty,
+                    "enqueued_at": 0}
+
+        # Reboot epochs do not turn one actor/site into a new fault door.
+        same_site = item(repeated, 4)
+        distinct_site = item(distinct, 0)
+        self.assertEqual(4, _retention_score(distinct_site, 0, state)
+                         - _retention_score(same_site, 0, state))
+        self.assertEqual("second", _pick([same_site, distinct_site], 0, state)[
+            "faults"][-1]["siteId"])
+        # Diversity changes priority only; sufficient coverage feedback can
+        # still select a repeated site in a multi-fault sequence.
+        self.assertEqual("first", _pick([item(repeated, 12),
+                                          distinct_site], 0, state)[
+            "faults"][-1]["siteId"])
+
     def test_v3_repeated_target_loss_downweights_but_keeps_site(self):
         state = _new_state(self.config(), self.budget())
         doors = [self.door(1, 1, site="lost-site"),
