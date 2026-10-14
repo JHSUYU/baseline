@@ -182,7 +182,8 @@ class PrepareCaseTest(unittest.TestCase):
             source=self.source, protocol_receipt=protocol, protocol_patch=patch,
             runner_classpath_file=runner_cp,
             adapter_jar=adapter, engine_root=engine,
-            communication_mappings=mappings, timeout=120, max_jobs=5))
+            communication_mappings=mappings, timeout=120, max_jobs=5,
+            analysis_heap_mb=8192))
         self.assertEqual(weave["typed_fault_doors"], 1)
         weave_config = prep.read_json(weave_out / "native-weave-config.json")
         self.assertEqual(weave_config["weave_mode"], "region_state")
@@ -196,6 +197,7 @@ class PrepareCaseTest(unittest.TestCase):
         plan_script = (weave_out / "run_original_recorder_scheduler.sh").read_text()
         self.assertIn("CausynthTraceRecorder", plan_script)
         self.assertIn("ConcolicScheduler", plan_script)
+        self.assertEqual(plan_script.count("-Xmx8192m"), 2)
         woven = weave_out / "woven"
         woven.mkdir()
         (woven / "native-original-weave-receipt.json").write_text("{}")
@@ -221,12 +223,14 @@ class PrepareCaseTest(unittest.TestCase):
             java=java, engine_root=engine, weave_config=weave_out / "native-weave-config.json",
             trace_dir=trace, junit_result_log=junit_result,
             schedule_index=index, schedule_plan=plan,
-            runner_classpath_file=runner_cp, max_jobs=5, trials=3,
+            runner_classpath_file=runner_cp, max_jobs=5, analysis_heap_mb=8192,
+            trials=3,
             seconds=60, max_faults=2, timeout=30))
         self.assertEqual(campaign["target_checks"], 1)
         config = prep.read_json(campaign_out / "campaign-config.json")
         self.assertEqual(config["junit"]["method"], "testRun")
         self.assertEqual(config["budget"]["max_faults_per_trial"], 2)
+        self.assertEqual(config["recording"]["graph_analysis_heap_mb"], 8192)
         self.assertEqual(config["target_throw"]["siteId"], self.throw)
 
     def test_existing_solr01_original_artifacts(self):

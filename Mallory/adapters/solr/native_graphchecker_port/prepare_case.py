@@ -416,13 +416,14 @@ def prepare_weave(args: argparse.Namespace) -> dict:
         str(artifacts / name) for name in SIDECARS if name != "region_skeletons.jsonl.gz")
     target_arg += ("," + str(artifacts / "region_skeletons.jsonl.gz") +
                    "," + str(healthy / "recorded"))
-    recorder = [str(args.java), "-Xmx3g", "-Dcausynth.loop.default.bound=3",
+    analysis_heap = f"-Xmx{args.analysis_heap_mb}m"
+    recorder = [str(args.java), analysis_heap, "-Dcausynth.loop.default.bound=3",
                 "-cp", original_cp,
                 "edu.uva.liftlab.graphchecker.runtime.CausynthTraceRecorder",
                 "--trace-dir", str(healthy / "trace"), "--test",
                 row["workload"]["selected_selector"], "--target", target_arg,
                 "--target-occurrence", "first"]
-    scheduler = [str(args.java), "-Xmx3g", "-Dcausynth.loop.default.bound=3",
+    scheduler = [str(args.java), analysis_heap, "-Dcausynth.loop.default.bound=3",
                  "-cp", original_cp,
                  "edu.uva.liftlab.graphchecker.plan.ConcolicScheduler",
                  "--region-plan", str(healthy / "recorded/concolic_region_plan.jsonl"),
@@ -496,6 +497,7 @@ def prepare_campaign(args: argparse.Namespace) -> dict:
                               "region_skeletons": str(args.sidecars.resolve(strict=True) /
                                                       "region_skeletons.jsonl.gz"),
                               "max_jobs": args.max_jobs,
+                              "graph_analysis_heap_mb": args.analysis_heap_mb,
                               "target_occurrence": "first",
                               "recorder_jvm_args": ["-Dcausynth.loop.default.bound=3"],
                               "scheduler_jvm_args": ["-Dcausynth.loop.default.bound=3"]},
@@ -571,6 +573,7 @@ def main() -> None:
     weave.add_argument("--communication-mappings", type=Path,
                        default=COMMUNICATION_MAPPINGS)
     weave.add_argument("--max-jobs", type=int, default=256)
+    weave.add_argument("--analysis-heap-mb", type=int, default=3072)
     campaign = sub.choices["campaign"]
     campaign.add_argument("--source", required=True, type=Path)
     campaign.add_argument("--protocol-receipt", type=Path,
@@ -585,13 +588,15 @@ def main() -> None:
     campaign.add_argument("--runner-classpath-file", required=True, type=Path)
     campaign.add_argument("--engine-root", required=True, type=Path)
     campaign.add_argument("--max-jobs", type=int, default=256)
+    campaign.add_argument("--analysis-heap-mb", type=int, default=3072)
     campaign.add_argument("--trials", type=int, default=64)
     campaign.add_argument("--seconds", type=int, default=1800)
     campaign.add_argument("--max-faults", type=int, default=4)
     args = parser.parse_args()
-    if args.phase == "weave" and min(args.timeout, args.max_jobs) <= 0:
-        parser.error("weave timeout and max jobs must be positive")
-    if args.phase == "campaign" and min(args.timeout, args.max_jobs, args.trials,
+    if args.phase == "weave" and min(args.timeout, args.max_jobs, args.analysis_heap_mb) <= 0:
+        parser.error("weave timeout, max jobs, and analysis heap must be positive")
+    if args.phase == "campaign" and min(args.timeout, args.max_jobs, args.analysis_heap_mb,
+                                        args.trials,
                                         args.seconds, args.max_faults) <= 0:
         parser.error("campaign budget must be positive")
     action = {"scope": prepare_scope, "weave": prepare_weave,
