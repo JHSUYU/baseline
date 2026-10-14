@@ -37,6 +37,7 @@ def _allocated(path: Path) -> int:
     if not path.exists():
         return 0
     total = 0
+    device = path.stat().st_dev
     pending = [path]
     while pending:
         current = pending.pop()
@@ -46,6 +47,8 @@ def _allocated(path: Path) -> int:
             continue  # A JVM may have just removed a temporary file.
         if stat.S_ISLNK(info.st_mode):
             continue
+        if info.st_dev != device:
+            continue  # A read-only frozen evidence bind is input, not local growth.
         total += info.st_blocks * 512
         if stat.S_ISDIR(info.st_mode):
             try:
@@ -208,6 +211,10 @@ def run_one(args: argparse.Namespace) -> dict:
         else:
             if state and state["terminal"]:
                 raise ValueError("new one-fault intent requires a nonterminal checkpoint")
+            if state and state["active"] is not None and (
+                    not isinstance(state["active"].get("key"), str) or
+                    not state["active"]["key"]):
+                raise ValueError("pending fault plan needs a nonempty exact key")
             if completed >= config["budget"]["fault_trials"]:
                 raise ValueError("formal fault budget exhausted")
             intent = {**pins, "start_completed": completed,

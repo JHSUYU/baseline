@@ -186,6 +186,77 @@ class GuardedOneFaultTest(unittest.TestCase):
             self.assertEqual("raw_cap", receipt["guard_reason"])
             self.assertEqual(0, receipt["completed_fault_trials"])
 
+    def test_interrupted_active_reentry_pins_exact_pending_key(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pg0, output, raw = (root / name for name in ("pg0", "output", "raw"))
+            for path in (pg0, output, raw):
+                path.mkdir()
+            config = root / "config.json"
+            config.write_text(json.dumps({"case_id": "CASE", "budget": {
+                "fault_trials": 8}, "runner": {"local_artifact_root": str(raw)}}))
+            args = self._args(pg0, config, output, raw)
+            original = {"completed_fault_trials": 0, "active": {
+                "index": 1, "name": "r0001", "key": "exact-pending"},
+                "terminal": False}
+            campaign._atomic(output / "checkpoint.json", original)
+
+            class EarlyExit:
+                pid = 1
+                returncode = 0
+
+                def poll(self):
+                    return 0
+
+                def wait(self):
+                    return 0
+
+            safe = {"raw_added_bytes": 0, "output_allocated_bytes": 0,
+                    "raw_available_bytes": 10000000,
+                    "output_available_bytes": 10000000,
+                    "memory_available_bytes": 10000000}
+            with (patch.object(guard, "_require_pg0_read_only"),
+                  patch.object(guard, "_require_local", side_effect=lambda path, *_:
+                               path.resolve()),
+                  patch.object(campaign, "_validate_config"),
+                  patch.object(guard, "_sample", return_value=safe),
+                  patch.object(guard.subprocess, "Popen", return_value=EarlyExit())
+                  as popen):
+                self.assertEqual("campaign_exit", guard.run_one(args)["status"])
+                self.assertEqual("campaign_exit", guard.run_one(args)["status"])
+                self.assertEqual(2, popen.call_count)
+                for changed in (None, {"index": 1, "name": "r0001",
+                                       "key": "other-pending"}):
+                    with self.subTest(changed=changed):
+                        campaign._atomic(output / "checkpoint.json",
+                                         {**original, "active": changed})
+                        with self.assertRaisesRegex(ValueError,
+                                                    "pending fault plan changed"):
+                            guard.run_one(args)
+                popen.assert_called()
+
+    def test_new_intent_refuses_empty_active_key(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pg0, output, raw = (root / name for name in ("pg0", "output", "raw"))
+            for path in (pg0, output, raw):
+                path.mkdir()
+            config = root / "config.json"
+            config.write_text(json.dumps({"case_id": "CASE", "budget": {
+                "fault_trials": 8}, "runner": {"local_artifact_root": str(raw)}}))
+            args = self._args(pg0, config, output, raw)
+            campaign._atomic(output / "checkpoint.json", {
+                "completed_fault_trials": 0, "active": {"key": ""},
+                "terminal": False})
+            with (patch.object(guard, "_require_pg0_read_only"),
+                  patch.object(guard, "_require_local", side_effect=lambda path, *_:
+                               path.resolve()),
+                  patch.object(campaign, "_validate_config"),
+                  patch.object(guard.subprocess, "Popen") as popen):
+                with self.assertRaisesRegex(ValueError, "nonempty exact key"):
+                    guard.run_one(args)
+                popen.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()
