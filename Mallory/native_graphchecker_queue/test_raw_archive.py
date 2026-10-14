@@ -1,6 +1,7 @@
 """Archive-backed frozen inspection must fail closed on missing or changed raw."""
 
 import json
+import io
 import shutil
 import tarfile
 import tempfile
@@ -81,5 +82,69 @@ class RawArchiveTest(unittest.TestCase):
         self.trial.symlink_to(self.raw / "raw/r0000/original-graph",
                               target_is_directory=True)
         self.receipt.write_text(self.receipt.read_text() + " ")
+        self.assertFalse(verify_trial_evidence(
+            self.binding, "SOLR-18", self.hashes, self.targets))
+
+    def test_ready_for_reclaim_checks_every_manifest_member(self):
+        extra = self.raw / "raw/r0000/trace/runtime_trace.jsonl"
+        extra.parent.mkdir(parents=True)
+        extra.write_text('{"event":"healthy"}\n')
+        with tarfile.open(self.archive, "w:gz") as tar:
+            tar.add(self.raw, arcname=self.raw.name)
+        files = []
+        for path in sorted(self.raw.rglob("*")):
+            if path.is_file():
+                files.append({"path": path.relative_to(self.raw).as_posix(),
+                              "sha256": _sha(path), "size": path.stat().st_size,
+                              "type": "file"})
+        manifest = self.raw.parent / "manifest.json"
+        manifest.write_text(json.dumps({"base": str(self.raw), "files": files}))
+        self.receipt.write_text(json.dumps({
+            "schema_version": 1, "case_id": "SOLR-18",
+            "status": "ready_for_reclaim", "items": [{
+                "raw_dir": str(self.raw), "archive": str(self.archive),
+                "archive_sha256": _sha(self.archive),
+                "manifest_path": str(manifest),
+                "manifest_sha256": _sha(manifest),
+                "verified_file_count": len(files)}]}))
+        self.binding["raw_archive_evidence"]["sha256"] = _sha(self.receipt)
+        self.assertTrue(verify_trial_evidence(
+            self.binding, "SOLR-18", self.hashes, self.targets))
+        shutil.rmtree(self.raw)
+        self.assertTrue(verify_trial_evidence(
+            self.binding, "SOLR-18", self.hashes, self.targets))
+
+        # Even a file outside the trial summary must remain exact after raw
+        # removal; a newly pinned archive cannot conceal changed trace bytes.
+        changed = self.raw.parent / "changed.tar.gz"
+        with tarfile.open(self.archive, "r:gz") as src, tarfile.open(
+                changed, "w:gz") as dst:
+            for member in src:
+                if member.isfile():
+                    data = src.extractfile(member).read()
+                    if member.name.endswith("runtime_trace.jsonl"):
+                        data = b"X" + data[1:]
+                    dst.addfile(member, io.BytesIO(data))
+                else:
+                    dst.addfile(member)
+        self.receipt.write_text(json.dumps({
+            "schema_version": 1, "case_id": "SOLR-18",
+            "status": "ready_for_reclaim", "items": [{
+                "raw_dir": str(self.raw), "archive": str(changed),
+                "archive_sha256": _sha(changed),
+                "manifest_path": str(manifest),
+                "manifest_sha256": _sha(manifest),
+                "verified_file_count": len(files)}]}))
+        self.binding["raw_archive_evidence"]["sha256"] = _sha(self.receipt)
+        self.assertFalse(verify_trial_evidence(
+            self.binding, "SOLR-18", self.hashes, self.targets))
+
+    def test_ready_for_reclaim_requires_pinned_manifest(self):
+        self.receipt.write_text(json.dumps({
+            "schema_version": 1, "case_id": "SOLR-18",
+            "status": "ready_for_reclaim", "items": [{
+                "raw_dir": str(self.raw), "archive": str(self.archive),
+                "archive_sha256": _sha(self.archive)}]}))
+        self.binding["raw_archive_evidence"]["sha256"] = _sha(self.receipt)
         self.assertFalse(verify_trial_evidence(
             self.binding, "SOLR-18", self.hashes, self.targets))
