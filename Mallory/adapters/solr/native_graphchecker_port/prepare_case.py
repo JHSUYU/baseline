@@ -16,6 +16,7 @@ from pathlib import Path
 import re
 import shlex
 import shutil
+import sys
 import tempfile
 import zipfile
 
@@ -438,20 +439,71 @@ def prepare_weave(args: argparse.Namespace) -> dict:
                  "--static-scope-map", str(artifacts / "static_scope_map.jsonl"),
                  "--output-dir", str(healthy / "scheduled"),
                  "--max-jobs", str(args.max_jobs), "--target-occurrence", "first"]
+    plan_path = output / "run_original_recorder_scheduler.sh"
+    command_runner = MALLORY / "native_graphchecker_campaign/record_command.py"
+    recorder_receipt = healthy / "recorder-command.json"
+    scheduler_receipt = healthy / "scheduler-command.json"
+
+    def executed(command: list[str], stage: str, receipt: Path) -> str:
+        runner = [sys.executable, str(command_runner),
+                  "--script", str(plan_path), "--receipt", str(receipt),
+                  "--stdout", str(healthy / f"{stage}.stdout.log"),
+                  "--stderr", str(healthy / f"{stage}.stderr.log"),
+                  "--", *command]
+        return " ".join(map(shlex.quote, runner))
+
     plan_script = ["#!/usr/bin/env bash", "set -euo pipefail",
                    "mkdir -p " + " ".join(shlex.quote(str(healthy / name))
                                            for name in ("recorded", "scheduled")),
-                   " ".join(map(shlex.quote, recorder)) + " >" +
-                   shlex.quote(str(healthy / "recorder.stdout.log")) + " 2>" +
-                   shlex.quote(str(healthy / "recorder.stderr.log")),
-                   " ".join(map(shlex.quote, scheduler)) + " >" +
-                   shlex.quote(str(healthy / "scheduler.stdout.log")) + " 2>" +
-                   shlex.quote(str(healthy / "scheduler.stderr.log"))]
-    plan_path = output / "run_original_recorder_scheduler.sh"
+                   "rm -f " + " ".join(map(shlex.quote,
+                                          (str(recorder_receipt), str(scheduler_receipt)))),
+                   executed(recorder, "recorder", recorder_receipt),
+                   executed(scheduler, "scheduler", scheduler_receipt)]
     write_once(plan_path, ("\n".join(plan_script) + "\n").encode())
     plan_path.chmod(0o755)
     return {"case_id": row["case_id"], "phase": "region_state_prepared",
             "typed_fault_doors": receipt["typed_fault_doors"], "output": str(output)}
+
+
+def bind_executed_schedule(campaign: dict, trace_dir: Path,
+                           schedule_index: Path, schedule_plan: Path,
+                           engine_jar: Path) -> bool:
+    """Seal only a successful original Solr plan from this exact preparation."""
+    healthy_root = trace_dir.resolve(strict=True).parent
+    recorder_receipt = healthy_root / "recorder-command.json"
+    scheduler_receipt = healthy_root / "scheduler-command.json"
+    if not recorder_receipt.exists() and not scheduler_receipt.exists():
+        return False
+    from Mallory.native_graphchecker_campaign import campaign as native
+
+    script = healthy_root.parent / "run_original_recorder_scheduler.sh"
+    command_runner = MALLORY / "native_graphchecker_campaign/record_command.py"
+    for receipt, stage in ((recorder_receipt, "recorder"),
+                           (scheduler_receipt, "scheduler")):
+        evidence = read_json(receipt)
+        if (evidence.get("schema_version") != 1 or
+                evidence.get("returncode") != 0 or
+                evidence.get("script") != str(script.resolve(strict=True)) or
+                evidence.get("script_sha256") != sha256(script) or
+                evidence.get("command_runner_sha256") != sha256(command_runner) or
+                evidence.get("stdout_sha256") != sha256(healthy_root /
+                                                        f"{stage}.stdout.log") or
+                evidence.get("stderr_sha256") != sha256(healthy_root /
+                                                        f"{stage}.stderr.log")):
+            raise ValueError("original Solr command execution receipt changed")
+    if (schedule_index.resolve(strict=True) !=
+            healthy_root / "scheduled/runtime_workflow_schedule_index.json" or
+            schedule_plan.resolve(strict=True) !=
+            healthy_root / "scheduled/execution_task_plan.jsonl"):
+        raise ValueError("original Solr schedule is outside recorded preparation")
+    if native.JAR.resolve(strict=True) != engine_jar.resolve(strict=True):
+        raise ValueError("original Solr preparation and campaign engine differ")
+    receipt = healthy_root / "precomputed-schedule.json"
+    native.seal_precomputed_schedule(
+        campaign, healthy_root / "recorded", healthy_root / "scheduled",
+        recorder_receipt, scheduler_receipt, receipt)
+    campaign["recording"]["precomputed_schedule"] = str(receipt)
+    return True
 
 
 def prepare_campaign(args: argparse.Namespace) -> dict:
@@ -538,6 +590,10 @@ def prepare_campaign(args: argparse.Namespace) -> dict:
                 "timeout_seconds": args.timeout}
     if admission_mode == "region_state_no_schedule":
         campaign["recording"]["admission_mode"] = admission_mode
+    else:
+        bind_executed_schedule(campaign, args.trace_dir,
+                               args.schedule_index, args.schedule_plan,
+                               engine_jar)
     emit_json(output / "campaign-config.json", campaign)
     emit_json(output / "preparation-receipt.json", {"case_id": row["case_id"],
               "selected_junit": row["workload"]["selected_selector"],

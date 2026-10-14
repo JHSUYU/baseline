@@ -215,6 +215,9 @@ class PrepareCaseTest(unittest.TestCase):
         self.assertIn("CausynthTraceRecorder", plan_script)
         self.assertIn("ConcolicScheduler", plan_script)
         self.assertEqual(plan_script.count("-Xmx8192m"), 2)
+        self.assertEqual(plan_script.count("record_command.py"), 2)
+        self.assertIn("recorder-command.json", plan_script)
+        self.assertIn("scheduler-command.json", plan_script)
         woven = weave_out / "woven"
         woven.mkdir()
         (woven / "native-original-weave-receipt.json").write_text("{}")
