@@ -701,6 +701,116 @@ class TerminalSuccessorImportTest(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "completed campaign"):
                 core.build_predecessor_pins(config_path, source)
 
+    def _extended_fixture(self, root: Path) -> tuple[Path, Path, dict, dict]:
+        config_path, source, old = self._fixture(root)
+        checked_trial = source / "trials" / "r0001"
+        events = checked_trial / "iteration-native" / "fault-events.jsonl"
+        events.parent.mkdir()
+        events.write_text('{"kind":"FAULT_APPLIED","seq":1}\n',
+                          encoding="utf-8")
+        result_path = checked_trial / "result.json"
+        result = core._load(result_path)
+        result["fault_events_sha256"] = core._sha(events)
+        core._atomic(result_path, result)
+        config = core._load(config_path)
+        config["budget"] = {**config["budget"], "max_faults_per_trial": 6}
+        config["predecessor_campaign"] = core.build_predecessor_pins(
+            config_path, source, successor_max_faults_per_trial=6)
+        return config_path, source, old, config
+
+    def test_monotonic_depth_import_pins_all_executed_events(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            config_path, source, old, config = self._extended_fixture(root)
+            core._validate_config(config)
+            legacy_pins = core.build_predecessor_pins(config_path, source)
+            for name in ("tested_plan_keys_sha256", "source_result_tree_sha256",
+                         "source_unmatched_event_tree_sha256"):
+                self.assertEqual(legacy_pins[name],
+                                 config["predecessor_campaign"][name])
+            original_shas = {str(path): core._sha(path) for path in (
+                config_path, source / "checkpoint.json", source / "summary.json",
+                *(source / "trials" / name / rel for name in ("r0001", "r0002")
+                  for rel in ("result.json", "iteration-native/fault-events.jsonl")))}
+            state = {**old, "budget": config["budget"]}
+            receipt, queue, _, seen = core._predecessor_snapshot(
+                config, root / "successor", state)
+            self.assertEqual(1, len(queue))
+            self.assertEqual(2, receipt["tested_plan_count"])
+            self.assertEqual(3, len(seen))
+            self.assertEqual(4, receipt["source_fault_depth_limit"])
+            self.assertEqual(6, receipt["successor_fault_depth_limit"])
+            self.assertEqual(config["predecessor_campaign"][
+                "source_all_event_tree_sha256"], receipt[
+                    "source_all_event_tree_sha256"])
+            self.assertEqual(original_shas, {path: core._sha(Path(path))
+                                             for path in original_shas})
+
+    def test_depth_extension_rejects_legacy_pin_and_tampered_receipts(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            config_path, source, old, config = self._extended_fixture(root)
+            state = {**old, "budget": config["budget"]}
+            legacy = {**config, "predecessor_campaign": {
+                key: value for key, value in config["predecessor_campaign"].items()
+                if key != "source_all_event_tree_sha256"}}
+            with self.assertRaisesRegex(ValueError, "all-trial event"):
+                core._predecessor_snapshot(legacy, root / "successor", state)
+            stale = {**config, "predecessor_campaign": {
+                **config["predecessor_campaign"],
+                "source_all_event_tree_sha256": "0" * 64}}
+            with self.assertRaisesRegex(ValueError, "receipt hash changed"):
+                core._predecessor_snapshot(stale, root / "successor", state)
+            malformed_state = {**state, "budget": {
+                **state["budget"], "max_faults_per_trial": True}}
+            with self.assertRaisesRegex(ValueError, "monotonic extension"):
+                core._predecessor_snapshot(config, root / "successor",
+                                           malformed_state)
+            for name, rel, message in (
+                    ("r0001", "iteration-native/fault-events.jsonl",
+                     "all-trial native fault receipts changed"),
+                    ("r0002", "result.json", "receipt hash changed")):
+                path = source / "trials" / name / rel
+                original = path.read_bytes()
+                try:
+                    path.write_bytes(original + b" ")
+                    with self.assertRaisesRegex(ValueError, message):
+                        core._predecessor_snapshot(config, root / "successor", state)
+                finally:
+                    path.write_bytes(original)
+            events = source / "trials" / "r0001" / "iteration-native" / "fault-events.jsonl"
+            original = events.read_bytes()
+            try:
+                events.unlink()
+                with self.assertRaisesRegex(ValueError, "all-trial native fault"):
+                    core._predecessor_snapshot(config, root / "successor", state)
+            finally:
+                events.write_bytes(original)
+
+    def test_depth_extension_rejects_downgrade_duplicate_and_source_overdepth(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            config_path, source, old, config = self._extended_fixture(root)
+            with self.assertRaisesRegex(ValueError, "monotonically extend"):
+                core.build_predecessor_pins(
+                    config_path, source, successor_max_faults_per_trial=3)
+            state = {**old, "budget": config["budget"]}
+            result_path = source / "trials" / "r0002" / "result.json"
+            original = result_path.read_bytes()
+            try:
+                result = core._load(result_path)
+                result["faults"] = core._load(
+                    source / "trials" / "r0001" / "result.json")["faults"]
+                core._atomic(result_path, result)
+                with self.assertRaisesRegex(ValueError, "duplicated"):
+                    core._predecessor_snapshot(config, root / "successor", state)
+                result["faults"] = result["faults"] * 5
+                core._atomic(result_path, result)
+                with self.assertRaisesRegex(ValueError, "exact fault sequence"):
+                    core._predecessor_snapshot(config, root / "successor", state)
+            finally:
+                result_path.write_bytes(original)
+
 
 class NativeQueueDiversityTest(unittest.TestCase):
     """The queue should reach distinct doors without losing deep sequences."""

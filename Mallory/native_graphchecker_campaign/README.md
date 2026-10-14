@@ -143,11 +143,21 @@ pins = build_predecessor_pins(Path("/absolute/source-config.json"),
 # Add pins as the successor config's "predecessor_campaign" value.
 ```
 
+To increase the maximum fault depth, request the new limit when pinning the
+source (for example, `successor_max_faults_per_trial=6` for a depth-four
+source). The successor budget must use that same limit. Depth can stay equal or
+increase; it cannot decrease. A depth increase requires every completed fault
+trial to have an exact `fault-events.jsonl` file whose SHA-256 matches its
+saved result, and adds `source_all_event_tree_sha256` to the predecessor pins.
+The import rechecks this aggregate, the tested plan keys, and every result
+file, while validating old queued and executed plans against the *source*
+depth limit. Legacy same-depth pins remain valid.
+
 The pins contain absolute paths and SHA-256 hashes for the source config,
 checkpoint, and summary, plus aggregates over its exact tested plan keys,
 per-trial result files, and unmatched native fault receipts. Import refuses an
 active, inconsistent, or mutated source. It requires the same original JUnit,
-target, runner, static scope, weave, recorder origin, and fault-depth limit;
+target, runner, static scope, weave, and recorder origin;
 the successor may set a fresh time and trial budget. A fresh healthy JUnit runs
 in the new directory. The successor keeps the source's untested queue and
 feedback, removes every completed exact plan (including old unmatched retries),

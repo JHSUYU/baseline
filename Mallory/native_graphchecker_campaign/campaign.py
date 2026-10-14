@@ -229,10 +229,13 @@ def _validate_config(config: dict[str, Any]) -> None:
         names = ("config", "checkpoint", "summary")
         derived = ("tested_plan_keys_sha256", "source_result_tree_sha256",
                    "source_unmatched_event_tree_sha256")
+        optional = {"source_all_event_tree_sha256"}
         if (not isinstance(predecessor, dict) or
-                set(predecessor) != ({name for item in names
-                                      for name in (item, item + "_sha256")} |
-                                     set(derived)) or
+                set(predecessor) not in (
+                    {name for item in names for name in (item, item + "_sha256")} |
+                    set(derived),
+                    {name for item in names for name in (item, item + "_sha256")} |
+                    set(derived) | optional) or
                 any(not isinstance(predecessor[name], str) or
                     not predecessor[name].startswith("/") or
                     not isinstance(predecessor[name + "_sha256"], str) or
@@ -240,7 +243,7 @@ def _validate_config(config: dict[str, Any]) -> None:
                     for name in names) or
                 any(not isinstance(predecessor[name], str) or
                     not SHA256_HEX.fullmatch(predecessor[name])
-                    for name in derived)):
+                    for name in set(derived) | (set(predecessor) & optional))):
             raise ValueError("predecessor_campaign needs exact paths and SHA-256 pins")
 
 
@@ -2509,9 +2512,31 @@ def _predecessor_snapshot(config: dict[str, Any], root: Path,
                  "runner_classpath_artifacts"):
         if source.get(name) != state.get(name):
             raise ValueError(f"predecessor {name} pin differs from successor")
-    if (source.get("budget", {}).get("max_faults_per_trial") !=
-            state["budget"]["max_faults_per_trial"]):
-        raise ValueError("predecessor and successor fault-depth limits differ")
+    source_budget = source_config.get("budget")
+    checkpoint_budget = source.get("budget")
+    successor_budget = config.get("budget")
+    state_budget = state.get("budget")
+    if any(not isinstance(budget, dict) for budget in (
+            source_budget, checkpoint_budget, successor_budget, state_budget)):
+        raise ValueError("predecessor fault-depth budget is malformed")
+    source_depth = source_budget.get("max_faults_per_trial")
+    checkpoint_depth = checkpoint_budget.get("max_faults_per_trial")
+    successor_depth = successor_budget.get("max_faults_per_trial")
+    state_depth = state_budget.get("max_faults_per_trial")
+    if (not isinstance(source_depth, int) or isinstance(source_depth, bool) or
+            not 1 <= source_depth <= MAX_FAULTS or
+            not isinstance(checkpoint_depth, int) or
+            isinstance(checkpoint_depth, bool) or checkpoint_depth != source_depth or
+            not isinstance(successor_depth, int) or
+            isinstance(successor_depth, bool) or
+            not source_depth <= successor_depth <= MAX_FAULTS or
+            not isinstance(state_depth, int) or isinstance(state_depth, bool) or
+            state_depth != successor_depth):
+        raise ValueError("predecessor fault-depth limit is not a valid monotonic extension")
+    expanding_depth = successor_depth > source_depth
+    all_events_pinned = "source_all_event_tree_sha256" in pins
+    if expanding_depth and not all_events_pinned:
+        raise ValueError("fault-depth extension needs an all-trial event SHA-256 pin")
 
     seen = source.get("seen_plan_keys")
     queue = source.get("queue")
@@ -2526,7 +2551,7 @@ def _predecessor_snapshot(config: dict[str, Any], root: Path,
 
     def plan_key(faults: Any) -> str:
         if (not isinstance(faults, list) or not 1 <= len(faults) <=
-                state["budget"]["max_faults_per_trial"]):
+                source_depth):
             raise ValueError("predecessor exact fault sequence is invalid")
         for fault in faults:
             if (not isinstance(fault, dict) or
@@ -2543,6 +2568,7 @@ def _predecessor_snapshot(config: dict[str, Any], root: Path,
     tested: set[str] = set()
     result_digest = hashlib.sha256()
     event_digest = hashlib.sha256()
+    all_event_digest = hashlib.sha256()
     successors = []
     trial_names = set()
     for item in trials:
@@ -2567,12 +2593,23 @@ def _predecessor_snapshot(config: dict[str, Any], root: Path,
         key = plan_key(result["faults"])
         if key not in seen_set:
             raise ValueError("predecessor tested plan is absent from plan index")
+        if expanding_depth and key in tested:
+            raise ValueError("predecessor executed plan key is duplicated")
         tested.add(key)
         result_digest.update(item["result"].encode("utf-8") + b"\0")
         result_digest.update(bytes.fromhex(_sha(result_file)))
+        events_file = (source_root / "trials" / name / "iteration-native" /
+                       "fault-events.jsonl")
+        if all_events_pinned:
+            if (not events_file.is_file() or
+                    events_file.resolve(strict=True) != events_file or
+                    _sha(events_file) != result.get("fault_events_sha256")):
+                raise ValueError("predecessor all-trial native fault receipts changed")
+            all_event_digest.update(events_file.relative_to(source_root).as_posix()
+                                    .encode("utf-8") + b"\0")
+            all_event_digest.update(bytes.fromhex(_sha(events_file)))
         if result["status"] == "unmatched" and result.get(
                 "runner_mode") == "region_state":
-            events_file = source_root / "trials" / name / "iteration-native" / "fault-events.jsonl"
             if (events_file.resolve(strict=True) != events_file or
                     _sha(events_file) != result.get("fault_events_sha256")):
                 raise ValueError("predecessor native fault receipts changed")
@@ -2603,6 +2640,8 @@ def _predecessor_snapshot(config: dict[str, Any], root: Path,
         "source_pins": {name: pins[name + "_sha256"]
                         for name in ("config", "checkpoint", "summary")},
         "source_status": source["status"],
+        "source_fault_depth_limit": source_depth,
+        "successor_fault_depth_limit": successor_depth,
         "source_completed_fault_trials": len(trials),
         "source_seen_plan_count": len(seen),
         "tested_plan_keys_sha256": hashlib.sha256("\n".join(sorted(tested))
@@ -2613,14 +2652,19 @@ def _predecessor_snapshot(config: dict[str, Any], root: Path,
         "pending_untested_plan_count": len(imported_queue),
         "observed_actor_successor_groups": len(successors),
     }
+    if all_events_pinned:
+        receipt["source_all_event_tree_sha256"] = all_event_digest.hexdigest()
     if verify_derived and any(receipt[name] != pins[name] for name in (
             "tested_plan_keys_sha256", "source_result_tree_sha256",
-            "source_unmatched_event_tree_sha256")):
+            "source_unmatched_event_tree_sha256") +
+            (("source_all_event_tree_sha256",) if all_events_pinned else ())):
         raise ValueError("predecessor tested-plan or trial receipt hash changed")
     return receipt, imported_queue, successors, seen_set
 
 
-def build_predecessor_pins(config_path: Path, terminal_root: Path) -> dict[str, str]:
+def build_predecessor_pins(
+        config_path: Path, terminal_root: Path, *,
+        successor_max_faults_per_trial: int | None = None) -> dict[str, str]:
     """Build reviewable SHA pins for a completed campaign; never mutate it."""
     config_path = config_path.resolve(strict=True)
     terminal_root = terminal_root.resolve(strict=True)
@@ -2630,12 +2674,29 @@ def build_predecessor_pins(config_path: Path, terminal_root: Path) -> dict[str, 
     pins = {name: str(path) for name, path in paths.items()}
     pins.update({name + "_sha256": _sha(path) for name, path in paths.items()})
     prospective = _load(config_path)
+    source_budget = prospective.get("budget")
+    source_depth = (source_budget.get("max_faults_per_trial")
+                    if isinstance(source_budget, dict) else None)
+    if successor_max_faults_per_trial is not None:
+        if (not isinstance(successor_max_faults_per_trial, int) or
+                isinstance(successor_max_faults_per_trial, bool) or
+                not isinstance(source_depth, int) or isinstance(source_depth, bool) or
+                not source_depth <= successor_max_faults_per_trial <= MAX_FAULTS):
+            raise ValueError("successor fault depth must monotonically extend source")
+        prospective["budget"] = {**prospective["budget"],
+                                  "max_faults_per_trial": successor_max_faults_per_trial}
+        if successor_max_faults_per_trial > source_depth:
+            pins["source_all_event_tree_sha256"] = "0" * 64
     prospective["predecessor_campaign"] = pins
     source = _load(paths["checkpoint"])
+    successor_state = {**source, "budget": prospective["budget"]}
     receipt, _, _, _ = _predecessor_snapshot(
-        prospective, terminal_root.parent, source, verify_derived=False)
-    for name in ("tested_plan_keys_sha256", "source_result_tree_sha256",
-                 "source_unmatched_event_tree_sha256"):
+        prospective, terminal_root.parent, successor_state, verify_derived=False)
+    derived_names = ("tested_plan_keys_sha256", "source_result_tree_sha256",
+                     "source_unmatched_event_tree_sha256")
+    if "source_all_event_tree_sha256" in pins:
+        derived_names += ("source_all_event_tree_sha256",)
+    for name in derived_names:
         pins[name] = receipt[name]
     return pins
 
