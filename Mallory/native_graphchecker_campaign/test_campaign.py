@@ -933,6 +933,115 @@ class NativeQueueDiversityTest(unittest.TestCase):
             state["fault_id_successes"][identity] = 1
         self.assertEqual("far", core._pick(state)["key"])
 
+    def test_v10_retained_feedback_fairly_selects_depth_four_five_six(self) -> None:
+        stale = [self._item(f"RPC#stale{i}", f"stale{i}", depth=3,
+                            novelty=60) for i in range(64)]
+        shallow = self._item("RPC#shallow", "shallow", depth=1, novelty=60)
+        state = self._state([*stale, shallow], completed=10, version=10)
+        state["budget"]["max_faults_per_trial"] = 6
+        state["seen_plan_keys"] = []
+        state.update(seen_node_families=[], seen_edge_families=[],
+                     seen_branch_outcomes=[])
+
+        def complete(item: dict, completed: int, next_depth: int, *,
+                     graph: bool = False, closure: bool = False,
+                     phase: str = "before_selected_target",
+                     peer: str = "unknown") -> dict:
+            state["completed_fault_trials"] = completed
+            active = {**item, "index": completed + 1,
+                      "name": f"r{completed + 1:04d}",
+                      "target_phase": phase, "peer_relation": peer}
+            state["active"] = active
+            door = {"fault": {
+                "siteId": f"RPC#depth{next_depth}", "node": "peer-a",
+                "actorEpochOrdinal": 0, "ordinal": 1,
+                "exceptionClass": "java.io.IOException"},
+                "tier": "observed_closure", "target_phase": phase,
+                "peer_relation": peer}
+            result = {
+                "faults": active["faults"], "elapsed_seconds": 1.0,
+                "status": "checked", "runner_mode": "region_state",
+                "strict_injection": True, "native_target_retained": True,
+                "post_fault_target_check_observed": True,
+                "fault_in_target_closure": closure,
+                "target_temporal_admitted": False,
+                "target_exception_triggered": False,
+                "eligible_doors": [door],
+                "native_delta": {"newNodeFamilies": ["novel-node"] if graph
+                                 else [], "newClosureEdgeFamilies": [],
+                                 "newBranchOutcomeIds": []},
+            }
+            core._accept(state, result, active["name"])
+            self.assertTrue(state["trials"][-1]["depth_feedback"][
+                "strict_post_fault_target"])
+            return core._pick(state)
+
+        parent = self._item("RPC#parent", "parent", depth=3)
+        for fault in parent["faults"]:
+            fault.update(node="peer-a", actorEpochOrdinal=0, ordinal=1)
+        depth4 = complete(parent, 10, 4, graph=True)
+        self.assertEqual(4, len(depth4["faults"]))
+        self.assertTrue(depth4["depth_feedback"]["graph_delta"])
+        depth5 = complete(depth4, 26, 5,
+                          peer="same_peer_before_target")
+        self.assertEqual(5, len(depth5["faults"]))
+        self.assertTrue(depth5["depth_feedback"]["same_peer_before_target"])
+        depth6 = complete(depth5, 42, 6, closure=True,
+                          phase="after_selected_target")
+        self.assertEqual(6, len(depth6["faults"]))
+        self.assertTrue(depth6["depth_feedback"]["fault_in_closure"])
+        self.assertTrue(all(item in state["queue"] for item in stale))
+
+    def test_v10_depth_slot_requires_strict_post_fault_target_evidence(self) -> None:
+        active = {"target_phase": "before_selected_target",
+                  "peer_relation": "same_peer_before_target"}
+        result = {"runner_mode": "region_state", "strict_injection": True,
+                  "native_target_retained": True,
+                  "post_fault_target_check_observed": False,
+                  "fault_in_target_closure": True,
+                  "target_temporal_admitted": True}
+        feedback = core._depth_feedback(active, result, novelty=30)
+        self.assertFalse(feedback["strict_post_fault_target"])
+        self.assertEqual(0, feedback["score"])
+        depth4 = self._item("RPC#deep", "deep", depth=4)
+        depth4["depth_feedback"] = feedback
+        shallow = self._item("RPC#shallow", "shallow", depth=1)
+        state = self._state([depth4, shallow], completed=11, version=10)
+        state["budget"]["max_faults_per_trial"] = 6
+        self.assertEqual("shallow", core._pick(state)["key"])
+
+    def test_v9_order_ignores_new_depth_feedback_field(self) -> None:
+        deep = self._item("RPC#deep", "deep", depth=4)
+        deep["depth_feedback"] = {"strict_post_fault_target": True,
+                                  "score": 6}
+        shallow = self._item("RPC#shallow", "shallow", depth=1)
+        for version, expected in ((9, "shallow"), (10, "deep")):
+            state = self._state([dict(deep), dict(shallow)],
+                                completed=11, version=version)
+            state["budget"]["max_faults_per_trial"] = 6
+            self.assertEqual(expected, core._pick(state)["key"])
+
+    def test_v10_depth_slot_preserves_replay_waiting_and_outside_slots(self) -> None:
+        deep = self._item("RPC#deep", "deep", depth=4)
+        deep["depth_feedback"] = {"strict_post_fault_target": True,
+                                  "score": 2}
+        replay = self._item("RPC#replay", "replay", depth=1)
+        state = self._state([deep, replay], completed=11, version=10)
+        state["budget"]["max_faults_per_trial"] = 6
+        state["required_replay_plan_keys"] = ["replay"]
+        self.assertEqual("replay", core._pick(state)["key"])
+        self.assertEqual([deep], state["queue"])
+
+        old = self._item("RPC#old", "old", depth=4, enqueued_at=1)
+        fresh = self._item("RPC#fresh", "fresh", depth=4, enqueued_at=10)
+        state = self._state([fresh, old], completed=14, version=10)
+        self.assertEqual("old", core._pick(state)["key"])
+
+        outside = self._item("RPC#outside", "outside",
+                             tier="outside_closure")
+        state = self._state([deep, outside], completed=15, version=10)
+        self.assertEqual("outside", core._pick(state)["key"])
+
     def test_v6_actor_and_proximity_metadata_survive_checkpoint(self) -> None:
         state = self._state([], version=6)
         state["seen_plan_keys"] = []

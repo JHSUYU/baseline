@@ -62,7 +62,7 @@ that session, compares observed target closure families and branch outcomes,
 and updates a persistent fault queue. It gives most queue slots to observed
 closure doors and reserves one in eight fault trials for doors outside it.
 
-New campaigns use scheduler version 9. The last fault's `siteId` and
+New campaigns use scheduler version 10. The last fault's `siteId` and
 `exceptionClass` form a fault ID; physical actors and event ordinals remain in
 the exact injection selector but do not split this scheduling identity. A
 new or less-tested fault ID outranks repeated IDs before closure novelty and
@@ -104,6 +104,19 @@ prefers less-tested fault IDs and lower ordinals, then spreads across later
 observed positions. If no eligible repeat exists, ordinary version 8 ordering
 applies. This changes only queue priority; eligibility, target retention,
 strict injection, and the bug oracle remain unchanged.
+
+Version 10 reserves a separate one-in-sixteen slot for fault sequences of
+depth four through six. The slot cycles its preferred depth from four to five
+to six, then repeats, so a queued deeper sequence cannot be displaced forever
+by depth-three plans with less-tested fault IDs. Its candidates must descend
+from a strictly injected run that retained the selected target check after the
+last fault. At least one graph delta, observed fault-in-closure relation, or
+admitted target temporal relation is required; an observed pretarget phase and
+a matching RPC peer together also qualify. Phase and peer are scheduling
+hints, not proof of causality. The selected depth is bounded by the campaign's
+existing maximum fault count. The existing outside-closure, oldest-waiting,
+retry, and depth-three slots keep their positions. Checkpoints created under
+earlier scheduler versions keep their original ordering.
 
 When a REGION_STATE trial misses its exact selector, versions 3 through 5 verify any already applied prefix
 against its original door receipts, then offers alternate actors observed at

@@ -35,7 +35,7 @@ from .static_may import rpc_producer_sites
 from .peer_identity import rank_region_doors_by_peer
 
 SCHEMA = 1
-SCHEDULER_VERSION = 9
+SCHEDULER_VERSION = 10
 FAULT_FIELDS = ("siteId", "node", "actorEpochOrdinal", "occurrenceId",
                 "ordinal", "exceptionClass")
 SELECTOR_FIELDS = ("siteId", "node", "actorEpochOrdinal", "ordinal",
@@ -1084,7 +1084,8 @@ def _plan_key(faults: list[dict[str, Any]]) -> str:
 
 
 def _enqueue(state: dict[str, Any], doors: list[dict[str, Any]],
-             prefix: list[dict[str, Any]], novelty: int) -> None:
+             prefix: list[dict[str, Any]], novelty: int,
+             depth_feedback: dict[str, Any] | None = None) -> None:
     if len(prefix) >= state["budget"]["max_faults_per_trial"]:
         return
     seen = set(state["seen_plan_keys"])
@@ -1107,6 +1108,8 @@ def _enqueue(state: dict[str, Any], doors: list[dict[str, Any]],
             item["target_order_distance"] = door.get("target_order_distance")
         if state.get("scheduler_version", 1) >= 8:
             item["peer_relation"] = door.get("peer_relation", "unknown")
+        if state.get("scheduler_version", 1) >= 10 and prefix:
+            item["depth_feedback"] = dict(depth_feedback or {})
         state["queue"].append(item)
     state["seen_plan_keys"] = sorted(seen)
 
@@ -1159,7 +1162,7 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
     version = state.get("scheduler_version", 1)
     if version == 1:
         return _pick_v1(state)
-    if version not in (2, 3, 4, 5, 6, 7, 8, SCHEDULER_VERSION):
+    if version not in (2, 3, 4, 5, 6, 7, 8, 9, SCHEDULER_VERSION):
         raise ValueError(f"unsupported native scheduler version: {version}")
     queue = state["queue"]
     if not queue:
@@ -1170,6 +1173,30 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
     # Keep one of eight slots for observed doors outside the target closure.
     outside_slot = bool(outside) and completed % 8 == 7
     candidates = outside if outside_slot else inside or outside
+    deep_fair_slot = False
+    if version >= 10 and not outside_slot and completed % 16 == 11:
+        # The v6 depth>=3 slot still sorts fault ID before depth. Reserve a
+        # separate slot for depth 4..6 descendants of a strictly injected
+        # trial that reached the target after its final fault and supplied
+        # target-directed graph, closure, temporal, or peer feedback. This
+        # does not admit any new fault door or alter the target oracle.
+        max_depth = min(6, state["budget"]["max_faults_per_trial"])
+        deep = [item for item in candidates if
+                4 <= len(item["faults"]) <= max_depth and
+                isinstance(item.get("depth_feedback"), dict) and
+                item["depth_feedback"].get("strict_post_fault_target") is True and
+                isinstance(item["depth_feedback"].get("score"), int) and
+                not isinstance(item["depth_feedback"]["score"], bool) and
+                item["depth_feedback"]["score"] >= 2]
+        if deep:
+            desired = 4 + (completed // 16) % 3
+            depths = {len(item["faults"]) for item in deep}
+            chosen_depth = (desired if desired in depths else
+                            max((depth for depth in depths if depth < desired),
+                                default=min(depths)))
+            candidates = [item for item in deep if
+                          len(item["faults"]) == chosen_depth]
+            deep_fair_slot = True
     repeat_phase_slot = False
     if version >= 9 and not outside_slot and completed % 16 == 12:
         # A late occurrence of an already successful I/O site may observe a
@@ -1211,7 +1238,7 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
         deep = [item for item in candidates if len(item["faults"]) >= 3]
         if deep:
             candidates = deep
-    elif version >= 4 and not outside_slot:
+    elif version >= 4 and not outside_slot and not deep_fair_slot:
         # A target-reaching seed can reveal hundreds of descendants. If all
         # descendants inherit its novelty, the old score selects deep plans
         # repeatedly even when their second actor often runs before the
@@ -1262,7 +1289,9 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
             recurrence = (-ordinal if isinstance(ordinal, int) and
                           not isinstance(ordinal, bool) and ordinal > 0
                           else -10**9)
-            return (-attempts(item),
+            return (*((item["depth_feedback"]["score"],)
+                      if deep_fair_slot else ()),
+                    -attempts(item),
                     -state["fault_id_successes"].get(fault_id, 0),
                     {"observed_closure": 4, "static_producer_frontier": 3,
                      "pre_target_actor": 2,
@@ -1343,6 +1372,33 @@ def _novelty(state: dict[str, Any], feedback: dict[str, Any]) -> int:
         state["seen_value_read_from_families"] = sorted(seen | set(reads))
         score += 2 * len(new)
     return min(60, score)
+
+
+def _depth_feedback(active: dict[str, Any], result: dict[str, Any],
+                    novelty: int) -> dict[str, Any]:
+    """Bounded depth priority from an actually applied, target-reaching seed.
+
+    Native receipt phase and peer are scheduling hints. A graph delta or
+    observed closure membership supplies a stronger signal. Neither this
+    score nor the slot changes graph membership or the bug verdict.
+    """
+    retained = (result.get("runner_mode") == "region_state" and
+                result.get("strict_injection") is True and
+                result.get("native_target_retained") is True and
+                result.get("post_fault_target_check_observed") is True)
+    graph = novelty > 0
+    closure = result.get("fault_in_target_closure") is True
+    temporal = result.get("target_temporal_admitted") is True
+    phase = active.get("target_phase") == "before_selected_target"
+    peer = active.get("peer_relation") == "same_peer_before_target"
+    score = (2 * int(graph) + 2 * int(closure) + 2 * int(temporal) +
+             int(phase) + int(peer)) if retained else 0
+    return {"strict_post_fault_target": retained,
+            "graph_delta": graph, "fault_in_closure": closure,
+            "target_temporal_admitted": temporal,
+            "observed_pre_target_phase": phase,
+            "same_peer_before_target": peer,
+            "score": score}
 
 
 def _region_doors(rows: list[dict[str, Any]], summary: dict[str, Any],
@@ -2283,6 +2339,8 @@ def _accept(state: dict[str, Any], result: dict[str, Any], name: str) -> None:
                 retry["target_order_distance"] = active.get("target_order_distance")
             if state.get("scheduler_version", 1) >= 8:
                 retry["peer_relation"] = active.get("peer_relation", "unknown")
+            if state.get("scheduler_version", 1) >= 10:
+                retry["depth_feedback"] = active.get("depth_feedback", {})
             state["queue"].append(retry)
             record["retry_enqueued"] = active.get("attempt", 0) + 1
         if (state.get("scheduler_version", 1) >= 3 and
@@ -2307,7 +2365,12 @@ def _accept(state: dict[str, Any], result: dict[str, Any], name: str) -> None:
                        result["post_fault_target_check_observed"] is not True
                        else _novelty(state, result["native_delta"]))
             record["target_closure_novelty"] = novelty
-            _enqueue(state, result["eligible_doors"], active["faults"], novelty)
+            depth_feedback = None
+            if state.get("scheduler_version", 1) >= 10:
+                depth_feedback = _depth_feedback(active, result, novelty)
+                record["depth_feedback"] = depth_feedback
+            _enqueue(state, result["eligible_doors"], active["faults"],
+                     novelty, depth_feedback)
     state["active"] = None
     _finish_status(state)
 
@@ -2716,6 +2779,9 @@ def run_campaign(config_path: Path, root: Path,
                 if state.get("scheduler_version", 1) >= 8:
                     state["active"]["peer_relation"] = selected.get(
                         "peer_relation", "unknown")
+                if state.get("scheduler_version", 1) >= 10:
+                    state["active"]["depth_feedback"] = selected.get(
+                        "depth_feedback", {})
                 _atomic(checkpoint, state)
             _resume_active(config, admitted, root, state)
         _atomic(checkpoint, state)
