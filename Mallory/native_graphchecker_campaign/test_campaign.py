@@ -1025,6 +1025,7 @@ class NativeLocalWorkRootTest(unittest.TestCase):
 
     def test_opt_in_raw_artifacts_are_local_with_durable_trial_receipt(self) -> None:
         config = json.loads(json.dumps(self.config))
+        config["runner"].pop("local_work_root")
         config["runner"]["local_artifact_root"] = str(self.local)
         core._validate_config(config)
         trial = self.campaign / "trials/r0001"
@@ -1040,6 +1041,10 @@ class NativeLocalWorkRootTest(unittest.TestCase):
                 core, "DEPENDENCIES", self.dependencies):
             execution = core._execute_junit(config, self.admitted, trial, [])
         self.assertEqual(0, execution["return_code"])
+        process = core._load(trial / "process.json")
+        self.assertTrue(Path(process["junit_workdir"]).is_relative_to(local))
+        self.assertEqual(str((local / "workdir").resolve()),
+                         process["junit_workdir"])
         (trial / "iteration-native/fault-events.jsonl").write_text("{}\n")
         (trial / "original-graph/summary.json").write_text("{}\n")
         saved = core._save_trial_result(trial, execution, 0.0)
@@ -1093,6 +1098,43 @@ class NativeLocalWorkRootTest(unittest.TestCase):
         self.assertFalse(copy.is_symlink())
         self.assertEqual(source.read_bytes(), copy.read_bytes())
         self.assertEqual(core._sha(copy), lineage["durable_copy_sha256"])
+
+    def test_run_trial_uses_local_cwd_and_graph_before_recorder(self) -> None:
+        config = json.loads(json.dumps(self.config))
+        config["runner"].pop("local_work_root")
+        config["runner"]["local_artifact_root"] = str(self.local)
+        trial = self.campaign / "trials/r0000"
+        seen = {}
+
+        def fake_junit(case, admitted, current, faults):
+            cwd = core._junit_workdir(case, current)
+            seen["cwd"] = cwd.resolve()
+            self.assertTrue(cwd.is_symlink())
+            self.assertTrue((current / "original-graph").is_symlink())
+            self.assertTrue(cwd.resolve().is_relative_to(self.local))
+            iteration = current / "iteration-native"
+            (iteration / "fault-events.jsonl").write_text("")
+            (iteration / "trace/runtime_trace.jsonl").write_text("{}\n")
+            return {"return_code": 0, "timed_out": False,
+                    "elapsed_seconds": 0.01}
+
+        def fake_recorder(trace, graph, **kwargs):
+            self.assertTrue(graph.is_symlink())
+            self.assertTrue(graph.resolve().is_relative_to(self.local))
+            (graph / "summary.json").write_text('{"targetReached":false}\n')
+            return {"targetReached": False, "targetEvidence": {}}
+
+        with patch.object(core, "_verify_pins"), patch.object(
+                core, "_execute_junit", side_effect=fake_junit), patch.object(
+                core, "_region_schedule"), patch.object(
+                core, "record_region_state", side_effect=fake_recorder):
+            admitted = json.loads(json.dumps(self.admitted))
+            admitted["weave_config"]["java"] = str(self.java)
+            result = core._run_trial(config, admitted, trial, [], None)
+        self.assertEqual("blocked_healthy_target", result["status"])
+        self.assertTrue(seen["cwd"].is_dir())
+        self.assertEqual(core._sha(trial / "local-artifacts.json"),
+                         result["local_artifacts_manifest_sha256"])
 
     def test_root_validation_rejects_shared_or_nested_paths(self) -> None:
         invalid = json.loads(json.dumps(self.config))

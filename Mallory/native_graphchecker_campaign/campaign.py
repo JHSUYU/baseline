@@ -1356,7 +1356,10 @@ def _junit_workdir(config: dict[str, Any], trial: Path) -> Path:
     configured = config["runner"].get("local_work_root")
     if configured is None:
         workdir = trial / "iteration-native" / "workdir"
-        workdir.mkdir(parents=True)
+        # With local_artifact_root this is already a symlink to the fresh
+        # attempt directory. Path.mkdir(exist_ok=True) accepts that directory
+        # while retaining the legacy in-campaign directory behavior.
+        workdir.mkdir(parents=True, exist_ok=True)
         return workdir
     campaign = trial.parent.parent.resolve()
     _validate_local_work_root(config, campaign)
@@ -1442,8 +1445,9 @@ def _execute_junit(config: dict[str, Any], admitted: dict[str, Any],
                            "start_ticks": _start_ticks(process.pid),
                            "argv": argv, "started_at": time.time(),
                            "host": os.uname().nodename}
-        if runner.get("local_work_root") is not None:
-            process_receipt["junit_workdir"] = str(workdir)
+        if (runner.get("local_work_root") is not None or
+                runner.get("local_artifact_root") is not None):
+            process_receipt["junit_workdir"] = str(workdir.resolve())
         _atomic(trial / "process.json", process_receipt)
         try:
             code = process.wait(timeout=config["timeout_seconds"])
