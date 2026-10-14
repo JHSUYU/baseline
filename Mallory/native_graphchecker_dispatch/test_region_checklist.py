@@ -8,6 +8,8 @@ import shutil
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import patch
 
 from Mallory.native_graphchecker_dispatch import checklist
 from Mallory.native_graphchecker_feedback.region_state_graph import (
@@ -101,6 +103,61 @@ class RegionChecklistTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "graph or target receipt changed"):
             checklist._verified_region_summary(trial, result, config,
                                                 graph_fixture.engine)
+
+    def test_alternate_upstream_junit_requires_pinned_source_and_target(self) -> None:
+        item = next(row for row in checklist.load_inventory(
+            checklist.DEFAULT_INVENTORY)[0] if row["case_id"] == "HDFS-11")
+        source_root = self.root / "upstream"
+        source = source_root / "test/AlternateTest.java"
+        source.parent.mkdir(parents=True)
+        source.write_text("@Test void original() { runCluster(); }\n")
+        compiled = self.root / "AlternateTest.class"
+        compiled.write_bytes(b"original compiled test")
+        resolved = self.root / "target-occurrence.json"
+        site = item["target"]["site_id"].rsplit("#", 1)[0] + "#u8"
+        resolved.write_text(json.dumps({"checkSiteId": site,
+                                        "reachedEventCount": 2}) + "\n")
+        healthy = self.root / "result.json"
+        healthy.write_text(json.dumps({"status": "healthy_seed",
+                                       "junit_passed": True,
+                                       "native_target_retained": True}) + "\n")
+        executed = "example.AlternateTest#original"
+        attestation = {
+            "case_id": item["case_id"],
+            "binding_type": "alternate_unchanged_original_junit",
+            "inventory_recorded_selector": item["workload"]["selected_selector"],
+            "executed_selector": executed,
+            "target_throw_site_id": item["target"]["site_id"],
+            "target_site_id": site,
+            "healthy_junit_exit_code": 0,
+            "healthy_target_reached_event_count": 2,
+            "source_root": str(source_root), "source_commit": "original-revision",
+            "source_path": str(source), "source_sha256": checklist._sha(source),
+            "compiled_test_class_path": str(compiled),
+            "compiled_test_class_sha256": checklist._sha(compiled),
+            "resolver_receipt_path": str(resolved),
+            "resolver_receipt_sha256": checklist._sha(resolved),
+            "native_official_healthy_result_path": str(healthy),
+            "native_official_healthy_result_sha256": checklist._sha(healthy),
+        }
+        attestation_path = self.root / "attestation.json"
+        attestation_path.write_text(json.dumps(attestation) + "\n")
+        binding = self.root / "binding.json"
+        binding.write_text(json.dumps({
+            "mode": "native_region_state_case_binding",
+            "alternate_original_junit": {
+                "attestation_path": str(attestation_path),
+                "attestation_sha256": checklist._sha(attestation_path)}}) + "\n")
+        config = {"junit": {"class": "example.AlternateTest",
+                            "method": "original"}, "target_site": site}
+        git = [SimpleNamespace(stdout="original-revision\n"),
+               SimpleNamespace(stdout="")]
+        with patch("Mallory.native_graphchecker_dispatch.checklist.subprocess.run",
+                   side_effect=git):
+            checklist._verify_alternate_junit(item, binding, config)
+        compiled.write_bytes(b"changed compiled test")
+        with self.assertRaisesRegex(ValueError, "compiled_test_class_path"):
+            checklist._verify_alternate_junit(item, binding, config)
 
 
 if __name__ == "__main__":

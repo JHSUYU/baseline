@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import hashlib
+import fcntl
 import multiprocessing
 import os
 import tempfile
@@ -114,6 +116,65 @@ class NativeQueueTest(unittest.TestCase):
         self.assertEqual(receipt["target_site"], self.item["target"]["site_id"])
         self.assertEqual(len(list((self.state_root / ".native-queue/attempts" /
                                    self.case_id).glob("*.json"))), 1)
+
+    def test_bound_region_campaign_skips_live_lock_and_adopts_native_root(self) -> None:
+        native_config = self.root / "immutable-native-config.json"
+        native_root = self.root / "immutable-native-state"
+        native_root.mkdir()
+        native = {"case_id": self.case_id + "-native-fixture",
+                  "runner": {"mode": "region_state",
+                             "jvm_args": self.config["runner"]["jvm_args"]},
+                  "junit": {"class": "OriginalTest", "method": "testOriginal"}}
+        native_config.write_text(json.dumps(native) + "\n")
+        row_sha = hashlib.sha256(json.dumps(
+            self.item, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+        self.config_file.write_text(json.dumps({
+            "schema_version": 1, "mode": "native_region_state_case_binding",
+            "inventory_case_id": self.case_id,
+            "inventory_row_sha256": row_sha,
+            "native_case_id": native["case_id"],
+            "native_config_path": str(native_config),
+            "native_config_sha256": sha(native_config),
+            "native_state_path": str(native_root)}) + "\n")
+        calls = []
+
+        def inspect(*_args):
+            done = (native_root / "summary.json").exists()
+            return {"terminal_disposition": "tested_no_target_throw" if done else
+                    "resumable", "native_tested_complete": done,
+                    "fault_trials": 1, "strict_fault_trials": 1,
+                    "target_retained_fault_trials": 1,
+                    "target_throw_trials": 0, "candidate_trials": 0,
+                    "elapsed_seconds": 3.0}
+
+        def runner(config_file, root):
+            calls.append((config_file, root))
+            (root / "summary.json").write_text('{"terminal":true}\n')
+            return {}
+
+        args = dict(host="node1", slot=0, slots=1,
+                    inventory=DEFAULT_INVENTORY,
+                    ownership_file=DEFAULT_OWNERSHIP,
+                    config_root=self.config_root, state_root=self.state_root,
+                    scratch_root=self.scratch_root,
+                    isolation_file=self.isolation, only_case=self.case_id,
+                    min_memory_gib=0, min_state_gib=0,
+                    min_scratch_gib=0, runner=runner)
+        with (native_root / ".campaign.lock").open("a+") as lock, patch(
+                "Mallory.native_graphchecker_queue.queue.physical_host"), patch(
+                "Mallory.native_graphchecker_queue.queue.inspect_case",
+                side_effect=inspect):
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            self.assertEqual(0, run_worker(**args)["completed"])
+            self.assertEqual([], calls)
+            fcntl.flock(lock, fcntl.LOCK_UN)
+            self.assertEqual(1, run_worker(**args)["completed"])
+        self.assertEqual([(native_config, native_root)], calls)
+        receipt = json.loads((self.state_root / ".native-queue/completions" /
+                              f"{self.case_id}.json").read_text())
+        self.assertEqual(native["case_id"], receipt["native_case_id"])
+        self.assertEqual(sha(self.config_file), receipt["binding_sha256"])
+        self.assertEqual(str(native_root / "summary.json"), receipt["summary_path"])
 
     def test_bind_collision_never_publishes_completion(self) -> None:
         case_root = self.state_root / self.case_id

@@ -22,7 +22,8 @@ from typing import Any, Callable
 
 from Mallory.native_graphchecker_campaign.campaign import run_campaign
 from Mallory.native_graphchecker_dispatch.checklist import (
-    DEFAULT_INVENTORY, DEFAULT_OWNERSHIP, inspect_case, load_inventory,
+    DEFAULT_INVENTORY, DEFAULT_OWNERSHIP, _native_case_files,
+    inspect_case, load_inventory,
     load_ownership, load_reviews,
 )
 
@@ -92,13 +93,31 @@ def port_conflict_logs(root: Path) -> list[str]:
     return hits
 
 
+def _campaign_running(root: Path) -> bool:
+    """A separately launched native campaign keeps this lock for its run."""
+    lock_path = root / ".campaign.lock"
+    if not lock_path.is_file():
+        return False
+    with lock_path.open("a+") as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            return True
+        finally:
+            # Closing releases a successful probe; a failed probe owns nothing.
+            pass
+    return False
+
+
 def completion(item: dict, row: dict, config_file: Path, state_root: Path,
-               queue_root: Path) -> dict[str, Any]:
+               queue_root: Path, *, native_root: Path | None = None,
+               binding_file: Path | None = None) -> dict[str, Any]:
     """Publish only a terminal result already audited by native inspect_case."""
     if row["terminal_disposition"] not in TERMINAL:
         raise ValueError("native case has no audited terminal disposition")
     case_id = item["case_id"]
-    conflicts = port_conflict_logs(state_root / case_id)
+    native_root = native_root or state_root / case_id
+    conflicts = port_conflict_logs(native_root)
     if conflicts:
         marker = queue_root / "invalid-overlap" / f"{case_id}.json"
         atomic(marker, {"schema_version": 1, "case_id": case_id,
@@ -107,7 +126,8 @@ def completion(item: dict, row: dict, config_file: Path, state_root: Path,
         raise ValueError(f"native JUnit port collision requires review: {marker}")
     if (queue_root / "invalid-overlap" / f"{case_id}.json").exists():
         raise ValueError("prior native port collision requires review")
-    summary = state_root / case_id / "summary.json"
+    summary = native_root / "summary.json"
+    native_config = obj(config_file)
     receipt = {
         "schema_version": 1, "method": "original_native_graphchecker_campaign",
         "case_id": case_id, "system": item["system"],
@@ -116,6 +136,10 @@ def completion(item: dict, row: dict, config_file: Path, state_root: Path,
         "target_site": item["target"]["site_id"],
         "target_exception": item["target"].get("target_exception"),
         "original_junit": item["workload"].get("selected_selector"),
+        "executed_original_junit": (native_config.get("junit", {}).get("class", "")
+                                    + "#" + native_config.get("junit", {}).get(
+                                        "method", "")),
+        "native_case_id": native_config.get("case_id", case_id),
         "terminal_disposition": row["terminal_disposition"],
         "native_tested_complete": row["native_tested_complete"],
         "bug_candidate": row["terminal_disposition"] == "tested_candidate",
@@ -130,6 +154,9 @@ def completion(item: dict, row: dict, config_file: Path, state_root: Path,
         "summary_path": str(summary.resolve()),
         "summary_sha256": sha(summary),
     }
+    if binding_file is not None:
+        receipt["binding_path"] = str(binding_file.resolve())
+        receipt["binding_sha256"] = sha(binding_file)
     _same_or_write(queue_root / "completions" / f"{case_id}.json", receipt)
     return receipt
 
@@ -249,13 +276,15 @@ def pilot_receipt(path: Path, inventory: Path, ownership_file: Path,
     row = inspect_case(item, owners[case_id], config_root, state_root)
     if row["native_tested_complete"] is not True:
         raise ValueError("native pilot is not an audited completed fuzz check")
+    config_file, native_root = _native_case_files(item, config_root, state_root)
     if ((state_root / ".native-queue" / "invalid-overlap" /
-         f"{case_id}.json").exists() or port_conflict_logs(state_root / case_id)):
+         f"{case_id}.json").exists() or port_conflict_logs(native_root)):
         raise ValueError("native pilot contains a JUnit port collision")
-    config_file = config_root / f"{case_id}.json"
-    summary = state_root / case_id / "summary.json"
+    summary = native_root / "summary.json"
+    entry = config_root / f"{case_id}.json"
     if (receipt.get("config_sha256") != sha(config_file) or
-            receipt.get("summary_sha256") != sha(summary)):
+            receipt.get("summary_sha256") != sha(summary) or
+            (entry != config_file and receipt.get("binding_sha256") != sha(entry))):
         raise ValueError("native pilot evidence changed")
     return receipt
 
@@ -292,17 +321,22 @@ def run_worker(*, host: str, slot: int, slots: int, inventory: Path,
             case_id = item["case_id"]
             if owners[case_id] != host or (only_case and case_id != only_case):
                 continue
-            root = state_root / case_id
+            config_file, root = _native_case_files(item, config_root, state_root)
+            binding_file = config_root / f"{case_id}.json"
+            if config_file == binding_file:
+                binding_file = None
             row = inspect_case(item, host, config_root, state_root,
                                reviewed.get(case_id))
             if row["terminal_disposition"] in TERMINAL:
                 validate_isolation(profile, item["system"], case_id,
-                                   obj(config_root / f"{case_id}.json"),
+                                   obj(config_file),
                                    owners, host)
-                completion(item, row, config_root / f"{case_id}.json",
-                           state_root, queue_root)
+                completion(item, row, config_file, state_root, queue_root,
+                           native_root=root, binding_file=binding_file)
                 continue
             if row["terminal_disposition"] not in ("ready", "resumable"):
+                continue
+            if _campaign_running(root):
                 continue
             root.mkdir(parents=True, exist_ok=True)
             with (root / ".dispatch.lock").open("a+") as case_lock:
@@ -314,10 +348,11 @@ def run_worker(*, host: str, slot: int, slots: int, inventory: Path,
                                    reviewed.get(case_id))
                 if row["terminal_disposition"] not in ("ready", "resumable"):
                     continue
-                config_file = config_root / f"{case_id}.json"
+                if _campaign_running(root):
+                    continue
                 isolation = validate_isolation(profile, item["system"], case_id,
                                                obj(config_file), owners, host)
-                _resources(state_root, scratch_root, min_memory_gib,
+                _resources(root, scratch_root, min_memory_gib,
                            min_state_gib, min_scratch_gib)
                 scratch = scratch_root / case_id
                 if scratch.is_symlink():
@@ -328,6 +363,8 @@ def run_worker(*, host: str, slot: int, slots: int, inventory: Path,
                 attempt = {"schema_version": 1, "case_id": case_id,
                            "host": host, "slot": slot, "pid": os.getpid(),
                            "config_sha256": sha(config_file),
+                           "binding_sha256": (sha(binding_file) if binding_file
+                                              is not None else None),
                            "isolation_sha256": sha(isolation_file),
                            "port_policy": isolation,
                            "scratch_path": str(scratch.resolve()),
@@ -347,7 +384,8 @@ def run_worker(*, host: str, slot: int, slots: int, inventory: Path,
                     if after["terminal_disposition"] not in TERMINAL:
                         raise RuntimeError("native campaign returned without audited terminal result")
                     result = completion(item, after, config_file, state_root,
-                                        queue_root)
+                                        queue_root, native_root=root,
+                                        binding_file=binding_file)
                     attempt.update(status="complete", ended_at=time.time(),
                                    completion_path=str(queue_root / "completions" /
                                                        f"{case_id}.json"))
@@ -388,8 +426,9 @@ def run_host(*, host: str, slots: int, pilot: Path, inventory: Path,
         row = inspect_case(item, host, config_root, state_root)
         if row["terminal_disposition"] not in ("ready", "resumable"):
             continue
+        config_file, _ = _native_case_files(item, config_root, state_root)
         validate_isolation(profile, item["system"], case_id,
-                           obj(config_root / f"{case_id}.json"), owners, host)
+                           obj(config_file), owners, host)
     # Each worker owns a separate process and slot lock. Case locks arbitrate
     # selection, including after a controller crash or a second invocation.
     processes = []

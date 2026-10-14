@@ -43,7 +43,8 @@ FIELDS = (
     "case_id", "system", "system_version", "owner", "terminal_disposition",
     "native_tested_complete", "target_source_path", "target_class",
     "target_method", "target_line", "target_check_code", "target_exception",
-    "junit_workload", "native_config", "native_target_site", "status",
+    "junit_workload", "executed_junit_workload", "native_config",
+    "native_target_site", "status",
     "fault_trials", "strict_fault_trials", "target_retained_fault_trials",
     "strict_target_retained_fault_trials", "target_throw_trials",
     "candidate_trials", "elapsed_seconds", "elapsed_basis", "evidence",
@@ -105,7 +106,8 @@ def _native_case_files(item: dict, config_root: Path,
             document.get("inventory_case_id") != case_id or
             document.get("inventory_row_sha256") != row_sha or
             not isinstance(native_id, str) or
-            not native_id.startswith(case_id + "-native-") or
+            not (native_id == case_id or
+                 native_id.startswith(case_id + "-native-")) or
             not config.is_absolute() or not root.is_absolute() or
             config.is_symlink() or root.is_symlink() or
             _sha(config) != document.get("native_config_sha256") or
@@ -113,6 +115,63 @@ def _native_case_files(item: dict, config_root: Path,
             _object(config).get("runner", {}).get("mode") != "region_state"):
         raise ValueError("native REGION_STATE case binding changed identity or inputs")
     return config, root
+
+
+def _verify_alternate_junit(item: dict, entry: Path, config: dict) -> None:
+    """Attribute an alternate unchanged upstream JUnit only with source proof."""
+    binding = _object(entry)
+    if binding.get("mode") != "native_region_state_case_binding":
+        raise ValueError("alternate original JUnit requires native case binding")
+    alternate = binding.get("alternate_original_junit")
+    if not isinstance(alternate, dict) or set(alternate) != {
+            "attestation_path", "attestation_sha256"}:
+        raise ValueError("alternate original JUnit lacks pinned attestation")
+    receipt_path = Path(alternate["attestation_path"])
+    if (not receipt_path.is_absolute() or receipt_path.is_symlink() or
+            _sha(receipt_path) != alternate["attestation_sha256"]):
+        raise ValueError("alternate original JUnit attestation changed")
+    receipt = _object(receipt_path)
+    inventory_selector = item["workload"].get("selected_selector")
+    executed = (config["junit"]["class"] + "#" + config["junit"]["method"])
+    if (receipt.get("case_id") != item["case_id"] or
+            receipt.get("binding_type") != "alternate_unchanged_original_junit" or
+            receipt.get("inventory_recorded_selector") != inventory_selector or
+            receipt.get("executed_selector") != executed or
+            receipt.get("target_throw_site_id") != item["target"]["site_id"] or
+            receipt.get("target_site_id") != config["target_site"] or
+            receipt.get("healthy_junit_exit_code") != 0 or
+            not isinstance(receipt.get("healthy_target_reached_event_count"), int) or
+            receipt["healthy_target_reached_event_count"] < 1):
+        raise ValueError("alternate JUnit attestation differs from target/inventory")
+    for path_field, sha_field in (
+            ("source_path", "source_sha256"),
+            ("compiled_test_class_path", "compiled_test_class_sha256"),
+            ("resolver_receipt_path", "resolver_receipt_sha256"),
+            ("native_official_healthy_result_path",
+             "native_official_healthy_result_sha256")):
+        path = Path(receipt[path_field])
+        if (not path.is_absolute() or path.is_symlink() or
+                _sha(path) != receipt[sha_field]):
+            raise ValueError(f"alternate JUnit source/proof changed: {path_field}")
+    source_root = Path(receipt["source_root"])
+    if (not source_root.is_absolute() or
+            subprocess.run(["git", "-C", str(source_root), "rev-parse", "HEAD"],
+                           capture_output=True, text=True, check=True).stdout.strip()
+            != receipt["source_commit"] or
+            subprocess.run(["git", "-C", str(source_root), "status", "--porcelain",
+                            "--", str(Path(receipt["source_path"]).relative_to(
+                                source_root))], capture_output=True, text=True,
+                           check=True).stdout.strip()):
+        raise ValueError("alternate JUnit upstream source revision changed")
+    resolved = _object(Path(receipt["resolver_receipt_path"]))
+    healthy = _object(Path(receipt["native_official_healthy_result_path"]))
+    if (resolved.get("checkSiteId") != config["target_site"] or
+            resolved.get("reachedEventCount") != receipt[
+                "healthy_target_reached_event_count"] or
+            healthy.get("status") != "healthy_seed" or
+            healthy.get("junit_passed") is not True or
+            healthy.get("native_target_retained") is not True):
+        raise ValueError("alternate JUnit did not retain original target")
 
 
 def verify_preparation_receipt(item: dict, config_file: Path,
@@ -794,6 +853,7 @@ def inspect_case(item: dict, owner: str, config_root: Path, state_root: Path,
         "target_check_code": target.get("check_code", ""),
         "target_exception": target.get("target_exception", ""),
         "junit_workload": workload.get("selected_selector", ""),
+        "executed_junit_workload": "",
         "native_config": str(config_file) if config_file.is_file() else "",
         "native_target_site": "", "status": "",
         "terminal_disposition": "needs_native_preparation",
@@ -833,11 +893,14 @@ def inspect_case(item: dict, owner: str, config_root: Path, state_root: Path,
     try:
         config = _object(config_file)
         bound = config_file != config_root / f"{case_id}.json"
-        if ((not bound and config.get("case_id") != case_id) or
-                config.get("junit") != {
-                "class": workload.get("test_class"),
-                "method": workload.get("test_method")}):
-            raise ValueError("native config does not use inventory's original JUnit")
+        if not bound and config.get("case_id") != case_id:
+            raise ValueError("native config does not use inventory case ID")
+        expected_junit = {"class": workload.get("test_class"),
+                          "method": workload.get("test_method")}
+        if config.get("junit") != expected_junit:
+            _verify_alternate_junit(item, config_root / f"{case_id}.json", config)
+        row["executed_junit_workload"] = (
+            config["junit"]["class"] + "#" + config["junit"]["method"])
         native._validate_config(config)
         inventory_method = target.get("site_id", "").split("#", 1)[0]
         native_method = config["target_site"].split("#", 1)[0]
@@ -878,7 +941,8 @@ def inspect_case(item: dict, owner: str, config_root: Path, state_root: Path,
         audited = auditor(config["case_id"], config_file, case_root, checkpoint,
                           _object(case_root / "summary.json"))
         row.update(audited)
-    except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError) as failure:
+    except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError,
+            subprocess.CalledProcessError) as failure:
         row.update(terminal_disposition="receipt_error", status="blocked",
                    reason=str(failure), evidence=str(checkpoint_file))
     return row
