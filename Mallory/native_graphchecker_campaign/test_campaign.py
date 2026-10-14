@@ -61,6 +61,27 @@ class NativeAdmissionLineageTest(unittest.TestCase):
         self.assertEqual(["-Dcausynth.trace.mode=region-state",
                           "-Dcausynth.trace.test=ExampleTest#testOperation"], args)
 
+    def test_unmatched_region_selector_gets_bounded_retry(self) -> None:
+        faults = [{"siteId": "I/O#u1", "node": "peer-1",
+                   "actorEpochOrdinal": 0, "ordinal": 1,
+                   "exceptionClass": "java.io.IOException"}]
+        state = {"active": {"index": 1, "name": "r0001", "faults": faults,
+                            "key": "plan-1", "tier": "pre_target_actor",
+                            "novelty": 0, "attempt": 0},
+                 "elapsed_seconds": 0.0, "completed_fault_trials": 0,
+                 "trials": [], "queue": [], "status": "running", "terminal": False,
+                 "budget": {"fault_trials": 10, "seconds": 60,
+                            "max_faults_per_trial": 4},
+                 "healthy": {"status": "healthy_seed"}}
+        result = {"faults": faults, "elapsed_seconds": 1.0,
+                  "status": "unmatched", "runner_mode": "region_state",
+                  "strict_injection": False, "native_target_retained": False,
+                  "target_exception_triggered": False}
+        core._accept(state, result, "r0001")
+        self.assertEqual(1, state["queue"][0]["attempt"])
+        self.assertEqual(1, state["trials"][0]["retry_enqueued"])
+        self.assertEqual("running", state["status"])
+
 
 class WireTemporalProofTest(unittest.TestCase):
     """Two exact actors; VM event IDs and receipt order are separate clocks."""

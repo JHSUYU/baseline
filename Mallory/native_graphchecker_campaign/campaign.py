@@ -36,6 +36,7 @@ FAULT_FIELDS = ("siteId", "node", "actorEpochOrdinal", "occurrenceId",
 SELECTOR_FIELDS = ("siteId", "node", "actorEpochOrdinal", "ordinal",
                    "exceptionClass")
 MAX_FAULTS = 10
+MAX_UNMATCHED_RETRIES = 2
 
 
 def _sha(path: Path) -> str:
@@ -622,7 +623,8 @@ def _enqueue(state: dict[str, Any], doors: list[dict[str, Any]],
         seen.add(key)
         state["queue"].append({"faults": faults, "key": key,
                                "tier": door["tier"], "novelty": novelty,
-                               "enqueued_at": state["completed_fault_trials"]})
+                               "enqueued_at": state["completed_fault_trials"],
+                               "attempt": 0})
     state["seen_plan_keys"] = sorted(seen)
 
 
@@ -638,7 +640,8 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
         {"observed_closure": 100, "pre_target_actor": 60,
          "outside_closure": 15}.get(item["tier"], 15) +
         item["novelty"] + 3 * len(item["faults"]) +
-        min(20, completed - item["enqueued_at"]), item["key"]))
+        min(20, completed - item["enqueued_at"]) -
+        25 * item.get("attempt", 0), item["key"]))
     queue.remove(selected)
     return selected
 
@@ -952,7 +955,9 @@ def _run_trial(config: dict[str, Any], admitted: dict[str, Any],
     execution = _execute_junit(config, admitted, trial, faults)
     iteration = trial / "iteration-native"
     result: dict[str, Any] = {"schema_version": SCHEMA, "case_id": config["case_id"],
-                              "faults": faults, **execution}
+                              "faults": faults,
+                              "runner_mode": config["runner"].get("mode", "concolic"),
+                              **execution}
     result["fault_events_sha256"] = (_sha(iteration / "fault-events.jsonl")
                                       if (iteration / "fault-events.jsonl").is_file()
                                       else None)
@@ -1101,6 +1106,15 @@ def _accept(state: dict[str, Any], result: dict[str, Any], name: str) -> None:
                   "target_exception_triggered": result["target_exception_triggered"],
                   "elapsed_seconds": result["elapsed_seconds"]}
         state["trials"].append(record)
+        if (result["status"] == "unmatched" and
+                result.get("runner_mode") == "region_state" and
+                active.get("attempt", 0) < MAX_UNMATCHED_RETRIES):
+            state["queue"].append({
+                "faults": active["faults"], "key": active["key"],
+                "tier": active["tier"], "novelty": active["novelty"],
+                "enqueued_at": state["completed_fault_trials"],
+                "attempt": active.get("attempt", 0) + 1})
+            record["retry_enqueued"] = active.get("attempt", 0) + 1
         if result["status"] in ("checked", "candidate"):
             novelty = _novelty(state, result["native_delta"])
             record["target_closure_novelty"] = novelty
@@ -1224,7 +1238,11 @@ def run_campaign(config_path: Path, root: Path) -> dict[str, Any]:
                 index = state["next_trial_index"]
                 state["next_trial_index"] += 1
                 state["active"] = {"index": index, "name": f"r{index:04d}",
-                                   "faults": selected["faults"]}
+                                   "faults": selected["faults"],
+                                   "key": selected["key"],
+                                   "tier": selected["tier"],
+                                   "novelty": selected["novelty"],
+                                   "attempt": selected.get("attempt", 0)}
                 _atomic(checkpoint, state)
             _resume_active(config, admitted, root, state)
         _atomic(checkpoint, state)
