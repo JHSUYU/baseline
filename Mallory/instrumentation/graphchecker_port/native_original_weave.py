@@ -19,7 +19,8 @@ import zipfile
 
 
 MALLORY = Path(__file__).resolve().parents[2]
-ENGINE = MALLORY / "static_scope_port" / "original_engine"
+ENGINE = Path(os.environ.get("MALLORY_NATIVE_ENGINE_ROOT") or
+              MALLORY / "static_scope_port" / "original_engine").resolve()
 REVISION = "c4a90033c654737206466ed36ce837c5b3c12457"
 JAR = ENGINE / "target" / "mallory-original-graphchecker-seed-1.0-SNAPSHOT.jar"
 ENGINE_RECEIPT = ENGINE / "target" / "native-original-engine-receipt.json"
@@ -237,6 +238,12 @@ def inputs(config_file: Path):
         if not isinstance(native_fault, str) or not native_fault:
             raise ValueError("native_fault_manifest must name a static manifest")
         Path(native_fault).resolve(strict=True)
+    communication_mappings = config.get("communication_mappings")
+    if communication_mappings is not None:
+        if not isinstance(communication_mappings, str) or not communication_mappings:
+            raise ValueError("communication_mappings must name a static mapping file")
+        if not Path(communication_mappings).resolve(strict=True).is_file():
+            raise ValueError("communication_mappings must be a file")
     process_dirs = config.get("process_dirs", [])
     if (not isinstance(process_dirs, list) or
             not all(isinstance(item, str) and item for item in process_dirs)):
@@ -266,6 +273,9 @@ def run(config_file: Path) -> dict:
     if config.get("native_fault_manifest"):
         command.append("-Dmallory.native.fault.manifest=" + str(
             Path(config["native_fault_manifest"]).resolve(strict=True)))
+    if config.get("communication_mappings"):
+        command.append("-Dcausynth.communication.mappings=" + str(
+            Path(config["communication_mappings"]).resolve(strict=True)))
     if config.get("process_dirs"):
         command.append("-Dcausynth.process.dirs=" + os.pathsep.join(
             str(Path(item).resolve(strict=True)) for item in config["process_dirs"]))
@@ -317,6 +327,9 @@ def run(config_file: Path) -> dict:
     if config.get("native_fault_manifest"):
         receipt["native_fault_manifest_sha256"] = digest(
             Path(config["native_fault_manifest"]).resolve(strict=True))
+    if config.get("communication_mappings"):
+        receipt["communication_mappings_sha256"] = digest(
+            Path(config["communication_mappings"]).resolve(strict=True))
     if config.get("process_dirs"):
         receipt["process_dir_artifacts"] = dependency_digests(os.pathsep.join(
             config["process_dirs"]))
@@ -351,6 +364,11 @@ def verify_existing(config_file: Path) -> dict:
     if config.get("native_fault_manifest"):
         observed["native_fault_manifest_sha256"] = digest(
             Path(config["native_fault_manifest"]).resolve(strict=True))
+    if config.get("communication_mappings"):
+        observed["communication_mappings_sha256"] = digest(
+            Path(config["communication_mappings"]).resolve(strict=True))
+    elif receipt.get("communication_mappings_sha256") is not None:
+        raise ValueError("unexpected communication mappings in receipt")
     if config.get("process_dirs"):
         observed["process_dir_artifacts"] = dependency_digests(os.pathsep.join(
             config["process_dirs"]))
