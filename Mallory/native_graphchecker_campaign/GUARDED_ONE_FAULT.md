@@ -24,6 +24,16 @@ wrapper; stage a versioned source snapshot and validate its original engine,
 weave receipt, config, and checkpoint compatibility before a JUnit launch.
 The wrapper verifies the config and campaign source hashes on every call.
 
+If a frozen checkpoint's config did not already use local work and artifact
+roots, use `rebase_local_checkpoint.py --dry-run` first. It permits changes
+only to those two runner fields. It verifies the copied checkpoint/admission,
+every accepted result, fault plan and fault event, unique tested plan keys,
+and the exact pending active plan. Its write mode changes only the copied
+checkpoint's config SHA and records a `checkpoint-rebase.json` receipt. Run it
+inside the same PG0-read-only namespace with the frozen campaign root mounted
+read-only at `--frozen-alias` under local output. The original checkpoint
+remains untouched.
+
 Example namespace entry (paths and capacity values must come from a reviewed
 case-specific recipe):
 
