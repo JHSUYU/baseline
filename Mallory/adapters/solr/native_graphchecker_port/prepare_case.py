@@ -459,8 +459,18 @@ def prepare_campaign(args: argparse.Namespace) -> dict:
                              args.sidecars.resolve(strict=True))
     healthy = validate_recording(args.trace_dir.resolve(strict=True), static["target_site"])
     healthy["junit_result_sha256"] = validate_junit_result(args.junit_result_log.resolve(strict=True))
-    schedule = validate_schedule(args.schedule_index.resolve(strict=True),
-                                 args.schedule_plan.resolve(strict=True))
+    admission_mode = getattr(args, "admission_mode", "scheduled")
+    if admission_mode == "scheduled":
+        if args.schedule_index is None or args.schedule_plan is None:
+            raise ValueError("scheduled admission requires original Scheduler outputs")
+        schedule = validate_schedule(args.schedule_index.resolve(strict=True),
+                                     args.schedule_plan.resolve(strict=True))
+    elif admission_mode == "region_state_no_schedule":
+        if args.schedule_index is not None or args.schedule_plan is not None:
+            raise ValueError("no-schedule admission must not bind a task plan")
+        schedule = {"admission_mode": admission_mode}
+    else:
+        raise ValueError("unknown original recording admission mode")
     weave_path = args.weave_config.resolve(strict=True)
     weave = read_json(weave_path)
     engine_root = args.engine_root.resolve(strict=True)
@@ -473,6 +483,9 @@ def prepare_campaign(args: argparse.Namespace) -> dict:
             Path(weave.get("region_skeletons", "")).resolve() !=
             (args.sidecars.resolve(strict=True) / "region_skeletons.jsonl.gz")):
         raise ValueError("REGION_STATE weave does not bind the selected static artifacts")
+    if admission_mode == "region_state_no_schedule" and (
+            weave.get("task_plan") or weave.get("task_id")):
+        raise ValueError("no-schedule admission requires a task-free REGION_STATE weave")
     woven = Path(weave["output_classes"]).resolve(strict=True)
     if not (woven / "native-original-weave-receipt.json").is_file():
         raise ValueError("original REGION_STATE weave receipt is absent")
@@ -515,6 +528,8 @@ def prepare_campaign(args: argparse.Namespace) -> dict:
                 "budget": {"fault_trials": args.trials, "seconds": args.seconds,
                            "max_faults_per_trial": args.max_faults},
                 "timeout_seconds": args.timeout}
+    if admission_mode == "region_state_no_schedule":
+        campaign["recording"]["admission_mode"] = admission_mode
     emit_json(output / "campaign-config.json", campaign)
     emit_json(output / "preparation-receipt.json", {"case_id": row["case_id"],
               "selected_junit": row["workload"]["selected_selector"],
@@ -582,8 +597,10 @@ def main() -> None:
                           default=NATIVE_PROTOCOL / "solr-e27f44e-original-engine.patch")
     campaign.add_argument("--trace-dir", required=True, type=Path)
     campaign.add_argument("--junit-result-log", required=True, type=Path)
-    campaign.add_argument("--schedule-index", required=True, type=Path)
-    campaign.add_argument("--schedule-plan", required=True, type=Path)
+    campaign.add_argument("--schedule-index", type=Path)
+    campaign.add_argument("--schedule-plan", type=Path)
+    campaign.add_argument("--admission-mode", choices=("scheduled", "region_state_no_schedule"),
+                          default="scheduled")
     campaign.add_argument("--weave-config", required=True, type=Path)
     campaign.add_argument("--runner-classpath-file", required=True, type=Path)
     campaign.add_argument("--engine-root", required=True, type=Path)

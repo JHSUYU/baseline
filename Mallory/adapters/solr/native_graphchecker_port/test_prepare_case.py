@@ -215,7 +215,7 @@ class PrepareCaseTest(unittest.TestCase):
         junit_result = self.root / "junit.stdout.log"
         junit_result.write_text("NATIVE_SOLR_JUNIT_RESULT run=1 failures=0 ignored=0\n")
         campaign_out = self.root / "campaign-prepared"
-        campaign = prep.prepare_campaign(argparse.Namespace(
+        campaign_args = argparse.Namespace(
             case_id="SOLR-XX", inventory=self.inventory, source=self.source,
             protocol_receipt=protocol, protocol_patch=patch,
             static_input=self.static_input, static_output=self.static_output,
@@ -225,13 +225,30 @@ class PrepareCaseTest(unittest.TestCase):
             schedule_index=index, schedule_plan=plan,
             runner_classpath_file=runner_cp, max_jobs=5, analysis_heap_mb=8192,
             trials=3,
-            seconds=60, max_faults=2, timeout=30))
+            seconds=60, max_faults=2, timeout=30)
+        campaign = prep.prepare_campaign(campaign_args)
         self.assertEqual(campaign["target_checks"], 1)
         config = prep.read_json(campaign_out / "campaign-config.json")
         self.assertEqual(config["junit"]["method"], "testRun")
         self.assertEqual(config["budget"]["max_faults_per_trial"], 2)
         self.assertEqual(config["recording"]["graph_analysis_heap_mb"], 8192)
         self.assertEqual(config["target_throw"]["siteId"], self.throw)
+        campaign_args.output = self.root / "campaign-no-schedule"
+        campaign_args.schedule_index = None
+        campaign_args.schedule_plan = None
+        campaign_args.admission_mode = "region_state_no_schedule"
+        prep.prepare_campaign(campaign_args)
+        no_schedule = prep.read_json(campaign_args.output / "campaign-config.json")
+        self.assertEqual(no_schedule["recording"]["admission_mode"],
+                         "region_state_no_schedule")
+        self.assertEqual(no_schedule["target_site"], self.branch)
+        self.assertEqual(no_schedule["target_throw"]["siteId"], self.throw)
+        self.assertEqual(prep.read_json(campaign_args.output / "preparation-receipt.json")
+                         ["schedule"], {"admission_mode": "region_state_no_schedule"})
+        campaign_args.schedule_plan = plan
+        campaign_args.output = self.root / "campaign-invalid-no-schedule"
+        with self.assertRaisesRegex(ValueError, "must not bind a task plan"):
+            prep.prepare_campaign(campaign_args)
 
     def test_existing_solr01_original_artifacts(self):
         root = Path("/proj/silentfailure-PG0/mallory/solr01-native-campaign-v1")
