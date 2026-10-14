@@ -34,6 +34,8 @@ import soot.jimple.ReturnStmt;
 import soot.jimple.Stmt;
 import soot.jimple.StringConstant;
 import soot.jimple.ThrowStmt;
+import soot.toolkits.graph.BriefUnitGraph;
+import soot.toolkits.scalar.SimpleLocalDefs;
 
 import java.io.IOException;
 import java.util.ArrayDeque;
@@ -174,6 +176,9 @@ final class SeedBackwardStaticAnalyzer {
     /** Structural accessor per call signature; a cached null is a negative. */
     private final Map<String, StructuralFieldAccessor>
             structuralFieldAccessors = new LinkedHashMap<>();
+    /** The body proof for an opaque synchronous functional wrapper. */
+    private final Map<String, FunctionalWrapper> functionalWrapperCache =
+            new LinkedHashMap<>();
     private final Map<String, MethodSig> methodSignatureCache =
             new LinkedHashMap<>();
     private final Set<String> invalidMethodSignatures =
@@ -1815,6 +1820,10 @@ final class SeedBackwardStaticAnalyzer {
                 callerRelevant);
         processLibraryReceiver(callerMethod, fact, callee, defs,
                 callerRelevant);
+        processOpaqueValueReceiver(callerMethod, fact, callee, defs,
+                callerRelevant);
+        processFunctionalWrapperReturn(callerMethod, fact, callee, defs,
+                callerRelevant);
         List<String> actuals = canonicalPositionList(callerMethod,
                 actualInvokeArgs(fact.unitText));
         processContainerCallMutationEffects(callerMethod, fact, callee,
@@ -2450,6 +2459,235 @@ final class SeedBackwardStaticAnalyzer {
             }
         }
         callerRelevant.add(receiver);
+    }
+
+    /** A value returned by a dependency-class getter may depend on the
+     * receiver even when that class was not supplied as a process directory.
+     * This is a static MAY edge, not a runtime object-version match. */
+    private void processOpaqueValueReceiver(String callerMethod, Fact fact,
+                                            MethodSig callee, List<String> defs,
+                                            Set<String> callerRelevant) {
+        if (isExpandableMethod(callee.raw) || !callee.params.isEmpty()
+                || !callee.name.startsWith("get")
+                || "void".equals(erasedTypeName(callee.returnType))
+                || callee.owner.startsWith("java.")
+                || callee.owner.startsWith("javax.")
+                || callee.owner.startsWith("com.google.")
+                || structuralFieldAccessor(callee) != null
+                || !(((Stmt) fact.unit).getInvokeExpr() instanceof InstanceInvokeExpr)) {
+            return;
+        }
+        String receiver = canonical(callerMethod,
+                invokeBaseLocal(fact.unitText));
+        if (ignoreNode(receiver)) return;
+        boolean used = false;
+        for (String def : defs) {
+            if (!ignoreNode(def) && callerRelevant.contains(def)) {
+                addEdge("opaque_value_receiver", receiver, def,
+                        callerMethod, fact);
+                used = true;
+            }
+        }
+        if (used) callerRelevant.add(receiver);
+    }
+
+    /** When an opaque helper synchronously returns its one SAM call's value,
+     * connect a demanded helper result to the actual callback's return. The
+     * helper body supplies the proof; a mere functional argument is not
+     * enough to claim a return dependency. */
+    private void processFunctionalWrapperReturn(String callerMethod, Fact fact,
+                                                MethodSig callee, List<String> defs,
+                                                Set<String> callerRelevant) {
+        if (isExpandableMethod(callee.raw) || defs.isEmpty()
+                || "void".equals(erasedTypeName(callee.returnType))
+                || callee.owner.startsWith("java.")
+                || callee.owner.startsWith("javax.")) return;
+        InvokeExpr invocation = ((Stmt) fact.unit).getInvokeExpr();
+        boolean demanded = false;
+        for (String def : defs) {
+            if (!ignoreNode(def) && callerRelevant.contains(def)) demanded = true;
+        }
+        if (!demanded) return;
+        boolean hasSam = false;
+        for (int i = 0; i < invocation.getArgCount() && i < callee.params.size(); i++) {
+            if (!(invocation.getArg(i) instanceof Local)) continue;
+            SootClass contract = sceneClass(callee.params.get(i));
+            if (contract != null && singleAbstractMethod(contract) != null) {
+                hasSam = true;
+                break;
+            }
+        }
+        if (!hasSam) return;
+        if (!functionalWrapperCache.containsKey(callee.raw)) {
+            FunctionalWrapper proof = null;
+            try {
+                Scene.v().forceResolve(callee.owner, SootClass.BODIES);
+                SootClass owner = sceneClass(callee.owner);
+                if (owner != null) proof = directFunctionalWrapper(
+                        owner.getMethodUnsafe(methodSubSignature(callee)));
+            } catch (RuntimeException unavailable) {
+                // A missing dependency body gives no wrapper proof.
+            }
+            functionalWrapperCache.put(callee.raw, proof);
+        }
+        FunctionalWrapper functional = functionalWrapperCache.get(callee.raw);
+        if (functional == null) return;
+        if (functional.parameter >= invocation.getArgCount()
+                || !(invocation.getArg(functional.parameter) instanceof Local)) return;
+        Local argument = (Local) invocation.getArg(functional.parameter);
+        for (SootClass created : creationClassesForSam(callerMethod, argument,
+                functional.sam.getDeclaringClass())) {
+            SootMethod callback = implementation(created,
+                    functional.sam.getSubSignature());
+            if (callback != null && created.isApplicationClass()) {
+                // Soot may materialize a lambda class after the initial
+                // application-class index was built.
+                allMethodsBySignature.putIfAbsent(callback.getSignature(), callback);
+            }
+            if (callback == null || !isExpandableMethod(callback.getSignature())) continue;
+            loadMethod(callback);
+            String returned = callback.getSignature() + ".return";
+            for (String def : defs) {
+                if (!ignoreNode(def) && callerRelevant.contains(def)) {
+                    addEdge("functional_wrapper_return", returned, def,
+                            callerMethod, fact);
+                }
+            }
+            relevant(callback.getSignature()).add(returned);
+            selectedMethods.add(callback.getSignature());
+        }
+    }
+
+    private Set<SootClass> creationClassesForSam(String method, Local local,
+                                                  SootClass contract) {
+        Set<SootClass> classes = new LinkedHashSet<>();
+        for (Fact fact : factsByMethod.getOrDefault(method,
+                Collections.<Fact>emptyList())) {
+            if (!(fact.unit instanceof AssignStmt)
+                    || ((AssignStmt) fact.unit).getLeftOp() != local) continue;
+            Value created = ((AssignStmt) fact.unit).getRightOp();
+            SootClass type = created instanceof NewExpr
+                    ? ((NewExpr) created).getBaseType().getSootClass()
+                    : created instanceof soot.jimple.StaticInvokeExpr
+                    ? ((InvokeExpr) created).getMethodRef().declaringClass() : null;
+            if (type != null && type.isApplicationClass()
+                    && Scene.v().getOrMakeFastHierarchy().canStoreType(
+                    type.getType(), contract.getType())) classes.add(type);
+        }
+        return classes;
+    }
+
+    private static final class FunctionalWrapper {
+        final int parameter;
+        final SootMethod sam;
+        FunctionalWrapper(int parameter, SootMethod sam) {
+            this.parameter = parameter;
+            this.sam = sam;
+        }
+    }
+
+    private FunctionalWrapper directFunctionalWrapper(SootMethod wrapper) {
+        Body body = activeBody(wrapper);
+        if (body == null || !wrapper.isStatic() || body.getUnits().size() > 48)
+            return null;
+        SimpleLocalDefs defs = new SimpleLocalDefs(new BriefUnitGraph(body));
+        FunctionalWrapper result = null;
+        boolean returned = false;
+        for (Unit unit : body.getUnits()) {
+            if (!(unit instanceof ReturnStmt)) continue;
+            returned = true;
+            FunctionalWrapper one = returnedSamCall(((ReturnStmt) unit).getOp(),
+                    unit, wrapper, defs, new LinkedHashSet<Unit>());
+            if (one == null || result != null
+                    && (result.parameter != one.parameter
+                        || !result.sam.getSignature().equals(one.sam.getSignature())))
+                return null;
+            result = one;
+        }
+        return returned ? result : null;
+    }
+
+    private FunctionalWrapper returnedSamCall(Value value, Unit at,
+                                               SootMethod wrapper,
+                                               SimpleLocalDefs defs,
+                                               Set<Unit> seen) {
+        if (!(value instanceof Local)) return null;
+        FunctionalWrapper result = null;
+        for (Unit def : defs.getDefsOfAt((Local) value, at)) {
+            if (!seen.add(def) || !(def instanceof AssignStmt)) return null;
+            Value source = ((AssignStmt) def).getRightOp();
+            FunctionalWrapper one = null;
+            if (source instanceof InstanceInvokeExpr) {
+                InstanceInvokeExpr invoke = (InstanceInvokeExpr) source;
+                int parameter = formalOrigin(invoke.getBase(), def, defs,
+                        new LinkedHashSet<Unit>());
+                if (parameter >= 0 && parameter < wrapper.getParameterCount()) {
+                    SootClass contract = sceneClass(wrapper.getParameterType(
+                            parameter).toString());
+                    SootMethod sam = singleAbstractMethod(contract);
+                    if (sam != null && sam.getSubSignature().equals(
+                            invoke.getMethodRef().getSubSignature().toString())) {
+                        one = new FunctionalWrapper(parameter, sam);
+                    }
+                }
+            } else if (source instanceof Local) {
+                one = returnedSamCall(source, def, wrapper, defs, seen);
+            } else if (source instanceof CastExpr) {
+                one = returnedSamCall(((CastExpr) source).getOp(), def,
+                        wrapper, defs, seen);
+            }
+            seen.remove(def);
+            if (one == null || result != null
+                    && (result.parameter != one.parameter
+                        || !result.sam.getSignature().equals(one.sam.getSignature())))
+                return null;
+            result = one;
+        }
+        return result;
+    }
+
+    private int formalOrigin(Value value, Unit at, SimpleLocalDefs defs,
+                             Set<Unit> seen) {
+        if (!(value instanceof Local)) return -1;
+        int result = -1;
+        for (Unit def : defs.getDefsOfAt((Local) value, at)) {
+            if (!seen.add(def)) return -1;
+            int one = -1;
+            if (def instanceof IdentityStmt
+                    && ((IdentityStmt) def).getRightOp() instanceof ParameterRef) {
+                one = ((ParameterRef) ((IdentityStmt) def).getRightOp()).getIndex();
+            } else if (def instanceof AssignStmt) {
+                Value source = ((AssignStmt) def).getRightOp();
+                if (source instanceof CastExpr) source = ((CastExpr) source).getOp();
+                one = formalOrigin(source, def, defs, seen);
+            }
+            seen.remove(def);
+            if (one < 0 || result >= 0 && result != one) return -1;
+            result = one;
+        }
+        return result;
+    }
+
+    private static SootMethod singleAbstractMethod(SootClass contract) {
+        if (contract == null || !contract.isInterface()) return null;
+        Map<String, SootMethod> abstractMethods = new LinkedHashMap<>();
+        Deque<SootClass> pending = new ArrayDeque<>();
+        Set<String> seen = new LinkedHashSet<>();
+        pending.add(contract);
+        while (!pending.isEmpty()) {
+            SootClass current = pending.removeFirst();
+            if (!seen.add(current.getName())) continue;
+            for (SootMethod method : current.getMethods()) {
+                if (method.isAbstract() && !method.isStatic()
+                        && !method.getSubSignature().toString()
+                            .equals("boolean equals(java.lang.Object)")) {
+                    abstractMethods.put(method.getSubSignature(), method);
+                }
+            }
+            pending.addAll(current.getInterfaces());
+        }
+        return abstractMethods.size() == 1
+                ? abstractMethods.values().iterator().next() : null;
     }
 
     private void annotateAccessorDeclaredFieldEdge(

@@ -419,7 +419,7 @@ public final class ScopePlanner {
             else System.setProperty("causynth.loop.default.bound", previousLoopBound);
         }
         Set<Method> held = new LinkedHashSet<>();
-        Map<String, String> firstRegionByMethod = new LinkedHashMap<>();
+        Map<String, Set<String>> regionsByMethod = new LinkedHashMap<>();
         for (JsonElement name : original.getAsJsonArray("traceMethods")) {
             Method method = methods.get(name.getAsString());
             if (method != null && materializedClasses.contains(
@@ -428,7 +428,8 @@ public final class ScopePlanner {
         for (JsonElement item : original.getAsJsonArray("regions")) {
             JsonObject region = item.getAsJsonObject();
             for (JsonElement name : region.getAsJsonArray("methods")) {
-                firstRegionByMethod.putIfAbsent(name.getAsString(),
+                regionsByMethod.computeIfAbsent(name.getAsString(),
+                        unused -> new LinkedHashSet<>()).add(
                         string(region, "regionId", ""));
                 Method method = methods.get(name.getAsString());
                 if (method != null && materializedClasses.contains(
@@ -517,10 +518,14 @@ public final class ScopePlanner {
                 continue;
             }
             JsonObject door = row("DOOR_SITE", site, "", ref.getSignature());
-            String region = firstRegionByMethod.getOrDefault(
-                    site.owner.soot.getSignature(), "");
-            if (!region.isEmpty()) door.addProperty("regionId", region);
-            addOriginal(rows, seen, door);
+            Set<String> placements = regionsByMethod.getOrDefault(
+                    site.owner.soot.getSignature(), Collections.<String>emptySet());
+            if (placements.isEmpty()) addOriginal(rows, seen, door);
+            for (String region : placements) {
+                JsonObject placed = door.deepCopy();
+                placed.addProperty("regionId", region);
+                addOriginal(rows, seen, placed);
+            }
         }
         // GraphChecker's demanded doors are value-slice facts.  A fault
         // campaign also needs I/O boundaries along the selected execution
@@ -539,13 +544,17 @@ public final class ScopePlanner {
                     SootMethodRef ref = stmt.getInvokeExpr().getMethodRef();
                     if (!isIoDoor(ref)) continue;
                     JsonObject door = row("DOOR_SITE", site, "", ref.getSignature());
-                    String region = firstRegionByMethod.getOrDefault(
-                            method.soot.getSignature(), "");
-                    if (!region.isEmpty()) door.addProperty("regionId", region);
                     door.addProperty("selectionSource", "ORIGINAL_SELECTED_METHOD_IO_FRONTIER");
                     door.addProperty("staticMayOnly", true);
                     int before = rows.size();
-                    addOriginal(rows, seen, door);
+                    Set<String> placements = regionsByMethod.getOrDefault(
+                            method.soot.getSignature(), Collections.<String>emptySet());
+                    if (placements.isEmpty()) addOriginal(rows, seen, door);
+                    for (String region : placements) {
+                        JsonObject placed = door.deepCopy();
+                        placed.addProperty("regionId", region);
+                        addOriginal(rows, seen, placed);
+                    }
                     if (rows.size() != before) supplementalDoors++;
                 }
             }
@@ -613,6 +622,22 @@ public final class ScopePlanner {
             }
         }
         ports.addAll(originalPorts.values());
+        int staticValueEdges;
+        int staticValueMemberships;
+        try {
+            List<JsonObject> projected = StaticValueProjection.read(
+                    Paths.get(directory), regionsByMethod);
+            rows.addAll(projected);
+            staticValueEdges = 0;
+            staticValueMemberships = 0;
+            for (JsonObject projectedRow : projected) {
+                if ("STATIC_VALUE_EDGE".equals(string(projectedRow, "role", "")))
+                    staticValueEdges++;
+                else staticValueMemberships++;
+            }
+        } catch (IOException error) {
+            throw new IllegalStateException("original GraphChecker value edges unavailable", error);
+        }
         JsonObject manifest = manifest(rows, held);
         JsonArray originalRoots = new JsonArray();
         Set<String> rootKeys = new HashSet<>();
@@ -647,6 +672,8 @@ public final class ScopePlanner {
         translation.addProperty("supplementalTypedIoDoors", supplementalDoors);
         translation.addProperty("methodParameterPortAnchors", parameterPortAnchors);
         translation.addProperty("methodReturnPortAnchors", returnPortAnchors);
+        translation.addProperty("staticValueMethodEdges", staticValueEdges);
+        translation.addProperty("staticValueMethodMemberships", staticValueMemberships);
         result.add("scopeTranslation", translation);
         JsonArray gaps = new JsonArray();
         for (String gap : analysisGaps) gaps.add(gap);
@@ -2186,10 +2213,13 @@ public final class ScopePlanner {
         out.add("coverage", coverage);
         JsonArray targets = new JsonArray();
         JsonArray doors = new JsonArray();
+        Set<String> instrumentedDoorSites = new HashSet<>();
         JsonArray state = new JsonArray();
         JsonArray rpc = new JsonArray();
         for (JsonObject row : rows) {
             String role = row.get("role").getAsString();
+            if ("STATIC_VALUE_EDGE".equals(role)
+                    || "STATIC_REGION_METHOD".equals(role)) continue;
             if (!materializedClasses.contains(row.get("clazz").getAsString())) {
                 if ("TARGET_SITE".equals(role) || "THROW_SITE".equals(role)) {
                     throw new IllegalStateException("target class has no compiled bytecode: "
@@ -2216,6 +2246,7 @@ public final class ScopePlanner {
                 ref.addProperty("kind", "BRANCH");
                 targets.add(ref);
             } else if ("DOOR_SITE".equals(role)) {
+                if (!instrumentedDoorSites.add(row.get("siteId").getAsString())) continue;
                 if (row.get("line").getAsInt() <= 0) {
                     analysisGaps.add("door_source_line_unavailable:" + row.get("siteId").getAsString());
                     continue;

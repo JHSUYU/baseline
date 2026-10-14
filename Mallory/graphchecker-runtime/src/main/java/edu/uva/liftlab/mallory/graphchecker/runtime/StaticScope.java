@@ -25,6 +25,9 @@ final class StaticScope {
     private final Map<String, List<JsonObject>> writers = new HashMap<>();
     private final Map<String, List<JsonObject>> exporters = new HashMap<>();
     private final Map<String, List<JsonObject>> doors = new HashMap<>();
+    private final Map<String, Set<String>> methodsByRegion = new HashMap<>();
+    private final Map<String, Set<String>> regionsByMethod = new HashMap<>();
+    private final Map<String, List<JsonObject>> valueEdgesByConsumerMethod = new HashMap<>();
     private final Map<String, String> targets = new HashMap<>();
 
     private StaticScope(List<JsonObject> rows) {
@@ -32,7 +35,21 @@ final class StaticScope {
         for (JsonObject row : rows) {
             String role = value(row, "role");
             String region = value(row, "regionId");
+            if ("STATIC_VALUE_EDGE".equals(role)) {
+                put(valueEdgesByConsumerMethod, value(row, "consumerMethod"), row);
+                continue;
+            }
             if (region.isEmpty()) continue;
+            if ("STATIC_REGION_METHOD".equals(role)) {
+                String method = value(row, "vmMethod");
+                if (!method.isEmpty()) {
+                    methodsByRegion.computeIfAbsent(region,
+                            unused -> new LinkedHashSet<>()).add(method);
+                    regionsByMethod.computeIfAbsent(method,
+                            unused -> new LinkedHashSet<>()).add(region);
+                }
+                continue;
+            }
             if ("READ_SITE".equals(role)) put(reads, region, row);
             else if ("IMPORT_SITE".equals(role)) put(imports, region, row);
             else if ("WRITE_SITE".equals(role)) put(writers, value(row, "cell"), row);
@@ -73,6 +90,7 @@ final class StaticScope {
         }
         List<JsonObject> relations = new ArrayList<>();
         Set<String> relationKeys = new LinkedHashSet<>();
+        Set<String> valueWitnesses = new LinkedHashSet<>();
         while (!pending.isEmpty()) {
             String consumer = pending.removeFirst();
             for (JsonObject read : reads.getOrDefault(consumer, Collections.<JsonObject>emptyList())) {
@@ -87,6 +105,29 @@ final class StaticScope {
                 for (JsonObject out : exporters.getOrDefault(port, Collections.<JsonObject>emptyList())) {
                     addMay("STATIC_WIRE", port, out, in, regions, pending,
                             relations, relationKeys);
+                }
+            }
+            for (String method : methodsByRegion.getOrDefault(consumer,
+                    Collections.<String>emptySet())) {
+                for (JsonObject edge : valueEdgesByConsumerMethod.getOrDefault(method,
+                        Collections.<JsonObject>emptyList())) {
+                    for (String from : regionsByMethod.getOrDefault(
+                            value(edge, "producerMethod"), Collections.<String>emptySet())) {
+                        if (from.equals(consumer)) continue;
+                        if (valueWitnesses.add(from)) {
+                            JsonObject relation = new JsonObject();
+                            relation.addProperty("kind", "STATIC_VALUE");
+                            relation.addProperty("carrier", value(edge, "carrier"));
+                            relation.addProperty("producerMethod",
+                                    value(edge, "producerMethod"));
+                            relation.addProperty("consumerMethod", method);
+                            relation.addProperty("producerRegionId", from);
+                            relation.addProperty("consumerRegionId", consumer);
+                            relation.addProperty("staticMayOnly", true);
+                            relations.add(relation);
+                        }
+                        if (regions.add(from)) pending.add(from);
+                    }
                 }
             }
         }

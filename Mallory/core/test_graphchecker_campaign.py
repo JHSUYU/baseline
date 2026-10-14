@@ -259,6 +259,9 @@ class GraphCheckerCampaignTest(unittest.TestCase):
                 "consumerRegionId": "target", "carrier": "key-map"}]}
             self.assertEqual({("producer", "rpc-reply")},
                              _static_producer_frontier_sites(path, graph))
+            graph["staticMayRelations"][0]["kind"] = "STATIC_VALUE"
+            self.assertEqual({("producer", "rpc-reply")},
+                             _static_producer_frontier_sites(path, graph))
             self.assertEqual(set(), _static_producer_frontier_sites(path, {}))
 
     def test_real_hdfs_target_row_shape_is_counted_without_attribution(self):

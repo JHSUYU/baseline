@@ -104,7 +104,7 @@ def _static_producer_frontier_sites(static_scope_map: Path,
     for relation in relations:
         if not isinstance(relation, dict):
             raise ValueError("GraphChecker static MAY relation is invalid")
-        if relation.get("kind") in {"STATIC_STATE", "STATIC_WIRE"}:
+        if relation.get("kind") in {"STATIC_STATE", "STATIC_WIRE", "STATIC_VALUE"}:
             region = relation.get("producerRegionId")
             if isinstance(region, str) and region:
                 producers.add(region)
