@@ -22,6 +22,7 @@ DEFAULT_ROOT = Path('/proj/silentfailure-PG0/ZhenyuLi/Mallory/native-102-queue-v
 
 def binding_for(item: dict, config_path: Path, state_path: Path,
                 *, alternate: Path | None = None,
+                alternate_source_receipt: Path | None = None,
                 identity: Path | None = None,
                 adapter_proof: Path | None = None,
                 recording_admission: Path | None = None,
@@ -54,6 +55,11 @@ def binding_for(item: dict, config_path: Path, state_path: Path,
                                   alternate.is_symlink() or
                                   not alternate.is_file()):
         raise ValueError('alternate JUnit attestation is not immutable')
+    if alternate_source_receipt is not None and (
+            alternate is None or not alternate_source_receipt.is_absolute() or
+            alternate_source_receipt.is_symlink() or
+            not alternate_source_receipt.is_file()):
+        raise ValueError('shared alternate source requires a pinned attestation')
     row_sha = hashlib.sha256(json.dumps(
         item, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
     runner_mode = config['runner']['mode']
@@ -96,6 +102,10 @@ def binding_for(item: dict, config_path: Path, state_path: Path,
     if alternate is not None:
         binding['alternate_original_junit'] = {
             'attestation_path': str(alternate), 'attestation_sha256': sha(alternate)}
+        if alternate_source_receipt is not None:
+            binding['alternate_original_junit'].update({
+                'shared_source_receipt_path': str(alternate_source_receipt),
+                'shared_source_receipt_sha256': sha(alternate_source_receipt)})
     if identity is not None:
         if not identity.is_absolute() or identity.is_symlink() or not identity.is_file():
             raise ValueError('native target identity audit is not immutable')
@@ -226,6 +236,7 @@ def promote(*, root: Path, case_id: str, native_config: Path,
             native_state: Path, host: str,
             port_review: Path | None = None,
             alternate_attestation: Path | None = None,
+            alternate_source_receipt: Path | None = None,
             target_identity_audit: Path | None = None,
             adapter_proof: Path | None = None,
             recording_admission: Path | None = None,
@@ -269,6 +280,7 @@ def promote(*, root: Path, case_id: str, native_config: Path,
                                  port_review, sha(native_config))
         binding = binding_for(item, native_config, native_state,
                               alternate=alternate_attestation,
+                              alternate_source_receipt=alternate_source_receipt,
                               identity=target_identity_audit,
                               adapter_proof=adapter_proof,
                               recording_admission=recording_admission,
@@ -310,7 +322,13 @@ def promote(*, root: Path, case_id: str, native_config: Path,
             raise ValueError(f'native case is not dispatchable: {inspected}')
         binding_path = config_root / f'{case_id}.json'
         if binding_path.is_file() and obj(binding_path) != binding:
-            raise ValueError('native binding already pins different inputs')
+            previous = obj(binding_path)
+            prior_shape = json.loads(json.dumps(binding))
+            prior_alternate = prior_shape.get('alternate_original_junit', {})
+            prior_alternate.pop('shared_source_receipt_path', None)
+            prior_alternate.pop('shared_source_receipt_sha256', None)
+            if (alternate_source_receipt is None or previous != prior_shape):
+                raise ValueError('native binding already pins different inputs')
         # No queue worker is active. Refresh the pilot's ownership/isolation
         # digest along with the two launch documents under this promotion lock.
         atomic(ownership, ownership_doc)
@@ -352,6 +370,7 @@ def main() -> None:
     parser.add_argument('--native-state', type=Path, required=True)
     parser.add_argument('--port-review', type=Path)
     parser.add_argument('--alternate-attestation', type=Path)
+    parser.add_argument('--alternate-source-receipt', type=Path)
     parser.add_argument('--target-identity-audit', type=Path)
     parser.add_argument('--adapter-proof', type=Path)
     parser.add_argument('--recording-admission', type=Path)
@@ -366,6 +385,7 @@ def main() -> None:
         native_config=args.native_config, native_state=args.native_state,
         port_review=args.port_review,
         alternate_attestation=args.alternate_attestation,
+        alternate_source_receipt=args.alternate_source_receipt,
         target_identity_audit=args.target_identity_audit,
         adapter_proof=args.adapter_proof,
         recording_admission=args.recording_admission,

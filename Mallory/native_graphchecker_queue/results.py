@@ -122,6 +122,82 @@ def _preparation_note(item: dict, state_root: Path) -> dict[str, Any] | None:
     }
 
 
+def _admission_note(item: dict, state_root: Path) -> dict[str, Any] | None:
+    """Record a pinned healthy JUnit whose native graph admission did not finish."""
+    case_id = item["case_id"]
+    pin_path = (state_root / ".native-queue" / "admission-notes" /
+                f"{case_id}.json")
+    if not pin_path.is_file():
+        return None
+    pin = obj(pin_path)
+    if (pin.get("schema_version") != 1 or pin.get("case_id") != case_id or
+            pin.get("status") != "blocked_healthy_native_session" or
+            pin.get("junit_trials") != 1 or pin.get("fault_trials") != 0 or
+            pin.get("inventory_row_sha256") != hashlib.sha256(json.dumps(
+                item, sort_keys=True, separators=(",", ":")
+            ).encode()).hexdigest()):
+        raise ValueError(f"native admission note changed: {case_id}")
+    paths = {}
+    for name in ("review", "config", "healthy_result", "target_occurrence"):
+        entry = pin.get(name)
+        path = Path(entry.get("path", "")) if isinstance(entry, dict) else Path("")
+        if (not path.is_absolute() or path.is_symlink() or not path.is_file() or
+                sha(path) != entry.get("sha256")):
+            raise ValueError(f"native admission {name} pin changed: {case_id}")
+        paths[name] = path
+    review, config, healthy, occurrence = (obj(paths[name]) for name in
+                                           ("review", "config", "healthy_result",
+                                            "target_occurrence"))
+    selector = item["workload"].get("selected_selector")
+    executed = config.get("junit", {}).get("class", "") + "#" + config.get(
+        "junit", {}).get("method", "")
+    if (review.get("caseId") != case_id or
+            review.get("kind") != "HBASE07_V4_NO_PLAN_HEALTHY_GRAPH_TERMINAL_REVIEW" or
+            review.get("status") != "blocked_healthy_native_session" or
+            review.get("failureClass") != "original_recorder_timeout_1800s" or
+            review.get("formalStarted") is not False or
+            review.get("appliedFaultCount") != 0 or
+            review.get("bugClaim") is not False or
+            review.get("junitPassed") is not True or
+            review.get("rawTargetCheckCount", 0) < 1 or
+            review.get("rawTargetThrowCount") != 0 or
+            review.get("configPath") != str(paths["config"]) or
+            review.get("configSha256") != sha(paths["config"]) or
+            review.get("healthyResultSha256") != sha(paths["healthy_result"]) or
+            executed != selector or
+            config.get("target_throw", {}).get("siteId") != item[
+                "target"]["site_id"] or
+            config.get("target_throw", {}).get("exceptionClass") != item[
+                "target"].get("target_exception") or
+            config.get("target_site") != occurrence.get("checkSiteId") or
+            occurrence.get("test") != selector or
+            occurrence.get("reachedEventCount", 0) < 1 or
+            occurrence.get("fatalOutcome") is not False or
+            healthy.get("status") != "blocked_healthy_native_session" or
+            healthy.get("junit_passed") is not True or
+            healthy.get("target_exception_triggered") is not False or
+            healthy.get("faults") != [] or
+            healthy.get("strict_injection") is not False):
+        raise ValueError(f"native admission evidence changed: {case_id}")
+    return {
+        "preparation_status": "blocked_healthy_native_session",
+        "preparation_junit_trials": 1,
+        "preparation_fault_trials": 0,
+        "preparation_review_path": str(paths["review"].resolve()),
+        "preparation_review_sha256": sha(paths["review"]),
+        "preparation_note_pin_path": str(pin_path.resolve()),
+        "preparation_note_pin_sha256": sha(pin_path),
+        "preparation_note": (
+            f"Original JUnit passed and reached the exact target guard "
+            f"{review['rawTargetCheckCount']} times in "
+            f"{review['junitElapsedSeconds']:g}s; original Recorder graph "
+            f"timed out after {review['analysisElapsedSeconds']:g}s. "
+            "No formal fault trial ran; no target throw or bug claim."),
+        "evidence_paths": [str(path.resolve()) for path in paths.values()] +
+                          [str(pin_path.resolve())],
+    }
+
+
 def _eligibility_note(item: dict, inventory: Path,
                       state_root: Path) -> dict[str, Any] | None:
     """Verify a source-only skip without granting a native trial verdict."""
@@ -441,9 +517,18 @@ def native_rows(inventory: Path, ownership_file: Path, config_root: Path,
             row.update(preparation)
             row["evidence_paths"].extend(evidence)
             row["native_state"] = "preparation_static_timeout"
+        admission = _admission_note(item, state_root)
+        if admission is not None:
+            if preparation is not None:
+                raise ValueError(f"native admission conflicts with preparation: {case_id}")
+            evidence = admission.pop("evidence_paths")
+            row.update(admission)
+            row["evidence_paths"].extend(evidence)
+            row["native_state"] = "preparation_healthy_graph_blocked"
         eligibility = _eligibility_note(item, inventory, state_root)
         if eligibility is not None:
-            if preparation is not None or config_file.is_file() or \
+            if preparation is not None or admission is not None or \
+                    config_file.is_file() or \
                     checkpoint_path.is_file() or receipt_path.is_file():
                 raise ValueError(f"native eligibility note conflicts with case: {case_id}")
             evidence = eligibility.pop("evidence_paths")

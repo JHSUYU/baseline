@@ -18,6 +18,79 @@ from .results import (_elapsed_basis, _reviewed_exact_closure,
 
 
 class NativeResultsTest(unittest.TestCase):
+    def test_healthy_graph_timeout_is_pinned_but_not_completed(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            config_root, state_root, results_dir = (root / name for name in
+                                                    ("config", "state", "results"))
+            config_root.mkdir()
+            state_root.mkdir()
+            item = next(row for row in load_inventory(DEFAULT_INVENTORY)[0]
+                        if row["case_id"] == "HBASE-07")
+            selector = item["workload"]["selected_selector"]
+            junit_class, junit_method = selector.split("#", 1)
+            guard = item["target"]["site_id"].rsplit("#", 1)[0] + "#u10"
+            config = root / "case.json"
+            config.write_text(json.dumps({
+                "junit": {"class": junit_class, "method": junit_method},
+                "target_site": guard,
+                "target_throw": {"siteId": item["target"]["site_id"],
+                                 "exceptionClass": item["target"][
+                                     "target_exception"]}}))
+            healthy = root / "result.json"
+            healthy.write_text(json.dumps({
+                "status": "blocked_healthy_native_session",
+                "junit_passed": True, "target_exception_triggered": False,
+                "faults": [], "strict_injection": False}))
+            occurrence = root / "target-occurrence.json"
+            occurrence.write_text(json.dumps({
+                "test": selector, "checkSiteId": guard,
+                "reachedEventCount": 2, "fatalOutcome": False}))
+            review = root / "review.json"
+            review.write_text(json.dumps({
+                "caseId": "HBASE-07",
+                "kind": "HBASE07_V4_NO_PLAN_HEALTHY_GRAPH_TERMINAL_REVIEW",
+                "status": "blocked_healthy_native_session",
+                "failureClass": "original_recorder_timeout_1800s",
+                "formalStarted": False, "appliedFaultCount": 0,
+                "bugClaim": False, "junitPassed": True,
+                "rawTargetCheckCount": 2, "rawTargetThrowCount": 0,
+                "junitElapsedSeconds": 80.205,
+                "analysisElapsedSeconds": 2100.289,
+                "configPath": str(config), "configSha256": sha(config),
+                "healthyResultSha256": sha(healthy)}))
+            pin = state_root / ".native-queue/admission-notes/HBASE-07.json"
+            pin.parent.mkdir(parents=True)
+            files = {name: {"path": str(path), "sha256": sha(path)}
+                     for name, path in (("review", review), ("config", config),
+                                        ("healthy_result", healthy),
+                                        ("target_occurrence", occurrence))}
+            pin.write_text(json.dumps({
+                "schema_version": 1, "case_id": "HBASE-07",
+                "status": "blocked_healthy_native_session",
+                "inventory_row_sha256": hashlib.sha256(json.dumps(
+                    item, sort_keys=True, separators=(",", ":")
+                ).encode()).hexdigest(),
+                "junit_trials": 1, "fault_trials": 0, **files}))
+            output, _ = export_native_results(
+                DEFAULT_INVENTORY, DEFAULT_OWNERSHIP, config_root,
+                state_root, results_dir)
+            document = json.loads(output.read_text())
+            row = next(row for row in document["rows"]
+                       if row["case_id"] == "HBASE-07")
+            self.assertEqual(document["verified_terminal_count"], 0)
+            self.assertEqual(row["native_state"],
+                             "preparation_healthy_graph_blocked")
+            self.assertEqual(row["preparation_junit_trials"], 1)
+            self.assertEqual(row["preparation_fault_trials"], 0)
+            self.assertFalse(row["native_tested_complete"])
+            self.assertIsNone(row["fault_trials"])
+            review.write_text(review.read_text() + " ")
+            with self.assertRaisesRegex(ValueError,
+                                        "native admission review pin changed"):
+                export_native_results(DEFAULT_INVENTORY, DEFAULT_OWNERSHIP,
+                                      config_root, state_root, results_dir)
+
     def test_source_only_eligibility_skip_is_pinned_and_nonterminal(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

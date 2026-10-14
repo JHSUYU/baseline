@@ -117,6 +117,15 @@ and fault trials, leaves terminal counts unset, and never grants
 `native_tested_complete`. The SOLR-40 review applies to the pinned checkout
 and current harness; fixture repair may make its original test eligible.
 
+For an alternate original JUnit whose upstream test source and compiled class
+exist only on the owner host, `bind_and_run --alternate-source-receipt` can add
+a small shared copy of those two exact files to an existing binding. The
+receipt pins their hashes, the official alternate attestation, and the
+owner-verified source commit. Promotion accepts this monotonic evidence
+addition only when every other binding field is unchanged. On the owner host
+the original files and clean source revision are still checked; on another
+host the shared byte-identical copies provide the source/class proof.
+
 The isolation contract requires a real system-specific port setting or a
 reviewed dynamic-port receipt. An unprepared case remains pending; no case is
 made runnable merely by this queue.

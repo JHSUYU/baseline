@@ -7,6 +7,7 @@ from tempfile import TemporaryDirectory
 import unittest
 from unittest.mock import patch
 
+from Mallory.native_graphchecker_dispatch.checklist import _verify_alternate_junit
 from .bind_and_run import binding_for, extend_profile
 from .queue import pinned_campaign_python, validate_isolation
 
@@ -16,6 +17,85 @@ def write(path: Path, value: dict) -> None:
 
 
 class BindAndRunTest(unittest.TestCase):
+    def test_alternate_junit_shared_source_works_on_nonowner_host(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            private = root / "private-source"
+            original_source = private / "src/TestOriginal.java"
+            original_class = private / "classes/TestOriginal.class"
+            source = root / "shared/TestOriginal.java"
+            compiled = root / "shared/TestOriginal.class"
+            source.parent.mkdir()
+            source.write_text("unchanged original test\n")
+            compiled.write_bytes(b"compiled unchanged test")
+            digest = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
+            resolver = root / "resolver.json"
+            write(resolver, {"checkSiteId": "<C: void m()>#u4",
+                             "reachedEventCount": 2})
+            healthy = root / "healthy.json"
+            write(healthy, {"status": "healthy_seed", "junit_passed": True,
+                            "native_target_retained": True})
+            attestation = root / "attestation.json"
+            write(attestation, {
+                "case_id": "HDFS-14",
+                "binding_type": "alternate_unchanged_original_junit",
+                "inventory_recorded_selector": "T#testCase",
+                "executed_selector": "T#testCase[0]",
+                "target_throw_site_id": "<C: void m()>#u9",
+                "target_site_id": "<C: void m()>#u4",
+                "healthy_junit_exit_code": 0,
+                "healthy_target_reached_event_count": 2,
+                "source_root": str(private), "source_commit": "a" * 40,
+                "source_path": str(original_source),
+                "source_sha256": digest(source),
+                "compiled_test_class_path": str(original_class),
+                "compiled_test_class_sha256": digest(compiled),
+                "resolver_receipt_path": str(resolver),
+                "resolver_receipt_sha256": digest(resolver),
+                "native_official_healthy_result_path": str(healthy),
+                "native_official_healthy_result_sha256": digest(healthy)})
+            shared = root / "shared-source-receipt.json"
+            write(shared, {
+                "schema_version": 1,
+                "mode": "shared_alternate_junit_source_receipt",
+                "case_id": "HDFS-14",
+                "attestation_path": str(attestation),
+                "attestation_sha256": digest(attestation),
+                "source_commit": "a" * 40,
+                "source_relative_path": "src/TestOriginal.java",
+                "git_blob_sha256": digest(source),
+                "original_source_path": str(original_source),
+                "original_source_sha256": digest(source),
+                "original_compiled_class_path": str(original_class),
+                "original_compiled_class_sha256": digest(compiled),
+                "shared_source_path": str(source),
+                "shared_source_sha256": digest(source),
+                "shared_compiled_class_path": str(compiled),
+                "shared_compiled_class_sha256": digest(compiled)})
+            binding = root / "binding.json"
+            write(binding, {"mode": "native_region_state_case_binding",
+                            "alternate_original_junit": {
+                                "attestation_path": str(attestation),
+                                "attestation_sha256": digest(attestation),
+                                "shared_source_receipt_path": str(shared),
+                                "shared_source_receipt_sha256": digest(shared)}})
+            item = {"case_id": "HDFS-14",
+                    "workload": {"selected_selector": "T#testCase"},
+                    "target": {"site_id": "<C: void m()>#u9"}}
+            config = {"junit": {"class": "T", "method": "testCase[0]"},
+                      "target_site": "<C: void m()>#u4"}
+            _verify_alternate_junit(item, binding, config)
+            compiled.write_bytes(b"altered compiled test")
+            with self.assertRaisesRegex(ValueError,
+                                        "alternate JUnit shared source/class changed"):
+                _verify_alternate_junit(item, binding, config)
+            compiled.write_bytes(b"compiled unchanged test")
+            original_source.parent.mkdir(parents=True)
+            original_source.write_text("changed private source\n")
+            with self.assertRaisesRegex(ValueError,
+                                        "alternate JUnit source_path changed"):
+                _verify_alternate_junit(item, binding, config)
+
     def test_assigned_case_review_repins_exact_live_port_range(self):
         with TemporaryDirectory() as directory:
             root = Path(directory)

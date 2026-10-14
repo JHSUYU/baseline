@@ -286,8 +286,11 @@ def _verify_alternate_junit(item: dict, entry: Path, config: dict) -> None:
     if binding.get("mode") != "native_region_state_case_binding":
         raise ValueError("alternate original JUnit requires native case binding")
     alternate = binding.get("alternate_original_junit")
-    if not isinstance(alternate, dict) or set(alternate) != {
-            "attestation_path", "attestation_sha256"}:
+    plain_keys = {"attestation_path", "attestation_sha256"}
+    shared_keys = plain_keys | {"shared_source_receipt_path",
+                                "shared_source_receipt_sha256"}
+    if not isinstance(alternate, dict) or set(alternate) not in (
+            plain_keys, shared_keys):
         raise ValueError("alternate original JUnit lacks pinned attestation")
     receipt_path = Path(alternate["attestation_path"])
     if (not receipt_path.is_absolute() or receipt_path.is_symlink() or
@@ -306,9 +309,56 @@ def _verify_alternate_junit(item: dict, entry: Path, config: dict) -> None:
             not isinstance(receipt.get("healthy_target_reached_event_count"), int) or
             receipt["healthy_target_reached_event_count"] < 1):
         raise ValueError("alternate JUnit attestation differs from target/inventory")
+    source = Path(receipt["source_path"])
+    compiled = Path(receipt["compiled_test_class_path"])
+    local_source = source.is_file()
+    local_compiled = compiled.is_file()
+    for path_field, path, sha_field in (
+            ("source_path", source, "source_sha256"),
+            ("compiled_test_class_path", compiled,
+             "compiled_test_class_sha256")):
+        if path.is_symlink() or (path.exists() and
+                                 _sha(path) != receipt[sha_field]):
+            raise ValueError(f"alternate JUnit {path_field} changed")
+    if set(alternate) == shared_keys:
+        shared_path = Path(alternate["shared_source_receipt_path"])
+        if (not shared_path.is_absolute() or shared_path.is_symlink() or
+                _sha(shared_path) != alternate["shared_source_receipt_sha256"]):
+            raise ValueError("alternate JUnit shared source receipt changed")
+        shared = _object(shared_path)
+        source_root = Path(receipt["source_root"])
+        try:
+            relative_source = source.relative_to(source_root).as_posix()
+        except ValueError as failure:
+            raise ValueError("alternate JUnit source is outside source root") from failure
+        if (shared.get("schema_version") != 1 or
+                shared.get("mode") != "shared_alternate_junit_source_receipt" or
+                shared.get("case_id") != item["case_id"] or
+                shared.get("attestation_path") != str(receipt_path) or
+                shared.get("attestation_sha256") != _sha(receipt_path) or
+                shared.get("source_commit") != receipt["source_commit"] or
+                shared.get("source_relative_path") != relative_source or
+                shared.get("git_blob_sha256") != receipt["source_sha256"] or
+                shared.get("original_source_path") != str(source) or
+                shared.get("original_source_sha256") != receipt["source_sha256"] or
+                shared.get("original_compiled_class_path") != str(compiled) or
+                shared.get("original_compiled_class_sha256") != receipt[
+                    "compiled_test_class_sha256"]):
+            raise ValueError("alternate JUnit shared source identity changed")
+        for path_field, sha_field, original_sha in (
+                ("shared_source_path", "shared_source_sha256",
+                 "source_sha256"),
+                ("shared_compiled_class_path", "shared_compiled_class_sha256",
+                 "compiled_test_class_sha256")):
+            path = Path(shared.get(path_field, ""))
+            if (not path.is_absolute() or path.is_symlink() or
+                    not path.is_file() or
+                    shared.get(sha_field) != receipt[original_sha] or
+                    _sha(path) != shared[sha_field]):
+                raise ValueError("alternate JUnit shared source/class changed")
+    elif not (local_source and local_compiled):
+        raise ValueError("alternate JUnit original source/class is unavailable")
     for path_field, sha_field in (
-            ("source_path", "source_sha256"),
-            ("compiled_test_class_path", "compiled_test_class_sha256"),
             ("resolver_receipt_path", "resolver_receipt_sha256"),
             ("native_official_healthy_result_path",
              "native_official_healthy_result_sha256")):
@@ -317,7 +367,8 @@ def _verify_alternate_junit(item: dict, entry: Path, config: dict) -> None:
                 _sha(path) != receipt[sha_field]):
             raise ValueError(f"alternate JUnit source/proof changed: {path_field}")
     source_root = Path(receipt["source_root"])
-    if (not source_root.is_absolute() or
+    if local_source and local_compiled and (
+            not source_root.is_absolute() or
             subprocess.run(["git", "-C", str(source_root), "rev-parse", "HEAD"],
                            capture_output=True, text=True, check=True).stdout.strip()
             != receipt["source_commit"] or
