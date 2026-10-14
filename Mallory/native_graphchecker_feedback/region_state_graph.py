@@ -269,14 +269,16 @@ def summarize_region_state(
         event = row.get("event")
         if event == "METHOD_ENTER" and isinstance(row.get("callId"), int):
             calls[row["callId"]] = {"parentCallId": row.get("parentCallId", 0),
-                                    "sourceKey": row.get("sourceKey")}
+                                    "sourceKey": row.get("sourceKey"),
+                                    "seq": row.get("seq")}
         elif event == "BRANCH":
             branches.append({key: row.get(key) for key in (
                 "seq", "callId", "siteId", "outcome")})
         elif event in ("EXCHANGE_SEND", "EXCHANGE_RECEIVE"):
             exchange_rows.append({key: row.get(key) for key in (
-                "event", "callId", "transport", "correlationId", "attemptId",
+                "event", "seq", "callId", "transport", "correlationId", "attemptId",
                 "half", "spanId", "remoteParentSpanId", "producerEndpoint",
+                "producerEndpointId",
                 "sourceKey")})
     receipt = _json(target_receipt)
     target = _validate_target(receipt, pins, branches, calls, target_site,
@@ -303,6 +305,19 @@ def summarize_region_state(
         raise ValueError("target check region is outside its selected activation")
     node_families = {_family(row["sourceKey"], row["regionId"]) for row in plans}
     by_root = {row["rootCallId"]: row for row in plans}
+    # A transport RECEIVE can precede the first instrumented method entry on
+    # its thread (callId=0).  GraphChecker carries the producer endpoint ID in
+    # the subsequent occurrence's causal context, so retain those exact
+    # identities as an alternative to call-stack ownership.  The token
+    # boundaries matter: a substring match would alias different messages.
+    by_message_anchor: dict[tuple[str, str], list[dict[str, Any]]] = {}
+    for plan in plans:
+        context = plan["occurrenceId"].split("/ctx:Anchor:", 1)
+        if len(context) != 2 or "@" not in context[1]:
+            continue
+        endpoint_id = context[1].split("@", 1)[0]
+        if endpoint_id:
+            by_message_anchor.setdefault((plan["sourceKey"], endpoint_id), []).append(plan)
     owner_cache: dict[int, dict[str, Any] | None] = {}
 
     def owner(call_id: int) -> dict[str, Any] | None:
@@ -339,7 +354,7 @@ def summarize_region_state(
                                        "EXCHANGE_RECEIVE": []})[row["event"]].append(row)
     edge_families = set()
     closure_edges = set()
-    paired = unmapped = ambiguous = 0
+    paired = unmapped = ambiguous = anchor_mapped = 0
 
     def endpoint_owner(endpoint: str) -> dict[str, Any] | None:
         # Original Endpoint.render() appends /site:<site>/sidx:<index>/att:<n>
@@ -364,17 +379,42 @@ def summarize_region_state(
             source_region = REGION_IN_ENDPOINT.search(sent.get(
                 "producerEndpoint") or "")
             destination = owner(received.get("callId") or 0)
-            if source_region is None or destination is None:
+            destinations = [destination] if destination is not None else []
+            if not destinations:
+                endpoint_id = sent.get("producerEndpointId")
+                producer_endpoint = sent.get("producerEndpoint") or ""
+                # The original region plan must actually contain the exact
+                # producer occurrence.  A role-only endpoint or a copied
+                # context from another physical source is insufficient.
+                producer = endpoint_owner(producer_endpoint)
+                producer_enter = calls.get(producer["rootCallId"], {}) \
+                    if producer is not None else {}
+                if (isinstance(endpoint_id, str) and endpoint_id and
+                        producer is not None and
+                        producer["sourceKey"] == sent.get("sourceKey") and
+                        isinstance(producer_enter.get("seq"), int) and
+                        producer_enter["seq"] <= sent.get("seq", -1) and
+                        isinstance(received.get("seq"), int) and
+                        sent["seq"] < received["seq"]):
+                    destinations = [plan for plan in by_message_anchor.get((
+                        received.get("sourceKey"), endpoint_id), []) if
+                        isinstance(calls.get(plan["rootCallId"], {}).get("seq"), int)
+                        and received.get("seq", -1) <
+                        calls[plan["rootCallId"]]["seq"]]
+                    if destinations:
+                        anchor_mapped += 1
+            if source_region is None or not destinations:
                 unmapped += 1
                 continue
             source_family = _family(sent["sourceKey"], source_region.group(1))
-            destination_family = _family(destination["sourceKey"],
-                                         destination["regionId"])
-            family = f"{key[0]}|{key[3]}|{source_family}->{destination_family}"
-            edge_families.add(family)
-            if (endpoint_owner(sent.get("producerEndpoint") or "") is not None
-                    and destination["occurrenceId"] in by_occurrence):
-                closure_edges.add(family)
+            for destination in destinations:
+                destination_family = _family(destination["sourceKey"],
+                                             destination["regionId"])
+                family = f"{key[0]}|{key[3]}|{source_family}->{destination_family}"
+                edge_families.add(family)
+                if (endpoint_owner(sent.get("producerEndpoint") or "") is not None
+                        and destination["occurrenceId"] in by_occurrence):
+                    closure_edges.add(family)
     selected_family = _family(selected["sourceKey"], selected["regionId"])
     throws = _target_throws(fault_events, target_throw,
                             target["physicalActor"],
@@ -406,6 +446,7 @@ def summarize_region_state(
               "branchOutcomeIds": sorted(branch_outcomes),
               "counts": {"traceRows": trace_count, "regionPlanRows": len(plans),
                          "pairedExchangeEvents": paired,
+                         "anchorMappedPairedExchanges": anchor_mapped,
                          "unmappedPairedExchanges": unmapped,
                          "ambiguousExchangeReceives": ambiguous,
                          "catalogGaps": len(plan_rows[0].get("gaps", []))},

@@ -178,6 +178,62 @@ class RegionStateGraphTest(unittest.TestCase):
         self.assertEqual(1, len(summary["edgeFamilies"]))
         self.assertEqual([], summary["closureEdgeFamilies"])
 
+    def test_receive_before_first_method_uses_exact_message_anchor(self) -> None:
+        case = self._case("anchored-receive")
+        trace_file = case["trace"] / "runtime_trace.jsonl"
+        rows = [json.loads(line) for line in trace_file.read_text().splitlines()]
+        sent = next(row for row in rows if row.get("event") == "EXCHANGE_SEND")
+        received = next(row for row in rows if row.get("event") == "EXCHANGE_RECEIVE")
+        plans = [json.loads(line) for line in case["plan"].read_text().splitlines()]
+        sent["producerEndpointId"] = "endpoint-1"
+        sent["producerEndpoint"] = plans[1]["occurrenceId"] + "/site:SEND"
+        received["callId"] = 0  # transport hook ran before the handler entered
+        receiver_enter = next(row for row in rows if row.get("event") ==
+                              "METHOD_ENTER" and row.get("callId") == 20)
+        receiver_branch = next(row for row in rows if row.get("event") ==
+                               "BRANCH" and row.get("callId") == 20)
+        receiver_enter["seq"] = 6
+        receiver_branch["seq"] = 7
+        rows.sort(key=lambda row: row["seq"])
+        write_jsonl(trace_file, rows)
+        plans[2]["occurrenceId"] = (
+            f"nn2#epoch0/region/{RECEIVER}/ctx:Anchor:endpoint-1@TEST_RPC/"
+            "idx:handler@0")
+        write_jsonl(case["plan"], plans)
+        receipt = json.loads(case["receipt"].read_text())
+        receipt.update(_closed_inputs(case["trace"], self.scope, self.graph,
+                                      self.skeletons))
+        case["receipt"].write_text(json.dumps(receipt) + "\n")
+
+        summary = self._summarize(case)
+        self.assertEqual(1, summary["counts"]["pairedExchangeEvents"])
+        self.assertEqual(1, summary["counts"]["anchorMappedPairedExchanges"])
+        self.assertEqual(0, summary["counts"]["unmappedPairedExchanges"])
+        self.assertEqual(1, len(summary["edgeFamilies"]))
+
+        plans[2]["occurrenceId"] = plans[2]["occurrenceId"].replace(
+            "Anchor:endpoint-1@", "Anchor:another-endpoint@")
+        write_jsonl(case["plan"], plans)
+        mismatched = self._summarize(case)
+        self.assertEqual(0, mismatched["counts"]["anchorMappedPairedExchanges"])
+        self.assertEqual(1, mismatched["counts"]["unmappedPairedExchanges"])
+        self.assertEqual([], mismatched["edgeFamilies"])
+
+        plans[2]["occurrenceId"] = plans[2]["occurrenceId"].replace(
+            "Anchor:another-endpoint@", "Anchor:endpoint-1@")
+        write_jsonl(case["plan"], plans)
+        sent["producerEndpoint"] = (
+            "nn1#epoch1/region/ROLE.TRANSPORT/ctx:Root:fixture/site:SEND")
+        write_jsonl(trace_file, rows)
+        receipt = json.loads(case["receipt"].read_text())
+        receipt.update(_closed_inputs(case["trace"], self.scope, self.graph,
+                                      self.skeletons))
+        case["receipt"].write_text(json.dumps(receipt) + "\n")
+        role_only = self._summarize(case)
+        self.assertEqual(0, role_only["counts"]["anchorMappedPairedExchanges"])
+        self.assertEqual(1, role_only["counts"]["unmappedPairedExchanges"])
+        self.assertEqual([], role_only["edgeFamilies"])
+
     def test_target_receipt_and_loss_are_fail_closed(self) -> None:
         case = self._case("healthy")
         healthy = self._summarize(case)
