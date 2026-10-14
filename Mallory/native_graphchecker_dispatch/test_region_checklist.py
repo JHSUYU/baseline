@@ -83,6 +83,15 @@ class RegionChecklistTest(unittest.TestCase):
         graph_fixture = fixture.RegionStateGraphTest("runTest")
         graph_fixture.setUp()
         self.addCleanup(graph_fixture.doCleanups)
+
+        def fixture_plan_ids(_path, _jar, plans):
+            # The synthetic fixture pins occurrence IDs directly; its
+            # engine.jar is deliberately not a compiled GraphChecker engine.
+            # Only the external ID conversion is replaced. Both summaries
+            # still traverse the real graph and receipt validation logic.
+            return {("exact-runtime-check" if row["regionId"] == fixture.ACTIVATION
+                     else "exact-receiver"): row for row in plans}
+
         original = graph_fixture._case("recorded")
         trial = self.root / "r0001"
         iteration = trial / "iteration-native"
@@ -105,30 +114,34 @@ class RegionChecklistTest(unittest.TestCase):
                           "candidate_graph": str(graph_fixture.graph),
                           "region_skeletons": str(graph_fixture.skeletons)},
         }
-        summary = summarize_region_state(
-            trace, plan, receipt, events, graph_fixture.scope,
-            graph_fixture.graph, graph_fixture.skeletons, fixture.SITE,
-            engine_jar=graph_fixture.engine, target_throw=config["target_throw"])
-        summary["provenance"]["extractor"] = (
-            "invoked_original_resolver_and_recorder")
-        for path in (trial / "native-summary.json", output / "summary.json"):
-            path.write_text(json.dumps(summary) + "\n")
-        (trial / "schedule-lineage.json").write_text(json.dumps({
-            "source": str(trace / "schedule.jsonl"),
-            "source_sha256": checklist._sha(trace / "schedule.jsonl"),
-            "destination_sha256": checklist._sha(trace / "schedule.jsonl"),
-            "copied": False}) + "\n")
-        result = {"native_session_sha256": checklist._sha(
-                      trial / "native-summary.json"),
-                  "native_target_occurrence_ids": summary[
-                      "targetEvidence"]["targetCheckOccurrenceIds"]}
-        self.assertEqual(summary, checklist._verified_region_summary(
-            trial, result, config, graph_fixture.engine))
-        events.write_text(events.read_text().replace("exact-runtime-check",
-                                                    "wrong-occurrence"))
-        with self.assertRaisesRegex(ValueError, "graph or target receipt changed"):
-            checklist._verified_region_summary(trial, result, config,
-                                                graph_fixture.engine)
+        with patch("Mallory.native_graphchecker_feedback.region_state_graph."
+                   "_plan_identity_rows", side_effect=fixture_plan_ids):
+            summary = summarize_region_state(
+                trace, plan, receipt, events, graph_fixture.scope,
+                graph_fixture.graph, graph_fixture.skeletons, fixture.SITE,
+                engine_jar=graph_fixture.engine,
+                target_throw=config["target_throw"])
+            summary["provenance"]["extractor"] = (
+                "invoked_original_resolver_and_recorder")
+            for path in (trial / "native-summary.json", output / "summary.json"):
+                path.write_text(json.dumps(summary) + "\n")
+            (trial / "schedule-lineage.json").write_text(json.dumps({
+                "source": str(trace / "schedule.jsonl"),
+                "source_sha256": checklist._sha(trace / "schedule.jsonl"),
+                "destination_sha256": checklist._sha(trace / "schedule.jsonl"),
+                "copied": False}) + "\n")
+            result = {"native_session_sha256": checklist._sha(
+                          trial / "native-summary.json"),
+                      "native_target_occurrence_ids": summary[
+                          "targetEvidence"]["targetCheckOccurrenceIds"]}
+            self.assertEqual(summary, checklist._verified_region_summary(
+                trial, result, config, graph_fixture.engine))
+            events.write_text(events.read_text().replace("exact-runtime-check",
+                                                        "wrong-occurrence"))
+            with self.assertRaisesRegex(
+                    ValueError, "original Finalizer plan omitted the exact target check"):
+                checklist._verified_region_summary(trial, result, config,
+                                                    graph_fixture.engine)
 
     def test_alternate_upstream_junit_requires_pinned_source_and_target(self) -> None:
         item = next(row for row in checklist.load_inventory(

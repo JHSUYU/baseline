@@ -310,7 +310,8 @@ class RegionStateGraphTest(unittest.TestCase):
         self.assertEqual(67, summaries["fault3"]["counts"]["regionPlanRows"])
         self.assertTrue(delta["targetRetained"])
         self.assertGreater(len(delta["newNodeFamilies"]), 0)
-        self.assertGreater(len(delta["newClosureEdgeFamilies"]), 0)
+        self.assertGreater(len(delta["newEdgeFamilies"]), 0)
+        self.assertGreater(len(delta["newBranchOutcomeIds"]), 0)
 
 
 if __name__ == "__main__":
