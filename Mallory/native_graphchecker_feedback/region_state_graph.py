@@ -14,6 +14,7 @@ import os
 import re
 import subprocess
 import fcntl
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
@@ -23,6 +24,7 @@ from Mallory.instrumentation.graphchecker_port.native_original_weave import (
 
 SCHEMA = 1
 REGION_IN_ENDPOINT = re.compile(r"/region/(REGION\.[^/]+)/")
+ROLE_IN_ENDPOINT = re.compile(r"^([^/]+)/region/(ROLE\.[^/]+)/ctx:")
 PLAN_ID_CLASS = "edu.uva.liftlab.mallory.nativefeedback.RegionPlanIdsMain"
 PLAN_ID_SOURCE = Path(__file__).with_name("RegionPlanIdsMain.java")
 
@@ -239,6 +241,7 @@ def _fatal_unplanned(trace_dir: Path, fault_events: Path,
                                    "rawTargetBranchSeqs": [matching[ordinal - 1]["seq"]],
                                    "targetThrowRows": throws},
                 "nodeFamilies": [], "edgeFamilies": [],
+                "contextBoundaryEdgeFamilies": [],
                 "closureEdgeFamilies": [], "branchOutcomeIds": [],
                 "provenance": {**pins, "faultEventsSha256": _sha(fault_events),
                                "engineJarSha256": _sha(engine_jar)}}
@@ -352,9 +355,16 @@ def summarize_region_state(
         if all(key):
             exchanges.setdefault(key, {"EXCHANGE_SEND": [],
                                        "EXCHANGE_RECEIVE": []})[row["event"]].append(row)
+    # An endpoint ID reused by distinct sends cannot by itself identify
+    # which send caused a later ROLE-anchored region occurrence.
+    send_id_counts = Counter(row["producerEndpointId"] for row in exchange_rows
+                             if row["event"] == "EXCHANGE_SEND" and
+                             isinstance(row.get("producerEndpointId"), str) and
+                             row["producerEndpointId"])
     edge_families = set()
+    context_boundary_edges = set()
     closure_edges = set()
-    paired = unmapped = ambiguous = anchor_mapped = 0
+    paired = unmapped = ambiguous = anchor_mapped = context_boundary_paired = 0
 
     def endpoint_owner(endpoint: str) -> dict[str, Any] | None:
         # Original Endpoint.render() appends /site:<site>/sidx:<index>/att:<n>
@@ -403,6 +413,42 @@ def summarize_region_state(
                         calls[plan["rootCallId"]]["seq"]]
                     if destinations:
                         anchor_mapped += 1
+            if source_region is None:
+                # The original GraphChecker represents a send made outside a
+                # selected static region as an ambient ROLE occurrence.  It
+                # is a real causal context, but not a Finalizer region and
+                # cannot establish region closure membership for the sender.
+                # The receiver must instead have an exact selected Anchor
+                # carrying this producer endpoint ID and transport.
+                address, delimiter, _ = (sent.get("producerEndpoint") or "").rpartition(
+                    "/site:")
+                role = ROLE_IN_ENDPOINT.match(address) if delimiter and (
+                    "/idx:" in address) else None
+                endpoint_id = sent.get("producerEndpointId")
+                if (role is not None and role.group(1) == sent.get("sourceKey")
+                        and isinstance(endpoint_id, str) and endpoint_id
+                        and send_id_counts[endpoint_id] == 1
+                        and isinstance(sent.get("seq"), int)
+                        and isinstance(received.get("seq"), int)
+                        and sent["seq"] < received["seq"]):
+                    anchored = [plan for plan in by_message_anchor.get((
+                        received.get("sourceKey"), endpoint_id), []) if
+                        f"/ctx:Anchor:{endpoint_id}@{key[0]}/" in plan["occurrenceId"]
+                        and isinstance(calls.get(plan["rootCallId"], {}).get("seq"), int)
+                        and received["seq"] < calls[plan["rootCallId"]]["seq"]]
+                    if anchored:
+                        context_boundary_paired += 1
+                        actor, _ = _source_actor(sent["sourceKey"])
+                        source_context = f"{actor}/context/{role.group(2)}"
+                        for plan in anchored:
+                            destination_family = _family(plan["sourceKey"],
+                                                         plan["regionId"])
+                            context_boundary_edges.add(
+                                f"{key[0]}|{key[3]}|{source_context}->{destination_family}")
+                        # Preserve the legacy count's meaning: this pair
+                        # still has no REGION-to-REGION mapped edge.
+                        unmapped += 1
+                        continue
             if source_region is None or not destinations:
                 unmapped += 1
                 continue
@@ -442,11 +488,13 @@ def summarize_region_state(
                   key=lambda row: row["occurrenceId"]),
               "nodeFamilies": sorted(node_families),
               "edgeFamilies": sorted(edge_families),
+              "contextBoundaryEdgeFamilies": sorted(context_boundary_edges),
               "closureEdgeFamilies": sorted(closure_edges),
               "branchOutcomeIds": sorted(branch_outcomes),
               "counts": {"traceRows": trace_count, "regionPlanRows": len(plans),
                          "pairedExchangeEvents": paired,
                          "anchorMappedPairedExchanges": anchor_mapped,
+                         "contextBoundaryPairedExchanges": context_boundary_paired,
                          "unmappedPairedExchanges": unmapped,
                          "ambiguousExchangeReceives": ambiguous,
                          "catalogGaps": len(plan_rows[0].get("gaps", []))},
@@ -481,17 +529,29 @@ def delta_region_state(healthy: dict[str, Any], faulted: dict[str, Any]
             "targetActivationRegionId") != healthy["targetActivationRegionId"]:
         return {"status": "target_lost", "targetRetained": False,
                 "newNodeFamilies": [], "newEdgeFamilies": [],
+                "newContextBoundaryEdgeFamilies": [],
                 "newClosureEdgeFamilies": [], "newBranchOutcomeIds": []}
     result: dict[str, Any] = {"status": "compared", "targetRetained": True,
                               "targetActorChanged": faulted.get(
                                   "targetNodeFamily") != healthy["targetNodeFamily"]}
     for field, out in (("nodeFamilies", "newNodeFamilies"),
                        ("edgeFamilies", "newEdgeFamilies"),
+                       ("contextBoundaryEdgeFamilies", "newContextBoundaryEdgeFamilies"),
                        ("closureEdgeFamilies", "newClosureEdgeFamilies"),
                        ("branchOutcomeIds", "newBranchOutcomeIds")):
-        result[out] = sorted(set(faulted[field]) - set(healthy[field]))
+        if field == "contextBoundaryEdgeFamilies" and (field not in healthy or
+                                                          field not in faulted):
+            # A campaign started before this typed observation has no
+            # healthy baseline for it. Do not award novelty for a boundary
+            # that may already have been present in that healthy execution.
+            result[out] = []
+            result["lost" + field[0].upper() + field[1:]] = []
+            continue
+        observed = faulted[field]
+        baseline = healthy[field]
+        result[out] = sorted(set(observed) - set(baseline))
         result["lost" + field[0].upper() + field[1:]] = sorted(
-            set(healthy[field]) - set(faulted[field]))
+            set(baseline) - set(observed))
     return result
 
 
@@ -543,7 +603,8 @@ def record_region_state(
                           "targetSiteId": target_site, "targetReached": False,
                           "targetThrowObserved": False,
                           "status": "target_absent", "nodeFamilies": [],
-                          "edgeFamilies": [], "closureEdgeFamilies": [],
+                          "edgeFamilies": [], "contextBoundaryEdgeFamilies": [],
+                          "closureEdgeFamilies": [],
                           "branchOutcomeIds": [], "provenance": before}
             (output_dir / "summary.json").write_text(json.dumps(result,
                                                   sort_keys=True, indent=2) + "\n")

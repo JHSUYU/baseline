@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -234,6 +235,63 @@ class RegionStateGraphTest(unittest.TestCase):
         self.assertEqual(1, role_only["counts"]["unmappedPairedExchanges"])
         self.assertEqual([], role_only["edgeFamilies"])
 
+        # A valid original GraphChecker ROLE address is an ambient causal
+        # context, not a static REGION. Its transported endpoint can lead to
+        # an exactly anchored selected receiver without admitting the sender
+        # as a member of the target's Finalizer closure.
+        sent["producerEndpoint"] = (
+            "nn1#epoch1/region/ROLE.TRANSPORT/ctx:Root:fixture/idx:send@0/site:SEND")
+        write_jsonl(trace_file, rows)
+        receipt = json.loads(case["receipt"].read_text())
+        receipt.update(_closed_inputs(case["trace"], self.scope, self.graph,
+                                      self.skeletons))
+        case["receipt"].write_text(json.dumps(receipt) + "\n")
+        role_context = self._summarize(case)
+        self.assertEqual(1, role_context["counts"]["contextBoundaryPairedExchanges"])
+        self.assertEqual(1, role_context["counts"]["unmappedPairedExchanges"])
+        self.assertEqual([
+            "TEST_RPC|REQUEST|nn1/context/ROLE.TRANSPORT->nn2/relation/REGION.receiver"
+        ], role_context["contextBoundaryEdgeFamilies"])
+        self.assertEqual([], role_context["edgeFamilies"])
+        self.assertEqual([], role_context["closureEdgeFamilies"])
+        self.assertEqual(1, len(delta_region_state(role_only, role_context)[
+            "newContextBoundaryEdgeFamilies"]))
+        legacy_healthy = dict(role_only)
+        legacy_healthy.pop("contextBoundaryEdgeFamilies")
+        self.assertEqual([], delta_region_state(legacy_healthy, role_context)[
+            "newContextBoundaryEdgeFamilies"])
+
+        sent["producerEndpoint"] = sent["producerEndpoint"].replace(
+            "nn1#epoch1/", "another#epoch0/")
+        write_jsonl(trace_file, rows)
+        receipt = json.loads(case["receipt"].read_text())
+        receipt.update(_closed_inputs(case["trace"], self.scope, self.graph,
+                                      self.skeletons))
+        case["receipt"].write_text(json.dumps(receipt) + "\n")
+        wrong_source = self._summarize(case)
+        self.assertEqual([], wrong_source["contextBoundaryEdgeFamilies"])
+
+        sent["producerEndpoint"] = sent["producerEndpoint"].replace(
+            "another#epoch0/", "nn1#epoch1/")
+        plans[2]["occurrenceId"] = plans[2]["occurrenceId"].replace(
+            "@TEST_RPC/", "@OTHER_RPC/")
+        write_jsonl(case["plan"], plans)
+        wrong_transport = self._summarize(case)
+        self.assertEqual([], wrong_transport["contextBoundaryEdgeFamilies"])
+
+        plans[2]["occurrenceId"] = plans[2]["occurrenceId"].replace(
+            "@OTHER_RPC/", "@TEST_RPC/")
+        write_jsonl(case["plan"], plans)
+        rows.append({**sent, "seq": 8, "correlationId": "another-message",
+                     "spanId": 51})
+        write_jsonl(trace_file, rows)
+        receipt = json.loads(case["receipt"].read_text())
+        receipt.update(_closed_inputs(case["trace"], self.scope, self.graph,
+                                      self.skeletons))
+        case["receipt"].write_text(json.dumps(receipt) + "\n")
+        reused_endpoint = self._summarize(case)
+        self.assertEqual([], reused_endpoint["contextBoundaryEdgeFamilies"])
+
     def test_target_receipt_and_loss_are_fail_closed(self) -> None:
         case = self._case("healthy")
         healthy = self._summarize(case)
@@ -248,6 +306,89 @@ class RegionStateGraphTest(unittest.TestCase):
         delta = delta_region_state(healthy, lost)
         self.assertEqual("target_lost", delta["status"])
         self.assertEqual([], delta["newNodeFamilies"])
+
+    def test_frozen_role_boundary_recordings_if_available(self) -> None:
+        # The static sidecars were in /dev/shm and have been retired. Check
+        # the saved Recorder pins and exact plan rows before reusing their
+        # attested digests; no resolver, JUnit, or campaign process runs.
+        runs = (
+            ("SOLR-09", Path("/proj/silentfailure-PG0/mallory/solr09-native-prep-v1/campaign-prep/campaign/trials/r0000"), 5, 7, 5, 5, 17),
+            ("SOLR-07", Path("/proj/silentfailure-PG0/mallory/solr07-native-prep-v1/campaign-prep/campaign/trials/r0000"), 21, 19, 17, 15, 129),
+            ("HBASE-01", Path("/proj/silentfailure-PG0/ZhenyuLi/Mallory/HBASE-01-20261014-native-v5/campaign/trials/r0000"), 0, 0, 0, 0, 258),
+        )
+        if not all((root / "original-graph/summary.json").is_file()
+                   for _, root, _, _, _, _, _ in runs):
+            self.skipTest("frozen native recordings are unavailable")
+
+        def digest(path: Path) -> str:
+            result = hashlib.sha256()
+            with path.open("rb") as stream:
+                for block in iter(lambda: stream.read(1 << 20), b""):
+                    result.update(block)
+            return result.hexdigest()
+
+        for (name, root, expected_pairs, expected_families, region_edges,
+             closure_edges, legacy_unmapped) in runs:
+            with self.subTest(name=name):
+                graph_dir = root / "original-graph"
+                original = json.loads((graph_dir / "summary.json").read_text())
+                pins = original["provenance"]
+                plan_path = graph_dir / "recorded/concolic_region_plan.jsonl"
+                receipt = graph_dir / "target-occurrence.json"
+                events = root / "iteration-native/fault-events.jsonl"
+                trace = root / "iteration-native/trace"
+                command = json.loads((graph_dir / "recorder-command.json").read_text())
+                engine = Path(command[4].split(":", 1)[0])
+                if not engine.is_file():
+                    self.skipTest("frozen original engine is unavailable")
+                for key, path in (
+                    ("regionPlanSha256", plan_path),
+                    ("runtimeTraceSha256", trace / "runtime_trace.jsonl"),
+                    ("traceManifestSha256", trace / "streaming_trace_manifest.json"),
+                    ("targetReceiptSha256", receipt),
+                    ("faultEventsSha256", events),
+                    ("engineJarSha256", engine),
+                ):
+                    self.assertEqual(pins[key], digest(path), (name, key))
+                receipt_row = json.loads(receipt.read_text())
+                selected_address = receipt_row["selectedOccurrenceAddress"]
+                selected_id = original["targetEvidence"]["targetCheckOccurrenceIds"][0]
+                recorded_ids = {row["occurrenceAddress"]: row["occurrenceId"]
+                                for row in original.get("closureMembers", [])}
+
+                def original_ids(_path, _jar, plans):
+                    if recorded_ids:
+                        self.assertEqual({p["occurrenceId"] for p in plans},
+                                         set(recorded_ids))
+                        return {recorded_ids[p["occurrenceId"]]: p for p in plans}
+                    # Older frozen summaries predate ID publication. Only
+                    # the selected target ID participates in this read-only
+                    # summary; unrelated IDs need unique placeholders.
+                    return {selected_id if p["occurrenceId"] == selected_address
+                            else f"offline-{i}": p for i, p in enumerate(plans)}
+
+                closed = {key: pins[key] for key in (
+                    "traceManifestSha256", "runtimeTraceSha256", "scheduleSha256",
+                    "scopeMapSha256", "candidateGraphSha256",
+                    "regionSkeletonsSha256", "tracedRowsDigest")}
+                with patch("Mallory.native_graphchecker_feedback.region_state_graph."
+                           "_closed_inputs", return_value=closed), patch(
+                           "Mallory.native_graphchecker_feedback.region_state_graph."
+                           "_plan_identity_rows", side_effect=original_ids):
+                    refreshed = summarize_region_state(
+                        trace, plan_path, receipt, events, receipt, receipt,
+                        receipt, original["targetSiteId"], engine_jar=engine)
+                self.assertEqual(expected_pairs, refreshed["counts"][
+                    "contextBoundaryPairedExchanges"])
+                self.assertEqual(expected_families, len(refreshed[
+                    "contextBoundaryEdgeFamilies"]))
+                self.assertEqual(region_edges, len(refreshed["edgeFamilies"]))
+                self.assertEqual(closure_edges, len(refreshed["closureEdgeFamilies"]))
+                self.assertEqual(legacy_unmapped, refreshed["counts"][
+                    "unmappedPairedExchanges"])
+                self.assertEqual(original["nodeFamilies"], refreshed["nodeFamilies"])
+                self.assertEqual(original["branchOutcomeIds"], refreshed[
+                    "branchOutcomeIds"])
 
     def test_exact_target_throw_survives_unplanned_resolver_and_absence(self) -> None:
         case = self._case("fatal")

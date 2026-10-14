@@ -18,6 +18,21 @@ from Mallory.native_graphchecker_campaign import campaign as core
 
 
 class NativeAdmissionLineageTest(unittest.TestCase):
+    def test_role_boundary_novelty_is_independent_and_once_per_family(self) -> None:
+        state = {"seen_node_families": [], "seen_edge_families": [],
+                 "seen_branch_outcomes": []}
+        feedback = {"newNodeFamilies": [], "newClosureEdgeFamilies": [],
+                    "newBranchOutcomeIds": [],
+                    "newContextBoundaryEdgeFamilies": [
+                        "SOLR_HTTP|REQUEST|node0/context/ROLE.WAKE->node1/relation/REGION.a"]}
+        self.assertEqual(2, core._novelty(state, feedback))
+        self.assertEqual(0, core._novelty(state, feedback))
+        self.assertEqual([], state["seen_edge_families"])
+        self.assertEqual(feedback["newContextBoundaryEdgeFamilies"], state[
+            "seen_context_boundary_families"])
+        feedback["newContextBoundaryEdgeFamilies"] = []
+        self.assertEqual(0, core._novelty(state, feedback))
+
     def test_trial_elapsed_includes_graph_analysis(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             trial = Path(directory)

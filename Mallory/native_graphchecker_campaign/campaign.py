@@ -923,6 +923,19 @@ def _novelty(state: dict[str, Any], feedback: dict[str, Any]) -> int:
         new = set(values) - seen
         state[seen_field] = sorted(seen | set(values))
         score += weight * len(new)
+    if region_state:
+        # A ROLE sender is an observed causal context outside the static
+        # Finalizer region plan. Reward a new exact handoff into a selected
+        # region, but keep it in its own corpus and below a region-region
+        # closure edge's weight. It never admits a fault to the closure.
+        boundaries = feedback.get("newContextBoundaryEdgeFamilies", [])
+        if not isinstance(boundaries, list) or not all(
+                isinstance(value, str) and value for value in boundaries):
+            raise ValueError("native delta has invalid context boundary edges")
+        seen = set(state.setdefault("seen_context_boundary_families", []))
+        new = set(boundaries) - seen
+        state["seen_context_boundary_families"] = sorted(seen | set(boundaries))
+        score += 2 * len(new)
     return min(60, score)
 
 
@@ -1468,6 +1481,7 @@ def _new_state(config: dict[str, Any], config_sha: str,
             "status": "running", "terminal": False,
             "healthy": None, "trials": [], "queue": [], "seen_plan_keys": [],
             "seen_node_families": [], "seen_edge_families": [],
+            "seen_context_boundary_families": [],
             "seen_branch_outcomes": [], "completed_fault_trials": 0,
             "fault_id_attempts": {}, "fault_id_successes": {},
             "elapsed_seconds": 0.0, "active": None, "next_trial_index": 1}
@@ -1659,6 +1673,7 @@ def _import_predecessor(config: dict[str, Any], root: Path,
     state["seen_plan_keys"] = sorted(seen)
     state["queue"] = queue
     for name in ("seen_node_families", "seen_edge_families",
+                 "seen_context_boundary_families",
                  "seen_branch_outcomes", "fault_id_attempts", "fault_id_successes"):
         state[name] = source.get(name, {} if name.startswith("fault_id_") else [])
     before = len(state["queue"])
