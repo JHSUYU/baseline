@@ -43,6 +43,22 @@ public final class ExecutionIndex extends Value {
         return copied.isEmpty() ? EMPTY : new ExecutionIndex(copied);
     }
 
+    /** Extend an already validated prefix while retaining its exact fold. */
+    public static ExecutionIndex append(ExecutionIndex prefix, ExecutionIndex suffix) {
+        Fields.required(prefix, "prefix");
+        Fields.required(suffix, "suffix");
+        if (suffix.frames.isEmpty()) return prefix;
+        if (prefix.frames.isEmpty()) return suffix;
+        List<Frame> frames = new ArrayList<>(prefix.frames.size() + suffix.frames.size());
+        frames.addAll(prefix.frames);
+        frames.addAll(suffix.frames);
+        ExecutionIndex joined = new ExecutionIndex(Collections.unmodifiableList(frames));
+        String folded = prefix.hash();
+        for (Frame frame : suffix.frames) folded = fold(folded, frame);
+        joined.hash = folded;
+        return joined;
+    }
+
     /** Reads {@code callSite@iter/callSite@iter/...}; {@code ""} is empty. */
     public static ExecutionIndex parse(String rendered) {
         String value = rendered == null ? "" : rendered.trim();

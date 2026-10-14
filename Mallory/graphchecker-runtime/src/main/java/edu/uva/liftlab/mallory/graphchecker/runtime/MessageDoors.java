@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * The GraphChecker message-door contract ported into Mallory's JUnit runtime.
@@ -33,6 +34,10 @@ public final class MessageDoors {
     private static final AtomicLong EXCHANGES = new AtomicLong();
     private static final Map<String, AtomicLong> DOOR_ORDINALS = new ConcurrentHashMap<>();
     private static final Map<String, AtomicLong> REPLAY_SEND_ORDINALS =
+            new ConcurrentHashMap<>();
+    private static final Map<String, AtomicLong> TASK_ORDINALS =
+            new ConcurrentHashMap<>();
+    private static final Map<Long, TaskRestore> TASK_CLAIMS =
             new ConcurrentHashMap<>();
     // Coverage feedback is a set of sites per causal occurrence. Repeated
     // execution of one block in a polling loop adds no coverage information.
@@ -274,6 +279,112 @@ public final class MessageDoors {
     }
 
     public static Object captureScope() { return TraceRows.snapshot(); }
+
+    /**
+     * Capture one executor submission without copying its caller's regions,
+     * frames, or saved request stack. An unrooted task has no causal ticket.
+     * A rejected task leaves an unclaimed submission and therefore no edge.
+     */
+    public static Object prepareTask(String siteId, Object carrier) {
+        if (empty(siteId) || carrier == null) {
+            gap("TASK_IDENTITY_MISSING", siteId, "site or carrier missing");
+            return null;
+        }
+        if (!TraceRows.hasAttributedScope(null)) return null;
+        OccurrenceAddress parent = TraceRows.occurrence(null);
+        if (parent == null) return null;
+        TraceRows.Context live = TraceRows.currentContext();
+        String key = parent.id() + "\n" + siteId;
+        long ordinal = TASK_ORDINALS.computeIfAbsent(key,
+                ignored -> new AtomicLong()).incrementAndGet();
+        String endpoint = Digest.digest("task-submit-v1\n" + key + "\n" + ordinal, 32);
+        String replayParent = TraceRows.replayOccurrenceId(parent);
+        String replay = empty(replayParent) ? "" : Digest.digest(
+                "task-replay-v1\n" + replayParent + "\n" + siteId
+                        + "\n" + ordinal, 32);
+        TaskTicket ticket = new TaskTicket(siteId, ordinal, endpoint,
+                parent.id(), live.source, replay);
+        TraceRows.row("TASK_SUBMIT", parent,
+                TraceRows.fields("siteId", siteId, "taskOrdinal", ordinal,
+                        "producerEndpointId", endpoint,
+                        "sourceKey", live.source.key()));
+        return ticket;
+    }
+
+    /** One exact task may be claimed once; the worker starts with a fresh path. */
+    public static long claimTask(Object prepared, String role, String api) {
+        if (prepared == null) return 0L;
+        if (!(prepared instanceof TaskTicket)) {
+            gap("TASK_TICKET_INVALID", api, "unrecognized task ticket");
+            return 0L;
+        }
+        TaskTicket ticket = (TaskTicket) prepared;
+        if (!ticket.claimed.compareAndSet(false, true)) {
+            gap("TASK_TICKET_REUSED", ticket.siteId, "task claimed more than once");
+            return 0L;
+        }
+        TraceRows.Context fresh = new TraceRows.Context();
+        fresh.source = ticket.source;
+        fresh.cause = CausalContext.of(ticket.endpoint, ticket.siteId);
+        fresh.replayCause = ticket.replay;
+        TraceRows.Context prior = TraceRows.install(fresh);
+        long token = EXCHANGES.incrementAndGet();
+        TASK_CLAIMS.put(token, new TaskRestore(prior, Thread.currentThread()));
+        OccurrenceAddress child = TraceRows.occurrence(null);
+        String claimEndpoint = Digest.digest("task-claim-v1\n"
+                + ticket.endpoint + "\n" + child.id(), 32);
+        TraceRows.row("TASK_CLAIM", child,
+                TraceRows.fields("role", role, "api", api,
+                        "siteId", ticket.siteId,
+                        "taskOrdinal", ticket.ordinal,
+                        "producerEndpointId", ticket.endpoint,
+                        "producerOccurrenceId", ticket.parentOccurrence,
+                        "consumerEndpointId", claimEndpoint,
+                        "sourceKey", ticket.source.key()));
+        return token;
+    }
+
+    public static void endTask(long token) {
+        if (token == 0L) return;
+        TaskRestore restore = TASK_CLAIMS.get(token);
+        if (restore == null || restore.thread != Thread.currentThread()) {
+            gap("TASK_CLAIM_UNBALANCED", String.valueOf(token),
+                    "missing claim or different worker thread");
+            return;
+        }
+        TASK_CLAIMS.remove(token);
+        TraceRows.restore(restore.prior);
+    }
+
+    private static final class TaskTicket {
+        final String siteId;
+        final long ordinal;
+        final String endpoint;
+        final String parentOccurrence;
+        final SourceRef source;
+        final String replay;
+        final AtomicBoolean claimed = new AtomicBoolean();
+
+        TaskTicket(String siteId, long ordinal, String endpoint,
+                   String parentOccurrence, SourceRef source, String replay) {
+            this.siteId = siteId;
+            this.ordinal = ordinal;
+            this.endpoint = endpoint;
+            this.parentOccurrence = parentOccurrence;
+            this.source = source;
+            this.replay = replay;
+        }
+    }
+
+    private static final class TaskRestore {
+        final TraceRows.Context prior;
+        final Thread thread;
+
+        TaskRestore(TraceRows.Context prior, Thread thread) {
+            this.prior = prior;
+            this.thread = thread;
+        }
+    }
 
     public static long enterCarriedScope(Object scope, String role,
                                          String api) {

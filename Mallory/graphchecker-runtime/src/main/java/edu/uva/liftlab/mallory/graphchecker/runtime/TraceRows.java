@@ -114,6 +114,9 @@ final class TraceRows {
 
     static Context snapshot() { return CURRENT.get().copy(); }
 
+    /** Read only the live source and cause for a compact task ticket. */
+    static Context currentContext() { return CURRENT.get(); }
+
     static Context install(Context scope) {
         Context prior = CURRENT.get();
         CURRENT.set(scope.copy());
@@ -402,12 +405,41 @@ final class TraceRows {
                 Activation activation = it.next();
                 if (!EMITTED_ACTIVATIONS.add(activation.occurrence.id())) continue;
                 OccurrenceAddress parent = activation.parent;
-                row("ACTIVATION", activation.occurrence,
-                        fields("regionId", activation.occurrence.regionId(),
-                                "parentOccurrenceId", parent == null ? "" : parent.id(),
-                                "parentOccurrence", parent == null ? "" : parent.render()));
+                JsonObject values = fields("regionId", activation.occurrence.regionId(),
+                        "parentOccurrenceId", parent == null ? "" : parent.id());
+                String suffix = COMPACT_TRACE && parent != null
+                        && EMITTED_ACTIVATIONS.contains(parent.id())
+                        ? activationSuffix(parent, activation.occurrence) : null;
+                if (suffix != null) {
+                    // The parser reconstructs the exact address from the
+                    // previously published parent and checks its digest.
+                    values.addProperty("indexSuffix", suffix);
+                    values.addProperty("parentIndexHash", parent.index().hash());
+                } else {
+                    values.addProperty("parentOccurrence",
+                            parent == null ? "" : parent.render());
+                }
+                row("ACTIVATION", activation.occurrence, values);
             }
         }
+    }
+
+    private static String activationSuffix(OccurrenceAddress parent,
+                                           OccurrenceAddress child) {
+        if (!parent.node().equals(child.node())
+                || !parent.context().equals(child.context())) return null;
+        List<Frame> before = parent.index().frames();
+        List<Frame> after = child.index().frames();
+        if (after.size() <= before.size()) return null;
+        for (int i = 0; i < before.size(); i++) {
+            if (!before.get(i).equals(after.get(i))) return null;
+        }
+        StringBuilder suffix = new StringBuilder();
+        for (int i = before.size(); i < after.size(); i++) {
+            if (suffix.length() > 0) suffix.append('/');
+            suffix.append(after.get(i).render());
+        }
+        return suffix.toString();
     }
 
     static boolean hasActiveRegion(Object owner) {
@@ -509,8 +541,20 @@ final class TraceRows {
                                 || "REGION_COMPLETE".equals(kind))
                         && EMITTED_ACTIVATIONS.contains(occurrence.id())) {
                     row.addProperty("occurrenceRef", "ACTIVATION");
-                } else if (occurrence != null) {
+                } else if (occurrence != null
+                        && !(COMPACT_TRACE && "ACTIVATION".equals(kind)
+                                && row.has("indexSuffix"))) {
                     row.addProperty("occurrence", occurrence.render());
+                }
+                if (COMPACT_TRACE && ("ACTIVATION".equals(kind)
+                        || "REGION_COMPLETE".equals(kind))
+                        && row.has("parentOccurrenceId")
+                        && EMITTED_ACTIVATIONS.contains(
+                                row.get("parentOccurrenceId").getAsString())) {
+                    // The exact full parent path was already emitted once.
+                    // The parser checks and restores that prior activation.
+                    row.remove("parentOccurrence");
+                    row.addProperty("parentOccurrenceRef", "ACTIVATION");
                 }
                 row.addProperty("seq", ++sequence);
                 writer.write(GSON.toJson(row));

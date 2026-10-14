@@ -3,6 +3,7 @@ package edu.uva.liftlab.mallory.graphchecker.runtime;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import edu.uva.liftlab.mallory.graphchecker.contract.ExecutionIndex;
 import edu.uva.liftlab.mallory.graphchecker.contract.OccurrenceAddress;
 
 import java.io.IOException;
@@ -42,6 +43,10 @@ public final class TrialGraph {
     private final Map<String, List<CoverageEvent>> coverageRows = new LinkedHashMap<>();
     private final Set<String> globalCoverageSiteIds = new TreeSet<>();
     private final Map<String, List<JsonObject>> doorRows = new LinkedHashMap<>();
+    // The first strict pass expands and validates compact activation identities.
+    // Later edge joins only need these validated strings, not another expansion
+    // of every execution-index prefix in the trace.
+    private final Map<String, String> activationOccurrences = new HashMap<>();
     private PriorSummary priorSummary;
 
     private static final class PriorSummary {
@@ -146,9 +151,46 @@ public final class TrialGraph {
         return graph;
     }
 
+    private static final class ActivationStamp {
+        final String occurrence;
+        final String node;
+        final String region;
+        final long seq;
+
+        ActivationStamp(JsonObject row) {
+            occurrence = value(row, "occurrence");
+            node = value(row, "node");
+            region = value(row, "regionId");
+            seq = number(row, "seq");
+        }
+    }
+
+    private static OccurrenceAddress address(ActivationStamp stamp,
+            Map<String, OccurrenceAddress> cache, String id) {
+        if (stamp == null) return null;
+        OccurrenceAddress known = cache.get(id);
+        if (known != null) return known;
+        try {
+            OccurrenceAddress parsed = OccurrenceAddress.parse(stamp.occurrence);
+            cache.put(id, parsed);
+            return parsed;
+        } catch (IllegalArgumentException invalid) {
+            return null;
+        }
+    }
+
     private void eachRow(Path trace, boolean countInvalid,
                          Consumer<JsonObject> consumer) throws IOException {
-        Map<String, JsonObject> activations = new HashMap<>();
+        Map<String, ActivationStamp> activations = new HashMap<>();
+        // Compact rows often refer to the same active region many times. The
+        // bounded cache avoids repeatedly parsing long execution indices.
+        Map<String, OccurrenceAddress> addressCache =
+                new LinkedHashMap<String, OccurrenceAddress>(1024, 0.75f, true) {
+                    @Override protected boolean removeEldestEntry(
+                            Map.Entry<String, OccurrenceAddress> eldest) {
+                        return size() > 1024;
+                    }
+                };
         try (InputStream raw = Files.newInputStream(trace);
              InputStream input = trace.toString().endsWith(".gz")
                      ? new GZIPInputStream(raw) : raw;
@@ -163,54 +205,136 @@ public final class TrialGraph {
                     if (countInvalid) gap("TRACE_ROW_INVALID");
                     continue;
                 }
+                OccurrenceAddress parentAddress = null;
+                if ("ACTIVATION".equals(value(row, "parentOccurrenceRef"))) {
+                    String parentId = value(row, "parentOccurrenceId");
+                    ActivationStamp parent = activations.get(parentId);
+                    parentAddress = address(parent, addressCache, parentId);
+                    if (!("ACTIVATION".equals(value(row, "kind"))
+                            || "REGION_COMPLETE".equals(value(row, "kind")))
+                            || row.has("parentOccurrence") || parentAddress == null
+                            || !parentId.equals(parentAddress.id())
+                            || !parent.node.equals(value(row, "node"))
+                            || parent.seq < 0 || parent.seq >= number(row, "seq")) {
+                        throw new IllegalArgumentException(
+                                "compact parent lacks exact prior activation "
+                                        + parentId + " at seq " + value(row, "seq"));
+                    }
+                    row.addProperty("parentOccurrence", parent.occurrence);
+                }
+                if (row.has("indexSuffix")) {
+                    if (!"ACTIVATION".equals(value(row, "kind"))
+                            || row.has("occurrence")
+                            || !"ACTIVATION".equals(value(row, "parentOccurrenceRef"))
+                            || !row.has("parentOccurrence")) {
+                        throw new IllegalArgumentException(
+                                "invalid compact activation at seq " + value(row, "seq"));
+                    }
+                    try {
+                        OccurrenceAddress parent = parentAddress;
+                        String suffix = value(row, "indexSuffix");
+                        if (suffix.isEmpty()
+                                || !parent.index().hash().equals(
+                                        value(row, "parentIndexHash"))
+                                || !parent.node().render().equals(value(row, "node"))) {
+                            throw new IllegalArgumentException("parent/index mismatch");
+                        }
+                        OccurrenceAddress child = OccurrenceAddress.of(parent.node(),
+                                value(row, "regionId"), parent.context(),
+                                ExecutionIndex.append(parent.index(),
+                                        ExecutionIndex.parse(suffix)));
+                        if (!child.id().equals(value(row, "occurrenceId"))) {
+                            throw new IllegalArgumentException("child digest mismatch");
+                        }
+                        row.addProperty("occurrence", child.render());
+                        addressCache.put(child.id(), child);
+                    } catch (IllegalArgumentException invalid) {
+                        throw new IllegalArgumentException(
+                                "compact activation does not reconstruct exact identity "
+                                        + value(row, "occurrenceId") + " at seq "
+                                        + value(row, "seq"), invalid);
+                    }
+                }
                 if ("ACTIVATION".equals(value(row, "kind"))) {
                     String id = value(row, "occurrenceId");
                     if (!id.isEmpty()) {
-                        JsonObject previous = activations.get(id);
-                        if (previous != null && (!value(previous, "occurrence").equals(
+                        ActivationStamp previous = activations.get(id);
+                        if (previous != null && (!previous.occurrence.equals(
                                 value(row, "occurrence"))
-                                || !value(previous, "node").equals(value(row, "node"))
-                                || !value(previous, "regionId").equals(
-                                        value(row, "regionId")))) {
+                                || !previous.node.equals(value(row, "node"))
+                                || !previous.region.equals(value(row, "regionId")))) {
                             throw new IllegalArgumentException(
                                     "conflicting activation for occurrence " + id);
                         }
                         // Identical duplicates preserve the prior streaming
                         // behavior: the latest publication is the anchor.
-                        activations.put(id, row);
+                        activations.put(id, new ActivationStamp(row));
                     }
                 } else if ("ACTIVATION".equals(value(row, "occurrenceRef"))) {
                     String kind = value(row, "kind");
                     String id = value(row, "occurrenceId");
-                    JsonObject activation = activations.get(id);
-                    OccurrenceAddress address = null;
-                    if (activation != null) {
-                        try {
-                            address = OccurrenceAddress.parse(
-                                    value(activation, "occurrence"));
-                        } catch (IllegalArgumentException invalid) {
-                            // A digest alone must never authenticate an
-                            // absent path in a compact row.
-                        }
-                    }
+                    ActivationStamp activation = activations.get(id);
+                    OccurrenceAddress address = address(activation, addressCache, id);
                     if (!("COVERAGE".equals(kind) || "FAULT_DOOR".equals(kind)
                             || "REGION_COMPLETE".equals(kind))
                             || row.has("occurrence") || address == null
                             || !id.equals(address.id())
-                            || !value(activation, "node").equals(
+                            || !activation.node.equals(
                                     address.node().render())
-                            || !value(activation, "regionId").equals(
+                            || !activation.region.equals(
                                     address.regionId())
-                            || !value(row, "node").equals(value(activation, "node"))
-                            || !value(row, "regionId").equals(
-                                    value(activation, "regionId"))
-                            || number(activation, "seq") < 0
-                            || number(activation, "seq") >= number(row, "seq")) {
+                            || !value(row, "node").equals(activation.node)
+                            || !value(row, "regionId").equals(activation.region)
+                            || activation.seq < 0
+                            || activation.seq >= number(row, "seq")) {
                         throw new IllegalArgumentException(
                                 "compact trace occurrence lacks an exact prior activation "
                                         + id + " at seq " + value(row, "seq"));
                     }
-                    row.addProperty("occurrence", value(activation, "occurrence"));
+                    row.addProperty("occurrence", activation.occurrence);
+                }
+                consumer.accept(row);
+            }
+        }
+    }
+
+    private void eachValidatedRowShallow(Path trace, Consumer<JsonObject> consumer)
+            throws IOException {
+        try (InputStream raw = Files.newInputStream(trace);
+             InputStream input = trace.toString().endsWith(".gz")
+                     ? new GZIPInputStream(raw) : raw;
+             BufferedReader reader = new BufferedReader(new InputStreamReader(
+                     input, StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.trim().isEmpty()) continue;
+                JsonObject row;
+                try { row = new JsonParser().parse(line).getAsJsonObject(); }
+                catch (RuntimeException invalid) { continue; }
+                String kind = value(row, "kind");
+                if (!("ATTACH".equals(kind) || "READ".equals(kind)
+                        || "TASK_CLAIM".equals(kind) || "QUEUE_CONSUMED".equals(kind)
+                        || "ACTIVATION".equals(kind) || "REGION_COMPLETE".equals(kind))) {
+                    continue;
+                }
+                if (("ACTIVATION".equals(kind) || "REGION_COMPLETE".equals(kind))
+                        && "ACTIVATION".equals(value(row, "parentOccurrenceRef"))) {
+                    String parent = activationOccurrences.get(value(row,
+                            "parentOccurrenceId"));
+                    if (parent == null) {
+                        throw new IllegalArgumentException(
+                                "validated parent activation missing in shallow pass");
+                    }
+                    row.addProperty("parentOccurrence", parent);
+                }
+                if ("REGION_COMPLETE".equals(kind)
+                        && "ACTIVATION".equals(value(row, "occurrenceRef"))) {
+                    String child = activationOccurrences.get(value(row, "occurrenceId"));
+                    if (child == null) {
+                        throw new IllegalArgumentException(
+                                "validated child activation missing in shallow pass");
+                    }
+                    row.addProperty("occurrence", child);
                 }
                 consumer.accept(row);
             }
@@ -221,12 +345,26 @@ public final class TrialGraph {
         Map<String, List<JsonObject>> exports = new HashMap<>();
         Map<String, List<JsonObject>> writes = new HashMap<>();
         Map<String, List<JsonObject>> reads = new HashMap<>();
+        Map<String, List<JsonObject>> taskSubmits = new HashMap<>();
+        Map<String, List<JsonObject>> taskClaims = new HashMap<>();
         Map<String, List<JsonObject>> rootEntries = new LinkedHashMap<>();
         Map<String, List<JsonObject>> rootExits = new HashMap<>();
         eachRow(trace, true, row -> {
             String kind = value(row, "kind");
+            if ("ACTIVATION".equals(kind)) {
+                activationOccurrences.put(value(row, "occurrenceId"),
+                        value(row, "occurrence"));
+            }
             if ("ACTIVATION".equals(kind) || "SCOPE_ENTER".equals(kind)
+                    || "TASK_SUBMIT".equals(kind)
                     || "TASK_CLAIM".equals(kind) || "SOURCE_SWITCH".equals(kind)) node(row);
+            if ("TASK_SUBMIT".equals(kind)) {
+                put(taskSubmits, value(row, "producerEndpointId"), row);
+            }
+            if ("TASK_CLAIM".equals(kind)
+                    && !value(row, "producerEndpointId").isEmpty()) {
+                put(taskClaims, value(row, "producerEndpointId"), row);
+            }
             if ("SCOPE_ENTER".equals(kind) && "true".equals(value(row, "newRoot"))) {
                 String key = scopeOrderKey(row);
                 if (key.isEmpty()) gap("PROGRAM_ORDER_SOURCE_MISSING");
@@ -280,7 +418,7 @@ public final class TrialGraph {
                 }
             }
         });
-        eachRow(trace, false, row -> {
+        eachValidatedRowShallow(trace, row -> {
             String kind = value(row, "kind");
             if ("ATTACH".equals(kind)) {
                 node(row);
@@ -329,6 +467,33 @@ public final class TrialGraph {
                 }
                 edge("STATE", write, row, "writerEndpointId",
                         "readerEndpointId", location.split("\\n", 2)[0]);
+            } else if ("TASK_CLAIM".equals(kind)
+                    && !value(row, "producerEndpointId").isEmpty()) {
+                String endpoint = value(row, "producerEndpointId");
+                List<JsonObject> matched = taskSubmits.getOrDefault(endpoint,
+                        Collections.emptyList());
+                List<JsonObject> claims = taskClaims.getOrDefault(endpoint,
+                        Collections.emptyList());
+                if (matched.size() != 1) {
+                    gap(matched.isEmpty() ? "TASK_SUBMIT_MISSING" :
+                            "TASK_SUBMIT_AMBIGUOUS");
+                    return;
+                }
+                if (claims.size() != 1) {
+                    gap("TASK_CLAIM_AMBIGUOUS");
+                    return;
+                }
+                JsonObject submit = matched.get(0);
+                if (!same(row, submit, "siteId", "taskOrdinal", "sourceKey")
+                        || !value(row, "producerOccurrenceId").equals(
+                                value(submit, "occurrenceId"))
+                        || !value(row, "node").equals(value(submit, "node"))
+                        || number(submit, "seq") >= number(row, "seq")) {
+                    gap("TASK_SUBMIT_MISMATCH");
+                    return;
+                }
+                edge("HANDOFF", submit, row, "producerEndpointId",
+                        "consumerEndpointId", value(row, "siteId") + ".TASK");
             } else if ("QUEUE_CONSUMED".equals(kind)) {
                 node(row);
                 String readerId = value(row, "readEndpointId");
@@ -351,68 +516,8 @@ public final class TrialGraph {
                 edge("HANDOFF", read, row, "readerEndpointId",
                         "consumerEndpointId", value(row, "transport") + ".QUEUE");
             }
-        });
-        eachRow(trace, false, row -> {
-            if (!"ACTIVATION".equals(value(row, "kind"))) return;
-            String parent = value(row, "parentOccurrenceId");
-            String child = value(row, "occurrenceId");
-            if (parent.isEmpty()) return; // older rows lack explicit scope parent
-            JsonObject parentNode = nodes.get(parent);
-            JsonObject childNode = nodes.get(child);
-            if (parentNode == null || childNode == null
-                    || !value(parentNode, "occurrence").equals(
-                            value(row, "parentOccurrence"))
-                    || !value(parentNode, "node").equals(value(childNode, "node"))
-                    || nodeFirstSeq.getOrDefault(parent, Long.MAX_VALUE)
-                            >= number(row, "seq")) {
-                gap("SCOPE_PARENT_UNPROVEN");
-                return;
-            }
-            JsonObject local = new JsonObject();
-            local.addProperty("kind", "EDGE");
-            local.addProperty("edge", "SCOPE");
-            local.addProperty("edgeId", digest("SCOPE" + parent + child));
-            local.addProperty("producerOccurrenceId", parent);
-            local.addProperty("consumerOccurrenceId", child);
-            local.addProperty("producerEndpointId", parent + ":scope");
-            local.addProperty("consumerEndpointId", child + ":entry");
-            local.addProperty("port", "scope.parent");
-            local.addProperty("producerSeq", number(row, "seq"));
-            local.addProperty("consumerSeq", number(row, "seq"));
-            edges.put(value(local, "edgeId"), local);
-        });
-        eachRow(trace, false, row -> {
-            if (!"REGION_COMPLETE".equals(value(row, "kind"))) return;
-            String child = value(row, "occurrenceId");
-            String parent = value(row, "parentOccurrenceId");
-            JsonObject childNode = nodes.get(child);
-            JsonObject parentNode = nodes.get(parent);
-            long when = number(row, "seq");
-            if (child.isEmpty() || parent.isEmpty()
-                    || childNode == null || parentNode == null
-                    || !value(childNode, "instrumented").equals("true")
-                    || !value(childNode, "occurrence").equals(
-                            value(row, "occurrence"))
-                    || !value(parentNode, "occurrence").equals(
-                            value(row, "parentOccurrence"))
-                    || !value(parentNode, "node").equals(value(childNode, "node"))
-                    || nodeFirstSeq.getOrDefault(child, Long.MAX_VALUE) >= when
-                    || nodeFirstSeq.getOrDefault(parent, Long.MAX_VALUE) >= when) {
-                gap("REGION_COMPLETE_UNPROVEN");
-                return;
-            }
-            JsonObject returned = new JsonObject();
-            returned.addProperty("kind", "EDGE");
-            returned.addProperty("edge", "COMPLETION");
-            returned.addProperty("edgeId", digest("COMPLETION" + child + parent + when));
-            returned.addProperty("producerOccurrenceId", child);
-            returned.addProperty("consumerOccurrenceId", parent);
-            returned.addProperty("producerEndpointId", child + ":completion");
-            returned.addProperty("consumerEndpointId", parent + ":resume");
-            returned.addProperty("port", "scope.completion");
-            returned.addProperty("producerSeq", when);
-            returned.addProperty("consumerSeq", when);
-            edges.put(value(returned, "edgeId"), returned);
+            if ("ACTIVATION".equals(kind)) addScopeEdge(row);
+            if ("REGION_COMPLETE".equals(kind)) addCompletionEdge(row);
         });
         for (List<JsonObject> entries : rootEntries.values()) {
             JsonObject previous = null;
@@ -451,6 +556,69 @@ public final class TrialGraph {
                 previous = current;
             }
         }
+        activationOccurrences.clear();
+    }
+
+    private void addScopeEdge(JsonObject row) {
+            String parent = value(row, "parentOccurrenceId");
+            String child = value(row, "occurrenceId");
+            if (parent.isEmpty()) return; // older rows lack explicit scope parent
+            JsonObject parentNode = nodes.get(parent);
+            JsonObject childNode = nodes.get(child);
+            if (parentNode == null || childNode == null
+                    || !value(parentNode, "occurrence").equals(
+                            value(row, "parentOccurrence"))
+                    || !value(parentNode, "node").equals(value(childNode, "node"))
+                    || nodeFirstSeq.getOrDefault(parent, Long.MAX_VALUE)
+                            >= number(row, "seq")) {
+                gap("SCOPE_PARENT_UNPROVEN");
+                return;
+            }
+            JsonObject local = new JsonObject();
+            local.addProperty("kind", "EDGE");
+            local.addProperty("edge", "SCOPE");
+            local.addProperty("edgeId", digest("SCOPE" + parent + child));
+            local.addProperty("producerOccurrenceId", parent);
+            local.addProperty("consumerOccurrenceId", child);
+            local.addProperty("producerEndpointId", parent + ":scope");
+            local.addProperty("consumerEndpointId", child + ":entry");
+            local.addProperty("port", "scope.parent");
+            local.addProperty("producerSeq", number(row, "seq"));
+            local.addProperty("consumerSeq", number(row, "seq"));
+            edges.put(value(local, "edgeId"), local);
+    }
+
+    private void addCompletionEdge(JsonObject row) {
+            String child = value(row, "occurrenceId");
+            String parent = value(row, "parentOccurrenceId");
+            JsonObject childNode = nodes.get(child);
+            JsonObject parentNode = nodes.get(parent);
+            long when = number(row, "seq");
+            if (child.isEmpty() || parent.isEmpty()
+                    || childNode == null || parentNode == null
+                    || !value(childNode, "instrumented").equals("true")
+                    || !value(childNode, "occurrence").equals(
+                            value(row, "occurrence"))
+                    || !value(parentNode, "occurrence").equals(
+                            value(row, "parentOccurrence"))
+                    || !value(parentNode, "node").equals(value(childNode, "node"))
+                    || nodeFirstSeq.getOrDefault(child, Long.MAX_VALUE) >= when
+                    || nodeFirstSeq.getOrDefault(parent, Long.MAX_VALUE) >= when) {
+                gap("REGION_COMPLETE_UNPROVEN");
+                return;
+            }
+            JsonObject returned = new JsonObject();
+            returned.addProperty("kind", "EDGE");
+            returned.addProperty("edge", "COMPLETION");
+            returned.addProperty("edgeId", digest("COMPLETION" + child + parent + when));
+            returned.addProperty("producerOccurrenceId", child);
+            returned.addProperty("consumerOccurrenceId", parent);
+            returned.addProperty("producerEndpointId", child + ":completion");
+            returned.addProperty("consumerEndpointId", parent + ":resume");
+            returned.addProperty("port", "scope.completion");
+            returned.addProperty("producerSeq", when);
+            returned.addProperty("consumerSeq", when);
+            edges.put(value(returned, "edgeId"), returned);
     }
 
     private static String scopeOrderKey(JsonObject row) {
