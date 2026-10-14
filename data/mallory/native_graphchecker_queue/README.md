@@ -18,6 +18,17 @@ weave, JUnit execution, or fault trial. Its pinned review and source preflight
 are recorded with `preparation_junit_trials=0` and
 `preparation_fault_trials=0`, while `native_tested_complete=false` and all
 terminal trial and elapsed fields remain unset.
+
+SOLR-40 has a separate source-only eligibility review for the pinned Solr
+8.11.4 checkout and current harness. Its selected original four-node JUnit
+inherits `@AwaitsFix`; a prior opt-in run failed creating a configset before
+the first routed document ADD and observed zero target checks. Reviewed
+enabled alias-management tests do not issue a routed ADD in one selector.
+The row is `skipped_no_eligible_original_cluster_test`, with zero **native
+queue** JUnit and fault trials, no native completion, and no bug verdict.
+The earlier failed opt-in JUnit is pinned in the review; fixture repair may
+change eligibility.
+
 `elapsed_seconds` for a verified row is the sum of the original native trial
 receipts, including the healthy run. `elapsed_basis` records what those
 receipts actually timed. Current native receipts include JUnit execution and
@@ -101,10 +112,11 @@ HBASE-01, HDFS-28, HDFS-31, SOLR-05, and SOLR-07 retain the explicitly labelled 
 same-occurrence proxy until an exact-ID frozen-evidence audit is pinned;
 their proxy counts do not establish causal closure.
 
-SOLR-19, ZOOKEEPER-03, and ZOOKEEPER-05 are bound to active direct campaigns
-with immutable configs and isolated states. SOLR-19's original healthy JUnit
-passed and retained its exact target before read-only binding. ZOOKEEPER-05
-v5 is the bound campaign; its earlier v3/v4 blocked states remain separate.
+SOLR-09, SOLR-19, ZOOKEEPER-03, and ZOOKEEPER-05 are bound to active direct
+campaigns with immutable configs and isolated states. SOLR-19's original
+healthy JUnit passed and retained its exact target before read-only binding.
+ZOOKEEPER-05 v5 is the bound campaign; its earlier v3/v4 blocked states remain
+separate.
 The queue must honor their direct campaign locks until those processes finish.
 `promotion-v2.json` and `promotion-v2-manifest.json` record the initial
 two-completion promotion. Later rows are pinned by completion receipts,
@@ -117,7 +129,9 @@ previous handoff. `promotion-bind-v6.json` pins the eleventh completion;
 `promotion-bind-v7.json` pins both HDFS terminal reviews. The current
 `promotion-bind-v8.json` pins the SOLR-19 active binding and its result
 snapshot. `promotion-bind-v9.json` pins the HDFS-39 nonterminal preparation
-note, the v6 exporter snapshot, and the 13-terminal result hashes.
+note and its 13-terminal result hashes. `promotion-bind-v10.json` pins the
+SOLR-40 eligibility review, the active SOLR-09 read-only binding, the v8
+exporter snapshot, and the current 13-terminal result hashes.
 
 For a newly prepared case, run the one-command promoter on its physical owner
 host after the immutable native config, healthy target gate, and port review
@@ -129,7 +143,7 @@ that host awaits an independent terminal audit; then run `run-host-once.sh`
 after the audit is pinned. The active ZOOKEEPER-05 v5 binding can be verified again with:
 
 ```bash
-PYTHONPATH=/proj/silentfailure-PG0/ZhenyuLi/Mallory/native-102-queue-v2/python-snapshot-bind-v6 \
+PYTHONPATH=/proj/silentfailure-PG0/ZhenyuLi/Mallory/native-102-queue-v2/python-snapshot-bind-v8 \
 python3 -m Mallory.native_graphchecker_queue.bind_and_run \
   --case-id ZOOKEEPER-05 --host node0 \
   --native-config /proj/silentfailure-PG0/ZhenyuLi/Mallory/ZOOKEEPER-05-20261014-native-prep-v1/config/case-region-state-frontier-v5.json \
@@ -150,12 +164,12 @@ These files are distinct from the earlier custom/preliminary
 Regenerate from the promoted durable queue state:
 
 ```bash
-cd /proj/silentfailure-PG0/ZhenyuLi/Mallory/native-102-queue-v2/python-snapshot-bind-v6
+cd /proj/silentfailure-PG0/ZhenyuLi/Mallory/native-102-queue-v2/python-snapshot-bind-v8
 python3 - <<'PY'
 from pathlib import Path
 from Mallory.native_graphchecker_queue.results import export_native_results
 b = Path('/proj/silentfailure-PG0/ZhenyuLi/Mallory/native-102-queue-v2')
-export_native_results(b / 'python-snapshot-bind-v6/Mallory/cases/inventory.json',
+export_native_results(b / 'python-snapshot-bind-v8/Mallory/cases/inventory.json',
     b / 'config/ownership.json', b / 'config', b / 'state',
     b / 'results')
 PY
