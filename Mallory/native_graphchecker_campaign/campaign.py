@@ -30,6 +30,7 @@ from Mallory.native_graphchecker_feedback.feedback import NoNativeTargetError
 from Mallory.native_graphchecker_feedback.region_state_graph import (
     delta_region_state, record_region_state,
 )
+from .source_preflight import feedback_bridge
 
 SCHEMA = 1
 SCHEDULER_VERSION = 4
@@ -344,6 +345,7 @@ def _verify_recording_plan(config: dict[str, Any], weave: dict[str, Any],
 
 
 def _admit(config: dict[str, Any], root: Path) -> dict[str, Any]:
+    feedback_source = feedback_bridge(Path(__file__).resolve().parents[2], JAR)
     weave_file = Path(config["native_weave_config"]).resolve(strict=True)
     weave_receipt = verify_existing(weave_file)
     weave = _load(weave_file)
@@ -358,6 +360,7 @@ def _admit(config: dict[str, Any], root: Path) -> dict[str, Any]:
                                      / "native-original-weave-receipt.json"),
         "scheduler_source_sha256": _sha(_scheduler_source()),
         "engine_jar_sha256": _sha(JAR),
+        "feedback_source": feedback_source,
     }
     admission = root / "recording-admission.json"
     if admission.is_file():

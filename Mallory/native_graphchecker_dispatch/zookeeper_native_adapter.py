@@ -111,6 +111,33 @@ def _zero_vm_java(profile: dict) -> str:
     return str(path.resolve(strict=True))
 
 
+def _campaign_mode(profile: dict) -> str:
+    """Select a reusable replay backend, independently of the target check."""
+    mode = profile.get("campaign_mode", "concolic")
+    if mode not in ("concolic", "region_state"):
+        raise ValueError("ZooKeeper campaign_mode must be concolic or region_state")
+    return mode
+
+
+def _campaign_runner(profile: dict, classpath: list[Path], loop_arg: str) -> dict:
+    mode = _campaign_mode(profile)
+    runner = {
+        "zero_vm_java": (_zero_vm_java(profile) if mode == "concolic"
+                         else str(Path(profile["java"]).resolve(strict=True))),
+        "mode": mode,
+        "main_class": ("edu.uva.liftlab.graphchecker.runtime."
+                       + ("NativeJUnitMethodRunner" if mode == "concolic"
+                          else "NativeZooKeeperSessionJUnitRunner")),
+        "classpath": [str(path) for path in classpath],
+        "jvm_args": ["-Xmx3g", "-Djava.io.tmpdir={trial_workdir}",
+                     "-Dbuild.test.dir={trial_workdir}", loop_arg,
+                     *profile.get("runner_jvm_args", [])],
+    }
+    if mode == "region_state":
+        runner["args_before_test"] = ["{trial_result_file}"]
+    return runner
+
+
 def _unique_class(classpath: list[Path], class_name: str) -> dict:
     relative = class_name.replace(".", "/") + ".class"
     matches = []
@@ -148,6 +175,11 @@ def preflight_execution_classes(profile: dict) -> dict:
                 native.DEPENDENCIES.read_text(encoding="utf-8").strip().split(
                     os.pathsep)), *classpath]
         class_rows.extend(_unique_class(classpath, name) for name in names)
+    session_runner = (_unique_class(_paths(profile.get("runner_classpath"),
+                        "runner_classpath"),
+                        "edu.uva.liftlab.graphchecker.runtime."
+                        "NativeZooKeeperSessionJUnitRunner")
+                      if _campaign_mode(profile) == "region_state" else None)
     return {"schema_version": 1,
             "mode": "original_graphchecker_zookeeper_class_preflight",
             "engine_jar_sha256": _sha(native.JAR),
@@ -155,7 +187,7 @@ def preflight_execution_classes(profile: dict) -> dict:
             "sources": {name: {"path": profile[name],
                                "sha256": _sha(Path(profile[name]))}
                         for name in ("runner_source", "post_weave_source")},
-            "classes": class_rows}
+            "classes": class_rows, "session_runner": session_runner}
 
 
 def preflight_static_sidecars(original: Path, scope_out: Path) -> dict:
@@ -339,7 +371,8 @@ def _profile(request: dict, profile_file: Path) -> dict:
         path = Path(profile.get(key, ""))
         if not path.is_absolute() or not path.exists() or path.is_symlink():
             raise ValueError(f"ZooKeeper {key} is absent or mutable")
-    _zero_vm_java(profile)
+    if _campaign_mode(profile) == "concolic":
+        _zero_vm_java(profile)
     if (not isinstance(profile.get("budget"), dict) or
             not isinstance(profile.get("timeout_seconds"), int) or
             profile["timeout_seconds"] <= 0 or
@@ -805,14 +838,15 @@ def finalize_after_healthy(request_file: Path, output: Path,
     selected_plan = output / _fresh_name(output, "selected-task-plan.jsonl")
     select_exact_task_row(plan, task["taskId"], selected_plan)
     branch = task["targetBranch"]
-    anchor = f"{branch['siteId']}#{branch['occurrence']}"
+    mode = _campaign_mode(profile)
+    anchor = (f"{branch['siteId']}#{branch['occurrence']}"
+              if mode == "concolic" else identity["original_guard_site_id"])
     weave_file = output / _fresh_name(output, "native-weave.json")
-    concolic_classes = output / _fresh_name(output, "concolic-classes")
-    _atomic(weave_file, {
+    woven_classes = output / _fresh_name(output, "native-classes")
+    weave_config = {
         "java": java, "input_classes": str(source_classes),
-        "output_classes": str(concolic_classes),
-        "weave_mode": "concolic", "jvm_args": ["-Xmx3g"],
-        "task_plan": str(selected_plan), "task_id": task["taskId"],
+        "output_classes": str(woven_classes),
+        "weave_mode": mode, "jvm_args": ["-Xmx3g"],
         "region_skeletons": str(skeletons),
         "communication_mappings": str(Path(
             profile["communication_mapping"]).resolve(strict=True)),
@@ -822,12 +856,23 @@ def finalize_after_healthy(request_file: Path, output: Path,
             "main_class":
                 "edu.uva.liftlab.mallory.nativecampaign.NativeZooKeeperCombinedPostWeave",
             "args": ["{woven_classes}", _cp(extra)]},
-        "timeout_seconds": 1800})
+        "timeout_seconds": 1800}
+    if mode == "concolic":
+        weave_config.update(task_plan=str(selected_plan), task_id=task["taskId"])
+    else:
+        artifacts = output / _fresh_name(output, "region-weave-artifacts")
+        artifacts.mkdir()
+        for name, source in (("candidate_dataflow_edges.jsonl.gz", graph),
+                             ("static_scope_map.jsonl", scope),
+                             ("region_skeletons.jsonl.gz", skeletons)):
+            (artifacts / name).write_bytes(source.read_bytes())
+        weave_config["recording_artifacts"] = str(artifacts)
+    _atomic(weave_file, weave_config)
     weave.run(weave_file)
     native_weave_receipt = _object(
-        concolic_classes / "native-original-weave-receipt.json")
+        woven_classes / "native-original-weave-receipt.json")
     if native_weave_receipt.get("input_classes_sha256") != process_classes_sha:
-        raise ValueError("concolic weave preimage differs from static Soot analysis")
+        raise ValueError("native weave preimage differs from static Soot analysis")
     config = {
         "case_id": request["case_id"], "target_site": anchor,
         "target_throw": {"siteId": identity["original_throw_site_id"],
@@ -842,16 +887,7 @@ def finalize_after_healthy(request_file: Path, output: Path,
                       "scheduler_jvm_args": [loop_arg],
                       "max_jobs": profile["max_jobs"]},
         "junit": {"class": junit["class"], "method": junit["method"]},
-        "runner": {"zero_vm_java": _zero_vm_java(profile),
-                   "mode": "concolic",
-                   "main_class":
-                       "edu.uva.liftlab.graphchecker.runtime.NativeJUnitMethodRunner",
-                   "classpath": [str(path) for path in runner_cp],
-                   "jvm_args": ["-Xmx3g",
-                                "-Djava.io.tmpdir={trial_workdir}",
-                                "-Dbuild.test.dir={trial_workdir}",
-                                loop_arg,
-                                *profile.get("runner_jvm_args", [])]},
+        "runner": _campaign_runner(profile, runner_cp, loop_arg),
         "budget": profile["budget"],
         "timeout_seconds": profile["timeout_seconds"]}
     native._validate_config(config)

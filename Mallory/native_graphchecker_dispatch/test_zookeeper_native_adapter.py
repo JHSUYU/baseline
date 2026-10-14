@@ -17,6 +17,25 @@ from Mallory.native_graphchecker_dispatch import zookeeper_native_adapter as zk
 
 
 class ZooKeeperNativeAdapterTest(unittest.TestCase):
+    def test_region_state_handoff_uses_dynamic_original_target(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            java = Path(temporary) / "java"
+            java.write_text("#!/bin/sh\nexit 0\n")
+            java.chmod(0o755)
+            profile = {"campaign_mode": "region_state", "java": str(java),
+                       "runner_jvm_args": ["-Dtest.junit.threads=16"]}
+            runner = zk._campaign_runner(profile, [Path(temporary)],
+                                         "-Dcausynth.loop.default.bound=3")
+            self.assertEqual("region_state", runner["mode"])
+            self.assertEqual("edu.uva.liftlab.graphchecker.runtime."
+                             "NativeZooKeeperSessionJUnitRunner",
+                             runner["main_class"])
+            self.assertEqual(["{trial_result_file}"],
+                             runner["args_before_test"])
+            self.assertEqual(str(java), runner["zero_vm_java"])
+            with self.assertRaisesRegex(ValueError, "campaign_mode"):
+                zk._campaign_mode({"campaign_mode": "fixed_actor"})
+
     def test_concolic_runner_rejects_stock_java_before_preparation(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             java = Path(temporary) / "zero-vm"

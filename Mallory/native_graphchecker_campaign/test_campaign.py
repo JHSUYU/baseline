@@ -1093,7 +1093,8 @@ class NativeCampaignFixtureTest(unittest.TestCase):
         self.weave_config.write_text(json.dumps({"output_classes": str(self.woven)}))
         output = self.root / "admission"
         output.mkdir()
-        with patch.object(core, "verify_existing", return_value={"verified": True}), patch.object(
+        with patch.object(core, "feedback_bridge", return_value={"compiled": "pinned"}), patch.object(
+                core, "verify_existing", return_value={"verified": True}), patch.object(
                 core, "_scheduler_source", return_value=scheduler), patch.object(
                 core, "_verify_recording_plan", return_value={"plan": "derived"}) as derive:
             first = core._admit(self.config, output)
