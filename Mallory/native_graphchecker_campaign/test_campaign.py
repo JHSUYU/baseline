@@ -167,6 +167,31 @@ class WireTemporalProofTest(unittest.TestCase):
         self.assertEqual("outside_closure",
                          core._region_doors([check, after], summary)[0]["tier"])
 
+    def test_region_schedule_copies_only_one_original_session(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            trial = Path(directory)
+            iteration = trial / "iteration-native"
+            trace = iteration / "trace"
+            trace.mkdir(parents=True)
+            (trace / "streaming_trace_manifest.json").write_text(
+                '{"status":"CLOSED"}\n')
+            source = iteration / "sessions" / "one" / "schedule.jsonl"
+            source.parent.mkdir(parents=True)
+            source.write_bytes(b'{"mark":"original"}\n')
+            core._region_schedule(iteration, trial)
+            self.assertEqual(source.read_bytes(),
+                             (trace / "schedule.jsonl").read_bytes())
+            receipt = json.loads((trial / "schedule-lineage.json").read_text())
+            self.assertTrue(receipt["copied"])
+            self.assertEqual(receipt["source_sha256"],
+                             receipt["destination_sha256"])
+            (trace / "schedule.jsonl").unlink()
+            other = iteration / "sessions" / "two" / "schedule.jsonl"
+            other.parent.mkdir(parents=True)
+            other.write_bytes(b'{"mark":"different"}\n')
+            with self.assertRaisesRegex(ValueError, "unique original schedule"):
+                core._region_schedule(iteration, trial)
+
     def test_queue_door_filter_does_not_compare_actor_clocks(self) -> None:
         door = {"kind": "FAULT_DOOR", "seq": 1,
                 "siteId": "RPC#dn", "node": "dn", "actorEpochOrdinal": 0,

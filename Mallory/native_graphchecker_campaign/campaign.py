@@ -12,6 +12,7 @@ import fcntl
 import hashlib
 import json
 import os
+import shutil
 import signal
 import subprocess
 import tempfile
@@ -748,6 +749,45 @@ def _region_throw_evidence(rows: list[dict[str, Any]], target_site: str,
             "no_exact_target_throw", temporal)
 
 
+def _region_schedule(iteration: Path, trial: Path) -> None:
+    """Place the sole original publisher's schedule beside its closed trace.
+
+    The unchanged JUnit runner may open RowRuntime after the trace writer.
+    RowRuntime then writes ScheduleLog into its session directory. Copy those
+    exact bytes only if this JVM published one unambiguous schedule.
+    """
+    trace = iteration / "trace"
+    destination = trace / "schedule.jsonl"
+    if destination.is_file():
+        _atomic(trial / "schedule-lineage.json", {
+            "source": str(destination), "source_sha256": _sha(destination),
+            "destination_sha256": _sha(destination), "copied": False})
+        return
+    manifest = _load(trace / "streaming_trace_manifest.json")
+    if manifest.get("status") != "CLOSED":
+        raise ValueError("region-state runtime trace is not closed")
+    sources = sorted((iteration / "sessions").glob("*/schedule.jsonl"))
+    if len(sources) != 1 or not sources[0].is_file() or sources[0].stat().st_size == 0:
+        raise ValueError("region-state trace has no unique original schedule")
+    source = sources[0]
+    with tempfile.NamedTemporaryFile("wb", dir=trace, prefix=".schedule-",
+                                     delete=False) as stream:
+        temporary = Path(stream.name)
+        with source.open("rb") as original:
+            shutil.copyfileobj(original, stream)
+        stream.flush()
+        os.fsync(stream.fileno())
+    try:
+        if _sha(source) != _sha(temporary):
+            raise ValueError("original session schedule changed while copying")
+        os.replace(temporary, destination)
+    finally:
+        temporary.unlink(missing_ok=True)
+    _atomic(trial / "schedule-lineage.json", {
+        "source": str(source), "source_sha256": _sha(source),
+        "destination_sha256": _sha(destination), "copied": True})
+
+
 def _trial_jvm_args(runner: dict[str, Any], workdir: Path) -> list[str]:
     return [arg.replace("{trial_workdir}", str(workdir))
             for arg in runner.get("jvm_args", [])]
@@ -841,6 +881,7 @@ def _run_region_trial(config: dict[str, Any], admitted: dict[str, Any],
     iteration = trial / "iteration-native"
     recording = config["recording"]
     try:
+        _region_schedule(iteration, trial)
         loop_args = [arg.split("=", 1)[1] for arg in recording.get(
             "recorder_jvm_args", []) if arg.startswith(
                 "-Dcausynth.loop.default.bound=")]
