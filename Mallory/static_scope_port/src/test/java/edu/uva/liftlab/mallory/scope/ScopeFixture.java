@@ -39,6 +39,26 @@ final class ScopeFixture {
         if (answer == null) throw new IOException("SCOPE_TARGET");
     }
 
+    static IllegalStateException alwaysThrowingFactory() {
+        throw new IllegalStateException("FACTORY_THROW_BODY");
+    }
+
+    static void checkThrowingFactory() {
+        if (read() == null) { // FACTORY_THROW_CHECK
+            throw alwaysThrowingFactory(); // FACTORY_THROW_SITE
+        }
+    }
+
+    static IllegalStateException returningFactory() {
+        return new IllegalStateException("RETURNING_FACTORY_BODY");
+    }
+
+    static void checkReturningFactory() {
+        if (read() == null) { // RETURNING_FACTORY_CHECK
+            throw returningFactory(); // RETURNING_FACTORY_SITE
+        }
+    }
+
     static void afterCatch() throws IOException {
         try {
             send("unrelated");

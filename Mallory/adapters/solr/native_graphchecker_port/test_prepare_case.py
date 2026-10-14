@@ -151,6 +151,21 @@ class PrepareCaseTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "typed fault doors"):
             prep.validate_static(self.row, self.static_input, self.static_output, self.sidecars)
 
+    def test_static_accepts_typed_factory_call_oracle_only_with_exact_callee(self):
+        oracle = self.manifest["targets"][1]
+        oracle["kind"] = "CALL_THROW"
+        oracle["callee"] = "<org.apache.solr.cloud.SampleFactory: " \
+                           "org.apache.solr.common.SolrException fail()>"
+        self._manifest()
+        self.assertEqual(prep.validate_static(self.row, self.static_input,
+                                              self.static_output, self.sidecars)
+                         ["target_throw"]["siteId"], self.throw)
+        del oracle["callee"]
+        self._manifest()
+        with self.assertRaisesRegex(ValueError, "exact callee identity"):
+            prep.validate_static(self.row, self.static_input,
+                                 self.static_output, self.sidecars)
+
     def test_static_rejects_changed_compiled_junit_class(self):
         self.assertEqual(prep.validate_static(self.row, self.static_input,
                                               self.static_output, self.sidecars)["typed_fault_doors"], 1)

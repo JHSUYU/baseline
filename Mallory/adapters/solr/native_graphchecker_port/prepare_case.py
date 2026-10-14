@@ -276,12 +276,15 @@ def validate_static(row: dict, static_input_path: Path, static_output: Path,
     branch = [site for site in manifest.get("targets", []) if site.get("kind") == "BRANCH"
               and site.get("clazz") == target["class"] and site.get("method") == target["method"]
               and site.get("line") == target["line"]]
-    throw = [site for site in manifest.get("targets", []) if site.get("kind") == "THROW"
+    throw = [site for site in manifest.get("targets", [])
+             if site.get("kind") in {"THROW", "CALL_THROW"}
              and site.get("clazz") == target["class"] and site.get("method") == target["method"]
              and site.get("line") == target["throw_line"]
              and site.get("exceptionClass") == target["exception"]]
     if len(branch) != 1 or len(throw) != 1 or branch[0]["siteId"] == throw[0]["siteId"]:
         raise ValueError("static target branch/throw does not resolve uniquely")
+    if throw[0]["kind"] == "CALL_THROW" and not throw[0].get("callee"):
+        raise ValueError("call-thrown exception has no exact callee identity")
     doors = manifest.get("doors", [])
     if not doors or any(not door.get("siteId") or not door.get("exceptionClass") for door in doors):
         raise ValueError("static manifest has no complete typed fault doors")

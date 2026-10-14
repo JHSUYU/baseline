@@ -88,6 +88,39 @@ public class ScopePlannerTest {
     }
 
     @Test
+    public void alwaysThrowingFactoryUsesExecutableCallOracle() throws Exception {
+        JsonObject config = fixtureTarget("checkThrowingFactory",
+                fixtureLine("FACTORY_THROW_CHECK"), "BRANCH",
+                "java.lang.IllegalStateException");
+        config.getAsJsonObject("target").addProperty("throw_line",
+                fixtureLine("FACTORY_THROW_SITE"));
+        JsonObject result = ScopePlanner.analyze(config);
+        JsonArray targets = result.getAsJsonObject("weaveManifest")
+                .getAsJsonArray("targets");
+        assertEquals(2, targets.size());
+        assertEquals("BRANCH", targets.get(0).getAsJsonObject()
+                .get("kind").getAsString());
+        assertEquals("CALL_THROW", targets.get(1).getAsJsonObject()
+                .get("kind").getAsString());
+        assertTrue(targets.get(1).getAsJsonObject().get("callee").getAsString()
+                .contains("alwaysThrowingFactory"));
+    }
+
+    @Test
+    public void returningFactoryKeepsTheCallerThrowOracle() throws Exception {
+        JsonObject config = fixtureTarget("checkReturningFactory",
+                fixtureLine("RETURNING_FACTORY_CHECK"), "BRANCH",
+                "java.lang.IllegalStateException");
+        config.getAsJsonObject("target").addProperty("throw_line",
+                fixtureLine("RETURNING_FACTORY_SITE"));
+        JsonObject result = ScopePlanner.analyze(config);
+        JsonArray targets = result.getAsJsonObject("weaveManifest")
+                .getAsJsonArray("targets");
+        assertEquals("THROW", targets.get(1).getAsJsonObject()
+                .get("kind").getAsString());
+    }
+
+    @Test
     public void callThrowArmCanBeNecessaryButNotSufficient() throws Exception {
         JsonObject config = fixtureTarget("checkCalledStateWithFallback",
                 fixtureLine("CALL_THROW_FALLBACK_CHECK"), "BRANCH",

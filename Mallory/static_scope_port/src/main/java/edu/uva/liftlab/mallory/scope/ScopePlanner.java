@@ -317,9 +317,18 @@ public final class ScopePlanner {
             }
         } else {
             fatalThrow = resolveControlledThrow(target, object(input, "target"));
+            if (fatalThrow != null && fatalThrow.unit instanceof ThrowStmt) {
+                Site factoryCall = exactThrowingFactoryCall(target, fatalThrow);
+                if (factoryCall != null) fatalThrow = factoryCall;
+            }
             if (fatalThrow != null && !(fatalThrow.unit instanceof ThrowStmt)) {
-                callThrowFatalArm = callThrowFatalArm(target, fatalThrow,
-                        string(object(input, "target"), "exception", ""));
+                // A directly controlled factory call already has an ordinary
+                // GraphChecker control guard. Only a call reached on both
+                // arms needs the Boolean-argument arm proof.
+                if (!target.owner.guardsOf(fatalThrow.unit).contains(target.unit)) {
+                    callThrowFatalArm = callThrowFatalArm(target, fatalThrow,
+                            string(object(input, "target"), "exception", ""));
+                }
             }
         }
         if (analysis.has("original_graphchecker_seed")
@@ -413,15 +422,23 @@ public final class ScopePlanner {
                         originalExceptionConstructionLine(fatalThrow),
                         ((ThrowStmt) fatalThrow.unit).getOp().getType().toString());
             } else {
-                original = (JsonObject) bridge.getMethod("analyzeCallThrow", List.class,
-                        Path.class, String.class, int.class, String.class,
-                        String.class, String.class, boolean.class).invoke(null,
-                        dirs, Paths.get(directory),
-                        fatalThrow.owner.soot.getSignature(), fatalThrow.index,
-                        ((Stmt) fatalThrow.unit).getInvokeExpr().getMethodRef()
-                                .getSignature(),
-                        string(object(config, "target"), "exception", ""),
-                        target.id, callThrowFatalArm.booleanValue());
+                String callee = ((Stmt) fatalThrow.unit).getInvokeExpr()
+                        .getMethodRef().getSignature();
+                String exception = string(object(config, "target"), "exception", "");
+                if (callThrowFatalArm == null) {
+                    original = (JsonObject) bridge.getMethod("analyzeCallThrow", List.class,
+                            Path.class, String.class, int.class, String.class,
+                            String.class).invoke(null, dirs, Paths.get(directory),
+                            fatalThrow.owner.soot.getSignature(), fatalThrow.index,
+                            callee, exception);
+                } else {
+                    original = (JsonObject) bridge.getMethod("analyzeCallThrow", List.class,
+                            Path.class, String.class, int.class, String.class,
+                            String.class, String.class, boolean.class).invoke(null,
+                            dirs, Paths.get(directory),
+                            fatalThrow.owner.soot.getSignature(), fatalThrow.index,
+                            callee, exception, target.id, callThrowFatalArm.booleanValue());
+                }
             }
         } catch (ReflectiveOperationException error) {
             Throwable cause = error instanceof java.lang.reflect.InvocationTargetException
@@ -781,6 +798,46 @@ public final class ScopePlanner {
                     + thrown.id + "; found " + allocations.size());
         }
         return allocations.get(0).line;
+    }
+
+    /**
+     * Java may compile {@code throw factory()} as a call followed by an
+     * unreachable athrow when the factory itself always throws. In that case
+     * the call is the executable exception oracle. Require an exact local
+     * definition, a direct control guard, and a concrete callee with one
+     * typed throw and no normal return before replacing the dead athrow.
+     */
+    private Site exactThrowingFactoryCall(Site check, Site thrown) {
+        if (!(thrown.unit instanceof ThrowStmt) || check.owner != thrown.owner
+                || !(check.unit instanceof IfStmt)) return null;
+        Method caller = thrown.owner;
+        caller.flow();
+        Value operand = ((ThrowStmt) thrown.unit).getOp();
+        if (!(operand instanceof Local)) return null;
+        List<Unit> definitions = caller.defs.getDefsOfAt((Local) operand, thrown.unit);
+        if (definitions.size() != 1 || !(definitions.get(0) instanceof AssignStmt))
+            return null;
+        AssignStmt definition = (AssignStmt) definitions.get(0);
+        if (!(definition.getRightOp() instanceof InvokeExpr)) return null;
+        Site call = caller.site(definitions.get(0));
+        if (call.line != thrown.line || call.index >= thrown.index
+                || !caller.guardsOf(call.unit).contains(check.unit)) return null;
+        SootMethodRef ref = ((InvokeExpr) definition.getRightOp()).getMethodRef();
+        if (!ref.returnType().toString().equals(operand.getType().toString()))
+            return null;
+        Method callee = methods.get(ref.getSignature());
+        if (callee == null || !callee.soot.isConcrete()) return null;
+        int typedThrows = 0;
+        for (Unit unit : callee.body.getUnits()) {
+            if (unit instanceof ReturnStmt || unit instanceof ReturnVoidStmt)
+                return null;
+            if (unit instanceof ThrowStmt) {
+                if (!((ThrowStmt) unit).getOp().getType().toString()
+                        .equals(operand.getType().toString())) return null;
+                typedThrows++;
+            }
+        }
+        return typedThrows == 1 ? call : null;
     }
 
     private static long elapsed(long started) {
