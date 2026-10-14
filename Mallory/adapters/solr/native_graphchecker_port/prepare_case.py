@@ -185,19 +185,46 @@ def attest_source(row: dict, source: Path) -> dict:
 
 
 def attest_native_protocol(row: dict, source: Path, receipt_path: Path,
-                           patch_path: Path) -> dict:
+                           patch_path: Path,
+                           overlay_receipts: list[Path] | None = None,
+                           overlay_patches: list[Path] | None = None) -> dict:
     receipt = read_json(receipt_path)
     if (receipt.get("source_commit") != row["provenance"]["source_commit"] or
             receipt.get("patch_sha256") != sha256(patch_path)):
         raise ValueError("native Solr protocol patch/source pin differs")
-    for rel, expected in receipt.get("patched_source_sha256", {}).items():
+    expected_sources = dict(receipt.get("patched_source_sha256", {}))
+    overlays = []
+    overlay_receipts = overlay_receipts or []
+    overlay_patches = overlay_patches or []
+    if len(overlay_receipts) != len(overlay_patches):
+        raise ValueError("native protocol overlay receipt/patch count differs")
+    for overlay_receipt, overlay_patch in zip(overlay_receipts, overlay_patches):
+        overlay = read_json(overlay_receipt)
+        rel = overlay.get("path")
+        if (overlay.get("schema_version") != 1 or
+                overlay.get("source_commit") != receipt["source_commit"] or
+                overlay.get("base_patch_sha256") != receipt["patch_sha256"] or
+                not isinstance(rel, str) or rel not in expected_sources or
+                overlay.get("original_source_sha256") != expected_sources[rel] or
+                overlay.get("overlay_patch_sha256") != sha256(overlay_patch) or
+                not isinstance(overlay.get("patched_source_sha256"), str)):
+            raise ValueError("native Solr protocol overlay lineage differs")
+        expected_sources[rel] = overlay["patched_source_sha256"]
+        for junit_rel, expected in overlay.get("unchanged_junit_source_sha256", {}).items():
+            if sha256(source / junit_rel) != expected:
+                raise ValueError("native Solr protocol overlay changed original JUnit")
+        overlays.append({"receipt_sha256": sha256(overlay_receipt),
+                         "patch_sha256": sha256(overlay_patch),
+                         "path": rel, "source_sha256": expected_sources[rel]})
+    for rel, expected in expected_sources.items():
         path = source / rel
         if not path.is_file() or sha256(path) != expected:
             raise ValueError(f"native Solr protocol source differs: {rel}")
-    if not receipt.get("patched_source_sha256"):
+    if not expected_sources:
         raise ValueError("native Solr protocol receipt has no patched sources")
     return {"native_protocol_receipt_sha256": sha256(receipt_path),
-            "native_protocol_patch_sha256": receipt["patch_sha256"]}
+            "native_protocol_patch_sha256": receipt["patch_sha256"],
+            "native_protocol_overlays": overlays}
 
 
 def read_classpath(path: Path) -> list[str]:
@@ -358,7 +385,9 @@ def prepare_scope(args: argparse.Namespace) -> dict:
     source = args.source.resolve(strict=True)
     proof = attest_source(row, source)
     proof.update(attest_native_protocol(row, source, args.protocol_receipt,
-                                        args.protocol_patch))
+                                        args.protocol_patch,
+                                        getattr(args, "protocol_overlay_receipt", []),
+                                        getattr(args, "protocol_overlay_patch", [])))
     class_tree = args.class_tree.resolve(strict=True)
     ordered = read_classpath(args.classpath_file)
     for entry in ordered:
@@ -396,7 +425,9 @@ def prepare_weave(args: argparse.Namespace) -> dict:
     source_proof = attest_source(row, source_root)
     source_proof.update(attest_native_protocol(row, source_root,
                                                args.protocol_receipt,
-                                               args.protocol_patch))
+                                               args.protocol_patch,
+                                               getattr(args, "protocol_overlay_receipt", []),
+                                               getattr(args, "protocol_overlay_patch", [])))
     static_path = args.static_input.resolve(strict=True)
     require_static_eligibility_pin(row, args.inventory, state_root, static_path)
     static_output = args.static_output.resolve(strict=True)
@@ -579,7 +610,9 @@ def prepare_campaign(args: argparse.Namespace) -> dict:
     source_proof = attest_source(row, source)
     source_proof.update(attest_native_protocol(row, source,
                                                args.protocol_receipt,
-                                               args.protocol_patch))
+                                               args.protocol_patch,
+                                               getattr(args, "protocol_overlay_receipt", []),
+                                               getattr(args, "protocol_overlay_patch", [])))
     static = validate_static(row, args.static_input.resolve(strict=True),
                              args.static_output.resolve(strict=True),
                              args.sidecars.resolve(strict=True))
@@ -688,6 +721,10 @@ def main() -> None:
         part.add_argument("--case-id", required=True)
         part.add_argument("--inventory", type=Path, default=INVENTORY)
         part.add_argument("--output", required=True, type=Path)
+        part.add_argument("--protocol-overlay-receipt", action="append", type=Path,
+                          default=[])
+        part.add_argument("--protocol-overlay-patch", action="append", type=Path,
+                          default=[])
         part.add_argument("--eligibility-state-root", type=Path,
                           help="queue state root with SHA-verified healthy supersession for a skipped JUnit")
     scope = sub.choices["scope"]

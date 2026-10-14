@@ -96,6 +96,50 @@ class PrepareCaseTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "original source differs"):
             prep.attest_source(row, self.source)
 
+    def test_native_protocol_overlay_requires_exact_source_lineage(self):
+        rel = "solr/core/src/java/org/apache/solr/cloud/OverseerTaskQueue.java"
+        target = self.source / rel
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(b"base protocol\n")
+        base_sha = prep.sha256(target)
+        base_patch = self.root / "base.patch"
+        base_patch.write_bytes(b"base patch\n")
+        base_receipt = self.root / "base-receipt.json"
+        base_receipt.write_text(json.dumps({
+            "source_commit": "fixture-commit",
+            "patch_sha256": prep.sha256(base_patch),
+            "patched_source_sha256": {rel: base_sha}}))
+        overlay_patch = self.root / "overlay.patch"
+        overlay_patch.write_bytes(b"overlay patch\n")
+        target.write_bytes(b"payload protocol\n")
+        overlay_receipt = self.root / "overlay-receipt.json"
+        overlay = {"schema_version": 1, "source_commit": "fixture-commit",
+                   "base_patch_sha256": prep.sha256(base_patch), "path": rel,
+                   "original_source_sha256": base_sha,
+                   "patched_source_sha256": prep.sha256(target),
+                   "overlay_patch_sha256": prep.sha256(overlay_patch),
+                   "unchanged_junit_source_sha256": {
+                       self.test_source: prep.sha256(self.source / self.test_source)}}
+        overlay_receipt.write_text(json.dumps(overlay))
+        proof = prep.attest_native_protocol(
+            self.row, self.source, base_receipt, base_patch,
+            [overlay_receipt], [overlay_patch])
+        self.assertEqual(proof["native_protocol_overlays"][0]["source_sha256"],
+                         prep.sha256(target))
+        with self.assertRaisesRegex(ValueError, "protocol source differs"):
+            prep.attest_native_protocol(self.row, self.source, base_receipt, base_patch)
+        overlay["original_source_sha256"] = "0" * 64
+        overlay_receipt.write_text(json.dumps(overlay))
+        with self.assertRaisesRegex(ValueError, "overlay lineage differs"):
+            prep.attest_native_protocol(self.row, self.source, base_receipt,
+                                        base_patch, [overlay_receipt], [overlay_patch])
+        overlay["original_source_sha256"] = base_sha
+        overlay_receipt.write_text(json.dumps(overlay))
+        (self.source / self.test_source).write_bytes(b"tampered JUnit\n")
+        with self.assertRaisesRegex(ValueError, "changed original JUnit"):
+            prep.attest_native_protocol(self.row, self.source, base_receipt,
+                                        base_patch, [overlay_receipt], [overlay_patch])
+
     def test_skipped_junit_requires_queue_verified_healthy_supersession(self):
         skipped = copy.deepcopy(self.row)
         skipped["eligibility"] = {"may_dispatch_healthy_seed": False,
