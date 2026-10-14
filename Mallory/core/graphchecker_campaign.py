@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 from collections import Counter, deque
+import errno
 import gzip
 import hashlib
 import json
@@ -1279,11 +1280,12 @@ def scan_window_trace(path: Path, output: Path | None = None, *,
                       selected_kinds: set[str] | None = None,
                       max_bytes: int = 4 * 1024 * 1024 * 1024
                       ) -> tuple[list[dict[str, Any]], int]:
-    """Validate and stream one JUnit window, retaining only oracle/door rows.
+    """Validate one JUnit window, retaining only oracle/door rows.
 
     Full HDFS traces may exceed a gigabyte. The graph still receives every
     window row, while Python retains only the rows used for fault selection
-    and the exact target oracle. Raw bytes are copied unchanged into output.
+    and the exact target oracle. A full-window raw trace shares its inode
+    with the window trace; a partial window is copied in a second pass.
     """
     selected = selected_kinds if selected_kinds is not None else {
         "FAULT_DOOR", "FAULT_APPLIED", "TARGET_CHECK", "TARGET_THROW"}
@@ -1293,11 +1295,17 @@ def scan_window_trace(path: Path, output: Path | None = None, *,
     closed = False
     count = 0
     consumed = 0
+    open_line = 0
+    close_line = 0
+    total_lines = 0
+    raw_digest = hashlib.sha256()
     if not path.is_file():
         raise ValueError(f"GraphChecker trace missing: {path}")
-    with _trace_stream(path) as source, (
-            output.open("wb") if output is not None else open(os.devnull, "wb")) as target:
+    source_stat = _archive_stat(path)
+    with _trace_stream(path) as source:
         for number, line in enumerate(source, 1):
+            total_lines = number
+            raw_digest.update(line)
             consumed += len(line)
             if consumed > max_bytes:
                 raise ValueError(f"GraphChecker trace over {max_bytes} decoded bytes: {path}")
@@ -1315,8 +1323,8 @@ def scan_window_trace(path: Path, output: Path | None = None, *,
                 if opened:
                     raise ValueError(f"multiple GraphChecker windows: {path}")
                 opened = True
+                open_line = number
             if opened and not closed:
-                target.write(line)
                 count += 1
                 if kind in selected:
                     rows.append(row)
@@ -1324,8 +1332,51 @@ def scan_window_trace(path: Path, output: Path | None = None, *,
                 if not opened or closed:
                     raise ValueError(f"GraphChecker window closes without an open: {path}")
                 closed = True
+                close_line = number
     if not opened or not closed:
         raise ValueError(f"GraphChecker trace lacks one complete JUnit window: {path}")
+    if _archive_stat(path) != source_stat:
+        raise ValueError(f"GraphChecker trace changed during window scan: {path}")
+    if output is None:
+        return rows, count
+    # Only an uncompressed, complete raw window has identical file bytes.
+    # link(2) is exclusive; it cannot replace an existing trial artifact.
+    if open_line == 1 and close_line == total_lines and path.suffix != ".gz":
+        try:
+            os.link(path, output, follow_symlinks=False)
+        except OSError as error:
+            if error.errno not in (errno.EXDEV, errno.EPERM, errno.EOPNOTSUPP):
+                raise
+        else:
+            linked = _archive_stat(output)
+            current = _archive_stat(path)
+            if ((linked[:3] != source_stat[:3]) or
+                    (current[:3] != source_stat[:3]) or
+                    linked[3] != source_stat[3] or current[3] != source_stat[3]):
+                output.unlink()
+                raise ValueError(f"GraphChecker trace changed before window link: {path}")
+            return rows, count
+    # Distinct windows (and cross-device outputs) require a byte-exact copy.
+    # Hashing the entire decoded source detects mutation between passes.
+    created = False
+    try:
+        if _archive_stat(path) != source_stat:
+            raise ValueError(f"GraphChecker trace changed before window copy: {path}")
+        copy_digest = hashlib.sha256()
+        target = output.open("xb")
+        created = True
+        with target, _trace_stream(path) as source:
+            for number, line in enumerate(source, 1):
+                copy_digest.update(line)
+                if open_line <= number <= close_line:
+                    target.write(line)
+        if (_archive_stat(path) != source_stat or
+                copy_digest.digest() != raw_digest.digest()):
+            raise ValueError(f"GraphChecker trace changed during window copy: {path}")
+    except Exception:
+        if created:
+            output.unlink(missing_ok=True)
+        raise
     return rows, count
 
 

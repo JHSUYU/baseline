@@ -865,6 +865,105 @@ class GraphCheckerCampaignTest(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "changed window_trace"):
                 verify_trial_artifacts(trial, result)
 
+    def test_full_window_shares_raw_inode_and_archive_semantics(self):
+        with tempfile.TemporaryDirectory() as temp:
+            trial = Path(temp)
+            raw = trial / "graphchecker-raw.jsonl"
+            window = trial / "graphchecker-trace.jsonl"
+            content = (b'{"kind":"WINDOW_OPEN","seq":1}\n'
+                       b'{"kind":"TARGET_CHECK","seq":2}\n'
+                       b'{"kind":"WINDOW_CLOSE","seq":3}\n')
+            raw.write_bytes(content)
+            selected, count = scan_window_trace(raw, window)
+            self.assertEqual(3, count)
+            self.assertEqual(["TARGET_CHECK"], [row["kind"] for row in selected])
+            self.assertEqual(os.stat(raw).st_ino, os.stat(window).st_ino)
+            self.assertEqual(content, window.read_bytes())
+            raw_receipt, window_receipt, shared, _ = _archive_trace_pair(
+                raw, window, trial)
+            self.assertTrue(shared)
+            self.assertFalse(raw.exists())
+            self.assertFalse(window.exists())
+            self.assertEqual(raw_receipt["content_sha256"],
+                             window_receipt["content_sha256"])
+            self.assertEqual(content, gzip.open(trial / raw_receipt["path"], "rb").read())
+            self.assertEqual(os.stat(trial / raw_receipt["path"]).st_ino,
+                             os.stat(trial / window_receipt["path"]).st_ino)
+
+    def test_partial_window_copies_only_validated_rows(self):
+        with tempfile.TemporaryDirectory() as temp:
+            trial = Path(temp)
+            raw = trial / "graphchecker-raw.jsonl"
+            window = trial / "graphchecker-trace.jsonl"
+            content = (b'{"kind":"COVERAGE","seq":1}\n'
+                       b'{"kind":"WINDOW_OPEN","seq":2}\n'
+                       b'{"kind":"TARGET_CHECK","seq":3}\n'
+                       b'{"kind":"WINDOW_CLOSE","seq":4}\n'
+                       b'{"kind":"COVERAGE","seq":5}\n')
+            raw.write_bytes(content)
+            selected, count = scan_window_trace(raw, window)
+            self.assertEqual(3, count)
+            self.assertEqual(["TARGET_CHECK"], [row["kind"] for row in selected])
+            self.assertNotEqual(os.stat(raw).st_ino, os.stat(window).st_ino)
+            self.assertEqual(b"".join(content.splitlines(keepends=True)[1:4]),
+                             window.read_bytes())
+
+    def test_changed_raw_between_scan_and_link_fails_closed(self):
+        with tempfile.TemporaryDirectory() as temp:
+            trial = Path(temp)
+            raw = trial / "graphchecker-raw.jsonl"
+            window = trial / "graphchecker-trace.jsonl"
+            raw.write_bytes(b'{"kind":"WINDOW_OPEN","seq":1}\n'
+                            b'{"kind":"WINDOW_CLOSE","seq":2}\n')
+            real_link = os.link
+
+            def mutate_then_link(source, destination, **kwargs):
+                raw.write_bytes(raw.read_bytes() + b" ")
+                return real_link(source, destination, **kwargs)
+
+            with patch("Mallory.core.graphchecker_campaign.os.link",
+                       side_effect=mutate_then_link):
+                with self.assertRaisesRegex(ValueError, "changed before window link"):
+                    scan_window_trace(raw, window)
+            self.assertFalse(window.exists())
+
+    def test_changed_raw_between_partial_window_passes_fails_closed(self):
+        with tempfile.TemporaryDirectory() as temp:
+            trial = Path(temp)
+            raw = trial / "graphchecker-raw.jsonl"
+            window = trial / "graphchecker-trace.jsonl"
+            raw.write_bytes(b'{"kind":"COVERAGE","seq":1}\n'
+                            b'{"kind":"WINDOW_OPEN","seq":2}\n'
+                            b'{"kind":"WINDOW_CLOSE","seq":3}\n')
+            from Mallory.core.graphchecker_campaign import _trace_stream
+            opens = 0
+
+            def mutate_on_second_open(path):
+                nonlocal opens
+                opens += 1
+                if opens == 2:
+                    raw.write_bytes(raw.read_bytes() + b" ")
+                return _trace_stream(path)
+
+            with patch("Mallory.core.graphchecker_campaign._trace_stream",
+                       side_effect=mutate_on_second_open):
+                with self.assertRaisesRegex(ValueError, "changed during window copy"):
+                    scan_window_trace(raw, window)
+            self.assertFalse(window.exists())
+
+    def test_existing_window_artifact_is_never_replaced(self):
+        with tempfile.TemporaryDirectory() as temp:
+            trial = Path(temp)
+            raw = trial / "graphchecker-raw.jsonl"
+            window = trial / "graphchecker-trace.jsonl"
+            raw.write_bytes(b'{"kind":"COVERAGE","seq":1}\n'
+                            b'{"kind":"WINDOW_OPEN","seq":2}\n'
+                            b'{"kind":"WINDOW_CLOSE","seq":3}\n')
+            window.write_bytes(b"prior evidence")
+            with self.assertRaises(FileExistsError):
+                scan_window_trace(raw, window)
+            self.assertEqual(b"prior evidence", window.read_bytes())
+
     def test_direct_gzip_graph_archive_keeps_one_compression_layer(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
