@@ -1020,14 +1020,14 @@ class WireTemporalProofTest(unittest.TestCase):
                 door("RPC#late", 5),
                 check("peer-b", "other-occ", 1)]
         ranked = core._region_doors(rows, summary)
-        self.assertEqual(["before_selected_target", "before_selected_target",
+        self.assertEqual(["before_selected_target", "after_selected_target",
                           "after_selected_target"],
                          [item["target_phase"] for item in ranked])
         self.assertEqual(["observed_closure"] * 3,
                          [item["tier"] for item in ranked])
         self.assertEqual([True] * 3,
                          [item["selected_target_actor"] for item in ranked])
-        self.assertEqual([3, 1, 1],
+        self.assertEqual([1, 1, 3],
                          [item["target_order_distance"] for item in ranked])
 
         # A selected check missing from the log gives no temporal inference.

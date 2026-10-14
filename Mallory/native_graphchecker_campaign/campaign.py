@@ -1226,8 +1226,12 @@ def _region_doors(rows: list[dict[str, Any]], summary: dict[str, Any],
                               row.get("node") == selected.get("physicalActor") and
                               row.get("actorEpochOrdinal") == selected.get(
                                   "actorEpochOrdinal")]
-    last_selected_check = (max(selected_check_indices)
-                           if selected_check_indices else None)
+    # A repeated check may disappear after a fault, even if the original
+    # fault-free run observed it later. Use the first selected check as the
+    # pre-target boundary so a door between checks is not promoted as a
+    # prospective fault before the target.
+    first_selected_check = (min(selected_check_indices)
+                            if selected_check_indices else None)
     actor_checks: dict[tuple[str, int], int] = {}
     for row in rows:
         if (row["kind"] != "TARGET_CHECK" or
@@ -1259,16 +1263,16 @@ def _region_doors(rows: list[dict[str, Any]], summary: dict[str, Any],
         actor = (row["node"], row["actorEpochOrdinal"])
         direct = row["occurrenceId"] in closure_ids
         before_actor_check = row["seq"] < actor_checks.get(actor, -1)
-        target_phase = ("unknown" if last_selected_check is None else
-                        "before_selected_target" if index < last_selected_check else
+        target_phase = ("unknown" if first_selected_check is None else
+                        "before_selected_target" if index < first_selected_check else
                         "after_selected_target")
         selected_actor = (selected.get("physicalActor"),
                           selected.get("actorEpochOrdinal"))
         actor_affinity = (actor == selected_actor if
                           selected_actor[0] is not None and
                           selected_actor[1] is not None else None)
-        target_distance = (abs(last_selected_check - index) if
-                           last_selected_check is not None else None)
+        target_distance = (abs(first_selected_check - index) if
+                           first_selected_check is not None else None)
         found.append({"fault": fault, "seq": row["seq"],
                       "target_phase": target_phase,
                       "selected_target_actor": actor_affinity,
