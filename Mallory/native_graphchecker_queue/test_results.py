@@ -45,7 +45,9 @@ class NativeResultsTest(unittest.TestCase):
             occurrence = root / "target-occurrence.json"
             occurrence.write_text(json.dumps({
                 "test": selector, "checkSiteId": guard,
-                "reachedEventCount": 2, "fatalOutcome": False}))
+                "reachedEventCount": 2, "fatalOutcome": False,
+                "reachedEvents": [{"observedOutcome": True},
+                                  {"observedOutcome": True}]}))
             review = root / "review.json"
             review.write_text(json.dumps({
                 "caseId": "HBASE-07",
@@ -92,6 +94,34 @@ class NativeResultsTest(unittest.TestCase):
             review.write_text(review.read_text() + " ")
             with self.assertRaisesRegex(ValueError,
                                         "native admission review pin changed"):
+                export_native_results(DEFAULT_INVENTORY, DEFAULT_OWNERSHIP,
+                                      config_root, state_root, results_dir)
+            review.write_text(review.read_text().rstrip())
+            for fatal in (True, False):
+                occurrence.write_text(json.dumps({
+                    "test": selector, "checkSiteId": guard,
+                    "reachedEventCount": 2, "fatalOutcome": fatal,
+                    "reachedEvents": [{"observedOutcome": not fatal},
+                                      {"observedOutcome": not fatal}]}))
+                pin_data = json.loads(pin.read_text())
+                pin_data["target_occurrence"]["sha256"] = sha(occurrence)
+                pin.write_text(json.dumps(pin_data))
+                output, _ = export_native_results(
+                    DEFAULT_INVENTORY, DEFAULT_OWNERSHIP, config_root,
+                    state_root, results_dir)
+                result = next(row for row in json.loads(output.read_text())["rows"]
+                              if row["case_id"] == "HBASE-07")
+                self.assertEqual(result["native_state"],
+                                 "preparation_healthy_graph_blocked")
+            occurrence.write_text(json.dumps({
+                "test": selector, "checkSiteId": guard,
+                "reachedEventCount": 2, "fatalOutcome": True,
+                "reachedEvents": [{"observedOutcome": False},
+                                  {"observedOutcome": True}]}))
+            pin_data = json.loads(pin.read_text())
+            pin_data["target_occurrence"]["sha256"] = sha(occurrence)
+            pin.write_text(json.dumps(pin_data))
+            with self.assertRaisesRegex(ValueError, "native admission evidence"):
                 export_native_results(DEFAULT_INVENTORY, DEFAULT_OWNERSHIP,
                                       config_root, state_root, results_dir)
 

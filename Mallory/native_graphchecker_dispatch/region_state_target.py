@@ -11,10 +11,34 @@ import argparse
 import hashlib
 import json
 import re
+from collections.abc import Iterable
 from pathlib import Path
 
 
 SITE = re.compile(r"^<[^:]+: .+>#u[0-9]+$")
+
+
+def healthy_reached_nonfatal(occurrence: dict) -> bool:
+    """Validate the observed arm, not the polarity of the fatal arm.
+
+    GraphChecker records ``fatalOutcome`` from the selected throw's static
+    guard.  The resolver records only healthy executions of the other arm in
+    ``reachedEvents``.  Either Boolean value can denote the fatal arm.
+    """
+    fatal = occurrence.get("fatalOutcome")
+    events = occurrence.get("reachedEvents")
+    count = occurrence.get("reachedEventCount")
+    return (type(fatal) is bool and type(count) is int and count > 0
+            and isinstance(events, list) and len(events) == count
+            and all(isinstance(event, dict)
+                    and type(event.get("observedOutcome")) is bool
+                    and event["observedOutcome"] is not fatal
+                    for event in events))
+
+
+def healthy_without_target_throw(events: Iterable[dict]) -> bool:
+    """The fault hook must not report a target throw in a healthy run."""
+    return not any(event.get("kind") == "TARGET_THROW" for event in events)
 
 
 def _sha(path: Path) -> str:

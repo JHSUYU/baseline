@@ -15,6 +15,9 @@ from typing import Any
 from Mallory.native_graphchecker_dispatch.checklist import (
     _native_case_files, load_ownership,
 )
+from Mallory.native_graphchecker_dispatch.region_state_target import (
+    healthy_reached_nonfatal,
+)
 from .queue import _terminal_fingerprint, obj, sha
 from .coverage import coverage_path, read_coverage
 from .inventory_epoch import (_row_sha, load_queue_inventory,
@@ -173,11 +176,11 @@ def _admission_note(item: dict, state_root: Path) -> dict[str, Any] | None:
                 "target"].get("target_exception") or
             config.get("target_site") != occurrence.get("checkSiteId") or
             occurrence.get("test") != selector or
-            occurrence.get("reachedEventCount", 0) < 1 or
-            occurrence.get("fatalOutcome") is not False or
+            not healthy_reached_nonfatal(occurrence) or
             healthy.get("status") != "blocked_healthy_native_session" or
             healthy.get("junit_passed") is not True or
             healthy.get("target_exception_triggered") is not False or
+            healthy.get("target_throw_rows", []) != [] or
             healthy.get("faults") != [] or
             healthy.get("strict_injection") is not False):
         raise ValueError(f"native admission evidence changed: {case_id}")

@@ -1,6 +1,8 @@
 import unittest
 
-from Mallory.native_graphchecker_dispatch.region_state_target import bind
+from Mallory.native_graphchecker_dispatch.region_state_target import (
+    bind, healthy_reached_nonfatal, healthy_without_target_throw,
+)
 
 
 class RegionStateTargetTest(unittest.TestCase):
@@ -42,6 +44,34 @@ class RegionStateTargetTest(unittest.TestCase):
         self.rows[0]["regionId"] = "OTHER"
         with self.assertRaisesRegex(ValueError, "target region"):
             bind(self.config, self.occurrence, self.rows)
+
+    def test_healthy_reached_arm_accepts_either_fatal_polarity(self):
+        for fatal in (False, True):
+            with self.subTest(fatal=fatal):
+                receipt = {"fatalOutcome": fatal, "reachedEventCount": 2,
+                           "reachedEvents": [
+                               {"observedOutcome": not fatal},
+                               {"observedOutcome": not fatal}]}
+                self.assertTrue(healthy_reached_nonfatal(receipt))
+                receipt["reachedEvents"][1]["observedOutcome"] = fatal
+                self.assertFalse(healthy_reached_nonfatal(receipt))
+
+    def test_healthy_reached_arm_rejects_missing_or_malformed_evidence(self):
+        valid = {"fatalOutcome": True, "reachedEventCount": 1,
+                 "reachedEvents": [{"observedOutcome": False}]}
+        for change in ({"fatalOutcome": None}, {"fatalOutcome": 1},
+                       {"reachedEventCount": 0}, {"reachedEventCount": True},
+                       {"reachedEventCount": 2}, {"reachedEvents": []},
+                       {"reachedEvents": [{}]},
+                       {"reachedEvents": [{"observedOutcome": 0}]}):
+            with self.subTest(change=change):
+                self.assertFalse(healthy_reached_nonfatal({**valid, **change}))
+
+    def test_healthy_run_rejects_target_throw_even_after_nonfatal_check(self):
+        self.assertTrue(healthy_without_target_throw(
+            [{"kind": "TARGET_CHECK"}, {"kind": "FAULT_DOOR"}]))
+        self.assertFalse(healthy_without_target_throw(
+            [{"kind": "TARGET_CHECK"}, {"kind": "TARGET_THROW"}]))
 
 
 if __name__ == "__main__":

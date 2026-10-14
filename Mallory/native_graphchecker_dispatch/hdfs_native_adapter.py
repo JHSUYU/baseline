@@ -22,6 +22,8 @@ from Mallory.instrumentation.graphchecker_port import native_original_weave as w
 from Mallory.native_graphchecker_campaign import campaign as native
 from .preparation import (_atomic, _digest, _sha,
                           stage_original_recording_artifacts)
+from .region_state_target import (healthy_reached_nonfatal,
+                                  healthy_without_target_throw)
 
 
 MODE = "original_graphchecker_native_preparation"
@@ -192,11 +194,12 @@ def request_from_inventory(inventory: Path, case_id: str,
             result = _object(Path(att["native_official_healthy_result_path"]))
             if (receipt.get("checkSiteId") != att.get("target_site_id") or
                     receipt.get("test") != att.get("executed_selector") or
-                    receipt.get("fatalOutcome") is not False or
-                    receipt.get("reachedEventCount", 0) < 1 or
+                    not healthy_reached_nonfatal(receipt) or
                     result.get("case_id") != case_id or
                     result.get("status") != "healthy_seed" or
-                    result.get("junit_passed") is not True):
+                    result.get("junit_passed") is not True or
+                    result.get("target_exception_triggered") is not False or
+                    result.get("target_throw_rows") != []):
                 raise ValueError("alternate JUnit resolver attestation is invalid")
             selector = att["executed_selector"]
             junit_source = att["source_path"]
@@ -349,12 +352,11 @@ def verify_existing(request: dict, static_root: Path, healthy_root: Path) -> dic
             root_event.get("event") != "SOURCE_REGISTER" or
             root_event.get("sourceId") != junit or
             door_count < 1 or check_count < 1 or
-            any(row.get("kind") in ("FAULT_APPLIED", "TARGET_THROW")
-                for row in rows) or
+            any(row.get("kind") == "FAULT_APPLIED" for row in rows) or
+            not healthy_without_target_throw(rows) or
             occurrence.get("test") != junit or
             occurrence.get("checkSiteId") != check or
-            occurrence.get("fatalOutcome") is not False or
-            occurrence.get("reachedEventCount", 0) < 1 or
+            not healthy_reached_nonfatal(occurrence) or
             occurrence.get("selectedOccurrenceAddress") in (None, "") or
             occurrence.get("runtimeTraceSha256") != _sha(
                 trace / "runtime_trace.jsonl")):
@@ -727,6 +729,10 @@ def prepare(request_file: Path, profile_file: Path, output: Path,
     _atomic(healthy / "healthy-run.json", {"status": 0, "junit": test,
         "elapsed_seconds": round(time.monotonic() - started, 3),
         "command": healthy_command})
+    with (healthy / "healthy-fault-events.jsonl").open(encoding="utf-8") as stream:
+        if not healthy_without_target_throw(
+                (json.loads(line) for line in stream if line.strip())):
+            raise ValueError("original HDFS healthy run threw the target exception")
     trace_manifest = _object(trace / "streaming_trace_manifest.json")
     if trace_manifest.get("status") != "CLOSED":
         raise ValueError("original HDFS healthy trace did not close")
@@ -747,8 +753,7 @@ def prepare(request_file: Path, profile_file: Path, output: Path,
     occurrence = _object(occurrence_file)
     if (occurrence.get("checkSiteId") != check or
             occurrence.get("test") != test or
-            occurrence.get("fatalOutcome") is not False or
-            occurrence.get("reachedEventCount", 0) < 1):
+            not healthy_reached_nonfatal(occurrence)):
         raise ValueError("original HDFS target guard was not reached healthy")
     selector = occurrence["selectedOccurrenceAddress"]
     recorded = healthy / "healthy-recorded"
