@@ -30,6 +30,23 @@ methods, and its encryption-defaults test starts no DataNodes. This source
 audit found no unchanged cluster JUnit combining the required operation and
 encrypted outbound SASL path; it does not prove that no such JUnit exists.
 
+The two viable original workloads stress different stale-key mechanisms.
+`TestBalancerWithEncryptedTransfer` enables encrypted transfer and the v22
+healthy trace contains 15 `DataXceiver#replaceBlock` method entries (first at
+seq 3702) and 15 observed door entries later in that method. Passing the
+`proxyReply != null` branch gives strong control-flow evidence of the outbound
+SASL connection, without an exact hook on `socketSend` itself. Its Balancer
+caller caches a DEK while a separate
+`BlockKeyUpdater` obtains key state from the NameNode; repeated failures on
+selected key-update RPC doors could produce a stale Balancer key, although the
+short original test does not naturally wait for the default block-key update
+interval. `testLongLivedClientPipelineRecovery` deliberately shortens key
+rotation and reaches the DataNode mirror/replication callers, but those peers
+create DEKs from local DataNode keys; an additional server-side target throw
+needs asymmetric key state across DataNodes. In both cases, the failure must
+occur at a dynamically selected pre-target door and the target must remain
+reachable. These are feasibility arguments, not successful injections.
+
 The larger issue chain includes [HDFS-16136](https://issues.apache.org/jira/browse/HDFS-16136), which enumerates the remaining `socketSend` callers. Older [HDFS-10609](https://issues.apache.org/jira/browse/HDFS-10609), [HDFS-11741](https://issues.apache.org/jira/browse/HDFS-11741), and [HDFS-12931](https://issues.apache.org/jira/browse/HDFS-12931) addressed client pipeline recovery, Balancer key expiry, and replicated checksum, respectively. Their existing retry/expiry logic is already present in the HDFS 3.4.3 source (`DataStreamer.java:124-149,1598`, `KeyManager.java:120-144`, `FileChecksumHelper.java:536-547`); an exception from one of those already handled paths is useful as a positive control but does not establish that a later missing-retry path was found. The striped checksum branch still has only a generic `IOException` catch at `FileChecksumHelper.java:669`.
 
 The pipeline-recovery healthy run already has one intentional target `EXPLICIT_THROW` at trace seq 936, caused by the client `DataStreamer$StreamerStreams` path; its retry recovers. Under the target-exception oracle, an additional fault-induced target throw is a detection candidate even when a caller subsequently catches it. PR-path attribution needs the caller chain; confirming the specific missing-retry defect additionally needs evidence that its caller failed to clear/retry the cached key. Record the key ID and relevant sender/receiver key sets for diagnosis. Earlier 80+40 diagnostic trials produced no extra target throw. They do not establish a detection or exhaust the revised generic multi-fault campaign.
