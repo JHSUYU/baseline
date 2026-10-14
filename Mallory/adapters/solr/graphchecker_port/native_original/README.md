@@ -60,6 +60,26 @@ an unreceived export is not evidence of a delivered message. This differs
 from the two-phase Mallory runtime API. Native graph validation must inspect
 the resulting paired endpoint and the target's backward closure.
 
+## Optional serialized-message replay identity
+
+`apply_message_payload.py` installs a separate source-pinned overlay after the
+base protocol patch. It scopes the actual serialized bytes of a synchronous
+`OverseerTaskQueue.offer(byte[], long)` while that call creates its request
+node. The original engine's `MessageDoors` hashes those bytes with the
+transport and queue route; the native fault adapter records that key and the
+current original GraphChecker causal parent on any automatically woven door
+reached in the scope. Neither the original JUnit nor the static door list is
+changed. The source and engine hashes are in
+`native-payload-replay-receipt.json`.
+
+The native campaign uses such a key for actor migration only if one seed door
+has its exact site, exception type, payload key, and causal parent. It checks
+the same tuple against the complete faulted door receipt after the trial;
+duplicates, missing keys, or a changed parent remain unmatched. An ordinal
+or actor fallback is not inferred from the payload. This does not establish
+that a future SOLR-40 healthy trace contains a unique usable key; that must
+be measured with the source-built original engine and unchanged JUnit.
+
 ## Shard-request worker handoff
 
 For subsequent Solr campaigns, apply the separate

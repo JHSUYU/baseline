@@ -17,6 +17,46 @@ from Mallory.native_graphchecker_feedback.feedback import (
 from Mallory.native_graphchecker_campaign import campaign as core
 
 
+class NativeMessageReplayTest(unittest.TestCase):
+    def test_unique_seed_rebinds_actor_and_postvalidates_unique_trial_door(self) -> None:
+        key, parent = "a" * 64, "b" * 64
+        seed = {"kind": "FAULT_DOOR", "seq": 1, "siteId": "IO#u1",
+                "node": "seed", "actorEpochOrdinal": 0, "occurrenceId": "seed-occ",
+                "ordinal": 2, "exceptionClass": "java.io.IOException",
+                "messageReplayKey": key, "messageParentId": parent}
+        selected = core._prefer_unique_message_keys([
+            {"fault": {field: seed[field] for field in core.SELECTOR_FIELDS}
+             | {"sourceOccurrenceId": "seed-occ"}, "seq": 1,
+             "tier": "observed_closure"}], [seed])[0]["fault"]
+        self.assertEqual(key, selected["messageReplayKey"])
+        moved = {**seed, "node": "trial", "actorEpochOrdinal": 5,
+                 "occurrenceId": "trial-occ", "ordinal": 9}
+        applied = {**moved, "kind": "FAULT_APPLIED", "seq": 2}
+        self.assertEqual((True, 2), core._strict_faults([selected], [moved, applied]))
+        self.assertEqual((False, None), core._strict_faults(
+            [selected], [moved, {**moved, "seq": 3}, applied]))
+        self.assertEqual((False, None), core._strict_faults(
+            [selected], [{**moved, "messageParentId": "c" * 64}, applied]))
+        malformed = {**selected, "messageParentId": "bad"}
+        self.assertEqual((False, None), core._strict_faults(
+            [malformed], [moved, applied]))
+        with self.assertRaisesRegex(ValueError, "two SHA-256 keys"):
+            core._plan_key([malformed])
+
+    def test_duplicate_seed_keeps_exact_selector(self) -> None:
+        seed = {"kind": "FAULT_DOOR", "seq": 1, "siteId": "IO#u1",
+                "node": "seed", "actorEpochOrdinal": 0, "occurrenceId": "one",
+                "ordinal": 1, "exceptionClass": "java.io.IOException",
+                "messageReplayKey": "a" * 64, "messageParentId": "b" * 64}
+        fault = {field: seed[field] for field in core.SELECTOR_FIELDS}
+        fault["sourceOccurrenceId"] = "one"
+        selected = core._prefer_unique_message_keys(
+            [{"fault": fault, "seq": 1}], [seed,
+             {**seed, "seq": 2, "occurrenceId": "two"}])[0]["fault"]
+        self.assertNotIn("messageReplayKey", selected)
+
+
+
 class NativeAdmissionLineageTest(unittest.TestCase):
     def test_post_fault_target_observation_keeps_graph_and_time_separate(self) -> None:
         site = "FSDirTruncateOp.truncate#u65"

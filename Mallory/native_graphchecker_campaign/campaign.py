@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import fcntl
 import hashlib
+from collections import Counter
 import json
 import os
 import re
@@ -43,6 +44,7 @@ SELECTOR_FIELDS = ("siteId", "node", "actorEpochOrdinal", "ordinal",
 MAX_FAULTS = 10
 MAX_UNMATCHED_RETRIES = 2
 SHA256_HEX = re.compile(r"[0-9a-f]{64}\Z")
+MESSAGE_FIELDS = ("messageReplayKey", "messageParentId")
 
 
 def _sha(path: Path) -> str:
@@ -752,10 +754,25 @@ def _strict_faults(faults: list[dict[str, Any]], rows: list[dict[str, Any]]
     doors = [row for row in rows if row["kind"] == "FAULT_DOOR"]
     for planned, actual in zip(faults, applied):
         identity = _fault_identity(actual, applied=True)
+        if any(field in planned for field in MESSAGE_FIELDS) and not all(
+                SHA256_HEX.fullmatch(planned.get(field, ""))
+                for field in MESSAGE_FIELDS):
+            return False, None
         # The source occurrence is an audit address from a prior JVM. A new
         # JVM binds the selector to a fresh exact occurrence at its door.
-        if tuple(actual.get(field) for field in SELECTOR_FIELDS) != tuple(
-                planned.get(field) for field in SELECTOR_FIELDS):
+        keyed = all(SHA256_HEX.fullmatch(planned.get(field, ""))
+                    for field in MESSAGE_FIELDS)
+        if keyed:
+            match = (all(actual.get(field) == planned[field]
+                         for field in ("siteId", "exceptionClass", *MESSAGE_FIELDS))
+                     and sum(all(door.get(field) == planned[field]
+                                 for field in ("siteId", "exceptionClass",
+                                               *MESSAGE_FIELDS))
+                             for door in doors) == 1)
+        else:
+            match = tuple(actual.get(field) for field in SELECTOR_FIELDS) == tuple(
+                    planned.get(field) for field in SELECTOR_FIELDS)
+        if not match:
             return False, None
         if not any(door["seq"] < actual["seq"] and
                    _fault_identity(door, applied=False) == identity
@@ -1073,14 +1090,50 @@ def _doors(rows: list[dict[str, Any]], summary: dict[str, Any],
         found.append({"fault": fault, "seq": row["seq"],
                       "tier": "observed_closure" if row["occurrenceId"] in closure
                       else "outside_closure"})
-    return found
+    return _prefer_unique_message_keys(found, rows)
 
 
 def _plan_key(faults: list[dict[str, Any]]) -> str:
-    stable = [{field: fault[field] for field in SELECTOR_FIELDS}
+    if any(any(field in fault for field in MESSAGE_FIELDS) and not all(
+            SHA256_HEX.fullmatch(fault.get(field, ""))
+            for field in MESSAGE_FIELDS) for fault in faults):
+        raise ValueError("native message replay selector requires two SHA-256 keys")
+    stable = [({field: fault[field] for field in
+                ("siteId", "exceptionClass", *MESSAGE_FIELDS)}
+               if all(SHA256_HEX.fullmatch(fault.get(field, ""))
+                      for field in MESSAGE_FIELDS)
+               else {field: fault[field] for field in SELECTOR_FIELDS})
               for fault in faults]
     return hashlib.sha256(json.dumps(stable, sort_keys=True,
                                      separators=(",", ":")).encode()).hexdigest()
+
+
+def _prefer_unique_message_keys(
+        doors: list[dict[str, Any]], rows: list[dict[str, Any]]
+        ) -> list[dict[str, Any]]:
+    """Rebind only a unique seed message; original exact selectors remain fallback."""
+    def key(row: dict[str, Any]) -> tuple[str, ...] | None:
+        if not all(SHA256_HEX.fullmatch(row.get(field, ""))
+                   for field in MESSAGE_FIELDS):
+            return None
+        return tuple(row.get(field, "") for field in
+                     ("siteId", "exceptionClass", *MESSAGE_FIELDS))
+
+    counts = Counter(value for row in rows if row.get("kind") == "FAULT_DOOR"
+                     if (value := key(row)) is not None)
+    by_identity = {(row.get("seq"), row.get("siteId"), row.get("occurrenceId")):
+                   row for row in rows if row.get("kind") == "FAULT_DOOR"}
+    preferred = []
+    for item in doors:
+        fault = item["fault"]
+        source = by_identity.get((item["seq"], fault["siteId"],
+                                  fault["sourceOccurrenceId"]))
+        identity = key(source) if source is not None else None
+        if identity is not None and counts[identity] == 1:
+            item = {**item, "fault": {**fault,
+                    **{field: source[field] for field in MESSAGE_FIELDS}}}
+        preferred.append(item)
+    return preferred
 
 
 def _enqueue(state: dict[str, Any], doors: list[dict[str, Any]],
@@ -1482,7 +1535,7 @@ def _region_doors(rows: list[dict[str, Any]], summary: dict[str, Any],
                                   target_phase == "before_selected_target") else
                               "pre_target_actor" if before_actor_check else
                               "outside_closure"})
-    return found
+    return _prefer_unique_message_keys(found, rows)
 
 
 def _post_fault_target_checks(rows: list[dict[str, Any]],

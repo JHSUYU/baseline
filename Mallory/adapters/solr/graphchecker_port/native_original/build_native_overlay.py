@@ -44,6 +44,8 @@ def main() -> None:
     parser.add_argument("--source-attestation", type=Path)
     parser.add_argument("--shard-handoff", action="store_true",
                         help="include the verified generic shard-request worker handoff")
+    parser.add_argument("--message-payload-overlay", action="store_true",
+                        help="include the verified native serialized-message scope")
     parser.add_argument("--native-runtime-overlay", type=Path,
                         help="attested Solr source port using the native trace runtime")
     parser.add_argument("--javac", default="javac")
@@ -56,8 +58,19 @@ def main() -> None:
     if output.exists():
         raise ValueError("refusing to overwrite an existing class tree: " + str(output))
     receipt = json.loads(RECEIPT.read_text())
+    payload_receipt = None
+    if args.message_payload_overlay:
+        if args.native_runtime_overlay is not None:
+            raise ValueError("original message scope cannot use the supplemental runtime")
+        from apply_message_payload import RECEIPT as PAYLOAD_RECEIPT, install as verify_payload
+        verify_payload(source, verify_only=True, source_attestation=(
+            args.source_attestation.resolve(strict=True)
+            if args.source_attestation is not None else None))
+        payload_receipt = json.loads(PAYLOAD_RECEIPT.read_text())
     if args.native_runtime_overlay is None:
-        if sha256(engine) != receipt["native_engine_jar_sha256_at_compile"]:
+        expected = (payload_receipt["engine_jar_sha256"] if payload_receipt
+                    else receipt["native_engine_jar_sha256_at_compile"])
+        if sha256(engine) != expected:
             raise ValueError("original GraphChecker engine does not match the pinned build")
     else:
         with zipfile.ZipFile(engine) as jar:
@@ -66,10 +79,10 @@ def main() -> None:
                 "edu/uva/liftlab/mallory/graphchecker/runtime/TrialGraphMain.class"} <= names:
             raise ValueError("native runtime jar lacks the one trace engine")
     attestation_sha256 = ""
-    if args.source_attestation is None:
+    if args.source_attestation is None and payload_receipt is None:
         subprocess.run([sys.executable, str(HERE / "install.py"),
                         "--source", str(source), "--verify-only"], check=True)
-    else:
+    elif args.source_attestation is not None:
         attestation_path = args.source_attestation.resolve(strict=True)
         attestation = json.loads(attestation_path.read_text())
         required = {
@@ -86,6 +99,8 @@ def main() -> None:
             raise ValueError("native Solr patch differs from the source receipt")
         for relative, expected in {**receipt["patched_source_sha256"],
                                    **receipt["unchanged_junit_source_sha256"]}.items():
+            if payload_receipt and relative == payload_receipt["path"]:
+                expected = payload_receipt["patched_source_sha256"]
             if sha256(source / relative) != expected:
                 raise ValueError("attested Solr source changed: " + relative)
         attestation_sha256 = sha256(attestation_path)
@@ -154,6 +169,11 @@ def main() -> None:
     if shard_handoff is not None:
         build["shard_handoff_patch_sha256"] = shard_handoff["overlay_patch_sha256"]
         build["shard_handoff_source_sha256"] = shard_handoff["patched_source_sha256"]
+    if payload_receipt is not None:
+        build["native_message_payload_overlay_receipt_sha256"] = sha256(
+            PAYLOAD_RECEIPT)
+        build["native_message_payload_source_sha256"] = payload_receipt[
+            "patched_source_sha256"]
     if native_port is not None:
         build["native_runtime_port_receipt_sha256"] = sha256(
             native_root / "native-runtime-port-receipt.json")

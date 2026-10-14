@@ -59,10 +59,18 @@ public final class NativeFaultHooks {
             ORDINALS.put(key, ordinal);
             JsonObject fields = identity(siteId, source, occurrence, ordinal,
                     exceptionClass);
+            String messageKey = MessageDoors.currentMessagePayloadKey();
+            String parentKey = messageKey.isEmpty() ? ""
+                    : MessageDoors.messageParentKey(occurrence);
+            if (!messageKey.isEmpty()) {
+                fields.addProperty("messageReplayKey", messageKey);
+                fields.addProperty("messageParentId", parentKey);
+            }
             emit("FAULT_DOOR", fields);
             if (nextFault >= PLAN.size()) return;
             Fault fault = PLAN.get(nextFault);
-            if (!fault.matches(siteId, source, ordinal, exceptionClass)) return;
+            if (!fault.matches(siteId, source, ordinal, exceptionClass,
+                    messageKey, parentKey)) return;
             Throwable injected = makeException(exceptionClass);
             emit("FAULT_APPLIED", fields);
             nextFault++;
@@ -277,14 +285,19 @@ public final class NativeFaultHooks {
         private final long epoch;
         private final int ordinal;
         private final String exceptionClass;
+        private final String messageReplayKey;
+        private final String messageParentId;
 
         private Fault(String siteId, String node, long epoch, int ordinal,
-                      String exceptionClass) {
+                      String exceptionClass, String messageReplayKey,
+                      String messageParentId) {
             this.siteId = siteId;
             this.node = node;
             this.epoch = epoch;
             this.ordinal = ordinal;
             this.exceptionClass = exceptionClass;
+            this.messageReplayKey = messageReplayKey;
+            this.messageParentId = messageParentId;
         }
 
         private static Fault from(JsonObject row) {
@@ -295,7 +308,22 @@ public final class NativeFaultHooks {
             int ordinal = row.get("ordinal").getAsInt();
             if (epoch < 0 || ordinal < 1) throw new IllegalArgumentException(
                     "invalid native fault epoch or ordinal");
-            return new Fault(site, node, epoch, ordinal, exception);
+            String messageKey = optionalDigest(row, "messageReplayKey");
+            String parentKey = optionalDigest(row, "messageParentId");
+            if (messageKey.isEmpty() != parentKey.isEmpty()) {
+                throw new IllegalArgumentException("native payload key and parent must pair");
+            }
+            return new Fault(site, node, epoch, ordinal, exception,
+                    messageKey, parentKey);
+        }
+
+        private static String optionalDigest(JsonObject row, String field) {
+            if (!row.has(field)) return "";
+            String value = required(row, field);
+            if (!value.matches("[0-9a-f]{64}")) {
+                throw new IllegalArgumentException("invalid native " + field);
+            }
+            return value;
         }
 
         private static String required(JsonObject row, String field) {
@@ -309,10 +337,15 @@ public final class NativeFaultHooks {
         }
 
         private boolean matches(String site, SourceRef source, int eventOrdinal,
-                                String exception) {
-            return siteId.equals(site) && node.equals(source.id())
-                    && epoch == source.epoch() && ordinal == eventOrdinal
-                    && exceptionClass.equals(exception);
+                                String exception, String messageKey,
+                                String parentKey) {
+            if (!siteId.equals(site) || !exceptionClass.equals(exception)) return false;
+            if (!messageReplayKey.isEmpty()) {
+                return messageReplayKey.equals(messageKey)
+                        && messageParentId.equals(parentKey);
+            }
+            return node.equals(source.id()) && epoch == source.epoch()
+                    && ordinal == eventOrdinal;
         }
     }
 }

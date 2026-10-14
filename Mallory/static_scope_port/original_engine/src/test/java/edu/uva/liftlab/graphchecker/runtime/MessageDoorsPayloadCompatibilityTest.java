@@ -13,6 +13,36 @@ import static org.junit.Assert.assertTrue;
 
 /** Protects WIRE_FLOW value transport while the later CODEC_PORT is absent. */
 public class MessageDoorsPayloadCompatibilityTest {
+    @Test public void serializedPayloadScopeIsExactNestedAndRestored() {
+        byte[] first = "first".getBytes(StandardCharsets.UTF_8);
+        byte[] second = "second".getBytes(StandardCharsets.UTF_8);
+        assertEquals("", MessageDoors.currentMessagePayloadKey());
+        String outer;
+        try (MessageDoors.MessagePayloadScope ignored =
+                     MessageDoors.beginMessagePayload("ZOOKEEPER", "/queue", first)) {
+            outer = MessageDoors.currentMessagePayloadKey();
+            assertEquals(64, outer.length());
+            try (MessageDoors.MessagePayloadScope nested =
+                         MessageDoors.beginMessagePayload("ZOOKEEPER", "/queue", second)) {
+                assertFalse(outer.equals(MessageDoors.currentMessagePayloadKey()));
+            }
+            assertEquals(outer, MessageDoors.currentMessagePayloadKey());
+        }
+        assertEquals("", MessageDoors.currentMessagePayloadKey());
+        try (MessageDoors.MessagePayloadScope ignored =
+                     MessageDoors.beginMessagePayload("ZOOKEEPER", "/queue", first)) {
+            assertEquals(outer, MessageDoors.currentMessagePayloadKey());
+        }
+        try (MessageDoors.MessagePayloadScope ignored =
+                     MessageDoors.beginMessagePayload("ZOOKEEPER", "/other", first)) {
+            assertFalse(outer.equals(MessageDoors.currentMessagePayloadKey()));
+        }
+        try (MessageDoors.MessagePayloadScope ignored =
+                     MessageDoors.beginMessagePayload("ZOOKEEPER", "/queue", null)) {
+            assertEquals("", MessageDoors.currentMessagePayloadKey());
+        }
+    }
+
     @Test public void payloadOverloadCarriesTheExactStagedPortElement()
             throws Exception {
         String prior = System.getProperty("causynth.wire.declarations");

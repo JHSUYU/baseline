@@ -8,6 +8,8 @@ import edu.uva.liftlab.graphchecker.contract.GapClass;
 import edu.uva.liftlab.graphchecker.contract.GapKind;
 
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -41,6 +43,76 @@ public final class MessageDoors {
     public static final String RESPONSE = "RESPONSE";
 
     private static final ThreadLocal<Inbound> CURRENT = new ThreadLocal<>();
+    private static final ThreadLocal<MessagePayloadScope> MESSAGE_PAYLOAD =
+            new ThreadLocal<>();
+
+    /** Scope exact serialized bytes over the synchronous operation they cause. */
+    public static MessagePayloadScope beginMessagePayload(String transport,
+                                                           String route, byte[] bytes) {
+        if (transport == null || transport.isEmpty() || route == null
+                || route.isEmpty() || bytes == null) {
+            return MessagePayloadScope.EMPTY;
+        }
+        String key = sha256("native-message-payload-v1\n" + transport + "\n"
+                + route + "\n" + sha256(bytes));
+        MessagePayloadScope scope = new MessagePayloadScope(key,
+                MESSAGE_PAYLOAD.get());
+        MESSAGE_PAYLOAD.set(scope);
+        return scope;
+    }
+
+    static String currentMessagePayloadKey() {
+        MessagePayloadScope scope = MESSAGE_PAYLOAD.get();
+        return scope == null ? "" : scope.key;
+    }
+
+    static String messageParentKey(edu.uva.liftlab.graphchecker.contract.OccurrenceAddress
+                                           occurrence) {
+        return occurrence == null ? "" : sha256("native-message-parent-v1\n"
+                + occurrence.context().render() + "\n" + occurrence.regionId()
+                + "\n" + occurrence.index().render());
+    }
+
+    private static String sha256(String value) {
+        return sha256(value.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private static String sha256(byte[] bytes) {
+        try {
+            byte[] digest = MessageDigest.getInstance("SHA-256").digest(bytes);
+            StringBuilder result = new StringBuilder(digest.length * 2);
+            for (byte part : digest) {
+                result.append(Character.forDigit((part >>> 4) & 15, 16));
+                result.append(Character.forDigit(part & 15, 16));
+            }
+            return result.toString();
+        } catch (NoSuchAlgorithmException impossible) {
+            throw new IllegalStateException("SHA-256 unavailable", impossible);
+        }
+    }
+
+    public static final class MessagePayloadScope implements AutoCloseable {
+        private static final MessagePayloadScope EMPTY =
+                new MessagePayloadScope("", null);
+        private final String key;
+        private final MessagePayloadScope prior;
+        private boolean closed;
+
+        private MessagePayloadScope(String key, MessagePayloadScope prior) {
+            this.key = key;
+            this.prior = prior;
+        }
+
+        @Override public void close() {
+            if (this == EMPTY) return;
+            if (closed || MESSAGE_PAYLOAD.get() != this) {
+                throw new IllegalStateException("message payload scopes close in order once");
+            }
+            closed = true;
+            if (prior == null) MESSAGE_PAYLOAD.remove();
+            else MESSAGE_PAYLOAD.set(prior);
+        }
+    }
 
     /**
      * What each version of a shared store carried when it was written
