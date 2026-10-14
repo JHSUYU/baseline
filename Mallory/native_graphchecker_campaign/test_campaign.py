@@ -501,11 +501,15 @@ class NativeQueueDiversityTest(unittest.TestCase):
     @staticmethod
     def _item(site: str, key: str, *, novelty: int = 0,
               depth: int = 1, tier: str = "observed_closure",
-              enqueued_at: int = 0) -> dict:
+              enqueued_at: int = 0,
+              target_phase: str | None = None) -> dict:
         fault = {"siteId": site, "exceptionClass": "java.io.IOException"}
-        return {"faults": [dict(fault) for _ in range(depth)], "key": key,
+        item = {"faults": [dict(fault) for _ in range(depth)], "key": key,
                 "tier": tier, "novelty": novelty,
                 "enqueued_at": enqueued_at, "attempt": 0}
+        if target_phase is not None:
+            item["target_phase"] = target_phase
+        return item
 
     @staticmethod
     def _state(items: list[dict], *, completed: int = 0,
@@ -606,6 +610,66 @@ class NativeQueueDiversityTest(unittest.TestCase):
         state = self._state([self._item("RPC#single", "single")],
                             completed=2, version=4)
         self.assertEqual(1, len(core._pick(state)["faults"]))
+
+    def test_v5_prefers_pre_target_even_when_late_closure_has_more_novelty(self) -> None:
+        early = self._item("RPC#early", "early", novelty=0,
+                           target_phase="before_selected_target")
+        late = self._item("RPC#late", "late", novelty=100,
+                          target_phase="after_selected_target")
+        state = self._state([early, late], version=5)
+        self.assertEqual("RPC#early", core._pick(state)["faults"][-1]["siteId"])
+        # The late door remains queued and gets a bounded recovery slot.
+        self.assertEqual([late], state["queue"])
+        state = self._state([early, late], completed=5, version=5)
+        self.assertEqual("RPC#late", core._pick(state)["faults"][-1]["siteId"])
+        # Frozen v4 checkpoints retain their old priority, despite metadata.
+        state = self._state([early, late], version=4)
+        self.assertEqual("RPC#late", core._pick(state)["faults"][-1]["siteId"])
+
+    def test_v5_keeps_deep_and_unknown_phase_exploration(self) -> None:
+        early = self._item("RPC#early", "early", depth=1,
+                           target_phase="before_selected_target")
+        deep_late = self._item("RPC#deep", "deep", depth=2,
+                               target_phase="after_selected_target")
+        state = self._state([early, deep_late], completed=2, version=5)
+        self.assertEqual(2, len(core._pick(state)["faults"]))
+        state = self._state([early, deep_late], completed=5, version=5)
+        self.assertEqual("RPC#deep",
+                         core._pick(state)["faults"][-1]["siteId"])
+        # A target-absent seed has no selected check; ordinary feedback still
+        # chooses between its unknown-phase doors.
+        state = self._state([self._item("RPC#low", "low", novelty=0,
+                                       target_phase="unknown"),
+                             self._item("RPC#high", "high", novelty=10,
+                                        target_phase="unknown")], version=5)
+        self.assertEqual("RPC#high", core._pick(state)["faults"][-1]["siteId"])
+
+    def test_v5_temporal_phase_survives_checkpoint_resume(self) -> None:
+        state = self._state([], version=5)
+        state["seen_plan_keys"] = []
+        doors = []
+        for site, phase in (("RPC#early", "before_selected_target"),
+                            ("RPC#late", "after_selected_target")):
+            doors.append({"fault": {"siteId": site, "node": "peer-a",
+                                    "actorEpochOrdinal": 0, "ordinal": 1,
+                                    "exceptionClass": "java.io.IOException"},
+                          "tier": "observed_closure", "target_phase": phase})
+        core._enqueue(state, doors, [], novelty=0)
+        with tempfile.TemporaryDirectory() as directory:
+            checkpoint = Path(directory) / "checkpoint.json"
+            core._atomic(checkpoint, state)
+            resumed = core._load(checkpoint)
+        self.assertEqual(5, resumed["scheduler_version"])
+        self.assertEqual("RPC#early",
+                         core._pick(resumed)["faults"][-1]["siteId"])
+        self.assertEqual("after_selected_target",
+                         resumed["queue"][0]["target_phase"])
+
+        frozen = self._state([], version=4)
+        frozen["seen_plan_keys"] = []
+        core._enqueue(frozen, doors, [], novelty=0)
+        self.assertTrue(all("target_phase" not in item
+                            for item in frozen["queue"]))
 
     def test_closure_feedback_still_breaks_ties_within_diverse_fault_ids(self) -> None:
         state = self._state([self._item("RPC#low", "low", novelty=0),
@@ -740,6 +804,40 @@ class WireTemporalProofTest(unittest.TestCase):
                          core._region_doors([check, after], summary)[0]["tier"])
         with self.assertRaisesRegex(ValueError, "original closure authority"):
             core._region_doors([*doors, check], {"targetSiteId": "Keys#check#u3"})
+
+    def test_region_door_phase_uses_selected_target_instance_only(self) -> None:
+        summary = {"targetSiteId": "Keys#check#u3",
+                   "closureMembershipAuthority":
+                       "original_runtime_selected_region_finalizer",
+                   "closureOccurrenceIds": ["target-occ"],
+                   "targetEvidence": {
+                       "targetCheckOccurrenceIds": ["target-occ"],
+                       "physicalActor": "peer-a", "actorEpochOrdinal": 1}}
+        def door(site: str, seq: int) -> dict:
+            return {"kind": "FAULT_DOOR", "seq": seq, "siteId": site,
+                    "node": "peer-a", "actorEpochOrdinal": 1,
+                    "occurrenceId": "target-occ", "ordinal": seq,
+                    "exceptionClass": "java.io.IOException"}
+        def check(actor: str, occurrence: str, seq: int) -> dict:
+            return {"kind": "TARGET_CHECK", "seq": seq,
+                    "siteId": summary["targetSiteId"], "node": actor,
+                    "actorEpochOrdinal": 1, "occurrenceId": occurrence}
+        rows = [door("RPC#early", 1), check("peer-a", "target-occ", 2),
+                door("RPC#between", 3), check("peer-a", "target-occ", 4),
+                door("RPC#late", 5),
+                check("peer-b", "other-occ", 1)]
+        ranked = core._region_doors(rows, summary)
+        self.assertEqual(["before_selected_target", "before_selected_target",
+                          "after_selected_target"],
+                         [item["target_phase"] for item in ranked])
+        self.assertEqual(["observed_closure"] * 3,
+                         [item["tier"] for item in ranked])
+
+        # A selected check missing from the log gives no temporal inference.
+        summary["targetEvidence"]["targetCheckOccurrenceIds"] = ["missing"]
+        self.assertEqual(["unknown"] * 3,
+                         [item["target_phase"] for item in
+                          core._region_doors(rows, summary)])
 
     def test_region_mutation_uses_global_observed_order_after_fault(self) -> None:
         summary = {"targetSiteId": "Keys#check#u3",

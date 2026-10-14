@@ -33,7 +33,7 @@ from Mallory.native_graphchecker_feedback.region_state_graph import (
 from .source_preflight import feedback_bridge
 
 SCHEMA = 1
-SCHEDULER_VERSION = 4
+SCHEDULER_VERSION = 5
 FAULT_FIELDS = ("siteId", "node", "actorEpochOrdinal", "occurrenceId",
                 "ordinal", "exceptionClass")
 SELECTOR_FIELDS = ("siteId", "node", "actorEpochOrdinal", "ordinal",
@@ -856,10 +856,13 @@ def _enqueue(state: dict[str, Any], doors: list[dict[str, Any]],
         if key in seen:
             continue
         seen.add(key)
-        state["queue"].append({"faults": faults, "key": key,
-                               "tier": door["tier"], "novelty": novelty,
-                               "enqueued_at": state["completed_fault_trials"],
-                               "attempt": 0})
+        item = {"faults": faults, "key": key,
+                "tier": door["tier"], "novelty": novelty,
+                "enqueued_at": state["completed_fault_trials"],
+                "attempt": 0}
+        if state.get("scheduler_version", 1) >= 5:
+            item["target_phase"] = door.get("target_phase", "unknown")
+        state["queue"].append(item)
     state["seen_plan_keys"] = sorted(seen)
 
 
@@ -893,7 +896,7 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
     version = state.get("scheduler_version", 1)
     if version == 1:
         return _pick_v1(state)
-    if version not in (2, 3, SCHEDULER_VERSION):
+    if version not in (2, 3, 4, SCHEDULER_VERSION):
         raise ValueError(f"unsupported native scheduler version: {version}")
     queue = state["queue"]
     if not queue:
@@ -904,6 +907,13 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
     # Keep one of eight slots for observed doors outside the target closure.
     outside_slot = bool(outside) and completed % 8 == 7
     candidates = outside if outside_slot else inside or outside
+    if version >= 5 and not outside_slot and completed % 8 == 5:
+        # Preserve a bounded recovery slot even when the late plan's fault
+        # depth differs from the usual depth preference.
+        later = [item for item in candidates if item.get(
+            "target_phase") == "after_selected_target"]
+        if later:
+            candidates = later
     if version >= 4 and not outside_slot:
         # A target-reaching seed can reveal hundreds of descendants. If all
         # descendants inherit its novelty, the old score selects deep plans
@@ -916,6 +926,14 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
                       (len(item["faults"]) > 1) == (preferred_depth > 1)]
         if same_depth:
             candidates = same_depth
+    if version >= 5 and not outside_slot and completed % 8 != 5:
+        # Row order is an observation, not a cross-actor happens-before
+        # proof. Favor doors observed before the selected target instance's
+        # final check, while reserving one slot in eight for later recovery.
+        timely = [item for item in candidates if item.get(
+            "target_phase") != "after_selected_target"]
+        if timely:
+            candidates = timely
 
     def attempts(item: dict[str, Any]) -> int:
         return state["fault_id_attempts"].get(_fault_id(item["faults"][-1]), 0)
@@ -1005,6 +1023,17 @@ def _region_doors(rows: list[dict[str, Any]], summary: dict[str, Any],
                             if row is after_fault), None)
         if after_index is None:
             raise ValueError("last applied fault is absent from the ordered log")
+    selected = summary.get("targetEvidence", {})
+    selected_ids = selected.get("targetCheckOccurrenceIds", [])
+    selected_check_indices = [index for index, row in enumerate(rows) if
+                              row.get("kind") == "TARGET_CHECK" and
+                              row.get("siteId") == summary["targetSiteId"] and
+                              row.get("occurrenceId") in selected_ids and
+                              row.get("node") == selected.get("physicalActor") and
+                              row.get("actorEpochOrdinal") == selected.get(
+                                  "actorEpochOrdinal")]
+    last_selected_check = (max(selected_check_indices)
+                           if selected_check_indices else None)
     actor_checks: dict[tuple[str, int], int] = {}
     for row in rows:
         if (row["kind"] != "TARGET_CHECK" or
@@ -1036,7 +1065,11 @@ def _region_doors(rows: list[dict[str, Any]], summary: dict[str, Any],
         actor = (row["node"], row["actorEpochOrdinal"])
         direct = row["occurrenceId"] in closure_ids
         before_actor_check = row["seq"] < actor_checks.get(actor, -1)
+        target_phase = ("unknown" if last_selected_check is None else
+                        "before_selected_target" if index < last_selected_check else
+                        "after_selected_target")
         found.append({"fault": fault, "seq": row["seq"],
+                      "target_phase": target_phase,
                       "tier": "observed_closure" if direct else
                               "pre_target_actor" if before_actor_check else
                               "outside_closure"})
@@ -1554,6 +1587,8 @@ def _accept(state: dict[str, Any], result: dict[str, Any], name: str) -> None:
                   "target_exception_triggered": result["target_exception_triggered"],
                   "elapsed_seconds": result["elapsed_seconds"]}
         state["trials"].append(record)
+        if state.get("scheduler_version", 1) >= 5:
+            record["target_phase"] = active.get("target_phase", "unknown")
         if state.get("scheduler_version", 1) >= 2:
             fault_id = _fault_id(active["faults"][-1])
             attempts = state["fault_id_attempts"]
@@ -1565,11 +1600,14 @@ def _accept(state: dict[str, Any], result: dict[str, Any], name: str) -> None:
         if (result["status"] == "unmatched" and
                 result.get("runner_mode") == "region_state" and
                 active.get("attempt", 0) < MAX_UNMATCHED_RETRIES):
-            state["queue"].append({
+            retry = {
                 "faults": active["faults"], "key": active["key"],
                 "tier": active["tier"], "novelty": active["novelty"],
                 "enqueued_at": state["completed_fault_trials"],
-                "attempt": active.get("attempt", 0) + 1})
+                "attempt": active.get("attempt", 0) + 1}
+            if state.get("scheduler_version", 1) >= 5:
+                retry["target_phase"] = active.get("target_phase", "unknown")
+            state["queue"].append(retry)
             record["retry_enqueued"] = active.get("attempt", 0) + 1
         if (state.get("scheduler_version", 1) >= 3 and
                 result["status"] == "unmatched" and
@@ -1927,6 +1965,9 @@ def run_campaign(config_path: Path, root: Path) -> dict[str, Any]:
                                    "tier": selected["tier"],
                                    "novelty": selected["novelty"],
                                    "attempt": selected.get("attempt", 0)}
+                if state.get("scheduler_version", 1) >= 5:
+                    state["active"]["target_phase"] = selected.get(
+                        "target_phase", "unknown")
                 _atomic(checkpoint, state)
             _resume_active(config, admitted, root, state)
         _atomic(checkpoint, state)

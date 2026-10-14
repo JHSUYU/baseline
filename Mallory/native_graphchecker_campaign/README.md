@@ -52,15 +52,23 @@ that session, compares observed target closure families and branch outcomes,
 and updates a persistent fault queue. It gives most queue slots to observed
 closure doors and reserves one in eight fault trials for doors outside it.
 
-New campaigns use scheduler version 4. The last fault's `siteId` and
+New campaigns use scheduler version 5. The last fault's `siteId` and
 `exceptionClass` form a fault ID; physical actors and event ordinals remain in
 the exact injection selector but do not split this scheduling identity. A
 new or less-tested fault ID outranks repeated IDs before closure novelty and
 depth break ties. One in eight selections goes to the oldest waiting plan,
 and another one in eight favors a multi-fault sequence when one is queued. The outside
 closure slot is still one in eight. Attempt and successful-injection counts
-are checkpointed, so resuming does not reset diversity. When a REGION_STATE
-trial misses its exact selector, versions 3 and 4 verify any already applied prefix
+are checkpointed, so resuming does not reset diversity. Version 5 also records
+whether each observed fault door appeared before or after the final check of
+the selected target occurrence in the append-only fault receipt. Most queue
+slots favor doors seen before that check; one in eight admits later doors to
+explore recovery and later target instances. This is a scheduling heuristic:
+receipt order across actors does not prove a causal order. If the exact selected
+check is absent, doors retain an unknown phase and normal feedback ranking.
+Versions 1 through 4 keep their frozen checkpoint selection rules.
+
+When a REGION_STATE trial misses its exact selector, versions 3 through 5 verify any already applied prefix
 against its original door receipts, then offers alternate actors observed at
 the missing fault's same `siteId` and `exceptionClass` after that prefix.
 These are new exact plans with their observed node, epoch, and ordinal; the
