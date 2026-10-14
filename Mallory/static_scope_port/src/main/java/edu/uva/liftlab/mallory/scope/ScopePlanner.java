@@ -53,6 +53,7 @@ import soot.toolkits.scalar.SimpleLocalDefs;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -87,6 +88,7 @@ import java.util.zip.ZipFile;
  */
 public final class ScopePlanner {
     private static final Gson JSON = new GsonBuilder().disableHtmlEscaping().create();
+    private static final Gson PRETTY_JSON = new GsonBuilder().setPrettyPrinting().create();
     private static final Set<String> MUTATORS = new HashSet<>(Arrays.asList(
             "put", "putAll", "remove", "clear", "add", "addAll", "set",
             "replace", "compute", "computeIfAbsent", "computeIfPresent",
@@ -155,36 +157,42 @@ public final class ScopePlanner {
         ScopePlanner planner = new ScopePlanner();
         JsonObject result = planner.run(input);
         Files.createDirectories(output);
-        StringBuilder rows = new StringBuilder();
-        for (JsonElement row : result.getAsJsonArray("scopeSites")) {
-            rows.append(JSON.toJson(row)).append('\n');
-        }
-        Files.write(output.resolve("static_scope_map.jsonl"),
-                rows.toString().getBytes(StandardCharsets.UTF_8));
-        Files.write(output.resolve("weave_manifest.json"),
-                new GsonBuilder().setPrettyPrinting().create().toJson(
-                        result.getAsJsonObject("weaveManifest")).getBytes(StandardCharsets.UTF_8));
-        Files.write(output.resolve("analysis.json"),
-                new GsonBuilder().setPrettyPrinting().create().toJson(result)
-                        .getBytes(StandardCharsets.UTF_8));
+        writeJsonLines(output.resolve("static_scope_map.jsonl"),
+                result.getAsJsonArray("scopeSites"));
+        writePrettyJson(output.resolve("weave_manifest.json"),
+                result.getAsJsonObject("weaveManifest"));
+        // A large static result is already resident as a JsonObject.  Gson's
+        // String-returning toJson overload creates another complete copy and
+        // Files.write then creates a UTF-8 byte[] copy.  Stream directly to
+        // the file so serialization has bounded additional heap use.
+        writePrettyJson(output.resolve("analysis.json"), result);
         if (result.has("graphCheckerRegionPort")) {
             JsonObject port = result.getAsJsonObject("graphCheckerRegionPort");
-            StringBuilder portRows = new StringBuilder();
-            for (JsonElement row : port.getAsJsonArray("staticScopeSites"))
-                portRows.append(JSON.toJson(row)).append('\n');
-            Files.write(output.resolve("graphchecker_static_scope_map.jsonl"),
-                    portRows.toString().getBytes(StandardCharsets.UTF_8));
-            Files.write(output.resolve("graphchecker_region_skeletons.json"),
-                    new GsonBuilder().setPrettyPrinting().create().toJson(
-                            port.get("regions")).getBytes(StandardCharsets.UTF_8));
-            Files.write(output.resolve("graphchecker_weave_manifest.json"),
-                    new GsonBuilder().setPrettyPrinting().create().toJson(
-                            port.get("weaveManifest")).getBytes(StandardCharsets.UTF_8));
-            Files.write(output.resolve("graphchecker_static_facts.json"),
-                    new GsonBuilder().setPrettyPrinting().create().toJson(
-                            port.get("facts")).getBytes(StandardCharsets.UTF_8));
+            writeJsonLines(output.resolve("graphchecker_static_scope_map.jsonl"),
+                    port.getAsJsonArray("staticScopeSites"));
+            writePrettyJson(output.resolve("graphchecker_region_skeletons.json"),
+                    port.get("regions"));
+            writePrettyJson(output.resolve("graphchecker_weave_manifest.json"),
+                    port.get("weaveManifest"));
+            writePrettyJson(output.resolve("graphchecker_static_facts.json"),
+                    port.get("facts"));
         }
         return result;
+    }
+
+    static void writeJsonLines(Path path, JsonArray rows) throws IOException {
+        try (Writer writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
+            for (JsonElement row : rows) {
+                JSON.toJson(row, writer);
+                writer.write('\n');
+            }
+        }
+    }
+
+    static void writePrettyJson(Path path, JsonElement value) throws IOException {
+        try (Writer writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
+            PRETTY_JSON.toJson(value, writer);
+        }
     }
 
     private JsonObject run(JsonObject input) {

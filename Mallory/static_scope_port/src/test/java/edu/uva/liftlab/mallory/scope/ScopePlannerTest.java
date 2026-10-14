@@ -3,6 +3,7 @@ package edu.uva.liftlab.mallory.scope;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.GsonBuilder;
 import edu.uva.liftlab.graphchecker.MalloryLambdaClassNames;
 import org.junit.Test;
 import soot.PackManager;
@@ -32,6 +33,31 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertTrue;
 
 public class ScopePlannerTest {
+    @Test
+    public void streamedArtifactsKeepTheExistingJsonBytes() throws Exception {
+        JsonObject result = new JsonObject();
+        result.addProperty("unicode", "\u96ea <script> \"quote\"");
+        result.addProperty("large", new String(new char[256 * 1024]).replace('\0', 'x'));
+        JsonArray rows = new JsonArray();
+        JsonObject row = new JsonObject();
+        row.addProperty("kind", "STATIC_SCOPE_SITE");
+        row.addProperty("siteId", "a<1");
+        rows.add(row);
+        rows.add(result);
+        Path directory = Files.createTempDirectory("mallory-scope-json-");
+        Path pretty = directory.resolve("analysis.json");
+        Path lines = directory.resolve("static_scope_map.jsonl");
+        ScopePlanner.writePrettyJson(pretty, result);
+        ScopePlanner.writeJsonLines(lines, rows);
+        assertArrayEquals(new GsonBuilder().setPrettyPrinting().create().toJson(result)
+                        .getBytes(StandardCharsets.UTF_8), Files.readAllBytes(pretty));
+        StringBuilder oldRows = new StringBuilder();
+        com.google.gson.Gson rowJson = new GsonBuilder().disableHtmlEscaping().create();
+        for (JsonElement element : rows) oldRows.append(rowJson.toJson(element)).append('\n');
+        assertArrayEquals(oldRows.toString().getBytes(StandardCharsets.UTF_8),
+                Files.readAllBytes(lines));
+    }
+
     @Test
     public void originalMethodParameterCaptureResolvesExactJimpleIdentity() throws Exception {
         SootClass owner = new SootClass("fixture.OriginalParameterCapture");
