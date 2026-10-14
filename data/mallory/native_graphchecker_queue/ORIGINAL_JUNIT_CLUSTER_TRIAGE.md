@@ -1,0 +1,22 @@
+# Original JUnit cluster and target triage
+
+This is a read-only source audit of the canonical 102-case Mallory inventory. The table is [original_junit_cluster_triage.tsv](original_junit_cluster_triage.tsv); its input and output hashes are in [original_junit_cluster_triage_receipt.json](original_junit_cluster_triage_receipt.json). Rows are ordered with unfinished queue cases first. No campaign state, workload, or source tree was changed.
+
+## Scope and interpretation
+
+- `original_cluster_test_candidate` (94): the selected unchanged JUnit exists and the test, a helper it calls, or its fixture starts an in-process target-system cluster. For HBASE-23/24, the protocol under test uses MiniZooKeeper and multiple HBase procedure participants, which is stated explicitly in `fixture_kind`. This status is a **source-level candidate**, not a completed fuzz result or proof that the exact target check ran.
+- `selected_test_not_cluster` (1): HBASE-33 directly invokes `retrievePassword` with a local `TokenServer` and MiniZooKeeper. Its `TestTokenAuthentication.java:373` setup explicitly avoids an HBase mini cluster. The earlier healthy run entered the method but did not reach the missing-key guard.
+- `ambiguous` (7): HDFS-13's selected cluster JUnit reaches the six-argument `Token.checkAccess` overload while the target is the four-argument overload; SOLR-10/13/39/40 have a cluster fixture in source but inherit an `@AwaitsFix` skip. HDFS-18 and SOLR-16 additionally have same-JUnit historical healthy evidence that the exact selected guard was not reached. The original selected JUnit cannot currently establish target reach for these seven cases. None was promoted to completed.
+- `missing_source_or_test` (0): all 102 selected test source files and declarations were found. Each test source SHA-256 matches its inventory candidate. Several inventory `method_line` fields are stale; the table gives the actual declaration line.
+
+`target_reach_assessment` is separate from cluster status. Four verified-terminal campaigns (HDFS-11/29, SOLR-01, ZOOKEEPER-07) have pinned fault-free `r0000` results with a retained target and target occurrence IDs. HBASE-02's frozen healthy receipt reaches the controlling branch `#u8` at line 910; its pinned campaign config maps the exception oracle to throw site `#u17` at line 911. This does not claim the exception was thrown. All other rows retain `exact_check_not_verified_by_this_source_audit`, `legacy_same_junit_exact_guard_not_observed`, or `not_established`; historical CrashFuzz `target_reached` is included only as a comparison and is not native GraphChecker evidence.
+
+The exact target source path, function, line, and source text appear on every row. A fixture line records a cluster constructor or start call; inherited helper paths are named explicitly. Source-level plausibility does not prove that a particular branch outcome was taken. Target reach requires a matching healthy occurrence under the exact selected JUnit and pinned target identity.
+
+## Source roots and notable bindings
+
+The audit read the unchanged source trees under `/users/ZhenyuLi/.graphchecker-sources/`: `hadoop-3.4.3`, `hbase-2.6.6`, `solr-8.11.4`, and `zookeeper-3.8.7`. Relative paths in the TSV resolve against the corresponding tree. The queue snapshot is `/proj/silentfailure-PG0/ZhenyuLi/Mallory/native-102-queue-v2/results/native-102-results.json`; its SHA-256 is pinned in the receipt. Queue states may advance after this snapshot.
+
+A source search found the only direct `injectStorage` test call in `TestProvidedStorageMap.java:101`; that test constructs descriptors without MiniDFSCluster and does not supply an identified unchanged cluster workload for HDFS-18's duplicate-storage assertion. `ChaosMonkeyShardSplitTest#test` is a possible unchanged Solr cluster alternate for SOLR-16: it restarts a leader before calling `splitShard`, but its reach of the exact changed-owner guard is unverified. Neither alternate was dispatched or marked complete.
+
+HDFS-29's inventory `method_line=328` belongs to an earlier selector, while the selected `TestLeaseRecovery#testBlockSynchronization` declaration is at line 108. HDFS-30's queue binding has a separate unchanged `TestLeaseRecovery` alternate attestation; its row retains the canonical inventory selector and flags the difference. HDFS-43/49 and ZOOKEEPER-02/03 also have stale method-line metadata, with actual declarations listed in the TSV. These are binding hygiene findings, not bug findings.
