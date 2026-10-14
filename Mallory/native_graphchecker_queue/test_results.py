@@ -12,10 +12,19 @@ from Mallory.native_graphchecker_dispatch.checklist import (
     DEFAULT_INVENTORY, DEFAULT_OWNERSHIP, load_inventory,
 )
 from .queue import completion, sha
-from .results import _elapsed_basis, export_native_results
+from .results import _elapsed_basis, _reviewed_wall_timing, export_native_results
 
 
 class NativeResultsTest(unittest.TestCase):
+    def test_reviewed_wall_timing_preserves_distinct_elapsed_basis(self) -> None:
+        review = {"timing": {"cumulative_trial_seconds": 1862.14,
+                             "campaign_wall_seconds": 2166.528,
+                             "static_to_terminal_wall_seconds": 3124.749}}
+        self.assertEqual((2166.528, 3124.749),
+                         _reviewed_wall_timing(review, 1862.14))
+        with self.assertRaisesRegex(ValueError, "wall timing differs"):
+            _reviewed_wall_timing(review, 1862.141)
+
     def test_exactly_102_rows_with_one_verified_native_completion(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -142,6 +151,9 @@ class NativeResultsTest(unittest.TestCase):
                        if row["case_id"] == case_id)
             self.assertEqual(row["strict_target_retained_fault_trials"], 2)
             self.assertEqual(row["strict_in_target_closure_trials"], 1)
+            self.assertEqual(row["closure_attribution_basis"],
+                             "region_state_v1_same_occurrence_proxy; "
+                             "causal_target_reachability_unverified")
             self.assertEqual(len(row["evidence_paths"]), 5)
             (native_root / "trials/r0001/native-summary.json").write_text(
                 '{"changed": true}\n')

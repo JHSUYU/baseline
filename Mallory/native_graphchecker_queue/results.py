@@ -25,8 +25,10 @@ FIELDS = (
     "checkpoint_observed_fault_trials", "checkpoint_observed_elapsed_seconds",
     "native_tested_complete", "fault_trials", "strict_fault_trials",
     "target_retained_fault_trials", "strict_target_retained_fault_trials",
-    "strict_in_target_closure_trials", "target_throw_trials", "candidate_trials",
+    "strict_in_target_closure_trials", "closure_attribution_basis",
+    "target_throw_trials", "candidate_trials",
     "elapsed_seconds", "elapsed_basis", "target_throw_observed",
+    "reviewed_campaign_wall_seconds", "reviewed_static_to_terminal_wall_seconds",
     "target_exception_candidate", "confirmed_new_bug",
     "native_config_path", "native_config_sha256",
     "checkpoint_path", "checkpoint_sha256", "summary_path", "summary_sha256",
@@ -68,6 +70,28 @@ def _elapsed_basis(native_root: Path, fault_trials: int,
     raise ValueError("native trial elapsed accounting changed within campaign")
 
 
+def _reviewed_wall_timing(review: dict, trial_elapsed: float) -> tuple[float | None,
+                                                                      float | None]:
+    timing = review.get("timing")
+    if not isinstance(timing, dict) or "campaign_wall_seconds" not in timing:
+        return None, None
+    cumulative = timing.get("cumulative_trial_seconds",
+                            timing.get("cumulative_healthy_plus_fault_trial_seconds"))
+    campaign_wall = timing["campaign_wall_seconds"]
+    static_wall = timing.get("static_to_terminal_wall_seconds")
+    if (not isinstance(cumulative, (int, float)) or
+            not isinstance(campaign_wall, (int, float)) or
+            isinstance(cumulative, bool) or isinstance(campaign_wall, bool) or
+            round(float(cumulative), 3) != round(float(trial_elapsed), 3) or
+            campaign_wall < 0 or
+            (static_wall is not None and
+             (not isinstance(static_wall, (int, float)) or
+              isinstance(static_wall, bool) or static_wall < 0))):
+        raise ValueError("reviewed wall timing differs from native trial receipts")
+    return float(campaign_wall), (float(static_wall) if static_wall is not None
+                                  else None)
+
+
 def native_rows(inventory: Path, ownership_file: Path, config_root: Path,
                 state_root: Path) -> list[dict[str, Any]]:
     cases, by_id = load_inventory(inventory)
@@ -106,9 +130,12 @@ def native_rows(inventory: Path, ownership_file: Path, config_root: Path,
             "target_retained_fault_trials": None,
             "strict_target_retained_fault_trials": None,
             "strict_in_target_closure_trials": None,
+            "closure_attribution_basis": None,
             "target_throw_trials": None,
             "candidate_trials": None, "elapsed_seconds": None,
             "elapsed_basis": None, "target_throw_observed": False,
+            "reviewed_campaign_wall_seconds": None,
+            "reviewed_static_to_terminal_wall_seconds": None,
             "target_exception_candidate": False,
             "confirmed_new_bug": None, "native_config_path": None,
             "native_config_sha256": None,
@@ -195,6 +222,9 @@ def native_rows(inventory: Path, ownership_file: Path, config_root: Path,
                     "strict_target_retained_fault_trials"]
                 row["strict_in_target_closure_trials"] = metric[
                     "strict_in_target_closure_trials"]
+                row["closure_attribution_basis"] = (
+                    "region_state_v1_same_occurrence_proxy; causal_target_"
+                    "reachability_unverified")
                 row["evidence_paths"].append(str(coverage_path(
                     state_root, case_id).resolve()))
             review_pin = (state_root / ".native-queue" / "reviews" /
@@ -213,6 +243,10 @@ def native_rows(inventory: Path, ownership_file: Path, config_root: Path,
                     raise ValueError(f"native terminal review pin changed: {case_id}")
                 row["terminal_review_path"] = str(review_path)
                 row["terminal_review_sha256"] = pin["review_sha256"]
+                wall, static_wall = _reviewed_wall_timing(
+                    obj(review_path), row["elapsed_seconds"])
+                row["reviewed_campaign_wall_seconds"] = wall
+                row["reviewed_static_to_terminal_wall_seconds"] = static_wall
                 row["evidence_paths"].extend((str(review_path),
                                                str(review_pin.resolve())))
         elif row["checkpoint_status"] == "running":
