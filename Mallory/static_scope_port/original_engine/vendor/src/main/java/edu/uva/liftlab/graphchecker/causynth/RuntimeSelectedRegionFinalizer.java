@@ -1558,8 +1558,11 @@ public final class RuntimeSelectedRegionFinalizer {
         private void crossWire(String occurrence, String cell,
                                Consumer<Demand> work) throws IOException {
             Set<String> ports = new LinkedHashSet<>();
-            for (String regionId : performedRegionIds(
-                    program.activations.get(occurrence))) {
+            // RegionDemandIndex froze this ordered, deduplicated list once
+            // for the same activation.  A demand can revisit the occurrence
+            // for many cells; rebuilding it here costs a scan of every fold.
+            for (String regionId : demands.regionsByOccurrence.getOrDefault(
+                    occurrence, Collections.<String>emptyList())) {
                 for (CutPort port : cutPorts.getOrDefault(regionId,
                         Collections.<CutPort>emptyList())) {
                     if ("IN".equals(port.side) && port.cells.contains(cell)) {
