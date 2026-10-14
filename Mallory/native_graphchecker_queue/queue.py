@@ -505,6 +505,13 @@ def _frozen_source_cache_valid(cache: dict, fingerprint: dict,
                 not isinstance(audit.get("trial_evidence_sha256"), dict) or
                 not audit["trial_evidence_sha256"]):
             return False
+        if "raw_archive_evidence" in audit:
+            from .raw_archive import verify_trial_evidence
+            if audit["raw_archive_evidence"] != binding.get("raw_archive_evidence"):
+                return False
+            return verify_trial_evidence(
+                binding, fingerprint["case_id"],
+                audit["trial_evidence_sha256"], audit.get("raw_summary_targets"))
         attestation = audit.get("local_artifact_attestation")
         if attestation is None:
             if require_local_attestation:

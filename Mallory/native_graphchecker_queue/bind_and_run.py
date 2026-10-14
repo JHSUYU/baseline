@@ -30,7 +30,8 @@ def binding_for(item: dict, config_path: Path, state_path: Path,
                 validation_stdout: Path | None = None,
                 target_source_archive: Path | None = None,
                 campaign_python_root: Path | None = None,
-                campaign_python_tar: Path | None = None) -> dict:
+                campaign_python_tar: Path | None = None,
+                raw_archive_receipt: Path | None = None) -> dict:
     if (not config_path.is_absolute() or not state_path.is_absolute() or
             config_path.is_symlink() or state_path.is_symlink() or
             not config_path.is_file()):
@@ -140,6 +141,16 @@ def binding_for(item: dict, config_path: Path, state_path: Path,
             source['required_files_sha256'] = {relative: sha(java)}
         pinned_campaign_python(source)
         binding['campaign_python_source'] = source
+    if raw_archive_receipt is not None:
+        if (not raw_archive_receipt.is_absolute() or
+                raw_archive_receipt.is_symlink() or
+                not raw_archive_receipt.is_file()):
+            raise ValueError('raw archive receipt is not immutable')
+        from .raw_archive import pinned_archives
+        binding['raw_archive_evidence'] = {
+            'path': str(raw_archive_receipt),
+            'sha256': sha(raw_archive_receipt)}
+        pinned_archives(binding, case_id)
     return binding
 
 
@@ -369,6 +380,7 @@ def promote(*, root: Path, case_id: str, native_config: Path,
             campaign_python_tar: Path | None = None,
             epoch_receipt: Path | None = None,
             epoch_receipt_sha256: str | None = None,
+            raw_archive_receipt: Path | None = None,
             shared_port_evidence: Path | None = None,
             dispatch: bool = True) -> dict:
     physical_host(host)
@@ -448,7 +460,8 @@ def promote(*, root: Path, case_id: str, native_config: Path,
                               validation_stdout=validation_stdout,
                               target_source_archive=target_source_archive,
                               campaign_python_root=campaign_python_root,
-                              campaign_python_tar=campaign_python_tar)
+                              campaign_python_tar=campaign_python_tar,
+                              raw_archive_receipt=raw_archive_receipt)
         for other_path in config_root.glob('*.json'):
             if other_path.stem in ('ownership', case_id):
                 continue
@@ -559,6 +572,7 @@ def main() -> None:
     parser.add_argument('--campaign-python-tar', type=Path)
     parser.add_argument('--inventory-epoch-receipt', type=Path)
     parser.add_argument('--inventory-epoch-sha256')
+    parser.add_argument('--raw-archive-receipt', type=Path)
     parser.add_argument('--shared-port-evidence', type=Path)
     parser.add_argument('--bind-only', action='store_true')
     args = parser.parse_args()
@@ -581,6 +595,7 @@ def main() -> None:
         campaign_python_tar=args.campaign_python_tar,
         epoch_receipt=args.inventory_epoch_receipt,
         epoch_receipt_sha256=args.inventory_epoch_sha256,
+        raw_archive_receipt=args.raw_archive_receipt,
         shared_port_evidence=args.shared_port_evidence,
         dispatch=not args.bind_only), sort_keys=True))
 

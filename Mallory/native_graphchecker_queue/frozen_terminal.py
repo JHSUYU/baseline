@@ -22,6 +22,7 @@ from Mallory.native_graphchecker_dispatch.checklist import (
 )
 from .queue import (_pinned_engine_root, _terminal_fingerprint, atomic, obj,
                     pinned_campaign_python, sha)
+from .raw_archive import pinned_archives, verify_trial_evidence
 
 
 _INSPECT = """
@@ -56,8 +57,9 @@ def _project_binding(item: dict, entry: Path, native_config: dict) -> dict:
     return binding
 
 
-def _trial_sha256(root: Path, count: int) -> dict[str, str]:
+def _trial_sha256(root: Path, count: int) -> tuple[dict[str, str], dict[str, str]]:
     evidence: dict[str, str] = {}
+    raw_targets: dict[str, str] = {}
     for index in range(count + 1):
         trial = root / "trials" / f"r{index:04d}"
         result = trial / "result.json"
@@ -68,10 +70,13 @@ def _trial_sha256(root: Path, count: int) -> dict[str, str]:
                          "original-graph/summary.json"):
             path = trial / relative
             if path.is_file():
-                evidence[str(path.resolve())] = sha(path)
+                name = str(path.absolute())
+                evidence[name] = sha(path)
+                if relative == "original-graph/summary.json" and path.parent.is_symlink():
+                    raw_targets[name] = str(path.parent.readlink() / path.name)
     if len(list((root / "trials").glob("r*/result.json"))) != count + 1:
         raise ValueError("sealed campaign has extra trial results")
-    return evidence
+    return evidence, raw_targets
 
 
 def _local_artifact_receipts(root: Path, count: int,
@@ -204,9 +209,14 @@ def inspect_frozen_terminal(item: dict, owner: str, config_root: Path,
     if (row.get("fault_trials") != summary.get("completed_fault_trials") or
             row.get("elapsed_seconds") != summary.get("elapsed_seconds")):
         raise ValueError("frozen inspection differs from sealed summary")
-    trial_hashes = _trial_sha256(native_root, row["fault_trials"])
-    local_artifacts = _local_artifact_receipts(native_root, row["fault_trials"],
-                                                native_config)
+    trial_hashes, raw_targets = _trial_sha256(native_root, row["fault_trials"])
+    raw_pin = binding.get("raw_archive_evidence")
+    if raw_pin is not None:
+        pinned_archives(binding, case_id)
+        if not verify_trial_evidence(binding, case_id, trial_hashes, raw_targets):
+            raise ValueError("frozen raw archive differs from inspected trial evidence")
+    local_artifacts = None if raw_pin is not None else _local_artifact_receipts(
+        native_root, row["fault_trials"], native_config)
     if _terminal_fingerprint(item, config_root, state_root) != fingerprint:
         raise ValueError("terminal inputs changed during frozen inspection")
     jar = engine_root / "target/mallory-original-graphchecker-seed-1.0-SNAPSHOT.jar"
@@ -225,6 +235,9 @@ def inspect_frozen_terminal(item: dict, owner: str, config_root: Path,
             "row": row}
     if local_artifacts is not None:
         receipt["local_artifact_attestation"] = local_artifacts
+    if raw_pin is not None:
+        receipt["raw_archive_evidence"] = raw_pin
+        receipt["raw_summary_targets"] = raw_targets
     return receipt
 
 
