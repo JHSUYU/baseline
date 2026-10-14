@@ -113,6 +113,23 @@ class PrepareCaseTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "compiled target or JUnit class differs"):
             prep.validate_static(self.row, self.static_input, self.static_output, self.sidecars)
 
+    def test_junit_result_accepts_exact_repeat_and_single_run(self):
+        receipt = self.root / "junit-result.log"
+        for count in (1, 2):
+            receipt.write_text(f"NATIVE_SOLR_JUNIT_RESULT run={count} failures=0 "
+                               f"ignored=0 expected={count}\n")
+            self.assertEqual(prep.sha256(receipt), prep.validate_junit_result(receipt))
+        for marker in (
+                "NATIVE_SOLR_JUNIT_RESULT run=1 failures=0 ignored=0 expected=2\n",
+                "NATIVE_SOLR_JUNIT_RESULT run=2 failures=1 ignored=0 expected=2\n",
+                "NATIVE_SOLR_JUNIT_RESULT run=0 failures=0 ignored=0 expected=0\n",
+                "NATIVE_SOLR_JUNIT_RESULT run=1 failures=0 ignored=1 expected=1\n",
+                "NATIVE_SOLR_JUNIT_RESULT run=1 failures=0 ignored=0\n",
+                "NATIVE_SOLR_JUNIT_RESULT run=1 failures=0 ignored=0 expected=1\n" * 2):
+            receipt.write_text(marker)
+            with self.assertRaisesRegex(ValueError, "receipt is invalid"):
+                prep.validate_junit_result(receipt)
+
     def test_closed_trace_and_unique_original_scheduler_task_required(self):
         trace = self.root / "trace"
         trace.mkdir()
@@ -213,7 +230,7 @@ class PrepareCaseTest(unittest.TestCase):
                                                   "taskId": "TASK.1"}]}))
         plan.write_text(json.dumps({"taskId": "TASK.1"}) + "\n")
         junit_result = self.root / "junit.stdout.log"
-        junit_result.write_text("NATIVE_SOLR_JUNIT_RESULT run=1 failures=0 ignored=0\n")
+        junit_result.write_text("NATIVE_SOLR_JUNIT_RESULT run=1 failures=0 ignored=0 expected=1\n")
         campaign_out = self.root / "campaign-prepared"
         campaign_args = argparse.Namespace(
             case_id="SOLR-XX", inventory=self.inventory, source=self.source,

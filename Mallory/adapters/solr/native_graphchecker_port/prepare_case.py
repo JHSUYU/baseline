@@ -265,9 +265,16 @@ def validate_recording(trace_dir: Path, target_site: str) -> dict:
 
 
 def validate_junit_result(path: Path) -> str:
-    line = "NATIVE_SOLR_JUNIT_RESULT run=1 failures=0 ignored=0"
-    if line not in path.read_text(encoding="utf-8"):
-        raise ValueError("original JUnit did not pass exactly once")
+    pattern = re.compile(r"^NATIVE_SOLR_JUNIT_RESULT run=(\d+) failures=(\d+) "
+                         r"ignored=(\d+) expected=(\d+)$")
+    matches = [pattern.fullmatch(line) for line in
+               path.read_text(encoding="utf-8").splitlines()
+               if line.startswith("NATIVE_SOLR_JUNIT_RESULT")]
+    if (len(matches) != 1 or matches[0] is None or
+            int(matches[0].group(1)) < 1 or
+            int(matches[0].group(1)) != int(matches[0].group(4)) or
+            int(matches[0].group(2)) != 0 or int(matches[0].group(3)) != 0):
+        raise ValueError("original JUnit run count/failure receipt is invalid")
     return sha256(path)
 
 
@@ -518,6 +525,7 @@ def prepare_campaign(args: argparse.Namespace) -> dict:
                           "method": row["workload"]["test_method"]},
                 "runner": {"mode": "region_state", "zero_vm_java": str(args.java),
                            "main_class": RUNNER, "classpath": runner_cp,
+                           "result_marker": "NATIVE_SOLR_JUNIT_RESULT",
                            "jvm_args": ["-ea", "-Xmx6g", "-Dcausynth.cluster.automatic=true",
                                         "-Dtests.luceneMatchVersion=8.11.4",
                                         "-Djava.io.tmpdir={trial_workdir}",

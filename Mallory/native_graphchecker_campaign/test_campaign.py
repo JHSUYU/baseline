@@ -101,6 +101,24 @@ class NativeAdmissionLineageTest(unittest.TestCase):
             {"args_before_test": ["{trial_result_file}"]}, Path("/tmp/trial"))
         self.assertEqual(["/tmp/trial/junit-result.json"], prefix)
 
+    def test_original_junit_marker_requires_all_repeat_iterations(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            log = Path(directory) / "stdout.log"
+            marker = "NATIVE_SOLR_JUNIT_RESULT"
+            for runs in (1, 2):
+                log.write_text(f"{marker} run={runs} failures=0 ignored=0 "
+                               f"expected={runs}\n")
+                self.assertTrue(core._junit_result_marker(log, marker)["valid"])
+            for line in (
+                    f"{marker} run=1 failures=0 ignored=0 expected=2\n",
+                    f"{marker} run=2 failures=1 ignored=0 expected=2\n",
+                    f"{marker} run=1 failures=0 ignored=1 expected=1\n",
+                    f"{marker} run=0 failures=0 ignored=0 expected=0\n",
+                    f"{marker} run=1 failures=0 ignored=0\n",
+                    f"{marker} run=1 failures=0 ignored=0 expected=1\n" * 2):
+                log.write_text(line)
+                self.assertFalse(core._junit_result_marker(log, marker)["valid"])
+
     def test_region_state_trial_omits_symbolic_task_publication(self) -> None:
         args = core._mode_jvm_args(
             {"mode": "region_state"}, {}, Path("/tmp/trial"),

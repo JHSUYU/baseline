@@ -157,6 +157,10 @@ def _validate_config(config: dict[str, Any]) -> None:
                      item == "{trial_result_file}")
                     for item in runner.get("args_before_test", []))):
         raise ValueError("native campaign requires bounded Zero VM JUnit runner")
+    marker = runner.get("result_marker")
+    if marker is not None and (not isinstance(marker, str) or
+                               not re.fullmatch(r"[A-Z][A-Z0-9_]*", marker)):
+        raise ValueError("runner result_marker must be an exact identifier")
     if runner.get("mode", "concolic") not in ("concolic", "region_state"):
         raise ValueError("runner mode must be concolic or region_state")
     if (admission_mode == "region_state_no_schedule" and
@@ -1094,6 +1098,23 @@ def _mode_jvm_args(runner: dict[str, Any], weave: dict[str, Any],
             f"-Dcausynth.concolic.results={iteration / 'vm-result.json'}"]
 
 
+def _junit_result_marker(path: Path, marker: str) -> dict[str, Any]:
+    """Verify one complete original JUnit result, including @Repeat expansion."""
+    pattern = re.compile(rf"^{re.escape(marker)} run=(\d+) failures=(\d+) "
+                         r"ignored=(\d+) expected=(\d+)$")
+    matches = []
+    with path.open(encoding="utf-8", errors="replace") as stream:
+        for line in stream:
+            if line.startswith(marker):
+                matches.append(pattern.fullmatch(line.rstrip("\r\n")))
+    if len(matches) != 1 or matches[0] is None:
+        return {"valid": False, "reason": "missing_ambiguous_or_malformed_marker"}
+    run, failures, ignored, expected = map(int, matches[0].groups())
+    return {"valid": run > 0 and run == expected and failures == 0 and ignored == 0,
+            "run": run, "failures": failures, "ignored": ignored,
+            "expected": expected}
+
+
 def _execute_junit(config: dict[str, Any], admitted: dict[str, Any],
                    trial: Path, faults: list[dict[str, Any]]) -> dict[str, Any]:
     """Run the same unchanged JUnit method in a fresh Zero VM."""
@@ -1148,8 +1169,12 @@ def _execute_junit(config: dict[str, Any], admitted: dict[str, Any],
                 os.killpg(process.pid, signal.SIGKILL)
                 process.wait()
             code, timed_out = process.returncode, True
-    return {"return_code": code, "timed_out": timed_out,
-            "elapsed_seconds": round(time.monotonic() - started, 3)}
+    execution = {"return_code": code, "timed_out": timed_out,
+                 "elapsed_seconds": round(time.monotonic() - started, 3)}
+    if runner.get("result_marker"):
+        execution["junit_result_marker"] = _junit_result_marker(
+            trial / "stdout.log", runner["result_marker"])
+    return execution
 
 
 def _run_region_trial(config: dict[str, Any], admitted: dict[str, Any],
@@ -1254,7 +1279,9 @@ def _run_trial(config: dict[str, Any], admitted: dict[str, Any],
                                       if (iteration / "fault-events.jsonl").is_file()
                                       else None)
     result["strict_injection"] = False
-    result["junit_passed"] = execution["return_code"] == 0 and not execution["timed_out"]
+    result["junit_passed"] = (execution["return_code"] == 0 and
+                              not execution["timed_out"] and
+                              execution.get("junit_result_marker", {"valid": True})["valid"])
     result["target_exception_triggered"] = False
     result["native_target_retained"] = False
     result["fault_in_target_closure"] = False
