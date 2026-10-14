@@ -12,12 +12,11 @@ its full original GraphChecker audit. `running_no_terminal_receipt` and
 `terminal_awaiting_adoption` preserve observed checkpoint progress separately;
 their final fault counts, elapsed time, target throws, and bug marks remain
 unset until receipt adoption. `checkpoint_observed_*` fields are preliminary.
-`preparation_static_timeout` is a nonterminal preparation note. HDFS-39's
-original static ScopePlanner timed out after 1800 seconds; it produced no
-weave, JUnit execution, or fault trial. Its pinned review and source preflight
-are recorded with `preparation_junit_trials=0` and
-`preparation_fault_trials=0`, while `native_tested_complete=false` and all
-terminal trial and elapsed fields remain unset.
+`preparation_static_timeout` records a failed preparation attempt, independently
+of any later campaign. HDFS-39's original ScopePlanner attempt timed out after
+1800 seconds and ran no JUnit or fault trial; a later native campaign completed
+its 3600-second fault budget and now has a verified terminal receipt. The row
+retains the timeout note and the later trial results separately.
 
 SOLR-40 has a separate source-only eligibility review for the pinned Solr
 8.11.4 checkout and current harness. Its selected original four-node JUnit
@@ -50,11 +49,16 @@ target exception with its required trial evidence. It does not assert a new
 bug. `confirmed_new_bug` remains null until independent source-level review
 provides that conclusion.
 
-The committed snapshot has 102 rows and thirteen verified terminal imports:
-ZOOKEEPER-01, ZOOKEEPER-02, ZOOKEEPER-07, HDFS-11, HDFS-28, HDFS-29,
-HDFS-30, HDFS-31,
-HBASE-01, HBASE-02, SOLR-01, SOLR-05, and SOLR-07. Active bound campaigns
-show checkpoint observations without a terminal receipt. HDFS-11's
+The committed snapshot has 102 rows and 25 verified terminal imports:
+HBASE-01/02/04/15, HDFS-11/14/21/28/29/30/31/39,
+SOLR-01/05/06/07/09/18/19, and
+ZOOKEEPER-01/02/03/05/06/07. The other rows comprise 73 `not_completed`,
+three `running_no_terminal_receipt` (SOLR-21, ZOOKEEPER-11/12), and one
+`preparation_healthy_graph_blocked` (HBASE-07). These are queue receipt
+states, not assertions that a JVM is currently running. Separate HDFS-11,
+SOLR-09, HBASE-14, and ZOOKEEPER-10 follow-up diagnostics or pilots do not
+alter these 25 terminal rows until the native queue adopts a new verified
+completion. HDFS-11's
 separate terminal review records incomplete SASL value provenance. HDFS-29
 finished its fault budget without an exact target throw. SOLR-01 has a
 client-only static map with no proven server receive edge; its completed
@@ -112,19 +116,10 @@ HBASE-01, HDFS-28, HDFS-31, SOLR-05, and SOLR-07 retain the explicitly labelled 
 same-occurrence proxy until an exact-ID frozen-evidence audit is pinned;
 their proxy counts do not establish causal closure.
 
-HDFS-14, SOLR-09, SOLR-19, ZOOKEEPER-03, ZOOKEEPER-05, and ZOOKEEPER-06
-are bound to active direct campaigns with immutable configs and isolated
-states. SOLR-19's original
-healthy JUnit passed and retained its exact target before read-only binding.
-ZOOKEEPER-05 v5 is the bound campaign; its earlier v3/v4 blocked states remain
-separate. ZOOKEEPER-06's reviewed assigned range is threadid 7, ports
-19297–20642; the queue changed only this case's old threadid 6 reservation
-under the promotion lock and checked overlap. HDFS-14's parameterized
-unchanged original JUnit is pinned by its official healthy r0000 and alternate
-selector attestation. That attestation still references node0-private source
-and class paths, so cross-host alternate proof needs a small shared immutable
-source fallback before a nonowner host independently inspects HDFS-14.
-The queue must honor their direct campaign locks until those processes finish.
+Earlier bindings for HDFS-14, SOLR-09/19, and ZOOKEEPER-03/05/06 have since
+received terminal receipts; their original config, source, and port reviews
+remain part of those receipts. A bound case still lacking a terminal receipt
+must retain its own lock and checkpoint until adopted or explicitly retired.
 `promotion-v2.json` and `promotion-v2-manifest.json` record the initial
 two-completion promotion. Later rows are pinned by completion receipts,
 coverage sidecars, review pins, and this snapshot.
