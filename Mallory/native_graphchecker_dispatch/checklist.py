@@ -87,8 +87,33 @@ def _same_checkpoint_summary(checkpoint: dict, summary: dict) -> None:
         raise ValueError("native summary differs from terminal checkpoint")
 
 
+def _archived_source_sha(case_id: str, audit_path: Path, source: Path,
+                         expected: str, archive_root: Path | None) -> str:
+    """Verify a shared copy when a pinned source is local to another host."""
+    if source.is_symlink() or source.exists() or archive_root is None:
+        return _sha(source)
+    receipt_path = archive_root / f"{case_id}.json"
+    if receipt_path.is_symlink():
+        raise ValueError("native source archive receipt is a symlink")
+    receipt = _object(receipt_path)
+    archived = Path(receipt.get("archived_path", ""))
+    if (receipt.get("schema_version") != 1 or
+            receipt.get("case_id") != case_id or
+            receipt.get("audit_path") != str(audit_path) or
+            receipt.get("audit_sha256") != _sha(audit_path) or
+            receipt.get("original_path") != str(source) or
+            receipt.get("original_sha256") != expected or
+            not archived.is_absolute() or archived.is_symlink() or
+            not archived.is_relative_to(archive_root) or
+            _sha(archived) != expected or
+            receipt.get("archived_sha256") != expected):
+        raise ValueError("native source archive differs from identity audit")
+    return expected
+
+
 def _native_case_files(item: dict, config_root: Path,
-                       state_root: Path) -> tuple[Path, Path]:
+                       state_root: Path,
+                       source_archive_root: Path | None = None) -> tuple[Path, Path]:
     """Resolve an explicit, pinned inventory-to-native campaign binding."""
     case_id = item["case_id"]
     entry = config_root / f"{case_id}.json"
@@ -149,7 +174,11 @@ def _native_case_files(item: dict, config_root: Path,
         for path_key, sha_key in (("source_path", "source_sha256"),
                                   ("jimple_path", "jimple_sha256"),
                                   ("manifest_path", "manifest_sha256")):
-            if _sha(Path(audit[path_key])) != audit[sha_key]:
+            current = Path(audit[path_key])
+            actual = (_archived_source_sha(case_id, audit_path, current,
+                                          audit[sha_key], source_archive_root)
+                      if path_key == "source_path" else _sha(current))
+            if actual != audit[sha_key]:
                 raise ValueError("native target identity source evidence changed")
     return config, root
 

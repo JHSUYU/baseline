@@ -1,0 +1,238 @@
+"""Bind one immutable native REGION_STATE case, then run one owner-host wave."""
+
+from __future__ import annotations
+
+import argparse
+import fcntl
+import hashlib
+import json
+from pathlib import Path
+
+from Mallory.native_graphchecker_campaign.campaign import _validate_config
+from Mallory.native_graphchecker_dispatch.checklist import (
+    _native_case_files, _verify_alternate_junit, inspect_case,
+    load_inventory, load_ownership,
+)
+from .queue import (atomic, obj, physical_host, pilot_receipt, run_host,
+                    sha, validate_isolation)
+
+DEFAULT_ROOT = Path('/proj/silentfailure-PG0/ZhenyuLi/Mallory/native-102-queue-v2')
+
+
+def binding_for(item: dict, config_path: Path, state_path: Path,
+                *, alternate: Path | None = None,
+                identity: Path | None = None) -> dict:
+    if (not config_path.is_absolute() or not state_path.is_absolute() or
+            config_path.is_symlink() or state_path.is_symlink() or
+            not config_path.is_file()):
+        raise ValueError('native config/state must be absolute non-symlink paths')
+    config = obj(config_path)
+    _validate_config(config)
+    case_id = item['case_id']
+    native_id = config.get('case_id')
+    if (not isinstance(native_id, str) or
+            not (native_id == case_id or native_id.startswith(case_id + '-native-')) or
+            config.get('runner', {}).get('mode') != 'region_state' or
+            config.get('target_throw', {}).get('siteId') != item['target']['site_id'] or
+            config.get('target_throw', {}).get('exceptionClass') != item[
+                'target'].get('target_exception') or
+            config.get('target_site', '').split('#', 1)[0] != item[
+                'target']['site_id'].split('#', 1)[0]):
+        raise ValueError('native config does not match exact inventory target')
+    expected = {'class': item['workload']['test_class'],
+                'method': item['workload']['test_method']}
+    if config.get('junit') != expected and alternate is None:
+        raise ValueError('alternate original JUnit requires pinned attestation')
+    if alternate is not None and (not alternate.is_absolute() or
+                                  alternate.is_symlink() or
+                                  not alternate.is_file()):
+        raise ValueError('alternate JUnit attestation is not immutable')
+    row_sha = hashlib.sha256(json.dumps(
+        item, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+    binding = {'schema_version': 1,
+               'mode': 'native_region_state_case_binding',
+               'inventory_case_id': case_id,
+               'inventory_row_sha256': row_sha,
+               'native_case_id': native_id,
+               'native_config_path': str(config_path),
+               'native_config_sha256': sha(config_path),
+               'native_state_path': str(state_path)}
+    if alternate is not None:
+        binding['alternate_original_junit'] = {
+            'attestation_path': str(alternate), 'attestation_sha256': sha(alternate)}
+    if identity is not None:
+        if not identity.is_absolute() or identity.is_symlink() or not identity.is_file():
+            raise ValueError('native target identity audit is not immutable')
+        binding['target_identity_audit'] = {'path': str(identity),
+                                            'sha256': sha(identity)}
+    return binding
+
+
+def extend_profile(profile: dict, system: str, case_id: str,
+                   review: Path | None) -> dict:
+    """Add a case-scoped port review; assigned ZooKeeper ports are preallocated."""
+    copied = json.loads(json.dumps(profile))
+    ports = copied['systems'][system]['ports']
+    if ports['mode'] == 'assigned':
+        if review is not None:
+            raise ValueError('assigned port policy does not take a case review')
+        return copied
+    if review is None or not review.is_absolute() or review.is_symlink() or not review.is_file():
+        raise ValueError('dynamic ports require an absolute case source review')
+    receipt = obj(review)
+    if receipt.get('schema_version') != 1 or receipt.get('system') != system or (
+            receipt.get('case_id') != case_id):
+        raise ValueError('port source review is for a different case')
+    source = (receipt.get('reviewed_source_sha256') if ports['mode'] ==
+              'random_retry' else receipt.get('evidence'))
+    if not isinstance(source, dict) or not source:
+        raise ValueError('port source review has no source digests')
+    for name, digest in source.items():
+        path = Path(name)
+        if (not path.is_absolute() or path.is_symlink() or not path.is_file() or
+                sha(path) != digest):
+            raise ValueError(f'port source evidence changed: {name}')
+    cases = ports.setdefault('case_receipts', {})
+    previous = ports.pop('receipt', None)
+    if previous is not None:
+        old = obj(Path(previous))
+        cases.setdefault(old['case_id'], previous)
+    if case_id in cases and cases[case_id] != str(review):
+        raise ValueError('case port review is already pinned elsewhere')
+    cases[case_id] = str(review)
+    ports['evidence'][str(review)] = sha(review)
+    ports['evidence'].update(source)
+    return copied
+
+
+def promote(*, root: Path, case_id: str, native_config: Path,
+            native_state: Path, host: str,
+            port_review: Path | None = None,
+            alternate_attestation: Path | None = None,
+            target_identity_audit: Path | None = None,
+            dispatch: bool = True) -> dict:
+    physical_host(host)
+    inventory = root / 'python-snapshot-bind-v1/Mallory/cases/inventory.json'
+    ownership = root / 'config/ownership.json'
+    config_root = root / 'config'
+    state_root = root / 'state'
+    profile_path = root / 'evidence/isolation.json'
+    pilot = state_root / '.native-queue/pilot-ZOOKEEPER-07.json'
+    cases, by_id = load_inventory(inventory)
+    item = next((row for row in cases if row['case_id'] == case_id), None)
+    if item is None:
+        raise ValueError('case is absent from canonical 102-row inventory')
+    owners = load_ownership(ownership, set(by_id))
+    queue_root = state_root / '.native-queue'
+    queue_root.mkdir(parents=True, exist_ok=True)
+    with (queue_root / 'promotion.lock').open('a+') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        for owner_host in ('node0', 'node1', 'node2'):
+            controller = queue_root / 'controllers' / f'{owner_host}.json'
+            if controller.is_file() and obj(controller).get('status') == 'running':
+                raise ValueError('queue controller is running during promotion')
+        # Verify the last pilot pin before changing ownership or isolation.
+        pilot_receipt(pilot, inventory, ownership, config_root, state_root,
+                      cases, owners, profile_path)
+        new_owners = dict(owners)
+        new_owners[case_id] = host
+        ownership_doc = obj(ownership)
+        ownership_doc['owner'] = new_owners
+        ownership_doc['counts'] = {name: sum(value == name for value in
+                                            new_owners.values()) for name in
+                                   ('node0', 'node1', 'node2')}
+        ownership_doc['basis'] = 'physical owner of immutable native campaign'
+        profile = extend_profile(obj(profile_path), item['system'], case_id,
+                                 port_review)
+        binding = binding_for(item, native_config, native_state,
+                              alternate=alternate_attestation,
+                              identity=target_identity_audit)
+        for other_path in config_root.glob('*.json'):
+            if other_path.stem in ('ownership', case_id):
+                continue
+            other = obj(other_path)
+            if other.get('mode') == 'native_region_state_case_binding':
+                other_state = Path(other['native_state_path'])
+                if (native_state == other_state or
+                        native_state.is_relative_to(other_state) or
+                        other_state.is_relative_to(native_state)):
+                    raise ValueError('native state root overlaps another case')
+        config = obj(native_config)
+        validate_isolation(profile, item['system'], case_id, config,
+                           new_owners, host)
+        candidate_dir = queue_root / 'promotion-candidate' / case_id
+        candidate_binding = candidate_dir / f'{case_id}.json'
+        atomic(candidate_binding, binding)
+        if alternate_attestation is not None:
+            # The dispatcher verifies the source, compiled test, Resolver, and
+            # official healthy result before accepting an alternate selector.
+            _verify_alternate_junit(item, candidate_binding, config)
+        checkpoint = native_state / 'checkpoint.json'
+        if checkpoint.is_file():
+            state = obj(checkpoint)
+            if (state.get('case_id') != config['case_id'] or
+                    state.get('config_sha256') != sha(native_config)):
+                raise ValueError('existing native checkpoint has another config')
+        inspected = inspect_case(item, host, candidate_dir, state_root)
+        if inspected['terminal_disposition'] not in (
+                'ready', 'resumable', 'tested_candidate',
+                'tested_no_target_throw', 'tested_inconclusive', 'native_blocked'):
+            raise ValueError(f'native case is not dispatchable: {inspected}')
+        binding_path = config_root / f'{case_id}.json'
+        if binding_path.is_file() and obj(binding_path) != binding:
+            raise ValueError('native binding already pins different inputs')
+        # No queue worker is active. Refresh the pilot's ownership/isolation
+        # digest along with the two launch documents under this promotion lock.
+        atomic(ownership, ownership_doc)
+        atomic(profile_path, profile)
+        atomic(binding_path, binding)
+        pilot_doc = obj(pilot)
+        pilot_doc['ownership_sha256'] = sha(ownership)
+        pilot_doc['isolation_sha256'] = sha(profile_path)
+        atomic(pilot, pilot_doc)
+        resolved, resolved_root = _native_case_files(item, config_root, state_root)
+        if resolved != native_config or resolved_root != native_state:
+            raise ValueError('promoted native binding resolved differently')
+        pilot_receipt(pilot, inventory, ownership, config_root, state_root,
+                      cases, new_owners, profile_path)
+        receipt = {'schema_version': 1, 'case_id': case_id, 'host': host,
+                   'binding_path': str(binding_path),
+                   'binding_sha256': sha(binding_path),
+                   'config_sha256': sha(native_config),
+                   'checkpoint_status': inspected.get('status'),
+                   'terminal_disposition': inspected['terminal_disposition'],
+                   'ownership_sha256': sha(ownership),
+                   'isolation_sha256': sha(profile_path)}
+        atomic(queue_root / 'promotions' / f'{case_id}.json', receipt)
+    if dispatch:
+        receipt['worker_exit_codes'] = run_host(
+            host=host, slots=2, pilot=pilot, inventory=inventory,
+            ownership_file=ownership, config_root=config_root,
+            state_root=state_root, scratch_root=root / 'scratch',
+            isolation_file=profile_path, results_dir=root / 'results')
+    return receipt
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--root', type=Path, default=DEFAULT_ROOT)
+    parser.add_argument('--case-id', required=True)
+    parser.add_argument('--host', choices=('node0','node1','node2'), required=True)
+    parser.add_argument('--native-config', type=Path, required=True)
+    parser.add_argument('--native-state', type=Path, required=True)
+    parser.add_argument('--port-review', type=Path)
+    parser.add_argument('--alternate-attestation', type=Path)
+    parser.add_argument('--target-identity-audit', type=Path)
+    parser.add_argument('--bind-only', action='store_true')
+    args = parser.parse_args()
+    print(json.dumps(promote(
+        root=args.root, case_id=args.case_id, host=args.host,
+        native_config=args.native_config, native_state=args.native_state,
+        port_review=args.port_review,
+        alternate_attestation=args.alternate_attestation,
+        target_identity_audit=args.target_identity_audit,
+        dispatch=not args.bind_only), sort_keys=True))
+
+
+if __name__ == '__main__':
+    main()

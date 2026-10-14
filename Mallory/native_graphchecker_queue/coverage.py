@@ -79,12 +79,14 @@ def publish_coverage(item: dict, row: dict[str, Any], config_root: Path,
 
 
 def read_coverage(item: dict, config_root: Path,
-                  state_root: Path) -> dict[str, Any] | None:
+                  state_root: Path,
+                  source_archive_root: Path | None = None) -> dict[str, Any] | None:
     path = coverage_path(state_root, item["case_id"])
     if not path.is_file():
         return None
     metric = obj(path)
-    fingerprint = _terminal_fingerprint(item, config_root, state_root)
+    fingerprint = _terminal_fingerprint(item, config_root, state_root,
+                                        source_archive_root)
     completion = (state_root / ".native-queue" / "completions" /
                   f"{item['case_id']}.json")
     evidence = metric.get("evidence_sha256")

@@ -75,12 +75,14 @@ def native_rows(inventory: Path, ownership_file: Path, config_root: Path,
     if len(cases) != 102:
         raise ValueError("native result export requires the 102-case inventory")
     rows = []
+    source_archive_root = state_root / ".native-queue" / "source-archive"
     for item in sorted(cases, key=lambda item: item["case_id"]):
         case_id = item["case_id"]
         target = item["target"]
         source_class, source_method = _method_parts(target["function"])
         config_file, native_root = _native_case_files(item, config_root,
-                                                       state_root)
+                                                       state_root,
+                                                       source_archive_root)
         checkpoint_path = native_root / "checkpoint.json"
         summary_path = native_root / "summary.json"
         receipt_path = (state_root / ".native-queue" / "completions" /
@@ -132,7 +134,8 @@ def native_rows(inventory: Path, ownership_file: Path, config_root: Path,
             row["evidence_paths"].append(str(checkpoint_path.resolve()))
         if receipt_path.is_file():
             receipt = obj(receipt_path)
-            fingerprint = _terminal_fingerprint(item, config_root, state_root)
+            fingerprint = _terminal_fingerprint(item, config_root, state_root,
+                                                source_archive_root)
             if (fingerprint is None or
                     receipt.get("method") != "original_native_graphchecker_campaign" or
                     receipt.get("case_id") != case_id or
@@ -185,7 +188,8 @@ def native_rows(inventory: Path, ownership_file: Path, config_root: Path,
                                    str(summary_path.resolve()),
                                    str(receipt_path.resolve())],
             })
-            metric = read_coverage(item, config_root, state_root)
+            metric = read_coverage(item, config_root, state_root,
+                                   source_archive_root)
             if metric is not None:
                 row["strict_target_retained_fault_trials"] = metric[
                     "strict_target_retained_fault_trials"]

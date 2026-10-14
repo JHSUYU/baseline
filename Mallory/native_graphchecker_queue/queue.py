@@ -309,9 +309,11 @@ def _resources(state_root: Path, scratch_root: Path,
 
 
 def _terminal_fingerprint(item: dict, config_root: Path,
-                          state_root: Path) -> dict[str, Any] | None:
+                          state_root: Path,
+                          source_archive_root: Path | None = None) -> dict[str, Any] | None:
     """Pin the files that define a terminal native checkpoint."""
-    config_file, root = _native_case_files(item, config_root, state_root)
+    config_file, root = _native_case_files(item, config_root, state_root,
+                                          source_archive_root)
     checkpoint_path = root / "checkpoint.json"
     summary_path = root / "summary.json"
     if not checkpoint_path.is_file() or not summary_path.is_file():

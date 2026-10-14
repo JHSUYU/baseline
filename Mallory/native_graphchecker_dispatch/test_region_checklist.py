@@ -24,6 +24,29 @@ class RegionChecklistTest(unittest.TestCase):
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name)
 
+    def test_shared_archive_verifies_unavailable_owner_source(self) -> None:
+        source = self.root / "owner-only.java"
+        audit = self.root / "identity.json"
+        archive = self.root / "shared"
+        archive.mkdir()
+        copy = archive / "source.java"
+        copy.write_text("exact original source\n")
+        digest = checklist._sha(copy)
+        audit.write_text('{"identity":"pinned"}\n')
+        receipt = {
+            "schema_version": 1, "case_id": "HDFS-29",
+            "audit_path": str(audit), "audit_sha256": checklist._sha(audit),
+            "original_path": str(source), "original_sha256": digest,
+            "archived_path": str(copy), "archived_sha256": digest,
+        }
+        (archive / "HDFS-29.json").write_text(json.dumps(receipt))
+        self.assertEqual(digest, checklist._archived_source_sha(
+            "HDFS-29", audit, source, digest, archive))
+        copy.write_text("changed\n")
+        with self.assertRaisesRegex(ValueError, "archive differs"):
+            checklist._archived_source_sha(
+                "HDFS-29", audit, source, digest, archive)
+
     def test_binding_pins_inventory_row_native_id_and_config_bytes(self) -> None:
         item = next(row for row in checklist.load_inventory(
             checklist.DEFAULT_INVENTORY)[0] if row["case_id"] == "ZOOKEEPER-07")
