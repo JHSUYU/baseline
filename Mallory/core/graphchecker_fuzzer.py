@@ -21,7 +21,7 @@ from .graphchecker_campaign import (_configured_check_sites, _json, _write_json,
                                     _prior_trace_metadata, _prior_trace_profiles,
                                     _sha256, load_config, prepare,
                                     run_trial, verify_trial_artifacts)
-from .resource_guard import check_capacity, load_capacity_guard
+from .resource_guard import CapacityGuardStop, check_capacity, load_capacity_guard
 
 SCHEMA = 1
 PLAN_FIELDS = ("siteId", "node", "occurrenceId", "ordinal", "exceptionClass")
@@ -604,7 +604,8 @@ def _accept_result(state: dict[str, Any], name: str,
 
 def _resume_active(state: dict[str, Any], root: Path,
                    config: dict[str, Any], prepared: Path,
-                   additional_healthy_seeds: list[Path] | None = None) -> None:
+                   additional_healthy_seeds: list[Path] | None = None,
+                   capacity_guard: dict[str, Any] | None = None) -> None:
     active = state.get("active")
     if active is None:
         return
@@ -639,7 +640,8 @@ def _resume_active(state: dict[str, Any], root: Path,
         prior = legacy
     result = run_trial(config, prepared, trial, {"faults": active["faults"]},
                        prior if active["index"] > 0 else None,
-                       additional_healthy_seeds if active["index"] > 0 else None)
+                       additional_healthy_seeds if active["index"] > 0 else None,
+                       capacity_guard, root if capacity_guard is not None else None)
     _accept_result(state, name, result)
     _write_json(root / "checkpoint.json", state)
 
@@ -671,6 +673,16 @@ def _admit_capacity(state: dict[str, Any], checkpoint: Path,
         state["updated_at"] = _now()
         _write_json(checkpoint, state)
     return True
+
+
+def _pause_running_jvm(state: dict[str, Any], checkpoint: Path,
+                       stopped: CapacityGuardStop) -> dict[str, Any]:
+    state["capacity_pause"] = stopped.receipt
+    state["capacity_guard_last"] = stopped.receipt
+    state["updated_at"] = _now()
+    state["terminal"] = False
+    _write_json(checkpoint, state)
+    return state
 
 
 def _finish(state: dict[str, Any], root: Path) -> dict[str, Any]:
@@ -821,7 +833,11 @@ def run_campaign(config_path: Path, root: Path,
         if not _admit_capacity(state, checkpoint, guard, root,
                                "healthy" if state["healthy"] is None else "fault"):
             return state
-        _resume_active(state, root, config, prepared, healthy_seed_paths)
+        try:
+            _resume_active(state, root, config, prepared, healthy_seed_paths,
+                           guard)
+        except CapacityGuardStop as stopped:
+            return _pause_running_jvm(state, checkpoint, stopped)
         while state["status"] == "running":
             if (state["completed_fault_trials"] >= budget["fault_trials"] or
                     state["trial_elapsed_seconds"] >= budget["seconds"] or
@@ -867,7 +883,11 @@ def run_campaign(config_path: Path, root: Path,
             _write_json(checkpoint, state)
             if not _admit_capacity(state, checkpoint, guard, root, "fault"):
                 return state
-            _resume_active(state, root, config, prepared, healthy_seed_paths)
+            try:
+                _resume_active(state, root, config, prepared, healthy_seed_paths,
+                               guard)
+            except CapacityGuardStop as stopped:
+                return _pause_running_jvm(state, checkpoint, stopped)
         return _finish(state, root)
 
 

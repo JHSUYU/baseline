@@ -27,6 +27,7 @@ from pathlib import Path
 from typing import Any
 
 from .graphchecker_trial import analyze_trial
+from .resource_guard import CapacityGuardStop, wait_with_capacity
 
 SCHEMA = 1
 CONTROLLER = "MALLORY_GC_FAULT_PLAN"
@@ -1444,8 +1445,12 @@ def _trial_verdict(evidence: dict[str, Any], faults: list[dict[str, Any]],
 
 def run_trial(config: dict[str, Any], prepared: Path, trial: Path,
               plan: dict[str, Any], prior_trace: Path | None = None,
-              healthy_seed_traces: list[Path] | None = None) -> dict[str, Any]:
+              healthy_seed_traces: list[Path] | None = None,
+              capacity_guard: dict[str, Any] | None = None,
+              campaign_root: Path | None = None) -> dict[str, Any]:
     """Execute one fresh JVM and write a self-contained, replayable receipt."""
+    if capacity_guard is not None and campaign_root is None:
+        raise ValueError("capacity_guard needs a campaign root")
     woven = _verify_prepared(config, prepared)
     door_types = _door_types(_json(prepared / "weave-manifest.json"))
     faults = validate_plan(plan, door_types)
@@ -1519,15 +1524,25 @@ def run_trial(config: dict[str, Any], prepared: Path, trial: Path,
             "scratch_dir": str(scratch), "trial_cwd": str(workdir),
             "trial_cwd_template_sha256": config["trial_cwd_template_sha256"]})
         try:
-            return_code = process.wait(timeout=config["timeout_seconds"])
-        except subprocess.TimeoutExpired:
-            timed_out = True
-            os.killpg(process.pid, signal.SIGTERM)
-            try:
-                return_code = process.wait(timeout=10)
-            except subprocess.TimeoutExpired:
-                os.killpg(process.pid, signal.SIGKILL)
-                return_code = process.wait()
+            if capacity_guard is not None:
+                return_code, timed_out = wait_with_capacity(
+                    process, config["timeout_seconds"], capacity_guard,
+                    campaign_root)
+            else:
+                try:
+                    return_code = process.wait(timeout=config["timeout_seconds"])
+                except subprocess.TimeoutExpired:
+                    timed_out = True
+                    os.killpg(process.pid, signal.SIGTERM)
+                    try:
+                        return_code = process.wait(timeout=10)
+                    except subprocess.TimeoutExpired:
+                        os.killpg(process.pid, signal.SIGKILL)
+                        return_code = process.wait()
+        except CapacityGuardStop as stopped:
+            _write_json(trial / "capacity-stop.json", stopped.receipt)
+            shutil.rmtree(scratch)
+            raise
     elapsed = round(time.time() - started, 3)
     phase_seconds = {"junit": elapsed}
     result: dict[str, Any] = {

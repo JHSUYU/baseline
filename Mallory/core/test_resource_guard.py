@@ -1,11 +1,13 @@
 """Capacity gates fail before a trial when a local or shared limit is hit."""
 
 import tempfile
+import subprocess
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from Mallory.core.resource_guard import check_capacity, load_capacity_guard
+from Mallory.core.resource_guard import (CapacityGuardStop, check_capacity,
+                                        load_capacity_guard, wait_with_capacity)
 
 
 class ResourceGuardTest(unittest.TestCase):
@@ -45,6 +47,14 @@ class ResourceGuardTest(unittest.TestCase):
                 self.assertEqual("pg0_stop_floor", check_capacity(
                     guard, private, "fault")["reason"])
             with patch("Mallory.core.resource_guard._available",
+                       side_effect=[95, 2000, 2000]), patch(
+                       "Mallory.core.resource_guard._memory_available",
+                       return_value=2000), patch(
+                       "Mallory.core.resource_guard._allocated_tree",
+                       side_effect=[0, 0]):
+                self.assertIsNone(check_capacity(guard, private,
+                                                 "running")["reason"])
+            with patch("Mallory.core.resource_guard._available",
                        side_effect=[200, 2000, 2000]), patch(
                        "Mallory.core.resource_guard._memory_available",
                        return_value=2000), patch(
@@ -60,6 +70,24 @@ class ResourceGuardTest(unittest.TestCase):
                        side_effect=[0, 100]):
                 self.assertEqual("durable_cap", check_capacity(
                     guard, private, "fault")["reason"])
+
+    def test_running_guard_stops_jvm_process_group(self):
+        with tempfile.TemporaryDirectory() as temp:
+            process = subprocess.Popen(["/bin/sleep", "3"], start_new_session=True)
+            try:
+                guard = {"poll_seconds": 0.01}
+                stopped = {"phase": "running", "reason": "pg0_stop_floor",
+                           "sample": {"pg0_available_bytes": 8}}
+                with patch("Mallory.core.resource_guard.check_capacity",
+                           return_value=stopped):
+                    with self.assertRaises(CapacityGuardStop) as caught:
+                        wait_with_capacity(process, 2, guard, Path(temp))
+                self.assertEqual(stopped, caught.exception.receipt)
+                self.assertIsNotNone(process.poll())
+            finally:
+                if process.poll() is None:
+                    process.terminate()
+                    process.wait()
 
 
 if __name__ == "__main__":

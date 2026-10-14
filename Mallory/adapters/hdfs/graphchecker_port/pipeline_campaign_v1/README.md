@@ -106,9 +106,11 @@ poll interval ≤3 seconds. The generic `capacity_guard` config checks PG0,
 root, tmpfs, memory, private local tree, and dedicated durable allocation
 before preparation and each trial. On refusal it writes `capacity_pause`
 with the exact reason to the nonterminal checkpoint; resume uses the same
-config and campaign directory after a fresh admission check. A monitored
-process group handles changes during a running JVM. No HDFS trial has been
-started by this staging.
+config and campaign directory after a fresh admission check. During a trial,
+the same generic guard polls at most every 3 seconds and stops the JUnit JVM's
+own process group if the stop threshold is crossed. It saves the stop receipt
+with the interrupted attempt and preserves the active plan for replay from
+the nonterminal checkpoint. No HDFS trial has been started by this staging.
 
 Read-only sizing on node1 at staging time found 5.20 GB free in `/dev/shm`
 and 1.70 GB free on root. A comparable HDFS48 static plus healthy tree used

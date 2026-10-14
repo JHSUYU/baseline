@@ -12,10 +12,12 @@ from unittest.mock import patch
 from Mallory.core.graphchecker_campaign import _archive_jsonl, _trial_verdict
 from Mallory.core.graphchecker_fuzzer import (_accept_result, _admit_capacity,
                                              _enqueue, _finish,
+                                             _pause_running_jvm,
                                              _actor_site_key, _plan_key,
                                              _retention_score,
                                              _new_state, _pick, _resume_active,
                                              run_campaign)
+from Mallory.core.resource_guard import CapacityGuardStop
 
 
 class GraphCheckerFuzzerTest(unittest.TestCase):
@@ -649,6 +651,21 @@ class GraphCheckerFuzzerTest(unittest.TestCase):
             self.assertNotIn("capacity_pause", paused)
             self.assertNotIn("capacity_pause", json.loads(
                 (root / "checkpoint.json").read_text()))
+
+    def test_running_jvm_capacity_stop_preserves_active_plan(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            state = _new_state(self.config(), self.budget())
+            state["active"] = {"index": 1, "name": "r0001",
+                               "faults": [{"siteId": "rpc"}]}
+            receipt = {"phase": "running", "reason": "shm_floor",
+                       "sample": {"scratch_available_bytes": 0}}
+            paused = _pause_running_jvm(state, root / "checkpoint.json",
+                                        CapacityGuardStop(receipt))
+            self.assertFalse(paused["terminal"])
+            self.assertEqual("r0001", paused["active"]["name"])
+            saved = json.loads((root / "checkpoint.json").read_text())
+            self.assertEqual(receipt, saved["capacity_pause"])
 
     def test_checkpoint_policy_preserves_v2_v3_v4_replay(self):
         for version in (2, 3, 4, 5):
