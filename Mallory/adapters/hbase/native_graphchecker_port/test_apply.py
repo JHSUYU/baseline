@@ -1,12 +1,38 @@
+import hashlib
+import json
 import unittest
 from pathlib import Path
 
 from apply import changed_sources
 
 
+HERE = Path(__file__).resolve().parent
+SOURCE = Path("/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6")
+
+
+def sha256(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
+
+
 class NativeHBasePatchTest(unittest.TestCase):
+    def test_frozen_hbase01_02_overlay_matches_pre_decoupling_output(self):
+        if not SOURCE.exists():
+            self.skipTest("original HBase 2.6.6 source unavailable")
+        golden = json.loads((HERE / "native_output_golden.json").read_text())
+        expected = {row["path"]: row for row in golden["rows"]}
+        actual = {path.relative_to(SOURCE).as_posix(): output
+                  for path, output in changed_sources(SOURCE).items()}
+        self.assertEqual(set(expected), set(actual))
+        for relative, row in expected.items():
+            with self.subTest(relative=relative):
+                source = SOURCE / relative
+                self.assertEqual(row["source_sha256"],
+                                 sha256(source.read_bytes()) if source.is_file() else None)
+                self.assertEqual(row["output_sha256"],
+                                 sha256(actual[relative].encode("utf-8")))
+
     def test_original_runtime_and_wire_boundaries(self):
-        source = Path("/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6")
+        source = SOURCE
         if not source.exists():
             self.skipTest("original HBase 2.6.6 source unavailable")
         changed = changed_sources(source)

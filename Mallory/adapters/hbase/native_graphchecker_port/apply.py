@@ -7,15 +7,12 @@ are checked before any source file is written.
 """
 
 import argparse
-import importlib.util
 from pathlib import Path
+
+from source_anchors import LEGACY_RUNTIME_DEPENDENCY, edit, patches
 
 
 HERE = Path(__file__).resolve().parent
-OLD = HERE.parent / "graphchecker_port" / "apply.py"
-spec = importlib.util.spec_from_file_location("hbase_graphchecker_anchors", OLD)
-anchors = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(anchors)
 
 NATIVE_DEPENDENCY = """    <dependency>
       <groupId>org.example</groupId>
@@ -43,7 +40,7 @@ BRIDGES = {
 
 
 def native_after(relative: str, after: str) -> str:
-    after = after.replace(anchors.DEPENDENCY, NATIVE_DEPENDENCY)
+    after = after.replace(LEGACY_RUNTIME_DEPENDENCY, NATIVE_DEPENDENCY)
     after = after.replace("edu.uva.liftlab.mallory.graphchecker.runtime.MessageDoors",
                           "org.apache.hadoop.hbase.ipc.GraphCheckerHBaseDoors")
     if relative.endswith("BlockingRpcCallback.java"):
@@ -64,12 +61,11 @@ def native_after(relative: str, after: str) -> str:
 
 def changed_sources(root: Path) -> dict[Path, str]:
     changes = {}
-    for relative, replacements in anchors.patches().items():
+    for relative, replacements in patches().items():
         path = root / relative
         content = path.read_text(encoding="utf-8")
         for before, after in replacements:
-            content = anchors.edit(content, before, native_after(relative, after),
-                                   relative)
+            content = edit(content, before, native_after(relative, after), relative)
         changes[path] = content
     for relative, bridge in BRIDGES.items():
         path = root / relative
