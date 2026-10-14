@@ -53,10 +53,7 @@ long original JUnit run does not retain every historical invocation path.
 
 The common runtime deliberately does not infer a shared-field read-from from
 method order or equal values. For exact state edges, an adapter must record a
-version and its writer under the real synchronization protocol. The isolated
-`../instrumentation/shared_state_port` prototype documents how selected Java
-field accesses could be replaced under a common location lock; that prototype
-is not yet part of the four-system run path.
+version and its writer under the real synchronization protocol.
 
 The current trace writer assumes one JUnit cluster JVM and one ordered trace
 file. Protocol headers carry producer identities across message boundaries,
