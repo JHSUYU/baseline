@@ -37,15 +37,20 @@ class GuardedOneFaultTest(unittest.TestCase):
         limits = argparse.Namespace(max_raw_bytes=500, max_output_bytes=1000,
                                     min_raw_available_bytes=100,
                                     min_output_available_bytes=100,
+                                    min_root_available_bytes=100,
                                     min_memory_available_bytes=100)
         sample = {"raw_added_bytes": 500, "output_allocated_bytes": 5,
                   "raw_available_bytes": 10000,
                   "output_available_bytes": 10000,
+                  "root_available_bytes": 10000,
                   "memory_available_bytes": 10000}
         self.assertEqual("raw_cap", guard._breach(sample, limits))
         sample["raw_added_bytes"] = 499
         sample["raw_available_bytes"] = 100
         self.assertEqual("raw_free_floor", guard._breach(sample, limits))
+        sample["raw_available_bytes"] = 10000
+        sample["root_available_bytes"] = 100
+        self.assertEqual("root_free_floor", guard._breach(sample, limits))
 
     def _args(self, pg0: Path, config: Path, output: Path, raw: Path) -> argparse.Namespace:
         return argparse.Namespace(pg0=pg0, config=config, output=output,
@@ -57,6 +62,7 @@ class GuardedOneFaultTest(unittest.TestCase):
                                   max_output_bytes=1000000,
                                   min_raw_available_bytes=0,
                                   min_output_available_bytes=0,
+                                  min_root_available_bytes=0,
                                   min_memory_available_bytes=0,
                                   max_wall_seconds=60, poll_seconds=0.01)
 
@@ -93,6 +99,7 @@ class GuardedOneFaultTest(unittest.TestCase):
             safe_sample = {"raw_added_bytes": 0, "output_allocated_bytes": 0,
                            "raw_available_bytes": 10000000,
                            "output_available_bytes": 10000000,
+                           "root_available_bytes": 10000000,
                            "memory_available_bytes": 10000000}
             with (patch.object(guard, "_require_pg0_read_only"),
                   patch.object(guard, "_require_local", side_effect=lambda path, *_:
@@ -129,6 +136,7 @@ class GuardedOneFaultTest(unittest.TestCase):
                         "output_allocated_bytes": 0,
                         "raw_available_bytes": 10000000,
                         "output_available_bytes": 10000000,
+                        "root_available_bytes": 10000000,
                         "memory_available_bytes": 10000000}
             with (patch.object(guard, "_require_pg0_read_only"),
                   patch.object(guard, "_require_local", side_effect=lambda path, *_:
@@ -139,6 +147,34 @@ class GuardedOneFaultTest(unittest.TestCase):
                 with self.assertRaisesRegex(RuntimeError, "raw_cap"):
                     guard.run_one(args)
                 popen.assert_not_called()
+
+    def test_root_floor_refuses_before_child_and_is_pinned(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pg0, output, raw = (root / name for name in ("pg0", "output", "raw"))
+            for path in (pg0, output, raw):
+                path.mkdir()
+            config = root / "config.json"
+            config.write_text(json.dumps({"case_id": "CASE", "budget": {
+                "fault_trials": 8}, "runner": {"local_artifact_root": str(raw)}}))
+            args = self._args(pg0, config, output, raw)
+            args.min_root_available_bytes = 200
+            low_root = {"raw_added_bytes": 0, "output_allocated_bytes": 0,
+                        "raw_available_bytes": 10000000,
+                        "output_available_bytes": 10000000,
+                        "root_available_bytes": 199,
+                        "memory_available_bytes": 10000000}
+            with (patch.object(guard, "_require_pg0_read_only"),
+                  patch.object(guard, "_require_local", side_effect=lambda path, *_:
+                               path.resolve()),
+                  patch.object(campaign, "_validate_config"),
+                  patch.object(guard, "_sample", return_value=low_root),
+                  patch.object(guard.subprocess, "Popen") as popen):
+                with self.assertRaisesRegex(RuntimeError, "root_free_floor"):
+                    guard.run_one(args)
+                popen.assert_not_called()
+            intent = campaign._load(output / "one-fault-intents" / "trial-0004.json")
+            self.assertEqual(200, intent["limits"]["min_root_available_bytes"])
 
     def test_running_raw_cap_stops_child_without_accepting_fault(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -153,6 +189,7 @@ class GuardedOneFaultTest(unittest.TestCase):
             safe = {"raw_added_bytes": 0, "output_allocated_bytes": 0,
                     "raw_available_bytes": 10000000,
                     "output_available_bytes": 10000000,
+                    "root_available_bytes": 10000000,
                     "memory_available_bytes": 10000000}
             over_cap = {**safe, "raw_added_bytes": args.max_raw_bytes}
 
@@ -214,6 +251,7 @@ class GuardedOneFaultTest(unittest.TestCase):
             safe = {"raw_added_bytes": 0, "output_allocated_bytes": 0,
                     "raw_available_bytes": 10000000,
                     "output_available_bytes": 10000000,
+                    "root_available_bytes": 10000000,
                     "memory_available_bytes": 10000000}
             with (patch.object(guard, "_require_pg0_read_only"),
                   patch.object(guard, "_require_local", side_effect=lambda path, *_:

@@ -116,6 +116,7 @@ def _sample(raw_namespace: Path, output: Path, baseline_raw: int) -> dict:
             "output_allocated_bytes": _allocated(output),
             "raw_available_bytes": _available(raw_namespace.parent),
             "output_available_bytes": _available(output),
+            "root_available_bytes": _available(Path("/")),
             "memory_available_bytes": _memory_available()}
 
 
@@ -127,6 +128,8 @@ def _breach(sample: dict, args: argparse.Namespace) -> str | None:
                "raw_free_floor"),
               (sample["output_available_bytes"] <= args.min_output_available_bytes,
                "output_free_floor"),
+              (sample["root_available_bytes"] <= args.min_root_available_bytes,
+               "root_free_floor"),
               (sample["memory_available_bytes"] <= args.min_memory_available_bytes,
                "memory_floor"))
     return next((reason for exceeded, reason in checks if exceeded), None)
@@ -153,7 +156,7 @@ def run_one(args: argparse.Namespace) -> dict:
         if getattr(args, name) <= 0:
             raise ValueError(f"{name} must be positive")
     for name in ("min_raw_available_bytes", "min_output_available_bytes",
-                 "min_memory_available_bytes"):
+                 "min_root_available_bytes", "min_memory_available_bytes"):
         if getattr(args, name) < 0:
             raise ValueError(f"{name} must be nonnegative")
     if not 0 < args.poll_seconds <= 3:
@@ -196,7 +199,8 @@ def run_one(args: argparse.Namespace) -> dict:
                 "limits": {name: getattr(args, name) for name in (
                     "max_raw_bytes", "max_output_bytes", "max_wall_seconds",
                     "min_raw_available_bytes", "min_output_available_bytes",
-                    "min_memory_available_bytes", "poll_seconds")}}
+                    "min_root_available_bytes", "min_memory_available_bytes",
+                    "poll_seconds")}}
         if intent_path.exists():
             intent = campaign._load(intent_path)
             if any(intent.get(key) != value for key, value in pins.items()):
@@ -288,6 +292,7 @@ def main() -> None:
     parser.add_argument("--max-output-bytes", required=True, type=int)
     parser.add_argument("--min-raw-available-bytes", required=True, type=int)
     parser.add_argument("--min-output-available-bytes", required=True, type=int)
+    parser.add_argument("--min-root-available-bytes", type=int, default=0)
     parser.add_argument("--min-memory-available-bytes", required=True, type=int)
     parser.add_argument("--max-wall-seconds", required=True, type=int)
     parser.add_argument("--poll-seconds", type=float, default=1.0)

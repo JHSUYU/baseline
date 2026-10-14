@@ -13,7 +13,8 @@ root, and raw artifact root must be separate dedicated host-local filesystems
 outside PG0. It refuses a writable PG0 tree or a root/NFS output. The caller
 must precreate those local roots and run a no-workload mount smoke first.
 The wrapper monitors raw bytes **added by this attempt**, total output bytes,
-their free-space floors, memory, and wall time. A cap or floor breach stops
+their free-space floors, the independent root filesystem free-space floor,
+memory, and wall time. A cap or floor breach stops
 the child process group; the campaign checkpoint remains available for the
 same attempt ID to resume. The monitor polls at most every three seconds, so
 the capacity reservation must include growth during one poll and termination.
@@ -47,6 +48,7 @@ unshare -U -c --keep-caps -m --fork --propagation private \
   --max-raw-bytes "$RAW_CAP" --max-output-bytes "$OUTPUT_CAP" \
   --min-raw-available-bytes "$RAW_FREE_FLOOR" \
   --min-output-available-bytes "$OUTPUT_FREE_FLOOR" \
+  --min-root-available-bytes "$ROOT_FREE_FLOOR" \
   --min-memory-available-bytes "$MEMORY_FLOOR" \
   --max-wall-seconds "$WALL_LIMIT" --poll-seconds 1
 ```
