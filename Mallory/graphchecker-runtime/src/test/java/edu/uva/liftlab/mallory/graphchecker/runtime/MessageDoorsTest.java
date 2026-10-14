@@ -167,6 +167,28 @@ public class MessageDoorsTest {
         assertTrue(bothVersionClosure.contains(firstStateEdge));
         assertTrue(bothVersionClosure.contains(secondStateEdge));
 
+        byte[] writtenPayload = "old-value".getBytes(StandardCharsets.UTF_8);
+        byte[] observedPayload = "new-value".getBytes(StandardCharsets.UTF_8);
+        long payloadWrite = MessageDoors.beginRequest(sender, "payload-write");
+        MessageDoors.stored("ZOOKEEPER", "/payload@v1", sender, writtenPayload);
+        MessageDoors.endRequest(payloadWrite, "payload-write");
+        long payloadRead = MessageDoors.beginRequest(receiver, "payload-read");
+        MessageDoors.notified("QUEUE_TAKE", () -> MessageDoors.fetched(
+                "ZOOKEEPER", "/payload@v1", receiver, observedPayload));
+        MessageDoors.consumed("ZOOKEEPER", "/payload@v1");
+        MessageDoors.endRequest(payloadRead, "payload-read");
+        List<String> payloadLines = Files.readAllLines(trace, StandardCharsets.UTF_8);
+        String payloadDigest = edu.uva.liftlab.mallory.graphchecker.contract.Digest
+                .payload(writtenPayload);
+        assertTrue(payloadLines.stream().anyMatch(line -> line.contains("/payload@v1")
+                && line.contains("\"kind\":\"WRITE\"")
+                && line.contains("\"payloadSha256\":\"" + payloadDigest + "\"")));
+        assertTrue(payloadLines.stream().anyMatch(line -> line.contains("/payload@v1")
+                && line.contains("\"kind\":\"READ\"")
+                && line.contains("\"writerEndpointId\":\"\"")));
+        assertTrue(payloadLines.stream().anyMatch(line -> line.contains(
+                "\"gapKind\":\"STATE_PAYLOAD_MISMATCH\"")));
+
         long bridgeScope = MessageDoors.beginRequest(sender, "bridge-scope");
         Object endedCall = MessageDoors.openCall("bridge-end", 0);
         MessageDoors.endRequest(bridgeScope, "bridge-scope");

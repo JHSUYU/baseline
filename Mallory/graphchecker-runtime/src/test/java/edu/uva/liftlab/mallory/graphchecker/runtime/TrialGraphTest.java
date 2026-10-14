@@ -332,6 +332,30 @@ public class TrialGraphTest {
                 .get("STATE_WRITE_AMBIGUOUS").getAsInt());
     }
 
+    @Test public void rejectsStateEdgeWhenExactVersionCarriesDifferentBytes()
+            throws Exception {
+        JsonObject write = row("kind", "WRITE", "occurrenceId", "writer",
+                "writerEndpointId", "w1", "locationVersion", "ZOOKEEPER\n/path@17",
+                "payloadSha256", "aaaaaaaa", "seq", 1);
+        JsonObject read = row("kind", "READ", "occurrenceId", "reader",
+                "readerEndpointId", "r1", "writerEndpointId", "w1",
+                "writerOccurrenceId", "writer",
+                "locationVersion", "ZOOKEEPER\n/path@17",
+                "payloadSha256", "bbbbbbbb", "seq", 2);
+        JsonObject target = row("kind", "TARGET_CHECK", "occurrenceId", "reader",
+                "siteId", "T", "seq", 3);
+        TrialGraph mismatch = graph(write, read, target);
+        assertEquals(1, mismatch.closure("T").size());
+        assertEquals(1, mismatch.feedback("T", null).getAsJsonObject("gaps")
+                .get("STATE_PAYLOAD_MISMATCH").getAsInt());
+
+        read.addProperty("payloadSha256", "aaaaaaaa");
+        TrialGraph match = graph(write, read, target);
+        assertEquals(2, match.closure("T").size());
+        assertEquals(0, match.feedback("T", null).getAsJsonObject("gaps")
+                .entrySet().size());
+    }
+
     @Test public void reportsOnlyAttributedExactTargetOutcomes() throws Exception {
         TrialGraph trial = graph(
                 row("kind", "TARGET_CHECK", "occurrenceId", "a",

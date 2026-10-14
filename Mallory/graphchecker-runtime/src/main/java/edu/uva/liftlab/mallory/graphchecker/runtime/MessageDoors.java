@@ -27,7 +27,7 @@ public final class MessageDoors {
     public static final String RESPONSE = "RESPONSE";
 
     private static final Map<String, Outbound> PREPARED = new ConcurrentHashMap<>();
-    private static final Map<String, List<Endpoint>> STORED = new ConcurrentHashMap<>();
+    private static final Map<String, List<StoredWrite>> STORED = new ConcurrentHashMap<>();
     private static final ThreadLocal<Inbound> CURRENT = new ThreadLocal<>();
     private static final ThreadLocal<String> NOTIFIED = new ThreadLocal<>();
     private static final ThreadLocal<ReadHandoff> LAST_NOTIFIED_READ = new ThreadLocal<>();
@@ -627,11 +627,14 @@ public final class MessageDoors {
             gap("STATE_WRITE_UNNAMED", transport, key);
             return;
         }
+        String payloadSha256 = data == null ? "" : Digest.payload(data);
         STORED.computeIfAbsent(location, ignored ->
-                java.util.Collections.synchronizedList(new ArrayList<>())).add(writer);
+                java.util.Collections.synchronizedList(new ArrayList<>()))
+                .add(new StoredWrite(writer, payloadSha256));
         TraceRows.row("WRITE", writer.occurrence(), TraceRows.fields(
                 "locationVersion", location, "writer", writer.render(),
-                "writerEndpointId", writer.id()));
+                "writerEndpointId", writer.id(),
+                "payloadSha256", payloadSha256));
     }
 
     public static void fetched(String transport, String key, Object owner) {
@@ -653,17 +656,26 @@ public final class MessageDoors {
             gap("STATE_READ_UNNAMED", transport, key);
             return;
         }
-        List<Endpoint> writers = STORED.get(location);
-        Endpoint exact = null;
+        String payloadSha256 = data == null ? "" : Digest.payload(data);
+        List<StoredWrite> writers = STORED.get(location);
+        StoredWrite stored = null;
         if (writers != null) synchronized (writers) {
-            if (writers.size() == 1) exact = writers.get(0);
+            if (writers.size() == 1) stored = writers.get(0);
         }
+        if (stored != null && !payloadSha256.isEmpty()
+                && !stored.payloadSha256.isEmpty()
+                && !payloadSha256.equals(stored.payloadSha256)) {
+            gap("STATE_PAYLOAD_MISMATCH", transport, key);
+            stored = null;
+        }
+        Endpoint exact = stored == null ? null : stored.endpoint;
         if (exact == null) gap("STATE_WRITER_UNRESOLVED", transport, key);
         TraceRows.row("READ", reader.occurrence(), TraceRows.fields(
                 "locationVersion", location, "reader", reader.render(),
                 "readerEndpointId", reader.id(), "writer", exact == null ? "" : exact.render(),
                 "writerEndpointId", exact == null ? "" : exact.id(),
-                "writerOccurrenceId", exact == null ? "" : exact.occurrence().id()));
+                "writerOccurrenceId", exact == null ? "" : exact.occurrence().id(),
+                "payloadSha256", payloadSha256));
         if (exact != null && NOTIFIED.get() != null) {
             LAST_NOTIFIED_READ.set(new ReadHandoff(transport, key, location,
                     reader, exact));
@@ -723,6 +735,16 @@ public final class MessageDoors {
             this.locationVersion = locationVersion;
             this.reader = reader;
             this.writer = writer;
+        }
+    }
+
+    private static final class StoredWrite {
+        final Endpoint endpoint;
+        final String payloadSha256;
+
+        StoredWrite(Endpoint endpoint, String payloadSha256) {
+            this.endpoint = endpoint;
+            this.payloadSha256 = payloadSha256;
         }
     }
 

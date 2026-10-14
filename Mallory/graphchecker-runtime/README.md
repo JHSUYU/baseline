@@ -14,6 +14,10 @@ missing carrier, ambiguous version, and failed join produce explicit GAP rows.
 For a queue consumer, a notified exact versioned read followed by `consumed`
 joins the read occurrence to the processing scope through a HANDOFF edge;
 the queue path, version, writer, and unique reader endpoint must agree.
+When both adapter hooks supply payload bytes, the runtime records SHA-256
+digests and refuses a state or queue handoff whose read bytes differ from the
+unique writer's bytes. Older adapters without payload bytes still join by the
+exact versioned key.
 
 `TrialGraphMain trace graph feedback targetSiteOrJsonArray [priorTrace|-] [staticScopeMap]`
 builds NODE, WIRE, STATE, and local SCOPE edges from those rows. It admits an

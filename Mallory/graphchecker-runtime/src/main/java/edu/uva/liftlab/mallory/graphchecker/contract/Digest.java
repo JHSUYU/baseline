@@ -11,10 +11,19 @@ public final class Digest {
     private Digest() { }
 
     public static String digest(String value, int length) {
+        return hex((value == null ? "" : value).getBytes(StandardCharsets.UTF_8), length);
+    }
+
+    /** Full SHA-256 for a transported value, without decoding binary payloads. */
+    public static String payload(byte[] value) {
+        if (value == null) throw new IllegalArgumentException("payload is null");
+        return hex(value, 0);
+    }
+
+    private static String hex(byte[] value, int length) {
         byte[] hash;
         try {
-            hash = MessageDigest.getInstance("SHA-256").digest(
-                    (value == null ? "" : value).getBytes(StandardCharsets.UTF_8));
+            hash = MessageDigest.getInstance("SHA-256").digest(value);
         } catch (NoSuchAlgorithmException impossible) {
             throw new IllegalStateException(impossible);
         }

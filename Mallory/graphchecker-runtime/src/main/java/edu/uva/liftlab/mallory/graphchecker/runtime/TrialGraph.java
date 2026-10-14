@@ -461,6 +461,13 @@ public final class TrialGraph {
                     return;
                 }
                 JsonObject write = matched.get(0);
+                String readPayload = value(row, "payloadSha256");
+                String writePayload = value(write, "payloadSha256");
+                if (!readPayload.isEmpty() && !writePayload.isEmpty()
+                        && !readPayload.equals(writePayload)) {
+                    gap("STATE_PAYLOAD_MISMATCH");
+                    return;
+                }
                 if (!value(row, "writerEndpointId").equals(
                         value(write, "writerEndpointId"))
                         || !value(row, "writerOccurrenceId").equals(
