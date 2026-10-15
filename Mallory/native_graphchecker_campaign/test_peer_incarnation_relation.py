@@ -7,6 +7,7 @@ from pathlib import Path
 
 from Mallory.native_graphchecker_campaign.peer_incarnation_relation import (
     healthy_door_peer_relation,
+    healthy_door_peer_relations,
     peer_incarnation_relation,
 )
 
@@ -235,6 +236,34 @@ class HealthyDoorPeerRelationTest(unittest.TestCase):
                  dict(rows[-1], correlationId="rpc-c", sourceKey="nn0#epoch1")]
         self.assertEqual("peer_identity_missing_or_ambiguous",
                          self._run(rows)["reason"])
+
+    def test_batch_multiple_target_queries_one_trace_and_sha(self):
+        rows = self._rows()
+        rows += [
+            {"event": "EXCHANGE_SEND", "seq": 8,
+             "transport": "HADOOP_IPC", "half": "REQUEST",
+             "correlationId": "rpc-c", "attemptId": "0",
+             "sourceKey": "dn3#epoch0", "sourceRole": "DATANODE"},
+            {"event": "EXCHANGE_RECEIVE", "seq": 9,
+             "transport": "HADOOP_IPC", "half": "REQUEST",
+             "correlationId": "rpc-c", "attemptId": "0",
+             "sourceKey": "nn0#epoch1", "sourceRole": "NAMENODE"},
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            trace = Path(directory) / "trace.jsonl"
+            events = Path(directory) / "fault-events.jsonl"
+            trace.write_text("".join(json.dumps(row) + "\n" for row in rows))
+            events.write_text(json.dumps({"kind": "FAULT_DOOR", **DOOR}) + "\n")
+            queries = [{"doorIdentity": DOOR, "targetSourceKey": TARGET},
+                       {"doorIdentity": DOOR,
+                        "targetSourceKey": "dn3#epoch0"}]
+            batch = healthy_door_peer_relations(
+                trace, events, queries=queries)
+            self.assertEqual(["same", "different"],
+                             [row["relation"] for row in batch])
+            self.assertEqual(batch[0]["traceSha256"], batch[1]["traceSha256"])
+            self.assertEqual(batch[0], healthy_door_peer_relation(
+                trace, events, door_identity=DOOR, target_source_key=TARGET))
 
 
 if __name__ == "__main__":

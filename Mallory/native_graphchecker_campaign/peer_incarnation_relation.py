@@ -297,6 +297,178 @@ def healthy_door_peer_relation(
     return report
 
 
+def healthy_door_peer_relations(
+    trace_path: Path, fault_events_path: Path, *,
+    queries: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Batch the exact healthy-door relation without rereading the raw trace.
+
+    Each query has ``doorIdentity`` (the six FAULT_DOOR fields) and
+    ``targetSourceKey`` (from one selected target occurrence).  One raw trace
+    pass indexes only method identity/parentage and compact HADOOP_IPC rows;
+    one wire-pair pass supplies every queried door.  Results are in query
+    order and retain the single-query fail-closed rules and file hashes.
+    """
+    if not queries:
+        return []
+    wanted = {_door_identity(q.get("doorIdentity", {})) for q in queries}
+    wanted.discard(None)
+    receipt_counts: dict[tuple[Any, ...], int] = defaultdict(int)
+    event_digest = hashlib.sha256()
+    with fault_events_path.open("rb") as stream:
+        for line in stream:
+            event_digest.update(line)
+            row = json.loads(line)
+            if row.get("kind") == "FAULT_DOOR":
+                identity = _door_identity(row)
+                if identity in wanted:
+                    receipt_counts[identity] += 1
+
+    enters: dict[int, tuple[Any, Any]] = {}
+    parent: dict[int, int] = {}
+    duplicate_calls: set[int] = set()
+    native_rows: dict[tuple[Any, ...], list[dict[str, Any]]] = defaultdict(list)
+    sends: dict[tuple[str, str, str], list[dict[str, Any]]] = defaultdict(list)
+    receives: dict[tuple[str, str, str], list[dict[str, Any]]] = defaultdict(list)
+    responses: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
+    trace_digest = hashlib.sha256()
+    with trace_path.open("rb") as stream:
+        for line in stream:
+            trace_digest.update(line)
+            row = json.loads(line)
+            event = row.get("event")
+            if event == "METHOD_ENTER" and isinstance(row.get("callId"), int):
+                call_id = row["callId"]
+                if call_id in enters:
+                    duplicate_calls.add(call_id)
+                enters[call_id] = (row.get("objectId"), row.get("sourceKey"))
+                parent[call_id] = row.get("parentCallId") or 0
+            elif event == "NATIVE_FAULT_DOOR":
+                identity = _door_identity(row)
+                if identity in wanted:
+                    native_rows[identity].append({
+                        "callId": row.get("callId"),
+                        "receiverObjectId": row.get("receiverObjectId"),
+                        "sourceKey": row.get("sourceKey"),
+                        "identityStatus": row.get("identityStatus")})
+            elif (row.get("transport") == "HADOOP_IPC" and
+                  event == "EXCHANGE_RECEIVE" and
+                  row.get("half") == "RESPONSE"):
+                key = _key(row)
+                if all(key):
+                    responses[key[:2]].append({
+                        "callId": row.get("callId"),
+                        "sourceKey": row.get("sourceKey"),
+                        "seq": row.get("seq")})
+            elif (row.get("transport") == "HADOOP_IPC" and
+                  row.get("half") == "REQUEST" and
+                  event in ("EXCHANGE_SEND", "EXCHANGE_RECEIVE")):
+                key = _key(row)
+                if all(key):
+                    (sends if event == "EXCHANGE_SEND" else receives)[key].append({
+                        "sourceKey": row.get("sourceKey"),
+                        "sourceRole": row.get("sourceRole"),
+                        "seq": row.get("seq")})
+
+    event_sha = event_digest.hexdigest()
+    trace_sha = trace_digest.hexdigest()
+    eligible: dict[tuple[Any, ...], dict[str, Any]] = {}
+    results: list[dict[str, Any]] = []
+    for query in queries:
+        door = query.get("doorIdentity", {})
+        target = query.get("targetSourceKey", "")
+        identity = _door_identity(door)
+        report: dict[str, Any] = {
+            "relation": "unknown", "doorIdentity": door,
+            "targetSourceKey": target,
+            "faultPeerIncarnations": [], "targetPeerIncarnations": [],
+            "faultEventsSha256": event_sha, "traceSha256": trace_sha,
+        }
+        results.append(report)
+        if identity is None or not target:
+            report["reason"] = "door_or_target_identity_missing"
+            continue
+        if receipt_counts[identity] != 1:
+            report["reason"] = "door_receipt_missing_or_ambiguous"
+            continue
+        candidates = native_rows[identity]
+        if len(candidates) != 1:
+            report["reason"] = "raw_door_identity_missing_or_ambiguous"
+            continue
+        native = candidates[0]
+        if native.get("identityStatus") != "owner_matches_active_receiver":
+            report["reason"] = "raw_door_receiver_unproven"
+            continue
+        call_id = native.get("callId")
+        receiver_id = native.get("receiverObjectId")
+        enter = enters.get(call_id) if isinstance(call_id, int) and call_id > 0 else None
+        source = str(identity[1]) + "#epoch" + str(identity[2])
+        if (enter is None or call_id in duplicate_calls or
+                not isinstance(receiver_id, int) or receiver_id <= 0 or
+                enter != (receiver_id, source) or native.get("sourceKey") != source):
+            report["reason"] = "raw_door_call_or_receiver_mismatch"
+            continue
+        report["faultCallId"] = call_id
+        report["faultReceiverObjectId"] = receiver_id
+        report["faultSourceKey"] = source
+        eligible[identity] = native
+
+    requested_calls = {native["callId"] for native in eligible.values()}
+    target_pairs: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    caller_pairs: dict[tuple[int, str], list[dict[str, Any]]] = defaultdict(list)
+    for key, send_rows in sends.items():
+        recv_rows = receives.get(key, [])
+        if len(send_rows) != 1 or len(recv_rows) != 1:
+            continue
+        send, receive = send_rows[0], recv_rows[0]
+        peer = receive["sourceKey"]
+        if receive["sourceRole"] != "NAMENODE" or not peer:
+            continue
+        evidence = {"correlationId": key[0], "attemptId": key[1],
+                    "sendSeq": send["seq"], "receiveSeq": receive["seq"],
+                    "peer": peer}
+        if send["sourceRole"] == "DATANODE":
+            target_pairs[send["sourceKey"]].append(evidence)
+        response_rows = [row for row in responses.get(key[:2], [])
+                         if row["sourceKey"] == send["sourceKey"]]
+        if len(response_rows) != 1:
+            continue
+        response = response_rows[0]
+        if not isinstance(response["callId"], int):
+            continue
+        for ancestor in _ancestors(response["callId"], parent):
+            if ancestor in requested_calls:
+                caller_pairs[(ancestor, send["sourceKey"])].append({
+                    **evidence, "responseReceiveSeq": response["seq"],
+                    "responseCallId": response["callId"]})
+
+    for report in results:
+        if "reason" in report:
+            continue
+        identity = _door_identity(report["doorIdentity"])
+        assert identity is not None
+        native = eligible[identity]
+        fault_pairs = caller_pairs[(native["callId"], native["sourceKey"])]
+        target = target_pairs[report["targetSourceKey"]]
+        fault_peers = {row["peer"] for row in fault_pairs}
+        target_peers = {row["peer"] for row in target}
+        report["faultPeerIncarnations"] = sorted(fault_peers)
+        report["targetPeerIncarnations"] = sorted(target_peers)
+        report["faultPairCount"] = len(fault_pairs)
+        report["targetPairCount"] = len(target)
+        report["faultPairExamples"] = fault_pairs[:3]
+        report["targetPairExamples"] = target[:3]
+        if len(fault_peers) != 1 or len(target_peers) != 1:
+            report["reason"] = "peer_identity_missing_or_ambiguous"
+        elif fault_peers == target_peers:
+            report["relation"] = "same"
+            report["reason"] = "same_exact_namenode_source_epoch"
+        else:
+            report["relation"] = "different"
+            report["reason"] = "different_exact_namenode_source_epoch"
+    return results
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("trace", type=Path)
