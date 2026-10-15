@@ -31,6 +31,73 @@ def anchor(address: str) -> dict:
 
 
 class MultiAnchorCampaignTest(unittest.TestCase):
+    def test_retention_policy_requires_opt_in_multi_anchor_scope(self):
+        config = {"case_id": "example", "target_site": "Target#u1",
+                  "native_weave_config": "/unused", "target_throw": {
+                      "siteId": "Target#u2", "exceptionClass": "java.io.IOException"},
+                  "recording": {"trace_dir": "/unused", "test_id": "X#y",
+                      "target_name": "target", "candidate_graph": "/unused",
+                      "static_scope_map": "/unused", "region_skeletons": "/unused",
+                      "max_jobs": 1, "anchor_retention_policy":
+                      "smoothed_postfault_3of4"}}
+        with self.assertRaisesRegex(ValueError, "requires multi-target anchors"):
+            core._validate_config(config)
+        config["recording"]["anchor_retention_policy"] = "unknown"
+        with self.assertRaisesRegex(ValueError, "requires multi-target anchors"):
+            core._validate_config(config)
+
+    def test_retention_policy_preserves_initial_rotation_then_uses_three_of_four(self):
+        addresses = [f"target-{index}" for index in range(4)]
+        state = {"budget": {"max_faults_per_trial": 6}, "queue": [],
+                 "seen_plan_keys": [], "completed_fault_trials": 0,
+                 "scheduler_version": 11, "multi_anchor_addresses": addresses,
+                 "fault_id_attempts": {}, "fault_id_successes": {}, "trials": []}
+        for address in addresses:
+            for ordinal in range(1, 9):
+                core._enqueue(state, [{"fault": fault(ordinal), "seq": ordinal,
+                                       "tier": "observed_closure",
+                                       "anchor_address": address}], [], 0)
+        selected = []
+        for _ in range(8):
+            chosen = core._pick(state)
+            address = chosen["anchor_address"]
+            selected.append(address)
+            state["trials"].append({"anchor_address": address,
+                                    "strict_injection": True,
+                                    "post_fault_target_check_observed":
+                                    address == "target-2"})
+            state["completed_fault_trials"] += 1
+        self.assertEqual(addresses, selected[:4])
+        self.assertEqual(["target-2"] * 3, selected[4:7])
+        self.assertEqual("target-3", selected[7])
+
+    def test_retention_policy_ignores_unmatched_unapplied_trial(self):
+        state = {"completed_fault_trials": 4, "trials": [
+            {"anchor_address": "a", "strict_injection": True,
+             "post_fault_target_check_observed": False},
+            {"anchor_address": "b", "strict_injection": True,
+             "post_fault_target_check_observed": True},
+            {"anchor_address": "a", "strict_injection": False,
+             "post_fault_target_check_observed": True}]}
+        self.assertEqual("b", core._retention_anchor_order(state, ["a", "b"])[0])
+
+    def test_new_campaign_only_opts_into_scheduler_v11_when_requested(self):
+        config = {"case_id": "example", "budget": {"fault_trials": 8},
+                  "recording": {"multi_target_max_anchors": 4}}
+        admitted = {"weave_config": {"output_classes": "/unused"},
+                    "origin": {}, "zero_vm_sha256": "zero",
+                    "runner_classpath_artifacts": []}
+        with patch.object(core, "_sha", return_value="receipt"):
+            old = core._new_state(config, "config", admitted)
+            config["recording"]["anchor_retention_policy"] = (
+                "smoothed_postfault_3of4")
+            new = core._new_state(config, "config2", admitted)
+        self.assertEqual(10, old["scheduler_version"])
+        self.assertEqual(11, new["scheduler_version"])
+        self.assertNotIn("anchor_retention_policy", old["multi_anchor_config"])
+        self.assertEqual("smoothed_postfault_3of4", new[
+            "multi_anchor_config"]["anchor_retention_policy"])
+
     def test_old_plan_key_is_bytewise_unchanged_and_anchor_namespaces_it(self):
         one = fault()
         stable = [{key: one[key] for key in core.SELECTOR_FIELDS}]

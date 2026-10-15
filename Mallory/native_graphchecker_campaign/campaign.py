@@ -11,6 +11,7 @@ from __future__ import annotations
 import fcntl
 import hashlib
 from collections import Counter
+from fractions import Fraction
 import json
 import os
 import re
@@ -142,6 +143,11 @@ def _validate_config(config: dict[str, Any]) -> None:
             not isinstance(config.get("runner"), dict) or
             config["runner"].get("mode") != "region_state"):
         raise ValueError("multi-target anchors require task-free REGION_STATE")
+    retention_policy = recording.get("anchor_retention_policy")
+    if retention_policy is not None and (
+            retention_policy != "smoothed_postfault_3of4" or
+            anchor_count is None):
+        raise ValueError("anchor retention policy requires multi-target anchors")
     may_path = recording.get("static_may_scope_map")
     may_sha = recording.get("static_may_scope_map_sha256")
     if (may_path is None) != (may_sha is None) or (may_path is not None and
@@ -1247,7 +1253,7 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
     version = state.get("scheduler_version", 1)
     if version == 1:
         return _pick_v1(state)
-    if version not in (2, 3, 4, 5, 6, 7, 8, 9, SCHEDULER_VERSION):
+    if version not in (2, 3, 4, 5, 6, 7, 8, 9, SCHEDULER_VERSION, 11):
         raise ValueError(f"unsupported native scheduler version: {version}")
     queue = state["queue"]
     if not queue:
@@ -1258,8 +1264,11 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
     if addresses:
         # One exact target activation per trial. The rotating quota applies
         # before the old tier/depth rules and cannot rewrite a queued plan.
-        for offset in range(len(addresses)):
-            desired = addresses[(completed + offset) % len(addresses)]
+        preferred = (_retention_anchor_order(state, addresses)
+                     if version == 11 else
+                     [addresses[(completed + offset) % len(addresses)]
+                      for offset in range(len(addresses))])
+        for desired in preferred:
             matching = [item for item in queue if
                         item.get("anchor_address") == desired]
             if matching:
@@ -1427,6 +1436,39 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
         selected = max(candidates, key=score)
     queue.remove(selected)
     return selected
+
+
+def _retention_anchor_order(state: dict[str, Any],
+                            addresses: list[str]) -> list[str]:
+    """Balance initial anchors, then reserve one of four slots for exploration.
+
+    Only strict, accepted trials contribute to the smoothed postfault target
+    retention estimate. This is a scheduling hint, never a bug oracle or a
+    replacement for an exact GraphChecker closure.
+    """
+    completed = state["completed_fault_trials"]
+    attempts = Counter({address: 0 for address in addresses})
+    retained = Counter({address: 0 for address in addresses})
+    for trial in state["trials"]:
+        address = trial.get("anchor_address")
+        if address in attempts and trial.get("strict_injection") is True:
+            attempts[address] += 1
+            if trial.get("post_fault_target_check_observed") is True:
+                retained[address] += 1
+    if any(attempts[address] == 0 for address in addresses):
+        # Preserve the original deterministic round-robin warm-up.
+        return [addresses[(completed + offset) % len(addresses)]
+                for offset in range(len(addresses))]
+    rotating = [addresses[(completed + offset) % len(addresses)]
+                for offset in range(len(addresses))]
+    if completed % 4 == 3:
+        # The exploration slot tests a less-used alternative even after one
+        # anchor begins to dominate. Rotation breaks equal-count ties.
+        lead = min(rotating, key=lambda address: attempts[address])
+    else:
+        lead = max(rotating, key=lambda address: Fraction(
+            retained[address] + 1, attempts[address] + 2))
+    return [lead, *(address for address in rotating if address != lead)]
 
 
 def _novelty(state: dict[str, Any], feedback: dict[str, Any]) -> int:
@@ -2619,7 +2661,9 @@ def _finish_status(state: dict[str, Any]) -> None:
 def _new_state(config: dict[str, Any], config_sha: str,
                admitted: dict[str, Any]) -> dict[str, Any]:
     state = {"schema_version": SCHEMA, "case_id": config["case_id"],
-            "scheduler_version": SCHEDULER_VERSION,
+            "scheduler_version": (11 if config["recording"].get(
+                "anchor_retention_policy") == "smoothed_postfault_3of4"
+                else SCHEDULER_VERSION),
             "config_sha256": config_sha, "budget": config["budget"],
             "weave_receipt_sha256": _sha(Path(admitted["weave_config"][
                 "output_classes"]) / "native-original-weave-receipt.json"),
@@ -2637,6 +2681,9 @@ def _new_state(config: dict[str, Any], config_sha: str,
     if "multi_target_max_anchors" in config["recording"]:
         state["multi_anchor_config"] = {"multi_target_max_anchors":
             config["recording"]["multi_target_max_anchors"]}
+        if "anchor_retention_policy" in config["recording"]:
+            state["multi_anchor_config"]["anchor_retention_policy"] = (
+                config["recording"]["anchor_retention_policy"])
     return state
 
 
