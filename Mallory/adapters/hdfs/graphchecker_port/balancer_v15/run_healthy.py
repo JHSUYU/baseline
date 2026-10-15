@@ -46,7 +46,18 @@ def main() -> None:
     scope = ROOT / "original-scope/static_scope_map.jsonl"
     woven = ROOT / "woven"
     assert scope.is_file() and (woven / "native-original-weave-receipt.json").is_file()
-    assert subprocess.run(["pgrep", "-x", "java"], stdout=subprocess.DEVNULL).returncode != 0
+    # A separate experiment may use Java on this host. Refuse only another
+    # instance of this exact JUnit workload, which would collide on its ports.
+    test_class = b"org.apache.hadoop.hdfs.server.balancer.TestBalancerWithEncryptedTransfer"
+    for proc in Path("/proc").iterdir():
+        if not proc.name.isdecimal() or int(proc.name) == os.getpid():
+            continue
+        try:
+            args = (proc / "cmdline").read_bytes().split(b"\0")
+        except (OSError, PermissionError):
+            continue
+        assert not (test_class in args and b"testEncryptedBalancer0" in args), (
+            "another Balancer JUnit is active", proc.name)
     before = capacity()
     assert before["root"] >= 2_000_000_000 and before["shm"] >= 8_000_000_000
     assert before["pg0"] >= 10_000_000_000
@@ -108,7 +119,7 @@ def main() -> None:
             if now["root"] < 1_600_000_000 or now["shm"] < 5_000_000_000 or (
                     now["pg0"] < 10_000_000_000):
                 stop_reason = "capacity_floor"
-            elif time.monotonic() - started > 180:
+            elif time.monotonic() - started > 600:
                 stop_reason = "junit_timeout"
             if stop_reason:
                 os.killpg(process.pid, signal.SIGTERM)

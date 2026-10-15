@@ -50,7 +50,7 @@ def main() -> None:
     })
     old = config["runner"]["classpath"]
     runner = config["runner"]
-    runner["classpath"] = [str(OVERLAY), str(ROOT / "woven"), str(ENGINE),
+    runner["classpath"] = [str(ROOT / "woven"), str(OVERLAY), str(ENGINE),
                             str(ADAPTER)] + [p for p in old if p not in old[:4]
                                                   and "native-fault-adapter" not in p]
     assert all(Path(p).exists() for p in runner["classpath"])
