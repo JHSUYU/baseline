@@ -53,10 +53,10 @@ def main() -> None:
         if not proc.name.isdecimal() or int(proc.name) == os.getpid():
             continue
         try:
-            args = (proc / "cmdline").read_bytes().split(b"\0")
+            proc_args = (proc / "cmdline").read_bytes().split(b"\0")
         except (OSError, PermissionError):
             continue
-        assert not (test_class in args and b"testEncryptedBalancer0" in args), (
+        assert not (test_class in proc_args and b"testEncryptedBalancer0" in proc_args), (
             "another Balancer JUnit is active", proc.name)
     before = capacity()
     assert before["root"] >= 2_000_000_000 and before["shm"] >= 8_000_000_000
