@@ -54,7 +54,7 @@ def check() -> dict:
                                  'max_faults_per_trial': 6, 'seconds': 7200} or
             'predecessor_campaign' in config):
         raise ValueError('K4 independent configuration changed')
-    if (CAMPAIGN / 'checkpoint.json').exists() or (ROOT / 'k4-healthy-process.json').exists():
+    if (CAMPAIGN / 'checkpoint.json').exists() or (ROOT / 'k4-healthy-gate.json').exists():
         raise RuntimeError('K4 healthy already started; inspect existing receipt')
     return actual
 
@@ -64,15 +64,27 @@ def main() -> None:
     sys.path.insert(0, str(PRIOR_RUNNER))
     from run_variant import run_guarded, require_ok, write_new
 
+    config = json.loads(CONFIG.read_text())
+    for name in ('local_artifact_root', 'local_work_root'):
+        Path(config['runner'][name]).mkdir(parents=True, exist_ok=True)
+    legacy_failed = ROOT / 'k4-healthy-process.json'
+    if legacy_failed.exists():
+        previous = json.loads(legacy_failed.read_text())
+        if previous.get('return_code') != 1 or previous.get('stop_reason') is not None:
+            raise RuntimeError('prior unversioned K4 attempt needs manual review')
+    attempt = 2 if legacy_failed.exists() else 1
+    while ((ROOT / f'k4-healthy-process-attempt{attempt}.json').exists() or
+           (ROOT / f'k4-healthy-run-attempt{attempt}.log').exists()):
+        attempt += 1
     env = dict(os.environ, PYTHONPATH=str(CODE),
                MALLORY_NATIVE_ENGINE_ROOT=str(ENGINE_ROOT))
     cmd = [sys.executable, '-m', 'Mallory.native_graphchecker_campaign',
            '--config', str(CONFIG), '--output', str(CAMPAIGN),
            '--stop-after-fault-trials', '0']
-    receipt = run_guarded(cmd, log=ROOT / 'k4-healthy-run.log', cwd=ROOT,
+    receipt = run_guarded(cmd, log=ROOT / f'k4-healthy-run-attempt{attempt}.log', cwd=ROOT,
                           timeout=1800, env=env)
     receipt['input_pins'] = pins
-    write_new(ROOT / 'k4-healthy-process.json', receipt)
+    write_new(ROOT / f'k4-healthy-process-attempt{attempt}.json', receipt)
     require_ok(receipt)
     state = json.loads((CAMPAIGN / 'checkpoint.json').read_text())
     result = json.loads((CAMPAIGN / 'trials/r0000/result.json').read_text())
