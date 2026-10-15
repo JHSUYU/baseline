@@ -304,21 +304,42 @@ def _validate_config(config: dict[str, Any]) -> None:
         names = ("config", "checkpoint", "summary")
         derived = ("tested_plan_keys_sha256", "source_result_tree_sha256",
                    "source_unmatched_event_tree_sha256")
-        optional = {"source_all_event_tree_sha256"}
+        required = {name for item in names for name in (item, item + "_sha256")}
+        required.update(derived)
+        optional = {"source_all_event_tree_sha256",
+                    "bounded_snapshot_manifest",
+                    "bounded_snapshot_manifest_sha256",
+                    "source_case_id", "successor_case_id"}
         if (not isinstance(predecessor, dict) or
-                set(predecessor) not in (
-                    {name for item in names for name in (item, item + "_sha256")} |
-                    set(derived),
-                    {name for item in names for name in (item, item + "_sha256")} |
-                    set(derived) | optional) or
+                not required.issubset(predecessor) or
+                not set(predecessor).issubset(required | optional) or
+                ("bounded_snapshot_manifest" in predecessor) !=
+                ("bounded_snapshot_manifest_sha256" in predecessor) or
+                ("bounded_snapshot_manifest" in predecessor) !=
+                ({"source_case_id", "successor_case_id"} <= set(predecessor)) or
+                (("source_case_id" in predecessor) !=
+                 ("successor_case_id" in predecessor)) or
+                ("successor_case_id" in predecessor and
+                 predecessor["successor_case_id"] != config.get("case_id")) or
+                any(not isinstance(predecessor.get(name), str) or
+                    not predecessor[name] for name in (
+                        "source_case_id", "successor_case_id")
+                    if name in predecessor) or
                 any(not isinstance(predecessor[name], str) or
                     not predecessor[name].startswith("/") or
                     not isinstance(predecessor[name + "_sha256"], str) or
                     not SHA256_HEX.fullmatch(predecessor[name + "_sha256"])
                     for name in names) or
+                ("bounded_snapshot_manifest" in predecessor and
+                 (not isinstance(predecessor["bounded_snapshot_manifest"], str) or
+                  not predecessor["bounded_snapshot_manifest"].startswith("/") or
+                  not isinstance(predecessor["bounded_snapshot_manifest_sha256"], str) or
+                  not SHA256_HEX.fullmatch(predecessor[
+                      "bounded_snapshot_manifest_sha256"]))) or
                 any(not isinstance(predecessor[name], str) or
                     not SHA256_HEX.fullmatch(predecessor[name])
-                    for name in set(derived) | (set(predecessor) & optional))):
+                    for name in set(derived) | (set(predecessor) & {
+                        "source_all_event_tree_sha256"}))):
             raise ValueError("predecessor_campaign needs exact paths and SHA-256 pins")
 
 
@@ -685,7 +706,8 @@ def _require_exact_resolver_protocol(config: dict[str, Any],
             "capabilities": capabilities}
 
 
-def _admit(config: dict[str, Any], root: Path) -> dict[str, Any]:
+def _admit(config: dict[str, Any], root: Path, *, no_child: bool = False
+           ) -> dict[str, Any]:
     # The Java bridge is consumed by concolic SessionReader feedback. Original
     # REGION_STATE replay uses the resolver/Recorder directly and has no bridge.
     feedback_source = (feedback_bridge(Path(__file__).resolve().parents[2], JAR)
@@ -695,10 +717,30 @@ def _admit(config: dict[str, Any], root: Path) -> dict[str, Any]:
     weave_receipt = verify_existing(weave_file)
     weave = _load(weave_file)
     rec = config["recording"]
-    resolver_protocol = (_require_exact_resolver_protocol(
-        config, Path(weave["java"]))
-        if (config["runner"].get("mode") == "region_state" and
-            rec.get("target_occurrence")) else None)
+    admission = root / "recording-admission.json"
+    if no_child and not admission.is_file():
+        raise ValueError("import-only requires a sealed recording admission")
+    if no_child and rec.get("target_occurrence"):
+        cached = _load(admission)
+        resolver_protocol = cached.get("recording_fingerprint", {}).get(
+            "resolver_protocol")
+        capabilities = (resolver_protocol.get("capabilities")
+                        if isinstance(resolver_protocol, dict) else None)
+        if (not isinstance(capabilities, dict) or
+                resolver_protocol.get("analysis_engine_jar_sha256") !=
+                _sha(_analysis_engine_jar(config)) or
+                capabilities.get("schemaVersion") != 1 or
+                capabilities.get("kind") !=
+                "MALLORY_TARGET_RESOLVER_CAPABILITIES" or
+                capabilities.get("exactRequestedOccurrenceReceiptSchemaVersion") != 2 or
+                capabilities.get("exactSelectionPolicy") !=
+                "EXACT_REQUESTED_OCCURRENCE_THEN_EARLIEST_EVENT"):
+            raise ValueError("sealed exact resolver admission changed")
+    else:
+        resolver_protocol = (_require_exact_resolver_protocol(
+            config, Path(weave["java"]))
+            if (config["runner"].get("mode") == "region_state" and
+                rec.get("target_occurrence")) else None)
     recording_fingerprint = {
         "trace_tree_sha256": _tree_sha(Path(rec["trace_dir"]).resolve(strict=True)),
         "candidate_graph_sha256": _sha(Path(rec["candidate_graph"]).resolve(strict=True)),
@@ -735,7 +777,6 @@ def _admit(config: dict[str, Any], root: Path) -> dict[str, Any]:
         recording_fingerprint["precomputed_schedule_sha256"] = _sha(receipt)
     if feedback_source is not None:
         recording_fingerprint["feedback_source"] = feedback_source
-    admission = root / "recording-admission.json"
     if admission.is_file():
         cached = _load(admission)
         if (cached.get("schema_version") != SCHEMA or
@@ -2960,6 +3001,9 @@ def _accept(state: dict[str, Any], result: dict[str, Any], name: str) -> None:
                         len(addresses) != len(set(addresses))):
                     raise ValueError("healthy multi-target anchor set changed")
                 state["multi_anchor_addresses"] = addresses
+                expected = state.get("imported_multi_anchor_addresses")
+                if expected is not None and addresses != expected:
+                    raise ValueError("fresh healthy target anchors differ from imported queue")
             _enqueue(state, result["eligible_doors"], [], 0)
             if not state["queue"]:
                 state["status"] = "no_observed_fault_door"
@@ -3011,6 +3055,8 @@ def _accept(state: dict[str, Any], result: dict[str, Any], name: str) -> None:
             record["last_fault_id"] = fault_id
         if (result["status"] == "unmatched" and
                 result.get("runner_mode") == "region_state" and
+                (state.get("scheduler_version", 1) < 16 or
+                 result.get("strict_injection") is False) and
                 active.get("attempt", 0) < MAX_UNMATCHED_RETRIES):
             retry = {
                 "faults": active["faults"], "key": active["key"],
@@ -3038,6 +3084,8 @@ def _accept(state: dict[str, Any], result: dict[str, Any], name: str) -> None:
         if (state.get("scheduler_version", 1) >= 3 and
                 result["status"] == "unmatched" and
                 result.get("runner_mode") == "region_state" and
+                (state.get("scheduler_version", 1) < 16 or
+                 result.get("strict_injection") is False) and
                 active.get("anchor_address") is None and
                 result.get("anchor_replay_status") != "retry_exact_missing"):
             prefix_size = result.get("applied_prefix_count", 0)
@@ -3074,7 +3122,9 @@ def _accept(state: dict[str, Any], result: dict[str, Any], name: str) -> None:
 def _finish_status(state: dict[str, Any]) -> None:
     if state["status"] != "running":
         state["terminal"] = True
-    elif state["completed_fault_trials"] >= state["budget"]["fault_trials"]:
+    elif (state["completed_fault_trials"] +
+          state.get("imported_completed_fault_trials", 0) >=
+          state["budget"]["fault_trials"]):
         state["status"], state["terminal"] = "complete_trial_budget", True
     elif state["elapsed_seconds"] >= state["budget"]["seconds"]:
         state["status"], state["terminal"] = "complete_time_budget", True
@@ -3137,12 +3187,201 @@ def _new_state(config: dict[str, Any], config_sha: str,
     return state
 
 
+def _verify_bounded_snapshot(pins: dict[str, str], paths: dict[str, Path],
+                             source: dict[str, Any]) -> dict[str, Any]:
+    """Verify an independent, SHA-pinned copy of a stopped campaign prefix.
+
+    The executed checkpoint can later be resumed by its owner; the successor
+    reads only this copied checkpoint and its copied small trial receipts.
+    Large local raw trees remain in lossless, SHA-pinned per-trial archives.
+    """
+    manifest_path = Path(pins["bounded_snapshot_manifest"])
+    if (manifest_path.is_symlink() or not manifest_path.is_file() or
+            _sha(manifest_path) != pins["bounded_snapshot_manifest_sha256"]):
+        raise ValueError("bounded predecessor snapshot manifest changed")
+    snapshot_root = paths["checkpoint"].parent
+    if (manifest_path.resolve(strict=True) !=
+            snapshot_root / "bounded-snapshot-manifest.json" or
+            paths["config"] != snapshot_root / "config.json" or
+            paths["summary"] != snapshot_root / "summary.json"):
+        raise ValueError("bounded predecessor must use one frozen snapshot root")
+    manifest = _load(manifest_path)
+    executed_root = manifest.get("source_output_root")
+    before = manifest.get("source_checkpoint_before_sha256",
+                          manifest.get("before_checkpoint_sha256"))
+    after = manifest.get("source_checkpoint_after_sha256",
+                         manifest.get("after_checkpoint_sha256"))
+    if (manifest.get("schema_version") != 1 or
+            manifest.get("case_id") != source.get("case_id") or
+            manifest.get("source_lock_verified") is not True or
+            before != pins["checkpoint_sha256"] or
+            after != pins["checkpoint_sha256"] or
+            ("source_checkpoint_before_sha256" in manifest and
+             "before_checkpoint_sha256" in manifest and
+             manifest["source_checkpoint_before_sha256"] !=
+             manifest["before_checkpoint_sha256"]) or
+            ("source_checkpoint_after_sha256" in manifest and
+             "after_checkpoint_sha256" in manifest and
+             manifest["source_checkpoint_after_sha256"] !=
+             manifest["after_checkpoint_sha256"]) or
+            not isinstance(executed_root, str) or
+            not Path(executed_root).is_absolute() or
+            Path(executed_root).resolve() == snapshot_root or
+            manifest.get("config_sha256") != pins["config_sha256"] or
+            manifest.get("checkpoint_sha256") != pins["checkpoint_sha256"] or
+            manifest.get("summary_sha256") != pins["summary_sha256"] or
+            manifest.get("completed_fault_trials") != source.get(
+                "completed_fault_trials") or
+            source.get("status") != "bounded_checkpoint_stop" or
+            source.get("terminal") is not False or
+            source.get("active") is not None or
+            not isinstance(source.get("completed_fault_trials"), int) or
+            isinstance(source["completed_fault_trials"], bool) or
+            not isinstance(source.get("budget"), dict) or
+            not isinstance(source["budget"].get("fault_trials"), int) or
+            not 0 < source["completed_fault_trials"] < source["budget"]["fault_trials"]):
+        raise ValueError("bounded predecessor is not a stopped, frozen prefix")
+    # The snapshot remains authoritative after the live root is archived.
+    # While that root still exists, reject a resumed worker or changed live
+    # checkpoint so two campaigns cannot silently consume the same queue.
+    live_root = Path(executed_root)
+    if live_root.exists():
+        lock_path = live_root / ".campaign.lock"
+        if not lock_path.is_file() or lock_path.is_symlink():
+            raise ValueError("bounded predecessor source lock is missing")
+        with lock_path.open("rb") as lock:
+            try:
+                fcntl.flock(lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError as failure:
+                raise ValueError("bounded predecessor source is still active") from failure
+            live_checkpoint = live_root / "checkpoint.json"
+            if (live_checkpoint.is_file() and
+                    _sha(live_checkpoint) != pins["checkpoint_sha256"]):
+                raise ValueError("bounded predecessor live checkpoint advanced")
+    files = manifest.get("files")
+    if not isinstance(files, dict) or not files:
+        raise ValueError("bounded predecessor file index is missing")
+    for name, pin in files.items():
+        relative = Path(name) if isinstance(name, str) else Path(".")
+        if (not isinstance(name, str) or not name or
+                relative.is_absolute() or ".." in relative.parts or
+                relative.as_posix() != name or not isinstance(pin, dict) or
+                set(pin) != {"sha256", "size_bytes"} or
+                not isinstance(pin["sha256"], str) or
+                not SHA256_HEX.fullmatch(pin["sha256"]) or
+                not isinstance(pin["size_bytes"], int) or
+                isinstance(pin["size_bytes"], bool) or pin["size_bytes"] < 0):
+            raise ValueError("bounded predecessor file pin is malformed")
+        path = snapshot_root / relative
+        if (not path.is_file() or path.is_symlink() or
+                path.resolve(strict=True) != path or
+                path.stat().st_size != pin["size_bytes"] or
+                _sha(path) != pin["sha256"]):
+            raise ValueError("bounded predecessor copied file changed")
+
+    def require(name: str, digest: str) -> Path:
+        pin = files.get(name)
+        if (not isinstance(pin, dict) or pin.get("sha256") != digest):
+            raise ValueError(f"bounded predecessor lacks pinned {name}")
+        return snapshot_root / name
+
+    for name in ("config", "checkpoint", "summary"):
+        require(name + ".json", pins[name + "_sha256"])
+    recorded = [source.get("healthy"), *source.get("trials", [])]
+    if (not isinstance(source.get("healthy"), dict) or
+            not isinstance(source.get("trials"), list) or
+            len(source["trials"]) != source["completed_fault_trials"]):
+        raise ValueError("bounded predecessor trial ledger is malformed")
+    trial_results: dict[int, str] = {}
+    for item in recorded:
+        relative = item.get("result") if isinstance(item, dict) else None
+        if (not isinstance(relative, str) or
+                not re.fullmatch(r"trials/r[0-9]{4,}/result\.json", relative)):
+            raise ValueError("bounded predecessor trial result path is invalid")
+        trial_index = int(Path(relative).parent.name[1:])
+        if trial_index in trial_results or (item is source["healthy"]) != (
+                trial_index == 0):
+            raise ValueError("bounded predecessor trial index is duplicated")
+        if relative not in files:
+            raise ValueError("bounded predecessor copied result is missing")
+        result_file = snapshot_root / relative
+        result_sha = _sha(result_file)
+        require(relative, result_sha)
+        result = _load(result_file)
+        if result.get("case_id") != source["case_id"]:
+            raise ValueError("bounded predecessor result case changed")
+        trial_results[trial_index] = result_sha
+        base = Path(relative).parent.as_posix()
+        for field, suffix in (
+                ("fault_events_sha256", "iteration-native/fault-events.jsonl"),
+                ("local_artifacts_manifest_sha256", "local-artifacts.json"),
+                ("native_session_sha256", "native-summary.json"),
+                ("peer_ranking_receipt_sha256", "peer-ranking-receipt.json")):
+            digest = result.get(field)
+            if field in ("peer_ranking_receipt_sha256",
+                         "native_session_sha256") and digest is None:
+                if (base + "/" + suffix in files or
+                        (snapshot_root / base / suffix).exists()):
+                    raise ValueError("bounded predecessor has an unpinned trial sidecar")
+                continue
+            if not isinstance(digest, str) or not SHA256_HEX.fullmatch(digest):
+                raise ValueError("bounded predecessor result lacks raw evidence pin")
+            sidecar = require(base + "/" + suffix, digest)
+            if suffix == "local-artifacts.json":
+                local = _load(sidecar)
+                if (local.get("campaign_root") != executed_root or
+                        local.get("trial") != Path(base).name):
+                    raise ValueError("bounded predecessor local raw lineage changed")
+    if (len(trial_results) != source["completed_fault_trials"] + 1 or
+            not isinstance(source.get("next_trial_index"), int) or
+            source["next_trial_index"] <= max(trial_results)):
+        raise ValueError("bounded predecessor trial count changed")
+    archives = manifest.get("raw_archives")
+    if not isinstance(archives, list) or len(archives) != len(trial_results):
+        raise ValueError("bounded predecessor raw archive coverage is incomplete")
+    covered = set()
+    for row in archives:
+        if not isinstance(row, dict):
+            raise ValueError("bounded predecessor raw archive pin is malformed")
+        index = row.get("trial_index")
+        if (not isinstance(index, int) or isinstance(index, bool) or
+                index not in trial_results or index in covered):
+            raise ValueError("bounded predecessor raw archive trial is invalid")
+        covered.add(index)
+        if row.get("result_sha256") != trial_results[index]:
+            raise ValueError("bounded predecessor raw archive result changed")
+        for path_key, sha_key in (("absolute_tar_path", "archive_sha256"),
+                                  ("absolute_receipt_path", "receipt_sha256")):
+            path_value = row.get(path_key)
+            digest = row.get(sha_key)
+            if (not isinstance(path_value, str) or
+                    not Path(path_value).is_absolute() or
+                    not isinstance(digest, str) or
+                    not SHA256_HEX.fullmatch(digest)):
+                raise ValueError("bounded predecessor raw archive pin is malformed")
+            path = Path(path_value)
+            if path.is_symlink() or not path.is_file() or _sha(path) != digest:
+                raise ValueError("bounded predecessor raw archive is missing or changed")
+        receipt = _load(Path(row["absolute_receipt_path"]))
+        if (receipt.get("trial_index") != index or
+                receipt.get("result_sha256") != trial_results[index] or
+                receipt.get("archive_sha256") != row["archive_sha256"] or
+                receipt.get("verified_against_source") is not True):
+            raise ValueError("bounded predecessor raw archive receipt disagrees")
+    if live_root.exists():
+        current = live_root / "checkpoint.json"
+        if current.is_file() and _sha(current) != pins["checkpoint_sha256"]:
+            raise ValueError("bounded predecessor live checkpoint advanced")
+    return manifest
+
+
 def _predecessor_snapshot(config: dict[str, Any], root: Path,
                           state: dict[str, Any], *, verify_derived: bool = True
                           ) -> tuple[dict[str, Any], list[dict[str, Any]],
                                      list[tuple[list[dict[str, Any]],
-                                                list[dict[str, Any]]]], set[str]]:
-    """Read a terminal campaign as immutable, exact successor input.
+                                                list[dict[str, Any]],
+                                                str | None]], set[str]]:
+    """Read a terminal campaign or frozen bounded prefix as exact input.
 
     A source checkpoint includes untested queued plans as well as tested plan
     keys. Preserve the queue, but exclude every completed exact plan from the
@@ -3162,14 +3401,23 @@ def _predecessor_snapshot(config: dict[str, Any], root: Path,
     source_config = _load(paths["config"])
     source = _load(paths["checkpoint"])
     summary = _load(paths["summary"])
+    bounded_prefix = "bounded_snapshot_manifest" in pins
+    source_case_id = (pins["source_case_id"] if bounded_prefix else
+                      config["case_id"])
+    if bounded_prefix:
+        _verify_bounded_snapshot(pins, paths, source)
     if (source.get("schema_version") != SCHEMA or
             source.get("config_sha256") != pins["config_sha256"] or
-            source.get("case_id") != config["case_id"] or
-            source.get("terminal") is not True or
+            source.get("case_id") != source_case_id or
+            (bounded_prefix and pins["successor_case_id"] != config["case_id"]) or
             source.get("active") is not None or
-            source.get("status") not in ("complete_trial_budget",
-                                         "complete_time_budget",
-                                         "complete_queue") or
+            ((source.get("terminal") is not True or
+              source.get("status") not in ("complete_trial_budget",
+                                           "complete_time_budget",
+                                           "complete_queue"))
+             if not bounded_prefix else
+             (source.get("terminal") is not False or
+              source.get("status") != "bounded_checkpoint_stop")) or
             not isinstance(source.get("healthy"), dict) or
             source["healthy"].get("status") != "healthy_seed" or
             summary != {key: value for key, value in source.items()
@@ -3178,11 +3426,32 @@ def _predecessor_snapshot(config: dict[str, Any], root: Path,
     _verify_terminal_peer_ranking_receipts(source_root, source)
     # A new budget and scheduler are legitimate; workload, target, bytecode,
     # static scope, and original recorder identity must remain exact.
-    for name in ("case_id", "target_site", "target_throw",
+    for name in ("target_site", "target_throw",
                  "target_actor_names", "native_weave_config", "recording",
-                 "junit", "runner", "timeout_seconds"):
+                 "junit", "timeout_seconds"):
         if source_config.get(name) != config.get(name):
             raise ValueError(f"predecessor {name} differs from successor")
+    if source_config.get("case_id") != source_case_id:
+        raise ValueError("predecessor source case identity changed")
+    source_runner = source_config.get("runner")
+    successor_runner = config.get("runner")
+    if bounded_prefix and isinstance(source_runner, dict) and isinstance(
+            successor_runner, dict):
+        transport = {"local_work_root", "local_artifact_root"}
+        if ({key: value for key, value in source_runner.items()
+             if key not in transport} !=
+            {key: value for key, value in successor_runner.items()
+             if key not in transport} or
+                any((source_runner.get(key) is not None or
+                     successor_runner.get(key) is not None) and (
+                    not isinstance(successor_runner.get(key), str) or
+                    not Path(successor_runner[key]).is_absolute() or
+                    not isinstance(source_runner.get(key), str) or
+                    not Path(source_runner[key]).is_absolute())
+                    for key in transport)):
+            raise ValueError("predecessor runner differs beyond local scratch roots")
+    elif source_runner != successor_runner:
+        raise ValueError("predecessor runner differs from successor")
     for name in ("weave_receipt_sha256", "origin", "zero_vm_sha256",
                  "runner_classpath_artifacts"):
         if source.get(name) != state.get(name):
@@ -3215,7 +3484,7 @@ def _predecessor_snapshot(config: dict[str, Any], root: Path,
         raise ValueError("predecessor plan index is malformed")
     seen_set = set(seen)
 
-    def plan_key(faults: Any) -> str:
+    def plan_key(faults: Any, anchor_address: Any = None) -> str:
         if (not isinstance(faults, list) or not 1 <= len(faults) <=
                 source_depth):
             raise ValueError("predecessor exact fault sequence is invalid")
@@ -3229,13 +3498,17 @@ def _predecessor_snapshot(config: dict[str, Any], root: Path,
                     not isinstance(fault.get("ordinal"), int) or
                     isinstance(fault["ordinal"], bool) or fault["ordinal"] <= 0):
                 raise ValueError("predecessor exact fault selector is malformed")
-        return _plan_key(faults)
+        if anchor_address is not None and (
+                not isinstance(anchor_address, str) or not anchor_address):
+            raise ValueError("predecessor exact target anchor is malformed")
+        return _plan_key(faults, anchor_address)
 
     tested: set[str] = set()
     result_digest = hashlib.sha256()
     event_digest = hashlib.sha256()
     all_event_digest = hashlib.sha256()
     successors = []
+    unmatched_tested: dict[str, tuple[list[dict[str, Any]], str | None]] = {}
     trial_names = set()
     for item in trials:
         if not isinstance(item, dict):
@@ -3251,17 +3524,26 @@ def _predecessor_snapshot(config: dict[str, Any], root: Path,
             raise ValueError("predecessor trial result must not be a symlink")
         result = _load(result_file)
         _verify_peer_ranking_receipt(result_file.parent, result)
-        if (result.get("case_id") != config["case_id"] or
+        if (result.get("case_id") != source_case_id or
                 result.get("status") != item.get("status") or
+                result.get("anchor_address") != item.get("anchor_address") or
                 not isinstance(result.get("faults"), list) or
                 not result["faults"]):
             raise ValueError("predecessor trial result disagrees with checkpoint")
-        key = plan_key(result["faults"])
+        anchor_address = result.get("anchor_address")
+        key = plan_key(result["faults"], anchor_address)
         if key not in seen_set:
             raise ValueError("predecessor tested plan is absent from plan index")
         if expanding_depth and key in tested:
             raise ValueError("predecessor executed plan key is duplicated")
         tested.add(key)
+        if bounded_prefix and (not isinstance(result.get("strict_injection"), bool)
+                               or not isinstance(result.get(
+                                   "native_target_retained"), bool)):
+            raise ValueError("bounded predecessor trial quality receipt is missing")
+        if (result["status"] == "unmatched" and
+                result.get("strict_injection") is False):
+            unmatched_tested[key] = (result["faults"], anchor_address)
         result_digest.update(item["result"].encode("utf-8") + b"\0")
         result_digest.update(bytes.fromhex(_sha(result_file)))
         events_file = (source_root / "trials" / name / "iteration-native" /
@@ -3286,20 +3568,38 @@ def _predecessor_snapshot(config: dict[str, Any], root: Path,
             prefix, alternatives = _unmatched_actor_successors(
                 result["faults"], rows)
             if alternatives:
-                successors.append((result["faults"][:prefix], alternatives))
+                successors.append((result["faults"][:prefix], alternatives,
+                                   anchor_address))
 
     imported_queue = []
     queue_keys = set()
+    imported_unmatched_retries = 0
+    discarded_tested_retries = 0
     for item in queue:
         if not isinstance(item, dict) or not isinstance(item.get("faults"), list):
             raise ValueError("predecessor pending plan is malformed")
-        key = plan_key(item["faults"])
+        anchor_address = item.get("anchor_address")
+        key = plan_key(item["faults"], anchor_address)
         if (key != item.get("key") or key not in seen_set or
                 key in queue_keys):
             raise ValueError("predecessor pending plan index disagrees")
         queue_keys.add(key)
-        if key not in tested:
-            imported_queue.append({**item, "enqueued_at": 0, "attempt": 0})
+        attempt = item.get("attempt", 0)
+        if (not isinstance(attempt, int) or isinstance(attempt, bool) or
+                not 0 <= attempt <= MAX_UNMATCHED_RETRIES):
+            raise ValueError("predecessor pending retry count is invalid")
+        retry = key in tested and bounded_prefix and (
+            key in unmatched_tested and
+            unmatched_tested[key] == (item["faults"], anchor_address) and
+            attempt > 0)
+        if key not in tested or retry:
+            imported_queue.append({**item, "enqueued_at": 0,
+                                   "attempt": attempt if bounded_prefix else 0})
+            imported_unmatched_retries += int(retry)
+        elif bounded_prefix and attempt > 0:
+            # A fully applied fault that lost the selected target is already
+            # tested. It cannot gain credit from a retry of the same plan.
+            discarded_tested_retries += 1
 
     receipt = {
         "schema_version": 1, "source_root": str(source_root),
@@ -3320,6 +3620,14 @@ def _predecessor_snapshot(config: dict[str, Any], root: Path,
     }
     if all_events_pinned:
         receipt["source_all_event_tree_sha256"] = all_event_digest.hexdigest()
+    if bounded_prefix:
+        receipt["source_kind"] = "bounded_prefix_snapshot_v1"
+        receipt["source_case_id"] = source_case_id
+        receipt["successor_case_id"] = config["case_id"]
+        receipt["bounded_snapshot_manifest_sha256"] = pins[
+            "bounded_snapshot_manifest_sha256"]
+        receipt["imported_unmatched_retry_count"] = imported_unmatched_retries
+        receipt["discarded_tested_retry_count"] = discarded_tested_retries
     if verify_derived and any(receipt[name] != pins[name] for name in (
             "tested_plan_keys_sha256", "source_result_tree_sha256",
             "source_unmatched_event_tree_sha256") +
@@ -3331,8 +3639,10 @@ def _predecessor_snapshot(config: dict[str, Any], root: Path,
 def build_predecessor_pins(
         config_path: Path, terminal_root: Path, *,
         successor_max_faults_per_trial: int | str | None = None,
-        successor_fault_trials: int | None = None) -> dict[str, str]:
-    """Build reviewable SHA pins for a completed campaign; never mutate it."""
+        successor_fault_trials: int | None = None,
+        bounded_snapshot_manifest: Path | None = None,
+        successor_case_id: str | None = None) -> dict[str, str]:
+    """Build SHA pins for terminal or independently frozen bounded input."""
     config_path = config_path.resolve(strict=True)
     terminal_root = terminal_root.resolve(strict=True)
     paths = {"config": config_path,
@@ -3340,7 +3650,20 @@ def build_predecessor_pins(
              "summary": terminal_root / "summary.json"}
     pins = {name: str(path) for name, path in paths.items()}
     pins.update({name + "_sha256": _sha(path) for name, path in paths.items()})
+    if bounded_snapshot_manifest is not None:
+        manifest = bounded_snapshot_manifest.resolve(strict=True)
+        pins["bounded_snapshot_manifest"] = str(manifest)
+        pins["bounded_snapshot_manifest_sha256"] = _sha(manifest)
     prospective = _load(config_path)
+    if bounded_snapshot_manifest is not None:
+        if successor_case_id is not None and (
+                not isinstance(successor_case_id, str) or not successor_case_id):
+            raise ValueError("successor case ID must be explicit and nonempty")
+        pins["source_case_id"] = prospective["case_id"]
+        pins["successor_case_id"] = successor_case_id or prospective["case_id"]
+        prospective["case_id"] = pins["successor_case_id"]
+    elif successor_case_id is not None:
+        raise ValueError("case identity transition needs a bounded snapshot")
     source_budget = prospective.get("budget")
     source_depth = _effective_fault_depth(source_budget)
     if (successor_max_faults_per_trial is not None or
@@ -3376,14 +3699,29 @@ def _import_predecessor(config: dict[str, Any], root: Path,
     source = _load(Path(config["predecessor_campaign"]["checkpoint"]))
     state["seen_plan_keys"] = sorted(seen)
     state["queue"] = queue
+    if receipt.get("source_kind") == "bounded_prefix_snapshot_v1":
+        # This is a new campaign with its own healthy seed and trial ledger.
+        # Keep the imported trial credit distinct from locally executed trials.
+        state["imported_completed_fault_trials"] = receipt[
+            "source_completed_fault_trials"]
+        state["next_trial_index"] = source["next_trial_index"]
+        if "multi_anchor_addresses" in source:
+            addresses = source["multi_anchor_addresses"]
+            if (not isinstance(addresses, list) or
+                    any(not isinstance(value, str) or not value
+                        for value in addresses) or
+                    len(set(addresses)) != len(addresses)):
+                raise ValueError("predecessor target anchor index is malformed")
+            state["imported_multi_anchor_addresses"] = addresses
     for name in ("seen_node_families", "seen_edge_families",
                  "seen_context_boundary_families",
                  "seen_value_read_from_families",
                  "seen_branch_outcomes", "fault_id_attempts", "fault_id_successes"):
         state[name] = source.get(name, {} if name.startswith("fault_id_") else [])
     before = len(state["queue"])
-    for prefix, alternatives in successors:
-        _enqueue(state, alternatives, prefix, 0)
+    for prefix, alternatives, anchor_address in successors:
+        _enqueue(state, alternatives, prefix, 0,
+                 anchor_address=anchor_address)
     receipt["new_actor_successor_plan_count"] = len(state["queue"]) - before
     state["predecessor_import"] = receipt
     _atomic(root / "predecessor-import.json", receipt)
@@ -3476,10 +3814,18 @@ def _resume_active(config: dict[str, Any], admitted: dict[str, Any],
 
 
 def run_campaign(config_path: Path, root: Path,
-                 stop_after_fault_trials: int | None = None) -> dict[str, Any]:
+                 stop_after_fault_trials: int | None = None,
+                 import_only: bool = False,
+                 admit_only: bool = False) -> dict[str, Any]:
     config_path = config_path.resolve(strict=True)
     config = _load(config_path)
     _validate_config(config)
+    if import_only and (config.get("predecessor_campaign") is None or
+                        stop_after_fault_trials is not None or
+                        config["runner"].get("mode") != "region_state"):
+        raise ValueError("import-only requires a REGION_STATE predecessor and no trial bound")
+    if admit_only and (import_only or stop_after_fault_trials is not None):
+        raise ValueError("admit-only cannot run a trial or import checkpoint")
     if stop_after_fault_trials is not None and (
             not isinstance(stop_after_fault_trials, int) or
             isinstance(stop_after_fault_trials, bool) or
@@ -3495,7 +3841,13 @@ def run_campaign(config_path: Path, root: Path,
             fcntl.flock(lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError as failure:
             raise RuntimeError("native campaign is owned by another worker") from failure
-        admitted = _admit(config, root)
+        admitted = _admit(config, root, no_child=import_only)
+        if admit_only:
+            if (root / "checkpoint.json").exists():
+                raise ValueError("admit-only requires an unstarted campaign")
+            return {"case_id": config["case_id"],
+                    "status": "recording_admitted", "terminal": False,
+                    "completed_fault_trials": 0, "elapsed_seconds": 0.0}
         checkpoint = root / "checkpoint.json"
         if checkpoint.is_file():
             state = _load(checkpoint)
@@ -3519,6 +3871,12 @@ def run_campaign(config_path: Path, root: Path,
                          if key != "new_actor_successor_plan_count"} != receipt or
                         _load(root / "predecessor-import.json") != saved):
                     raise ValueError("predecessor import receipt changed")
+                if (saved.get("source_kind") == "bounded_prefix_snapshot_v1" and
+                        (state.get("imported_completed_fault_trials") != saved[
+                            "source_completed_fault_trials"] or
+                         state.get("next_trial_index", 0) < saved[
+                             "source_completed_fault_trials"] + 1)):
+                    raise ValueError("bounded predecessor trial credit changed")
             elif "predecessor_import" in state:
                 raise ValueError("native checkpoint unexpectedly imports a predecessor")
         else:
@@ -3526,6 +3884,14 @@ def run_campaign(config_path: Path, root: Path,
             if config.get("predecessor_campaign") is not None:
                 _import_predecessor(config, root, state)
             _atomic(checkpoint, state)
+        if import_only:
+            if state.get("healthy") is not None or state.get("trials") or (
+                    state.get("active") is not None):
+                raise ValueError("import-only requires a fresh successor checkpoint")
+            _atomic(root / "summary.json", {
+                key: value for key, value in state.items()
+                if key not in ("queue", "seen_plan_keys", "active")})
+            return state
         saved_stop = state.get("stop_after_completed_fault_trials")
         if (stop_after_fault_trials is not None and saved_stop is not None and
                 stop_after_fault_trials != saved_stop):

@@ -174,6 +174,52 @@ receipts. The source's completed trials do not count against the new budget.
 `predecessor-import.json` records the import lineage and counts. Every resume
 rechecks the predecessor hashes and refuses changed source evidence.
 
+### Bounded checkpoint successor
+
+An opt-in successor may import an accepted `bounded_checkpoint_stop` prefix
+without waiting for the old campaign's full fault budget. First stop its sole
+worker and freeze a distinct snapshot root while holding the source campaign
+lock. The snapshot contains regular-file copies of `config.json`,
+`checkpoint.json`, `summary.json`, and every healthy/fault result plus the
+sidecars pinned by those results. Its `bounded-snapshot-manifest.json` pins
+each copied file's SHA-256 and size, the source lock and unchanged checkpoint
+before/after the copy, and one independently verified lossless raw archive
+and receipt per healthy/fault trial. A missing archive or unaccepted active
+trial prevents import. The original checkpoint and campaign files stay intact.
+
+```python
+pins = build_predecessor_pins(
+    frozen / "config.json", frozen,
+    successor_fault_trials=256, successor_max_faults_per_trial=256,
+    bounded_snapshot_manifest=frozen / "bounded-snapshot-manifest.json",
+    successor_case_id="reviewed-successor-case-id")
+```
+
+The successor config uses these pins and a separate output directory. It may
+change only its case ID through that explicit pin, its budget, and the two
+runner scratch paths `local_work_root` and `local_artifact_root`; original
+JUnit, recording, target, engine/weave, classpath, and other runner fields
+must match the source. Import rechecks all copied files and raw archives,
+excludes every tested exact plan from the new queue, and refuses a live source
+worker or an advanced live checkpoint. Terminal predecessor imports retain
+their existing strict identity rules.
+
+For a new successor, run `--admit-only` first under the ordinary resource
+guard. It may invoke the original GraphChecker Recorder/Scheduler, but never
+the workload JUnit or a fault trial. Once `recording-admission.json` is
+sealed, run `--import-only` with the same config and output root. This stage
+requires that cached admission, rechecks the frozen predecessor, and writes
+only the successor checkpoint, summary, and import receipt. It starts no
+Java child, JUnit, or fault trial. The checkpoint records imported completed
+fault trials separately from new trials; imported trials count toward the
+formal trial budget. A fresh successor healthy r0000 is still required before
+new faults. New fault directory numbering starts at the frozen source's
+`next_trial_index`, so no old trial name or successful plan is replayed.
+One exact retry of a fault-unmatched plan may remain pending with its attempt
+number, while strict-applied plans that lost the target are discarded and
+counted in the import receipt. Continue with the normal guarded worker only
+after reviewing the import receipt and healthy admission.
+
 ## Input contract
 
 Call `run_campaign(Path("case.json"), Path("case-output"))` or run

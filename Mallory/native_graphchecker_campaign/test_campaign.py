@@ -349,6 +349,28 @@ class NativeAdmissionLineageTest(unittest.TestCase):
         self.assertEqual(1, state["trials"][0]["retry_enqueued"])
         self.assertEqual("running", state["status"])
 
+    def test_scheduler16_does_not_retry_strict_target_lost_plan(self) -> None:
+        faults = [{"siteId": "I/O#u1", "node": "peer-1",
+                   "actorEpochOrdinal": 0, "ordinal": 1,
+                   "exceptionClass": "java.io.IOException"}]
+        state = {"active": {"index": 1, "name": "r0001", "faults": faults,
+                            "key": "plan-1", "tier": "observed_closure",
+                            "novelty": 0, "attempt": 0},
+                 "scheduler_version": 16, "elapsed_seconds": 0.0,
+                 "completed_fault_trials": 0, "trials": [], "queue": [],
+                 "status": "running", "terminal": False,
+                 "budget": {"fault_trials": 10, "seconds": 60,
+                            "max_faults_per_trial": 10},
+                 "healthy": {"status": "healthy_seed"},
+                 "fault_id_attempts": {}, "fault_id_successes": {}}
+        result = {"faults": faults, "elapsed_seconds": 1.0,
+                  "status": "unmatched", "runner_mode": "region_state",
+                  "strict_injection": True, "native_target_retained": False,
+                  "target_exception_triggered": False}
+        core._accept(state, result, "r0001")
+        self.assertEqual([], state["queue"])
+        self.assertNotIn("retry_enqueued", state["trials"][0])
+
 
 class ObservedActorSuccessorTest(unittest.TestCase):
     """An unmatched actor can supply a new exact selector, never a loose one."""
@@ -668,6 +690,7 @@ class TerminalSuccessorImportTest(unittest.TestCase):
             self.assertEqual(2, len(queued))  # Pending plus observed actor successor.
             self.assertEqual(2, state["predecessor_import"][
                 "tested_plan_count"])
+            self.assertNotIn("source_kind", state["predecessor_import"])
             self.assertEqual(1, state["predecessor_import"][
                 "new_actor_successor_plan_count"])
             self.assertEqual(["old-node"], state["seen_node_families"])
