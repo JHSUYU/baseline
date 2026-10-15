@@ -77,6 +77,20 @@ class FreezeBoundedPrefixTest(unittest.TestCase):
             freeze(self.source, self.config, self.archives, self.destination, 1)
         self.assertFalse(self.destination.exists())
 
+    def test_unmatched_trial_may_lack_peer_receipt_if_result_does(self):
+        trial = self.source / "trials/r0001"
+        result_path = trial / "result.json"
+        result = json.loads(result_path.read_text())
+        result.pop("peer_ranking_receipt_sha256")
+        result_path.write_text(json.dumps(result))
+        (trial / "peer-ranking-receipt.json").unlink()
+        receipt_path = self.archives / "raw-r0001-receipt.json"
+        receipt = json.loads(receipt_path.read_text())
+        receipt["result_sha256"] = digest(result_path)
+        receipt_path.write_text(json.dumps(receipt))
+        manifest = freeze(self.source, self.config, self.archives, self.destination, 1)
+        self.assertNotIn("trials/r0001/peer-ranking-receipt.json", manifest["files"])
+
     def test_rejects_active_checkpoint(self):
         path = self.source / "checkpoint.json"
         checkpoint = json.loads(path.read_text())

@@ -93,12 +93,14 @@ def freeze(source: Path, config: Path, archives: Path, destination: Path,
                 raise ValueError(f"wrong case ID in trial {number}")
             for rel in SIDECARS:
                 path = trial / rel
+                pin_key = PIN_KEYS.get(rel)
+                pinned = pin_key is not None and bool(result.get(pin_key))
                 if not path.exists():
-                    if rel in PIN_KEYS or rel == "result.json":
+                    if pinned or rel == "result.json" or (pin_key is not None and rel != "peer-ranking-receipt.json"):
                         raise ValueError(f"missing pinned sidecar: {path}")
                     continue
                 regular(path)
-                if rel in PIN_KEYS and sha256(path) != result.get(PIN_KEYS[rel]):
+                if pin_key is not None and (not pinned or sha256(path) != result[pin_key]):
                     raise ValueError(f"result sidecar pin mismatch: {path}")
                 copied[f"trials/r{number:04d}/{rel}"] = path
             tar = archives / f"raw-r{number:04d}.tar.gz"
