@@ -97,6 +97,96 @@ class MultiAnchorCampaignTest(unittest.TestCase):
         self.assertNotIn("anchor_retention_policy", old["multi_anchor_config"])
         self.assertEqual("smoothed_postfault_3of4", new[
             "multi_anchor_config"]["anchor_retention_policy"])
+        config["recording"]["control_plane_peer_policy"] = (
+            "same_peer_pretarget_quarter")
+        with patch.object(core, "_sha", return_value="receipt"):
+            peer = core._new_state(config, "config3", admitted)
+        self.assertEqual(12, peer["scheduler_version"])
+        self.assertEqual({}, peer["peer_postfault_attempts"])
+
+    def test_control_peer_quarter_selects_only_observed_same_peer_door(self):
+        addresses = [f"target-{index}" for index in range(4)]
+        state = {"budget": {"max_faults_per_trial": 6}, "queue": [],
+                 "seen_plan_keys": [], "completed_fault_trials": 0,
+                 "scheduler_version": 12, "multi_anchor_addresses": addresses,
+                 "fault_id_attempts": {}, "fault_id_successes": {},
+                 "peer_postfault_attempts": {}, "peer_postfault_retained": {},
+                 "trials": []}
+        for index, address in enumerate(addresses):
+            door = {"fault": fault(index + 1), "seq": index + 1,
+                    "tier": "observed_closure", "anchor_address": address,
+                    "target_phase": "before_selected_target",
+                    "selected_target_actor": False,
+                    "target_order_distance": 1,
+                    "peer_relation": ("same_peer_before_target" if
+                                      index == 2 else "unknown")}
+            core._enqueue(state, [door], [], 0)
+        selected = core._pick(state)
+        self.assertEqual(addresses[2], selected["anchor_address"])
+        self.assertEqual("same_peer_before_target", selected["peer_relation"])
+        self.assertEqual(3, len(state["queue"]))
+
+    def test_peer_policy_validation_requires_pinned_may_and_retention(self):
+        config = {"case_id": "example", "target_site": "Target#u1",
+                  "native_weave_config": "/unused", "target_throw": {
+                      "siteId": "Target#u2", "exceptionClass": "java.io.IOException"},
+                  "recording": {"trace_dir": "/unused", "test_id": "X#y",
+                      "target_name": "target", "candidate_graph": "/unused",
+                      "static_scope_map": "/unused", "region_skeletons": "/unused",
+                      "max_jobs": 1, "multi_target_max_anchors": 4,
+                      "admission_mode": "region_state_no_schedule",
+                      "anchor_retention_policy": "smoothed_postfault_3of4",
+                      "control_plane_peer_policy":
+                          "same_peer_pretarget_quarter"},
+                  "runner": {"mode": "region_state"}}
+        with self.assertRaisesRegex(ValueError, "control-plane peer policy"):
+            core._validate_config(config)
+
+    def test_healthy_peer_hint_is_versioned_and_requires_exact_join(self):
+        config = {"target_site": "Target#u1", "recording": {
+            "multi_target_max_anchors": 2,
+            "static_may_scope_map": "/unused/map",
+            "static_may_scope_map_sha256": "a" * 64,
+            "control_plane_peer_policy": "same_peer_pretarget_quarter"}}
+        rows = [anchor("dn#epoch0/region/a"),
+                anchor("dn#epoch1/region/b")]
+        bundle = {"status": "multi_target_recorded", "anchors": rows,
+                  "retryExactOccurrences": []}
+        door = {"fault": fault(), "seq": 1, "tier": "observed_closure",
+                "target_phase": "before_selected_target"}
+        with tempfile.TemporaryDirectory() as directory, \
+             patch.object(core, "rpc_producer_sites", return_value=frozenset()), \
+             patch.object(core, "observed_rpc_door_sites",
+                          return_value=frozenset({fault()["siteId"]})), \
+             patch.object(core, "_region_doors", return_value=[door]), \
+             patch.object(core, "rank_region_doors_by_peer") as rank:
+            rank.side_effect = lambda doors, *args: (
+                [{**item, "peer_relation": "same_peer_before_target"}
+                 for item in doors],
+                {"status": "ranked", "samePeerBeforeTargetCount": 1})
+            (Path(directory) / "scope.jsonl").write_text("\n")
+            config["recording"]["static_may_scope_map"] = str(
+                Path(directory) / "scope.jsonl")
+            result = core._complete_multi_healthy(
+                config, Path(directory), {"raw_exact_target_throw_count": 0},
+                [], bundle)
+            self.assertEqual("healthy_seed", result["status"])
+            self.assertEqual(2, rank.call_count)
+            self.assertEqual(2, len(result["eligible_doors"]))
+            self.assertEqual(core._sha(Path(directory) /
+                             "peer-ranking-receipt.json"), result[
+                                 "peer_ranking_receipt_sha256"])
+            self.assertTrue(all(item["peer_relation"] ==
+                                "same_peer_before_target" for item in result[
+                                    "eligible_doors"]))
+            rank.side_effect = lambda doors, *args: (
+                [{**item, "peer_relation": "unknown"} for item in doors],
+                {"status": "ranked", "samePeerBeforeTargetCount": 0})
+            blocked = core._complete_multi_healthy(
+                config, Path(directory), {"raw_exact_target_throw_count": 0},
+                [], bundle)
+            self.assertEqual("blocked_healthy_peer_scope", blocked["status"])
+            self.assertEqual([], blocked["eligible_doors"])
 
     def test_old_plan_key_is_bytewise_unchanged_and_anchor_namespaces_it(self):
         one = fault()

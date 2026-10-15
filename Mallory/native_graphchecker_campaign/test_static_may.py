@@ -8,7 +8,9 @@ import unittest
 from pathlib import Path
 
 from Mallory.native_graphchecker_campaign import campaign as core
-from Mallory.native_graphchecker_campaign.static_may import rpc_producer_sites
+from Mallory.native_graphchecker_campaign.static_may import (
+    observed_rpc_door_sites, rpc_producer_sites,
+)
 
 
 def _row(role: str, **fields: str) -> str:
@@ -36,6 +38,24 @@ class StaticMayTest(unittest.TestCase):
                                                 "Target#u1"))
             with self.assertRaisesRegex(ValueError, "exact target"):
                 rpc_producer_sites(str(path), core._sha(path), "Other#u1")
+
+    def test_broad_rpc_catalog_is_only_a_peer_hint_without_value_edges(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "scope.jsonl"
+            path.write_text("\n".join((
+                _row("TARGET_SITE", siteId="Target#u1", regionId="target"),
+                _row("STATIC_REGION_METHOD", regionId="target", vmMethod="Target"),
+                _row("DOOR_SITE", siteId="RPC#u1", vmSite="Control",
+                     exceptionClass="x.ServiceException"),
+                _row("DOOR_SITE", siteId="FILE#u1", vmSite="Control",
+                     exceptionClass="java.io.IOException"))) + "\n")
+            digest = core._sha(path)
+            self.assertEqual(frozenset(), rpc_producer_sites(
+                str(path), digest, "Target#u1"))
+            self.assertEqual(frozenset({"RPC#u1"}), observed_rpc_door_sites(
+                str(path), digest, "Target#u1"))
+            with self.assertRaisesRegex(ValueError, "exact target"):
+                observed_rpc_door_sites(str(path), digest, "Other#u1")
 
     def test_static_producer_is_ranked_without_claiming_closure(self) -> None:
         target = "Target#u1"

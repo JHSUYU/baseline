@@ -9,6 +9,39 @@ from pathlib import Path
 
 
 @lru_cache(maxsize=4)
+def observed_rpc_door_sites(path: str, sha256: str,
+                            target_site: str) -> frozenset[str]:
+    """Return typed RPC doors in a pinned MAY scope, without an ancestry claim.
+
+    Runtime peer correlation and exact target ordering must still validate each
+    door before it can receive a control-plane scheduling hint. This broad
+    catalog is deliberately separate from ``rpc_producer_sites``: a
+    conservative MAY map may contain no proven STATIC_VALUE_EDGE at all.
+    """
+    found_target = False
+    sites: set[str] = set()
+    with Path(path).open(encoding="utf-8") as source:
+        for number, line in enumerate(source, 1):
+            row = json.loads(line)
+            if row.get("kind") != "STATIC_SCOPE_SITE":
+                continue
+            if row.get("role") == "TARGET_SITE" and row.get("siteId") == target_site:
+                found_target = True
+            elif row.get("role") == "DOOR_SITE":
+                site = row.get("siteId")
+                if not isinstance(site, str) or not site or not isinstance(
+                        row.get("vmSite"), str) or not row["vmSite"]:
+                    raise ValueError(f"static MAY door lacks site/method at row {number}")
+                if (row.get("transport") == "RPC" or
+                        str(row.get("exceptionClass", "")).endswith(
+                            ".ServiceException")):
+                    sites.add(site)
+    if not found_target:
+        raise ValueError("static MAY map lacks exact target site")
+    return frozenset(sites)
+
+
+@lru_cache(maxsize=4)
 def rpc_producer_sites(path: str, sha256: str, target_site: str) -> frozenset[str]:
     """Find RPC doors whose enclosing method MAY produce a target-region value.
 

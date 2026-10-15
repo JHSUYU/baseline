@@ -36,7 +36,7 @@ from Mallory.native_graphchecker_feedback.multi_target import (
     record_multiple_region_states, record_pinned_region_states,
 )
 from .source_preflight import feedback_bridge
-from .static_may import rpc_producer_sites
+from .static_may import observed_rpc_door_sites, rpc_producer_sites
 from .peer_identity import rank_region_doors_by_peer
 
 SCHEMA = 1
@@ -148,6 +148,14 @@ def _validate_config(config: dict[str, Any]) -> None:
             retention_policy != "smoothed_postfault_3of4" or
             anchor_count is None):
         raise ValueError("anchor retention policy requires multi-target anchors")
+    peer_policy = recording.get("control_plane_peer_policy")
+    if peer_policy is not None and (
+            peer_policy != "same_peer_pretarget_quarter" or
+            anchor_count is None or
+            retention_policy != "smoothed_postfault_3of4" or
+            recording.get("static_may_scope_map") is None):
+        raise ValueError("control-plane peer policy requires multi-target "
+                         "retention and a pinned static MAY map")
     may_path = recording.get("static_may_scope_map")
     may_sha = recording.get("static_may_scope_map_sha256")
     if (may_path is None) != (may_sha is None) or (may_path is not None and
@@ -1253,23 +1261,32 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
     version = state.get("scheduler_version", 1)
     if version == 1:
         return _pick_v1(state)
-    if version not in (2, 3, 4, 5, 6, 7, 8, 9, SCHEDULER_VERSION, 11):
+    if version not in (2, 3, 4, 5, 6, 7, 8, 9, SCHEDULER_VERSION, 11, 12):
         raise ValueError(f"unsupported native scheduler version: {version}")
     queue = state["queue"]
     if not queue:
         raise ValueError("empty native fault queue")
     completed = state["completed_fault_trials"]
     selection_queue = queue
+    control_peer_slot = False
+    if version >= 12 and completed % 4 == 0:
+        # A bounded quarter of trials samples RPCs that the unchanged
+        # trace correlated to the selected target actor's actual peer.
+        # If no exact pair survived a previous fault, use the ordinary queue.
+        peers = [item for item in queue if item.get("peer_relation") ==
+                 "same_peer_before_target"]
+        if peers:
+            selection_queue, control_peer_slot = peers, True
     addresses = state.get("multi_anchor_addresses", [])
     if addresses:
         # One exact target activation per trial. The rotating quota applies
         # before the old tier/depth rules and cannot rewrite a queued plan.
         preferred = (_retention_anchor_order(state, addresses)
-                     if version == 11 else
+                     if version in (11, 12) else
                      [addresses[(completed + offset) % len(addresses)]
                       for offset in range(len(addresses))])
         for desired in preferred:
-            matching = [item for item in queue if
+            matching = [item for item in selection_queue if
                         item.get("anchor_address") == desired]
             if matching:
                 selection_queue = matching
@@ -1308,7 +1325,8 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
                           len(item["faults"]) == chosen_depth]
             deep_fair_slot = True
     repeat_phase_slot = False
-    if version >= 9 and not outside_slot and completed % 16 == 12:
+    if (version >= 9 and not outside_slot and not control_peer_slot and
+            completed % 16 == 12):
         # A late occurrence of an already successful I/O site may observe a
         # different recovery state. Give such exact, observed-closure doors a
         # bounded slot; leave every other selection and old checkpoint rule
@@ -1324,7 +1342,8 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
         if repeated:
             candidates, repeat_phase_slot = repeated, True
     peer_slot = False
-    if version >= 8 and not outside_slot and completed % 8 == 4:
+    if (version >= 8 and not outside_slot and not control_peer_slot and
+            completed % 8 == 4):
         # A bounded slot gives tool-selected producer RPC doors to the
         # target's observed peer a chance before a large closure queue uses
         # the whole budget. Peer identity is a hint, never causal closure.
@@ -1399,7 +1418,13 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
             recurrence = (-ordinal if isinstance(ordinal, int) and
                           not isinstance(ordinal, bool) and ordinal > 0
                           else -10**9)
-            return (*((item["depth_feedback"]["score"],)
+            peer_attempts = state.get("peer_postfault_attempts", {}).get(
+                fault_id, 0)
+            peer_retained = state.get("peer_postfault_retained", {}).get(
+                fault_id, 0)
+            return (*((Fraction(peer_retained + 1, peer_attempts + 2),)
+                      if control_peer_slot else ()),
+                    *((item["depth_feedback"]["score"],)
                       if deep_fair_slot else ()),
                     -attempts(item),
                     -state["fault_id_successes"].get(fault_id, 0),
@@ -2109,6 +2134,22 @@ def _healthy_anchor_valid(row: Any) -> bool:
             bool(evidence["targetCheckOccurrenceIds"]))
 
 
+def _peer_rpc_sites(config: dict[str, Any],
+                    producer_sites: frozenset[str]) -> frozenset[str]:
+    """Return exact typed RPC sites eligible for a runtime peer hint.
+
+    Conservative static MAY scopes need not contain a proven value edge.
+    Their RPC doors are only *candidates* for exact exchange pairing; they
+    never become static producers or causal-closure members here.
+    """
+    recording = config["recording"]
+    if recording.get("control_plane_peer_policy") is None:
+        return producer_sites
+    return observed_rpc_door_sites(
+        str(Path(recording["static_may_scope_map"]).resolve(strict=True)),
+        recording["static_may_scope_map_sha256"], config["target_site"])
+
+
 def _complete_multi_healthy(config: dict[str, Any], trial: Path,
                             result: dict[str, Any], events: list[dict[str, Any]],
                             bundle: dict[str, Any]) -> dict[str, Any]:
@@ -2138,12 +2179,38 @@ def _complete_multi_healthy(config: dict[str, Any], trial: Path,
         recording["static_may_scope_map_sha256"], config["target_site"])
         if "static_may_scope_map" in recording else frozenset())
     doors = []
-    for row in anchors:
+    peer_sites = _peer_rpc_sites(config, static_rpc_sites)
+    peer_audits = []
+    for index, row in enumerate(anchors):
         address = row["occurrenceAddress"]
         selected = _region_doors(events, row["summary"], None,
                                  static_rpc_sites)
-        doors.extend({**door, "anchor_address": address} for door in selected
-                     if door["tier"] == "observed_closure")
+        selected = [{**door, "anchor_address": address} for door in selected
+                    if door["tier"] == "observed_closure"]
+        if recording.get("control_plane_peer_policy") is not None:
+            selected, peer_audit = rank_region_doors_by_peer(
+                selected,
+                trial / "iteration-native" / "trace" / "runtime_trace.jsonl",
+                trial / "original-graph" / f"anchor-{index:02d}" /
+                "target-occurrence.json", peer_sites, events)
+            peer_audits.append({"anchorAddress": address,
+                                "peerAudit": peer_audit})
+        doors.extend(selected)
+    if recording.get("control_plane_peer_policy") is not None:
+        receipt = {"schemaVersion": 1,
+                   "scopeKind": "observed_typed_rpc_peer_hint",
+                   "staticMayScopeSha256": recording[
+                       "static_may_scope_map_sha256"],
+                   "anchors": peer_audits}
+        _atomic(trial / "peer-ranking-receipt.json", receipt)
+        result["peer_ranking_receipt_sha256"] = _sha(
+            trial / "peer-ranking-receipt.json")
+        if not any(row["peerAudit"]["status"] == "ranked" and row[
+                "peerAudit"]["samePeerBeforeTargetCount"] > 0
+                for row in peer_audits):
+            result["status"] = "blocked_healthy_peer_scope"
+            result["eligible_doors"] = []
+            return result
     result["eligible_doors"] = doors
     result["status"] = "healthy_seed"
     return result
@@ -2279,12 +2346,13 @@ def _run_region_trial(config: dict[str, Any], admitted: dict[str, Any],
             "eligible_doors"] if door["tier"] == "observed_closure"]
         for door in result["eligible_doors"]:
             door["anchor_address"] = anchor_address
-    if scheduler_version >= 8 and result["eligible_doors"] and static_rpc_sites:
+    peer_rpc_sites = _peer_rpc_sites(config, static_rpc_sites)
+    if scheduler_version >= 8 and result["eligible_doors"] and peer_rpc_sites:
         result["eligible_doors"], peer_receipt = rank_region_doors_by_peer(
             result["eligible_doors"],
             iteration / "trace" / "runtime_trace.jsonl",
             target_receipt,
-            static_rpc_sites, events)
+            peer_rpc_sites, events)
         _atomic(trial / "peer-ranking-receipt.json", peer_receipt)
         result["peer_ranking_receipt_sha256"] = _sha(
             trial / "peer-ranking-receipt.json")
@@ -2582,6 +2650,17 @@ def _accept(state: dict[str, Any], result: dict[str, Any], name: str) -> None:
             record["target_order_distance"] = active.get("target_order_distance")
         if state.get("scheduler_version", 1) >= 8:
             record["peer_relation"] = active.get("peer_relation", "unknown")
+        if (state.get("scheduler_version", 1) >= 12 and
+                active.get("peer_relation") == "same_peer_before_target" and
+                result["strict_injection"] is True):
+            # Measure whether this exact RPC identity leaves a target check
+            # after the applied fault. This is feedback, not a bug oracle.
+            peer_id = _fault_id(active["faults"][-1])
+            attempts = state["peer_postfault_attempts"]
+            attempts[peer_id] = attempts.get(peer_id, 0) + 1
+            if result.get("post_fault_target_check_observed") is True:
+                retained = state["peer_postfault_retained"]
+                retained[peer_id] = retained.get(peer_id, 0) + 1
         if state.get("scheduler_version", 1) >= 2:
             fault_id = _fault_id(active["faults"][-1])
             attempts = state["fault_id_attempts"]
@@ -2661,7 +2740,9 @@ def _finish_status(state: dict[str, Any]) -> None:
 def _new_state(config: dict[str, Any], config_sha: str,
                admitted: dict[str, Any]) -> dict[str, Any]:
     state = {"schema_version": SCHEMA, "case_id": config["case_id"],
-            "scheduler_version": (11 if config["recording"].get(
+            "scheduler_version": (12 if config["recording"].get(
+                "control_plane_peer_policy") == "same_peer_pretarget_quarter"
+                else 11 if config["recording"].get(
                 "anchor_retention_policy") == "smoothed_postfault_3of4"
                 else SCHEDULER_VERSION),
             "config_sha256": config_sha, "budget": config["budget"],
@@ -2677,6 +2758,7 @@ def _new_state(config: dict[str, Any], config_sha: str,
             "seen_value_read_from_families": [],
             "seen_branch_outcomes": [], "completed_fault_trials": 0,
             "fault_id_attempts": {}, "fault_id_successes": {},
+            "peer_postfault_attempts": {}, "peer_postfault_retained": {},
             "elapsed_seconds": 0.0, "active": None, "next_trial_index": 1}
     if "multi_target_max_anchors" in config["recording"]:
         state["multi_anchor_config"] = {"multi_target_max_anchors":
@@ -2684,6 +2766,9 @@ def _new_state(config: dict[str, Any], config_sha: str,
         if "anchor_retention_policy" in config["recording"]:
             state["multi_anchor_config"]["anchor_retention_policy"] = (
                 config["recording"]["anchor_retention_policy"])
+        if "control_plane_peer_policy" in config["recording"]:
+            state["multi_anchor_config"]["control_plane_peer_policy"] = (
+                config["recording"]["control_plane_peer_policy"])
     return state
 
 
