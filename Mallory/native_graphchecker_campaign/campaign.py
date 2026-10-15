@@ -164,6 +164,15 @@ def _validate_config(config: dict[str, Any]) -> None:
             recording.get("static_may_scope_map") is None):
         raise ValueError("repeated RPC occurrence policy requires multi-target "
                          "anchors and a pinned static MAY map")
+    depth_policy = recording.get("cross_anchor_strict_depth_policy")
+    if depth_policy is not None and (
+            depth_policy != "global_quarter_v1" or anchor_count is None or
+            repeat_policy != "repeated_rpc_pretarget_v1" or
+            not isinstance(config.get("budget"), dict) or
+            not isinstance(config["budget"].get("max_faults_per_trial"), int) or
+            config["budget"]["max_faults_per_trial"] < 3):
+        raise ValueError("cross-anchor depth policy requires repeated RPC "
+                         "anchors and a multi-fault budget")
     if "repeated_target_temporal_frontier" in recording and (
             recording["repeated_target_temporal_frontier"] is not True or
             recording.get("admission_mode") != "region_state_no_schedule" or
@@ -1354,6 +1363,48 @@ def _pick_v1(state: dict[str, Any]) -> dict[str, Any]:
     return selected
 
 
+def _cross_anchor_strict_descendant(state: dict[str, Any]
+                                    ) -> dict[str, Any] | None:
+    """Reserve two of eight slots for verified strict-prefix descendants.
+
+    Anchor rotation and depth cadence can be phase-locked: a seed on anchor
+    five is revisited only on rounds 5, 13, ... while the old depth-two slot
+    occurs on rounds 2, 6, ... . This opt-in quota selects from *all* exact
+    anchor queues. It changes scheduling only; eligible sites still come from
+    the original recorded graph and every trial must pass strict injection.
+    """
+    completed = state["completed_fault_trials"]
+    if completed % 4 != 2:
+        return None
+    depth_limit = min(MAX_FAULTS, state["budget"]["max_faults_per_trial"])
+    candidates = [item for item in state["queue"] if
+                  2 <= len(item["faults"]) <= depth_limit and
+                  item.get("target_phase") == "before_selected_target" and
+                  isinstance(item.get("depth_feedback"), dict) and
+                  item["depth_feedback"].get("strict_post_fault_target") is True]
+    if not candidates:
+        return None
+    if completed % 8 == 2:
+        # Fair slot: a source anchor with fewer accepted deep trials gets a
+        # turn even when its round-robin residue never matches the old quota.
+        counts = Counter(trial.get("anchor_address") for trial in state["trials"]
+                         if trial.get("strict_injection") is True and
+                         len(trial.get("faults", [])) >= 2)
+        lowest = min(counts[item.get("anchor_address")] for item in candidates)
+        candidates = [item for item in candidates if
+                      counts[item.get("anchor_address")] == lowest]
+    # Progress slot (round 6 modulo 8) favors the deepest verified prefix.
+    # The fair slot first chooses an underserved anchor, then also rewards
+    # a longer valid prefix. Exact peer and same-site status are hints only.
+    return max(candidates, key=lambda item: (
+        len(item["faults"]),
+        item.get("peer_relation") == "same_peer_before_target",
+        item.get("same_site_descendant") is True,
+        item["depth_feedback"].get("score", 0),
+        -state["fault_id_attempts"].get(_fault_id(item["faults"][-1]), 0),
+        item.get("novelty", 0), item["key"]))
+
+
 def _pick(state: dict[str, Any]) -> dict[str, Any]:
     """Select diverse I/O sites, with explicit depth and waiting slots."""
     # Retry an exact, previously selected plan after an infrastructure
@@ -1377,12 +1428,17 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
     version = state.get("scheduler_version", 1)
     if version == 1:
         return _pick_v1(state)
-    if version not in (2, 3, 4, 5, 6, 7, 8, 9, SCHEDULER_VERSION, 11, 12, 13, 14):
+    if version not in (2, 3, 4, 5, 6, 7, 8, 9, SCHEDULER_VERSION, 11, 12, 13, 14, 15):
         raise ValueError(f"unsupported native scheduler version: {version}")
     queue = state["queue"]
     if not queue:
         raise ValueError("empty native fault queue")
     completed = state["completed_fault_trials"]
+    if version >= 15:
+        selected = _cross_anchor_strict_descendant(state)
+        if selected is not None:
+            queue.remove(selected)
+            return selected
     selection_queue = queue
     control_peer_slot = False
     if version >= 12 and completed % 4 == 0:
@@ -2991,7 +3047,9 @@ def _finish_status(state: dict[str, Any]) -> None:
 def _new_state(config: dict[str, Any], config_sha: str,
                admitted: dict[str, Any]) -> dict[str, Any]:
     state = {"schema_version": SCHEMA, "case_id": config["case_id"],
-            "scheduler_version": (14 if config["recording"].get(
+            "scheduler_version": (15 if config["recording"].get(
+                "cross_anchor_strict_depth_policy") == "global_quarter_v1"
+                else 14 if config["recording"].get(
                 "repeated_rpc_occurrence_policy") ==
                 "repeated_rpc_pretarget_v1"
                 else 13 if config["recording"].get(
@@ -3029,6 +3087,9 @@ def _new_state(config: dict[str, Any], config_sha: str,
         if "repeated_rpc_occurrence_policy" in config["recording"]:
             state["multi_anchor_config"]["repeated_rpc_occurrence_policy"] = (
                 config["recording"]["repeated_rpc_occurrence_policy"])
+        if "cross_anchor_strict_depth_policy" in config["recording"]:
+            state["multi_anchor_config"]["cross_anchor_strict_depth_policy"] = (
+                config["recording"]["cross_anchor_strict_depth_policy"])
     return state
 
 
