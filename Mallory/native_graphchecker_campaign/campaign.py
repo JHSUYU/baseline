@@ -45,10 +45,37 @@ FAULT_FIELDS = ("siteId", "node", "actorEpochOrdinal", "occurrenceId",
                 "ordinal", "exceptionClass")
 SELECTOR_FIELDS = ("siteId", "node", "actorEpochOrdinal", "ordinal",
                    "exceptionClass")
-MAX_FAULTS = 16
+LEGACY_FAULT_DEPTH = 16
+# Kept for callers reading the historical constant; it is no longer a
+# campaign-wide validation or scheduling ceiling.
+MAX_FAULTS = LEGACY_FAULT_DEPTH
+UNTIL_BUDGET = "until_budget"
 MAX_UNMATCHED_RETRIES = 2
 SHA256_HEX = re.compile(r"[0-9a-f]{64}\Z")
 MESSAGE_FIELDS = ("messageReplayKey", "messageParentId")
+
+
+def _effective_fault_depth(budget: dict[str, Any]) -> int:
+    """Resolve an opt-in depth to a finite trial budget.
+
+    Existing numeric budgets retain their saved checkpoint semantics. A new
+    numeric depth above the old limit must fit the fault-trial budget.
+    """
+    if not isinstance(budget, dict):
+        raise ValueError("fault-depth budget is malformed")
+    trials = budget.get("fault_trials")
+    depth = budget.get("max_faults_per_trial")
+    if (isinstance(depth, int) and not isinstance(depth, bool) and
+            0 < depth <= LEGACY_FAULT_DEPTH):
+        return depth
+    if not isinstance(trials, int) or isinstance(trials, bool) or trials <= 0:
+        raise ValueError("fault trial budget must be a positive integer")
+    if depth == UNTIL_BUDGET:
+        return trials
+    if (not isinstance(depth, int) or isinstance(depth, bool) or depth <= 0 or
+            depth > trials):
+        raise ValueError("fault depth must be positive and bounded by the trial budget")
+    return depth
 
 
 def _sha(path: Path) -> str:
@@ -169,8 +196,7 @@ def _validate_config(config: dict[str, Any]) -> None:
             depth_policy != "global_quarter_v1" or anchor_count is None or
             repeat_policy != "repeated_rpc_pretarget_v1" or
             not isinstance(config.get("budget"), dict) or
-            not isinstance(config["budget"].get("max_faults_per_trial"), int) or
-            config["budget"]["max_faults_per_trial"] < 3):
+            _effective_fault_depth(config["budget"]) < 3):
         raise ValueError("cross-anchor depth policy requires repeated RPC "
                          "anchors and a multi-fault budget")
     if "repeated_target_temporal_frontier" in recording and (
@@ -267,9 +293,9 @@ def _validate_config(config: dict[str, Any]) -> None:
     if (not isinstance(budget, dict) or any(
             not isinstance(budget.get(key), int) or isinstance(budget[key], bool)
             or budget[key] <= 0 for key in
-            ("fault_trials", "seconds", "max_faults_per_trial")) or
-            budget["max_faults_per_trial"] > MAX_FAULTS):
+            ("fault_trials", "seconds"))):
         raise ValueError("invalid native campaign budget")
+    _effective_fault_depth(budget)
     if (not isinstance(config.get("timeout_seconds"), int) or
             config["timeout_seconds"] <= 0):
         raise ValueError("native campaign needs positive per-trial timeout_seconds")
@@ -1201,7 +1227,10 @@ def _enqueue(state: dict[str, Any], doors: list[dict[str, Any]],
              prefix: list[dict[str, Any]], novelty: int,
              depth_feedback: dict[str, Any] | None = None,
              anchor_address: str | None = None) -> None:
-    if len(prefix) >= state["budget"]["max_faults_per_trial"]:
+    depth_limit = _effective_fault_depth(state["budget"])
+    if len(prefix) > depth_limit:
+        raise ValueError("native fault prefix exceeds campaign depth budget")
+    if len(prefix) == depth_limit:
         return
     seen = set(state["seen_plan_keys"])
     # One plan per exact observed I/O identity; an occurrence is never
@@ -1376,7 +1405,7 @@ def _cross_anchor_strict_descendant(state: dict[str, Any]
     completed = state["completed_fault_trials"]
     if completed % 4 != 2:
         return None
-    depth_limit = min(MAX_FAULTS, state["budget"]["max_faults_per_trial"])
+    depth_limit = _effective_fault_depth(state["budget"])
     candidates = [item for item in state["queue"] if
                   2 <= len(item["faults"]) <= depth_limit and
                   item.get("target_phase") == "before_selected_target" and
@@ -1407,6 +1436,13 @@ def _cross_anchor_strict_descendant(state: dict[str, Any]
 
 def _pick(state: dict[str, Any]) -> dict[str, Any]:
     """Select diverse I/O sites, with explicit depth and waiting slots."""
+    if state.get("scheduler_version", 1) >= 16:
+        depth_limit = _effective_fault_depth(state["budget"])
+        if any(not isinstance(item, dict) or
+               not isinstance(item.get("faults"), list) or
+               not 1 <= len(item["faults"]) <= depth_limit
+               for item in state["queue"]):
+            raise ValueError("native queued plan exceeds campaign depth budget")
     # Retry an exact, previously selected plan after an infrastructure
     # failure. The caller checkpoints the chosen active plan before running
     # its JUnit, so a crash cannot silently skip this replay.
@@ -1428,7 +1464,7 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
     version = state.get("scheduler_version", 1)
     if version == 1:
         return _pick_v1(state)
-    if version not in (2, 3, 4, 5, 6, 7, 8, 9, SCHEDULER_VERSION, 11, 12, 13, 14, 15):
+    if version not in (2, 3, 4, 5, 6, 7, 8, 9, SCHEDULER_VERSION, 11, 12, 13, 14, 15, 16):
         raise ValueError(f"unsupported native scheduler version: {version}")
     queue = state["queue"]
     if not queue:
@@ -1480,7 +1516,7 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
                        "descendant" if completed % 8 in (1, 6) else None)
         # A long repeated run matters more than a nearby isolated retry.
         # This is tied to the configured sequence depth, not a named RPC.
-        min_later = min(7, state["budget"]["max_faults_per_trial"] - 1)
+        min_later = min(7, _effective_fault_depth(state["budget"]) - 1)
         repeat_candidates = ([item for item in candidates if
             len(item["faults"]) == 1 and
             item.get("later_same_site_pretarget_count", 0) >= min_later and
@@ -1522,8 +1558,10 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
         # trial that reached the target after its final fault and supplied
         # target-directed graph, closure, temporal, or peer feedback. This
         # does not admit any new fault door or alter the target oracle.
-        max_depth = min((MAX_FAULTS if version >= 14 else 6),
-                        state["budget"]["max_faults_per_trial"])
+        max_depth = (min(LEGACY_FAULT_DEPTH, _effective_fault_depth(state["budget"]))
+                     if version in (14, 15) else
+                     _effective_fault_depth(state["budget"]) if version >= 16 else
+                     min(6, _effective_fault_depth(state["budget"])))
         deep = [item for item in candidates if
                 4 <= len(item["faults"]) <= max_depth and
                 isinstance(item.get("depth_feedback"), dict) and
@@ -3046,8 +3084,14 @@ def _finish_status(state: dict[str, Any]) -> None:
 
 def _new_state(config: dict[str, Any], config_sha: str,
                admitted: dict[str, Any]) -> dict[str, Any]:
+    configured_depth = config["budget"].get("max_faults_per_trial")
+    budget_depth_opt_in = (configured_depth == UNTIL_BUDGET or
+                           configured_depth is not None and
+                           _effective_fault_depth(config["budget"]) >
+                           LEGACY_FAULT_DEPTH)
     state = {"schema_version": SCHEMA, "case_id": config["case_id"],
-            "scheduler_version": (15 if config["recording"].get(
+            "scheduler_version": (16 if budget_depth_opt_in
+                else 15 if config["recording"].get(
                 "cross_anchor_strict_depth_policy") == "global_quarter_v1"
                 else 14 if config["recording"].get(
                 "repeated_rpc_occurrence_policy") ==
@@ -3150,19 +3194,10 @@ def _predecessor_snapshot(config: dict[str, Any], root: Path,
     if any(not isinstance(budget, dict) for budget in (
             source_budget, checkpoint_budget, successor_budget, state_budget)):
         raise ValueError("predecessor fault-depth budget is malformed")
-    source_depth = source_budget.get("max_faults_per_trial")
-    checkpoint_depth = checkpoint_budget.get("max_faults_per_trial")
-    successor_depth = successor_budget.get("max_faults_per_trial")
-    state_depth = state_budget.get("max_faults_per_trial")
-    if (not isinstance(source_depth, int) or isinstance(source_depth, bool) or
-            not 1 <= source_depth <= MAX_FAULTS or
-            not isinstance(checkpoint_depth, int) or
-            isinstance(checkpoint_depth, bool) or checkpoint_depth != source_depth or
-            not isinstance(successor_depth, int) or
-            isinstance(successor_depth, bool) or
-            not source_depth <= successor_depth <= MAX_FAULTS or
-            not isinstance(state_depth, int) or isinstance(state_depth, bool) or
-            state_depth != successor_depth):
+    source_depth = _effective_fault_depth(source_budget)
+    successor_depth = _effective_fault_depth(successor_budget)
+    if (checkpoint_budget != source_budget or state_budget != successor_budget or
+            successor_depth < source_depth):
         raise ValueError("predecessor fault-depth limit is not a valid monotonic extension")
     expanding_depth = successor_depth > source_depth
     all_events_pinned = "source_all_event_tree_sha256" in pins
@@ -3295,7 +3330,8 @@ def _predecessor_snapshot(config: dict[str, Any], root: Path,
 
 def build_predecessor_pins(
         config_path: Path, terminal_root: Path, *,
-        successor_max_faults_per_trial: int | None = None) -> dict[str, str]:
+        successor_max_faults_per_trial: int | str | None = None,
+        successor_fault_trials: int | None = None) -> dict[str, str]:
     """Build reviewable SHA pins for a completed campaign; never mutate it."""
     config_path = config_path.resolve(strict=True)
     terminal_root = terminal_root.resolve(strict=True)
@@ -3306,17 +3342,19 @@ def build_predecessor_pins(
     pins.update({name + "_sha256": _sha(path) for name, path in paths.items()})
     prospective = _load(config_path)
     source_budget = prospective.get("budget")
-    source_depth = (source_budget.get("max_faults_per_trial")
-                    if isinstance(source_budget, dict) else None)
-    if successor_max_faults_per_trial is not None:
-        if (not isinstance(successor_max_faults_per_trial, int) or
-                isinstance(successor_max_faults_per_trial, bool) or
-                not isinstance(source_depth, int) or isinstance(source_depth, bool) or
-                not source_depth <= successor_max_faults_per_trial <= MAX_FAULTS):
+    source_depth = _effective_fault_depth(source_budget)
+    if (successor_max_faults_per_trial is not None or
+            successor_fault_trials is not None):
+        successor_budget = dict(source_budget)
+        if successor_max_faults_per_trial is not None:
+            successor_budget["max_faults_per_trial"] = successor_max_faults_per_trial
+        if successor_fault_trials is not None:
+            successor_budget["fault_trials"] = successor_fault_trials
+        successor_depth = _effective_fault_depth(successor_budget)
+        if successor_depth < source_depth:
             raise ValueError("successor fault depth must monotonically extend source")
-        prospective["budget"] = {**prospective["budget"],
-                                  "max_faults_per_trial": successor_max_faults_per_trial}
-        if successor_max_faults_per_trial > source_depth:
+        prospective["budget"] = successor_budget
+        if successor_depth > source_depth:
             pins["source_all_event_tree_sha256"] = "0" * 64
     prospective["predecessor_campaign"] = pins
     source = _load(paths["checkpoint"])
@@ -3356,6 +3394,12 @@ def _resume_active(config: dict[str, Any], admitted: dict[str, Any],
     active = state["active"]
     if active is None:
         return
+    if state.get("scheduler_version", 1) >= 16 and (
+            not isinstance(active, dict) or
+            not isinstance(active.get("faults"), list) or
+            not 0 <= len(active["faults"]) <= _effective_fault_depth(
+                state["budget"])):
+        raise ValueError("native active plan exceeds campaign depth budget")
     name = active["name"]
     trial = root / "trials" / name
     result_file = trial / "result.json"

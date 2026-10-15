@@ -811,6 +811,37 @@ class TerminalSuccessorImportTest(unittest.TestCase):
             finally:
                 result_path.write_bytes(original)
 
+    def test_budget_derived_depth_import_pins_prior_trial_bytes(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            config_path, source, old, config = self._extended_fixture(root)
+            legacy = core.build_predecessor_pins(config_path, source)
+            for requested in ("until_budget", 256):
+                config["budget"] = {**config["budget"],
+                                    "fault_trials": 256,
+                                    "max_faults_per_trial": requested}
+                config["predecessor_campaign"] = core.build_predecessor_pins(
+                    config_path, source,
+                    successor_max_faults_per_trial=requested,
+                    successor_fault_trials=256)
+                core._validate_config(config)
+                for name in ("tested_plan_keys_sha256",
+                             "source_result_tree_sha256",
+                             "source_unmatched_event_tree_sha256"):
+                    self.assertEqual(legacy[name],
+                                     config["predecessor_campaign"][name])
+                receipt, _, _, _ = core._predecessor_snapshot(
+                    config, root / "successor", {**old,
+                                                 "budget": config["budget"]})
+                self.assertEqual(4, receipt["source_fault_depth_limit"])
+                self.assertEqual(256, receipt["successor_fault_depth_limit"])
+                self.assertEqual(2, receipt["tested_plan_count"])
+            with self.assertRaisesRegex(ValueError, "bounded by the trial budget"):
+                core.build_predecessor_pins(
+                    config_path, source,
+                    successor_max_faults_per_trial=65,
+                    successor_fault_trials=64)
+
 
 class NativeQueueDiversityTest(unittest.TestCase):
     """The queue should reach distinct doors without losing deep sequences."""

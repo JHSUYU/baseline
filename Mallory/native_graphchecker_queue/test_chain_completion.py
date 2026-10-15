@@ -156,6 +156,69 @@ class ChainedCompletionTest(unittest.TestCase):
         self.assertFalse(inspect_chain(self.manifest([segment], fault_budget=2))[
             "native_tested_complete"])
 
+    def test_budget_derived_depth_seventeen_is_audited_without_completion(self) -> None:
+        segment = self.segment("deep")
+        root = Path(segment["checkpoint"]["path"]).parent
+        config_path = root / "config.json"
+        config = json.loads(config_path.read_text())
+        config["budget"] = {"fault_trials": 32, "seconds": 60,
+                            "max_faults_per_trial": "until_budget"}
+        write(config_path, config)
+        segment["config"] = pin(config_path)
+        result_path = root / "trials/r0001/result.json"
+        result = json.loads(result_path.read_text())
+        faults = [{**result["faults"][0], "ordinal": number,
+                   "sourceOccurrenceId": f"occ-rpc-{number}"}
+                  for number in range(1, 18)]
+        events = []
+        for number, fault in enumerate(faults, 1):
+            row = {"siteId": fault["siteId"], "node": fault["node"],
+                   "actorEpochOrdinal": fault["actorEpochOrdinal"],
+                   "occurrenceId": f"occ-rpc-{number}",
+                   "ordinal": fault["ordinal"],
+                   "exceptionClass": fault["exceptionClass"]}
+            events.extend(({**row, "kind": "FAULT_DOOR", "seq": 2 * number - 1},
+                           {**row, "kind": "FAULT_APPLIED", "seq": 2 * number}))
+        events.append({"kind": "TARGET_CHECK", "seq": 35, "siteId": SITE,
+                       "node": "zk-peer-1", "actorEpochOrdinal": 0,
+                       "occurrenceId": "occ-target", "ordinal": 1})
+        events_path = root / "trials/r0001/iteration-native/fault-events.jsonl"
+        events_path.write_text("".join(json.dumps(row) + "\n" for row in events))
+        result["faults"] = faults
+        result["fault_events_sha256"] = sha256(events_path)
+        write(result_path, result)
+        checkpoint_path = root / "checkpoint.json"
+        checkpoint = json.loads(checkpoint_path.read_text())
+        checkpoint["config_sha256"] = sha256(config_path)
+        checkpoint["status"] = "complete_queue"
+        write(checkpoint_path, checkpoint)
+        write(root / "summary.json", checkpoint)
+        segment["checkpoint"] = pin(checkpoint_path)
+        segment["summary"] = pin(root / "summary.json")
+        audit_path = root / "full-audit.json"
+        audit = json.loads(audit_path.read_text())
+        audit["fingerprint"].update({
+            "config_sha256": sha256(config_path),
+            "checkpoint_sha256": sha256(checkpoint_path),
+            "summary_sha256": sha256(root / "summary.json")})
+        write(audit_path, audit)
+        segment["frozen_audit"] = pin(audit_path)
+        manifest_path = self.manifest([segment], fault_budget=32)
+        manifest = json.loads(manifest_path.read_text())
+        manifest["budget"]["max_faults_per_trial"] = "until_budget"
+        authority = Path(manifest["formal_budget_authority"]["path"])
+        write(authority, {"case_id": self.case, "budget": manifest["budget"]})
+        manifest["formal_budget_authority"] = pin(authority)
+        write(manifest_path, manifest)
+        receipt = inspect_chain(manifest_path)
+        self.assertEqual(1, receipt["completed_fault_trials"])
+        self.assertEqual(1, receipt["strict_fault_trials"])
+        self.assertFalse(receipt["native_tested_complete"])
+        result["faults"] += [faults[-1]] * 16
+        write(result_path, result)
+        with self.assertRaisesRegex(ValueError, "fault plan is invalid"):
+            inspect_chain(manifest_path)
+
     def test_exact_throw_requires_matching_original_events(self) -> None:
         segment = self.segment("one", exact_throw=True)
         receipt = inspect_chain(self.manifest([segment]))

@@ -145,8 +145,16 @@ pins = build_predecessor_pins(Path("/absolute/source-config.json"),
 
 To increase the maximum fault depth, request the new limit when pinning the
 source (for example, `successor_max_faults_per_trial=6` for a depth-four
-source). The successor budget must use that same limit. Depth can stay equal or
-increase; it cannot decrease. A depth increase requires every completed fault
+source). The successor budget must use that same limit. A fresh campaign may
+also set `max_faults_per_trial` to `"until_budget"`; its effective sequence
+limit is its finite `fault_trials` budget. An explicit numeric limit above 16
+is accepted when it does not exceed `fault_trials`. For a successor that raises
+the fault-trial budget, pass both `successor_max_faults_per_trial` and
+`successor_fault_trials` to `build_predecessor_pins`; for example, a 256-trial
+successor can use `successor_max_faults_per_trial=256` or `"until_budget"` and
+`successor_fault_trials=256`. Existing numeric checkpoints keep their prior
+depth and scheduler semantics. Depth can stay equal or increase; it cannot
+decrease. A depth increase requires every completed fault
 trial to have an exact `fault-events.jsonl` file whose SHA-256 matches its
 saved result, and adds `source_all_event_tree_sha256` to the predecessor pins.
 The import rechecks this aggregate, the tested plan keys, and every result

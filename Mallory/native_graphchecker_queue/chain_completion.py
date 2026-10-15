@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any
 
 from Mallory.native_graphchecker_dispatch.checklist import _checkpoint_trial_refs
+from Mallory.native_graphchecker_campaign.campaign import _effective_fault_depth
 from .raw_archive import verify_trial_evidence
 
 
@@ -229,6 +230,8 @@ def inspect_chain(manifest_path: Path) -> dict[str, Any]:
             budget["seconds"] <= 0 or
             not isinstance(segments, list) or not segments):
         raise ValueError("invalid chain identity or budget")
+    formal_depth = _effective_fault_depth({
+        **budget, "max_faults_per_trial": budget.get("max_faults_per_trial", 10)})
     authority_pin = manifest.get("formal_budget_authority")
     authority_sha = None
     if authority_pin is not None:
@@ -254,6 +257,7 @@ def inspect_chain(manifest_path: Path) -> dict[str, Any]:
             raise ValueError("native segment root changed")
         config = _load(config_path)
         checkpoint = _load(checkpoint_path)
+        segment_depth = _effective_fault_depth(config.get("budget"))
         if (config.get("case_id") != case_id or
                 checkpoint.get("case_id") != case_id or
                 checkpoint.get("config_sha256") != segment["config"]["sha256"] or
@@ -316,7 +320,8 @@ def inspect_chain(manifest_path: Path) -> dict[str, Any]:
             result_hashes[name] = sha256(result_path)
             faults = result.get("faults")
             if (result.get("case_id") != case_id or not isinstance(faults, list) or
-                    not faults or len(faults) > budget.get("max_faults_per_trial", 10)):
+                    not faults or len(faults) > formal_depth or
+                    len(faults) > segment_depth):
                 raise ValueError("fault plan is invalid")
             if (not isinstance(result.get("elapsed_seconds"), (int, float)) or
                     result["elapsed_seconds"] < 0 or
