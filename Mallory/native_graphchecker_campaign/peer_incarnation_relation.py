@@ -9,6 +9,7 @@ sequence by itself.  All peer links require a unique recorded RPC exchange.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from collections import defaultdict
 from pathlib import Path
@@ -131,6 +132,153 @@ def peer_incarnation_relation(
             fault_pairs.append({**evidence,
                                 "responseReceiveSeq": responses[0].get("seq"),
                                 "responseCallId": responses[0].get("callId")})
+
+    report["faultPeerIncarnations"] = sorted(fault_peers)
+    report["targetPeerIncarnations"] = sorted(target_peers)
+    report["faultPairCount"] = len(fault_pairs)
+    report["targetPairCount"] = len(target_pairs)
+    report["faultPairExamples"] = fault_pairs[:3]
+    report["targetPairExamples"] = target_pairs[:3]
+    if len(fault_peers) != 1 or len(target_peers) != 1:
+        report["reason"] = "peer_identity_missing_or_ambiguous"
+    elif fault_peers == target_peers:
+        report["relation"] = "same"
+        report["reason"] = "same_exact_namenode_source_epoch"
+    else:
+        report["relation"] = "different"
+        report["reason"] = "different_exact_namenode_source_epoch"
+    return report
+
+
+DOOR_IDENTITY_FIELDS = ("siteId", "node", "actorEpochOrdinal",
+                        "occurrenceId", "ordinal", "exceptionClass")
+
+
+def _door_identity(row: dict[str, Any]) -> tuple[Any, ...] | None:
+    values = tuple(row.get(field) for field in DOOR_IDENTITY_FIELDS)
+    if any(value is None or value == "" for value in values):
+        return None
+    return values
+
+
+def healthy_door_peer_relation(
+    trace_path: Path, fault_events_path: Path, *,
+    door_identity: dict[str, Any], target_source_key: str,
+) -> dict[str, Any]:
+    """Relate one healthy fault door to the selected DataNode's NN incarnation.
+
+    This requires a generic ``NATIVE_FAULT_DOOR`` raw row carrying the exact
+    GraphChecker six-field door identity and the enclosing raw call/receiver
+    IDs.  Old traces have no such row and return ``unknown``; matching by the
+    ordinal of a method entry would invent a join when a call skips or repeats
+    the door.  The caller must obtain ``target_source_key`` from the selected
+    target occurrence, not from any other target in the same test.
+    """
+    identity = _door_identity(door_identity)
+    report: dict[str, Any] = {
+        "relation": "unknown", "doorIdentity": door_identity,
+        "targetSourceKey": target_source_key,
+        "faultPeerIncarnations": [], "targetPeerIncarnations": [],
+    }
+    if identity is None or not target_source_key:
+        report["reason"] = "door_or_target_identity_missing"
+        return report
+
+    event_digest = hashlib.sha256()
+    receipts: list[dict[str, Any]] = []
+    with fault_events_path.open("rb") as stream:
+        for line in stream:
+            event_digest.update(line)
+            row = json.loads(line)
+            if row.get("kind") == "FAULT_DOOR" and _door_identity(row) == identity:
+                receipts.append(row)
+    report["faultEventsSha256"] = event_digest.hexdigest()
+    if len(receipts) != 1:
+        report["reason"] = "door_receipt_missing_or_ambiguous"
+        return report
+
+    enters: dict[int, dict[str, Any]] = {}
+    parent: dict[int, int] = {}
+    native_rows: list[dict[str, Any]] = []
+    sends: dict[tuple[str, str, str], list[dict[str, Any]]] = defaultdict(list)
+    receives: dict[tuple[str, str, str], list[dict[str, Any]]] = defaultdict(list)
+    responses: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
+    trace_digest = hashlib.sha256()
+    with trace_path.open("rb") as stream:
+        for line in stream:
+            trace_digest.update(line)
+            row = json.loads(line)
+            event = row.get("event")
+            if event == "METHOD_ENTER" and isinstance(row.get("callId"), int):
+                enters[row["callId"]] = row
+                parent[row["callId"]] = row.get("parentCallId") or 0
+            elif (event == "NATIVE_FAULT_DOOR" and
+                  _door_identity(row) == identity):
+                native_rows.append(row)
+            elif (row.get("transport") == "HADOOP_IPC" and
+                  event == "EXCHANGE_RECEIVE" and
+                  row.get("half") == "RESPONSE"):
+                key = _key(row)
+                if all(key):
+                    responses[key[:2]].append(row)
+            elif (row.get("transport") == "HADOOP_IPC" and
+                  row.get("half") == "REQUEST" and
+                  event in ("EXCHANGE_SEND", "EXCHANGE_RECEIVE")):
+                key = _key(row)
+                if all(key):
+                    (sends if event == "EXCHANGE_SEND" else receives)[key].append(row)
+    report["traceSha256"] = trace_digest.hexdigest()
+    if len(native_rows) != 1:
+        report["reason"] = "raw_door_identity_missing_or_ambiguous"
+        return report
+    native = native_rows[0]
+    if native.get("identityStatus") != "owner_matches_active_receiver":
+        report["reason"] = "raw_door_receiver_unproven"
+        return report
+    call_id = native.get("callId")
+    receiver_id = native.get("receiverObjectId")
+    enter = enters.get(call_id) if isinstance(call_id, int) and call_id > 0 else None
+    if (enter is None or not isinstance(receiver_id, int) or receiver_id <= 0 or
+            enter.get("objectId") != receiver_id or
+            native.get("sourceKey") != enter.get("sourceKey") or
+            native.get("sourceKey") !=
+            (str(identity[1]) + "#epoch" + str(identity[2]))):
+        report["reason"] = "raw_door_call_or_receiver_mismatch"
+        return report
+    report["faultCallId"] = call_id
+    report["faultReceiverObjectId"] = receiver_id
+    report["faultSourceKey"] = native["sourceKey"]
+
+    fault_peers: set[str] = set()
+    target_peers: set[str] = set()
+    fault_pairs: list[dict[str, Any]] = []
+    target_pairs: list[dict[str, Any]] = []
+    for key, send_rows in sends.items():
+        recv_rows = receives.get(key, [])
+        if len(send_rows) != 1 or len(recv_rows) != 1:
+            continue
+        send, receive = send_rows[0], recv_rows[0]
+        peer = receive.get("sourceKey")
+        if receive.get("sourceRole") != "NAMENODE" or not peer:
+            continue
+        evidence = {"correlationId": key[0], "attemptId": key[1],
+                    "sendSeq": send.get("seq"),
+                    "receiveSeq": receive.get("seq"), "peer": peer}
+        if (send.get("sourceKey") == target_source_key and
+                send.get("sourceRole") == "DATANODE"):
+            target_peers.add(peer)
+            target_pairs.append(evidence)
+        if send.get("sourceKey") != native["sourceKey"]:
+            continue
+        response_rows = [row for row in responses.get(key[:2], [])
+                         if row.get("sourceKey") == native["sourceKey"]]
+        if len(response_rows) != 1:
+            continue
+        if call_id in _ancestors(response_rows[0].get("callId", 0), parent):
+            fault_peers.add(peer)
+            fault_pairs.append({**evidence,
+                                "responseReceiveSeq": response_rows[0].get("seq"),
+                                "responseCallId": response_rows[0].get("callId")})
 
     report["faultPeerIncarnations"] = sorted(fault_peers)
     report["targetPeerIncarnations"] = sorted(target_peers)
