@@ -3574,7 +3574,10 @@ def _predecessor_snapshot(config: dict[str, Any], root: Path,
             rows = _rows(events_file)
             prefix, alternatives = _unmatched_actor_successors(
                 result["faults"], rows)
-            if alternatives:
+            # The original campaign generates actor-drift alternatives only
+            # for legacy unanchored plans. An anchored target keeps its exact
+            # address; its bounded retry is already in the frozen queue.
+            if alternatives and anchor_address is None:
                 successors.append((result["faults"][:prefix], alternatives,
                                    anchor_address))
 

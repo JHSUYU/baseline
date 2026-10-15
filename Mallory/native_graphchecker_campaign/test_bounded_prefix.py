@@ -165,7 +165,7 @@ class BoundedPrefixImportTest(unittest.TestCase):
                 bounded_snapshot_manifest=frozen / "bounded-snapshot-manifest.json")
             successor["predecessor_campaign"] = pins
             state = {**source, "budget": successor["budget"]}
-            receipt, queue, _, _ = core._predecessor_snapshot(
+            receipt, queue, successors, _ = core._predecessor_snapshot(
                 successor, root / "successor", state)
             old_result = core._load(frozen / "trials/r0002/result.json")
             key = core._plan_key(old_result["faults"],
@@ -176,6 +176,13 @@ class BoundedPrefixImportTest(unittest.TestCase):
             self.assertEqual(old_result["anchor_address"],
                              retry[0]["anchor_address"])
             self.assertEqual(1, receipt["imported_unmatched_retry_count"])
+            self.assertEqual([], successors)
+            imported = {**state, "case_id": successor["case_id"],
+                        "queue": [], "seen_plan_keys": [],
+                        "completed_fault_trials": 0, "next_trial_index": 1}
+            core._import_predecessor(successor, root / "successor", imported)
+            self.assertEqual(1, imported["predecessor_import"][
+                "imported_unmatched_retry_count"])
             self.assertNotIn(core._plan_key(core._load(
                 frozen / "trials/r0001/result.json")["faults"],
                 old_result["anchor_address"]),
