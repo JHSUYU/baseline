@@ -150,7 +150,8 @@ def _validate_config(config: dict[str, Any]) -> None:
         raise ValueError("anchor retention policy requires multi-target anchors")
     peer_policy = recording.get("control_plane_peer_policy")
     if peer_policy is not None and (
-            peer_policy != "same_peer_pretarget_quarter" or
+            peer_policy not in ("same_peer_pretarget_quarter",
+                                "same_peer_pretarget_late_repeated_quarter") or
             anchor_count is None or
             retention_policy != "smoothed_postfault_3of4" or
             recording.get("static_may_scope_map") is None):
@@ -1219,6 +1220,38 @@ def _fault_id(fault: dict[str, Any]) -> str:
                       separators=(",", ":"), ensure_ascii=False)
 
 
+def _repeated_near_score(item: dict[str, Any]) -> Fraction:
+    """Bounded repeated-occurrence proximity from an observed RPC door."""
+    ordinal = item["faults"][-1].get("ordinal")
+    distance = item.get("target_order_distance")
+    if (not isinstance(ordinal, int) or isinstance(ordinal, bool) or
+            ordinal <= 0 or not isinstance(distance, int) or
+            isinstance(distance, bool) or distance < 0):
+        return Fraction(-1, 1)
+    return Fraction(min(ordinal, 16), distance + 1)
+
+
+def _peer_slot_anchor_order(state: dict[str, Any], addresses: list[str],
+                            peers: list[dict[str, Any]]) -> list[str]:
+    """Select a target with both retained checks and useful observed RPCs."""
+    attempts = Counter({address: 0 for address in addresses})
+    retained = Counter({address: 0 for address in addresses})
+    for trial in state["trials"]:
+        address = trial.get("anchor_address")
+        if address in attempts and trial.get("strict_injection") is True:
+            attempts[address] += 1
+            if trial.get("post_fault_target_check_observed") is True:
+                retained[address] += 1
+    best = {address: max((_repeated_near_score(item) for item in peers
+                          if item.get("anchor_address") == address),
+                         default=Fraction(-1, 1)) for address in addresses}
+    return sorted(addresses, key=lambda address: (
+        Fraction(retained[address] + 1, attempts[address] + 2) *
+        max(best[address], Fraction(0, 1)),
+        Fraction(retained[address] + 1, attempts[address] + 2),
+        best[address], -addresses.index(address)), reverse=True)
+
+
 def _pick_v1(state: dict[str, Any]) -> dict[str, Any]:
     """Frozen selection rule for checkpoints created before version 2."""
     queue = state["queue"]
@@ -1261,7 +1294,7 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
     version = state.get("scheduler_version", 1)
     if version == 1:
         return _pick_v1(state)
-    if version not in (2, 3, 4, 5, 6, 7, 8, 9, SCHEDULER_VERSION, 11, 12):
+    if version not in (2, 3, 4, 5, 6, 7, 8, 9, SCHEDULER_VERSION, 11, 12, 13):
         raise ValueError(f"unsupported native scheduler version: {version}")
     queue = state["queue"]
     if not queue:
@@ -1282,9 +1315,12 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
         # One exact target activation per trial. The rotating quota applies
         # before the old tier/depth rules and cannot rewrite a queued plan.
         preferred = (_retention_anchor_order(state, addresses)
-                     if version in (11, 12) else
+                     if version in (11, 12, 13) else
                      [addresses[(completed + offset) % len(addresses)]
                       for offset in range(len(addresses))])
+        if version >= 13 and control_peer_slot:
+            preferred = _peer_slot_anchor_order(state, addresses,
+                                                selection_queue)
         for desired in preferred:
             matching = [item for item in selection_queue if
                         item.get("anchor_address") == desired]
@@ -1387,7 +1423,8 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
             "target_phase") != "after_selected_target"]
         if timely:
             candidates = timely
-    if version >= 6 and not outside_slot and not peer_slot:
+    if (version >= 6 and not outside_slot and not peer_slot and
+            not (version >= 13 and control_peer_slot)):
         # Actor affinity is a scheduling hint, not closure membership. Keep
         # cross-actor plans in the queue and give them a recurring slot.
         actor_choice = (completed % 4 in (0, 1))
@@ -1422,6 +1459,20 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
                 fault_id, 0)
             peer_retained = state.get("peer_postfault_retained", {}).get(
                 fault_id, 0)
+            if version >= 13 and control_peer_slot:
+                # This slot is already restricted to exact, same-peer,
+                # pretarget RPC observations. Favor repeated exchanges near
+                # the target over startup-only management calls. Ordinal is
+                # bounded so a frequent but distant heartbeat cannot win by
+                # count alone; distance is an observed scheduling hint, not
+                # a happens-before or static causal edge. Preserve the old
+                # scheduler for every other slot and checkpoint version.
+                return (Fraction(peer_retained + 1, peer_attempts + 2),
+                        _repeated_near_score(item), -attempts(item),
+                        -state["fault_id_successes"].get(fault_id, 0),
+                        item["novelty"], len(item["faults"]),
+                        completed - item["enqueued_at"],
+                        -item.get("attempt", 0), item["key"])
             return (*((Fraction(peer_retained + 1, peer_attempts + 2),)
                       if control_peer_slot else ()),
                     *((item["depth_feedback"]["score"],)
@@ -2740,7 +2791,10 @@ def _finish_status(state: dict[str, Any]) -> None:
 def _new_state(config: dict[str, Any], config_sha: str,
                admitted: dict[str, Any]) -> dict[str, Any]:
     state = {"schema_version": SCHEMA, "case_id": config["case_id"],
-            "scheduler_version": (12 if config["recording"].get(
+            "scheduler_version": (13 if config["recording"].get(
+                "control_plane_peer_policy") ==
+                "same_peer_pretarget_late_repeated_quarter"
+                else 12 if config["recording"].get(
                 "control_plane_peer_policy") == "same_peer_pretarget_quarter"
                 else 11 if config["recording"].get(
                 "anchor_retention_policy") == "smoothed_postfault_3of4"

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import copy
 import json
 import tempfile
 import unittest
@@ -103,6 +104,11 @@ class MultiAnchorCampaignTest(unittest.TestCase):
             peer = core._new_state(config, "config3", admitted)
         self.assertEqual(12, peer["scheduler_version"])
         self.assertEqual({}, peer["peer_postfault_attempts"])
+        config["recording"]["control_plane_peer_policy"] = (
+            "same_peer_pretarget_late_repeated_quarter")
+        with patch.object(core, "_sha", return_value="receipt"):
+            late_peer = core._new_state(config, "config4", admitted)
+        self.assertEqual(13, late_peer["scheduler_version"])
 
     def test_control_peer_quarter_selects_only_observed_same_peer_door(self):
         addresses = [f"target-{index}" for index in range(4)]
@@ -125,6 +131,87 @@ class MultiAnchorCampaignTest(unittest.TestCase):
         self.assertEqual(addresses[2], selected["anchor_address"])
         self.assertEqual("same_peer_before_target", selected["peer_relation"])
         self.assertEqual(3, len(state["queue"]))
+
+    def test_late_repeated_peer_quarter_keeps_cross_actor_rpc(self):
+        """A generic repeated near-target RPC beats a startup-only RPC.
+
+        The legacy v12 checkpoint keeps its original actor-affinity rule.
+        Neither version admits a new door or uses a named Hadoop method.
+        """
+        address = "dn2#epoch0/region/target"
+        state = {"budget": {"max_faults_per_trial": 6}, "queue": [],
+                 "seen_plan_keys": [], "completed_fault_trials": 4,
+                 "scheduler_version": 13, "multi_anchor_addresses": [address],
+                 "fault_id_attempts": {}, "fault_id_successes": {},
+                 "peer_postfault_attempts": {}, "peer_postfault_retained": {},
+                 "trials": []}
+        candidates = [
+            ("startup", 1, 526, True),
+            ("near", 3, 30, False),
+            ("repeated-near", 12, 34, False),
+            ("repeated-far", 15, 211, False),
+        ]
+        for name, ordinal, distance, target_actor in candidates:
+            observed = {**fault(ordinal), "siteId":
+                        f"<{name}: void send()>#u1",
+                        "sourceOccurrenceId": name}
+            core._enqueue(state, [{"fault": observed, "seq": 1000 - distance,
+                                   "tier": "observed_closure",
+                                   "anchor_address": address,
+                                   "target_phase": "before_selected_target",
+                                   "selected_target_actor": target_actor,
+                                   "target_order_distance": distance,
+                                   "peer_relation": "same_peer_before_target"}],
+                          [], 0)
+        legacy = copy.deepcopy(state)
+        legacy["scheduler_version"] = 12
+        self.assertEqual("<startup: void send()>#u1",
+                         core._pick(legacy)["faults"][-1]["siteId"])
+        self.assertEqual("<repeated-near: void send()>#u1",
+                         core._pick(state)["faults"][-1]["siteId"])
+
+    def test_late_repeated_peer_quarter_chooses_observed_useful_anchor(self):
+        addresses = [f"target-{index}" for index in range(4)]
+        state = {"budget": {"max_faults_per_trial": 6}, "queue": [],
+                 "seen_plan_keys": [], "completed_fault_trials": 0,
+                 "scheduler_version": 13, "multi_anchor_addresses": addresses,
+                 "fault_id_attempts": {}, "fault_id_successes": {},
+                 "peer_postfault_attempts": {}, "peer_postfault_retained": {},
+                 "trials": []}
+        for index, (ordinal, distance) in enumerate(
+                ((1, 21), (2, 191), (12, 34), (13, 233))):
+            observed = {**fault(ordinal), "siteId":
+                        f"<rpc{index}: void send()>#u1",
+                        "sourceOccurrenceId": f"rpc{index}"}
+            core._enqueue(state, [{"fault": observed, "seq": 1000 - distance,
+                                   "tier": "observed_closure",
+                                   "anchor_address": addresses[index],
+                                   "target_phase": "before_selected_target",
+                                   "selected_target_actor": index == 0,
+                                   "target_order_distance": distance,
+                                   "peer_relation": "same_peer_before_target"}],
+                          [], 0)
+        legacy = copy.deepcopy(state)
+        legacy["scheduler_version"] = 12
+        self.assertEqual(addresses[0], core._pick(legacy)["anchor_address"])
+        self.assertEqual(addresses[2], core._pick(state)["anchor_address"])
+
+    def test_peer_anchor_ranking_uses_strict_postfault_retention(self):
+        peers = [{"anchor_address": address,
+                  "faults": [{**fault(4), "sourceOccurrenceId": address}],
+                  "target_order_distance": 20}
+                 for address in ("a", "b")]
+        state = {"trials": [
+            {"anchor_address": "a", "strict_injection": True,
+             "post_fault_target_check_observed": False},
+            {"anchor_address": "b", "strict_injection": True,
+             "post_fault_target_check_observed": True},
+            {"anchor_address": "b", "strict_injection": False,
+             "post_fault_target_check_observed": False}]}
+        self.assertEqual(["b", "a"], core._peer_slot_anchor_order(
+            state, ["a", "b"], peers))
+        peers[0]["target_order_distance"] = -1
+        self.assertEqual(-1, core._repeated_near_score(peers[0]))
 
     def test_peer_policy_validation_requires_pinned_may_and_retention(self):
         config = {"case_id": "example", "target_site": "Target#u1",
