@@ -1425,6 +1425,8 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
             [item for item in candidates if
              len(item["faults"]) > 1 and
              item.get("same_site_descendant") is True and
+             isinstance(item.get("depth_feedback"), dict) and
+             item["depth_feedback"].get("strict_post_fault_target") is True and
              item.get("target_phase") == "before_selected_target"]
             if repeat_kind == "descendant" else [])
         if repeat_candidates:

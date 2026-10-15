@@ -67,11 +67,24 @@ class RepeatedRpcOccurrenceTest(unittest.TestCase):
         # A fresh trial may reveal a later occurrence after the applied
         # prefix. Only that observed successor is admitted.
         s["completed_fault_trials"] = 6
-        core._enqueue(s, [late, door("other", 2, 5)], selected["faults"], 0)
+        core._enqueue(s, [late, door("other", 2, 5)], selected["faults"], 0,
+                      depth_feedback={"strict_post_fault_target": True})
         descendant = core._pick(s)
         self.assertEqual([2, 3], [f["ordinal"] for f in
                                   descendant["faults"]])
         self.assertTrue(descendant["same_site_descendant"])
+
+    def test_descendant_priority_requires_postfault_target(self) -> None:
+        s = state(completed=1)
+        prior = door("RPC", 2, 2)["fault"]
+        core._enqueue(s, [door("RPC", 3, 3)],
+                      [prior], 0,
+                      depth_feedback={"strict_post_fault_target": False})
+        core._enqueue(s, [door("other", 1, 4)], [], 0)
+        self.assertTrue(any(row["same_site_descendant"] for row in s["queue"]))
+        picked = core._pick(s)
+        self.assertIsNotNone(picked)
+        self.assertNotEqual("RPC", picked["faults"][-1]["siteId"])
 
     def test_different_actor_and_nonincreasing_occurrence_are_not_descendants(self):
         s = state()
