@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import tempfile
@@ -78,6 +79,35 @@ class GuardedHealthyTest(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "fresh and empty"):
                 guarded_healthy.run_healthy(self.args)
             popen.assert_not_called()
+
+    def _imported_start(self) -> str:
+        receipt = {"source_kind": "bounded_prefix_snapshot_v1",
+                   "source_completed_fault_trials": 16}
+        path = self.output / "predecessor-import.json"
+        path.write_text(json.dumps(receipt))
+        (self.output / "checkpoint.json").write_text(json.dumps({
+            "case_id": "SUCCESSOR", "healthy": None, "active": None,
+            "completed_fault_trials": 0, "trials": [], "terminal": False,
+            "predecessor_import": receipt, "imported_completed_fault_trials": 16,
+            "next_trial_index": 17}))
+        return hashlib.sha256(path.read_bytes()).hexdigest()
+
+    def test_accepts_only_exact_imported_start_for_healthy(self) -> None:
+        digest = self._imported_start()
+        self.assertEqual(digest, guarded_healthy._validate_imported_healthy_start(
+            self.output, {"case_id": "SUCCESSOR", "predecessor_campaign": {}}, digest))
+
+    def test_rejects_imported_start_with_local_trial_or_changed_receipt(self) -> None:
+        digest = self._imported_start()
+        (self.output / "trials/r0000").mkdir(parents=True)
+        with self.assertRaisesRegex(ValueError, "local trial"):
+            guarded_healthy._validate_imported_healthy_start(
+                self.output, {"case_id": "SUCCESSOR", "predecessor_campaign": {}}, digest)
+        (self.output / "trials/r0000").rmdir()
+        (self.output / "predecessor-import.json").write_text("{}")
+        with self.assertRaisesRegex(ValueError, "SHA-256 changed"):
+            guarded_healthy._validate_imported_healthy_start(
+                self.output, {"case_id": "SUCCESSOR", "predecessor_campaign": {}}, digest)
 
 
 if __name__ == "__main__":

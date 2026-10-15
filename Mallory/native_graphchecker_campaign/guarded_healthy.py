@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import subprocess
 import sys
 import time
@@ -21,6 +22,44 @@ from .guarded_one_fault import (
     _breach, _checkpoint, _require_local, _require_pg0_read_only, _sample,
     _sha, _stop_group,
 )
+
+
+def _validate_imported_healthy_start(output: Path, config: dict,
+                                     expected_receipt_sha256: str | None) -> str:
+    """Permit only a verified, zero-local-trial bounded import as healthy input."""
+    if not isinstance(expected_receipt_sha256, str) or not re.fullmatch(
+            r"[0-9a-f]{64}", expected_receipt_sha256):
+        raise ValueError("imported healthy requires a pinned import receipt SHA-256")
+    if config.get("predecessor_campaign") is None:
+        raise ValueError("imported healthy requires a pinned predecessor")
+    checkpoint_path = output / "checkpoint.json"
+    receipt_path = output / "predecessor-import.json"
+    if any(path.is_symlink() or not path.is_file()
+           for path in (checkpoint_path, receipt_path)):
+        raise ValueError("imported healthy requires regular checkpoint and receipt")
+    if _sha(receipt_path) != expected_receipt_sha256:
+        raise ValueError("imported healthy receipt SHA-256 changed")
+    checkpoint = campaign._load(checkpoint_path)
+    receipt = campaign._load(receipt_path)
+    imported = receipt.get("source_completed_fault_trials")
+    if (checkpoint.get("case_id") != config.get("case_id") or
+            checkpoint.get("healthy") is not None or
+            checkpoint.get("active") is not None or
+            checkpoint.get("completed_fault_trials") != 0 or
+            checkpoint.get("trials") != [] or
+            checkpoint.get("terminal") is not False or
+            checkpoint.get("predecessor_import") != receipt or
+            receipt.get("source_kind") != "bounded_prefix_snapshot_v1" or
+            not isinstance(imported, int) or isinstance(imported, bool) or
+            imported <= 0 or
+            checkpoint.get("imported_completed_fault_trials") != imported or
+            not isinstance(checkpoint.get("next_trial_index"), int) or
+            checkpoint["next_trial_index"] < imported + 1):
+        raise ValueError("imported healthy checkpoint differs from pinned predecessor receipt")
+    trials = output / "trials"
+    if trials.exists() and (trials.is_symlink() or any(trials.iterdir())):
+        raise ValueError("imported healthy already has local trial files")
+    return expected_receipt_sha256
 
 
 def run_healthy(args: argparse.Namespace) -> dict:
@@ -42,7 +81,13 @@ def run_healthy(args: argparse.Namespace) -> dict:
                        "healthy work root")
     if output == raw_root or output.is_relative_to(raw_root) or raw_root.is_relative_to(output):
         raise ValueError("healthy output and raw roots must be separate")
-    if (output / "checkpoint.json").exists() or any(output.iterdir()):
+    import_receipt_sha = None
+    if getattr(args, "allow_imported_predecessor", False):
+        import_receipt_sha = _validate_imported_healthy_start(
+            output, config, getattr(args, "predecessor_import_sha256", None))
+        if campaign._load(output / "checkpoint.json").get("config_sha256") != args.config_sha256:
+            raise ValueError("imported healthy checkpoint config SHA-256 changed")
+    elif (output / "checkpoint.json").exists() or any(output.iterdir()):
         raise ValueError("healthy output must be fresh and empty")
     for name in ("max_raw_bytes", "max_output_bytes", "max_wall_seconds"):
         if getattr(args, name) <= 0:
@@ -102,6 +147,8 @@ def run_healthy(args: argparse.Namespace) -> dict:
                "sample": final, "elapsed_seconds": round(time.monotonic() - started, 3),
                "checked_utc": datetime.now(timezone.utc).isoformat(),
                "log": str(log_path)}
+    if import_receipt_sha is not None:
+        receipt["predecessor_import_sha256"] = import_receipt_sha
     campaign._atomic(args.receipt, receipt)
     if not accepted:
         raise RuntimeError(f"native healthy gate failed; see {args.receipt}")
@@ -119,6 +166,8 @@ def main() -> None:
                  "min-memory-available-bytes", "max-wall-seconds"):
         parser.add_argument("--" + name, required=True, type=int)
     parser.add_argument("--poll-seconds", type=float, default=1.0)
+    parser.add_argument("--allow-imported-predecessor", action="store_true")
+    parser.add_argument("--predecessor-import-sha256")
     print(json.dumps(run_healthy(parser.parse_args()), sort_keys=True))
 
 
