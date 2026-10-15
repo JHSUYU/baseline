@@ -81,7 +81,7 @@ def _campaign_java_running(output: Path, raw_root: Path,
 
 
 def archive(output: Path, raw_root: Path, archive_root: Path,
-            index: int) -> dict:
+            index: int, *, allow_unmatched: bool = False) -> dict:
     if index < 0:
         raise ValueError("trial index must be nonnegative")
     result_dir = output / "trials" / f"r{index:04d}"
@@ -95,10 +95,17 @@ def archive(output: Path, raw_root: Path, archive_root: Path,
                    if entry.get("name") == f"r{index:04d}"]
         if (len(matches) != 1 or
                 matches[0].get("result") != f"trials/r{index:04d}/result.json" or
-                matches[0].get("strict_injection") is not True or
-                result.get("strict_injection") is not True or
                 result.get("case_id") != checkpoint.get("case_id")):
-            raise ValueError("only an exact strict accepted trial may be archived")
+            raise ValueError("only an exact accepted trial may be archived")
+        strict = (matches[0].get("strict_injection") is True and
+                  result.get("strict_injection") is True)
+        unmatched = (allow_unmatched and
+                     matches[0].get("strict_injection") is False and
+                     result.get("strict_injection") is False and
+                     matches[0].get("status") == "unmatched" and
+                     result.get("status") == "unmatched")
+        if not (strict or unmatched):
+            raise ValueError("only an exact strict accepted or opted-in unmatched trial may be archived")
     elif (result.get("status") != "healthy_seed" or
           result.get("case_id") != checkpoint.get("case_id") or
           checkpoint.get("healthy", {}).get("result") != "trials/r0000/result.json"):
@@ -177,9 +184,11 @@ def main() -> None:
     parser.add_argument("--raw-root", type=Path, required=True)
     parser.add_argument("--archive-root", type=Path, required=True)
     parser.add_argument("--index", type=int, required=True)
+    parser.add_argument("--allow-unmatched", action="store_true")
     args = parser.parse_args()
     print(json.dumps(archive(args.output, args.raw_root,
-                             args.archive_root, args.index), sort_keys=True))
+                             args.archive_root, args.index,
+                             allow_unmatched=args.allow_unmatched), sort_keys=True))
 
 
 if __name__ == "__main__":

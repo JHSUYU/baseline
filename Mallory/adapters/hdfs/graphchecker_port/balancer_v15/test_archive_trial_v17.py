@@ -42,8 +42,27 @@ class ImportedArchiveTest(unittest.TestCase):
     def test_rejects_missing_exact_trial_record(self):
         self.state["trials"][0]["name"] = "r0001"
         self.checkpoint.write_text(json.dumps(self.state))
-        with self.assertRaisesRegex(ValueError, "exact strict accepted"):
+        with self.assertRaisesRegex(ValueError, "exact accepted"):
             archive(self.output, self.raw, self.archives, 17)
+
+    def test_unmatched_needs_explicit_opt_in_and_exact_record(self):
+        result = json.loads((self.trial / "result.json").read_text())
+        result.update(status="unmatched", strict_injection=False)
+        (self.trial / "result.json").write_text(json.dumps(result))
+        self.state["trials"][0].update(status="unmatched", strict_injection=False)
+        self.checkpoint.write_text(json.dumps(self.state))
+        with self.assertRaisesRegex(ValueError, "opted-in unmatched"):
+            archive(self.output, self.raw, self.archives, 17)
+        self.state["trials"][0]["status"] = "checked"
+        self.checkpoint.write_text(json.dumps(self.state))
+        with self.assertRaisesRegex(ValueError, "opted-in unmatched"):
+            archive(self.output, self.raw, self.archives, 17,
+                    allow_unmatched=True)
+        self.state["trials"][0]["status"] = "unmatched"
+        self.checkpoint.write_text(json.dumps(self.state))
+        receipt = archive(self.output, self.raw, self.archives, 17,
+                          allow_unmatched=True)
+        self.assertTrue(receipt["verified_against_source"])
 
     def test_rejects_active_checkpoint(self):
         self.state["active"] = {"name": "r0018"}
