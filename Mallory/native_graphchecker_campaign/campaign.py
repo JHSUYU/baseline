@@ -164,6 +164,12 @@ def _validate_config(config: dict[str, Any]) -> None:
             recording.get("static_may_scope_map") is None):
         raise ValueError("repeated RPC occurrence policy requires multi-target "
                          "anchors and a pinned static MAY map")
+    if "repeated_target_temporal_frontier" in recording and (
+            recording["repeated_target_temporal_frontier"] is not True or
+            recording.get("admission_mode") != "region_state_no_schedule" or
+            not isinstance(config.get("runner"), dict) or
+            config["runner"].get("mode") != "region_state"):
+        raise ValueError("repeated target temporal frontier requires task-free REGION_STATE")
     may_path = recording.get("static_may_scope_map")
     may_sha = recording.get("static_may_scope_map_sha256")
     if (may_path is None) != (may_sha is None) or (may_path is not None and
@@ -686,6 +692,8 @@ def _admit(config: dict[str, Any], root: Path) -> dict[str, Any]:
             "analysis_engine_sha256"]
     if rec.get("admission_mode") == "region_state_no_schedule":
         recording_fingerprint["admission_mode"] = "region_state_no_schedule"
+    if rec.get("repeated_target_temporal_frontier") is True:
+        recording_fingerprint["repeated_target_temporal_frontier"] = True
     if rec.get("precomputed_schedule"):
         receipt = Path(rec["precomputed_schedule"]).resolve(strict=True)
         recording_fingerprint["precomputed_schedule"] = str(receipt)
@@ -1725,7 +1733,8 @@ def _depth_feedback(active: dict[str, Any], result: dict[str, Any],
     graph = novelty > 0
     closure = result.get("fault_in_target_closure") is True
     temporal = result.get("target_temporal_admitted") is True
-    phase = active.get("target_phase") == "before_selected_target"
+    phase = active.get("target_phase") in (
+        "before_selected_target", "before_later_selected_target")
     peer = active.get("peer_relation") == "same_peer_before_target"
     score = (2 * int(graph) + 2 * int(closure) + 2 * int(temporal) +
              int(phase) + int(peer)) if retained else 0
@@ -1739,9 +1748,17 @@ def _depth_feedback(active: dict[str, Any], result: dict[str, Any],
 
 def _region_doors(rows: list[dict[str, Any]], summary: dict[str, Any],
                   after_fault: dict[str, Any] | None = None,
-                  static_may_rpc_sites: frozenset[str] = frozenset()
+                  static_may_rpc_sites: frozenset[str] = frozenset(),
+                  *, repeated_target_temporal_frontier: bool = False,
+                  same_peer_incarnation_door_check_pairs: frozenset[
+                      tuple[tuple[Any, ...], int]] = frozenset()
                   ) -> list[dict[str, Any]]:
-    """Mutate doors admitted by the original target demand closure."""
+    """Mutate doors admitted by the original target demand closure.
+
+    Cross-actor peer pairs must be established independently from exact
+    source/receiver incarnation evidence. A hook-clock relation alone cannot
+    prove that a CLIENT door and a target process use the same RPC peer.
+    """
     if summary.get("closureMembershipAuthority") != (
             "original_runtime_selected_region_finalizer"):
         raise ValueError("REGION_STATE summary lacks original closure authority")
@@ -1761,12 +1778,32 @@ def _region_doors(rows: list[dict[str, Any]], summary: dict[str, Any],
                               row.get("node") == selected.get("physicalActor") and
                               row.get("actorEpochOrdinal") == selected.get(
                                   "actorEpochOrdinal")]
-    # A repeated check may disappear after a fault, even if the original
-    # fault-free run observed it later. Use the first selected check as the
-    # pre-target boundary so a door between checks is not promoted as a
-    # prospective fault before the target.
+    # A repeated check may disappear after a fault, even if the fault-free
+    # run observed it later. The default boundary remains the first actual
+    # selected check. The opt-in frontier below requires another check in
+    # this run and separately verified order and, across actors, peer proof.
     first_selected_check = (min(selected_check_indices)
                             if selected_check_indices else None)
+    selected_actor = (selected.get("physicalActor"),
+                      selected.get("actorEpochOrdinal"))
+    # _rows verifies this when reading native receipts. Recheck here because
+    # callers may supply an in-memory receipt. Local seq orders an actor;
+    # only a gapless JVM-wide hook clock can order different actors.
+    selected_actor_seqs = [row.get("seq") for row in rows if
+        (row.get("node"), row.get("actorEpochOrdinal")) == selected_actor]
+    verified_selected_actor_order = (
+        all(isinstance(seq, int) and not isinstance(seq, bool) and seq > 0
+            for seq in selected_actor_seqs) and
+        all(left < right for left, right in zip(
+            selected_actor_seqs, selected_actor_seqs[1:])))
+    gapless_global_clock = all(row.get("seq") == index + 1
+                               for index, row in enumerate(rows))
+    repeated_frontier = (
+        repeated_target_temporal_frontier and
+        isinstance(selected.get("selectedOccurrenceAddress"), str) and
+        bool(selected["selectedOccurrenceAddress"]) and
+        len(selected_check_indices) >= 2 and
+        verified_selected_actor_order)
     actor_checks: dict[tuple[str, int], int] = {}
     for row in rows:
         if (row["kind"] != "TARGET_CHECK" or
@@ -1790,7 +1827,7 @@ def _region_doors(rows: list[dict[str, Any]], summary: dict[str, Any],
                 and row["seq"] <= after_fault["seq"]):
             continue
         try:
-            _fault_identity(row, applied=True)
+            exact_identity = _fault_identity(row, applied=True)
         except ValueError:
             continue
         fault = {field: row[field] for field in SELECTOR_FIELDS}
@@ -1798,24 +1835,55 @@ def _region_doors(rows: list[dict[str, Any]], summary: dict[str, Any],
         actor = (row["node"], row["actorEpochOrdinal"])
         direct = row["occurrenceId"] in closure_ids
         before_actor_check = row["seq"] < actor_checks.get(actor, -1)
+        same_actor = actor == selected_actor
+        order_basis = ("same_actor_seq" if same_actor else
+                       "gapless_hook_clock" if gapless_global_clock else None)
+        first_later_selected_check = (next((check_index for check_index in
+            selected_check_indices if check_index > index and
+            rows[check_index]["seq"] > row["seq"]), None)
+            if repeated_frontier and order_basis is not None and
+            first_selected_check is not None and index > first_selected_check
+            else None)
+        later_selected_check = (first_later_selected_check if same_actor else
+            next((check_index for check_index in selected_check_indices
+                  if check_index > index and
+                  rows[check_index]["seq"] > row["seq"] and
+                  (exact_identity, rows[check_index]["seq"]) in
+                  same_peer_incarnation_door_check_pairs), None)
+            if first_later_selected_check is not None else None)
+        frontier_admitted = later_selected_check is not None
+        observed_later_check = (later_selected_check if frontier_admitted else
+                                first_later_selected_check)
         target_phase = ("unknown" if first_selected_check is None else
                         "before_selected_target" if index < first_selected_check else
+                        "before_later_selected_target" if
+                        frontier_admitted else
                         "after_selected_target")
-        selected_actor = (selected.get("physicalActor"),
-                          selected.get("actorEpochOrdinal"))
         actor_affinity = (actor == selected_actor if
                           selected_actor[0] is not None and
                           selected_actor[1] is not None else None)
-        target_distance = (abs(first_selected_check - index) if
+        target_distance = (later_selected_check - index if
+                           frontier_admitted else
+                           abs(first_selected_check - index) if
                            first_selected_check is not None else None)
         found.append({"fault": fault, "seq": row["seq"],
                       "target_phase": target_phase,
+                      **({"later_selected_target_order": {
+                          "checkOccurrenceId": rows[observed_later_check][
+                              "occurrenceId"],
+                          "checkSeq": rows[observed_later_check]["seq"],
+                          "orderBasis": order_basis,
+                          "sameActor": same_actor,
+                          "peerIncarnationVerified": (not same_actor and
+                                                       frontier_admitted),
+                      }} if observed_later_check is not None else {}),
                       "selected_target_actor": actor_affinity,
                       "target_order_distance": target_distance,
                       "tier": "observed_closure" if direct else
                               "static_producer_frontier" if (
                                   row["siteId"] in static_may_rpc_sites and
-                                  target_phase == "before_selected_target") else
+                                  target_phase in ("before_selected_target",
+                                                   "before_later_selected_target")) else
                               "pre_target_actor" if before_actor_check else
                               "outside_closure"})
     return _prefer_unique_message_keys(found, rows)
@@ -2352,7 +2420,9 @@ def _complete_multi_healthy(config: dict[str, Any], trial: Path,
     for index, row in enumerate(anchors):
         address = row["occurrenceAddress"]
         selected = _region_doors(events, row["summary"], None,
-                                 static_rpc_sites)
+                                 static_rpc_sites,
+                                 repeated_target_temporal_frontier=recording.get(
+                                     "repeated_target_temporal_frontier") is True)
         selected = [{**door, "anchor_address": address} for door in selected
                     if door["tier"] == "observed_closure"]
         if recording.get("control_plane_peer_policy") is not None:
@@ -2511,7 +2581,11 @@ def _run_region_trial(config: dict[str, Any], admitted: dict[str, Any],
     result["eligible_doors"] = ([] if summary.get("status") ==
                                 "target_throw_unplanned" else
                                 _region_doors(events, summary, last,
-                                              static_rpc_sites))
+                                              static_rpc_sites,
+                                              repeated_target_temporal_frontier=
+                                              recording.get(
+                                                  "repeated_target_temporal_frontier")
+                                              is True))
     if anchor_address is not None:
         previous = faults[-1] if scheduler_version >= 14 and faults else None
         result["eligible_doors"] = _anchored_repeated_rpc_doors(

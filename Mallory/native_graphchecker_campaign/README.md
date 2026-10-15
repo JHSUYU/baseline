@@ -220,6 +220,17 @@ graph's observed closure. A faulted JUnit replays just that address and one
 graph; if it disappears, the plan retries without substituting an earlier
 instance. The exact raw target throw oracle runs before graph replay. Existing
 configs and checkpoints retain their original plan keys and behavior.
+For a new task-free `REGION_STATE` config, setting
+`recording.repeated_target_temporal_frontier` to `true` lets a door between
+two **observed** exact checks of one selected activation retain a prospective
+target phase. The first check alone never proves a later one will occur. A
+same-actor door needs the actor's monotone native receipt clock. A door on
+another actor additionally needs a gapless JVM-wide hook clock and an exact
+verified same-peer-incarnation relation keyed by all six fault-door identity
+fields **and** the specific later check's native receipt sequence. Unknown or
+different peer relations keep the old `after_selected_target`
+phase. This phase only changes queue priority; it cannot add a GraphChecker
+closure member or satisfy the raw target exception oracle.
 In `runner.jvm_args`, `{trial_workdir}` expands to that trial's fresh work
 directory, for example with `-Djava.io.tmpdir={trial_workdir}` and
 `-Dbuild.test.dir={trial_workdir}` for JUnit cluster data.
