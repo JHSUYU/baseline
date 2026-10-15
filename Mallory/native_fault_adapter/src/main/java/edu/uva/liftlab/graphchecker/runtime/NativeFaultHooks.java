@@ -38,6 +38,11 @@ public final class NativeFaultHooks {
 
     /** Inserted immediately before a statically selected RPC or file I/O call. */
     public static void beforeDoor(String siteId, String exceptionClass) {
+        beforeDoor(siteId, exceptionClass, null);
+    }
+
+    /** Receives the woven method's owner for an exact recorder call join. */
+    public static void beforeDoor(String siteId, String exceptionClass, Object owner) {
         synchronized (LOCK) {
             initialize();
             if (!enabled) return;
@@ -67,6 +72,11 @@ public final class NativeFaultHooks {
                 fields.addProperty("messageParentId", parentKey);
             }
             emit("FAULT_DOOR", fields);
+            if (Boolean.getBoolean("mallory.gc.nativeFaultDoorContext")) {
+                CausynthTraceRecorder.recordNativeFaultDoor(siteId,
+                        source.key(), occurrence.id(), ordinal,
+                        exceptionClass, owner);
+            }
             if (nextFault >= PLAN.size()) return;
             Fault fault = PLAN.get(nextFault);
             if (!fault.matches(siteId, source, ordinal, exceptionClass,

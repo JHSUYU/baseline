@@ -17,6 +17,8 @@ import soot.VoidType;
 import soot.jimple.GotoStmt;
 import soot.jimple.Jimple;
 import soot.jimple.Stmt;
+import soot.jimple.StaticInvokeExpr;
+import soot.jimple.NullConstant;
 import soot.options.Options;
 
 import java.lang.reflect.InvocationTargetException;
@@ -34,6 +36,99 @@ import static org.junit.Assert.fail;
 
 /** Checks the actual fault-site admission path in recording and replay modes. */
 public class MalloryNativeFaultWeaveModeTest {
+    @Test public void nativeDoorWeaveCarriesExactInstanceOwnerAndNullForStatic()
+            throws Exception {
+        soot.G.reset();
+        Options.v().set_allow_phantom_refs(true);
+        SootClass hooks = new SootClass(
+                "edu.uva.liftlab.graphchecker.runtime.NativeFaultHooks", Modifier.PUBLIC);
+        Scene.v().addClass(hooks);
+        hooks.addMethod(new SootMethod("beforeDoor", Arrays.asList(
+                RefType.v("java.lang.String"), RefType.v("java.lang.String"),
+                RefType.v("java.lang.Object")), VoidType.v(),
+                Modifier.PUBLIC | Modifier.STATIC));
+        SootClass owner = new SootClass("test.NativeDoorOwner", Modifier.PUBLIC);
+        Scene.v().addClass(owner);
+        SootMethod callee = new SootMethod("io", Collections.<soot.Type>emptyList(),
+                VoidType.v(), Modifier.PUBLIC | Modifier.STATIC);
+        owner.addMethod(callee);
+        JsonObject manifest = new JsonObject();
+        com.google.gson.JsonArray doors = new com.google.gson.JsonArray();
+        manifest.add("doors", doors);
+        for (boolean staticMethod : new boolean[] {false, true}) {
+            SootMethod method = new SootMethod(staticMethod ? "staticRun" : "instanceRun",
+                    Collections.<soot.Type>emptyList(), VoidType.v(),
+                    Modifier.PUBLIC | (staticMethod ? Modifier.STATIC : 0));
+            owner.addMethod(method);
+            Body body = Jimple.v().newBody(method);
+            method.setActiveBody(body);
+            Local receiver = null;
+            if (!staticMethod) {
+                receiver = Jimple.v().newLocal("self", RefType.v(owner.getName()));
+                body.getLocals().add(receiver);
+                body.getUnits().add(Jimple.v().newIdentityStmt(receiver,
+                        Jimple.v().newThisRef(RefType.v(owner.getName()))));
+            }
+            Unit call = Jimple.v().newInvokeStmt(Jimple.v().newStaticInvokeExpr(
+                    callee.makeRef()));
+            body.getUnits().add(call);
+            body.getUnits().add(Jimple.v().newReturnVoidStmt());
+            JsonObject row = new JsonObject();
+            row.addProperty("clazz", owner.getName());
+            row.addProperty("method", method.getName());
+            row.addProperty("descriptor", "()V");
+            row.addProperty("unitIndex", staticMethod ? 0 : 1);
+            row.addProperty("line", 1);
+            row.addProperty("siteId", method.getSignature() + "#io");
+            row.addProperty("kind", "RPC");
+            row.addProperty("callee", callee.getSignature());
+            row.addProperty("exceptionClass", "java.io.IOException");
+            doors.add(row);
+        }
+        Path path = Files.createTempFile("native-owner-weave-", ".json");
+        Files.write(path, manifest.toString().getBytes(StandardCharsets.UTF_8));
+        String prior = System.getProperty(MalloryNativeFaultWeave.PROPERTY);
+        try {
+            System.setProperty(MalloryNativeFaultWeave.PROPERTY, path.toString());
+            MalloryNativeFaultWeave weave = new MalloryNativeFaultWeave();
+            java.lang.reflect.Field sitesField = MalloryNativeFaultWeave.class
+                    .getDeclaredField("sites");
+            sitesField.setAccessible(true);
+            java.util.List<?> sites = (java.util.List<?>) sitesField.get(weave);
+            for (Object site : sites) {
+                Class<?> type = site.getClass();
+                java.lang.reflect.Field bodyField = type.getDeclaredField("body");
+                java.lang.reflect.Field unitField = type.getDeclaredField("unit");
+                bodyField.setAccessible(true);
+                unitField.setAccessible(true);
+                java.lang.reflect.Field methodField = type.getDeclaredField("method");
+                methodField.setAccessible(true);
+                SootMethod method = owner.getMethodByName((String) methodField.get(site));
+                Body body = method.getActiveBody();
+                bodyField.set(site, body);
+                unitField.set(site, body.getUnits().getPredOf(body.getUnits().getLast()));
+            }
+            Method insert = MalloryNativeFaultWeave.class.getDeclaredMethod("insertHooks");
+            insert.setAccessible(true);
+            insert.invoke(weave);
+            for (boolean staticMethod : new boolean[] {false, true}) {
+                Body body = owner.getMethodByName(staticMethod ? "staticRun" : "instanceRun")
+                        .getActiveBody();
+                Stmt hook = (Stmt) body.getUnits().getPredOf(
+                        body.getUnits().getPredOf(body.getUnits().getLast()));
+                StaticInvokeExpr expr = (StaticInvokeExpr) hook.getInvokeExpr();
+                assertEquals(3, expr.getArgCount());
+                assertEquals("beforeDoor", expr.getMethod().getName());
+                assertEquals(staticMethod ? NullConstant.v() : body.getThisLocal(),
+                        expr.getArg(2));
+                body.validate();
+            }
+        } finally {
+            restore(MalloryNativeFaultWeave.PROPERTY, prior);
+            Files.deleteIfExists(path);
+        }
+    }
+
     @Test public void calledExceptionHookCatchesOneInvocationAndRethrows()
             throws Exception {
         soot.G.reset();

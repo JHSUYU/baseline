@@ -22,10 +22,15 @@ public final class NativeFaultDoorContextTest {
         long callId = CausynthTraceRecorder.enterMethod(
                 "<test.Native: void exercise()>", owner, "");
         try {
-            CausynthTraceRecorder.recordNativeFaultDoor("rpc#u2", "client#epoch3",
+            CausynthTraceRecorder.recordNativeFaultDoor(
+                    "<test.Native: void exercise()>#u2", "client#epoch3",
                     "occurrence", 4L, "java.io.IOException", owner);
-            CausynthTraceRecorder.recordNativeFaultDoor("rpc#u2", "client#epoch3",
+            CausynthTraceRecorder.recordNativeFaultDoor(
+                    "<test.Native: void exercise()>#u2", "client#epoch3",
                     "occurrence", 5L, "java.io.IOException", new Object());
+            CausynthTraceRecorder.recordNativeFaultDoor(
+                    "<test.Native: void other()>#u2", "client#epoch3",
+                    "occurrence", 6L, "java.io.IOException", owner);
         } finally {
             CausynthTraceRecorder.exitActiveMethod(null, "", false);
             CausynthTraceRecorder.stopRecording();
@@ -44,10 +49,11 @@ public final class NativeFaultDoorContextTest {
                     && row.get("callId").getAsLong() == callId) enter = row;
             if ("NATIVE_FAULT_DOOR".equals(event)) doors.add(row);
         }
-        assertEquals(2, doors.size());
+        assertEquals(3, doors.size());
         assertEquals("client", doors.get(0).get("node").getAsString());
         assertEquals(3, doors.get(0).get("actorEpochOrdinal").getAsInt());
-        assertEquals("rpc#u2", doors.get(0).get("siteId").getAsString());
+        assertEquals("<test.Native: void exercise()>#u2",
+                doors.get(0).get("siteId").getAsString());
         assertEquals("occurrence", doors.get(0).get("occurrenceId").getAsString());
         assertEquals(4L, doors.get(0).get("ordinal").getAsLong());
         assertEquals("java.io.IOException",
@@ -61,5 +67,7 @@ public final class NativeFaultDoorContextTest {
         assertEquals("unproven", doors.get(1).get("identityStatus").getAsString());
         assertEquals(0L, doors.get(1).get("callId").getAsLong());
         assertEquals(0, doors.get(1).get("receiverObjectId").getAsInt());
+        assertEquals("unproven", doors.get(2).get("identityStatus").getAsString());
+        assertEquals(0L, doors.get(2).get("callId").getAsLong());
     }
 }

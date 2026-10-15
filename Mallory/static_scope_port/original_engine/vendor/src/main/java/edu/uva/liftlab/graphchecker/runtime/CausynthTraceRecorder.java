@@ -1214,7 +1214,9 @@ public final class CausynthTraceRecorder {
         }
         if (epoch < 0) throw new IllegalArgumentException("negative native fault-door epoch");
         ActiveCall call = ACTIVE_CALLS.get().peek();
-        boolean ownerMatches = owner != null && call != null && call.receiver == owner;
+        int unitMarker = siteId.lastIndexOf("#u");
+        boolean ownerMatches = owner != null && call != null && call.receiver == owner
+                && unitMarker > 0 && call.method.equals(siteId.substring(0, unitMarker));
         long callId = ownerMatches ? call.callId : 0L;
         int receiverObjectId = ownerMatches ? identity(owner) : 0;
         RuntimeTraceContext.View context = RuntimeTraceContext.current();

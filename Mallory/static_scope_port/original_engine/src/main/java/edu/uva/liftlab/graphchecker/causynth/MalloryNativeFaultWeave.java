@@ -16,10 +16,12 @@ import soot.SootMethodRef;
 import soot.Trap;
 import soot.Type;
 import soot.Unit;
+import soot.Value;
 import soot.VoidType;
 import soot.jimple.Jimple;
 import soot.jimple.IfStmt;
 import soot.jimple.GotoStmt;
+import soot.jimple.NullConstant;
 import soot.jimple.Stmt;
 import soot.jimple.StringConstant;
 import soot.jimple.ThrowStmt;
@@ -162,7 +164,8 @@ public final class MalloryNativeFaultWeave {
         SootClass helper = Scene.v().getSootClass(HOOK);
         SootMethodRef door = Scene.v().makeMethodRef(helper, "beforeDoor",
                 java.util.Arrays.<Type>asList(RefType.v("java.lang.String"),
-                        RefType.v("java.lang.String")), VoidType.v(), true);
+                        RefType.v("java.lang.String"),
+                        RefType.v("java.lang.Object")), VoidType.v(), true);
         SootMethodRef target = Scene.v().makeMethodRef(helper, "targetThrow",
                 java.util.Arrays.<Type>asList(RefType.v("java.lang.String"),
                         RefType.v("java.lang.String"),
@@ -183,6 +186,8 @@ public final class MalloryNativeFaultWeave {
                 modified.put(body, Boolean.TRUE);
                 continue;
             }
+            Value doorOwner = body.getMethod().isStatic()
+                    ? NullConstant.v() : body.getThisLocal();
             Unit hook = "THROW".equals(site.kind)
                     ? Jimple.v().newInvokeStmt(Jimple.v().newStaticInvokeExpr(
                             target, StringConstant.v(site.siteId),
@@ -193,7 +198,7 @@ public final class MalloryNativeFaultWeave {
                             targetCheck, StringConstant.v(site.siteId)))
                     : Jimple.v().newInvokeStmt(Jimple.v().newStaticInvokeExpr(
                             door, StringConstant.v(site.siteId),
-                            StringConstant.v(site.exceptionClass)));
+                            StringConstant.v(site.exceptionClass), doorOwner));
             body.getUnits().insertBefore(hook, at);
             // An injected IOException should enter the same application
             // handler that encloses the selected I/O call.
