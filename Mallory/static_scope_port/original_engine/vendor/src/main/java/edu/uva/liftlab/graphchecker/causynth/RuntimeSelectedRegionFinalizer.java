@@ -89,6 +89,10 @@ public final class RuntimeSelectedRegionFinalizer {
      * ({@code RuntimeRegionPlanner#bindObservedCommunicationCaptures}).
      */
     private static final String WIRE_PRODUCER_ADMISSION = "WIRE_PRODUCER_V1";
+    /** A uniquely paired value port can cross later frames of one exchange
+     *  session without claiming that either frame carried that value. */
+    private static final String WIRE_SESSION_PRODUCER_ADMISSION =
+            "WIRE_SESSION_PRODUCER_V1";
     /**
      * Activation member, in memory only: per field the recording saw it read
      * or write, the objects it did so on ({@code
@@ -988,10 +992,13 @@ public final class RuntimeSelectedRegionFinalizer {
     private static final class Attach {
         private final String port;
         private final String leg;
+        private final String sessionInfluenceLeg;
 
-        private Attach(String port, String leg) {
+        private Attach(String port, String leg,
+                       String sessionInfluenceLeg) {
             this.port = port;
             this.leg = leg;
+            this.sessionInfluenceLeg = sessionInfluenceLeg;
         }
     }
 
@@ -1592,7 +1599,8 @@ public final class RuntimeSelectedRegionFinalizer {
                 String leg = text(capture.get("exchangeLeg"));
                 if ("IN".equals(text(capture.get("side")))
                         && !leg.isEmpty()) {
-                    held.add(new Attach(text(capture.get("portId")), leg));
+                    held.add(new Attach(text(capture.get("portId")), leg,
+                            text(capture.get("sessionInfluenceLeg"))));
                 }
             }
             return held;
@@ -1606,19 +1614,35 @@ public final class RuntimeSelectedRegionFinalizer {
         private boolean crossMessage(String occurrence, Attach attach,
                                      Consumer<Demand> work)
                 throws IOException {
+            if (crossMessageOnLeg(occurrence, attach.port, attach.leg,
+                    WIRE_PRODUCER_ADMISSION, work)) return true;
+            return !attach.sessionInfluenceLeg.isEmpty()
+                    && crossMessageOnLeg(occurrence, attach.port,
+                            attach.sessionInfluenceLeg,
+                            WIRE_SESSION_PRODUCER_ADMISSION, work);
+        }
+
+        private boolean crossMessageOnLeg(String occurrence, String port,
+                String leg, String admission, Consumer<Demand> work)
+                throws IOException {
             boolean paired = false;
             for (String producer : exporters.getOrDefault(wireKey(
-                    attach.port, attach.leg),
+                    port, leg),
                     Collections.<String>emptyList())) {
-                if (producer.equals(occurrence)
-                        || excluded.contains(producer)) {
+                // A different observed target occurrence is not another
+                // target root for this question, but it can still be a real
+                // predecessor when its declared OUT port was captured on
+                // this exact, or verified session-linked, wire leg.  The
+                // exclusion applies to independent root/control admission;
+                // applying it here would erase a measured value producer.
+                if (producer.equals(occurrence)) {
                     continue;
                 }
                 paired = true;
                 heldApart.add(producer);
                 reach(producer, depth(occurrence) + 1,
-                        WIRE_PRODUCER_ADMISSION);
-                for (String handed : exportCells.getOrDefault(attach.port,
+                        admission);
+                for (String handed : exportCells.getOrDefault(port,
                         Collections.<String>emptySet())) {
                     work.accept(new Demand(producer, handed));
                 }

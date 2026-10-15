@@ -43,6 +43,7 @@ import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -844,7 +845,7 @@ public final class RuntimeRegionPlanner {
      * states.  A declared direction bound nothing more, and a wrong one
      * dropped the capture or bound it to an unrelated exchange.
      */
-    private static void bindObservedCommunicationCaptures(
+    static void bindObservedCommunicationCaptures(
             Collection<Map<String, Object>> activations,
             Map<Long, List<ProtocolEvent>> protocolByActivationRoot,
             List<ProtocolEvent> protocolEvents) {
@@ -913,6 +914,154 @@ public final class RuntimeRegionPlanner {
             }
             activation.put(RuntimeSelectedRegionFinalizer
                     .OBSERVED_COMMUNICATION_CAPTURES, bound);
+        }
+        bindSessionPortInfluence(activations, protocolEvents);
+    }
+
+    /**
+     * A value captured before a multi-frame request can be consumed after a
+     * later frame of the same session.  Keep both physical exchange legs in
+     * the recording.  Only a unique, ordered pair of real wire deliveries on
+     * the same transport, correlation, half and lifecycle-bound peers may
+     * state a conservative session influence for the port.  The Finalizer
+     * tries the exact exchange leg first and uses this relation only when it
+     * found no exact exporter.
+     */
+    private static void bindSessionPortInfluence(
+            Collection<Map<String, Object>> activations,
+            List<ProtocolEvent> protocolEvents) {
+        Map<Long, ProtocolEvent> bySeq = new HashMap<>();
+        Map<String, List<ProtocolEvent>> sends = new HashMap<>();
+        Map<String, List<ProtocolEvent>> receives = new HashMap<>();
+        for (ProtocolEvent event : protocolEvents) {
+            bySeq.put(event.seq, event);
+            if (event.correlationId.isEmpty() || event.transport.isEmpty()
+                    || event.attemptId.isEmpty() || event.half.isEmpty()) {
+                continue;
+            }
+            Map<String, List<ProtocolEvent>> side = "SEND".equals(
+                    event.direction) ? sends : receives;
+            side.computeIfAbsent(event.transport + "\n"
+                    + event.exchangeLeg(), ignored ->
+                    new ArrayList<ProtocolEvent>()).add(event);
+        }
+        Map<Long, ProtocolEvent> paired = new HashMap<>();
+        for (Map.Entry<String, List<ProtocolEvent>> entry : sends.entrySet()) {
+            List<ProtocolEvent> delivered = receives.getOrDefault(
+                    entry.getKey(), Collections.<ProtocolEvent>emptyList());
+            for (ProtocolEvent sent : entry.getValue()) {
+                List<ProtocolEvent> matches = new ArrayList<>();
+                for (ProtocolEvent received : delivered) {
+                    if (sent.spanId > 0L
+                            && sent.spanId == received.remoteParentSpanId
+                            && !sent.producerEndpointId.isEmpty()
+                            && (received.producerEndpointId.isEmpty()
+                                || sent.producerEndpointId.equals(
+                                        received.producerEndpointId))
+                            && sent.source != null && received.source != null
+                            && sent.seq < received.seq) {
+                        matches.add(received);
+                    }
+                }
+                if (matches.size() == 1) {
+                    ProtocolEvent received = matches.get(0);
+                    int competingSends = 0;
+                    for (ProtocolEvent other : entry.getValue()) {
+                        if (other.spanId > 0L
+                                && other.spanId == received.remoteParentSpanId
+                                && !other.producerEndpointId.isEmpty()
+                                && (received.producerEndpointId.isEmpty()
+                                    || other.producerEndpointId.equals(
+                                            received.producerEndpointId))
+                                && other.source != null
+                                && other.seq < received.seq) {
+                            competingSends++;
+                        }
+                    }
+                    if (competingSends != 1) continue;
+                    paired.put(sent.seq, received);
+                    paired.put(received.seq, sent);
+                }
+            }
+        }
+        List<Map<String, Object>> outgoing = new ArrayList<>();
+        List<Map<String, Object>> incoming = new ArrayList<>();
+        for (Map<String, Object> activation : activations) {
+            for (Map<String, Object> capture : rows(activation.get(
+                    RuntimeSelectedRegionFinalizer
+                            .OBSERVED_COMMUNICATION_CAPTURES))) {
+                if ("OUT".equals(capture.get("side"))) outgoing.add(capture);
+                else if ("IN".equals(capture.get("side"))) incoming.add(capture);
+            }
+        }
+        Map<Map<String, Object>, Map<String, Object>> candidates =
+                new IdentityHashMap<>();
+        Map<Map<String, Object>, Integer> uses = new IdentityHashMap<>();
+        for (Map<String, Object> in : incoming) {
+            ProtocolEvent received = bySeq.get(longNumber(in.get(
+                    "transportEventSeq"), -1L));
+            ProtocolEvent laterSend = received == null ? null
+                    : paired.get(received.seq);
+            if (laterSend == null || !"RECEIVE".equals(received.direction))
+                continue;
+            // Preserve the original exact-frame authority.
+            boolean exact = false;
+            for (Map<String, Object> out : outgoing) {
+                if (out.get("portId").equals(in.get("portId"))
+                        && out.get(CommunicationCatalogContract.TRANSPORT)
+                                .equals(in.get(
+                                        CommunicationCatalogContract.TRANSPORT))
+                        && out.get("exchangeLeg").equals(
+                                in.get("exchangeLeg"))) {
+                    exact = true;
+                    break;
+                }
+            }
+            if (exact) continue;
+            Map<String, Object> unique = null;
+            int count = 0;
+            for (Map<String, Object> out : outgoing) {
+                if (!out.get("portId").equals(in.get("portId"))) continue;
+                ProtocolEvent earlierSend = bySeq.get(longNumber(out.get(
+                        "transportEventSeq"), -1L));
+                ProtocolEvent earlierReceive = earlierSend == null ? null
+                        : paired.get(earlierSend.seq);
+                if (earlierReceive == null
+                        || !"SEND".equals(earlierSend.direction)
+                        || !earlierSend.transport.equals(received.transport)
+                        || !earlierSend.correlationId.equals(
+                                received.correlationId)
+                        || !earlierSend.half.equals(received.half)
+                        || earlierSend.exchangeLeg().equals(
+                                received.exchangeLeg())
+                        || !earlierSend.source.equals(laterSend.source)
+                        || !earlierReceive.source.equals(received.source)
+                        || earlierSend.spanId != laterSend.spanId
+                        || earlierReceive.spanId != received.spanId
+                        || !(longNumber(out.get("eventSeq"), -1L)
+                                < earlierSend.seq
+                            && earlierSend.seq < earlierReceive.seq
+                            && earlierReceive.seq < laterSend.seq
+                            && laterSend.seq < received.seq
+                            && received.seq < longNumber(in.get(
+                                    "eventSeq"), -1L))) {
+                    continue;
+                }
+                unique = out;
+                count++;
+            }
+            if (count == 1) {
+                candidates.put(in, unique);
+                uses.put(unique, uses.getOrDefault(unique, 0) + 1);
+            }
+        }
+        for (Map.Entry<Map<String, Object>, Map<String, Object>> entry
+                : candidates.entrySet()) {
+            if (uses.get(entry.getValue()) != 1) continue;
+            entry.getKey().put("sessionInfluenceLeg",
+                    entry.getValue().get("exchangeLeg"));
+            entry.getKey().put("sessionInfluenceKind",
+                    "ORDERED_UNIQUE_MULTI_FRAME_V1");
         }
     }
 
