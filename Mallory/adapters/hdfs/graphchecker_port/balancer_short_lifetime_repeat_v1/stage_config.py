@@ -14,7 +14,7 @@ from pathlib import Path
 
 SOURCE_CONFIG_SHA256 = "da96c526b1cfdd35208d2adf6ad477be161b1097f9214322ce33b3703ca16c10"
 NEW_CASE_ID = "HDFS-11-TIMING-LIFETIME-REPEATED-RPC-V1"
-LOCAL_ROOT = Path("/dev/shm/mallory-hdfs-balancer-short-lifetime-repeat-v1")
+LOCAL_ROOT = Path("/run/user/20003/mallory-hdfs-balancer-short-lifetime-repeat-v1")
 
 
 def derive(source: dict) -> dict:
