@@ -55,6 +55,27 @@ class ArchiveTrialTest(unittest.TestCase):
         self.assertEqual("evidence", (outside / "keep").read_text())
         self.assertFalse(self.archives.exists())
 
+    def test_healthy_graph_symlink_remains_readable_after_archive(self) -> None:
+        healthy_attempt = self.raw / "slot" / "r0000-attempt"
+        graph = healthy_attempt / "original-graph" / "anchor-00"
+        graph.mkdir(parents=True)
+        (graph / "summary.json").write_text('{"targetReached":true}\n')
+        healthy = self.output / "trials/r0000"
+        healthy.mkdir(parents=True)
+        (healthy / "result.json").write_text('{"status":"healthy_seed"}')
+        (healthy / "local-artifacts.json").write_text(json.dumps({
+            "local_attempt_dir": str(healthy_attempt)}))
+        (healthy / "original-graph").symlink_to(graph.parent,
+                                                 target_is_directory=True)
+        with patch.object(archive_trial.subprocess, "run") as pgrep:
+            pgrep.return_value.stdout = b""
+            receipt = archive_trial.archive(self.output, self.raw,
+                                            self.archives, 0)
+        self.assertTrue(receipt["source_retained_for_resume"])
+        self.assertTrue(healthy_attempt.exists())
+        self.assertEqual('{"targetReached":true}\n', (healthy /
+            "original-graph/anchor-00/summary.json").read_text())
+
 
 if __name__ == "__main__":
     unittest.main()

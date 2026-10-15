@@ -56,6 +56,13 @@ def archive(output: Path, raw_root: Path, archive_root: Path,
     attempt = Path(manifest["local_attempt_dir"]).resolve(strict=True)
     if not attempt.is_relative_to(raw_root):
         raise ValueError("raw attempt escaped pinned root")
+    # Every resumed multi-anchor campaign verifies the healthy graph summary
+    # through this symlink. Keep its verified source directory live; the tar is
+    # a second, lossless copy, not a replacement for a required input.
+    healthy_graph = result_dir / "original-graph"
+    retain_source = bool(index == 0 and healthy_graph.is_symlink() and
+                         healthy_graph.resolve(strict=True).is_relative_to(
+                             attempt))
     archive_root.mkdir(parents=True, exist_ok=True)
     target = archive_root / f"raw-r{index:04d}.tar.gz"
     receipt_path = archive_root / f"raw-r{index:04d}-receipt.json"
@@ -100,11 +107,13 @@ def archive(output: Path, raw_root: Path, archive_root: Path,
                "archive_size_bytes": target.stat().st_size,
                "result_sha256": sha(result_file), "member_count": len(actual),
                "verified_against_source": True,
+               "source_retained_for_resume": retain_source,
                "restore_command": f"tar -xzf {target} -C {raw_root}"}
     with receipt_path.open("x") as stream:
         json.dump(receipt, stream, indent=2, sort_keys=True)
         stream.write("\n")
-    shutil.rmtree(attempt)
+    if not retain_source:
+        shutil.rmtree(attempt)
     return receipt
 
 
