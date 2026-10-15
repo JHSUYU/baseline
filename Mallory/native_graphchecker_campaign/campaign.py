@@ -19,6 +19,7 @@ import re
 import shutil
 import signal
 import subprocess
+import tarfile
 import tempfile
 import time
 import zipfile
@@ -307,7 +308,7 @@ def _validate_config(config: dict[str, Any]) -> None:
                    "source_unmatched_event_tree_sha256")
         required = {name for item in names for name in (item, item + "_sha256")}
         required.update(derived)
-        optional = {"source_all_event_tree_sha256",
+        optional = {"source_all_event_tree_sha256", "frozen_healthy_seed",
                     "bounded_snapshot_manifest",
                     "bounded_snapshot_manifest_sha256",
                     "source_case_id", "successor_case_id"}
@@ -322,6 +323,10 @@ def _validate_config(config: dict[str, Any]) -> None:
                  ("successor_case_id" in predecessor)) or
                 ("successor_case_id" in predecessor and
                  predecessor["successor_case_id"] != config.get("case_id")) or
+                ("frozen_healthy_seed" in predecessor and
+                 (predecessor["frozen_healthy_seed"] is not True or
+                  "bounded_snapshot_manifest" not in predecessor or
+                  predecessor.get("source_case_id") != config.get("case_id"))) or
                 any(not isinstance(predecessor.get(name), str) or
                     not predecessor[name] for name in (
                         "source_case_id", "successor_case_id")
@@ -3377,6 +3382,128 @@ def _verify_bounded_snapshot(pins: dict[str, str], paths: dict[str, Path],
     return manifest
 
 
+def _frozen_healthy_seed(pins: dict[str, Any], source_root: Path,
+                         source: dict[str, Any]
+                         ) -> tuple[dict[str, Any], dict[str, bytes]]:
+    """Read exact healthy graph summaries from a pinned bounded raw archive.
+
+    A fresh distributed execution can select different dynamic occurrences.
+    This opt-in keeps the old queue on its original, verified healthy graph.
+    It does not equate two different occurrence addresses.
+    """
+    manifest = _load(Path(pins["bounded_snapshot_manifest"]))
+    files = manifest["files"]
+    base = "trials/r0000/"
+    copied = {name: pin["sha256"] for name, pin in files.items()
+              if name.startswith(base)}
+    healthy = source["healthy"]
+    result_file = source_root / healthy["result"]
+    result = _load(result_file)
+    bundle_file = source_root / base / "native-summary.json"
+    bundle = _load(bundle_file)
+    addresses = source.get("multi_anchor_addresses")
+    anchors = bundle.get("anchors") if isinstance(bundle, dict) else None
+    if (healthy.get("name") != "r0000" or
+            healthy.get("status") != "healthy_seed" or
+            result.get("status") != "healthy_seed" or
+            result.get("case_id") != source["case_id"] or
+            result.get("junit_passed") is not True or
+            result.get("raw_exact_target_throw_count") != 0 or
+            result.get("faults") != [] or
+            not isinstance(addresses, list) or not addresses or
+            len(addresses) != len(set(addresses)) or
+            result.get("multi_anchor_addresses") != addresses or
+            not isinstance(anchors, list) or len(anchors) != len(addresses) or
+            [row.get("occurrenceAddress") if isinstance(row, dict) else None
+             for row in anchors] != addresses or
+            _sha(bundle_file) != result.get("native_session_sha256") or
+            copied.get(healthy["result"]) != _sha(result_file) or
+            copied.get(base + "native-summary.json") != _sha(bundle_file)):
+        raise ValueError("frozen healthy seed identity or evidence changed")
+    archive_rows = [row for row in manifest["raw_archives"]
+                    if row["trial_index"] == 0]
+    if len(archive_rows) != 1:
+        raise ValueError("frozen healthy raw archive is not unique")
+    archive = Path(archive_rows[0]["absolute_tar_path"])
+    if (_sha(archive) != archive_rows[0]["archive_sha256"] or
+            archive_rows[0]["result_sha256"] != _sha(result_file)):
+        raise ValueError("frozen healthy raw archive changed")
+    graphs: dict[str, bytes] = {}
+    with tarfile.open(archive, "r:gz") as tar:
+        members = tar.getmembers()
+        for index, row in enumerate(anchors):
+            relative = f"original-graph/anchor-{index:02d}/summary.json"
+            matches = [member for member in members
+                       if member.name.endswith("/" + relative)]
+            if (len(matches) != 1 or not matches[0].isfile() or
+                    matches[0].name.startswith("/") or
+                    ".." in Path(matches[0].name).parts):
+                raise ValueError("frozen healthy graph archive member is invalid")
+            stream = tar.extractfile(matches[0])
+            if stream is None:
+                raise ValueError("frozen healthy graph summary is unreadable")
+            data = stream.read()
+            if (hashlib.sha256(data).hexdigest() != row.get("summarySha256") or
+                    json.loads(data) != row.get("summary")):
+                raise ValueError("frozen healthy graph differs from native bundle")
+            graphs[relative] = data
+    evidence = {"source_healthy_result_sha256": _sha(result_file),
+                "source_native_summary_sha256": _sha(bundle_file),
+                "source_raw_archive_sha256": _sha(archive),
+                "source_healthy_files": copied,
+                "source_graph_summaries": {
+                    name: hashlib.sha256(data).hexdigest()
+                    for name, data in graphs.items()}}
+    return evidence, graphs
+
+
+def _verify_frozen_healthy_materialized(root: Path,
+                                        receipt: dict[str, Any]) -> None:
+    evidence = receipt.get("frozen_healthy_seed")
+    if not isinstance(evidence, dict):
+        return
+    paths = {**evidence["source_healthy_files"],
+             **{f"trials/r0000/{name}": digest for name, digest in
+                evidence["source_graph_summaries"].items()}}
+    for name, digest in paths.items():
+        target = root / name
+        if (target.is_symlink() or not target.is_file() or
+                target.resolve(strict=True) != target or
+                _sha(target) != digest):
+            raise ValueError("materialized frozen healthy seed changed")
+
+
+def _materialize_frozen_healthy(root: Path, pins: dict[str, Any],
+                                source: dict[str, Any],
+                                receipt: dict[str, Any]) -> None:
+    source_root = Path(pins["checkpoint"]).parent
+    evidence, graphs = _frozen_healthy_seed(pins, source_root, source)
+    if evidence != receipt.get("frozen_healthy_seed"):
+        raise ValueError("frozen healthy seed receipt changed")
+    for name, digest in evidence["source_healthy_files"].items():
+        source_file = source_root / name
+        if source_file.is_symlink() or _sha(source_file) != digest:
+            raise ValueError("frozen healthy sidecar changed")
+        target = root / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        if target.exists() or target.is_symlink():
+            raise ValueError("frozen healthy destination already exists")
+        temporary = target.with_name(target.name + ".partial")
+        if temporary.exists() or temporary.is_symlink():
+            raise ValueError("frozen healthy temporary path already exists")
+        shutil.copyfile(source_file, temporary)
+        if _sha(temporary) != digest:
+            raise ValueError("frozen healthy sidecar copy changed")
+        temporary.replace(target)
+    for name, data in graphs.items():
+        target = root / "trials" / "r0000" / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        if target.exists() or target.is_symlink():
+            raise ValueError("frozen healthy graph destination already exists")
+        target.write_bytes(data)
+    _verify_frozen_healthy_materialized(root, receipt)
+
+
 def _predecessor_snapshot(config: dict[str, Any], root: Path,
                           state: dict[str, Any], *, verify_derived: bool = True
                           ) -> tuple[dict[str, Any], list[dict[str, Any]],
@@ -3639,6 +3766,11 @@ def _predecessor_snapshot(config: dict[str, Any], root: Path,
         receipt["imported_unmatched_retry_count"] = imported_unmatched_retries
         receipt["discarded_tested_retry_count"] = discarded_tested_retries
         receipt["source_elapsed_seconds"] = source["elapsed_seconds"]
+    if pins.get("frozen_healthy_seed") is True:
+        if not bounded_prefix or source_case_id != config["case_id"]:
+            raise ValueError("frozen healthy seed requires one exact case identity")
+        healthy_evidence, _ = _frozen_healthy_seed(pins, source_root, source)
+        receipt["frozen_healthy_seed"] = healthy_evidence
     if verify_derived and any(receipt[name] != pins[name] for name in (
             "tested_plan_keys_sha256", "source_result_tree_sha256",
             "source_unmatched_event_tree_sha256") +
@@ -3652,7 +3784,8 @@ def build_predecessor_pins(
         successor_max_faults_per_trial: int | str | None = None,
         successor_fault_trials: int | None = None,
         bounded_snapshot_manifest: Path | None = None,
-        successor_case_id: str | None = None) -> dict[str, str]:
+        successor_case_id: str | None = None,
+        frozen_healthy_seed: bool = False) -> dict[str, Any]:
     """Build SHA pins for terminal or independently frozen bounded input."""
     config_path = config_path.resolve(strict=True)
     terminal_root = terminal_root.resolve(strict=True)
@@ -3675,6 +3808,11 @@ def build_predecessor_pins(
         prospective["case_id"] = pins["successor_case_id"]
     elif successor_case_id is not None:
         raise ValueError("case identity transition needs a bounded snapshot")
+    if frozen_healthy_seed:
+        if (bounded_snapshot_manifest is None or
+                pins["source_case_id"] != pins["successor_case_id"]):
+            raise ValueError("frozen healthy seed needs one bounded case identity")
+        pins["frozen_healthy_seed"] = True
     source_budget = prospective.get("budget")
     source_depth = _effective_fault_depth(source_budget)
     if (successor_max_faults_per_trial is not None or
@@ -3735,6 +3873,11 @@ def _import_predecessor(config: dict[str, Any], root: Path,
         _enqueue(state, alternatives, prefix, 0,
                  anchor_address=anchor_address)
     receipt["new_actor_successor_plan_count"] = len(state["queue"]) - before
+    if "frozen_healthy_seed" in receipt:
+        _materialize_frozen_healthy(root, config["predecessor_campaign"],
+                                    source, receipt)
+        state["healthy"] = source["healthy"]
+        state["multi_anchor_addresses"] = source["multi_anchor_addresses"]
     state["predecessor_import"] = receipt
     _atomic(root / "predecessor-import.json", receipt)
 
@@ -3891,6 +4034,8 @@ def run_campaign(config_path: Path, root: Path,
                          state.get("next_trial_index", 0) < saved[
                              "source_completed_fault_trials"] + 1)):
                     raise ValueError("bounded predecessor trial credit changed")
+                if "frozen_healthy_seed" in saved:
+                    _verify_frozen_healthy_materialized(root, saved)
             elif "predecessor_import" in state:
                 raise ValueError("native checkpoint unexpectedly imports a predecessor")
         else:
@@ -3899,8 +4044,12 @@ def run_campaign(config_path: Path, root: Path,
                 _import_predecessor(config, root, state)
             _atomic(checkpoint, state)
         if import_only:
-            if state.get("healthy") is not None or state.get("trials") or (
-                    state.get("active") is not None):
+            inherited_healthy = (config.get("predecessor_campaign", {}).get(
+                "frozen_healthy_seed") is True and
+                state.get("healthy") is not None and
+                "frozen_healthy_seed" in state.get("predecessor_import", {}))
+            if ((state.get("healthy") is not None and not inherited_healthy) or
+                    state.get("trials") or state.get("active") is not None):
                 raise ValueError("import-only requires a fresh successor checkpoint")
             _atomic(root / "summary.json", {
                 key: value for key, value in state.items()

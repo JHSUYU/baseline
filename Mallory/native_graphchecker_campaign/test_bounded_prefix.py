@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import fcntl
+import json
 import tarfile
 import tempfile
 import unittest
@@ -130,6 +131,109 @@ class BoundedPrefixImportTest(unittest.TestCase):
         successor["budget"] = {**successor["budget"], "fault_trials": 256,
                                "max_faults_per_trial": 256}
         return config_path, frozen, source, successor
+
+    def frozen_healthy_fixture(self, root: Path) -> tuple[Path, Path, dict, dict]:
+        config_path, frozen, source, successor = self.fixture(root, anchored=True)
+        address = source["trials"][0]["anchor_address"]
+        graph = {"status": "recorded", "targetReached": True}
+        graph_file = root / "original-graph/anchor-00/summary.json"
+        core._atomic(graph_file, graph)
+        bundle_file = frozen / "trials/r0000/native-summary.json"
+        core._atomic(bundle_file, {"anchors": [{
+            "occurrenceAddress": address, "summarySha256": sha(graph_file),
+            "summary": graph}]})
+        result_file = frozen / "trials/r0000/result.json"
+        result = core._load(result_file)
+        result.update(junit_passed=True, raw_exact_target_throw_count=0,
+                      multi_anchor_addresses=[address],
+                      native_session_sha256=sha(bundle_file))
+        core._atomic(result_file, result)
+        source["multi_anchor_addresses"] = [address]
+        core._atomic(frozen / "checkpoint.json", source)
+        core._atomic(Path(core._load(frozen /
+            "bounded-snapshot-manifest.json")["source_output_root"]) /
+            "checkpoint.json", source)
+        core._atomic(frozen / "summary.json", {
+            key: value for key, value in source.items()
+            if key not in ("queue", "seen_plan_keys", "active")})
+        archive = root / "raw-r0000.tar.gz"
+        with tarfile.open(archive, "w:gz") as tar:
+            tar.add(result_file, arcname="old/raw/r0000/result.json")
+            tar.add(graph_file,
+                    arcname="old/raw/r0000/original-graph/anchor-00/summary.json")
+        receipt = frozen / "raw-archive-receipt-r0000.json"
+        core._atomic(receipt, {"trial_index": 0,
+                               "result_sha256": sha(result_file),
+                               "archive_sha256": sha(archive),
+                               "verified_against_source": True})
+        manifest_file = frozen / "bounded-snapshot-manifest.json"
+        manifest = core._load(manifest_file)
+        manifest["checkpoint_sha256"] = sha(frozen / "checkpoint.json")
+        manifest["summary_sha256"] = sha(frozen / "summary.json")
+        manifest["source_checkpoint_before_sha256"] = manifest[
+            "checkpoint_sha256"]
+        manifest["source_checkpoint_after_sha256"] = manifest[
+            "checkpoint_sha256"]
+        for name in ("checkpoint.json", "summary.json",
+                     "trials/r0000/result.json",
+                     "trials/r0000/native-summary.json",
+                     "raw-archive-receipt-r0000.json"):
+            path = frozen / name
+            manifest["files"][name] = {"sha256": sha(path),
+                                       "size_bytes": path.stat().st_size}
+        manifest["raw_archives"][0].update(
+            archive_sha256=sha(archive), receipt_sha256=sha(receipt),
+            result_sha256=sha(result_file))
+        core._atomic(manifest_file, manifest)
+        return config_path, frozen, source, successor
+
+    def test_opt_in_frozen_healthy_seed_preserves_exact_anchor(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source_config, frozen, source, successor = self.frozen_healthy_fixture(
+                root)
+            pins = core.build_predecessor_pins(
+                source_config, frozen, successor_fault_trials=256,
+                successor_max_faults_per_trial=256,
+                bounded_snapshot_manifest=frozen /
+                "bounded-snapshot-manifest.json", frozen_healthy_seed=True)
+            successor["predecessor_campaign"] = pins
+            state = {**source, "case_id": successor["case_id"],
+                     "budget": successor["budget"], "healthy": None,
+                     "multi_anchor_addresses": [], "trials": [],
+                     "queue": [], "seen_plan_keys": [], "active": None,
+                     "completed_fault_trials": 0}
+            destination = root / "successor"
+            core._import_predecessor(successor, destination, state)
+            self.assertEqual(source["multi_anchor_addresses"],
+                             state["multi_anchor_addresses"])
+            self.assertEqual(source["healthy"], state["healthy"])
+            self.assertEqual(2, state["imported_completed_fault_trials"])
+            self.assertEqual(sha(frozen / "trials/r0000/result.json"),
+                             sha(destination / "trials/r0000/result.json"))
+            core._verify_frozen_healthy_materialized(
+                destination, state["predecessor_import"])
+            graph = destination / "trials/r0000/original-graph/anchor-00/summary.json"
+            graph.write_text(json.dumps({"status": "changed"}), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "materialized frozen healthy"):
+                core._verify_frozen_healthy_materialized(
+                    destination, state["predecessor_import"])
+            archive = root / "raw-r0000.tar.gz"
+            archive.write_bytes(archive.read_bytes() + b"tampered")
+            with self.assertRaisesRegex(ValueError, "raw archive is missing"):
+                core._predecessor_snapshot(successor, destination, state)
+
+    def test_frozen_healthy_seed_rejects_case_identity_transition(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            source_config, frozen, _, _ = self.frozen_healthy_fixture(
+                Path(directory))
+            with self.assertRaisesRegex(ValueError, "one bounded case identity"):
+                core.build_predecessor_pins(
+                    source_config, frozen, successor_fault_trials=256,
+                    successor_max_faults_per_trial=256,
+                    successor_case_id="different-case",
+                    bounded_snapshot_manifest=frozen /
+                    "bounded-snapshot-manifest.json", frozen_healthy_seed=True)
 
     def test_imports_stopped_prefix_without_repeating_tested_keys(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
