@@ -109,6 +109,51 @@ class GuardedHealthyTest(unittest.TestCase):
             guarded_healthy._validate_imported_healthy_start(
                 self.output, {"case_id": "SUCCESSOR", "predecessor_campaign": {}}, digest)
 
+    def test_runs_zero_fault_healthy_from_pinned_import(self) -> None:
+        digest = self._imported_start()
+        pin = "a" * 64
+        config = json.loads(self.config.read_text())
+        config.update({"case_id": "SUCCESSOR", "predecessor_campaign": {}})
+        self.config.write_text(json.dumps(config))
+        state_path = self.output / "checkpoint.json"
+        state = json.loads(state_path.read_text())
+        state["config_sha256"] = pin
+        state_path.write_text(json.dumps(state))
+        self.args.config_sha256 = pin
+        self.args.campaign_source_sha256 = pin
+        self.args.allow_imported_predecessor = True
+        self.args.predecessor_import_sha256 = pin
+        sample = {"raw_added_bytes": 0, "output_allocated_bytes": 0,
+                  "raw_available_bytes": 2000, "output_available_bytes": 2000,
+                  "root_available_bytes": 2000, "memory_available_bytes": 2000}
+
+        class DoneProcess:
+            def __init__(inner, command, **kwargs):
+                self.assertEqual("0", command[-1])
+                trial = self.output / "trials/r0000"
+                trial.mkdir(parents=True)
+                (trial / "result.json").write_text('{"status":"healthy_seed"}')
+                updated = json.loads(state_path.read_text())
+                updated["healthy"] = {"status": "healthy_seed"}
+                state_path.write_text(json.dumps(updated))
+
+            def poll(inner):
+                return 0
+
+            def wait(inner):
+                return 0
+
+        with (patch.object(guarded_healthy, "_require_pg0_read_only"),
+              patch.object(guarded_healthy, "_require_local",
+                           side_effect=lambda path, *_: path),
+              patch.object(guarded_healthy.campaign, "_validate_config"),
+              patch.object(guarded_healthy, "_sha", return_value=pin),
+              patch.object(guarded_healthy, "_sample", return_value=sample),
+              patch.object(guarded_healthy.subprocess, "Popen", side_effect=DoneProcess)):
+            receipt = guarded_healthy.run_healthy(self.args)
+        self.assertEqual("healthy_seed", receipt["status"])
+        self.assertEqual(pin, receipt["predecessor_import_sha256"])
+
 
 if __name__ == "__main__":
     unittest.main()
