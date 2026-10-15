@@ -17,14 +17,12 @@ OUTPUT = ROOT / "formal-b"
 RAW = ROOT / "raw"
 ARCHIVE = Path("/users/ZhenyuLi/.mallory-local-evidence/hdfs-balancer-v16-pilot")
 HEALTHY = ROOT / "guarded-healthy-v16b.json"
-ARCHIVE_SCRIPT = Path("/users/ZhenyuLi/.mallory-worktrees/native-repeated-io-v1/"
-                      "Mallory/adapters/hdfs/graphchecker_port/"
-                      "balancer_short_lifetime_repeat_v1/archive_trial.py")
+ARCHIVE_SCRIPT = Path(__file__).resolve().with_name("archive_trial_v16.py")
 PINS = {
     CONFIG: "ed719939ba0c6e03bafaa100c1729a6a3a05ff6c3a9e947abecd34b10202f49d",
     Path(__file__).resolve().parents[4] / "native_graphchecker_campaign/campaign.py":
         "c08afcda3a22d5ea16847bbfd801d1800814a625cf4fe92d4f2d43b3edace9e1",
-    ARCHIVE_SCRIPT: "9230fe731b3c6b1fcfe92e655d9c11371508ed75cf2d4c2a82b9f38b828c15a2",
+    ARCHIVE_SCRIPT: "773bd36b7f79fab9bda53c3378eed402d7288011aa1e815bcf59d69325446452",
 }
 ENGINE_ROOT = Path("/users/ZhenyuLi/.mallory-worktrees/native-repeated-io-v1/"
                    "Mallory/static_scope_port/original_engine")
