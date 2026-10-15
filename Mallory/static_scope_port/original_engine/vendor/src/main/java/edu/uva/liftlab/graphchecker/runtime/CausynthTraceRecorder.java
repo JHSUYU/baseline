@@ -1183,6 +1183,65 @@ public final class CausynthTraceRecorder {
                 site.siteId, site.declaredCallee);
     }
 
+    /**
+     * Records the exact native fault-door identity alongside this recorder's
+     * active call identity.  Both hooks execute on the same Java thread at
+     * one woven door.  A call is usable for peer attribution only when its
+     * receiver is the door owner by reference identity.  This row is evidence
+     * for an offline join; it does not create a causal graph edge.
+     */
+    public static void recordNativeFaultDoor(String siteId, String nativeNodeId,
+                                             String occurrenceId, long ordinal,
+                                             String exceptionClass, Object owner) {
+        initialize();
+        if (contextOnlyConcolicReplay || !RecordingWindow.opened()) return;
+        if (siteId == null || siteId.isEmpty() || nativeNodeId == null
+                || occurrenceId == null || ordinal <= 0L
+                || exceptionClass == null || exceptionClass.isEmpty()) {
+            throw new IllegalArgumentException("incomplete native fault-door identity");
+        }
+        int marker = nativeNodeId.lastIndexOf("#epoch");
+        if (marker <= 0 || marker + 6 >= nativeNodeId.length()) {
+            throw new IllegalArgumentException("invalid native fault-door node: "
+                    + nativeNodeId);
+        }
+        int epoch;
+        try {
+            epoch = Integer.parseInt(nativeNodeId.substring(marker + 6));
+        } catch (NumberFormatException invalid) {
+            throw new IllegalArgumentException("invalid native fault-door epoch: "
+                    + nativeNodeId, invalid);
+        }
+        if (epoch < 0) throw new IllegalArgumentException("negative native fault-door epoch");
+        ActiveCall call = ACTIVE_CALLS.get().peek();
+        boolean ownerMatches = owner != null && call != null && call.receiver == owner;
+        long callId = ownerMatches ? call.callId : 0L;
+        int receiverObjectId = ownerMatches ? identity(owner) : 0;
+        RuntimeTraceContext.View context = RuntimeTraceContext.current();
+        Thread thread = Thread.currentThread();
+        synchronized (LOCK) {
+            writeTraceRow(
+                    "schemaVersion", 3,
+                    "event", "NATIVE_FAULT_DOOR",
+                    "seq", EVENT_COUNTER.incrementAndGet(),
+                    "siteId", siteId,
+                    "node", nativeNodeId.substring(0, marker),
+                    "actorEpochOrdinal", epoch,
+                    "occurrenceId", occurrenceId,
+                    "ordinal", ordinal,
+                    "exceptionClass", exceptionClass,
+                    "callId", callId,
+                    "receiverObjectId", receiverObjectId,
+                    "identityStatus", ownerMatches && callId > 0L
+                            && receiverObjectId > 0
+                            ? "owner_matches_active_receiver" : "unproven",
+                    "method", ownerMatches ? call.method : "",
+                    "sourceKey", context.source == null ? "" : context.source.key(),
+                    "threadName", thread.getName(),
+                    "tid", thread.getId());
+        }
+    }
+
     /** The occurrences this thread's region entries opened, rendered,
      *  innermost first. */
     static List<String> enclosingOccurrences() {

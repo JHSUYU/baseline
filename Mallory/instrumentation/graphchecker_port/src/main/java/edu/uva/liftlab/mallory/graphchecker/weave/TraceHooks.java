@@ -15,6 +15,7 @@ public final class TraceHooks {
     private static final ThreadLocal<Deque<Entry>> REGIONS =
             ThreadLocal.withInitial(ArrayDeque::new);
     private static volatile Method oldProbe;
+    private static volatile Method nativeDoorContext;
     private static final ConcurrentHashMap<String, Boolean> STATE_GAPS =
             new ConcurrentHashMap<>();
     private static final AtomicInteger STATE_GAP_COUNT = new AtomicInteger();
@@ -116,6 +117,9 @@ public final class TraceHooks {
     public static void faultDoor(String siteId, Object owner, String exceptionClass,
                                  int controller) {
         MessageDoors.FaultDoorHit hit = MessageDoors.faultDoorHit(siteId, owner);
+        if (hit != null && Boolean.getBoolean("mallory.gc.nativeFaultDoorContext")) {
+            recordNativeDoorContext(hit, exceptionClass, owner);
+        }
         if (controller == 0) return;
         if (controller == 2) {
             Throwable injected = GcFaultPlan.current().consume(hit, exceptionClass);
@@ -144,6 +148,41 @@ public final class TraceHooks {
             sneakyThrow(invoked.getCause());
         } catch (ReflectiveOperationException missing) {
             throw new IllegalStateException("MALLORY_PROBE controller is unavailable", missing);
+        }
+    }
+
+    /**
+     * Opt-in identity bridge between the native GraphChecker door receipt and
+     * the original recorder's active call.  The recorder checks receiver
+     * identity itself; an unrelated enclosing call is never attributed to a
+     * door.  Reflection keeps the weave runtime usable without the original
+     * recorder on its classpath, while the opt-in fails closed if it is absent.
+     */
+    private static void recordNativeDoorContext(MessageDoors.FaultDoorHit hit,
+                                                String exceptionClass, Object owner) {
+        try {
+            Method method = nativeDoorContext;
+            if (method == null) {
+                synchronized (TraceHooks.class) {
+                    method = nativeDoorContext;
+                    if (method == null) {
+                        Class<?> recorder = Class.forName(
+                                "edu.uva.liftlab.graphchecker.runtime.CausynthTraceRecorder");
+                        method = recorder.getMethod("recordNativeFaultDoor",
+                                String.class, String.class, String.class,
+                                long.class, String.class, Object.class);
+                        nativeDoorContext = method;
+                    }
+                }
+            }
+            method.invoke(null, hit.siteId, hit.node, hit.occurrenceId,
+                    hit.ordinal, exceptionClass, owner);
+        } catch (InvocationTargetException failed) {
+            throw new IllegalStateException("original recorder rejected native fault door context",
+                    failed.getCause());
+        } catch (ReflectiveOperationException missing) {
+            throw new IllegalStateException("native fault door context bridge is unavailable",
+                    missing);
         }
     }
 
