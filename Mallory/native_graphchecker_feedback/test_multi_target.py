@@ -10,7 +10,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from Mallory.native_graphchecker_feedback.multi_target import (
-    delta_matching_anchors, record_multiple_region_states,
+    continuation_signatures, delta_matching_anchors, record_multiple_region_states,
     record_pinned_region_states,
     select_target_occurrences,
 )
@@ -30,6 +30,36 @@ def receipt(count: int = 75) -> dict:
 
 
 class MultiTargetTest(unittest.TestCase):
+    def test_same_lane_continuation_diversifies_without_method_names(self) -> None:
+        observed = receipt(12)
+        with tempfile.TemporaryDirectory() as temporary:
+            trace = Path(temporary)
+            lines = []
+            for index, row in enumerate(observed["reachedEvents"]):
+                row["callId"] = 1000 + index
+                group = ("A" if index < 4 or 6 <= index < 10 else
+                         "B" if index < 6 else "C")
+                lines.append({"event": "METHOD_ENTER", "seq": row["eventSeq"] - 1,
+                              "callId": row["callId"], "laneId": index,
+                              "sourceKey": row["sourceKey"], "method": "check"})
+                for offset, method in enumerate(("common", group + "1",
+                                                  group + "2"), 1):
+                    lines.append({"event": "METHOD_ENTER",
+                                  "seq": row["eventSeq"] + offset,
+                                  "callId": 2000 + index * 10 + offset,
+                                  "laneId": index, "method": method})
+            (trace / "runtime_trace.jsonl").write_text(
+                "".join(json.dumps(line) + "\n" for line in lines),
+                encoding="utf-8")
+            signatures = continuation_signatures(trace, observed)
+            selected = select_target_occurrences(
+                observed, max_anchors=3, signatures=signatures)
+        indices = [int(row["occurrenceAddress"].split("-")[1])
+                   for row in selected]
+        self.assertEqual(0, indices[0])
+        self.assertTrue(4 <= indices[1] <= 5, indices)
+        self.assertTrue(10 <= indices[2] <= 11, indices)
+
     def test_initial_quantiles_and_rotation_span_repeated_activations(self) -> None:
         observed = receipt()
         first = select_target_occurrences(observed)

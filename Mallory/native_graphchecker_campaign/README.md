@@ -210,6 +210,16 @@ the following shape (paths are absolute in an actual campaign):
 `recording.target_occurrence` is optional only when the original recorder and
 scheduler can select the recorded occurrence without ambiguity. The selected
 task ID comes from the pinned weave configuration, never from a refusal log.
+For a new task-free `REGION_STATE` campaign, the optional
+`recording.multi_target_max_anchors` (2..16) samples repeated instances of
+the same target check from its closed healthy trace. Same-lane continuation
+methods provide a bounded diversity hint; each chosen instance still gets its
+own original Resolver, Recorder, and Finalizer graph. Every queued plan pins
+one exact healthy occurrence address and draws fault doors only from that
+graph's observed closure. A faulted JUnit replays just that address and one
+graph; if it disappears, the plan retries without substituting an earlier
+instance. The exact raw target throw oracle runs before graph replay. Existing
+configs and checkpoints retain their original plan keys and behavior.
 In `runner.jvm_args`, `{trial_workdir}` expands to that trial's fresh work
 directory, for example with `-Djava.io.tmpdir={trial_workdir}` and
 `-Dbuild.test.dir={trial_workdir}` for JUnit cluster data.

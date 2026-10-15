@@ -31,6 +31,9 @@ from Mallory.native_graphchecker_feedback.feedback import NoNativeTargetError
 from Mallory.native_graphchecker_feedback.region_state_graph import (
     _closed_inputs, delta_region_state, record_region_state,
 )
+from Mallory.native_graphchecker_feedback.multi_target import (
+    record_multiple_region_states, record_pinned_region_states,
+)
 from .source_preflight import feedback_bridge
 from .static_may import rpc_producer_sites
 from .peer_identity import rank_region_doors_by_peer
@@ -130,6 +133,15 @@ def _validate_config(config: dict[str, Any]) -> None:
             (not isinstance(recording["target_occurrence"], str) or
              not recording["target_occurrence"])):
         raise ValueError("recording target_occurrence must be an exact ID")
+    anchor_count = recording.get("multi_target_max_anchors")
+    if anchor_count is not None and (
+            not isinstance(anchor_count, int) or isinstance(anchor_count, bool)
+            or not 2 <= anchor_count <= 16 or
+            recording.get("target_occurrence") is not None or
+            recording.get("admission_mode") != "region_state_no_schedule" or
+            not isinstance(config.get("runner"), dict) or
+            config["runner"].get("mode") != "region_state"):
+        raise ValueError("multi-target anchors require task-free REGION_STATE")
     may_path = recording.get("static_may_scope_map")
     may_sha = recording.get("static_may_scope_map_sha256")
     if (may_path is None) != (may_sha is None) or (may_path is not None and
@@ -1096,7 +1108,8 @@ def _doors(rows: list[dict[str, Any]], summary: dict[str, Any],
     return _prefer_unique_message_keys(found, rows)
 
 
-def _plan_key(faults: list[dict[str, Any]]) -> str:
+def _plan_key(faults: list[dict[str, Any]],
+              anchor_address: str | None = None) -> str:
     if any(any(field in fault for field in MESSAGE_FIELDS) and not all(
             SHA256_HEX.fullmatch(fault.get(field, ""))
             for field in MESSAGE_FIELDS) for fault in faults):
@@ -1107,8 +1120,14 @@ def _plan_key(faults: list[dict[str, Any]]) -> str:
                       for field in MESSAGE_FIELDS)
                else {field: fault[field] for field in SELECTOR_FIELDS})
               for fault in faults]
-    return hashlib.sha256(json.dumps(stable, sort_keys=True,
-                                     separators=(",", ":")).encode()).hexdigest()
+    encoded = json.dumps(stable, sort_keys=True, separators=(",", ":")).encode()
+    if anchor_address is None:
+        # Preserve every existing checkpoint and exact plan key byte-for-byte.
+        return hashlib.sha256(encoded).hexdigest()
+    if not isinstance(anchor_address, str) or not anchor_address:
+        raise ValueError("anchored plan requires an exact occurrence address")
+    return hashlib.sha256(b"MALLORY_ANCHORED_PLAN_V1\0" +
+                          anchor_address.encode() + b"\0" + encoded).hexdigest()
 
 
 def _prefer_unique_message_keys(
@@ -1141,7 +1160,8 @@ def _prefer_unique_message_keys(
 
 def _enqueue(state: dict[str, Any], doors: list[dict[str, Any]],
              prefix: list[dict[str, Any]], novelty: int,
-             depth_feedback: dict[str, Any] | None = None) -> None:
+             depth_feedback: dict[str, Any] | None = None,
+             anchor_address: str | None = None) -> None:
     if len(prefix) >= state["budget"]["max_faults_per_trial"]:
         return
     seen = set(state["seen_plan_keys"])
@@ -1149,7 +1169,14 @@ def _enqueue(state: dict[str, Any], doors: list[dict[str, Any]],
     # fabricated from a static relation or a different trial's task address.
     for door in doors:
         faults = [*prefix, door["fault"]]
-        key = _plan_key(faults)
+        anchor = anchor_address or door.get("anchor_address")
+        if state.get("multi_anchor_addresses"):
+            if anchor not in state["multi_anchor_addresses"] or (
+                    door.get("anchor_address") not in (None, anchor)):
+                raise ValueError("fault door changed its exact target anchor")
+        elif anchor is not None:
+            raise ValueError("legacy queue cannot receive an anchored fault")
+        key = _plan_key(faults, anchor)
         if key in seen:
             continue
         seen.add(key)
@@ -1157,6 +1184,8 @@ def _enqueue(state: dict[str, Any], doors: list[dict[str, Any]],
                 "tier": door["tier"], "novelty": novelty,
                 "enqueued_at": state["completed_fault_trials"],
                 "attempt": 0}
+        if anchor is not None:
+            item["anchor_address"] = anchor
         if state.get("scheduler_version", 1) >= 5:
             item["target_phase"] = door.get("target_phase", "unknown")
         if state.get("scheduler_version", 1) >= 6:
@@ -1224,8 +1253,24 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
     if not queue:
         raise ValueError("empty native fault queue")
     completed = state["completed_fault_trials"]
-    outside = [item for item in queue if item["tier"] == "outside_closure"]
-    inside = [item for item in queue if item["tier"] != "outside_closure"]
+    selection_queue = queue
+    addresses = state.get("multi_anchor_addresses", [])
+    if addresses:
+        # One exact target activation per trial. The rotating quota applies
+        # before the old tier/depth rules and cannot rewrite a queued plan.
+        for offset in range(len(addresses)):
+            desired = addresses[(completed + offset) % len(addresses)]
+            matching = [item for item in queue if
+                        item.get("anchor_address") == desired]
+            if matching:
+                selection_queue = matching
+                break
+        else:
+            raise ValueError("anchored queue has no valid target identity")
+    outside = [item for item in selection_queue if
+               item["tier"] == "outside_closure"]
+    inside = [item for item in selection_queue if
+              item["tier"] != "outside_closure"]
     # Keep one of eight slots for observed doors outside the target closure.
     outside_slot = bool(outside) and completed % 8 == 7
     candidates = outside if outside_slot else inside or outside
@@ -2006,11 +2051,68 @@ def _execute_junit(config: dict[str, Any], admitted: dict[str, Any],
     return execution
 
 
+def _healthy_anchor_valid(row: Any) -> bool:
+    if not isinstance(row, dict) or not isinstance(row.get("summary"), dict):
+        return False
+    summary = row["summary"]
+    evidence = summary.get("targetEvidence")
+    return (row.get("targetReached") is True and
+            summary.get("targetReached") is True and
+            summary.get("closureMembershipAuthority") ==
+            "original_runtime_selected_region_finalizer" and
+            isinstance(evidence, dict) and
+            evidence.get("selectedOccurrenceAddress") == row.get(
+                "occurrenceAddress") and
+            isinstance(evidence.get("targetCheckOccurrenceIds"), list) and
+            bool(evidence["targetCheckOccurrenceIds"]))
+
+
+def _complete_multi_healthy(config: dict[str, Any], trial: Path,
+                            result: dict[str, Any], events: list[dict[str, Any]],
+                            bundle: dict[str, Any]) -> dict[str, Any]:
+    """Seed one original GraphChecker closure and queue per exact activation."""
+    _atomic(trial / "native-summary.json", bundle)
+    result["native_session_sha256"] = _sha(trial / "native-summary.json")
+    anchors = bundle.get("anchors", [])
+    count = config["recording"]["multi_target_max_anchors"]
+    if (bundle.get("status") != "multi_target_recorded" or
+            not isinstance(anchors, list) or len(anchors) != count or
+            bundle.get("retryExactOccurrences") or
+            any(not _healthy_anchor_valid(row) for row in anchors)):
+        result["status"] = "blocked_healthy_target"
+        return result
+    if result.get("raw_exact_target_throw_count") != 0:
+        result["status"] = "blocked_healthy_target_exception"
+        return result
+    result["native_target_retained"] = True
+    result["multi_anchor_addresses"] = [row["occurrenceAddress"]
+                                         for row in anchors]
+    result["native_target_occurrence_ids"] = sorted({identifier
+        for row in anchors for identifier in row["summary"].get(
+            "targetEvidence", {}).get("targetCheckOccurrenceIds", [])})
+    recording = config["recording"]
+    static_rpc_sites = (rpc_producer_sites(
+        str(Path(recording["static_may_scope_map"]).resolve(strict=True)),
+        recording["static_may_scope_map_sha256"], config["target_site"])
+        if "static_may_scope_map" in recording else frozenset())
+    doors = []
+    for row in anchors:
+        address = row["occurrenceAddress"]
+        selected = _region_doors(events, row["summary"], None,
+                                 static_rpc_sites)
+        doors.extend({**door, "anchor_address": address} for door in selected
+                     if door["tier"] == "observed_closure")
+    result["eligible_doors"] = doors
+    result["status"] = "healthy_seed"
+    return result
+
+
 def _run_region_trial(config: dict[str, Any], admitted: dict[str, Any],
                       trial: Path, faults: list[dict[str, Any]],
                       healthy: dict[str, Any] | None,
                       result: dict[str, Any], events: list[dict[str, Any]],
-                      strict: bool, scheduler_version: int = SCHEDULER_VERSION
+                      strict: bool, scheduler_version: int = SCHEDULER_VERSION,
+                      anchor_address: str | None = None
                       ) -> dict[str, Any]:
     """Extract each run's graph from its own original CLOSED trace."""
     if not faults and not result["junit_passed"]:
@@ -2027,20 +2129,61 @@ def _run_region_trial(config: dict[str, Any], admitted: dict[str, Any],
             "recorder_jvm_args", []) if arg.startswith(
                 "-Dcausynth.loop.default.bound=")]
         loop_bound = int(loop_args[-1]) if loop_args else 3
-        summary = record_region_state(
-            iteration / "trace", trial / "original-graph",
-            test_id=recording["test_id"], target_site=config["target_site"],
-            fault_events=iteration / "fault-events.jsonl",
-            static_scope_map=Path(recording["static_scope_map"]),
-            candidate_graph=Path(recording["candidate_graph"]),
-            region_skeletons=Path(recording["region_skeletons"]),
-            engine_jar=_analysis_engine_jar(config),
-            java=Path(admitted["weave_config"]["java"]),
-            loop_bound=loop_bound,
-            timeout_seconds=recording.get("graph_analysis_timeout_seconds", 300),
-            heap_mb=recording.get("graph_analysis_heap_mb", 3072),
-            target_occurrence=recording.get("target_occurrence"),
-            target_throw=config["target_throw"])
+        graph_options = {
+            "test_id": recording["test_id"],
+            "target_site": config["target_site"],
+            "fault_events": iteration / "fault-events.jsonl",
+            "static_scope_map": Path(recording["static_scope_map"]),
+            "candidate_graph": Path(recording["candidate_graph"]),
+            "region_skeletons": Path(recording["region_skeletons"]),
+            "engine_jar": _analysis_engine_jar(config),
+            "java": Path(admitted["weave_config"]["java"]),
+            "loop_bound": loop_bound,
+            "timeout_seconds": recording.get("graph_analysis_timeout_seconds", 300),
+            "heap_mb": recording.get("graph_analysis_heap_mb", 3072),
+            "target_throw": config["target_throw"],
+        }
+        multi_count = recording.get("multi_target_max_anchors")
+        target_receipt = trial / "original-graph" / "target-occurrence.json"
+        if multi_count is None:
+            summary = record_region_state(
+                iteration / "trace", trial / "original-graph",
+                target_occurrence=recording.get("target_occurrence"),
+                **graph_options)
+        elif not faults:
+            bundle = record_multiple_region_states(
+                iteration / "trace", trial / "original-graph",
+                max_anchors=multi_count, **graph_options)
+            return _complete_multi_healthy(
+                config, trial, result, events, bundle)
+        else:
+            if (healthy is None or healthy.get("schemaVersion") != 1 or
+                    not isinstance(healthy.get("anchors"), list)):
+                raise ValueError("missing pinned multi-target healthy graph")
+            matching = [row for row in healthy["anchors"] if
+                        row.get("occurrenceAddress") == anchor_address]
+            if len(matching) != 1:
+                raise ValueError("fault plan has no unique healthy target anchor")
+            replay = record_pinned_region_states(
+                iteration / "trace", trial / "original-graph",
+                healthy_bundle={"schemaVersion": 1, "anchors": matching},
+                **graph_options)
+            result["anchor_replay_status"] = replay["status"]
+            if replay["status"] == "retry_exact_missing":
+                result["status"] = ("needs_causal_review" if result.get(
+                    "raw_target_throw_differential_candidate") else "unmatched")
+                result["analysis_error"] = "healthy exact target activation absent"
+                result["native_target_retained"] = False
+                result["eligible_doors"] = []
+                _atomic(trial / "native-summary.json", replay)
+                result["native_session_sha256"] = _sha(
+                    trial / "native-summary.json")
+                return result
+            summary = replay["anchors"][0]["summary"]
+            healthy = matching[0]["summary"]
+            target_receipt = (trial / "original-graph" / "anchor-00" /
+                              "target-occurrence.json")
+            result["anchor_address"] = anchor_address
     except (ValueError, FileNotFoundError, subprocess.SubprocessError,
             OSError, RuntimeError) as failure:
         result["status"] = ("blocked_healthy_native_session" if not faults
@@ -2089,11 +2232,16 @@ def _run_region_trial(config: dict[str, Any], admitted: dict[str, Any],
                                 "target_throw_unplanned" else
                                 _region_doors(events, summary, last,
                                               static_rpc_sites))
+    if anchor_address is not None:
+        result["eligible_doors"] = [door for door in result[
+            "eligible_doors"] if door["tier"] == "observed_closure"]
+        for door in result["eligible_doors"]:
+            door["anchor_address"] = anchor_address
     if scheduler_version >= 8 and result["eligible_doors"] and static_rpc_sites:
         result["eligible_doors"], peer_receipt = rank_region_doors_by_peer(
             result["eligible_doors"],
             iteration / "trace" / "runtime_trace.jsonl",
-            trial / "original-graph" / "target-occurrence.json",
+            target_receipt,
             static_rpc_sites, events)
         _atomic(trial / "peer-ranking-receipt.json", peer_receipt)
         result["peer_ranking_receipt_sha256"] = _sha(
@@ -2120,6 +2268,10 @@ def _run_region_trial(config: dict[str, Any], admitted: dict[str, Any],
                         throws else "healthy_seed" if not faults else
                         "candidate" if throws and admitted_temporal else
                         "needs_causal_review" if throws else "checked")
+    if (faults and anchor_address is not None and
+            result.get("raw_target_throw_differential_candidate") and
+            result["status"] == "checked"):
+        result["status"] = "needs_causal_review"
     return result
 
 
@@ -2127,7 +2279,8 @@ def _run_trial(config: dict[str, Any], admitted: dict[str, Any],
                trial: Path, faults: list[dict[str, Any]],
                healthy: dict[str, Any] | None,
                healthy_raw_throw_count: int | None = None,
-               scheduler_version: int = SCHEDULER_VERSION) -> dict[str, Any]:
+               scheduler_version: int = SCHEDULER_VERSION,
+               anchor_address: str | None = None) -> dict[str, Any]:
     _verify_pins(config, admitted)
     trial.mkdir(parents=True, exist_ok=False)
     _prepare_trial_artifacts(config, trial)
@@ -2138,6 +2291,8 @@ def _run_trial(config: dict[str, Any], admitted: dict[str, Any],
                               "faults": faults,
                               "runner_mode": config["runner"].get("mode", "concolic"),
                               **execution}
+    if anchor_address is not None:
+        result["anchor_address"] = anchor_address
     result["fault_events_sha256"] = (_sha(iteration / "fault-events.jsonl")
                                       if (iteration / "fault-events.jsonl").is_file()
                                       else None)
@@ -2186,7 +2341,8 @@ def _run_trial(config: dict[str, Any], admitted: dict[str, Any],
             result["applied_prefix_count"] = prefix_size
             result["observed_actor_successors"] = successors
         result = _run_region_trial(config, admitted, trial, faults, healthy,
-                                   result, events, strict, scheduler_version)
+                                   result, events, strict, scheduler_version,
+                                   anchor_address)
         return _save_trial_result(trial, result, trial_started)
     if not result["junit_passed"] and not faults:
         result["status"] = "blocked_healthy_junit"
@@ -2334,7 +2490,9 @@ def _verify_terminal_peer_ranking_receipts(root: Path,
 
 def _accept(state: dict[str, Any], result: dict[str, Any], name: str) -> None:
     active = state["active"]
-    if active is None or active["name"] != name or active["faults"] != result["faults"]:
+    if (active is None or active["name"] != name or
+            active["faults"] != result["faults"] or
+            active.get("anchor_address") != result.get("anchor_address")):
         raise ValueError("native campaign active trial identity changed")
     state["elapsed_seconds"] = round(state["elapsed_seconds"] +
                                      result["elapsed_seconds"], 3)
@@ -2344,6 +2502,14 @@ def _accept(state: dict[str, Any], result: dict[str, Any], name: str) -> None:
         if result["status"] != "healthy_seed":
             state["status"] = result["status"]
         else:
+            if "multi_target_max_anchors" in state.get("multi_anchor_config", {}):
+                addresses = result.get("multi_anchor_addresses")
+                if (not isinstance(addresses, list) or
+                        len(addresses) != state["multi_anchor_config"][
+                            "multi_target_max_anchors"] or
+                        len(addresses) != len(set(addresses))):
+                    raise ValueError("healthy multi-target anchor set changed")
+                state["multi_anchor_addresses"] = addresses
             _enqueue(state, result["eligible_doors"], [], 0)
             if not state["queue"]:
                 state["status"] = "no_observed_fault_door"
@@ -2355,6 +2521,8 @@ def _accept(state: dict[str, Any], result: dict[str, Any], name: str) -> None:
                   "native_target_retained": result["native_target_retained"],
                   "target_exception_triggered": result["target_exception_triggered"],
                   "elapsed_seconds": result["elapsed_seconds"]}
+        if active.get("anchor_address") is not None:
+            record["anchor_address"] = active["anchor_address"]
         if "raw_target_throw_differential_candidate" in result:
             record["raw_target_throw_differential_candidate"] = result[
                 "raw_target_throw_differential_candidate"]
@@ -2388,6 +2556,8 @@ def _accept(state: dict[str, Any], result: dict[str, Any], name: str) -> None:
                 "tier": active["tier"], "novelty": active["novelty"],
                 "enqueued_at": state["completed_fault_trials"],
                 "attempt": active.get("attempt", 0) + 1}
+            if active.get("anchor_address") is not None:
+                retry["anchor_address"] = active["anchor_address"]
             if state.get("scheduler_version", 1) >= 5:
                 retry["target_phase"] = active.get("target_phase", "unknown")
             if state.get("scheduler_version", 1) >= 6:
@@ -2401,7 +2571,9 @@ def _accept(state: dict[str, Any], result: dict[str, Any], name: str) -> None:
             record["retry_enqueued"] = active.get("attempt", 0) + 1
         if (state.get("scheduler_version", 1) >= 3 and
                 result["status"] == "unmatched" and
-                result.get("runner_mode") == "region_state"):
+                result.get("runner_mode") == "region_state" and
+                active.get("anchor_address") is None and
+                result.get("anchor_replay_status") != "retry_exact_missing"):
             prefix_size = result.get("applied_prefix_count", 0)
             successors = result.get("observed_actor_successors", [])
             if (not isinstance(prefix_size, int) or isinstance(prefix_size, bool)
@@ -2409,7 +2581,8 @@ def _accept(state: dict[str, Any], result: dict[str, Any], name: str) -> None:
                     not isinstance(successors, list)):
                 raise ValueError("invalid unmatched actor successor receipt")
             before = len(state["queue"])
-            _enqueue(state, successors, active["faults"][:prefix_size], 0)
+            _enqueue(state, successors, active["faults"][:prefix_size], 0,
+                     anchor_address=active.get("anchor_address"))
             record["observed_actor_successors_enqueued"] = (
                 len(state["queue"]) - before)
         if result["status"] in ("checked", "candidate"):
@@ -2426,7 +2599,8 @@ def _accept(state: dict[str, Any], result: dict[str, Any], name: str) -> None:
                 depth_feedback = _depth_feedback(active, result, novelty)
                 record["depth_feedback"] = depth_feedback
             _enqueue(state, result["eligible_doors"], active["faults"],
-                     novelty, depth_feedback)
+                     novelty, depth_feedback,
+                     anchor_address=active.get("anchor_address"))
     state["active"] = None
     _finish_status(state)
 
@@ -2444,7 +2618,7 @@ def _finish_status(state: dict[str, Any]) -> None:
 
 def _new_state(config: dict[str, Any], config_sha: str,
                admitted: dict[str, Any]) -> dict[str, Any]:
-    return {"schema_version": SCHEMA, "case_id": config["case_id"],
+    state = {"schema_version": SCHEMA, "case_id": config["case_id"],
             "scheduler_version": SCHEDULER_VERSION,
             "config_sha256": config_sha, "budget": config["budget"],
             "weave_receipt_sha256": _sha(Path(admitted["weave_config"][
@@ -2460,6 +2634,10 @@ def _new_state(config: dict[str, Any], config_sha: str,
             "seen_branch_outcomes": [], "completed_fault_trials": 0,
             "fault_id_attempts": {}, "fault_id_successes": {},
             "elapsed_seconds": 0.0, "active": None, "next_trial_index": 1}
+    if "multi_target_max_anchors" in config["recording"]:
+        state["multi_anchor_config"] = {"multi_target_max_anchors":
+            config["recording"]["multi_target_max_anchors"]}
+    return state
 
 
 def _predecessor_snapshot(config: dict[str, Any], root: Path,
@@ -2731,7 +2909,8 @@ def _resume_active(config: dict[str, Any], admitted: dict[str, Any],
     if result_file.is_file():
         result = _load(result_file)
         if result.get("case_id") != state["case_id"] or result.get(
-                "faults") != active["faults"]:
+                "faults") != active["faults"] or result.get(
+                "anchor_address") != active.get("anchor_address"):
             raise ValueError("completed native trial disagrees with checkpoint")
         local_sha = result.get("local_artifacts_manifest_sha256")
         if local_sha is not None and _sha(trial / "local-artifacts.json") != local_sha:
@@ -2765,6 +2944,20 @@ def _resume_active(config: dict[str, Any], admitted: dict[str, Any],
     healthy_raw_throw_count = None
     if active["index"] > 0:
         healthy_result = _load(root / "trials" / "r0000" / "result.json")
+        if state.get("multi_anchor_addresses"):
+            healthy_file = root / "trials" / "r0000" / "native-summary.json"
+            if (_sha(healthy_file) != healthy_result.get("native_session_sha256")
+                    or not isinstance(healthy, dict) or
+                    [row.get("occurrenceAddress") for row in healthy.get(
+                        "anchors", [])] != state["multi_anchor_addresses"]):
+                raise ValueError("healthy multi-target graph bundle changed")
+            for index, row in enumerate(healthy["anchors"]):
+                graph_file = (root / "trials" / "r0000" / "original-graph" /
+                              f"anchor-{index:02d}" / "summary.json")
+                if (not graph_file.is_file() or
+                        _sha(graph_file) != row.get("summarySha256") or
+                        _load(graph_file) != row.get("summary")):
+                    raise ValueError("healthy exact target graph changed")
         healthy_raw_throw_count = healthy_result.get("raw_exact_target_throw_count")
         if (healthy_raw_throw_count is not None and
                 (not isinstance(healthy_raw_throw_count, int) or
@@ -2775,7 +2968,9 @@ def _resume_active(config: dict[str, Any], admitted: dict[str, Any],
                    if "scheduler_version" in state else {})
     if active["index"] > 0:
         result = _run_trial(config, admitted, trial, active["faults"], healthy,
-                            healthy_raw_throw_count, **version_arg)
+                            healthy_raw_throw_count,
+                            anchor_address=active.get("anchor_address"),
+                            **version_arg)
     else:
         result = _run_trial(config, admitted, trial, active["faults"], healthy,
                             **version_arg)
@@ -2882,6 +3077,9 @@ def run_campaign(config_path: Path, root: Path,
                                    "tier": selected["tier"],
                                    "novelty": selected["novelty"],
                                    "attempt": selected.get("attempt", 0)}
+                if "anchor_address" in selected:
+                    state["active"]["anchor_address"] = selected[
+                        "anchor_address"]
                 if state.get("scheduler_version", 1) >= 5:
                     state["active"]["target_phase"] = selected.get(
                         "target_phase", "unknown")

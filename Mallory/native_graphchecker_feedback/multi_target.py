@@ -7,7 +7,10 @@ is resolved, recorded, and finalized independently by the original engine.
 from __future__ import annotations
 
 import hashlib
+import gzip
 import json
+import math
+from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
 
@@ -48,10 +51,89 @@ def _candidate_rows(receipt: dict[str, Any]) -> list[dict[str, Any]]:
         row["eventSeq"], row["occurrenceAddress"]))
 
 
+def continuation_signatures(trace_dir: Path, receipt: dict[str, Any], *,
+                            method_window: int = 40) -> dict[str, set[str]]:
+    """Fingerprint bounded same-lane work after each observed target check.
+
+    The original runtime trace supplies the lane and method identities. A
+    method must recur across several activations to be useful; methods common
+    to almost every activation carry no context information. These hints
+    cannot admit a fault into an original GraphChecker closure.
+    """
+    if (not isinstance(method_window, int) or isinstance(method_window, bool)
+            or not 1 <= method_window <= 256):
+        raise ValueError("invalid bounded continuation method window")
+    rows = _candidate_rows(receipt)
+    trace_dir = Path(trace_dir)
+    raw = trace_dir / "runtime_trace.jsonl"
+    compressed = trace_dir / "runtime_trace.jsonl.gz"
+    if raw.is_file():
+        opener, path = open, raw
+    elif compressed.is_file():
+        opener, path = gzip.open, compressed
+    else:
+        return {}
+    target_calls = {row.get("callId") for row in rows}
+    if any(not isinstance(call, int) or isinstance(call, bool)
+           for call in target_calls):
+        return {}
+    target_entries: dict[int, dict[str, Any]] = {}
+    methods_by_lane: dict[int, list[tuple[int, str]]] = defaultdict(list)
+    with opener(path, "rt", encoding="utf-8") as stream:
+        for line in stream:
+            event = json.loads(line)
+            if event.get("event") != "METHOD_ENTER":
+                continue
+            lane, seq, method = (event.get("laneId"), event.get("seq"),
+                                 event.get("method"))
+            if (not isinstance(lane, int) or isinstance(lane, bool) or
+                    not isinstance(seq, int) or isinstance(seq, bool) or
+                    not isinstance(method, str) or not method):
+                continue
+            methods_by_lane[lane].append((seq, method))
+            if event.get("callId") in target_calls:
+                target_entries[event["callId"]] = event
+    raw_signatures: dict[str, set[str]] = {}
+    for row in rows:
+        entry = target_entries.get(row["callId"])
+        if (entry is None or entry.get("sourceKey") != row["sourceKey"] or
+                entry["seq"] > row["eventSeq"]):
+            continue
+        future = [method for seq, method in methods_by_lane[entry["laneId"]]
+                  if seq > row["eventSeq"]][:method_window]
+        if future:
+            raw_signatures[row["occurrenceAddress"]] = set(future)
+    count = len(raw_signatures)
+    if count < 3:
+        return {}
+    frequency = Counter(method for methods in raw_signatures.values()
+                        for method in methods)
+    minimum = max(2, math.ceil(count * 0.04))
+    maximum = math.floor(count * 0.80)
+    return {address: {method for method in methods
+                      if minimum <= frequency[method] <= maximum}
+            for address, methods in raw_signatures.items()}
+
+
+def _continuation_distance(left: set[str], right: set[str],
+                           frequency: Counter[str], count: int) -> int:
+    if not left or not right:
+        return 0
+    union = left | right
+    total = sum(math.log((count + 1) / (frequency[method] + 1))
+                for method in union)
+    if total <= 0:
+        return 0
+    common = sum(math.log((count + 1) / (frequency[method] + 1))
+                 for method in left & right)
+    return round(1000 * (1 - common / total))
+
+
 def select_target_occurrences(receipt: dict[str, Any], *, max_anchors: int = 4,
                               round_index: int = 0,
                               prior_graphs: dict[str, dict[str, Any]] | None = None,
-                              typed_doors: list[dict[str, Any]] | None = None
+                              typed_doors: list[dict[str, Any]] | None = None,
+                              signatures: dict[str, set[str]] | None = None
                               ) -> list[dict[str, Any]]:
     """Sample first/quantile/last target activations, rotating across rounds.
 
@@ -76,6 +158,9 @@ def select_target_occurrences(receipt: dict[str, Any], *, max_anchors: int = 4,
         indices = [(index + round_index) % len(rows) for index in indices]
     prior_graphs = prior_graphs or {}
     typed_doors = typed_doors or []
+    signatures = signatures or {}
+    frequency = Counter(method for methods in signatures.values()
+                        for method in methods)
     chosen: list[dict[str, Any]] = []
     used: set[str] = set()
     radius = max(1, len(rows) // (2 * count))
@@ -83,7 +168,7 @@ def select_target_occurrences(receipt: dict[str, Any], *, max_anchors: int = 4,
         neighborhood = [rows[(center + offset) % len(rows)]
                         for offset in range(-radius, radius + 1)]
 
-        def score(row: dict[str, Any]) -> tuple[int, int, int, int, str]:
+        def score(row: dict[str, Any]) -> tuple[int, int, int, int, int, str]:
             address = row["occurrenceAddress"]
             graph = prior_graphs.get(address, {})
             target_evidence = graph.get("targetEvidence")
@@ -95,6 +180,11 @@ def select_target_occurrences(receipt: dict[str, Any], *, max_anchors: int = 4,
             # Only exact Finalizer output can change priority.  Quantile
             # proximity breaks ties so the initial round is reproducible.
             evidence = len(closure) if isinstance(closure, list) else 0
+            signature = signatures.get(address, set())
+            diversity = (min(_continuation_distance(
+                signature, signatures.get(earlier, set()), frequency,
+                len(signatures)) for earlier in used)
+                if used and signature else 0)
             # Compare only the same actor's native VM event clock.  The
             # fault-receipt `seq` is a different clock and is never used.
             nearest_door = min((row["eventSeq"] - door["nativeVmEventId"]
@@ -113,7 +203,7 @@ def select_target_occurrences(receipt: dict[str, Any], *, max_anchors: int = 4,
             position = rows.index(row)
             distance = min((position - center) % len(rows),
                            (center - position) % len(rows))
-            return (evidence, door_evidence, -distance,
+            return (evidence, diversity, door_evidence, -distance,
                     -row["eventSeq"], address)
 
         available = [row for row in neighborhood if
@@ -153,9 +243,11 @@ def record_multiple_region_states(trace_dir: Path, output_dir: Path, *,
     fault_events = Path(recording["fault_events"])
     with fault_events.open(encoding="utf-8") as stream:
         typed_doors = [json.loads(line) for line in stream if line.strip()]
+    signatures = continuation_signatures(trace_dir, receipt)
     candidates = select_target_occurrences(
         receipt, max_anchors=max_anchors, round_index=round_index,
-        prior_graphs=prior_graphs, typed_doors=typed_doors)
+        prior_graphs=prior_graphs, typed_doors=typed_doors,
+        signatures=signatures)
     anchors = []
     for index, candidate in enumerate(candidates):
         anchor_dir = output_dir / f"anchor-{index:02d}"
@@ -187,6 +279,13 @@ def record_multiple_region_states(trace_dir: Path, output_dir: Path, *,
             "initialSummarySha256": _sha(initial_dir / "summary.json"),
             "initialReceiptSha256": _sha(receipt_file),
             "roundIndex": round_index,
+            "selectionEvidence": {"strategy":
+                "bounded_continuation_idf_then_exact_original_graph",
+                "methodWindow": 40, "signatureCount": len(signatures),
+                "signatureSha256": hashlib.sha256(json.dumps(
+                    {address: sorted(methods) for address, methods in
+                     signatures.items()}, sort_keys=True,
+                    separators=(",", ":")).encode()).hexdigest()},
             "retryExactOccurrences": [row["occurrenceAddress"] for row in anchors
                                       if not row["targetReached"]],
             "anchors": anchors}
