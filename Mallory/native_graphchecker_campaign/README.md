@@ -211,8 +211,8 @@ sealed, run `--import-only` with the same config and output root. This stage
 requires that cached admission, rechecks the frozen predecessor, and writes
 only the successor checkpoint, summary, and import receipt. It starts no
 Java child, JUnit, or fault trial. The checkpoint records imported completed
-fault trials separately from new trials; imported trials count toward the
-formal trial budget. A fresh successor healthy r0000 is still required before
+fault trials and elapsed trial time separately from new work; both count toward
+the formal trial and time budgets. A fresh successor healthy r0000 is still required before
 new faults. New fault directory numbering starts at the frozen source's
 `next_trial_index`, so no old trial name or successful plan is replayed.
 One exact retry of a fault-unmatched plan may remain pending with its attempt

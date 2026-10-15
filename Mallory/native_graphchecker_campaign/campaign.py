@@ -13,6 +13,7 @@ import hashlib
 from collections import Counter
 from fractions import Fraction
 import json
+import math
 import os
 import re
 import shutil
@@ -3126,7 +3127,8 @@ def _finish_status(state: dict[str, Any]) -> None:
           state.get("imported_completed_fault_trials", 0) >=
           state["budget"]["fault_trials"]):
         state["status"], state["terminal"] = "complete_trial_budget", True
-    elif state["elapsed_seconds"] >= state["budget"]["seconds"]:
+    elif (state["elapsed_seconds"] + state.get("imported_elapsed_seconds", 0.0)
+          >= state["budget"]["seconds"]):
         state["status"], state["terminal"] = "complete_time_budget", True
     elif state["healthy"] is not None and not state["queue"] and state["active"] is None:
         state["status"], state["terminal"] = "complete_queue", True
@@ -3468,6 +3470,11 @@ def _predecessor_snapshot(config: dict[str, Any], root: Path,
     if (checkpoint_budget != source_budget or state_budget != successor_budget or
             successor_depth < source_depth):
         raise ValueError("predecessor fault-depth limit is not a valid monotonic extension")
+    if bounded_prefix and (not isinstance(source.get("elapsed_seconds"), (int, float))
+                           or isinstance(source["elapsed_seconds"], bool) or
+                           not math.isfinite(source["elapsed_seconds"]) or
+                           source["elapsed_seconds"] < 0):
+        raise ValueError("bounded predecessor elapsed trial time is invalid")
     expanding_depth = successor_depth > source_depth
     all_events_pinned = "source_all_event_tree_sha256" in pins
     if expanding_depth and not all_events_pinned:
@@ -3628,6 +3635,7 @@ def _predecessor_snapshot(config: dict[str, Any], root: Path,
             "bounded_snapshot_manifest_sha256"]
         receipt["imported_unmatched_retry_count"] = imported_unmatched_retries
         receipt["discarded_tested_retry_count"] = discarded_tested_retries
+        receipt["source_elapsed_seconds"] = source["elapsed_seconds"]
     if verify_derived and any(receipt[name] != pins[name] for name in (
             "tested_plan_keys_sha256", "source_result_tree_sha256",
             "source_unmatched_event_tree_sha256") +
@@ -3704,6 +3712,7 @@ def _import_predecessor(config: dict[str, Any], root: Path,
         # Keep the imported trial credit distinct from locally executed trials.
         state["imported_completed_fault_trials"] = receipt[
             "source_completed_fault_trials"]
+        state["imported_elapsed_seconds"] = receipt["source_elapsed_seconds"]
         state["next_trial_index"] = source["next_trial_index"]
         if "multi_anchor_addresses" in source:
             addresses = source["multi_anchor_addresses"]
@@ -3874,6 +3883,8 @@ def run_campaign(config_path: Path, root: Path,
                 if (saved.get("source_kind") == "bounded_prefix_snapshot_v1" and
                         (state.get("imported_completed_fault_trials") != saved[
                             "source_completed_fault_trials"] or
+                         state.get("imported_elapsed_seconds") != saved[
+                             "source_elapsed_seconds"] or
                          state.get("next_trial_index", 0) < saved[
                              "source_completed_fault_trials"] + 1)):
                     raise ValueError("bounded predecessor trial credit changed")

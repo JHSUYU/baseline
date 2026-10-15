@@ -52,6 +52,7 @@ class BoundedPrefixImportTest(unittest.TestCase):
         source["terminal"] = False
         source["scheduler_version"] = 15
         source["next_trial_index"] = 3
+        source["elapsed_seconds"] = 10.0
         source["active"] = ({"name": "r0003", "faults": []} if active else None)
         source["healthy"] = {"name": "r0000", "status": "healthy_seed",
                              "result": "trials/r0000/result.json"}
@@ -230,6 +231,7 @@ class BoundedPrefixImportTest(unittest.TestCase):
             run_trial.assert_not_called()
             self.assertEqual(0, state["completed_fault_trials"])
             self.assertEqual(2, state["imported_completed_fault_trials"])
+            self.assertEqual(10.0, state["imported_elapsed_seconds"])
             self.assertEqual(3, state["next_trial_index"])
             self.assertIsNone(state["healthy"])
             self.assertFalse((root / "successor/trials").exists())
