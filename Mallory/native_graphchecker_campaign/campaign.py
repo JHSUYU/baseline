@@ -45,7 +45,7 @@ FAULT_FIELDS = ("siteId", "node", "actorEpochOrdinal", "occurrenceId",
                 "ordinal", "exceptionClass")
 SELECTOR_FIELDS = ("siteId", "node", "actorEpochOrdinal", "ordinal",
                    "exceptionClass")
-MAX_FAULTS = 10
+MAX_FAULTS = 16
 MAX_UNMATCHED_RETRIES = 2
 SHA256_HEX = re.compile(r"[0-9a-f]{64}\Z")
 MESSAGE_FIELDS = ("messageReplayKey", "messageParentId")
@@ -157,6 +157,13 @@ def _validate_config(config: dict[str, Any]) -> None:
             recording.get("static_may_scope_map") is None):
         raise ValueError("control-plane peer policy requires multi-target "
                          "retention and a pinned static MAY map")
+    repeat_policy = recording.get("repeated_rpc_occurrence_policy")
+    if repeat_policy is not None and (
+            repeat_policy != "repeated_rpc_pretarget_v1" or
+            anchor_count is None or
+            recording.get("static_may_scope_map") is None):
+        raise ValueError("repeated RPC occurrence policy requires multi-target "
+                         "anchors and a pinned static MAY map")
     may_path = recording.get("static_may_scope_map")
     may_sha = recording.get("static_may_scope_map_sha256")
     if (may_path is None) != (may_sha is None) or (may_path is not None and
@@ -1210,6 +1217,18 @@ def _enqueue(state: dict[str, Any], doors: list[dict[str, Any]],
             item["peer_relation"] = door.get("peer_relation", "unknown")
         if state.get("scheduler_version", 1) >= 10 and prefix:
             item["depth_feedback"] = dict(depth_feedback or {})
+        if state.get("scheduler_version", 1) >= 14:
+            item["later_same_site_pretarget_count"] = door.get(
+                "later_same_site_pretarget_count", 0)
+            item["last_same_site_target_distance"] = door.get(
+                "last_same_site_target_distance")
+            previous = prefix[-1] if prefix else None
+            item["same_site_descendant"] = bool(previous and
+                previous["siteId"] == door["fault"]["siteId"] and
+                previous["node"] == door["fault"]["node"] and
+                previous["actorEpochOrdinal"] == door["fault"]["actorEpochOrdinal"] and
+                previous["exceptionClass"] == door["fault"]["exceptionClass"] and
+                previous["ordinal"] < door["fault"]["ordinal"])
         state["queue"].append(item)
     state["seen_plan_keys"] = sorted(seen)
 
@@ -1218,6 +1237,62 @@ def _fault_id(fault: dict[str, Any]) -> str:
     """CrashFuzz-style I/O identity, independent of actor and occurrence."""
     return json.dumps([fault["siteId"], fault["exceptionClass"]],
                       separators=(",", ":"), ensure_ascii=False)
+
+
+def _mark_repeated_rpc_predecessors(
+        doors: list[dict[str, Any]], rpc_sites: frozenset[str]
+        ) -> list[dict[str, Any]]:
+    """Annotate observed pretarget RPC doors with later same-actor occurrences.
+
+    The static MAY map admits the RPC site. Exact actor, ordinal and event
+    order come from the healthy trace; this is a scheduler hint, not an edge.
+    """
+    ordered = sorted(doors, key=lambda item: item["seq"])
+    for index, door in enumerate(ordered):
+        fault = door["fault"]
+        if (fault["siteId"] not in rpc_sites or
+                door.get("target_phase") != "before_selected_target"):
+            continue
+        later = [other for other in ordered[index + 1:]
+                 if other.get("target_phase") == "before_selected_target" and
+                 other["seq"] > door["seq"] and
+                 other["fault"]["siteId"] == fault["siteId"] and
+                 other["fault"]["node"] == fault["node"] and
+                 other["fault"]["actorEpochOrdinal"] == fault["actorEpochOrdinal"] and
+                 other["fault"]["exceptionClass"] == fault["exceptionClass"] and
+                 other["fault"]["ordinal"] > fault["ordinal"]]
+        if later:
+            door["later_same_site_pretarget_count"] = len(later)
+            distances = [other.get("target_order_distance") for other in later]
+            door["last_same_site_target_distance"] = min(
+                (value for value in distances if isinstance(value, int) and
+                 not isinstance(value, bool) and value >= 0), default=None)
+    return doors
+
+
+def _anchored_repeated_rpc_doors(
+        doors: list[dict[str, Any]], rpc_sites: frozenset[str],
+        previous: dict[str, Any] | None) -> list[dict[str, Any]]:
+    """Keep exact closure doors plus a prior RPC's observed continuation.
+
+    Static MAY admits the RPC site; the later occurrence must be in the same
+    actor and before the selected target. It is not promoted into closure.
+    """
+    retained = []
+    for door in doors:
+        if door["tier"] == "observed_closure":
+            retained.append(door)
+            continue
+        if previous is None or door["tier"] != "static_producer_frontier" or (
+                door["target_phase"] != "before_selected_target"):
+            continue
+        fault = door["fault"]
+        if (fault["siteId"] in rpc_sites and
+                all(fault[key] == previous[key] for key in
+                    ("siteId", "node", "actorEpochOrdinal", "exceptionClass")) and
+                fault["ordinal"] > previous["ordinal"]):
+            retained.append(door)
+    return retained
 
 
 def _repeated_near_score(item: dict[str, Any]) -> Fraction:
@@ -1294,7 +1369,7 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
     version = state.get("scheduler_version", 1)
     if version == 1:
         return _pick_v1(state)
-    if version not in (2, 3, 4, 5, 6, 7, 8, 9, SCHEDULER_VERSION, 11, 12, 13):
+    if version not in (2, 3, 4, 5, 6, 7, 8, 9, SCHEDULER_VERSION, 11, 12, 13, 14):
         raise ValueError(f"unsupported native scheduler version: {version}")
     queue = state["queue"]
     if not queue:
@@ -1336,14 +1411,53 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
     # Keep one of eight slots for observed doors outside the target closure.
     outside_slot = bool(outside) and completed % 8 == 7
     candidates = outside if outside_slot else inside or outside
+    if version >= 14 and not outside_slot:
+        repeat_kind = ("earlier" if completed % 8 == 2 else
+                       "descendant" if completed % 8 in (1, 6) else None)
+        # A long repeated run matters more than a nearby isolated retry.
+        # This is tied to the configured sequence depth, not a named RPC.
+        min_later = min(7, state["budget"]["max_faults_per_trial"] - 1)
+        repeat_candidates = ([item for item in candidates if
+            len(item["faults"]) == 1 and
+            item.get("later_same_site_pretarget_count", 0) >= min_later and
+            item.get("target_phase") == "before_selected_target"]
+            if repeat_kind == "earlier" else
+            [item for item in candidates if
+             len(item["faults"]) > 1 and
+             item.get("same_site_descendant") is True and
+             item.get("target_phase") == "before_selected_target"]
+            if repeat_kind == "descendant" else [])
+        if repeat_candidates:
+            # Exact target-anchor rotation still applies. This slot favors
+            # an earlier observed RPC occurrence, then a same-site successor.
+            def repeat_distance(item: dict[str, Any]) -> int:
+                value = item.get("last_same_site_target_distance") if (
+                    repeat_kind == "earlier") else item.get(
+                    "target_order_distance")
+                return value if isinstance(value, int) and not isinstance(
+                    value, bool) and value >= 0 else 10**9
+
+            selected = max(repeat_candidates, key=lambda item: (
+                len(item["faults"]) if repeat_kind == "descendant" else
+                -repeat_distance(item),
+                -state["fault_id_attempts"].get(_fault_id(
+                    item["faults"][-1]), 0),
+                item.get("peer_relation") == "same_peer_before_target",
+                -repeat_distance(item),
+                item.get("later_same_site_pretarget_count", 0),
+                item["faults"][-1]["ordinal"],
+                -item.get("attempt", 0), item["key"]))
+            queue.remove(selected)
+            return selected
     deep_fair_slot = False
     if version >= 10 and not outside_slot and completed % 16 == 11:
         # The v6 depth>=3 slot still sorts fault ID before depth. Reserve a
-        # separate slot for depth 4..6 descendants of a strictly injected
+        # separate slot for deeper descendants of a strictly injected
         # trial that reached the target after its final fault and supplied
         # target-directed graph, closure, temporal, or peer feedback. This
         # does not admit any new fault door or alter the target oracle.
-        max_depth = min(6, state["budget"]["max_faults_per_trial"])
+        max_depth = min((MAX_FAULTS if version >= 14 else 6),
+                        state["budget"]["max_faults_per_trial"])
         deep = [item for item in candidates if
                 4 <= len(item["faults"]) <= max_depth and
                 isinstance(item.get("depth_feedback"), dict) and
@@ -1352,8 +1466,9 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
                 not isinstance(item["depth_feedback"]["score"], bool) and
                 item["depth_feedback"]["score"] >= 2]
         if deep:
-            desired = 4 + (completed // 16) % 3
             depths = {len(item["faults"]) for item in deep}
+            desired = (max(depths) if version >= 14 else
+                       4 + (completed // 16) % 3)
             chosen_depth = (desired if desired in depths else
                             max((depth for depth in depths if depth < desired),
                                 default=min(depths)))
@@ -2246,6 +2361,9 @@ def _complete_multi_healthy(config: dict[str, Any], trial: Path,
                 "target-occurrence.json", peer_sites, events)
             peer_audits.append({"anchorAddress": address,
                                 "peerAudit": peer_audit})
+        if recording.get("repeated_rpc_occurrence_policy") is not None:
+            selected = _mark_repeated_rpc_predecessors(
+                selected, static_rpc_sites)
         doors.extend(selected)
     if recording.get("control_plane_peer_policy") is not None:
         receipt = {"schemaVersion": 1,
@@ -2393,8 +2511,9 @@ def _run_region_trial(config: dict[str, Any], admitted: dict[str, Any],
                                 _region_doors(events, summary, last,
                                               static_rpc_sites))
     if anchor_address is not None:
-        result["eligible_doors"] = [door for door in result[
-            "eligible_doors"] if door["tier"] == "observed_closure"]
+        previous = faults[-1] if scheduler_version >= 14 and faults else None
+        result["eligible_doors"] = _anchored_repeated_rpc_doors(
+            result["eligible_doors"], static_rpc_sites, previous)
         for door in result["eligible_doors"]:
             door["anchor_address"] = anchor_address
     peer_rpc_sites = _peer_rpc_sites(config, static_rpc_sites)
@@ -2739,6 +2858,11 @@ def _accept(state: dict[str, Any], result: dict[str, Any], name: str) -> None:
                 retry["peer_relation"] = active.get("peer_relation", "unknown")
             if state.get("scheduler_version", 1) >= 10:
                 retry["depth_feedback"] = active.get("depth_feedback", {})
+            if state.get("scheduler_version", 1) >= 14:
+                retry["later_same_site_pretarget_count"] = active.get(
+                    "later_same_site_pretarget_count", 0)
+                retry["same_site_descendant"] = active.get(
+                    "same_site_descendant", False)
             state["queue"].append(retry)
             record["retry_enqueued"] = active.get("attempt", 0) + 1
         if (state.get("scheduler_version", 1) >= 3 and
@@ -2791,7 +2915,10 @@ def _finish_status(state: dict[str, Any]) -> None:
 def _new_state(config: dict[str, Any], config_sha: str,
                admitted: dict[str, Any]) -> dict[str, Any]:
     state = {"schema_version": SCHEMA, "case_id": config["case_id"],
-            "scheduler_version": (13 if config["recording"].get(
+            "scheduler_version": (14 if config["recording"].get(
+                "repeated_rpc_occurrence_policy") ==
+                "repeated_rpc_pretarget_v1"
+                else 13 if config["recording"].get(
                 "control_plane_peer_policy") ==
                 "same_peer_pretarget_late_repeated_quarter"
                 else 12 if config["recording"].get(
@@ -2823,6 +2950,9 @@ def _new_state(config: dict[str, Any], config_sha: str,
         if "control_plane_peer_policy" in config["recording"]:
             state["multi_anchor_config"]["control_plane_peer_policy"] = (
                 config["recording"]["control_plane_peer_policy"])
+        if "repeated_rpc_occurrence_policy" in config["recording"]:
+            state["multi_anchor_config"]["repeated_rpc_occurrence_policy"] = (
+                config["recording"]["repeated_rpc_occurrence_policy"])
     return state
 
 
