@@ -46,6 +46,8 @@ def peer_incarnation_relation(
     throws: list[dict[str, Any]] = []
     sends: dict[tuple[str, str, str], list[dict[str, Any]]] = defaultdict(list)
     receives: dict[tuple[str, str, str], list[dict[str, Any]]] = defaultdict(list)
+    response_receives: dict[tuple[str, str], list[dict[str, Any]]] = (
+        defaultdict(list))
     with trace_path.open(encoding="utf-8") as stream:
         for line in stream:
             row = json.loads(line)
@@ -56,6 +58,12 @@ def peer_incarnation_relation(
             elif event == "METHOD_EXIT_THROW" and row.get("method") == fault_method:
                 if row.get("runtimeType") == fault_exception:
                     throws.append(row)
+            elif (row.get("transport") == "HADOOP_IPC" and
+                  event == "EXCHANGE_RECEIVE" and
+                  row.get("half") == "RESPONSE"):
+                key = _key(row)
+                if all(key):
+                    response_receives[key[:2]].append(row)
             elif (row.get("transport") == "HADOOP_IPC" and
                   row.get("half") == "REQUEST" and
                   event in ("EXCHANGE_SEND", "EXCHANGE_RECEIVE")):
@@ -107,13 +115,22 @@ def peer_incarnation_relation(
             target_pairs.append(evidence)
         if send.get("sourceKey") != fault_source_key:
             continue
-        ancestors = _ancestors(send.get("callId", 0), parent)
+        # HDFS's RpcRequestSender may write on a different thread, so its
+        # callId can be 0.  The exact matching RESPONSE is attached on the
+        # original caller thread and carries that caller's invocation.
+        responses = [row for row in response_receives.get(key[:2], [])
+                     if row.get("sourceKey") == fault_source_key]
+        if len(responses) != 1:
+            continue
+        ancestors = _ancestors(responses[0].get("callId", 0), parent)
         if any((enters.get(call_id, {}).get("objectId") == handle and
                 enters.get(call_id, {}).get("sourceKey") == fault_source_key and
                 enters.get(call_id, {}).get("receiverType") ==
                 fault_enter.get("receiverType")) for call_id in ancestors):
             fault_peers.add(peer)
-            fault_pairs.append(evidence)
+            fault_pairs.append({**evidence,
+                                "responseReceiveSeq": responses[0].get("seq"),
+                                "responseCallId": responses[0].get("callId")})
 
     report["faultPeerIncarnations"] = sorted(fault_peers)
     report["targetPeerIncarnations"] = sorted(target_peers)

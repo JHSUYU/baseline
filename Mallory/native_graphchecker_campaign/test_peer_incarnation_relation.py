@@ -34,6 +34,10 @@ class PeerIncarnationRelationTest(unittest.TestCase):
              "transport": "HADOOP_IPC", "half": "REQUEST",
              "correlationId": "rpc-a", "attemptId": "0",
              "sourceKey": "nn0#epoch0", "sourceRole": "NAMENODE"},
+            {"event": "EXCHANGE_RECEIVE", "seq": 4,
+             "callId": 10, "transport": "HADOOP_IPC", "half": "RESPONSE",
+             "correlationId": "rpc-a", "attemptId": "0",
+             "sourceKey": CLIENT, "sourceRole": "CLIENT"},
             {"event": "METHOD_ENTER", "seq": 5, "callId": 20,
              "parentCallId": 0, "method": FAULT_METHOD,
              "objectId": 11, "receiverType": "ClientTranslator",
@@ -84,6 +88,10 @@ class PeerIncarnationRelationTest(unittest.TestCase):
              "transport": "HADOOP_IPC", "half": "REQUEST",
              "correlationId": "rpc-c", "attemptId": "0",
              "sourceKey": "nn0#epoch1", "sourceRole": "NAMENODE"},
+            {"event": "EXCHANGE_RECEIVE", "seq": 11, "callId": 10,
+             "transport": "HADOOP_IPC", "half": "RESPONSE",
+             "correlationId": "rpc-c", "attemptId": "0",
+             "sourceKey": CLIENT, "sourceRole": "CLIENT"},
         ]
         result = self._run(rows)
         self.assertEqual("unknown", result["relation"])
@@ -102,9 +110,20 @@ class PeerIncarnationRelationTest(unittest.TestCase):
                          "METHOD_EXIT_THROW"))
         self.assertEqual("unknown", self._run(rows)["relation"])
         rows = self._events()
-        rows.append(dict(rows[5], seq=12))
+        rows.append(dict(next(row for row in rows if row["event"] ==
+                              "METHOD_EXIT_THROW"), seq=12))
         self.assertEqual("unknown", self._run(rows)["relation"])
         self.assertEqual("same", self._run(rows, fault_throw_seq=6)["relation"])
+
+    def test_missing_or_duplicate_caller_response_is_unknown(self):
+        rows = self._events()
+        response = next(row for row in rows if row.get("half") == "RESPONSE")
+        rows.remove(response)
+        self.assertEqual("unknown", self._run(rows)["relation"])
+        rows = self._events()
+        response = next(row for row in rows if row.get("half") == "RESPONSE")
+        rows.append(dict(response, seq=12))
+        self.assertEqual("unknown", self._run(rows)["relation"])
 
     def test_receiver_identity_is_scoped_to_source_actor(self):
         rows = self._events()
