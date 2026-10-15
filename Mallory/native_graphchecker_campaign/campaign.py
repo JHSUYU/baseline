@@ -2986,7 +2986,7 @@ def run_campaign(config_path: Path, root: Path,
     if stop_after_fault_trials is not None and (
             not isinstance(stop_after_fault_trials, int) or
             isinstance(stop_after_fault_trials, bool) or
-            not 0 < stop_after_fault_trials <= config["budget"]["fault_trials"]):
+            not 0 <= stop_after_fault_trials <= config["budget"]["fault_trials"]):
         raise ValueError("stop_after_fault_trials must be within the formal fault budget")
     config_sha = _sha(config_path)
     root = root.resolve()
