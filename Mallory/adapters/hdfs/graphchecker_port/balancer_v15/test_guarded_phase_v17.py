@@ -125,10 +125,12 @@ class GuardedPhaseTest(unittest.TestCase):
             "name": "r0000", "status": "healthy_seed",
             "result": "trials/r0000/result.json"},
             "multi_anchor_addresses": ["dn0/region/one"],
+            "imported_multi_anchor_addresses": ["dn0/region/one"],
             "trials": [], "active": None, "completed_fault_trials": 0,
             "imported_completed_fault_trials": 16,
             "predecessor_import": imported}
-        config = {"recording": {"multi_target_max_anchors": 1}}
+        config = {"recording": {"multi_target_max_anchors": 1},
+                  "predecessor_campaign": {"frozen_healthy_seed": True}}
         return state, imported, config, graph
 
     def test_frozen_healthy_seed_requires_exact_graph_and_sidecars(self):
@@ -149,6 +151,14 @@ class GuardedPhaseTest(unittest.TestCase):
         state["multi_anchor_addresses"] = ["different"]
         self.assertFalse(phase._verified_frozen_healthy_seed(
             self.output, state, imported, config))
+        state, imported, config, _ = self._frozen_fixture()
+        state["imported_multi_anchor_addresses"] = ["different"]
+        self.assertFalse(phase._verified_frozen_healthy_seed(
+            self.output, state, imported, config))
+        state, imported, config, _ = self._frozen_fixture()
+        config["predecessor_campaign"]["frozen_healthy_seed"] = False
+        self.assertFalse(phase._verified_frozen_healthy_seed(
+            self.output, state, imported, config))
 
     def test_import_accepts_only_opted_in_frozen_healthy_seed(self):
         self.args.mode = "import"
@@ -157,7 +167,8 @@ class GuardedPhaseTest(unittest.TestCase):
         self.config.write_text(json.dumps({"case_id": "SUCCESSOR", "runner": {
             "local_artifact_root": str(self.raw),
             "local_work_root": str(self.work)},
-            "recording": {"multi_target_max_anchors": 1}}))
+            "recording": {"multi_target_max_anchors": 1},
+            "predecessor_campaign": {"frozen_healthy_seed": True}}))
 
         class Done:
             def __init__(inner, command, **kwargs):

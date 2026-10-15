@@ -40,9 +40,12 @@ def _verified_frozen_healthy_seed(output: Path, state: dict,
     anchor_count = config.get("recording", {}).get("multi_target_max_anchors")
     addresses = state.get("multi_anchor_addresses")
     if (not isinstance(files, dict) or not isinstance(graphs, dict) or
+            config.get("predecessor_campaign", {}).get(
+                "frozen_healthy_seed") is not True or
             not isinstance(anchor_count, int) or anchor_count <= 0 or
             len(graphs) != anchor_count or not isinstance(addresses, list) or
             len(addresses) != anchor_count or len(set(addresses)) != anchor_count or
+            state.get("imported_multi_anchor_addresses") != addresses or
             "trials/r0000/result.json" not in files or
             "trials/r0000/native-summary.json" not in files):
         return False
