@@ -120,9 +120,15 @@ class MultiTargetTest(unittest.TestCase):
 
     def test_cross_anchor_delta_is_never_compared(self) -> None:
         a = {"occurrenceAddress": "a", "targetReached": True,
-             "summary": {"id": "healthy-a"}}
+             "summary": {"id": "healthy-a", "targetReached": True,
+                         "closureMembershipAuthority":
+                         "original_runtime_selected_region_finalizer",
+                         "targetEvidence": {"selectedOccurrenceAddress": "a"}}}
         b = {"occurrenceAddress": "b", "targetReached": True,
-             "summary": {"id": "fault-b"}}
+             "summary": {"id": "fault-b", "targetReached": True,
+                         "closureMembershipAuthority":
+                         "original_runtime_selected_region_finalizer",
+                         "targetEvidence": {"selectedOccurrenceAddress": "b"}}}
         with patch("Mallory.native_graphchecker_feedback.multi_target."
                    "delta_region_state") as delta:
             self.assertEqual({}, delta_matching_anchors(
@@ -132,6 +138,31 @@ class MultiTargetTest(unittest.TestCase):
             self.assertEqual({"a": delta.return_value}, delta_matching_anchors(
                 {"anchors": [a]}, {"anchors": [a]}))
             delta.assert_called_once_with(a["summary"], a["summary"])
+
+    def test_raw_exact_oracle_is_independent_of_graph_absence(self) -> None:
+        from Mallory.native_graphchecker_campaign.campaign import (
+            _target_throw_observations,
+        )
+        target_site = "<Example: void check()>#u7"
+        target_throw = {"siteId": "<Example: void check()>#u8",
+                        "exceptionClass": "java.io.IOException"}
+        rows = [{"kind": "FAULT_APPLIED", "seq": 1,
+                 "node": "client", "actorEpochOrdinal": 0,
+                 "occurrenceId": "fault"},
+                {"kind": "TARGET_CHECK", "seq": 2,
+                 "siteId": target_site, "node": "dn0",
+                 "actorEpochOrdinal": 0, "occurrenceId": "exact-check"},
+                {"kind": "TARGET_THROW", "seq": 3,
+                 "siteId": target_throw["siteId"],
+                 "exceptionClass": target_throw["exceptionClass"],
+                 "node": "dn0", "actorEpochOrdinal": 0,
+                 "occurrenceId": "exact-check"}]
+        # campaign._run_trial invokes this existing oracle before graphs.
+        raw = _target_throw_observations(rows, target_site, target_throw)
+        self.assertEqual(1, len(raw))
+        self.assertEqual("exact-check", raw[0]["occurrenceId"])
+        self.assertEqual([], _target_throw_observations(
+            rows[:2], target_site, target_throw))
 
     def test_missing_exact_occurrence_requests_retry_without_fallback(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -175,10 +206,13 @@ class MultiTargetTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             healthy = {"schemaVersion": 1, "anchors": [
-                {"occurrenceAddress": "target-00"},
-                {"occurrenceAddress": "target-25"},
-                {"occurrenceAddress": "target-49"},
-                {"occurrenceAddress": "target-74"}]}
+                {"occurrenceAddress": address, "targetReached": True,
+                 "summary": {"targetReached": True,
+                    "closureMembershipAuthority":
+                    "original_runtime_selected_region_finalizer",
+                    "targetEvidence": {"selectedOccurrenceAddress": address}}}
+                for address in ("target-00", "target-25", "target-49",
+                                "target-74")]}
             calls = []
 
             def graph(_trace, output, **arguments):

@@ -215,6 +215,9 @@ def record_pinned_region_states(trace_dir: Path, output_dir: Path, *,
                 for address in addresses) or
             len(addresses) != len(set(addresses))):
         raise ValueError("healthy anchor bundle has invalid exact identities")
+    for row in healthy:
+        if not _authoritative_anchor(row):
+            raise ValueError("healthy anchor lacks original exact closure authority")
     output_dir = Path(output_dir)
     anchors = []
     for index, address in enumerate(addresses):
@@ -258,6 +261,21 @@ def delta_matching_anchors(healthy: dict[str, Any], faulted: dict[str, Any]
         address = row["occurrenceAddress"]
         if address in baseline and row["targetReached"] and baseline[address][
                 "targetReached"]:
+            if not _authoritative_anchor(row) or not _authoritative_anchor(
+                    baseline[address]):
+                raise ValueError("cross-run graph lacks exact closure authority")
             result[address] = delta_region_state(baseline[address]["summary"],
                                                  row["summary"])
     return result
+
+
+def _authoritative_anchor(row: dict[str, Any]) -> bool:
+    summary = row.get("summary")
+    return (row.get("targetReached") is True and
+            isinstance(summary, dict) and
+            summary.get("targetReached") is True and
+            summary.get("closureMembershipAuthority") ==
+            "original_runtime_selected_region_finalizer" and
+            isinstance(summary.get("targetEvidence"), dict) and
+            summary["targetEvidence"].get("selectedOccurrenceAddress") ==
+            row.get("occurrenceAddress"))
