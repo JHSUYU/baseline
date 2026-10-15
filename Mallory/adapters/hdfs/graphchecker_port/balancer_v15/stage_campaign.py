@@ -56,12 +56,14 @@ def main() -> None:
     assert all(Path(p).exists() for p in runner["classpath"])
     runner["jvm_args"] = [*runner["jvm_args"],
                           "-Dmallory.gc.nativeFaultDoorContext=true"]
-    runner["local_artifact_root"] = "/run/user/20003/mallory-hdfs-balancer-v15b-raw"
+    # Keep the large native traces on the guarded local scratch filesystem;
+    # /run/user has only about 1 GB free on node0.
+    runner["local_artifact_root"] = str(ROOT / "raw-v15c")
     runner["local_work_root"] = str(ROOT / "trial-work")
     for name in ("candidate_graph", "region_skeletons", "static_scope_map",
                  "static_may_scope_map", "trace_dir"):
         assert Path(rec[name]).exists(), name
-    path = ROOT / "inputs/campaign-config-v15.json"
+    path = ROOT / "inputs/campaign-config-v15c.json"
     assert not path.exists()
     path.write_text(json.dumps(config, indent=2, sort_keys=True) + "\n")
     receipt = {"config": str(path), "config_sha256": sha(path),
@@ -74,7 +76,7 @@ def main() -> None:
                "healthy1_manifest_sha256": sha(ROOT / "healthy1/trace/streaming_trace_manifest.json"),
                "healthy2_manifest_sha256": sha(ROOT / "healthy2/trace/streaming_trace_manifest.json"),
                "zero_imported_fault_trials": True, "manual_fault_site_overrides": 0}
-    (ROOT / "inputs/campaign-pin-v15.json").write_text(
+    (ROOT / "inputs/campaign-pin-v15c.json").write_text(
         json.dumps(receipt, indent=2, sort_keys=True) + "\n")
     print(json.dumps(receipt, sort_keys=True))
 
