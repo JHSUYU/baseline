@@ -40,6 +40,7 @@ from Mallory.native_graphchecker_feedback.multi_target import (
 from .source_preflight import feedback_bridge
 from .static_may import observed_rpc_door_sites, rpc_producer_sites
 from .peer_identity import rank_region_doors_by_peer
+from .priority_quota import POLICY as RETAINED_PARENT_PRIORITY, choose as choose_retained_parent
 
 SCHEMA = 1
 SCHEDULER_VERSION = 10
@@ -172,6 +173,13 @@ def _validate_config(config: dict[str, Any]) -> None:
             not isinstance(config.get("runner"), dict) or
             config["runner"].get("mode") != "region_state"):
         raise ValueError("multi-target anchors require task-free REGION_STATE")
+    retained_priority = config.get("retained_parent_pretarget_priority")
+    if retained_priority is not None and (
+            retained_priority != RETAINED_PARENT_PRIORITY or
+            anchor_count is None or
+            _effective_fault_depth(config["budget"]) < 2):
+        raise ValueError("retained-parent priority requires exact multi-anchor "
+                         "plans and a multi-fault budget")
     scheduler_policy = config.get("scheduler_policy")
     if scheduler_policy is not None and (
             scheduler_policy not in (
@@ -1434,6 +1442,12 @@ def _pick_v1(state: dict[str, Any]) -> dict[str, Any]:
     if not queue:
         raise ValueError("empty native fault queue")
     completed = state["completed_fault_trials"]
+    retained = choose_retained_parent(
+        state, plan_key=_plan_key, fault_id=_fault_id,
+        depth_limit=_effective_fault_depth(state["budget"]))
+    if retained is not None:
+        queue.remove(retained)
+        return retained
     # A sparse slot preserves exploration outside the observed target closure.
     outside = [item for item in queue if item["tier"] == "outside_closure"]
     candidates = outside if outside and completed % 8 == 7 else queue
@@ -3286,6 +3300,9 @@ def _new_state(config: dict[str, Any], config_sha: str,
             "fault_id_attempts": {}, "fault_id_successes": {},
             "peer_postfault_attempts": {}, "peer_postfault_retained": {},
             "elapsed_seconds": 0.0, "active": None, "next_trial_index": 1}
+    if config.get("retained_parent_pretarget_priority") is not None:
+        state["retained_parent_pretarget_priority"] = config[
+            "retained_parent_pretarget_priority"]
     if "multi_target_max_anchors" in config["recording"]:
         state["multi_anchor_config"] = {"multi_target_max_anchors":
             config["recording"]["multi_target_max_anchors"]}
@@ -4251,6 +4268,8 @@ def run_campaign(config_path: Path, root: Path,
             if (state.get("schema_version") != SCHEMA or
                     state.get("case_id") != config["case_id"] or
                     state.get("config_sha256") != config_sha or
+                    state.get("retained_parent_pretarget_priority") !=
+                    config.get("retained_parent_pretarget_priority") or
                     state.get("budget") != config["budget"] or
                     state.get("weave_receipt_sha256") != _sha(Path(admitted[
                         "weave_config"]["output_classes"]) /
