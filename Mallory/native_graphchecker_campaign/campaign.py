@@ -23,7 +23,7 @@ import tarfile
 import tempfile
 import time
 import zipfile
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 from Mallory.instrumentation.graphchecker_port.native_original_weave import (
@@ -3246,6 +3246,122 @@ def _new_state(config: dict[str, Any], config_sha: str,
     return state
 
 
+def _inherited_healthy_local_lineage(paths: dict[str, Path],
+                                     source: dict[str, Any],
+                                     sidecar: Path,
+                                     local: dict[str, Any]) -> bool:
+    """Prove that r0000 kept an earlier frozen healthy seed's raw root.
+
+    A bounded successor copies r0000 bytes unchanged.  Its local-artifact
+    sidecar therefore names the original campaign, while later trials name
+    the immediate source campaign.  Accept this one exception only after the
+    pinned predecessor snapshot and frozen-healthy receipt both validate.
+    """
+    config = _load(paths["config"])
+    pins = config.get("predecessor_campaign")
+    receipt = source.get("predecessor_import")
+    if (not isinstance(pins, dict) or pins.get("frozen_healthy_seed") is not True
+            or not isinstance(receipt, dict) or
+            receipt.get("source_kind") != "bounded_prefix_snapshot_v1" or
+            not isinstance(receipt.get("frozen_healthy_seed"), dict)):
+        return False
+    prior_paths = {}
+    for name in ("config", "checkpoint", "summary"):
+        path_value = pins.get(name)
+        digest = pins.get(name + "_sha256")
+        if (not isinstance(path_value, str) or
+                not Path(path_value).is_absolute() or
+                not isinstance(digest, str) or
+                not SHA256_HEX.fullmatch(digest)):
+            return False
+        prior_paths[name] = Path(path_value)
+        if not prior_paths[name].is_file() or _sha(prior_paths[name]) != digest:
+            return False
+    if (receipt.get("source_root") != str(prior_paths["checkpoint"].parent) or
+            receipt.get("source_pins") != {
+                name: pins[name + "_sha256"] for name in prior_paths} or
+            receipt.get("bounded_snapshot_manifest_sha256") !=
+            pins.get("bounded_snapshot_manifest_sha256") or
+            receipt["frozen_healthy_seed"].get("source_healthy_files", {}).get(
+                "trials/r0000/local-artifacts.json") != _sha(sidecar)):
+        return False
+    prior = _load(prior_paths["checkpoint"])
+    manifest = _verify_bounded_snapshot(pins, prior_paths, prior)
+    prior_pin = manifest["files"].get("trials/r0000/local-artifacts.json")
+    return (manifest.get("source_output_root") == local.get("campaign_root")
+            and isinstance(prior_pin, dict) and
+            prior_pin.get("sha256") == _sha(sidecar))
+
+
+def _verify_attempt_contents_archive(row: dict[str, Any],
+                                     receipt: dict[str, Any],
+                                     local: dict[str, Any]) -> bool:
+    """Verify a pinned raw attempt tar whose receipt predates trial wrappers.
+
+    The result and local-artifact sidecar are pinned separately by the
+    bounded manifest.  This format's restore receipt pins each raw member,
+    rather than repeating the trial index and result hash.
+    """
+    archive = Path(row["absolute_tar_path"])
+    attempt = local.get("local_attempt_dir")
+    members = receipt.get("members")
+    selected = local.get("selected_sha256")
+    if (row.get("archive_format") != "attempt_contents" or
+            receipt.get("schema_version") != 1 or
+            receipt.get("actual_restore_verified") is not True or
+            receipt.get("source_retained") is not True or
+            receipt.get("archive") != str(archive) or
+            receipt.get("archive_sha256") != row["archive_sha256"] or
+            receipt.get("archive_bytes") != archive.stat().st_size or
+            not isinstance(attempt, str) or not Path(attempt).is_absolute() or
+            receipt.get("source") != attempt or
+            not isinstance(members, list) or not members or
+            receipt.get("member_count") != len(members) or
+            not isinstance(selected, dict) or not selected or
+            local.get("total_bytes") != receipt.get("source_bytes")):
+        return False
+    expected = {}
+    for member in members:
+        if (not isinstance(member, dict) or
+                member.get("type") not in ("file", "dir") or
+                not isinstance(member.get("path"), str) or
+                member["path"] in expected):
+            return False
+        expected[member["path"]] = member
+    actual = {}
+    prefix = PurePosixPath(Path(attempt).name)
+    with tarfile.open(archive, "r:gz") as stream:
+        for info in stream:
+            name = PurePosixPath(info.name)
+            if (name.is_absolute() or ".." in name.parts or
+                    not name.parts or name.parts[0] != str(prefix) or
+                    (not info.isfile() and not info.isdir())):
+                return False
+            relative = PurePosixPath(*name.parts[1:]).as_posix()
+            if relative in actual:
+                return False
+            if info.isdir():
+                actual[relative] = {"path": relative, "type": "dir"}
+            else:
+                raw = stream.extractfile(info)
+                if raw is None:
+                    return False
+                digest = hashlib.sha256()
+                size = 0
+                for block in iter(lambda: raw.read(1 << 20), b""):
+                    digest.update(block)
+                    size += len(block)
+                actual[relative] = {"path": relative, "type": "file",
+                                    "bytes": size,
+                                    "sha256": digest.hexdigest()}
+    if actual != expected:
+        return False
+    total = sum(member.get("bytes", 0) for member in actual.values())
+    return (total == receipt["source_bytes"] and all(
+        isinstance(name, str) and actual.get(name, {}).get("sha256") == digest
+        for name, digest in selected.items()))
+
+
 def _verify_bounded_snapshot(pins: dict[str, str], paths: dict[str, Path],
                              source: dict[str, Any]) -> dict[str, Any]:
     """Verify an independent, SHA-pinned copy of a stopped campaign prefix.
@@ -3388,8 +3504,11 @@ def _verify_bounded_snapshot(pins: dict[str, str], paths: dict[str, Path],
             sidecar = require(base + "/" + suffix, digest)
             if suffix == "local-artifacts.json":
                 local = _load(sidecar)
-                if (local.get("campaign_root") != executed_root or
-                        local.get("trial") != Path(base).name):
+                if (local.get("trial") != Path(base).name or
+                        (local.get("campaign_root") != executed_root and
+                         not (trial_index == 0 and
+                              _inherited_healthy_local_lineage(
+                                  paths, source, sidecar, local)))):
                     raise ValueError("bounded predecessor local raw lineage changed")
     if (len(trial_results) != source["completed_fault_trials"] + 1 or
             not isinstance(source.get("next_trial_index"), int) or
@@ -3422,10 +3541,14 @@ def _verify_bounded_snapshot(pins: dict[str, str], paths: dict[str, Path],
             if path.is_symlink() or not path.is_file() or _sha(path) != digest:
                 raise ValueError("bounded predecessor raw archive is missing or changed")
         receipt = _load(Path(row["absolute_receipt_path"]))
-        if (receipt.get("trial_index") != index or
-                receipt.get("result_sha256") != trial_results[index] or
-                receipt.get("archive_sha256") != row["archive_sha256"] or
-                receipt.get("verified_against_source") is not True):
+        if row.get("archive_format") == "attempt_contents":
+            local = _load(snapshot_root / f"trials/r{index:04d}/local-artifacts.json")
+            if not _verify_attempt_contents_archive(row, receipt, local):
+                raise ValueError("bounded predecessor raw attempt archive disagrees")
+        elif (receipt.get("trial_index") != index or
+              receipt.get("result_sha256") != trial_results[index] or
+              receipt.get("archive_sha256") != row["archive_sha256"] or
+              receipt.get("verified_against_source") is not True):
             raise ValueError("bounded predecessor raw archive receipt disagrees")
     if live_root.exists():
         current = live_root / "checkpoint.json"
