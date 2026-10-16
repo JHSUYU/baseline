@@ -1513,7 +1513,8 @@ def _all_anchor_fairness_slot(state: dict[str, Any]
         distance_score = (-distance if isinstance(distance, int) and
                           not isinstance(distance, bool) and distance >= 0
                           else -10**9)
-        return (item.get("target_phase") == "before_selected_target",
+        return (item["tier"] != "outside_closure",
+                item.get("target_phase") == "before_selected_target",
                 len(item["faults"]) == 1,
                 item.get("peer_relation") == "same_peer_before_target",
                 item.get("tier") == "observed_closure",

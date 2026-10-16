@@ -58,6 +58,14 @@ class AnchorFairnessV21Test(unittest.TestCase):
         current = state(version=16)
         self.assertEqual("deep-anchor-1", campaign._pick(current)["key"])
 
+    def test_fairness_prefers_in_closure_when_anchor_has_both(self):
+        current = state()
+        current["queue"] = [plan("inside", "anchor-0"),
+                            {**plan("outside", "anchor-0"),
+                             "tier": "outside_closure",
+                             "peer_relation": "same_peer_before_target"}]
+        self.assertEqual("inside", campaign._pick(current)["key"])
+
     def test_policy_is_explicit_and_preserves_default_version(self):
         base = {"case_id": "test", "budget": {"fault_trials": 256,
                 "max_faults_per_trial": 256},
