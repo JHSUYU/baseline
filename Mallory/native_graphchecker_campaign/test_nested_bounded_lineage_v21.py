@@ -7,6 +7,7 @@ import tarfile
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from Mallory.native_graphchecker_campaign import campaign
 from Mallory.native_graphchecker_campaign import test_bounded_prefix
@@ -42,6 +43,18 @@ class NestedBoundedLineageTest(unittest.TestCase):
             local = campaign._load(sidecar)
             self.assertTrue(campaign._inherited_healthy_local_lineage(
                 paths, source, sidecar, local))
+            # A second bounded successor keeps the first campaign's raw
+            # root, while the immediate predecessor has a different output
+            # root.  The exact sidecar and verified predecessor chain prove
+            # that inheritance without equating the two roots.
+            with patch.object(campaign, "_verify_bounded_snapshot",
+                              return_value={"source_output_root":
+                                            "/intermediate-campaign",
+                                            "files": {
+                                                "trials/r0000/local-artifacts.json": {
+                                                    "sha256": campaign._sha(sidecar)}}}):
+                self.assertTrue(campaign._inherited_healthy_local_lineage(
+                    paths, source, sidecar, local))
             self.assertFalse(campaign._inherited_healthy_local_lineage(
                 paths, source, sidecar,
                 {**local, "campaign_root": "/unrelated"}))

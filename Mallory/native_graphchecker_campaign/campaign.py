@@ -3346,9 +3346,18 @@ def _inherited_healthy_local_lineage(paths: dict[str, Path],
     prior = _load(prior_paths["checkpoint"])
     manifest = _verify_bounded_snapshot(pins, prior_paths, prior)
     prior_pin = manifest["files"].get("trials/r0000/local-artifacts.json")
-    return (manifest.get("source_output_root") == local.get("campaign_root")
-            and isinstance(prior_pin, dict) and
-            prior_pin.get("sha256") == _sha(sidecar))
+    prior_sidecar = prior_paths["checkpoint"].parent / (
+        "trials/r0000/local-artifacts.json")
+    # The direct predecessor may itself have inherited r0000 from an even
+    # earlier campaign.  Its complete bounded snapshot is verified above,
+    # including that earlier lineage.  Carry the exact pinned r0000 bytes
+    # forward instead of equating the first campaign's raw root to every
+    # intermediate campaign's output root.
+    return (isinstance(prior_pin, dict) and
+            prior_pin.get("sha256") == _sha(sidecar) and
+            _sha(prior_sidecar) == _sha(sidecar) and
+            _load(prior_sidecar).get("campaign_root") ==
+            local.get("campaign_root"))
 
 
 def _verify_attempt_contents_archive(row: dict[str, Any],
