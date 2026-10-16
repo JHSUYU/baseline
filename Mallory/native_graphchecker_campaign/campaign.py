@@ -174,10 +174,12 @@ def _validate_config(config: dict[str, Any]) -> None:
         raise ValueError("multi-target anchors require task-free REGION_STATE")
     scheduler_policy = config.get("scheduler_policy")
     if scheduler_policy is not None and (
-            scheduler_policy != {
-                "anchor_fairness": "all_selected_anchors_eighth_v1"} or
+            scheduler_policy not in (
+                {"anchor_fairness": "all_selected_anchors_eighth_v1"},
+                {"anchor_fairness": "all_selected_anchors_eighth_v1",
+                 "target_retention": "strict_prefix_shallow_eighth_v1"}) or
             anchor_count is None):
-        raise ValueError("anchor fairness requires exact multi-target anchors")
+        raise ValueError("scheduler policy requires exact multi-target anchors")
     retention_policy = recording.get("anchor_retention_policy")
     if retention_policy is not None and (
             retention_policy != "smoothed_postfault_3of4" or
@@ -1526,6 +1528,55 @@ def _all_anchor_fairness_slot(state: dict[str, Any]
     return max(candidates, key=score)
 
 
+def _target_retention_slot(state: dict[str, Any]
+                           ) -> dict[str, Any] | None:
+    """Spend one of eight slots on an exact target-retaining prefix.
+
+    A deep extension can erase the selected target even when its prefix
+    reached it.  This slot samples existing two/three-fault descendants of
+    strict target-retaining prefixes.  The depth bound applies only here:
+    other slots keep exploring arbitrarily deep configured sequences.  A
+    smoothed per-anchor shallow retention rate uses actual strict trials;
+    untried anchors retain a neutral prior.  No site or system name enters
+    this decision.
+    """
+    candidates = [item for item in state["queue"] if
+                  2 <= len(item["faults"]) <= 3 and
+                  item.get("target_phase") == "before_selected_target" and
+                  item.get("tier") != "outside_closure" and
+                  isinstance(item.get("depth_feedback"), dict) and
+                  item["depth_feedback"].get(
+                      "strict_post_fault_target") is True]
+    if not candidates:
+        return None
+    attempts: Counter[str] = Counter()
+    retained: Counter[str] = Counter()
+    for trial in state["trials"]:
+        if (trial.get("strict_injection") is True and
+                1 <= len(trial.get("faults", [])) <= 3):
+            anchor = trial.get("anchor_address")
+            attempts[anchor] += 1
+            if trial.get("post_fault_target_check_observed") is True:
+                retained[anchor] += 1
+
+    def score(item: dict[str, Any]) -> tuple[Any, ...]:
+        anchor = item.get("anchor_address")
+        distance = item.get("target_order_distance")
+        proximity = (-distance if isinstance(distance, int) and
+                     not isinstance(distance, bool) and distance >= 0
+                     else -10**9)
+        return (Fraction(retained[anchor] + 1, attempts[anchor] + 2),
+                -attempts[anchor],
+                item.get("peer_relation") == "same_peer_before_target",
+                item.get("tier") == "observed_closure",
+                -state["fault_id_attempts"].get(
+                    _fault_id(item["faults"][-1]), 0),
+                proximity, item["depth_feedback"].get("score", 0),
+                item["key"])
+
+    return max(candidates, key=score)
+
+
 def _pick(state: dict[str, Any]) -> dict[str, Any]:
     """Select diverse I/O sites, with explicit depth and waiting slots."""
     if state.get("scheduler_version", 1) >= 16:
@@ -1556,14 +1607,19 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
     version = state.get("scheduler_version", 1)
     if version == 1:
         return _pick_v1(state)
-    if version not in (2, 3, 4, 5, 6, 7, 8, 9, SCHEDULER_VERSION, 11, 12, 13, 14, 15, 16, 21):
+    if version not in (2, 3, 4, 5, 6, 7, 8, 9, SCHEDULER_VERSION, 11, 12, 13, 14, 15, 16, 21, 22):
         raise ValueError(f"unsupported native scheduler version: {version}")
     queue = state["queue"]
     if not queue:
         raise ValueError("empty native fault queue")
     completed = state["completed_fault_trials"]
-    if version == 21 and completed % 8 == 2:
+    if version >= 21 and completed % 8 == 2:
         selected = _all_anchor_fairness_slot(state)
+        if selected is not None:
+            queue.remove(selected)
+            return selected
+    if version == 22 and completed % 8 == 3:
+        selected = _target_retention_slot(state)
         if selected is not None:
             queue.remove(selected)
             return selected
@@ -3197,7 +3253,9 @@ def _new_state(config: dict[str, Any], config_sha: str,
                            _effective_fault_depth(config["budget"]) >
                            LEGACY_FAULT_DEPTH)
     state = {"schema_version": SCHEMA, "case_id": config["case_id"],
-            "scheduler_version": (21 if config.get("scheduler_policy", {}).get(
+            "scheduler_version": (22 if config.get("scheduler_policy", {}).get(
+                "target_retention") == "strict_prefix_shallow_eighth_v1"
+                else 21 if config.get("scheduler_policy", {}).get(
                 "anchor_fairness") == "all_selected_anchors_eighth_v1"
                 else 16 if budget_depth_opt_in
                 else 15 if config["recording"].get(
