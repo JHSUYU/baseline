@@ -172,6 +172,12 @@ def _validate_config(config: dict[str, Any]) -> None:
             not isinstance(config.get("runner"), dict) or
             config["runner"].get("mode") != "region_state"):
         raise ValueError("multi-target anchors require task-free REGION_STATE")
+    scheduler_policy = config.get("scheduler_policy")
+    if scheduler_policy is not None and (
+            scheduler_policy != {
+                "anchor_fairness": "all_selected_anchors_eighth_v1"} or
+            anchor_count is None):
+        raise ValueError("anchor fairness requires exact multi-target anchors")
     retention_policy = recording.get("anchor_retention_policy")
     if retention_policy is not None and (
             retention_policy != "smoothed_postfault_3of4" or
@@ -1481,6 +1487,44 @@ def _cross_anchor_strict_descendant(state: dict[str, Any]
         item.get("novelty", 0), item["key"]))
 
 
+def _all_anchor_fairness_slot(state: dict[str, Any]
+                              ) -> dict[str, Any] | None:
+    """Give every recorded target anchor a bounded chance to run.
+
+    Count all attempted plans, including strict misses and target loss.  A
+    depth quota can otherwise occupy the same modulo-eight position as an
+    anchor forever.  This slot only selects existing, exact queued plans.
+    """
+    addresses = state.get("multi_anchor_addresses", [])
+    if not addresses:
+        return None
+    available = {item.get("anchor_address") for item in state["queue"]}
+    attempts = Counter(trial.get("anchor_address") for trial in state["trials"])
+    eligible = [address for address in addresses if address in available]
+    if not eligible:
+        return None
+    address = min(eligible, key=lambda value: (attempts[value],
+                                               addresses.index(value)))
+    candidates = [item for item in state["queue"] if
+                  item.get("anchor_address") == address]
+
+    def score(item: dict[str, Any]) -> tuple[Any, ...]:
+        distance = item.get("target_order_distance")
+        distance_score = (-distance if isinstance(distance, int) and
+                          not isinstance(distance, bool) and distance >= 0
+                          else -10**9)
+        return (item.get("target_phase") == "before_selected_target",
+                len(item["faults"]) == 1,
+                item.get("peer_relation") == "same_peer_before_target",
+                item.get("tier") == "observed_closure",
+                item.get("selected_target_actor") is True,
+                -state["fault_id_attempts"].get(
+                    _fault_id(item["faults"][-1]), 0),
+                distance_score, item["key"])
+
+    return max(candidates, key=score)
+
+
 def _pick(state: dict[str, Any]) -> dict[str, Any]:
     """Select diverse I/O sites, with explicit depth and waiting slots."""
     if state.get("scheduler_version", 1) >= 16:
@@ -1511,12 +1555,17 @@ def _pick(state: dict[str, Any]) -> dict[str, Any]:
     version = state.get("scheduler_version", 1)
     if version == 1:
         return _pick_v1(state)
-    if version not in (2, 3, 4, 5, 6, 7, 8, 9, SCHEDULER_VERSION, 11, 12, 13, 14, 15, 16):
+    if version not in (2, 3, 4, 5, 6, 7, 8, 9, SCHEDULER_VERSION, 11, 12, 13, 14, 15, 16, 21):
         raise ValueError(f"unsupported native scheduler version: {version}")
     queue = state["queue"]
     if not queue:
         raise ValueError("empty native fault queue")
     completed = state["completed_fault_trials"]
+    if version == 21 and completed % 8 == 2:
+        selected = _all_anchor_fairness_slot(state)
+        if selected is not None:
+            queue.remove(selected)
+            return selected
     if version >= 15:
         selected = _cross_anchor_strict_descendant(state)
         if selected is not None:
@@ -3147,7 +3196,9 @@ def _new_state(config: dict[str, Any], config_sha: str,
                            _effective_fault_depth(config["budget"]) >
                            LEGACY_FAULT_DEPTH)
     state = {"schema_version": SCHEMA, "case_id": config["case_id"],
-            "scheduler_version": (16 if budget_depth_opt_in
+            "scheduler_version": (21 if config.get("scheduler_policy", {}).get(
+                "anchor_fairness") == "all_selected_anchors_eighth_v1"
+                else 16 if budget_depth_opt_in
                 else 15 if config["recording"].get(
                 "cross_anchor_strict_depth_policy") == "global_quarter_v1"
                 else 14 if config["recording"].get(
