@@ -53,13 +53,15 @@ unpack hbase-2.6.6-src.tar.gz hbase-2.6.6 "${deps}/sources/hbase-2.6.6"
 unpack solr-8.11.4-src.tgz solr-8.11.4 "${deps}/sources/solr-8.11.4"
 unpack apache-zookeeper-3.8.7.tar.gz apache-zookeeper-3.8.7 "${deps}/sources/zookeeper-3.8.7"
 
-# Test-only jars the HBase and HDFS runners put on the classpath from ~/.m2.
+# Test-only jars the HBase and HDFS runners put on the classpath from CRASHFUZZ_M2
+# (default ~/.m2/repository; a shared directory when the runners run on several nodes).
 for artifact in org.bouncycastle:bcprov-jdk15on:1.60 org.bouncycastle:bcpkix-jdk15on:1.60 \
     org.jacoco:org.jacoco.agent:0.8.15:jar:runtime org.apache.hadoop:hadoop-minikdc:3.4.3 \
     org.mockito:mockito-core:4.9.0 net.bytebuddy:byte-buddy:1.12.16 \
     net.bytebuddy:byte-buddy-agent:1.12.16 org.objenesis:objenesis:3.3 \
     org.apache.kerby:kerb-simplekdc:2.0.3; do
-  mvn -q dependency:get -Dtransitive=true -Dartifact="${artifact}"
+  mvn -q dependency:get -Dtransitive=true -Dartifact="${artifact}" \
+    -Dmaven.repo.local="${CRASHFUZZ_M2:-${HOME}/.m2/repository}"
 done
 
 # The ZooKeeper runner reads QuorumRestartTest's Surefire classpath from a built tree.
