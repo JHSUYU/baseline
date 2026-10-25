@@ -226,6 +226,50 @@ public class CoarseSelectorTest {
         }
     }
 
+    @Test public void readsGraphCheckerSchemaV3WireFlowsAndRefusesOthers() throws Exception {
+        String producer = "<" + PREFIX + "$RpcProducer: void send()>";
+        String consumer = "<" + PREFIX + "$Reader: void check()>";
+        for (int schema : new int[] {3, 4}) {
+            Path mapping = Files.createTempFile("crashfuzz-wire-v" + schema + "-", ".jsonl");
+            try {
+                JsonObject row = new JsonObject();
+                row.addProperty("schemaVersion", schema);
+                row.addProperty("kind", "WIRE_FLOW");
+                JsonObject from = new JsonObject();
+                from.addProperty("method", producer);
+                JsonObject to = new JsonObject();
+                to.addProperty("method", consumer);
+                row.add("producer", from);
+                row.add("consumer", to);
+                Files.write(mapping, (row.toString() + "\n").getBytes(StandardCharsets.UTF_8));
+                JsonObject input = new JsonObject();
+                input.addProperty("target_method", consumer);
+                JsonObject analysis = new JsonObject();
+                JsonArray dirs = new JsonArray();
+                dirs.add("target/test-classes");
+                analysis.add("process_dirs", dirs);
+                analysis.add("classpath", new JsonArray());
+                JsonArray mappings = new JsonArray();
+                mappings.add(mapping.toString());
+                analysis.add("rpc_mapping_files", mappings);
+                input.add("analysis", analysis);
+                if (schema == 3) {
+                    assertTrue(CoarseSelector.analyze(input).getAsJsonArray("coverage_methods")
+                            .toString().contains("$RpcProducer: void send()"));
+                } else {
+                    try {
+                        CoarseSelector.analyze(input);
+                        throw new AssertionError("a schema v4 row was read");
+                    } catch (IllegalArgumentException expected) {
+                        assertTrue(expected.getMessage().contains("v2 or v3 WIRE_FLOW"));
+                    }
+                }
+            } finally {
+                Files.deleteIfExists(mapping);
+            }
+        }
+    }
+
     @Test public void followsMappedWireProducerToSendingIoBoundary() throws Exception {
         Path mapping = Files.createTempFile("crashfuzz-wire-sender-", ".jsonl");
         try {

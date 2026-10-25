@@ -681,10 +681,11 @@ public final class CoarseSelector {
                     lineNumber++;
                     if (line.trim().isEmpty()) continue;
                     JsonObject row = JsonParser.parseString(line).getAsJsonObject();
-                    if (!row.has("schemaVersion") || row.get("schemaVersion").getAsInt() != 2
-                            || !"WIRE_FLOW".equals(required(row, "kind"))) {
+                    // GraphChecker's v2 and v3 WIRE_FLOW rows name producer and consumer alike.
+                    int schema = row.has("schemaVersion") ? row.get("schemaVersion").getAsInt() : 0;
+                    if ((schema != 2 && schema != 3) || !"WIRE_FLOW".equals(required(row, "kind"))) {
                         throw new IllegalArgumentException(path + ":" + lineNumber
-                                + ": expected GraphChecker schema v2 WIRE_FLOW");
+                                + ": expected a GraphChecker schema v2 or v3 WIRE_FLOW");
                     }
                     String producer = required(row.getAsJsonObject("producer"), "method");
                     String consumer = required(row.getAsJsonObject("consumer"), "method");
