@@ -120,8 +120,8 @@ aliases watch's `getData` leaves a node's alias cache stale, so a valid update
 is rejected; found by a 240-trial Soot-selected campaign, trial 31 -- see
 `data/evidence/SOLR-40/`; the refactored code replays it: the same single fault,
 injected strictly in all 10 replays, makes the target throw in 1, the run whose
-JUnit test fails, as the race needs the update to arrive before the watch's
-retry -- `data/evidence/SOLR-40/replay-2026-10-25.json`) and **HBASE-32**
+JUnit test fails (exit 1; the other nine pass): whether the stale cache meets an
+update is a matter of timing -- `data/evidence/SOLR-40/replay-2026-10-25.json`) and **HBASE-32**
 (`RegionReplicaFlushHandler.triggerFlushInPrimaryRegion`; found with a
 case-specific agent of the earlier campaign -- see `data/evidence/HBASE-32/`).
 [`DESIGN.md`](DESIGN.md) records the campaign protocol.
