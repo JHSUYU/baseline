@@ -31,7 +31,7 @@ def trace_rows(fatal: bool = False, applied: bool = False) -> list[dict]:
     rows = [
         {"event": "METHOD_ENTER", "seq": 1, "method": CAS, "callId": 1, "sourceKey": CLIENT,
          "threadName": MAIN},
-        {"event": "PLANT_MARKER", "seq": 2, "rootId": "FAULT:HBASE_RPC:REQUEST",
+        {"event": "PLANT_MARKER", "seq": 2, "nanos": 200, "rootId": "FAULT:HBASE_RPC:REQUEST",
          "siteId": CALL + "#u60", "occurrences": ["c1"], "occurrenceAddress": cas,
          "threadName": MAIN},
         {"event": "EXCHANGE_SEND", "seq": 3, "transport": "HBASE_RPC", "correlationId": "r1",
@@ -44,10 +44,10 @@ def trace_rows(fatal: bool = False, applied: bool = False) -> list[dict]:
          "threadName": HANDLER},
         {"event": "STORE_READ", "seq": 6, "transport": "HBASE_ZK", "location": "/hbase/lock",
          "version": "3", "op": "getData", "occurrenceAddress": cas, "threadName": MAIN},
-        {"event": "PLANT_MARKER", "seq": 7, "rootId": "FAULT:HBASE_RPC:RESPONSE",
+        {"event": "PLANT_MARKER", "seq": 7, "nanos": 700, "rootId": "FAULT:HBASE_RPC:RESPONSE",
          "siteId": FINISH + "#u44", "occurrences": ["f1", "c1"], "occurrenceAddress": reply,
          "threadName": NETTY},
-        {"event": "PLANT_MARKER", "seq": 8, "rootId": "FAULT:HBASE_RPC:RESPONSE",
+        {"event": "PLANT_MARKER", "seq": 8, "nanos": 800, "rootId": "FAULT:HBASE_RPC:RESPONSE",
          "siteId": FINISH + "#u44", "occurrences": ["f1", "c1"], "occurrenceAddress": reply,
          "threadName": NETTY},
         {"event": "BRANCH", "seq": 9, "callId": 1, "siteId": CAS + "#u24", "outcome": not fatal},
@@ -110,7 +110,7 @@ class FaultTest(unittest.TestCase):
         points = faults.points(run)
         self.assertEqual([(p.occurrence, p.invocation) for p in points],
                          [("c1", 1), ("f1", 1), ("f1", 2)])
-        self.assertEqual(faults.points(run, after_seq=7)[0].invocation, 2)
+        self.assertEqual(faults.points(run, after_nanos=700)[0].invocation, 2)
         self.assertEqual(points[1].action, "FAULT:HBASE_RPC:RESPONSE @ RpcConnection.finishCall#u44")
 
     def test_plant_rows(self) -> None:
@@ -118,15 +118,51 @@ class FaultTest(unittest.TestCase):
             run = graph.build(write_trace(Path(tmp), trace_rows()))
             point = faults.points(run)[1]
             target = {"kind": "TARGET", "occurrence": "t1", "siteId": CAS + "#u24", "value": False}
-            planted = faults.write_plant(Path(tmp) / "plant.jsonl", (point,), [target])
-            rows = [json.loads(line) for line in (Path(tmp) / "plant.jsonl").read_text().splitlines()]
-        self.assertEqual(planted, [0])
+            planted, outside = faults.write_plant(Path(tmp) / "t1.plant.jsonl", (point,), [target])
+            rows = [json.loads(line) for line in
+                    (Path(tmp) / "t1.plant.jsonl").read_text().splitlines()]
+            self.assertEqual((Path(tmp) / "t1.plant-outside.jsonl").read_text(), "")
+        self.assertEqual((planted, outside), ([0], set()))
         self.assertEqual(rows[0], {"kind": "ROOT", "category": "FAULT", "rootId": point.root,
                                    "occurrence": "f1", "siteId": point.site, "invocation": 1,
                                    "value": "true", "row": 0})
         self.assertEqual(rows[1]["kind"], "TARGET")
         self.assertIs(rows[1]["value"], False)
         self.assertEqual(rows[1]["row"], 1)
+
+    def test_door_evaluations_outside_the_window_are_fault_points_too(self) -> None:
+        place = "before|" + CLIENT + "|RS-EventLoopGroup-N-N"
+        outside_rows = [
+            {"event": "OUTSIDE_MARKER", "nanos": 100, "rootId": "FAULT:HBASE_RPC:RESPONSE",
+             "siteId": FINISH + "#u44", "place": place, "invocation": 1},
+            {"event": "OUTSIDE_APPLIED", "nanos": 150, "rootId": "FAULT:HBASE_RPC:RESPONSE",
+             "siteId": FINISH + "#u44", "place": place, "invocation": 2}]
+        with tempfile.TemporaryDirectory() as tmp:
+            run_dir = Path(tmp) / "t1"
+            run_dir.mkdir()
+            trace = write_trace(run_dir, trace_rows())
+            log = graph.outside_log(trace)
+            self.assertEqual(log, Path(tmp) / "t1.outside.jsonl")
+            log.write_text("".join(json.dumps(row) + "\n" for row in outside_rows))
+            run = graph.build(trace, log)
+            points = faults.points(run)
+            plant = Path(tmp) / "t2.plant.jsonl"
+            planted, outside = faults.write_plant(plant, (points[1], points[3]), [])
+            outside_rows_written = [json.loads(line) for line in
+                                    faults.outside_plant(plant).read_text().splitlines()]
+        # one order across the window: the two outside evaluations came first
+        self.assertEqual([p.outside for p in points], [True, True, False, False, False])
+        self.assertEqual(points[0].occurrence, "outside:" + place)
+        self.assertEqual((points[1].invocation, points[1].node), (2, CLIENT))
+        self.assertEqual(run.outside_applied, {(FINISH + "#u44", place, 2)})
+        self.assertEqual(faults.evaluated_at(run, (points[1], points[3])), 700)
+        self.assertEqual([p.nanos for p in faults.points(run, after_nanos=150)], [200, 700, 800])
+        self.assertEqual(planted, [0])
+        self.assertEqual(outside, {(FINISH + "#u44", place, 2)})
+        self.assertEqual(outside_rows_written,
+                         [{"siteId": FINISH + "#u44", "place": place, "invocation": 2}])
+        # an outside point and a window point of one site may share a plan
+        self.assertTrue(faults.compatible((points[1],), points[3]))
 
     def test_one_occurrence_per_site_in_a_plan(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -150,6 +186,11 @@ class PolicyTest(unittest.TestCase):
         pick = q.choose(["a", "b", "c"], state_of=lambda c: "s", action_of=lambda c: c,
                         tried_count=lambda c: q.tries.get("s", {}).get(c, 0))
         self.assertEqual(pick, 2)                                # the untried action
+        # among equally ranked candidates the draw, not their order, decides
+        fresh = [policy.QPolicy(epsilon=0.0, seed=seed) for seed in range(20)]
+        picks = {p.choose(["x", "y", "z"], state_of=lambda c: "s", action_of=lambda c: c,
+                          tried_count=lambda c: 0) for p in fresh}
+        self.assertEqual(picks, {0, 1, 2})
         self.assertGreater(policy.reward(10), policy.reward(1))
         self.assertLessEqual(policy.reward(1000), 1.0)
         self.assertEqual(policy.reward(0), 0.0)

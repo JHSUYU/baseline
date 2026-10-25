@@ -7,6 +7,14 @@ call site, the innermost enclosing occurrence and the invocation of that site
 under that occurrence. Planting a ``FAULT`` row with those three makes the
 marker fail at that very evaluation (``RecordingPlant.marker`` counts a site's
 evaluations under the planted occurrence the same way).
+
+Outside GraphChecker's recording window no occurrence names an evaluation:
+there a fault point is the call site, its place (``before`` the window opened
+or ``after`` it closed, the node its thread serves, the thread's name with its
+numbers folded) and the invocation counted per site and place, as the run's
+``OUTSIDE_MARKER`` rows state it; such points are planted through their own
+file (``causynth.plant.outside``). So a campaign can fail any woven door
+anywhere in the workload, not only where GraphChecker records.
 """
 
 from __future__ import annotations
@@ -29,7 +37,9 @@ class FaultPoint:
     line: str          # its timeline: the node's thread (graph.timeline)
     region: str        # the GraphChecker region of the innermost occurrence
     context: str       # its exchange or root and call path (graph.context_of)
-    seq: int           # its trace seq in the run it was observed in
+    seq: int           # its trace seq in the run it was observed in (-1 outside the window)
+    place: str = ""    # outside the window: before|after, node, thread (else "")
+    nanos: int = 0     # the JVM's nanoTime of the evaluation: one order in and out of the window
 
     @property
     def action(self) -> str:
@@ -37,12 +47,16 @@ class FaultPoint:
         return f"{self.root} @ {short_site(self.site)}"
 
     @property
+    def outside(self) -> bool:
+        return bool(self.place)
+
+    @property
     def key(self) -> tuple[str, str, int]:
         return self.site, self.occurrence, self.invocation
 
 
-def points(graph: RunGraph, after_seq: int = -1) -> list[FaultPoint]:
-    """Every marker evaluation of a run after ``after_seq``, as a fault point."""
+def points(graph: RunGraph, after_nanos: int = -1) -> list[FaultPoint]:
+    """Every door evaluation of a run after ``after_nanos``, in and out of the window, in order."""
     counted: dict[tuple[str, str], int] = {}
     found = []
     for row in graph.markers:
@@ -52,8 +66,6 @@ def points(graph: RunGraph, after_seq: int = -1) -> list[FaultPoint]:
         innermost = occurrences[0]
         for occurrence in occurrences:
             counted[(row["siteId"], occurrence)] = counted.get((row["siteId"], occurrence), 0) + 1
-        if row.get("seq", -1) <= after_seq:
-            continue
         found.append(FaultPoint(site=row["siteId"], root=row.get("rootId", ""),
                                 occurrence=innermost,
                                 invocation=counted[(row["siteId"], innermost)],
@@ -62,13 +74,30 @@ def points(graph: RunGraph, after_seq: int = -1) -> list[FaultPoint]:
                                               row.get("threadName", "")),
                                 region=region_of_address(row.get("occurrenceAddress", "")),
                                 context=context_of(row.get("occurrenceAddress", "")),
-                                seq=row.get("seq", -1)))
-    return found
+                                seq=row.get("seq", -1), nanos=row.get("nanos", 0)))
+    for row in graph.outside:
+        place = row.get("place", "")
+        phase, node, thread = (place.split("|", 2) + ["", ""])[:3]
+        found.append(FaultPoint(site=row["siteId"], root=row.get("rootId", ""),
+                                occurrence="outside:" + place, invocation=row.get("invocation", 0),
+                                node=node, line=(node or "?") + " | " + thread,
+                                region="outside " + phase, context="outside " + phase,
+                                seq=-1, place=place, nanos=row.get("nanos", 0)))
+    found.sort(key=lambda point: point.nanos)
+    return [point for point in found if point.nanos > after_nanos]
+
+
+def evaluated_at(graph: RunGraph, plan: tuple[FaultPoint, ...]) -> int:
+    """When the run evaluated its plan's last fault (nanoTime), or -1."""
+    wanted = {point.key for point in plan}
+    return max((point.nanos for point in points(graph) if point.key in wanted), default=-1)
 
 
 def compatible(plan: tuple[FaultPoint, ...], point: FaultPoint) -> bool:
-    """A plan plants one occurrence per site, so its invocations count alike."""
-    return all(p.key != point.key and (p.site != point.site or p.occurrence == point.occurrence)
+    """A plan plants one occurrence per site in the window, so its invocations count alike."""
+    return all(p.key != point.key and
+               (p.outside or point.outside or p.site != point.site or
+                p.occurrence == point.occurrence)
                for p in plan)
 
 
@@ -77,10 +106,17 @@ def plan_id(plan: tuple[FaultPoint, ...]) -> str:
     return hashlib.sha256(text.encode()).hexdigest()[:16]
 
 
-def write_plant(path: Path, plan: tuple[FaultPoint, ...], target_rows: list[dict]) -> list[int]:
-    """The plant for ``plan``; returns the plant rows of its faults."""
+def outside_plant(path: Path) -> Path:
+    """The file of a plant's faults outside the window."""
+    return path.with_name(path.name.replace(".plant.jsonl", "") + ".plant-outside.jsonl")
+
+
+def write_plant(path: Path, plan: tuple[FaultPoint, ...], target_rows: list[dict]
+                ) -> tuple[list[int], set[tuple[str, str, int]]]:
+    """The plant for ``plan``: the plant rows of its window faults, and its outside faults."""
+    inside = [point for point in plan if not point.outside]
     rows = []
-    for point in plan:
+    for point in inside:
         rows.append({"kind": "ROOT", "category": "FAULT", "rootId": point.root,
                      "occurrence": point.occurrence, "siteId": point.site,
                      "invocation": point.invocation, "value": "true"})
@@ -89,7 +125,11 @@ def write_plant(path: Path, plan: tuple[FaultPoint, ...], target_rows: list[dict
         row["row"] = number
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("".join(json.dumps(row) + "\n" for row in rows))
-    return list(range(len(plan)))
+    outside = [{"siteId": p.site, "place": p.place, "invocation": p.invocation}
+               for p in plan if p.outside]
+    outside_plant(path).write_text("".join(json.dumps(row) + "\n" for row in outside))
+    return (list(range(len(inside))),
+            {(p.site, p.place, p.invocation) for p in plan if p.outside})
 
 
 def to_json(plan: tuple[FaultPoint, ...]) -> list[dict]:

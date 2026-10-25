@@ -13,7 +13,7 @@ instrumentation records, unchanged, and Mallory compares how that graph changes 
 GraphChecker SEED + PLAN of the case        recording weave, static scope, declared target resolved
         |                                    (TARGET rows: the target's fatal arm at its occurrence)
         v
-healthy native run  ---- graph G0, fault points (every fault marker it evaluated)
+healthy native runs ---- graph G0, fault points (every door evaluation, in and out of the window)
         |
         v   repeat, one run at a time
 Q-policy picks a fault point (state = where it stands in the graph, action = which failure where)
@@ -32,22 +32,46 @@ oracle: PLANT_FATAL at the declared target occurrence, every planted fault appli
   reads and watch notifications, the injected faults and the target's fatal arm. Abstract happens-before edges:
   program order on each node's timeline, a send to its receipt (transport, correlation id, attempt, half), a
   store write to the reads and watch notifications of its version. A run's observation is its edge set.
-- **Fault points** (`mallory/faults.py`): with `-Dcausynth.plant.observe=true` a planted run states every fault
-  marker GraphChecker wove at a door (`PLANT_MARKER`: transport fault kind, call site, enclosing occurrences).
-  A fault point is one marker evaluation: its site, innermost occurrence and invocation, exactly what a
-  GraphChecker plant's `FAULT` row names, so a point any earlier run reached can be planted in the next.
+- **Fault points** (`mallory/faults.py`): every door of the system's transports in GraphChecker's library
+  catalog is woven (`settings.System.doors`, added to the case's scope through `CAUSYNTH_EXTRA_SCOPE`), and
+  a planted run states every evaluation of one, over the whole workload. Inside GraphChecker's recording
+  window (`PLANT_MARKER`: transport fault kind, call site, enclosing occurrences) a fault point is the site,
+  innermost occurrence and invocation, exactly what a GraphChecker plant's `FAULT` row names. Outside it,
+  where GraphChecker names no occurrence (cluster start-up, set-up, shutdown), it is the site, its place
+  (before or after the window, the node, the thread) and the invocation per place (`OUTSIDE_MARKER`,
+  planted through `causynth.plant.outside`). Either way a point an earlier run reached can be planted in
+  the next; every row carries the JVM's `nanoTime`, which orders the two.
 - **The policy** (`mallory/policy.py`): Q-learning as in Mallory. A state is where the fault point stands in
   GraphChecker's graph (node, region, the message exchange or root it serves, its call path) with its node's
   last two abstract events; an action is which failure at which code site. Untried actions are optimistic;
+  ties are drawn at random from the campaign's seed (never the order a run evaluated its points);
   epsilon-greedy (0.1) keeps random choices; the reward saturates with the run's new edges beyond the
   workload's own noise (`1 - exp(-max(0, new - noise)/10)`, where `noise` is the edges a second fault-free run
   adds to the first); the update looks one fault point ahead in the run the fault produced.
 - **The campaign** (`mallory/campaign.py`): one trial at a time on one node; a plan extends a corpus run with
   one more fault after its last (at most three); a run joins the corpus only when it adds more edges than
   the noise; a trial is bounded by four times the healthy run (at least
-  120 s). The state is checkpointed after every trial (`state.json`); the result is `result.json`.
+  120 s). The state is checkpointed after every trial (`<case>/seed-<n>/state.json`); the result
+  (`result.json`) states the time to detect three ways: the trials alone, with the two healthy runs, and
+  with GraphChecker's SEED and PLAN of the case.
 
-Different cases run side by side on different nodes; a case's own trials never run in parallel.
+Different cases run side by side on different nodes; a case's own trials never run in parallel, and its
+seeds run one after another.
+
+## What Mallory takes from GraphChecker, and what it does not
+
+- **The workload and the oracle, as GraphChecker gets them.** A case's workload is its GraphChecker test
+  (`TestCausynth*`), which drives the bug's set-up and leaves the fault to be found; the oracle is the
+  case's declared target taking its fatal arm at the declared occurrence, which GraphChecker's native run
+  reports (`PLANT_FATAL`, the JVM halts there). Both tools get these same inputs.
+- **The graph.** GraphChecker records what its SEED selected: the full recorder is woven into the region
+  skeleton methods of the target's backward Soot slice, transport and store events at every woven door
+  and store hook, all inside the recording window. Mallory's feedback is therefore computed over the
+  target's slice: this is the point of migrating GraphChecker's graph, and it is stated here because it
+  steers the search toward the target.
+- **Not the fault space.** GraphChecker explores only roots inside its window and its case scope. Mallory
+  injects at every door of the system's catalog over the whole run, start-up and shutdown included, with
+  no knowledge of which doors GraphChecker's analysis demands.
 
 ## GraphChecker and the systems
 
@@ -59,10 +83,12 @@ Different cases run side by side on different nodes; a case's own trials never r
 
 Mallory needs no change in a system tree: the system's adaptation (its door hooks, the cluster's node
 identities, the bug workloads) is GraphChecker's, in the fork's `graphchecker/*-checks` branch; `baseline/mallory`
-pins the commit Mallory ran on. The GraphChecker branches add one commit, *Native plant runs for the Mallory
+pins the commit Mallory ran on. The GraphChecker branches add two commits. *Native plant runs for the Mallory
 baseline*: the `PLANT_MARKER` observation in `RecordingPlant`, `explore.TargetRows` (a plant's TARGET rows for the
 declared target, as `ConfirmMain` writes them), `run_engine.sh plant-run <run dir> <plant> [bound]` and
-`campaign_stop_after=PLAN`.
+`campaign_stop_after=PLAN`. *Fail and observe doors outside the recording window*: `RecordingPlant`'s outside
+evaluations (`causynth.plant.outside`, `causynth.plant.outside.log`), `nanoTime` on marker rows and
+`CAUSYNTH_EXTRA_SCOPE` in `experiments/lib/case-env.sh`.
 
 ## Running it (CloudLab, node0-node4)
 
@@ -81,8 +107,9 @@ python3 -m unittest discover -s tests -t .
 
 `run` prepares the case itself when it has no `prepared.json`. Budget flags: `--trials` (600), `--seconds`
 (14400), `--max-faults` (3), `--trial-bound` (900, lowered to four times the healthy run),
-`--continue-after-detection`. Output: `$MALLORY_WORK/<case>/{gc,runs,state.json,result.json}`; every run keeps
-its plant, its log and its gzipped trace.
+`--continue-after-detection`, `--seed`. Output: `$MALLORY_WORK/<case>/gc` and `prepared.json` (shared by
+every seed), `$MALLORY_WORK/<case>/seed-<n>/{runs,state.json,result.json}`; every run keeps its plant, its
+log, its gzipped trace and its log of door evaluations outside the window.
 
 ## Results (2026-10-25, CloudLab)
 

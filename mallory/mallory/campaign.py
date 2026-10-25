@@ -83,41 +83,55 @@ class Campaign:
         self.elapsed = 0.0
         self.target_rows: list[dict] = []
         self.healthy_noise = 0
+        self.prepare_s: float | None = None    # GraphChecker's SEED and PLAN of the case
+        self.healthy_s = 0.0                   # the two healthy runs
+        self.started = 0.0
 
     # -- paths ---------------------------------------------------------------
     @property
+    def directory(self) -> Path:
+        """This campaign's runs, checkpoint and result; the case's GraphChecker output is shared."""
+        return self.case.work / f"seed-{self.seed}"
+
+    @property
     def runs(self) -> Path:
-        return self.case.work / "runs"
+        return self.directory / "runs"
 
     @property
     def checkpoint(self) -> Path:
-        return self.case.work / "state.json"
+        return self.directory / "state.json"
 
     # -- one native run -------------------------------------------------------
     def _run(self, name: str, plan: tuple[faults.FaultPoint, ...], node: str
-             ) -> tuple[int, graph.RunGraph | None, set[int]]:
+             ) -> tuple[int, graph.RunGraph | None, bool]:
+        """One native run planting ``plan``: its exit, its graph, whether every fault applied."""
         run = self.runs / name
         shutil.rmtree(run, ignore_errors=True)
         plant = self.runs / (name + ".plant.jsonl")
-        planted = faults.write_plant(plant, plan, self.target_rows)
-        status = engine.plant_run(self.case, node, run, plant, self.budget.trial_bound_s)
+        planted, planted_outside = faults.write_plant(plant, plan, self.target_rows)
         trace = run / "runtime_trace.jsonl"
+        outside = graph.outside_log(trace)
+        outside.unlink(missing_ok=True)
+        status = engine.plant_run(self.case, node, run, plant, faults.outside_plant(plant),
+                                  outside, self.budget.trial_bound_s)
         if not trace.is_file():
-            return status, None, set(planted)
-        built = graph.build(trace)
-        with trace.open("rb") as source, gzip.open(str(trace) + ".gz", "wb", compresslevel=3) as sink:
-            shutil.copyfileobj(source, sink)
-        trace.unlink()
-        return status, built, set(planted)
+            return status, None, False
+        built = graph.build(trace, outside)
+        for path in (trace, outside):
+            if path.is_file():
+                with path.open("rb") as source, \
+                        gzip.open(str(path) + ".gz", "wb", compresslevel=3) as sink:
+                    shutil.copyfileobj(source, sink)
+                path.unlink()
+        applied = (set(planted) <= built.applied_rows and
+                   planted_outside <= built.outside_applied)
+        return status, built, applied
 
     # -- the corpus -----------------------------------------------------------
     def _admit(self, name: str, plan: tuple[faults.FaultPoint, ...], run: graph.RunGraph) -> None:
         """A corpus run offers every fault point after its last applied fault."""
-        after = max((p.seq for p in plan), default=-1)
-        if plan:
-            applied = [seq for seq, (_, label) in run.events if label.startswith("fault ")]
-            after = max(applied, default=after)
-        for point in faults.points(run, after_seq=after):
+        after = faults.evaluated_at(run, plan) if plan else -1
+        for point in faults.points(run, after_nanos=after):
             if not faults.compatible(plan, point) or len(plan) >= self.budget.max_faults:
                 continue
             candidate_plan = plan + (point,)
@@ -143,18 +157,18 @@ class Campaign:
     def _trial(self, candidate: Candidate, number: int) -> Trial:
         trial = Trial(name=f"t{number:05d}", plan=candidate.plan, state=candidate.state,
                       node=self.node, started=time.time())
-        status, run, planted = self._run(trial.name, candidate.plan, self.node)
+        status, run, applied = self._run(trial.name, candidate.plan, self.node)
         trial.ended, trial.exit = time.time(), status
         if run is None:
             return trial
-        trial.applied = planted <= run.applied_rows
+        trial.applied = applied
         trial.fatal = run.fatal and trial.applied
         trial.new_edges = len(run.edges - self.corpus_edges)
         trial.graph_added = len(run.edges - self.healthy_edges)
         trial.graph_removed = len(self.healthy_edges - run.edges)
         self.corpus_edges |= run.edges
         trial.reward = policy.reward(trial.new_edges, self.healthy_noise) if trial.applied else 0.0
-        following = [p for p in faults.points(run, after_seq=candidate.point.seq)
+        following = [p for p in faults.points(run, faults.evaluated_at(run, (candidate.point,)))
                      if p.node == candidate.point.node][:1]
         next_state = (policy.state_key(following[0], run.timeline_before(
             following[0].line, following[0].seq, policy.TIMELINE_DEPTH)) if following else None)
@@ -169,9 +183,11 @@ class Campaign:
             "trials": [_trial_json(t) for t in self.trials],
             "detections": [t.name for t in self.detections],
             "tried": sorted(self.tried), "corpus_edges": len(self.corpus_edges),
-            "healthy_noise_edges": self.healthy_noise,
+            "healthy_noise_edges": self.healthy_noise, "seed": self.seed,
+            "prepare_s": self.prepare_s, "healthy_s": round(self.healthy_s, 1),
             "candidates": len(self.candidates), "policy": self.q.to_json(),
         }
+        self.directory.mkdir(parents=True, exist_ok=True)
         tmp = self.checkpoint.with_suffix(".tmp")
         tmp.write_text(json.dumps(state, indent=1) + "\n")
         tmp.replace(self.checkpoint)
@@ -181,7 +197,8 @@ class Campaign:
         prepared = (json.loads(prepared_file.read_text()) if prepared_file.is_file()
                     else engine.prepare(self.case, self.node))
         self.target_rows = prepared["target_rows"]
-        started = time.time()
+        self.prepare_s = prepared.get("seconds")
+        started = self.started = time.time()
         status, healthy, _ = self._run("healthy", (), self.node)
         # A trial may take a few times the healthy run (a failure's retries and
         # timeouts), never the whole bound when a cluster hangs at its shutdown.
@@ -194,6 +211,7 @@ class Campaign:
         # A second healthy run: what differs between two runs with no fault is the
         # workload's own nondeterminism, never a fault's effect, so the corpus starts with both.
         _, again, _ = self._run("healthy-2", (), self.node)
+        self.healthy_s = time.time() - started
         if again is not None and again.fatal:
             raise RuntimeError(f"{self.case.case_id}: the target fails without any fault")
         self.healthy_edges = set(healthy.edges)
@@ -217,6 +235,54 @@ class Campaign:
         return summary(self)
 
 
+class Sweep(Campaign):
+    """Every single fault of one healthy run, once each: how many expose the target.
+
+    Not a campaign and no part of Mallory: the ground truth a campaign's time to
+    detect is read against (a uniformly random choice among ``points`` faults of
+    which ``k`` expose the target needs (points + 1) / (k + 1) trials on average).
+    """
+
+    @property
+    def directory(self) -> Path:
+        return self.case.work / "sweep"
+
+    def sweep(self, limit: int | None = None) -> dict:
+        prepared = json.loads((self.case.work / "prepared.json").read_text())
+        self.target_rows = prepared["target_rows"]
+        record = self.directory / "sweep.json"
+        done = json.loads(record.read_text()) if record.is_file() else {"points": [], "runs": {}}
+        healthy_trace = self.runs / "healthy" / "runtime_trace.jsonl.gz"
+        if not healthy_trace.is_file():
+            started = time.time()
+            status, healthy, _ = self._run("healthy", (), self.node)
+            if healthy is None or healthy.fatal:
+                raise RuntimeError(f"{self.case.case_id}: unusable healthy run (exit {status})")
+            done["healthy_s"] = round(time.time() - started, 1)
+        self.budget.trial_bound_s = min(self.budget.trial_bound_s,
+                                        max(120, int(4 * done.get("healthy_s", 30))))
+        healthy = graph.build(healthy_trace, Path(str(graph.outside_log(
+            self.runs / "healthy" / "runtime_trace.jsonl")) + ".gz"))
+        points = faults.points(healthy)
+        done["points"] = faults.to_json(tuple(points))
+        for index, point in enumerate(points[:limit]):
+            name = f"s{index:05d}"
+            if name in done["runs"]:
+                continue
+            started = time.time()
+            status, run, applied = self._run(name, (point,), self.node)
+            done["runs"][name] = {"action": point.action, "outside": point.outside,
+                                  "exit": status, "seconds": round(time.time() - started, 1),
+                                  "applied": applied, "fatal": bool(run and run.fatal and applied)}
+            self.directory.mkdir(parents=True, exist_ok=True)
+            record.with_suffix(".tmp").write_text(json.dumps(done, indent=1) + "\n")
+            record.with_suffix(".tmp").replace(record)
+        runs = done["runs"].values()
+        return {"case": self.case.case_id, "points": len(points), "run": len(done["runs"]),
+                "applied": sum(r["applied"] for r in runs), "expose": sum(r["fatal"] for r in runs),
+                "exposing": sorted(name for name, r in done["runs"].items() if r["fatal"])}
+
+
 def _trial_json(trial: Trial) -> dict:
     return {"name": trial.name, "plan": faults.to_json(trial.plan), "state": trial.state,
             "node": trial.node, "seconds": round(trial.ended - trial.started, 1),
@@ -229,19 +295,27 @@ def summary(campaign: Campaign) -> dict:
     first = campaign.detections[0] if campaign.detections else None
     result = {
         "case": campaign.case.case_id,
+        "seed": campaign.seed,
         "detected": first is not None,
         "trials": len(campaign.trials),
         "applied_trials": sum(t.applied for t in campaign.trials),
+        "prepare_s": campaign.prepare_s,
+        "healthy_s": round(campaign.healthy_s, 1),
         "elapsed_s": round(campaign.elapsed, 1),
         "corpus_edges": len(campaign.corpus_edges),
         "detection": None if first is None else {
             "trial": first.name,
             "trial_index": campaign.trials.index(first) + 1,
+            # the trials alone; with the healthy runs; with GraphChecker's SEED and PLAN too
             "seconds_from_start": round(first.ended - min(t.started for t in campaign.trials), 1),
+            "seconds_with_healthy": round(first.ended - campaign.started, 1),
+            "seconds_with_prepare": (round(first.ended - campaign.started + campaign.prepare_s, 1)
+                                     if campaign.prepare_s is not None else None),
             "faults": [p.action for p in first.plan],
             "plan": faults.to_json(first.plan),
             "graph_added": first.graph_added, "graph_removed": first.graph_removed,
         },
     }
-    (campaign.case.work / "result.json").write_text(json.dumps(result, indent=2) + "\n")
+    campaign.directory.mkdir(parents=True, exist_ok=True)
+    (campaign.directory / "result.json").write_text(json.dumps(result, indent=2) + "\n")
     return result

@@ -22,6 +22,9 @@ class System:
     name: str
     checkout: Path       # the GraphChecker baseline/mallory-<name> checkout
     image: Path          # the concolic VM image (only GraphChecker's preflight reads it)
+    # Every door family of the system's transports in GraphChecker's library
+    # catalog, as scope entries: woven whatever the case's own scope reaches.
+    doors: tuple[str, ...] = ()
 
     @property
     def jar(self) -> Path:
@@ -30,11 +33,18 @@ class System:
 
 SYSTEMS = {
     "hdfs": System("hdfs", Path(_env("MALLORY_GC_HDFS", "/bulk/wt/gc-mallory-hdfs")),
-                   Path(_env("MALLORY_IMAGE_HDFS", "/bulk/vm/hbase/j2sdk-image"))),
+                   Path(_env("MALLORY_IMAGE_HDFS", "/bulk/vm/hbase/j2sdk-image")),
+                   ("common:org/apache/hadoop/ipc/Client",
+                    "client:org/apache/hadoop/hdfs/protocol/datatransfer/sasl/SaslDataTransferClient",
+                    "client:org/apache/hadoop/hdfs/protocol/datatransfer/Sender")),
     "hbase": System("hbase", Path(_env("MALLORY_GC_HBASE", "/bulk/wt/gc-mallory-hbase")),
-                    Path(_env("MALLORY_IMAGE_HBASE", "/bulk/vm/hbase/j2sdk-image"))),
+                    Path(_env("MALLORY_IMAGE_HBASE", "/bulk/vm/hbase/j2sdk-image")),
+                    ("client:org/apache/hadoop/hbase/ipc/AbstractRpcClient",
+                     "client:org/apache/hadoop/hbase/ipc/RpcConnection")),
     "solr": System("solr", Path(_env("MALLORY_GC_SOLR", "/bulk/wt/gc-mallory-solr")),
-                   Path(_env("MALLORY_IMAGE_SOLR", "/bulk/vm/solr/j2sdk-image"))),
+                   Path(_env("MALLORY_IMAGE_SOLR", "/bulk/vm/solr/j2sdk-image")),
+                   ("solrj:org/apache/solr/client/solrj/impl/HttpSolrClient",
+                    "solrj:org/apache/solr/client/solrj/impl/Http2SolrClient")),
 }
 
 WORK = Path(_env("MALLORY_WORK", "/bulk/mallory-work"))

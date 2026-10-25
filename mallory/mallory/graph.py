@@ -120,6 +120,10 @@ class RunGraph:
     applied_rows: set[int] = field(default_factory=set)              # plant rows applied
     fatal: bool = False                                              # PLANT_FATAL at the anchor
     fatal_rows: list[dict] = field(default_factory=list)
+    # door evaluations outside GraphChecker's recording window (OUTSIDE_MARKER /
+    # OUTSIDE_APPLIED rows) and the (site, place, invocation) of those failed
+    outside: list[dict] = field(default_factory=list)
+    outside_applied: set[tuple[str, str, int]] = field(default_factory=set)
 
     def timeline_before(self, line: str, seq: int, depth: int) -> tuple[str, ...]:
         """The last ``depth`` abstract labels of timeline ``line`` before trace ``seq``."""
@@ -133,9 +137,24 @@ class RunGraph:
         return tuple(reversed(labels))
 
 
-def build(trace: Path) -> RunGraph:
-    """GraphChecker's graph of the run whose trace is ``trace``."""
+def outside_log(trace: Path) -> Path:
+    """Where a run states its door evaluations outside the recording window."""
+    return trace.parent.parent / (trace.parent.name + ".outside.jsonl")
+
+
+def build(trace: Path, outside: Path | None = None) -> RunGraph:
+    """GraphChecker's graph of the run whose trace is ``trace``.
+
+    ``outside`` is the run's log of door evaluations outside the window: no
+    graph event (GraphChecker names nothing there), but fault points.
+    """
     graph = RunGraph()
+    if outside is not None and (outside.is_file() or Path(str(outside) + ".gz").is_file()):
+        for row in read_trace(outside if outside.is_file() else Path(str(outside) + ".gz")):
+            graph.outside.append(row)
+            if row.get("event") == "OUTSIDE_APPLIED":
+                graph.outside_applied.add((row.get("siteId", ""), row.get("place", ""),
+                                           row.get("invocation", 0)))
     call_line: dict[int, str] = {}
     marker_line = ""
     sends: dict[tuple, Event] = {}

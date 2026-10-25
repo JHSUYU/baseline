@@ -56,15 +56,17 @@ class QPolicy:
 
         ``state_of``/``action_of`` map a candidate to its state and action;
         ``tried_count`` to how often its exact plan's action ran in that state,
-        which breaks ties toward the less explored.
+        which breaks ties toward the less explored. The rest of a tie is drawn
+        at random: the order a run evaluated its fault points is no preference.
         """
         if not candidates:
             raise ValueError("no candidate fault plan")
         if self.random.random() < self.epsilon:
             return self.random.randrange(len(candidates))
-        return max(range(len(candidates)), key=lambda index: (
-            self.value(state_of(candidates[index]), action_of(candidates[index])),
-            -tried_count(candidates[index]), -index))
+        keys = [(self.value(state_of(candidate), action_of(candidate)), -tried_count(candidate))
+                for candidate in candidates]
+        best = max(keys)
+        return self.random.choice([index for index, key in enumerate(keys) if key == best])
 
     def update(self, state: str, action: str, gained: float, next_state: str | None) -> float:
         future = self.best(next_state) if next_state is not None else 0.0

@@ -29,6 +29,11 @@ def main(argv: list[str] | None = None) -> int:
     run.add_argument("--continue-after-detection", action="store_true")
     run.add_argument("--seed", type=int, default=0)
 
+    sweep = sub.add_parser("sweep", help="ground truth: every single fault of a healthy run once")
+    sweep.add_argument("case")
+    sweep.add_argument("--node", default=settings.NODES[0])
+    sweep.add_argument("--limit", type=int)
+
     report = sub.add_parser("report", help="every case's result under the work directory")
     report.add_argument("--work", type=Path, default=settings.WORK)
 
@@ -42,17 +47,23 @@ def main(argv: list[str] | None = None) -> int:
         result = campaign.Campaign(engine.Case.resolve(args.case), budget, args.node,
                                    seed=args.seed).run()
         print(json.dumps(result, indent=2))
+    elif args.command == "sweep":
+        print(json.dumps(campaign.Sweep(engine.Case.resolve(args.case), campaign.Budget(),
+                                        args.node).sweep(args.limit), indent=2))
     else:
         rows = []
-        for path in sorted(args.work.glob("*/result.json")):
+        for path in sorted(args.work.glob("*/seed-*/result.json")):
             result = json.loads(path.read_text())
             detection = result.get("detection") or {}
-            rows.append([result["case"], "yes" if result["detected"] else "no",
+            rows.append([result["case"], str(result.get("seed", "-")),
+                         "yes" if result["detected"] else "no",
                          str(result["trials"]), str(result["elapsed_s"]),
                          str(detection.get("trial_index", "-")),
                          str(detection.get("seconds_from_start", "-")),
+                         str(detection.get("seconds_with_prepare", "-")),
                          "; ".join(detection.get("faults", [])) or "-"])
-        header = ["case", "detected", "trials", "seconds", "detecting trial", "seconds to detect",
+        header = ["case", "seed", "detected", "trials", "seconds", "detecting trial",
+                  "seconds to detect (trials)", "seconds to detect (with SEED/PLAN and healthy runs)",
                   "faults of the detecting run"]
         print("| " + " | ".join(header) + " |")
         print("|" + " --- |" * len(header))

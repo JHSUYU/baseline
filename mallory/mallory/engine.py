@@ -11,6 +11,7 @@ import getpass
 import json
 import shlex
 import subprocess
+import time
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -63,12 +64,14 @@ def _remote(node: str, case: Case, environment: dict[str, str], arguments: list[
 
 def prepare(case: Case, node: str) -> dict:
     """GraphChecker's SEED and PLAN of the case on ``node`` alone: its recording weave and target."""
+    started = time.time()
     subprocess.run(["rm", "-rf", str(case.gc)], check=True)
     status = _remote(node, case, {
         "CAUSYNTH_OUTPUT_DIR": str(case.gc),
         "CAUSYNTH_CUSTOM_JDK_HOME": str(case.system.image),
         "CAUSYNTH_CAMPAIGN_STOP_AFTER": "PLAN",
         "CAUSYNTH_CAMPAIGN_WORKER_HOSTS": node,
+        "CAUSYNTH_EXTRA_SCOPE": " ".join(case.system.doors),
     }, ["campaign"], case.work / "prepare.log")
     if status != 0:
         raise RuntimeError(f"{case.case_id}: GraphChecker's SEED/PLAN exited {status} "
@@ -80,17 +83,26 @@ def prepare(case: Case, node: str) -> dict:
          str(case.gc / "static_scope_map.jsonl"), target],
         check=True, capture_output=True, text=True).stdout
     target_rows = [json.loads(line) for line in rows.splitlines() if line.strip()]
-    prepared = {"case": case.case_id, "target_occurrence": target, "target_rows": target_rows}
+    prepared = {"case": case.case_id, "target_occurrence": target, "target_rows": target_rows,
+                "node": node, "seconds": round(time.time() - started, 1)}
     (case.work / "prepared.json").write_text(json.dumps(prepared, indent=2) + "\n")
     return prepared
 
 
-def plant_run(case: Case, node: str, run: Path, plant: Path, bound_s: int) -> int:
-    """One native run of the case's workload planting ``plant``, its markers observed."""
+def plant_run(case: Case, node: str, run: Path, plant: Path, outside_plant: Path,
+              outside_log: Path, bound_s: int) -> int:
+    """One native run of the case's workload planting ``plant``, its markers observed.
+
+    ``outside_plant`` lists the faults outside GraphChecker's recording window;
+    every door evaluation outside the window is stated in ``outside_log``.
+    """
     scratch = settings.LOCAL_SCRATCH.format(user=getpass.getuser())
     return _remote(node, case, {
         "CAUSYNTH_OUTPUT_DIR": str(case.gc),
-        "CAUSYNTH_WORKLOAD_JAVA_OPTS": "-Dcausynth.plant.observe=true",
+        "CAUSYNTH_WORKLOAD_JAVA_OPTS": (f"-Dcausynth.plant.observe=true "
+                                        f"-Dcausynth.plant.outside={outside_plant} "
+                                        f"-Dcausynth.plant.outside.log={outside_log}"),
         "CAUSYNTH_LOCAL_SCRATCH": scratch,
+        "CAUSYNTH_EXTRA_SCOPE": " ".join(case.system.doors),
     }, ["plant-run", str(run), str(plant), str(bound_s)], run.parent / (run.name + ".log"),
         timeout=bound_s + 300)
