@@ -1,7 +1,0 @@
-# SOLR-19 v23 healthy calibration
-
-The unchanged `AddReplicaTest#testAddMultipleReplicas` JUnit workload passed (1 run, 0 failures, 0 ignored) in 24.647 seconds. The exact `CoreContainer#create@1329:branch:5` check was reached on named `node1`, `node2`, and `node3`; the expected original class SHA-256 and loaded class identity matched the site catalog. The final-5820 offline causal audit passed: 9 named HTTP doors had an entirely observed path to a target occurrence, with 27 observed closure edges and no candidate edges. This establishes a usable healthy seed, not a fault result.
-
-The node2 and node0 copies of `data/mallory/calibration_v23_lane2/SOLR-19` match across 95 files (1,831,026 bytes), tree SHA-256 `e5689011e60f61aeae00643a065fbae1c0217b95c6615f937647541edba9f596`. Campaign result SHA-256 is `0ec30dee5c51bfdd3b4f987113186d69808977e89daccb811e7208dbb0b4bc06`; final-5820 audit SHA-256 is `a8ef439a8e17892e3263e3bde33f5abde4ce5cf5535f039a83abad59c7f2b061`.
-
-The original target is `solr/core/src/java/org/apache/solr/core/CoreContainer.java:1329-1330`; the cluster test adds multiple replicas. Its observed path includes `Http2SolrClient#request@776` on the named client actor and `HttpSolrClient#request@248` on a named Solr node before CoreAdmin creation. A distinct v23p bounded pilot config pins only those observed HTTP door sites for exception injection. Fault testing and full campaign promotion await a matched, target-retaining trial.

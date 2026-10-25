@@ -1,9 +1,0 @@
-# Filtering nonfatal helper-return arms
-
-`ConcolicScheduler.fatalDecider` used to reject every target guard with more than one helper-branch decider. A helper branch can have both an open arm and an arm that returns a constant which is known to miss the declared target. The latter is not a viable fatal decider.
-
-The source-backed example is HBase 2.6.6 `ConnectionImplementation.locateRegionInMeta`, at the `isDeadServer(serverName)` guard (source line 1104) and `RegionServerStoppedException` throw (line 1106). The static `TARGET_SITE` row gives guard `#u212` fatal outcome `false`. Its two helper deciders are `ConnectionImplementation.isDeadServer#u3`: `(outcome=true, verdict=null)` continues to `ClusterStatusListener.isDeadServer`, and `(outcome=false, verdict=true)` returns constant `false` when the listener is absent. The bytecode of `isDeadServer` branches at `ifnonnull` and returns `iconst_0` on the null-listener path. That constant causes the outer guard to skip the throw. Therefore the second decider's `verdict=true` is incompatible with the target's fatal outcome `false`.
-
-The change filters a decider only when its stated constant `verdict` differs from the target guard's fatal arm. Open arms remain eligible. If zero or multiple compatible deciders remain, scheduling still fails closed. It does not declare fault sites or infer a runtime causal edge.
-
-The regression `ConcolicSchedulerFatalDeciderTest` checks both the uniquely compatible arm and the continued ambiguity refusal. In an isolated engine copy, `mvn -q test package` passed. Replaying the unchanged HBase healthy Recorder plan through the original Scheduler with this one change produced 81 tasks; the prior Scheduler refused the same input with `ambiguous target guard deciders ... #u212: 2`. This is a scheduling proof only; it is not a completed fault campaign or a bug finding.
