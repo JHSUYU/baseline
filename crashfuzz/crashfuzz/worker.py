@@ -138,6 +138,25 @@ def selected_exception_type(selection: dict[str, Any], location: dict[str, Any])
     return types.pop() if len(types) == 1 else None
 
 
+def selected_site_id(selection: dict[str, Any], location: dict[str, Any],
+                     exception: str | None = None) -> str:
+    """The check's site as a Soot unit (``#uN``).
+
+    A checklist row may give it as a source line (``#L<line>``); the agent and
+    the oracle name sites by unit, so the throw of the check's exception type
+    that Soot found at that line stands for it (a line can also hold the
+    compiler's rethrow of a try-with-resources). A unit site, or a line with
+    no single such throw, is kept.
+    """
+    site = location["site_id"]
+    if "#L" not in site:
+        return site
+    units = {row["soot_site_id"] for row in selection.get("target_throw_sites", [])
+             if row.get("line") == location.get("selected_line") and row.get("soot_site_id")
+             and (exception is None or row.get("thrown_type") == exception)}
+    return units.pop() if len(units) == 1 else site
+
+
 def _resolve_class(name: str, text: str) -> str | None:
     if "." in name:
         outer, *nested = name.split(".")
@@ -314,7 +333,8 @@ def _prepare(row: dict[str, Any], base: Path, summary: dict[str, Any], summary_p
               "test_method": method, "cwd": str(workspace),
               "workspaces": {"system_test": str(workspace), "temp": str(temp)},
               "env": runner_env(),
-              "target": {"method": target, "site_id": location["site_id"],
+              "target": {"method": target,
+                         "site_id": selected_site_id(selection, location, exc_type),
                          "check_events": ["CHECK_REACHED"], "exception_type": exc_type,
                          "source_file": location["file"],
                          "source_line": location["selected_line"],

@@ -70,6 +70,24 @@ class ExceptionResolutionTest(unittest.TestCase):
                          'example.MissingException')
         self.assertIsNone(worker.selected_exception_type(selection, {'selected_line': 5}))
 
+    def test_a_line_site_stands_for_the_unit_of_its_typed_throw(self):
+        selection = {'target_throw_sites': [
+            {'line': 481, 'soot_site_id': '<T: void lock()>#u24', 'thrown_type': 'x.Held'},
+            {'line': 481, 'soot_site_id': '<T: void lock()>#u49', 'thrown_type': 'java.lang.Throwable'},
+            {'line': 490, 'soot_site_id': '<T: void lock()>#u31', 'thrown_type': 'x.Held'}]}
+        self.assertEqual(worker.selected_site_id(selection, {'site_id': '<T: void lock()>#L481',
+                                                             'selected_line': 481}),
+                         '<T: void lock()>#L481')          # two throws on the line, no type
+        selection['target_throw_sites'] = selection['target_throw_sites'][::2]
+        self.assertEqual(worker.selected_site_id(selection, {'site_id': '<T: void lock()>#L481',
+                                                             'selected_line': 481}, 'x.Held'),
+                         '<T: void lock()>#u24')
+        self.assertEqual(worker.selected_site_id(selection, {'site_id': '<T: void lock()>#L470',
+                                                             'selected_line': 470}),
+                         '<T: void lock()>#L470')
+        self.assertEqual(worker.selected_site_id(selection, {'site_id': '<T: void lock()>#u9'}),
+                         '<T: void lock()>#u9')
+
     def test_unfinished_case_pins_its_static_selection(self):
         with tempfile.TemporaryDirectory() as directory:
             base = Path(directory)

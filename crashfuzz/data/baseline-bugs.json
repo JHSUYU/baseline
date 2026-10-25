@@ -35,7 +35,7 @@
    "case_id": "HBASE-BACKUP-LOCK",
    "system": "HBase 2.6.6",
    "selection_group": "baseline_bug",
-   "cluster_test": "org.apache.hadoop.hbase.backup.TestFullBackup#testFullBackupMultipleCommand",
+   "cluster_test": "org.apache.hadoop.hbase.backup.TestBackupManager#testStartBackupExclusiveOperation",
    "check_code": "if (\n!table.checkAndMutate(ACTIVE_SESSION_ROW, SESSIONS_FAMILY).qualifier(ACTIVE_SESSION_COL)\n.ifEquals(ACTIVE_SESSION_NO).thenPut(put)\n) {\nthrow new ExclusiveOperationException();",
    "exact_check_location": {
     "check_start_line": 477,
@@ -44,7 +44,7 @@
     "selected_line": 481,
     "site_id": "<org.apache.hadoop.hbase.backup.impl.BackupSystemTable: void startBackupExclusiveOperation()>#L481"
    },
-   "note": "A lost reply of the backup lock's checkAndMutate: the client retries the committed compare-and-set, finds its own lock and throws, so the backup fails and the lock stays."
+   "note": "A lost reply of the backup lock's checkAndMutate: the client retries the committed compare-and-set, finds its own lock and throws, so the backup fails and the lock stays. Its test has two sessions contend for the lock, so a fault-free run already takes the throw while one waits; only a further failure is a candidate."
   }
  ]
 }
