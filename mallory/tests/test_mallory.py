@@ -134,7 +134,8 @@ class FaultTest(unittest.TestCase):
         place = "before|" + CLIENT + "|RS-EventLoopGroup-N-N"
         outside_rows = [
             {"event": "OUTSIDE_MARKER", "nanos": 100, "rootId": "FAULT:HBASE_RPC:RESPONSE",
-             "siteId": FINISH + "#u44", "place": place, "invocation": 1},
+             "siteId": FINISH + "#u44", "place": place, "invocation": 1,
+             "callers": "AsyncTableImpl.get<BackupSystemTable.readBackupInfo"},
             {"event": "OUTSIDE_APPLIED", "nanos": 150, "rootId": "FAULT:HBASE_RPC:RESPONSE",
              "siteId": FINISH + "#u44", "place": place, "invocation": 2}]
         with tempfile.TemporaryDirectory() as tmp:
@@ -153,6 +154,8 @@ class FaultTest(unittest.TestCase):
         # one order across the window: the two outside evaluations came first
         self.assertEqual([p.outside for p in points], [True, True, False, False, False])
         self.assertEqual(points[0].occurrence, "outside:" + place)
+        self.assertEqual(points[0].context,
+                         "outside before AsyncTableImpl.get<BackupSystemTable.readBackupInfo")
         self.assertEqual((points[1].invocation, points[1].node), (2, CLIENT))
         self.assertEqual(run.outside_applied, {(FINISH + "#u44", place, 2)})
         self.assertEqual(faults.evaluated_at(run, (points[1], points[3])), 700)

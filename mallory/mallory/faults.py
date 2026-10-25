@@ -12,7 +12,8 @@ Outside GraphChecker's recording window no occurrence names an evaluation:
 there a fault point is the call site, its place (``before`` the window opened
 or ``after`` it closed, the node its thread serves, the thread's name with its
 numbers folded) and the invocation counted per site and place, as the run's
-``OUTSIDE_MARKER`` rows state it; such points are planted through their own
+``OUTSIDE_MARKER`` rows state it, with the door call's nearest callers outside
+the door's package for its context; such points are planted through their own
 file (``causynth.plant.outside``). So a campaign can fail any woven door
 anywhere in the workload, not only where GraphChecker records.
 """
@@ -81,7 +82,9 @@ def points(graph: RunGraph, after_nanos: int = -1) -> list[FaultPoint]:
         found.append(FaultPoint(site=row["siteId"], root=row.get("rootId", ""),
                                 occurrence="outside:" + place, invocation=row.get("invocation", 0),
                                 node=node, line=(node or "?") + " | " + thread,
-                                region="outside " + phase, context="outside " + phase,
+                                region="outside " + phase,
+                                # the operation it serves, as an occurrence's context does inside
+                                context=f"outside {phase} {row.get('callers', '')}",
                                 seq=-1, place=place, nanos=row.get("nanos", 0)))
     found.sort(key=lambda point: point.nanos)
     return [point for point in found if point.nanos > after_nanos]
