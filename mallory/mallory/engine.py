@@ -47,6 +47,8 @@ class Case:
 def _remote(node: str, case: Case, environment: dict[str, str], arguments: list[str],
             log: Path, timeout: int | None = None) -> int:
     """``run.sh <case dir> <arg> <arguments>`` on ``node`` with ``environment``; its exit."""
+    if settings.HEAP_BASIS_MB:
+        environment = {**environment, "CAUSYNTH_HEAP_BASIS_MB": settings.HEAP_BASIS_MB}
     env = " ".join(f"{k}={shlex.quote(v)}" for k, v in environment.items())
     command = (f"cd {shlex.quote(str(case.directory))} && env {env} bash "
                f"{shlex.quote(str(case.system.checkout / 'experiments/lib/run.sh'))} "

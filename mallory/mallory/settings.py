@@ -51,6 +51,8 @@ WORK = Path(_env("MALLORY_WORK", "/bulk/mallory-work"))
 NODES = _env("MALLORY_NODES", "node0 node1 node2 node3 node4").split()
 JAVA = _env("MALLORY_JAVA", "/usr/lib/jvm/java-8-openjdk-amd64/bin/java")
 LOCAL_SCRATCH = _env("MALLORY_LOCAL_SCRATCH", "/localtmp/{user}/mallory")
+# GraphChecker sizes a workload JVM's heap at half this (CAUSYNTH_HEAP_BASIS_MB); empty keeps its default
+HEAP_BASIS_MB = _env("MALLORY_HEAP_BASIS_MB", "")
 
 
 def system_of(case_id: str) -> System:
