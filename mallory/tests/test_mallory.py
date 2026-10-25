@@ -20,25 +20,36 @@ def address(node: str, region: str, ctx: str, *frames: str) -> str:
     return f"{node}/region/{region}/ctx:{ctx}/idx:" + "/".join(f"{f}@0" for f in frames)
 
 
+MAIN = "TEST-worker-1"
+HANDLER = "RpcServer.handler=3"
+NETTY = "RS-EventLoopGroup-1-2"
+
+
 def trace_rows(fatal: bool = False, applied: bool = False) -> list[dict]:
     cas = address(CLIENT, "REGION.cas", "Root:CLIENT/test#1", CAS, CALL)
     reply = address(CLIENT, "REGION.finish", "Anchor:00aa@HBASE_RPC/test", FINISH)
     rows = [
-        {"event": "METHOD_ENTER", "seq": 1, "method": CAS, "callId": 1, "sourceKey": CLIENT},
+        {"event": "METHOD_ENTER", "seq": 1, "method": CAS, "callId": 1, "sourceKey": CLIENT,
+         "threadName": MAIN},
         {"event": "PLANT_MARKER", "seq": 2, "rootId": "FAULT:HBASE_RPC:REQUEST",
-         "siteId": CALL + "#u60", "occurrences": ["c1"], "occurrenceAddress": cas},
+         "siteId": CALL + "#u60", "occurrences": ["c1"], "occurrenceAddress": cas,
+         "threadName": MAIN},
         {"event": "EXCHANGE_SEND", "seq": 3, "transport": "HBASE_RPC", "correlationId": "r1",
-         "attemptId": "1", "half": "REQUEST", "method": CALL, "sourceKey": CLIENT},
+         "attemptId": "1", "half": "REQUEST", "method": CALL, "sourceKey": CLIENT,
+         "threadName": MAIN},
         {"event": "EXCHANGE_RECEIVE", "seq": 4, "transport": "HBASE_RPC", "correlationId": "r1",
-         "attemptId": "1", "half": "REQUEST", "sourceKey": MASTER},
+         "attemptId": "1", "half": "REQUEST", "sourceKey": MASTER, "threadName": HANDLER},
         {"event": "STORE_WRITE", "seq": 5, "transport": "HBASE_ZK", "location": "/hbase/lock",
-         "version": "3", "occurrenceAddress": address(MASTER, "REGION.m", "Root:WAKE/x#2", CAS)},
+         "version": "3", "occurrenceAddress": address(MASTER, "REGION.m", "Root:WAKE/x#2", CAS),
+         "threadName": HANDLER},
         {"event": "STORE_READ", "seq": 6, "transport": "HBASE_ZK", "location": "/hbase/lock",
-         "version": "3", "op": "getData", "occurrenceAddress": cas},
+         "version": "3", "op": "getData", "occurrenceAddress": cas, "threadName": MAIN},
         {"event": "PLANT_MARKER", "seq": 7, "rootId": "FAULT:HBASE_RPC:RESPONSE",
-         "siteId": FINISH + "#u44", "occurrences": ["f1", "c1"], "occurrenceAddress": reply},
+         "siteId": FINISH + "#u44", "occurrences": ["f1", "c1"], "occurrenceAddress": reply,
+         "threadName": NETTY},
         {"event": "PLANT_MARKER", "seq": 8, "rootId": "FAULT:HBASE_RPC:RESPONSE",
-         "siteId": FINISH + "#u44", "occurrences": ["f1", "c1"], "occurrenceAddress": reply},
+         "siteId": FINISH + "#u44", "occurrences": ["f1", "c1"], "occurrenceAddress": reply,
+         "threadName": NETTY},
         {"event": "BRANCH", "seq": 9, "callId": 1, "siteId": CAS + "#u24", "outcome": not fatal},
     ]
     if applied:
@@ -60,11 +71,13 @@ class GraphTest(unittest.TestCase):
     def test_edges_join_timelines_messages_and_store_versions(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             run = graph.build(write_trace(Path(tmp), trace_rows()))
-        send = (CLIENT, "send HBASE_RPC REQUEST AbstractRpcClient.callMethod")
-        receive = (MASTER, "receive HBASE_RPC REQUEST")
-        write = (MASTER, "write HBASE_ZK /hbase/lock")
-        read = (CLIENT, "read getData /hbase/lock")
-        enter = (CLIENT, "enter BackupSystemTable.startBackupExclusiveOperation")
+        client, master = graph.timeline(CLIENT, MAIN), graph.timeline(MASTER, HANDLER)
+        self.assertEqual(master, "auto0/master0#epoch0 | RpcServer.handler=N")
+        send = (client, "send HBASE_RPC REQUEST AbstractRpcClient.callMethod")
+        receive = (master, "receive HBASE_RPC REQUEST")
+        write = (master, "write HBASE_ZK /hbase/lock")
+        read = (client, "read getData /hbase/lock")
+        enter = (client, "enter BackupSystemTable.startBackupExclusiveOperation")
         self.assertIn((send, receive), run.edges)              # message
         self.assertIn((write, read), run.edges)                # store version
         self.assertIn((enter, send), run.edges)                # program order
@@ -76,6 +89,9 @@ class GraphTest(unittest.TestCase):
             run = graph.build(write_trace(Path(tmp), trace_rows(fatal=True, applied=True)))
         self.assertTrue(run.fatal)
         self.assertEqual(run.applied_rows, {0})
+        # the planted fault sits on the timeline of the marker that planted it
+        self.assertIn((graph.timeline(CLIENT, NETTY), "fault FAULT:HBASE_RPC:RESPONSE"),
+                      [event for _, event in run.events])
 
     def test_context_keeps_the_exchange_and_the_call_path(self) -> None:
         reply = address(CLIENT, "REGION.finish", "Anchor:00aa@HBASE_RPC/test", FINISH)
@@ -118,7 +134,8 @@ class FaultTest(unittest.TestCase):
         first, second, third = faults.points(run)
         self.assertTrue(faults.compatible((second,), third))     # same occurrence, next invocation
         self.assertFalse(faults.compatible((second,), second))   # the same point twice
-        other = faults.FaultPoint(second.site, second.root, "c1", 1, second.node, "", "", 0)
+        other = faults.FaultPoint(second.site, second.root, "c1", 1, second.node, second.line,
+                                  "", "", 0)
         self.assertFalse(faults.compatible((second,), other))    # another occurrence of the site
         self.assertTrue(faults.compatible((first,), second))
 

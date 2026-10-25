@@ -91,6 +91,9 @@ CONSTRUCTION, and HBase's lost backup-lock reply. Each case ran alone on one nod
 | case | bug | node | detected | trials | time to detect | the detecting run's fault |
 | --- | --- | --- | --- | ---: | ---: | --- |
 | hdfs-17967-pathB | HDFS-17967, `DataXceiver.replaceBlock` proxy | node2 | yes | 1 | 9 s (+11 s healthy run) | `FAULT:HADOOP_IPC:REQUEST` on the DataNode's `sendHeartbeat` |
+| hbase-bugs-backup-lock-reply-lost | lost reply of the backup lock's checkAndMutate | node0 | yes | 72 | 1097 s | `RESPONSE:CallTimeoutException` on an earlier RPC's reply, then `RESPONSE:ConnectionClosedException` on the lock CAS's reply (`RpcConnection.finishCall`) |
 
 The HDFS workload's first fault marker is the heartbeat whose loss keeps the new block key from the DataNode, so
-the optimistic first choice found it; its run added 7 edges to the healthy graph and lost 61.
+the optimistic first choice found it; its run added 7 edges to the healthy graph and lost 61. HBase's detection
+came from the corpus: an earlier trial losing another reply showed new edges, and the policy extended that run
+with a loss of the lock CAS's reply at the occurrence GraphChecker's claim moves (12 edges added, 37 lost).

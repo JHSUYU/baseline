@@ -82,6 +82,7 @@ class Campaign:
         self.detections: list[Trial] = []
         self.elapsed = 0.0
         self.target_rows: list[dict] = []
+        self.healthy_noise = 0
 
     # -- paths ---------------------------------------------------------------
     @property
@@ -124,7 +125,7 @@ class Campaign:
             if identifier in self.tried:
                 continue
             state = policy.state_key(point, run.timeline_before(
-                point.node, point.seq, policy.TIMELINE_DEPTH))
+                point.line, point.seq, policy.TIMELINE_DEPTH))
             self.candidates.append(Candidate(candidate_plan, state, name))
 
     def _choose(self) -> Candidate | None:
@@ -156,7 +157,7 @@ class Campaign:
         following = [p for p in faults.points(run, after_seq=candidate.point.seq)
                      if p.node == candidate.point.node][:1]
         next_state = (policy.state_key(following[0], run.timeline_before(
-            following[0].node, following[0].seq, policy.TIMELINE_DEPTH)) if following else None)
+            following[0].line, following[0].seq, policy.TIMELINE_DEPTH)) if following else None)
         self.q.update(candidate.state, candidate.point.action, trial.reward, next_state)
         if trial.applied and trial.new_edges > 0:
             self._admit(trial.name, candidate.plan, run)
@@ -168,6 +169,7 @@ class Campaign:
             "trials": [_trial_json(t) for t in self.trials],
             "detections": [t.name for t in self.detections],
             "tried": sorted(self.tried), "corpus_edges": len(self.corpus_edges),
+            "healthy_noise_edges": self.healthy_noise,
             "candidates": len(self.candidates), "policy": self.q.to_json(),
         }
         tmp = self.checkpoint.with_suffix(".tmp")
@@ -189,8 +191,14 @@ class Campaign:
             raise RuntimeError(f"{self.case.case_id}: the healthy run wrote no trace (exit {status})")
         if healthy.fatal:
             raise RuntimeError(f"{self.case.case_id}: the target fails without any fault")
+        # A second healthy run: what differs between two runs with no fault is the
+        # workload's own nondeterminism, never a fault's effect, so the corpus starts with both.
+        _, again, _ = self._run("healthy-2", (), self.node)
+        if again is not None and again.fatal:
+            raise RuntimeError(f"{self.case.case_id}: the target fails without any fault")
         self.healthy_edges = set(healthy.edges)
-        self.corpus_edges = set(healthy.edges)
+        self.corpus_edges = set(healthy.edges) | (again.edges if again is not None else set())
+        self.healthy_noise = len(again.edges - healthy.edges) if again is not None else 0
         self._admit("healthy", (), healthy)
         while (len(self.trials) < self.budget.trials
                and time.time() - started < self.budget.seconds

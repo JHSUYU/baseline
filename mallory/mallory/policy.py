@@ -4,9 +4,9 @@ Mallory (Meng et al., CCS 2023) treats fault scheduling as reinforcement
 learning. A state is an abstract observation of the system when a fault could
 be injected; an action is the fault; the reward is how much new causal behavior
 the run then showed. Here a state is where a fault marker is about to be
-evaluated in GraphChecker's graph (its node, region, the message exchange or
-root it serves and its call path) with the last abstract events of its node's
-timeline, an action is which failure at
+evaluated in GraphChecker's graph (its node and thread, region, the message
+exchange or root it serves and its call path) with the last abstract events of
+its thread's timeline, an action is which failure at
 which code site (``FaultPoint.action``), and the reward grows with the run's new
 happens-before edges. Values start optimistic, so every action is tried at
 least once in each state before a learned value can rank it below another;
@@ -80,5 +80,5 @@ class QPolicy:
 
 
 def state_key(point, timeline: tuple[str, ...]) -> str:
-    """Where a fault point stands in GraphChecker's graph, with its node's last abstract events."""
-    return f"{point.node} | {point.region} | {point.context} | " + " > ".join(timeline)
+    """Where a fault point stands in GraphChecker's graph, with its thread's last abstract events."""
+    return f"{point.line} | {point.region} | {point.context} | " + " > ".join(timeline)

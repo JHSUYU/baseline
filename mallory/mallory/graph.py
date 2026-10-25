@@ -9,7 +9,9 @@ run as Lamport timelines, one per node, joined by those cross-node relations,
 and abstracts each event to a label that is stable across runs. The run's
 observation is its set of abstract happens-before edges:
 
-* program order: consecutive abstract events of one node's timeline;
+* program order: consecutive abstract events of one timeline: a node's thread,
+  its name's numbers folded so pool threads of one kind align across runs
+  (a mini cluster's nodes share one JVM; each thread is a sequential process);
 * message: a send to its receipt;
 * state: a store write to each read or watch notification of its version.
 
@@ -33,7 +35,7 @@ TIMELINE_EVENTS = {
     "STORE_WRITE", "STORE_READ", "WATCH_FIRED", "PLANT_APPLIED", "PLANT_FATAL",
 }
 
-Event = tuple[str, str]          # (node, abstract label)
+Event = tuple[str, str]          # (timeline: node | thread kind, abstract label)
 Edge = tuple[Event, Event]
 
 
@@ -95,6 +97,12 @@ def short_site(site: str) -> str:
 
 
 _NUMBERED = re.compile(r"\d{4,}")
+_DIGITS = re.compile(r"\d+")
+
+
+def timeline(node: str, thread: str) -> str:
+    """A node's thread as a timeline, its numbers folded (pool and handler threads)."""
+    return node + " | " + _DIGITS.sub("N", thread or "")
 
 
 def stable_location(location: str) -> str:
@@ -113,11 +121,11 @@ class RunGraph:
     fatal: bool = False                                              # PLANT_FATAL at the anchor
     fatal_rows: list[dict] = field(default_factory=list)
 
-    def timeline_before(self, node: str, seq: int, depth: int) -> tuple[str, ...]:
-        """The last ``depth`` abstract labels of ``node`` before trace ``seq``."""
+    def timeline_before(self, line: str, seq: int, depth: int) -> tuple[str, ...]:
+        """The last ``depth`` abstract labels of timeline ``line`` before trace ``seq``."""
         labels: list[str] = []
         for at, (owner, label) in reversed(self.events):
-            if at >= seq or owner != node:
+            if at >= seq or owner != line:
                 continue
             labels.append(label)
             if len(labels) == depth:
@@ -128,19 +136,20 @@ class RunGraph:
 def build(trace: Path) -> RunGraph:
     """GraphChecker's graph of the run whose trace is ``trace``."""
     graph = RunGraph()
-    call_node: dict[int, str] = {}
+    call_line: dict[int, str] = {}
+    marker_line = ""
     sends: dict[tuple, Event] = {}
     receipts: list[tuple[tuple, Event]] = []
     writes: dict[tuple[str, str], Event] = {}
     reads: list[tuple[tuple[str, str], Event]] = []
-    last_on_node: dict[str, str] = {}
+    last_on_line: dict[str, str] = {}
 
-    def add(seq: int, node: str, label: str) -> Event:
-        event = (node, label)
-        previous = last_on_node.get(node)
+    def add(seq: int, line: str, label: str) -> Event:
+        event = (line, label)
+        previous = last_on_line.get(line)
         if previous is not None and previous != label:
-            graph.edges.add(((node, previous), event))
-        last_on_node[node] = label
+            graph.edges.add(((line, previous), event))
+        last_on_line[line] = label
         graph.events.append((seq, event))
         return event
 
@@ -149,50 +158,55 @@ def build(trace: Path) -> RunGraph:
         seq = row.get("seq", 0)
         if kind == "PLANT_MARKER":
             graph.markers.append(row)
+            # the fault a marker plants is stated next, from the same call on the same thread
+            marker_line = timeline(node_of_address(row.get("occurrenceAddress", "")) or "?",
+                                   row.get("threadName", ""))
             continue
         if kind not in TIMELINE_EVENTS:
             continue
         if kind == "METHOD_ENTER":
             node = row.get("sourceKey") or node_of_address(row.get("occurrenceAddress", ""))
-            if isinstance(row.get("callId"), int) and node:
-                call_node[row["callId"]] = node
-            if node:
-                add(seq, node, "enter " + short_method(row.get("method", "")))
+            if not node:
+                continue
+            line = timeline(node, row.get("threadName", ""))
+            if isinstance(row.get("callId"), int):
+                call_line[row["callId"]] = line
+            add(seq, line, "enter " + short_method(row.get("method", "")))
         elif kind == "BRANCH":
-            node = call_node.get(row.get("callId"), "")
-            if node:
-                add(seq, node, f"branch {short_site(row.get('siteId', ''))}={row.get('outcome')}")
+            line = call_line.get(row.get("callId"), "")
+            if line:
+                add(seq, line, f"branch {short_site(row.get('siteId', ''))}={row.get('outcome')}")
         elif kind in ("EXCHANGE_SEND", "EXCHANGE_RECEIVE"):
-            node = row.get("sourceKey", "")
+            line = timeline(row.get("sourceKey") or "?", row.get("threadName", ""))
             key = (row.get("transport"), row.get("correlationId"), row.get("attemptId"),
                    row.get("half"))
             if kind == "EXCHANGE_SEND":
-                event = add(seq, node or "?", f"send {row.get('transport')} {row.get('half')} "
-                                              f"{short_method(row.get('method', ''))}")
+                event = add(seq, line, f"send {row.get('transport')} {row.get('half')} "
+                                       f"{short_method(row.get('method', ''))}")
                 sends[key] = event
             else:
-                event = add(seq, node or "?", f"receive {row.get('transport')} {row.get('half')}")
+                event = add(seq, line, f"receive {row.get('transport')} {row.get('half')}")
                 receipts.append((key, event))
         elif kind in ("STORE_WRITE", "STORE_READ", "WATCH_FIRED"):
             location = stable_location(row.get("location", ""))
-            node = node_of_address(row.get("occurrenceAddress", "")) or "?"
+            line = timeline(node_of_address(row.get("occurrenceAddress", "")) or "?",
+                            row.get("threadName", ""))
             version = (row.get("location", ""), str(row.get("version", "")))
             if kind == "STORE_WRITE":
-                writes[version] = add(seq, node, f"write {row.get('transport')} {location}")
+                writes[version] = add(seq, line, f"write {row.get('transport')} {location}")
             elif kind == "STORE_READ":
-                reads.append((version, add(seq, node, f"read {row.get('op')} {location}")))
+                reads.append((version, add(seq, line, f"read {row.get('op')} {location}")))
             else:
-                event = add(seq, node, f"watch {row.get('type')} {location}")
+                event = add(seq, line, f"watch {row.get('type')} {location}")
                 reads.append(((row.get("location", ""), "*"), event))
         elif kind == "PLANT_APPLIED":
-            node = node_of_address(row.get("occurrenceAddress", "")) or "?"
             graph.applied_rows.add(row.get("row"))
-            add(seq, node, f"fault {row.get('planted', '')}")
+            add(seq, marker_line or "?", f"fault {row.get('planted', '')}")
         elif kind == "PLANT_FATAL":
             node = node_of_address(row.get("occurrenceAddress", "")) or "?"
             graph.fatal_rows.append(row)
             graph.fatal = graph.fatal or bool(row.get("atAnchor"))
-            add(seq, node, "fatal " + short_site(row.get("siteId", "")))
+            add(seq, timeline(node, "target"), "fatal " + short_site(row.get("siteId", "")))
 
     for key, receipt in receipts:
         sent = sends.get(key)

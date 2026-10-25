@@ -16,7 +16,7 @@ import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
-from .graph import RunGraph, context_of, node_of_address, region_of_address, short_site
+from .graph import RunGraph, context_of, node_of_address, region_of_address, short_site, timeline
 
 
 @dataclass(frozen=True)
@@ -26,6 +26,7 @@ class FaultPoint:
     occurrence: str    # the innermost enclosing occurrence id
     invocation: int    # the site's evaluation under that occurrence, from 1
     node: str          # the node that evaluated it
+    line: str          # its timeline: the node's thread (graph.timeline)
     region: str        # the GraphChecker region of the innermost occurrence
     context: str       # its exchange or root and call path (graph.context_of)
     seq: int           # its trace seq in the run it was observed in
@@ -57,6 +58,8 @@ def points(graph: RunGraph, after_seq: int = -1) -> list[FaultPoint]:
                                 occurrence=innermost,
                                 invocation=counted[(row["siteId"], innermost)],
                                 node=node_of_address(row.get("occurrenceAddress", "")),
+                                line=timeline(node_of_address(row.get("occurrenceAddress", "")) or "?",
+                                              row.get("threadName", "")),
                                 region=region_of_address(row.get("occurrenceAddress", "")),
                                 context=context_of(row.get("occurrenceAddress", "")),
                                 seq=row.get("seq", -1)))
