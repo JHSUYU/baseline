@@ -86,16 +86,37 @@ its plant, its log and its gzipped trace.
 
 ## Results (2026-10-25, CloudLab)
 
-The three targets are bugs a single injected fault exposes (GraphChecker's claims for them move one fault root):
-HDFS-17967 (PR apache/hadoop#8698) on its `replaceBlock` proxy path, Solr's RESTORE retry that leaves a shard in
-CONSTRUCTION, and HBase's lost backup-lock reply. Each case ran alone on one node, one trial at a time.
+The three targets are bugs a single injected fault exposes: HDFS-17967 (PR apache/hadoop#8698) on its
+`replaceBlock` proxy path, Solr's RESTORE retry that leaves a shard in CONSTRUCTION, and HBase's lost
+backup-lock reply. Each case ran alone on one node, one trial at a time; the time to detect counts from the first
+trial (the two healthy runs come before it). `data/<case>/` keeps each campaign's result, every trial
+(`trials.json`) and the detecting run's plant (`detecting-plant.jsonl`, the input of `run_engine.sh plant-run`).
 
-| case | bug | node | detected | trials | time to detect | the detecting run's fault |
-| --- | --- | --- | --- | ---: | ---: | --- |
-| hdfs-17967-pathB | HDFS-17967, `DataXceiver.replaceBlock` proxy | node2 | yes | 1 | 9 s (+11 s healthy run) | `FAULT:HADOOP_IPC:REQUEST` on the DataNode's `sendHeartbeat` |
-| hbase-bugs-backup-lock-reply-lost | lost reply of the backup lock's checkAndMutate | node0 | yes | 72 | 1097 s | `RESPONSE:CallTimeoutException` on an earlier RPC's reply, then `RESPONSE:ConnectionClosedException` on the lock CAS's reply (`RpcConnection.finishCall`) |
+| case | bug | node | trials | time to detect | healthy noise | the detecting run's fault |
+| --- | --- | --- | ---: | ---: | ---: | --- |
+| hdfs-17967-pathB | HDFS-17967, `DataXceiver.replaceBlock` proxy | node2 | 1 | 9 s | 66 edges | `FAULT:HADOOP_IPC:REQUEST` on the proxy DataNode's `sendHeartbeat` (`Client$Connection.sendRpcRequest#u41`) |
+| solr-bugs-restore-construction | a failed RESTORE leaves its slices in CONSTRUCTION | node1 | 51 | 893 s | 57 edges | `FAULT:SOLR_HTTP2:RESPONSE` on the Overseer's apply-buffered-updates shard request (`RestoreOnANewCollection.requestReplicasToApplyBufferUpdates`, `Http2SolrClient.processErrorsAndResponse#u11`) |
+| hbase-bugs-backup-lock-reply-lost | lost reply of the backup lock's checkAndMutate | node0 | 169 | 2579 s | 0 edges | `FAULT:HBASE_RPC:RESPONSE` on the lock CAS's reply (`RpcConnection.finishCall#u39`, occurrence `95f9b23c7997b9e9`) |
 
-The HDFS workload's first fault marker is the heartbeat whose loss keeps the new block key from the DataNode, so
-the optimistic first choice found it; its run added 7 edges to the healthy graph and lost 61. HBase's detection
-came from the corpus: an earlier trial losing another reply showed new edges, and the policy extended that run
-with a loss of the lock CAS's reply at the occurrence GraphChecker's claim moves (12 edges added, 37 lost).
+Every detecting run applied its one planted fault and ended at the target's fatal arm at the declared occurrence
+(GraphChecker's `AT_ANCHOR` end of a native run):
+
+- **HDFS**: the workload's first fault marker is the heartbeat whose loss keeps the new block key from the
+  DataNode, so the policy's first, optimistic choice found it (the run's graph: 62 edges added to the healthy
+  graph, 136 lost).
+- **Solr**: the failed shard request makes the first RESTORE fail ("operation: restore failed"); the test's
+  second RESTORE succeeds on the existing collection, a path that never marks the slices ACTIVE, and the next
+  update is refused with "No active slice servicing hash code ... in causynthRestore-target". This is the fault
+  the bug report names (an HTTP fault at a RESTORECORE or apply-buffer shard request), not the ZooKeeper
+  `setData` fault GraphChecker's own reproduction planted. 41 edges added, 119 lost.
+- **HBase**: the client's retry re-runs the committed CAS and fails on its own lock row
+  (`startBackupExclusiveOperation`'s throw arm). The policy reached it in its sweep of the healthy run's fault
+  points (index 207 of its 219, each in a state of its own); 9 edges added, 29 lost.
+
+Two fault-free runs of the same workload differ (thread interleavings, retries, timing): the healthy noise above is
+how many edges the second added to the first. Before the reward discounted it, every Solr trial looked novel
+(all of 38 trials had new edges, 32 of them no more than the noise) and the corpus filled with runs that showed
+nothing a fault caused. The HDFS and HBase campaigns started before that change; HDFS detected at its first choice and
+HBase's noise is 0, so neither run would differ under the current code. A second Solr case,
+`solr-bugs-migrate-buffer-leak` (any fault after the buffer step leaves the target core BUFFERING), ran on node2
+as a fallback and was stopped at 27 trials, undetected, once the RESTORE case had detected.
