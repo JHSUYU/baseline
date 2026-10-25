@@ -101,7 +101,7 @@ def plant_run(case: Case, node: str, run: Path, plant: Path, outside_plant: Path
     scratch = settings.LOCAL_SCRATCH.format(user=getpass.getuser())
     return _remote(node, case, {
         "CAUSYNTH_OUTPUT_DIR": str(case.gc),
-        "CAUSYNTH_WORKLOAD_JAVA_OPTS": (f"-Dcausynth.plant.observe=true "
+        "CAUSYNTH_WORKLOAD_JAVA_OPTS": (f"-Dcausynth.plant.observe=true -Dcausynth.plant.continue=true "
                                         f"-Dcausynth.plant.outside={outside_plant} "
                                         f"-Dcausynth.plant.outside.log={outside_log}"),
         "CAUSYNTH_LOCAL_SCRATCH": scratch,

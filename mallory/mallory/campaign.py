@@ -8,11 +8,13 @@
 3. A finished trial's graph is compared with every graph so far: its new
    happens-before edges are the reward; a trial with new edges joins the corpus,
    so its later fault points become choices.
-4. The oracle is GraphChecker's: in a run where every planted fault applied,
-   the target took its fatal arm at the declared occurrence (PLANT_FATAL
-   atAnchor), or took it more often than in either healthy run (a workload
-   whose own fault-free run already fails the check once, as a test of the
-   failure path does, counts only a further failure).
+4. The oracle is GraphChecker's target check, counted: in a run where every
+   planted fault applied, the target took its fatal arm (PLANT_FATAL, any
+   occurrence) more often than in any healthy run. A workload whose own
+   fault-free run fails the check (a test of the failure path, or two
+   sessions contending for a lock) counts only further failures; runs go on
+   past the declared occurrence (causynth.plant.continue), so a failure that
+   repeats is counted whole.
 
 As in Mallory, one trial runs at a time and the next choice uses everything the
 earlier trials showed; a campaign runs on one node, so different cases (systems)
@@ -29,6 +31,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from . import engine, faults, graph, policy, settings
+
+
+HEALTHY_RUNS = 3
 
 
 @dataclass
@@ -168,7 +173,7 @@ class Campaign:
         if run is None:
             return trial
         trial.applied = applied
-        trial.fatal = trial.applied and (run.fatal or len(run.fatal_rows) > self.healthy_fatal)
+        trial.fatal = trial.applied and len(run.fatal_rows) > self.healthy_fatal
         trial.fatal_at = [row.get("occurrenceAddress", "") for row in run.fatal_rows]
         trial.new_edges = len(run.edges - self.corpus_edges)
         trial.graph_added = len(run.edges - self.healthy_edges)
@@ -214,19 +219,17 @@ class Campaign:
         self.budget.trial_bound_s = min(self.budget.trial_bound_s, max(120, int(4 * healthy_s)))
         if healthy is None:
             raise RuntimeError(f"{self.case.case_id}: the healthy run wrote no trace (exit {status})")
-        if healthy.fatal:
-            raise RuntimeError(f"{self.case.case_id}: the target fails without any fault")
-        # A second healthy run: what differs between two runs with no fault is the
-        # workload's own nondeterminism, never a fault's effect, so the corpus starts with both.
-        _, again, _ = self._run("healthy-2", (), self.node)
+        # More healthy runs: what differs between runs with no fault is the workload's
+        # own nondeterminism, never a fault's effect, so the corpus starts with all of
+        # them, the noise is the most another adds to the first, and the oracle's
+        # baseline is the most fatal arms any of them took.
+        others = [run for run in (self._run(f"healthy-{k}", (), self.node)[1]
+                                  for k in range(2, HEALTHY_RUNS + 1)) if run is not None]
         self.healthy_s = time.time() - started
-        if again is not None and again.fatal:
-            raise RuntimeError(f"{self.case.case_id}: the target fails without any fault")
-        self.healthy_fatal = max(len(healthy.fatal_rows),
-                                 len(again.fatal_rows) if again is not None else 0)
+        self.healthy_fatal = max(len(run.fatal_rows) for run in [healthy, *others])
         self.healthy_edges = set(healthy.edges)
-        self.corpus_edges = set(healthy.edges) | (again.edges if again is not None else set())
-        self.healthy_noise = len(again.edges - healthy.edges) if again is not None else 0
+        self.corpus_edges = set(healthy.edges).union(*(run.edges for run in others))
+        self.healthy_noise = max((len(run.edges - healthy.edges) for run in others), default=0)
         self._admit("healthy", (), healthy)
         while (len(self.trials) < self.budget.trials
                and time.time() - started < self.budget.seconds
@@ -270,9 +273,10 @@ class Sweep(Campaign):
         if not healthy_trace.is_file():
             started = time.time()
             status, healthy, _ = self._run("healthy", (), self.node)
-            if healthy is None or healthy.fatal:
+            if healthy is None:
                 raise RuntimeError(f"{self.case.case_id}: unusable healthy run (exit {status})")
             done["healthy_s"] = round(time.time() - started, 1)
+            done["healthy_fatal"] = len(healthy.fatal_rows)
         self.budget.trial_bound_s = min(self.budget.trial_bound_s,
                                         max(120, int(4 * done.get("healthy_s", 30))))
         healthy = graph.build(healthy_trace, Path(str(graph.outside_log(
@@ -290,7 +294,9 @@ class Sweep(Campaign):
             status, run, applied = self._run(name, (point,), self.node)
             done["runs"][name] = {"action": point.action, "outside": point.outside,
                                   "exit": status, "seconds": round(time.time() - started, 1),
-                                  "applied": applied, "fatal": bool(run and run.fatal and applied)}
+                                  "applied": applied,
+                                  "fatal": bool(run and applied and
+                                                len(run.fatal_rows) > done.get("healthy_fatal", 0))}
             self.directory.mkdir(parents=True, exist_ok=True)
             record.with_suffix(".tmp").write_text(json.dumps(done, indent=1) + "\n")
             record.with_suffix(".tmp").replace(record)
