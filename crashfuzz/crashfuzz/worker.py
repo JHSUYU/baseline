@@ -278,7 +278,8 @@ def _prepare(row: dict[str, Any], base: Path, summary: dict[str, Any], summary_p
              max_trials: int, max_faults: int, campaign_suffix: str,
              refresh_selection: bool,
              config_name: str = "campaign-config.json",
-             stop_at_candidate: bool = False) -> tuple[dict[str, Any], Path]:
+             stop_at_candidate: bool = False,
+             max_seconds: int | None = None) -> tuple[dict[str, Any], Path]:
     """Selection and healthy run for the row; returns (campaign config, its root)."""
     cid = row["case_id"]
     spec = system_of(row["system"])
@@ -344,10 +345,14 @@ def _prepare(row: dict[str, Any], base: Path, summary: dict[str, Any], summary_p
               "seed": {"trace": healthy_record["trace"],
                        "elapsed_seconds": healthy_record["elapsed_seconds"]},
               "trial": {"command": command},
+              # A time-to-detect run (stop_at_candidate) spends its whole budget, a
+              # number of trials or of JUnit seconds; a checklist campaign stops
+              # adding trials past 80 once 30 keep the target after their faults.
               "budget": {"max_trials": max_trials, "max_faults": max_faults,
-                         "base_trials": min(80, max_trials),
+                         "base_trials": max_trials if stop_at_candidate else min(80, max_trials),
                          "min_target_retained_trials": 30, "max_unmatched_retries": 1,
-                         "stop_at_candidate": stop_at_candidate},
+                         "stop_at_candidate": stop_at_candidate,
+                         **({"max_seconds": max_seconds} if max_seconds else {})},
               "timeout_seconds": spec.timeout + 30}
     atomic_json(base / config_name, config)
     # A checkpoint made with another selection keeps its own directory.
@@ -374,7 +379,8 @@ def _new_summary(row: dict[str, Any]) -> dict[str, Any]:
 def _run_case_unlocked(row: dict[str, Any], result_root: Path, max_trials: int,
                        max_faults: int, campaign_suffix: str = "",
                        refresh_selection: bool = False,
-                       stop_at_candidate: bool = False) -> dict[str, Any]:
+                       stop_at_candidate: bool = False,
+                       max_seconds: int | None = None) -> dict[str, Any]:
     cid = row["case_id"]
     base = result_root / cid
     base.mkdir(parents=True, exist_ok=True)
@@ -399,7 +405,7 @@ def _run_case_unlocked(row: dict[str, Any], result_root: Path, max_trials: int,
             summary["started_at"] = prior["started_at"]
         config, root = _prepare(row, base, summary, summary_path, max_trials, max_faults,
                                 campaign_suffix, refresh_selection,
-                                stop_at_candidate=stop_at_candidate)
+                                stop_at_candidate=stop_at_candidate, max_seconds=max_seconds)
         summary["status"] = "fuzzing"
         atomic_json(summary_path, summary)
         state = campaign(config, root)
@@ -444,7 +450,7 @@ def _first_candidate(state: dict[str, Any], started_at: float) -> dict[str, Any]
 
 def run_case(row: dict[str, Any], result_root: Path, max_trials: int, max_faults: int,
              campaign_suffix: str = "", refresh_selection: bool = False,
-             stop_at_candidate: bool = False) -> dict[str, Any]:
+             stop_at_candidate: bool = False, max_seconds: int | None = None) -> dict[str, Any]:
     """Run (or resume) a case; claimed first so parallel workers never collide."""
     base = result_root / row["case_id"]
     base.mkdir(parents=True, exist_ok=True)
@@ -459,7 +465,8 @@ def run_case(row: dict[str, Any], result_root: Path, max_trials: int, max_faults
                     "status": "claimed_elsewhere", "finished": False}
         try:
             return _run_case_unlocked(row, result_root, max_trials, max_faults,
-                                      campaign_suffix, refresh_selection, stop_at_candidate)
+                                      campaign_suffix, refresh_selection, stop_at_candidate,
+                                      max_seconds)
         finally:
             fcntl.flock(claim, fcntl.LOCK_UN)
 
