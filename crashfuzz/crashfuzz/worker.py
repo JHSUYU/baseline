@@ -118,8 +118,6 @@ def exception_type(row: dict[str, Any]) -> str | None:
         resolved = _resolve_class(name, text)
         if resolved:
             return resolved
-    if "RoutedAlias.newAliasMustExistException" in code:
-        return "org.apache.solr.common.SolrException"
     if "Preconditions.checkState" in code:
         return "java.lang.IllegalStateException"
     if "Preconditions.checkArgument" in code:
@@ -127,6 +125,17 @@ def exception_type(row: dict[str, Any]) -> str | None:
     if re.search(r"\bassert\s+", code):
         return "java.lang.AssertionError"
     return None
+
+
+def selected_exception_type(selection: dict[str, Any], location: dict[str, Any]) -> str | None:
+    """The type Soot gives the typed throw at the check's line, or None.
+
+    It names the exception a check throws when the source text does not:
+    ``throw make(x)`` throws the static type ``make`` returns.
+    """
+    types = {site.get("thrown_type") for site in selection.get("target_throw_sites", [])
+             if site.get("line") == location.get("selected_line") and site.get("thrown_type")}
+    return types.pop() if len(types) == 1 else None
 
 
 def _resolve_class(name: str, text: str) -> str | None:
@@ -261,6 +270,7 @@ def _prepare(row: dict[str, Any], base: Path, summary: dict[str, Any], summary_p
     pinned = None if refresh_selection else live_selection_artifact(base, cid, target)
     selection = select_case(target, location, None if pinned else spec.analysis(), base,
                             artifact=pinned)
+    exc_type = exc_type or selected_exception_type(selection, location)
     summary.update(status="healthy", test_class=clazz, test_method=method,
                    exception_type=exc_type, static_io_calls=len(selection["io_calls"]),
                    static_coverage_methods=len(selection["coverage_methods"]))

@@ -57,6 +57,19 @@ class ExceptionResolutionTest(unittest.TestCase):
         self.assertIsNone(self.resolve(source,
                                        'if (key == null) key = refresh();', 3))
 
+    def test_a_thrown_factory_result_takes_the_type_soot_gives_it(self):
+        source = ('package example;\nclass Target { void check() {\n'
+                  'throw Errors.missing(name);\n}}\n')
+        self.assertIsNone(self.resolve(source, 'throw Errors.missing(name);', 3))
+        selection = {'target_throw_sites': [
+            {'line': 3, 'thrown_type': 'example.MissingException',
+             'thrown_by_call': '<example.Errors: example.MissingException missing(java.lang.String)>'},
+            {'line': 7, 'thrown_type': 'java.lang.IllegalStateException'}]}
+        location = {'selected_line': 3}
+        self.assertEqual(worker.selected_exception_type(selection, location),
+                         'example.MissingException')
+        self.assertIsNone(worker.selected_exception_type(selection, {'selected_line': 5}))
+
     def test_unfinished_case_pins_its_static_selection(self):
         with tempfile.TemporaryDirectory() as directory:
             base = Path(directory)

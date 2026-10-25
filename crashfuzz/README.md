@@ -114,14 +114,25 @@ uncompressed for review.
 [`data/`](data/README.md) holds the earlier campaigns: the 104-row checklist
 (102 selected checks and two HDFS known-issue controls), the Soot-selected
 rerun table [`static102-rerun.tsv`](data/static102-rerun.tsv), per-case records,
-evidence and source reviews. Two candidates were reproduced: **SOLR-40**
-(`RoutedAliasUpdateProcessor.getAliasProps`: a `ConnectionLoss` on the
-aliases watch's `getData` leaves a node's alias cache stale, so a valid update
-is rejected; found by a 240-trial Soot-selected campaign, trial 31 -- see
-`data/evidence/SOLR-40/`; the refactored code replays it: the same single fault,
-injected strictly in all 10 replays, makes the target throw in 1, the run whose
-JUnit test fails (exit 1; the other nine pass): whether the stale cache meets an
-update is a matter of timing -- `data/evidence/SOLR-40/replay-2026-10-25.json`) and **HBASE-32**
-(`RegionReplicaFlushHandler.triggerFlushInPrimaryRegion`; found with a
-case-specific agent of the earlier campaign -- see `data/evidence/HBASE-32/`).
+evidence and source reviews.
+
+One check failed under generic CrashFuzz: **SOLR-40**
+(`RoutedAliasUpdateProcessor.getAliasProps`: a `ConnectionLoss` on the aliases
+watch's `getData` leaves a node's alias cache stale, so a valid update is
+rejected). The 240-trial Soot-selected campaign first produced it at trial 31,
+2102 s after the campaign started (the whole campaign took 21292 s); see
+`data/evidence/SOLR-40/`. The refactored code replays it: the same single
+fault, injected strictly in all 10 replays, makes the target throw in 1, the
+run whose JUnit test fails (exit 1; the other nine pass), since whether the
+stale cache meets an update is a matter of timing
+(`data/evidence/SOLR-40/replay-2026-10-25.json`).
+
+**HBASE-32** (`RegionReplicaFlushHandler.triggerFlushInPrimaryRegion`) is not a
+detection of generic CrashFuzz. Its Soot-selected rerun ran 80 trials (10915 s)
+with no candidate. The earlier candidates came from a case-specific agent that
+injected flush-RPC failures (185 trials plus a supplemental 272; 34934 s of
+JUnit time in all). Each one was a 360 s JUnit timeout reaching the check's rethrow,
+which is the documented reaction to a `DoNotRetryIOException`. Every isolated
+replay of those plans passed, so the record keeps `new_bug=false`
+(`data/cases/HBASE-32/`, `data/evidence/HBASE-32/`).
 [`DESIGN.md`](DESIGN.md) records the campaign protocol.
