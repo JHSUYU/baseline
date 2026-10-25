@@ -375,6 +375,28 @@ def selected_target_throw_lines(selection: dict[str, Any], target: dict[str, Any
     return sorted(lines)
 
 
+def throw_oracle(selection: dict[str, Any], target: dict[str, Any],
+                 lines: list[int]) -> dict[str, Any]:
+    """How the selected typed throw is observed: its target fields.
+
+    A ``throw`` statement is seen as ``EXPLICIT_THROW`` at its source line.
+    When every selected throw throws the result of a call (``throw
+    make(x)``, Soot's ``thrown_by_call``), the callee throws the exception
+    and that statement never executes: the check's typed exception then
+    leaves the target method from the call, a ``METHOD_EXIT_THROW`` of the
+    target in its call (SOLR-40's ``throw RoutedAlias.newAliasMustExist
+    Exception(aliasName)``).
+    """
+    if not lines:
+        return {}
+    sites = [site for site in selection.get("target_throw_sites", [])
+             if site.get("method") == target["method"] and site.get("line") in lines and
+             site.get("thrown_type") == target["exception_type"]]
+    if sites and all(site.get("thrown_by_call") for site in sites):
+        return {"throw_event": "METHOD_EXIT_THROW"}
+    return {"throw_event": "EXPLICIT_THROW", "explicit_throw_lines": lines}
+
+
 def selected_target_control_branches(selection: dict[str, Any], target: dict[str, Any],
                                      throw_lines: list[int]) -> list[str]:
     """The branches nearest the check that control its selected typed throw.

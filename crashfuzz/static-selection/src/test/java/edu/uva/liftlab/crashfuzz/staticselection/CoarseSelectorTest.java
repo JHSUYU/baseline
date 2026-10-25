@@ -106,6 +106,33 @@ public class CoarseSelectorTest {
         assertTrue(found);
     }
 
+    @Test public void namesTheCalleeWhoseResultATargetThrowThrows() {
+        JsonObject factory = targetThrowSite("<" + PREFIX + "$FactoryThrowReader: void check(java.lang.String)>");
+        assertEquals("<" + PREFIX + "$FactoryThrowReader: java.lang.IllegalStateException "
+                + "mustExist(java.lang.String)>", factory.get("thrown_by_call").getAsString());
+        JsonObject plain = targetThrowSite("<" + PREFIX + "$ThrowLineReader: void check()>");
+        assertTrue(!plain.has("thrown_by_call"));
+    }
+
+    private static JsonObject targetThrowSite(String target) {
+        JsonObject input = new JsonObject();
+        input.addProperty("target_method", target);
+        JsonObject analysis = new JsonObject();
+        JsonArray dirs = new JsonArray();
+        dirs.add("target/test-classes");
+        analysis.add("process_dirs", dirs);
+        analysis.add("classpath", new JsonArray());
+        input.add("analysis", analysis);
+        for (com.google.gson.JsonElement element : CoarseSelector.analyze(input)
+                .getAsJsonArray("target_throw_sites")) {
+            JsonObject site = element.getAsJsonObject();
+            if ("java.lang.IllegalStateException".equals(site.get("thrown_type").getAsString())) {
+                return site;
+            }
+        }
+        throw new AssertionError("no IllegalStateException throw site in " + target);
+    }
+
     @Test public void followsIoFromNestedWriterIntoItsOuterClass() {
         JsonObject input = new JsonObject();
         input.addProperty("target_method", "<" + PREFIX + "$WatchedReader: void check()>");

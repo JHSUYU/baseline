@@ -29,7 +29,7 @@ from typing import Any
 from .faults import Sequence, fault_family, retry_lost_target, sequence_id, \
     strict_applied_prefix, strict_injection
 from .oracle import (fatal_guard_paths, selected_target_control_branches,
-                     selected_target_throw_lines, trace_feedback)
+                     selected_target_throw_lines, throw_oracle, trace_feedback)
 from .scheduler import (ADMITTED, budget_has_room, choose_next_sequence, completed_sequences,
                         enqueue_extensions, enqueue_seed, static_reason_priority)
 from .selection import prepare as prepare_selection
@@ -179,7 +179,7 @@ def with_selection(config: dict[str, Any], case_dir: Path) -> dict[str, Any]:
     lines = selected_target_throw_lines(selection, config["target"])
     target = {**config["target"], "coverage_include_methods": selection["coverage_methods"]}
     if lines and "throw_event" not in target:
-        target.update(throw_event="EXPLICIT_THROW", explicit_throw_lines=lines)
+        target.update(throw_oracle(selection, target, lines))
     controls = (selected_target_control_branches(selection, target, lines)
                 if target.get("check_events") == ["CHECK_REACHED"] else [])
     io_calls = selection["io_calls"]

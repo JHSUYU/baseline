@@ -57,6 +57,18 @@ public final class SelectionFixture {
         }
     }
 
+    public static final class FactoryThrowReader {
+        static IllegalStateException mustExist(String name) {
+            throw new IllegalStateException("must exist: " + name);
+        }
+
+        public void check(String name) {
+            if (shared == 7) {
+                throw mustExist(name);
+            }
+        }
+    }
+
     public static final class ThrowLineReader {
         public void check() {
             if (shared == 7) {

@@ -432,6 +432,7 @@ public final class CoarseSelector {
                     row.addProperty("line", site.line);
                     row.addProperty("unit_index", site.unitIndex);
                     row.addProperty("thrown_type", site.thrownType);
+                    if (site.thrownByCall != null) row.addProperty("thrown_by_call", site.thrownByCall);
                     JsonArray controls = new JsonArray();
                     for (String branch : site.controlledBy) controls.add(branch);
                     row.add("controlled_by", controls);
@@ -982,6 +983,8 @@ public final class CoarseSelector {
         final int unitIndex;
         final String thrownType;
         final List<String> controlledBy = new ArrayList<>();
+        /** The callee whose result the throw throws, when every definition of its operand is that call. */
+        String thrownByCall;
 
         ThrowSite(Unit unit, int line, int unitIndex, String thrownType) {
             this.unit = unit;
@@ -1086,6 +1089,32 @@ public final class CoarseSelector {
                     if (box.getValue() instanceof FieldRef) {
                         reads.add(((FieldRef) box.getValue()).getFieldRef().getSignature());
                     }
+                }
+            }
+            if (!throwSites.isEmpty()) {
+                // `throw make(x)`: the exception may be thrown inside the callee, never by
+                // this throw, so the check's typed exception leaves the method from the call.
+                SimpleLocalDefs operands = new SimpleLocalDefs(new ExceptionalUnitGraph(body));
+                for (ThrowSite site : throwSites) {
+                    Value op = ((ThrowStmt) site.unit).getOp();
+                    if (!(op instanceof Local)) continue;
+                    List<Unit> definitions = operands.getDefsOfAt((Local) op, site.unit);
+                    String callee = null;
+                    for (Unit definition : definitions) {
+                        if (!(definition instanceof AssignStmt)
+                                || !(((AssignStmt) definition).getRightOp() instanceof InvokeExpr)) {
+                            callee = null;
+                            break;
+                        }
+                        String called = ((InvokeExpr) ((AssignStmt) definition).getRightOp())
+                                .getMethod().getSignature();
+                        if (callee != null && !callee.equals(called)) {
+                            callee = null;
+                            break;
+                        }
+                        callee = called;
+                    }
+                    site.thrownByCall = callee;
                 }
             }
             if (!throwSites.isEmpty() && !branches.isEmpty()) {

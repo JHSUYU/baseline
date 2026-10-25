@@ -31,7 +31,9 @@ coordination checks of [`data/checklist102.json`](data/checklist102.json)
    occurrences of a callsite.
 4. **Oracle.** A candidate is the check's typed exception, on a complete fatal
    route inside the target call, after the last applied fault, more often than
-   in the healthy run. A candidate is a hypothesis: its fault plan is replayed
+   in the healthy run. The selected `throw` is seen at its source line; when it
+   throws a callee's result (`throw make(x)`, Soot's `thrown_by_call`) the
+   callee throws, so the target method's typed exit in its call is the throw. A candidate is a hypothesis: its fault plan is replayed
    and the source reviewed before it is called a bug.
 
 New campaigns start with 80 trials and at most ten faults per sequence and

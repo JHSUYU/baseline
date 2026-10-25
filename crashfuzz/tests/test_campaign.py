@@ -16,7 +16,7 @@ from crashfuzz.faults import (fault_family, fault_point_for_io, fault_variants_f
                               retry_lost_target, stable_occurrence, strict_applied_prefix,
                               strict_injection)
 from crashfuzz.oracle import (selected_target_control_branches,  # noqa: E402
-                              selected_target_throw_lines, trace_feedback)
+                              selected_target_throw_lines, throw_oracle, trace_feedback)
 from crashfuzz.scheduler import (budget_has_room, choose_next_sequence, enqueue,  # noqa: E402
                                  static_reason_priority, target_proximity_score)
 from crashfuzz.trace import fingerprint, rows  # noqa: E402
@@ -250,6 +250,50 @@ class CoverageIoTest(unittest.TestCase):
         target = {'method': TARGET, 'site_id': TARGET + '#u11',
                   'exception_type': 'example.TargetException'}
         self.assertEqual(selected_target_throw_lines(selection, target), [23])
+
+    def test_a_throw_of_a_callee_result_is_observed_as_the_target_exiting(self):
+        site = {'method': TARGET, 'line': 23, 'soot_site_id': TARGET + '#u11',
+                'thrown_type': 'example.TargetException', 'controlled_by': [TARGET + '#u4']}
+        target = {'method': TARGET, 'site_id': TARGET + '#u11',
+                  'exception_type': 'example.TargetException'}
+        factory = {**site, 'thrown_by_call': '<example.Errors: example.TargetException make()>'}
+        self.assertEqual(throw_oracle({'target_throw_sites': [factory]}, target, [23]),
+                         {'throw_event': 'METHOD_EXIT_THROW'})
+        self.assertEqual(throw_oracle({'target_throw_sites': [site]}, target, [23]),
+                         {'throw_event': 'EXPLICIT_THROW', 'explicit_throw_lines': [23]})
+        mixed = {'target_throw_sites': [factory, {**site, 'soot_site_id': TARGET + '#u12'}]}
+        self.assertEqual(throw_oracle(mixed, target, [23])['throw_event'], 'EXPLICIT_THROW')
+        self.assertEqual(throw_oracle({'target_throw_sites': [factory]}, target, []), {})
+
+    def test_a_callee_thrown_target_exception_after_the_fault_is_a_candidate(self):
+        # throw make(x): the callee's throw, then the target's typed exit in its call
+        target = {'method': TARGET, 'exception_type': 'example.TargetException',
+                  'throw_event': 'METHOD_EXIT_THROW', 'site_id': SITE,
+                  'check_events': ['CHECK_REACHED', 'BRANCH'], 'check_site_ids': [SITE]}
+        callee = '<example.Errors: example.TargetException make()>'
+        events = [
+            {'event': 'FAULT_APPLIED', 'seq': 1, 'schemaVersion': 3, 'marker': 'FAULT:STATIC:IO',
+             'siteId': TARGET + '#u2', 'occurrenceAddress': 'local/a/' + TARGET + '#u2',
+             'hitOrdinal': 1, 'faultId': 'f'},
+            {'event': 'METHOD_ENTER', 'seq': 2, 'method': TARGET, 'callId': 7},
+            {'event': 'CHECK_REACHED', 'seq': 3, 'method': TARGET, 'callId': 7, 'siteId': SITE},
+            {'event': 'METHOD_ENTER', 'seq': 4, 'method': callee, 'callId': 8, 'parentCallId': 7},
+            {'event': 'EXPLICIT_THROW', 'seq': 5, 'method': callee, 'callId': 8,
+             'runtimeType': 'example.TargetException', 'sourceLine': 72},
+            {'event': 'METHOD_EXIT_THROW', 'seq': 6, 'method': callee, 'callId': 8,
+             'runtimeType': 'example.TargetException'},
+            {'event': 'METHOD_EXIT_THROW', 'seq': 7, 'method': TARGET, 'callId': 7,
+             'runtimeType': 'example.TargetException'},
+        ]
+        with tempfile.TemporaryDirectory() as tmp:
+            trace = Path(tmp) / 'runtime_trace.jsonl'
+            trace.write_text(''.join(json.dumps(event) + '\n' for event in events))
+            feedback = trace_feedback(trace, target)
+            explicit = trace_feedback(trace, {**target, 'throw_event': 'EXPLICIT_THROW',
+                                              'explicit_throw_lines': [23]})
+        self.assertTrue(feedback['oracle'])
+        self.assertEqual(feedback['target_fatal_exception_count'], 1)
+        self.assertFalse(explicit['oracle'])
 
     def test_soot_exact_throw_line_disambiguates_adjacent_checks(self):
         guard = TARGET + '#u4'
