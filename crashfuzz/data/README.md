@@ -1,7 +1,9 @@
 # Campaign records
 
-[`static102-rerun.tsv`](static102-rerun.tsv) is the live checklist for the
-current Soot-selected CrashFuzz rerun. It has one row for each original check,
+[`static102-rerun.tsv`](static102-rerun.tsv) is the table of the
+Soot-selected CrashFuzz rerun (2026-10-13), as its collector wrote it from the
+three nodes of that cluster; `python3 -m crashfuzz report` writes the same
+columns (without the retired archive and migration ones) for a new results root. It has one row for each original check,
 with the exact source site, chosen cluster JUnit, elapsed time, fault counts,
 strict runtime matches, post-fault target reaches, and candidate status.
 The `fault_trials`, `active_trial`, strict injection, target reach, and

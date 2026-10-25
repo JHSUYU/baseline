@@ -6,20 +6,20 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from fuzzer import (archive_trial_attempts, budget_has_room, campaign,
-                    choose_next_sequence, enqueue, fault_family, fault_point_for_io,
-                    fault_variants_for_io, fingerprint,
-                    in_io_scope, point_from_event,
-                    independent_reply_fanout, reply_fanout_degree,
-                    repeated_nonempty_reply_profile,
-                    rows, static_reason_priority, strict_applied_prefix,
-                    strict_injection,
-                    retry_lost_target,
-                    target_proximity_score,
-                    trace_feedback, stable_occurrence,
-                    selected_target_control_branches,
-                    selected_target_throw_lines, validate,
-                    write_case_result, write_trial)
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from crashfuzz.campaign import (archive_trial_attempts, campaign, replay,  # noqa: E402
+                                validate, write_case_result, write_trial)
+from crashfuzz.faults import (fault_family, fault_point_for_io, fault_variants_for_io,  # noqa: E402
+                              in_io_scope, independent_reply_fanout, point_from_event,
+                              reply_fanout_degree, repeated_nonempty_reply_profile,
+                              retry_lost_target, stable_occurrence, strict_applied_prefix,
+                              strict_injection)
+from crashfuzz.oracle import (selected_target_control_branches,  # noqa: E402
+                              selected_target_throw_lines, trace_feedback)
+from crashfuzz.scheduler import (budget_has_room, choose_next_sequence, enqueue,  # noqa: E402
+                                 static_reason_priority, target_proximity_score)
+from crashfuzz.trace import fingerprint, rows  # noqa: E402
 
 TARGET = '<example.Target: void check()>'
 SITE = TARGET + '#u8'
@@ -463,11 +463,10 @@ class CoverageIoTest(unittest.TestCase):
             {'status': 'lost_target'}] * 50
         self.assertFalse(budget_has_room(state, budget))
 
-    def test_old_seen_sequence_list_migrates_without_duplicate_trials(self):
-        state = {'seen_sequences': [fingerprint([A])], 'queue': []}
+    def test_a_sequence_is_queued_once(self):
+        state = {'seen_sequences': {fingerprint([A]): True}, 'queue': []}
         enqueue(state, [A])
         self.assertEqual(state['queue'], [])
-        self.assertIsInstance(state['seen_sequences'], dict)
         enqueue(state, [B])
         self.assertEqual(len(state['queue']), 1)
         enqueue(state, [B])
@@ -485,11 +484,8 @@ class CoverageIoTest(unittest.TestCase):
                  'responseShape': 'example.Heartbeat|commands=[example.Update]'}
         state = {'completed': [{'sequence': [B]}] * 5,
                  'queue': [{'sequence': [plain], 'priority': 1000, 'created': 1},
-                           {'sequence': [reply], 'priority': 1, 'created': 2}],
-                 'response_shape_diversity_version': 1}
+                           {'sequence': [reply], 'priority': 1, 'created': 2}]}
         self.assertEqual(choose_next_sequence(state), 1)
-        state['response_shape_diversity_version'] = 0
-        self.assertEqual(choose_next_sequence(state), 0)
 
     def test_fanout_slot_selects_multi_node_observed_reply_loss(self):
         reply = {**A, 'phase': 'after',
@@ -505,11 +501,8 @@ class CoverageIoTest(unittest.TestCase):
             one, {**two, 'responseShape': 'example.Reply|commands=[example.Other]'}]), 1)
         state = {'completed': [{'sequence': [B]}] * 3,
                  'queue': [{'sequence': pair, 'priority': 1000, 'created': 1},
-                           {'sequence': triple, 'priority': 1, 'created': 2}],
-                 'reply_fanout_diversity_version': 1}
+                           {'sequence': triple, 'priority': 1, 'created': 2}]}
         self.assertEqual(choose_next_sequence(state), 1)
-        state['reply_fanout_diversity_version'] = 0
-        self.assertEqual(choose_next_sequence(state), 0)
 
     def test_reply_chain_slot_favors_later_repeated_loss_on_one_node(self):
         reply = {**A, 'phase': 'after',
@@ -522,11 +515,8 @@ class CoverageIoTest(unittest.TestCase):
         self.assertEqual(repeated_nonempty_reply_profile(fanout), (1, 1))
         state = {'completed': [{'sequence': [B]}] * 8,
                  'queue': [{'sequence': fanout, 'priority': 1000, 'created': 1},
-                           {'sequence': chain, 'priority': 1, 'created': 2}],
-                 'reply_chain_diversity_version': 1}
+                           {'sequence': chain, 'priority': 1, 'created': 2}]}
         self.assertEqual(choose_next_sequence(state), 1)
-        state['reply_chain_diversity_version'] = 0
-        self.assertEqual(choose_next_sequence(state), 0)
 
     def test_reply_chain_slot_caps_depth_before_fault_count(self):
         reply = {**A, 'phase': 'after',
@@ -540,8 +530,7 @@ class CoverageIoTest(unittest.TestCase):
                       'responseShape': 'example.Reply|commands=[]'}])
         state = {'completed': [{'sequence': [B]}] * 8,
                  'queue': [{'sequence': five, 'priority': 1000, 'created': 1},
-                           {'sequence': four, 'priority': 1, 'created': 2}],
-                 'reply_chain_diversity_version': 1}
+                           {'sequence': four, 'priority': 1, 'created': 2}]}
         self.assertEqual(choose_next_sequence(state), 1)
 
     def test_strict_injection_accepts_only_complete_unordered_reply_fanout(self):
@@ -564,22 +553,19 @@ class CoverageIoTest(unittest.TestCase):
         self.assertFalse(strict_injection(wrong, plan))
 
     def test_temporal_diversity_explores_later_occurrences_of_a_site(self):
+        # Every fourth choice ranks by temporal family alone: a later hit of a
+        # tried site is a new family, the repeated B is not.
         later = {**A, 'hitOrdinal': 4}
-        state = {'completed': [{'sequence': [A]}],
+        state = {'completed': [{'sequence': [A]}, {'sequence': [B]}, {'sequence': [B]}],
                  'queue': [{'sequence': [later], 'priority': 20, 'created': 1},
-                           {'sequence': [B], 'priority': 10, 'created': 2}],
-                 'temporal_diversity_version': 1}
-        self.assertEqual(choose_next_sequence(state), 1)
-        state['temporal_diversity_version'] = 2
+                           {'sequence': [B], 'priority': 10, 'created': 2}]}
         self.assertEqual(choose_next_sequence(state), 0)
 
     def test_new_io_site_precedes_repeated_timing_variants(self):
         later = {**A, 'hitOrdinal': 4}
         state = {'completed': [{'sequence': [A]}],
                  'queue': [{'sequence': [later], 'priority': 100, 'created': 1},
-                           {'sequence': [B], 'priority': 10, 'created': 2}],
-                 'temporal_diversity_version': 2,
-                 'site_diversity_version': 2}
+                           {'sequence': [B], 'priority': 10, 'created': 2}]}
         self.assertEqual(choose_next_sequence(state), 1)
         # A recurring call can run at a different distributed state, so a
         # periodic temporal slot still explores the later observation.
@@ -592,17 +578,14 @@ class CoverageIoTest(unittest.TestCase):
                  'queue': [{'sequence': [reply_loss], 'priority': 100,
                             'created': 1},
                            {'sequence': [B], 'priority': 10,
-                            'created': 2}],
-                 'site_diversity_version': 2}
+                            'created': 2}]}
         self.assertEqual(choose_next_sequence(state), 0)
 
     def test_bounded_late_occurrence_slot_prevents_family_starvation(self):
         late = {**A, 'hitOrdinal': 4, 'phase': 'after'}
         state = {'completed': [{'sequence': [A]}] * 5,
                  'queue': [{'sequence': [B], 'priority': 1000, 'created': 1},
-                           {'sequence': [late], 'priority': 20, 'created': 2}],
-                 'site_diversity_version': 2,
-                 'late_occurrence_diversity_version': 1}
+                           {'sequence': [late], 'priority': 20, 'created': 2}]}
         self.assertEqual(choose_next_sequence(state), 1)
         state['completed'].append({'sequence': [late]})
         self.assertEqual(choose_next_sequence(state), 0)
@@ -612,9 +595,7 @@ class CoverageIoTest(unittest.TestCase):
         fifth = {**A, 'hitOrdinal': 5, 'phase': 'after'}
         state = {'completed': [{'sequence': [fourth]}] * 11,
                  'queue': [{'sequence': [B], 'priority': 1000, 'created': 1},
-                           {'sequence': [fifth], 'priority': 20, 'created': 2}],
-                 'exact_late_occurrence_version': 1,
-                 'late_occurrence_diversity_version': 1}
+                           {'sequence': [fifth], 'priority': 20, 'created': 2}]}
         self.assertEqual(choose_next_sequence(state), 1)
 
     def test_bounded_slot_tries_two_lost_replies_on_same_actor(self):
@@ -626,8 +607,7 @@ class CoverageIoTest(unittest.TestCase):
                            {'sequence': [first, other_actor],
                             'priority': 1000, 'created': 2},
                            {'sequence': [first, next_reply],
-                            'priority': 20, 'created': 3}],
-                 'repeated_reply_loss_version': 1}
+                            'priority': 20, 'created': 3}]}
         self.assertEqual(choose_next_sequence(state), 2)
 
     def test_bounded_slot_keeps_three_fault_descendants_in_budget(self):
@@ -636,8 +616,7 @@ class CoverageIoTest(unittest.TestCase):
                            {'sequence': [A, B], 'priority': 400, 'created': 2},
                            {'sequence': [A, B, {**B, 'siteId': 'third'}],
                             'priority': 80,
-                            'target_proximity': 80, 'created': 3}],
-                 'deep_sequence_version': 1}
+                            'target_proximity': 80, 'created': 3}]}
         self.assertEqual(choose_next_sequence(state), 2)
 
     def test_deep_slot_prefers_consecutive_replies_from_one_actor(self):
@@ -648,8 +627,7 @@ class CoverageIoTest(unittest.TestCase):
                             'priority': 1000, 'target_proximity': 80,
                             'created': 1},
                            {'sequence': replies, 'priority': 10,
-                            'target_proximity': 50, 'created': 2}],
-                 'deep_sequence_version': 1}
+                            'target_proximity': 50, 'created': 2}]}
         self.assertEqual(choose_next_sequence(state), 1)
 
     def test_followup_slot_interrupts_repair_io_on_same_actor(self):
@@ -660,8 +638,7 @@ class CoverageIoTest(unittest.TestCase):
                  'queue': [{'sequence': [watch, other], 'priority': 500,
                             'created': 1},
                            {'sequence': [watch, repair], 'priority': 50,
-                            'target_proximity': 80, 'created': 2}],
-                 'same_actor_followup_version': 1}
+                            'target_proximity': 80, 'created': 2}]}
         self.assertEqual(choose_next_sequence(state), 1)
 
     def test_cross_actor_slot_explores_distinct_fault_actors(self):
@@ -675,11 +652,8 @@ class CoverageIoTest(unittest.TestCase):
                  'queue': [{'sequence': [first, same], 'priority': 1000,
                             'created': 1},
                            {'sequence': [first, other], 'priority': 10,
-                            'created': 2}],
-                 'cross_actor_diversity_version': 1}
+                            'created': 2}]}
         self.assertEqual(choose_next_sequence(state), 1)
-        state['cross_actor_diversity_version'] = 0
-        self.assertEqual(choose_next_sequence(state), 0)
 
     def test_cross_actor_slot_prefers_confirmed_distinct_nodes(self):
         unbound_first = {**A, 'occurrence':
@@ -694,8 +668,7 @@ class CoverageIoTest(unittest.TestCase):
                  'queue': [{'sequence': [unbound_first, unbound_second],
                             'priority': 1000, 'created': 1},
                            {'sequence': [bound_first, bound_second],
-                            'priority': 10, 'created': 2}],
-                 'cross_actor_diversity_version': 1}
+                            'priority': 10, 'created': 2}]}
         self.assertEqual(choose_next_sequence(state), 1)
 
     def test_followup_slot_prefers_same_component_on_less_tried_root(self):
@@ -708,8 +681,7 @@ class CoverageIoTest(unittest.TestCase):
                  'queue': [{'sequence': [watch, distant], 'priority': 500,
                             'target_proximity': 80, 'created': 1},
                            {'sequence': [watch, local], 'priority': 50,
-                            'target_proximity': 80, 'created': 2}],
-                 'same_actor_followup_version': 1}
+                            'target_proximity': 80, 'created': 2}]}
         self.assertEqual(choose_next_sequence(state), 1)
 
     def test_target_near_slot_keeps_a_precheck_fault_in_budget(self):
@@ -717,8 +689,7 @@ class CoverageIoTest(unittest.TestCase):
                  'queue': [{'sequence': [B], 'priority': 1000,
                             'target_proximity': 0, 'created': 1},
                            {'sequence': [A], 'priority': 20,
-                            'target_proximity': 80, 'created': 2}],
-                 'site_diversity_version': 2}
+                            'target_proximity': 80, 'created': 2}]}
         self.assertEqual(choose_next_sequence(state), 1)
 
     def test_proximity_uses_the_next_check_after_the_io(self):
@@ -1186,6 +1157,20 @@ class CoverageIoTest(unittest.TestCase):
                            static_reason_priority('callee_may_dispatch'))
         self.assertGreater(static_reason_priority('target_direct_field_writer'),
                            static_reason_priority('callee_may_dispatch'))
+
+    def test_replay_runs_one_sequence_as_ordinary_trials(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            config = fixture(root, max_trials=1)
+            state = replay(config, root / 'replay', [A], repeats=3)
+            self.assertEqual([item['number'] for item in state['completed']], [1, 2, 3])
+            self.assertTrue(all(item['sequence'] == [A] for item in state['completed']))
+            results = [json.loads(Path(item['result']).read_text()) for item in state['completed']]
+            self.assertTrue(all(result['strict_injection'] for result in results))
+            self.assertEqual({item['status'] for item in state['completed']},
+                             {'target_exception_candidate'})
+            again = replay(config, root / 'replay', [A], repeats=3)
+            self.assertEqual(len(again['completed']), 3)
 
     def test_completed_retry_archives_every_attempt(self):
         with tempfile.TemporaryDirectory() as temp:
