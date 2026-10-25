@@ -7,7 +7,7 @@ import org.junit.platform.launcher.listeners.TestExecutionSummary;
 import java.lang.reflect.Method;
 
 /** Run one unchanged JUnit Jupiter method with its native test fixture. */
-public final class RunOriginalJupiter {
+public final class RunJupiterMethod {
   public static void main(String[] args) {
     if (args.length != 2) throw new IllegalArgumentException("test class and method required");
     String parameterTypes = null;

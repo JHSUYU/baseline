@@ -5,8 +5,8 @@ import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/** Execute exactly one existing Hadoop JUnit method with its native fixture. */
-public final class RunOriginalHdfsJUnit {
+/** Run exactly one existing JUnit 4 method with its native fixture. */
+public final class RunJUnit4Method {
   public static void main(String[] args) throws Exception {
     if (args.length != 2) throw new IllegalArgumentException("test class and method required");
     AtomicInteger assumptions = new AtomicInteger();
