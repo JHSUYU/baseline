@@ -22,9 +22,13 @@ from dataclasses import dataclass, field
 TIMELINE_DEPTH = 2
 
 
-def reward(new_edges: int) -> float:
-    """New happens-before edges, saturating: one new edge is worth much, the 50th little."""
-    return 1.0 - math.exp(-new_edges / 10.0)
+def reward(new_edges: int, noise: int = 0) -> float:
+    """New happens-before edges beyond the workload's own noise, saturating.
+
+    ``noise`` is how many edges a second fault-free run added to the first:
+    a run adding no more than that shows nothing a fault caused.
+    """
+    return 1.0 - math.exp(-max(0, new_edges - noise) / 10.0)
 
 
 @dataclass

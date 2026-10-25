@@ -39,10 +39,12 @@ oracle: PLANT_FATAL at the declared target occurrence, every planted fault appli
 - **The policy** (`mallory/policy.py`): Q-learning as in Mallory. A state is where the fault point stands in
   GraphChecker's graph (node, region, the message exchange or root it serves, its call path) with its node's
   last two abstract events; an action is which failure at which code site. Untried actions are optimistic;
-  epsilon-greedy (0.1) keeps random choices; the reward saturates with the run's new edges
-  (`1 - exp(-new/10)`); the update looks one fault point ahead in the run the fault produced.
+  epsilon-greedy (0.1) keeps random choices; the reward saturates with the run's new edges beyond the
+  workload's own noise (`1 - exp(-max(0, new - noise)/10)`, where `noise` is the edges a second fault-free run
+  adds to the first); the update looks one fault point ahead in the run the fault produced.
 - **The campaign** (`mallory/campaign.py`): one trial at a time on one node; a plan extends a corpus run with
-  one more fault after its last (at most three); a trial is bounded by four times the healthy run (at least
+  one more fault after its last (at most three); a run joins the corpus only when it adds more edges than
+  the noise; a trial is bounded by four times the healthy run (at least
   120 s). The state is checkpointed after every trial (`state.json`); the result is `result.json`.
 
 Different cases run side by side on different nodes; a case's own trials never run in parallel.

@@ -153,13 +153,13 @@ class Campaign:
         trial.graph_added = len(run.edges - self.healthy_edges)
         trial.graph_removed = len(self.healthy_edges - run.edges)
         self.corpus_edges |= run.edges
-        trial.reward = policy.reward(trial.new_edges) if trial.applied else 0.0
+        trial.reward = policy.reward(trial.new_edges, self.healthy_noise) if trial.applied else 0.0
         following = [p for p in faults.points(run, after_seq=candidate.point.seq)
                      if p.node == candidate.point.node][:1]
         next_state = (policy.state_key(following[0], run.timeline_before(
             following[0].line, following[0].seq, policy.TIMELINE_DEPTH)) if following else None)
         self.q.update(candidate.state, candidate.point.action, trial.reward, next_state)
-        if trial.applied and trial.new_edges > 0:
+        if trial.applied and trial.new_edges > self.healthy_noise:
             self._admit(trial.name, candidate.plan, run)
         return trial
 

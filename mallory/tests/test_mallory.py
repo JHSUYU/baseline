@@ -153,6 +153,8 @@ class PolicyTest(unittest.TestCase):
         self.assertGreater(policy.reward(10), policy.reward(1))
         self.assertLessEqual(policy.reward(1000), 1.0)
         self.assertEqual(policy.reward(0), 0.0)
+        self.assertEqual(policy.reward(38, noise=38), 0.0)       # no more than two healthy runs differ
+        self.assertAlmostEqual(policy.reward(48, noise=38), policy.reward(10))
 
 
 if __name__ == "__main__":
