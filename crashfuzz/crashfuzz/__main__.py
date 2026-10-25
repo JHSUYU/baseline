@@ -33,7 +33,8 @@ def _row(checklist: Path, case_id: str) -> dict:
 def _print(result: dict) -> None:
     print(json.dumps({key: result.get(key) for key in
                       ("case_id", "status", "finished", "fault_trials", "strict_injections",
-                       "total_elapsed_seconds", "error")}), flush=True)
+                       "total_elapsed_seconds", "first_candidate_trial",
+                       "first_candidate_seconds", "error")}), flush=True)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -52,6 +53,8 @@ def main(argv: list[str] | None = None) -> int:
         sub.add_argument("--max-faults", type=int, default=10)
         sub.add_argument("--campaign-suffix", default="")
         sub.add_argument("--refresh-selection", action="store_true")
+        sub.add_argument("--stop-at-candidate", action="store_true",
+                         help="end the campaign at its first candidate (a time-to-detect run)")
 
     run = commands.add_parser("run")
     run.add_argument("--case-id", required=True)
@@ -105,7 +108,8 @@ def main(argv: list[str] | None = None) -> int:
                           "branches": len(selection["branches"])}), flush=True)
     elif args.command == "run":
         _print(run_case(_row(args.checklist, args.case_id), args.results, args.max_trials,
-                        args.max_faults, args.campaign_suffix, args.refresh_selection))
+                        args.max_faults, args.campaign_suffix, args.refresh_selection,
+                        args.stop_at_candidate))
     elif args.command == "worker":
         if args.shard_count < 1 or not 0 <= args.shard_index < args.shard_count:
             parser.error("shard-index must be in [0, shard-count)")

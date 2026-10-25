@@ -8,8 +8,11 @@
 3. A finished trial's graph is compared with every graph so far: its new
    happens-before edges are the reward; a trial with new edges joins the corpus,
    so its later fault points become choices.
-4. The oracle is GraphChecker's: the target took its fatal arm at the declared
-   occurrence (PLANT_FATAL atAnchor) in a run where every planted fault applied.
+4. The oracle is GraphChecker's: in a run where every planted fault applied,
+   the target took its fatal arm at the declared occurrence (PLANT_FATAL
+   atAnchor), or took it more often than in either healthy run (a workload
+   whose own fault-free run already fails the check once, as a test of the
+   failure path does, counts only a further failure).
 
 As in Mallory, one trial runs at a time and the next choice uses everything the
 earlier trials showed; a campaign runs on one node, so different cases (systems)
@@ -63,6 +66,7 @@ class Trial:
     graph_added: int = 0
     graph_removed: int = 0
     reward: float = 0.0
+    fatal_at: list[str] = field(default_factory=list)   # occurrences of its target fatal arms
 
 
 @dataclass
@@ -85,6 +89,7 @@ class Campaign:
         self.healthy_noise = 0
         self.prepare_s: float | None = None    # GraphChecker's SEED and PLAN of the case
         self.healthy_s = 0.0                   # the two healthy runs
+        self.healthy_fatal = 0                 # target fatal arms of a healthy run, at most
         self.started = 0.0
 
     # -- paths ---------------------------------------------------------------
@@ -148,7 +153,8 @@ class Campaign:
             return None
         index = self.q.choose(
             self.candidates, state_of=lambda c: c.state, action_of=lambda c: c.point.action,
-            tried_count=lambda c: self.q.tries.get(c.state, {}).get(c.point.action, 0))
+            tried_count=lambda c: self.q.tries.get(c.state, {}).get(c.point.action, 0),
+            identity_of=lambda c: faults.plan_id(c.plan))
         chosen = self.candidates.pop(index)
         self.tried.add(faults.plan_id(chosen.plan))
         return chosen
@@ -162,7 +168,8 @@ class Campaign:
         if run is None:
             return trial
         trial.applied = applied
-        trial.fatal = run.fatal and trial.applied
+        trial.fatal = trial.applied and (run.fatal or len(run.fatal_rows) > self.healthy_fatal)
+        trial.fatal_at = [row.get("occurrenceAddress", "") for row in run.fatal_rows]
         trial.new_edges = len(run.edges - self.corpus_edges)
         trial.graph_added = len(run.edges - self.healthy_edges)
         trial.graph_removed = len(self.healthy_edges - run.edges)
@@ -184,6 +191,7 @@ class Campaign:
             "detections": [t.name for t in self.detections],
             "tried": sorted(self.tried), "corpus_edges": len(self.corpus_edges),
             "healthy_noise_edges": self.healthy_noise, "seed": self.seed,
+            "healthy_fatal_arms": self.healthy_fatal,
             "prepare_s": self.prepare_s, "healthy_s": round(self.healthy_s, 1),
             "candidates": len(self.candidates), "policy": self.q.to_json(),
         }
@@ -214,6 +222,8 @@ class Campaign:
         self.healthy_s = time.time() - started
         if again is not None and again.fatal:
             raise RuntimeError(f"{self.case.case_id}: the target fails without any fault")
+        self.healthy_fatal = max(len(healthy.fatal_rows),
+                                 len(again.fatal_rows) if again is not None else 0)
         self.healthy_edges = set(healthy.edges)
         self.corpus_edges = set(healthy.edges) | (again.edges if again is not None else set())
         self.healthy_noise = len(again.edges - healthy.edges) if again is not None else 0
@@ -247,11 +257,15 @@ class Sweep(Campaign):
     def directory(self) -> Path:
         return self.case.work / "sweep"
 
-    def sweep(self, limit: int | None = None) -> dict:
+    def sweep(self, limit: int | None = None, reverse: bool = False) -> dict:
+        """``reverse`` runs the points from the last, beside a forward sweep (its own record)."""
         prepared = json.loads((self.case.work / "prepared.json").read_text())
         self.target_rows = prepared["target_rows"]
-        record = self.directory / "sweep.json"
+        record = self.directory / ("sweep-reverse.json" if reverse else "sweep.json")
+        other = self.directory / ("sweep.json" if reverse else "sweep-reverse.json")
         done = json.loads(record.read_text()) if record.is_file() else {"points": [], "runs": {}}
+        if reverse and "healthy_s" not in done and other.is_file():
+            done["healthy_s"] = json.loads(other.read_text()).get("healthy_s")
         healthy_trace = self.runs / "healthy" / "runtime_trace.jsonl.gz"
         if not healthy_trace.is_file():
             started = time.time()
@@ -265,10 +279,13 @@ class Sweep(Campaign):
             self.runs / "healthy" / "runtime_trace.jsonl")) + ".gz"))
         points = faults.points(healthy)
         done["points"] = faults.to_json(tuple(points))
-        for index, point in enumerate(points[:limit]):
+        order = list(enumerate(points[:limit]))
+        for index, point in (reversed(order) if reverse else order):
             name = f"s{index:05d}"
             if name in done["runs"]:
                 continue
+            if other.is_file() and name in json.loads(other.read_text())["runs"]:
+                break                         # the two sweeps met
             started = time.time()
             status, run, applied = self._run(name, (point,), self.node)
             done["runs"][name] = {"action": point.action, "outside": point.outside,
@@ -277,10 +294,13 @@ class Sweep(Campaign):
             self.directory.mkdir(parents=True, exist_ok=True)
             record.with_suffix(".tmp").write_text(json.dumps(done, indent=1) + "\n")
             record.with_suffix(".tmp").replace(record)
-        runs = done["runs"].values()
-        return {"case": self.case.case_id, "points": len(points), "run": len(done["runs"]),
+        merged = dict(done["runs"])
+        if other.is_file():
+            merged.update(json.loads(other.read_text())["runs"])
+        runs = merged.values()
+        return {"case": self.case.case_id, "points": len(points), "run": len(merged),
                 "applied": sum(r["applied"] for r in runs), "expose": sum(r["fatal"] for r in runs),
-                "exposing": sorted(name for name, r in done["runs"].items() if r["fatal"])}
+                "exposing": sorted(name for name, r in merged.items() if r["fatal"])}
 
 
 def _trial_json(trial: Trial) -> dict:
@@ -288,7 +308,8 @@ def _trial_json(trial: Trial) -> dict:
             "node": trial.node, "seconds": round(trial.ended - trial.started, 1),
             "exit": trial.exit, "applied": trial.applied, "fatal": trial.fatal,
             "new_edges": trial.new_edges, "graph_added": trial.graph_added,
-            "graph_removed": trial.graph_removed, "reward": round(trial.reward, 4)}
+            "graph_removed": trial.graph_removed, "reward": round(trial.reward, 4),
+            "fatal_at": trial.fatal_at}
 
 
 def summary(campaign: Campaign) -> dict:
@@ -314,6 +335,7 @@ def summary(campaign: Campaign) -> dict:
             "faults": [p.action for p in first.plan],
             "plan": faults.to_json(first.plan),
             "graph_added": first.graph_added, "graph_removed": first.graph_removed,
+            "fatal_at": first.fatal_at,
         },
     }
     campaign.directory.mkdir(parents=True, exist_ok=True)

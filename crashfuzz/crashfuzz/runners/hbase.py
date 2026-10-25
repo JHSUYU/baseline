@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import fcntl
 import os
 import subprocess
 from pathlib import Path
@@ -12,7 +13,9 @@ from .base import (JUPITER_RUNNER, Request, agent_env, compile_runner, finish, f
 
 HBASE = settings.DEPS / "hbase-2.6.6"
 HADOOP = settings.DEPS / "hadoop-2.10.0"
+SOURCE = settings.SOURCES / "hbase-2.6.6"
 BUILD = settings.BUILD / "hbase-junit"
+TEST_CLASSES = settings.BUILD / "hbase-test-classes"
 SSL_UTILITY = (Path(__file__).resolve().parent /
                "hbase-support/src/org/apache/hadoop/hbase/http/ssl/KeyStoreTestUtil.java")
 # The binary distribution holds both 1.0.0-M20 and 2.1.7 Apache Directory API
@@ -27,6 +30,29 @@ def _launcher() -> Path:
     vendor = settings.HOME / "vendor"
     return next(vendor.glob("*junit-platform-launcher-1.13.4.jar"),
                 vendor / "junit-platform-launcher-1.13.4.jar")
+
+
+def _source_test_classes(test_class: str, classpath: str) -> list[Path]:
+    """A test whose module ships no tests jar (hbase-backup), compiled unchanged from the
+    release source: its classes and test resources, else nothing."""
+    relative = Path(*test_class.split(".")).with_suffix(".java")
+    for tests in sorted(SOURCE.glob("hbase-*/src/test/java")):
+        if not (tests / relative).is_file():
+            continue
+        module = tests.parts[-4]
+        if (HBASE / "lib" / f"{module}-2.6.6-tests.jar").is_file():
+            return []
+        classes = TEST_CLASSES / module
+        compiled = classes / relative.with_suffix(".class")
+        with (settings.BUILD / f".{module}-tests.lock").open("a+") as lock:
+            fcntl.flock(lock, fcntl.LOCK_EX)
+            if not compiled.is_file():
+                classes.mkdir(parents=True, exist_ok=True)
+                subprocess.run([java("javac"), "-nowarn", "-cp", classpath, "-sourcepath", str(tests),
+                                "-d", str(classes), str(tests / relative)], check=True)
+        resources = tests.parent / "resources"
+        return [classes] + ([resources] if resources.is_dir() else [])
+    return []
 
 
 def run(request: Request) -> int:
@@ -53,6 +79,10 @@ def run(request: Request) -> int:
         ssl_classes.mkdir(parents=True)
         subprocess.run([java("javac"), "-cp", classpath, "-d", str(ssl_classes),
                         str(SSL_UTILITY)], check=True)
+    settings.BUILD.mkdir(parents=True, exist_ok=True)
+    source_tests = _source_test_classes(request.test_class, classpath)
+    if source_tests:
+        classpath = os.pathsep.join([*(str(path) for path in source_tests), classpath])
     compile_runner(JUPITER_RUNNER, classpath, BUILD, lock=settings.BUILD / ".hbase-junit.lock")
     command = [java("java"), "-ea", "-Xmx4g",
                "-Djava.library.path=" + str(HADOOP / "lib/native"),

@@ -745,7 +745,10 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
         max_runtime = budget.get("max_seconds", 1e18)
 
         def can_run() -> bool:
-            return (budget_has_room(state, budget) and
+            # stop_at_candidate: a measurement of the time to the first candidate
+            found = (budget.get("stop_at_candidate") and
+                     any(item["status"] in CANDIDATES for item in state["completed"]))
+            return (not found and budget_has_room(state, budget) and
                     (state["active"] or state["active_runtime_seconds"] < max_runtime) and
                     bool(state["queue"] or state["active"]))
 
@@ -768,7 +771,8 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
         state["last_updated"] = time.time()
         state["finished"] = bool(not state["active"] and
                                  (not state["queue"] or not budget_has_room(state, budget) or
-                                  state["active_runtime_seconds"] >= max_runtime))
+                                  state["active_runtime_seconds"] >= max_runtime or
+                                  not can_run()))
         if state["finished"] and state.get("status") not in TERMINAL:
             valid = {"checked", "target_exception_candidate",
                      "partial_target_exception_candidate", "baseline_exception_recurrence"}

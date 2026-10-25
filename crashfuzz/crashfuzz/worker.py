@@ -258,7 +258,8 @@ def healthy_dir(base: Path, selection: dict[str, Any], campaign_suffix: str = ""
 def _prepare(row: dict[str, Any], base: Path, summary: dict[str, Any], summary_path: Path,
              max_trials: int, max_faults: int, campaign_suffix: str,
              refresh_selection: bool,
-             config_name: str = "campaign-config.json") -> tuple[dict[str, Any], Path]:
+             config_name: str = "campaign-config.json",
+             stop_at_candidate: bool = False) -> tuple[dict[str, Any], Path]:
     """Selection and healthy run for the row; returns (campaign config, its root)."""
     cid = row["case_id"]
     spec = system_of(row["system"])
@@ -325,7 +326,8 @@ def _prepare(row: dict[str, Any], base: Path, summary: dict[str, Any], summary_p
               "trial": {"command": command},
               "budget": {"max_trials": max_trials, "max_faults": max_faults,
                          "base_trials": min(80, max_trials),
-                         "min_target_retained_trials": 30, "max_unmatched_retries": 1},
+                         "min_target_retained_trials": 30, "max_unmatched_retries": 1,
+                         "stop_at_candidate": stop_at_candidate},
               "timeout_seconds": spec.timeout + 30}
     atomic_json(base / config_name, config)
     # A checkpoint made with another selection keeps its own directory.
@@ -346,12 +348,13 @@ def _new_summary(row: dict[str, Any]) -> dict[str, Any]:
             "target_line": location["selected_line"], "target_site_id": location["site_id"],
             "check_code": row.get("check_code"), "cluster_test": row.get("cluster_test"),
             "status": "preparing", "bug_mark": "none", "finished": False,
-            "updated_at": time.time()}
+            "started_at": time.time(), "updated_at": time.time()}
 
 
 def _run_case_unlocked(row: dict[str, Any], result_root: Path, max_trials: int,
                        max_faults: int, campaign_suffix: str = "",
-                       refresh_selection: bool = False) -> dict[str, Any]:
+                       refresh_selection: bool = False,
+                       stop_at_candidate: bool = False) -> dict[str, Any]:
     cid = row["case_id"]
     base = result_root / cid
     base.mkdir(parents=True, exist_ok=True)
@@ -372,8 +375,11 @@ def _run_case_unlocked(row: dict[str, Any], result_root: Path, max_trials: int,
         return summary
     started = time.monotonic()
     try:
+        if prior and prior.get("started_at"):
+            summary["started_at"] = prior["started_at"]
         config, root = _prepare(row, base, summary, summary_path, max_trials, max_faults,
-                                campaign_suffix, refresh_selection)
+                                campaign_suffix, refresh_selection,
+                                stop_at_candidate=stop_at_candidate)
         summary["status"] = "fuzzing"
         atomic_json(summary_path, summary)
         state = campaign(config, root)
@@ -391,7 +397,8 @@ def _run_case_unlocked(row: dict[str, Any], result_root: Path, max_trials: int,
                        total_elapsed_seconds=round(max(
                            previous_seconds + time.monotonic() - started,
                            float(record["total_elapsed_seconds"])), 3),
-                       campaign_result=str(record_path))
+                       campaign_result=str(record_path),
+                       **_first_candidate(state, summary["started_at"]))
     except Exception as error:
         if str(error).startswith("case already claimed:") and prior is not None:
             atomic_json(summary_path, prior)
@@ -404,8 +411,20 @@ def _run_case_unlocked(row: dict[str, Any], result_root: Path, max_trials: int,
     return summary
 
 
+def _first_candidate(state: dict[str, Any], started_at: float) -> dict[str, Any]:
+    """The first candidate trial and the wall time from the case's start (selection, healthy
+    run and trials) to its end."""
+    for item in state["completed"]:
+        if item["status"] in {"target_exception_candidate", "partial_target_exception_candidate"}:
+            result = json.loads(Path(item["result"]).read_text())
+            return {"first_candidate_trial": item["number"],
+                    "first_candidate_seconds": round(result["completed_at"] - started_at, 1)}
+    return {"first_candidate_trial": None, "first_candidate_seconds": None}
+
+
 def run_case(row: dict[str, Any], result_root: Path, max_trials: int, max_faults: int,
-             campaign_suffix: str = "", refresh_selection: bool = False) -> dict[str, Any]:
+             campaign_suffix: str = "", refresh_selection: bool = False,
+             stop_at_candidate: bool = False) -> dict[str, Any]:
     """Run (or resume) a case; claimed first so parallel workers never collide."""
     base = result_root / row["case_id"]
     base.mkdir(parents=True, exist_ok=True)
@@ -420,7 +439,7 @@ def run_case(row: dict[str, Any], result_root: Path, max_trials: int, max_faults
                     "status": "claimed_elsewhere", "finished": False}
         try:
             return _run_case_unlocked(row, result_root, max_trials, max_faults,
-                                      campaign_suffix, refresh_selection)
+                                      campaign_suffix, refresh_selection, stop_at_candidate)
         finally:
             fcntl.flock(claim, fcntl.LOCK_UN)
 

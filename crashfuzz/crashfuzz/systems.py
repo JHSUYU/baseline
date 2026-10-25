@@ -46,7 +46,7 @@ SYSTEMS = {
         "HBase", "hbase-2.6.6", 300,
         tuple(f"hbase-2.6.6/lib/hbase-{module}-2.6.6.jar" for module in
               ("client", "server", "common", "procedure", "zookeeper", "protocol",
-               "protocol-shaded", "replication", "master", "regionserver"))),
+               "protocol-shaded", "replication", "master", "regionserver", "backup"))),
     "Solr": SystemSpec(
         "Solr", "solr-8.11.4", 600,
         ("solr-8.11.4/dist/solr-core-8.11.4.jar", "solr-8.11.4/dist/solr-solrj-8.11.4.jar")),

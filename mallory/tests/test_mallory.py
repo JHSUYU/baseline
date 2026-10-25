@@ -189,11 +189,15 @@ class PolicyTest(unittest.TestCase):
         pick = q.choose(["a", "b", "c"], state_of=lambda c: "s", action_of=lambda c: c,
                         tried_count=lambda c: q.tries.get("s", {}).get(c, 0))
         self.assertEqual(pick, 2)                                # the untried action
-        # among equally ranked candidates the draw, not their order, decides
-        fresh = [policy.QPolicy(epsilon=0.0, seed=seed) for seed in range(20)]
-        picks = {p.choose(["x", "y", "z"], state_of=lambda c: "s", action_of=lambda c: c,
-                          tried_count=lambda c: 0) for p in fresh}
-        self.assertEqual(picks, {0, 1, 2})
+        # among equally ranked candidates a seeded draw decides, not their order
+        def pick(seed: int, order: list[str]) -> str:
+            chosen = policy.QPolicy(epsilon=0.0, seed=seed).choose(
+                order, state_of=lambda c: "s", action_of=lambda c: c, tried_count=lambda c: 0,
+                identity_of=lambda c: c)
+            return order[chosen]
+        self.assertEqual({pick(seed, ["x", "y", "z"]) for seed in range(20)}, {"x", "y", "z"})
+        self.assertTrue(all(pick(seed, ["x", "y", "z"]) == pick(seed, ["z", "x", "y"])
+                            for seed in range(20)))
         self.assertGreater(policy.reward(10), policy.reward(1))
         self.assertLessEqual(policy.reward(1000), 1.0)
         self.assertEqual(policy.reward(0), 0.0)

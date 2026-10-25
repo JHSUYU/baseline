@@ -1,0 +1,50 @@
+{
+ "schema_version": 1,
+ "about": "The three bugs the two baselines are measured on, each with the system's own cluster JUnit test (unchanged) as the workload.",
+ "rows": [
+  {
+   "case_id": "HDFS-17967-A",
+   "system": "HDFS 3.4.3",
+   "selection_group": "baseline_bug",
+   "cluster_test": "org.apache.hadoop.hdfs.TestEncryptedTransfer#testLongLivedClientPipelineRecovery[0]",
+   "check_code": "if (key == null) {\nthrow new InvalidEncryptionKeyException(\"Can't re-compute encryption key\"\n+ \" for nonce, since the required block key (keyID=\" + keyId\n+ \") doesn't exist. Current key: \" + currentKey.getKeyId());",
+   "exact_check_location": {
+    "check_start_line": 552,
+    "enclosing_function": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrieveDataEncryptionKey(int,byte[])",
+    "file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+    "selected_line": 555,
+    "site_id": "<org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager: byte[] retrieveDataEncryptionKey(int,byte[])>#u20"
+   },
+   "note": "HDFS-17967 (apache/hadoop#8698) path A: a write pipeline head opens its own SASL connection to the next DataNode, which cannot resolve the block key. The test rotates block keys every 2 s and, without any fault, fails its client's stale key once at this check (then refreshes it); only a further failure is a candidate."
+  },
+  {
+   "case_id": "SOLR-40",
+   "system": "Solr 8.11.4",
+   "selection_group": "baseline_bug",
+   "cluster_test": "TimeRoutedAliasUpdateProcessorTest.test",
+   "check_code": "if (aliasProperties.isEmpty()) {\nthrow RoutedAlias.newAliasMustExistException(aliasName); // if it did exist, we'd have a non-null map",
+   "exact_check_location": {
+    "check_start_line": 132,
+    "enclosing_function": "org.apache.solr.update.processor.RoutedAliasUpdateProcessor.getAliasProps(org.apache.solr.request.SolrQueryRequest,java.lang.String)",
+    "file": "solr/core/src/java/org/apache/solr/update/processor/RoutedAliasUpdateProcessor.java",
+    "selected_line": 133,
+    "site_id": "<org.apache.solr.update.processor.RoutedAliasUpdateProcessor: java.util.Map getAliasProps(org.apache.solr.request.SolrQueryRequest,java.lang.String)>#u10"
+   }
+  },
+  {
+   "case_id": "HBASE-BACKUP-LOCK",
+   "system": "HBase 2.6.6",
+   "selection_group": "baseline_bug",
+   "cluster_test": "org.apache.hadoop.hbase.backup.TestFullBackup#testFullBackupMultipleCommand",
+   "check_code": "if (\n!table.checkAndMutate(ACTIVE_SESSION_ROW, SESSIONS_FAMILY).qualifier(ACTIVE_SESSION_COL)\n.ifEquals(ACTIVE_SESSION_NO).thenPut(put)\n) {\nthrow new ExclusiveOperationException();",
+   "exact_check_location": {
+    "check_start_line": 477,
+    "enclosing_function": "org.apache.hadoop.hbase.backup.impl.BackupSystemTable.startBackupExclusiveOperation()",
+    "file": "hbase-backup/src/main/java/org/apache/hadoop/hbase/backup/impl/BackupSystemTable.java",
+    "selected_line": 481,
+    "site_id": "<org.apache.hadoop.hbase.backup.impl.BackupSystemTable: void startBackupExclusiveOperation()>#L481"
+   },
+   "note": "A lost reply of the backup lock's checkAndMutate: the client retries the committed compare-and-set, finds its own lock and throws, so the backup fails and the lock stays."
+  }
+ ]
+}

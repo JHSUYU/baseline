@@ -15,6 +15,7 @@ epsilon-greedy keeps a share of random choices.
 
 from __future__ import annotations
 
+import hashlib
 import math
 import random
 from dataclasses import dataclass, field
@@ -43,6 +44,7 @@ class QPolicy:
 
     def __post_init__(self) -> None:
         self.random = random.Random(self.seed)
+        self.draws = 0
 
     def value(self, state: str, action: str) -> float:
         return self.values.get(state, {}).get(action, self.optimistic)
@@ -51,22 +53,32 @@ class QPolicy:
         """The state's best action value; an action not yet tried there counts as optimistic."""
         return max([self.optimistic, *self.values.get(state, {}).values()])
 
-    def choose(self, candidates: list, state_of, action_of, tried_count) -> int:
+    def choose(self, candidates: list, state_of, action_of, tried_count,
+               identity_of=repr) -> int:
         """Index of the candidate to run next.
 
         ``state_of``/``action_of`` map a candidate to its state and action;
         ``tried_count`` to how often its exact plan's action ran in that state,
-        which breaks ties toward the less explored. The rest of a tie is drawn
-        at random: the order a run evaluated its fault points is no preference.
+        which breaks ties toward the less explored. The rest of a tie, and an
+        epsilon choice, is drawn by hashing the seed with the candidate's
+        ``identity_of`` (its plan): random, yet the same draw however the runs
+        happened to list their fault points, so a campaign repeats itself.
         """
         if not candidates:
             raise ValueError("no candidate fault plan")
+        self.draws += 1
+
+        def draw(index: int, salt: str) -> str:
+            text = f"{self.seed}|{salt}|{identity_of(candidates[index])}"
+            return hashlib.sha256(text.encode()).hexdigest()
+
         if self.random.random() < self.epsilon:
-            return self.random.randrange(len(candidates))
+            return min(range(len(candidates)), key=lambda index: draw(index, f"epsilon{self.draws}"))
         keys = [(self.value(state_of(candidate), action_of(candidate)), -tried_count(candidate))
                 for candidate in candidates]
         best = max(keys)
-        return self.random.choice([index for index, key in enumerate(keys) if key == best])
+        return min((index for index, key in enumerate(keys) if key == best),
+                   key=lambda index: draw(index, "tie"))
 
     def update(self, state: str, action: str, gained: float, next_state: str | None) -> float:
         future = self.best(next_state) if next_state is not None else 0.0
