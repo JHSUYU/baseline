@@ -8,6 +8,13 @@ Two baselines, each reproducing a paper's approach on the same systems GraphChec
 | [`mallory/`](mallory/README.md) | Mallory | greybox fuzzing guided by changes in the run's causal graph: GraphChecker's graph of every native run, Q-learning over injected faults |
 
 Each directory holds its code, its per-system setup, how to run it on the CloudLab cluster, and its results.
+Neither baseline changes a system's source:
+
+- CrashFuzz runs the Apache releases and their unchanged tests (`crashfuzz/scripts/setup-deps.sh` fetches and
+  verifies them); its per-system code is one runner per system under `crashfuzz/crashfuzz/runners/`.
+- Mallory runs on GraphChecker (`git@github.com:JHSUYU/GraphChecker.git`, `system/<system>-cloudlab`) with the
+  patches in `mallory/graphchecker/` (`apply.sh` applies them), against the system trees each fork's
+  `baseline/mallory` branch pins (`JHSUYU/hadoop`, `JHSUYU/hbase`, `JHSUYU/solr`, `JHSUYU/zookeeper`).
 
 ## Results (2026-10-26, CloudLab)
 

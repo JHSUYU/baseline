@@ -12,7 +12,6 @@ import os
 import shutil
 import subprocess
 import zipfile
-from pathlib import Path
 
 from .. import settings
 from .base import (JUNIT4_RUNNER, Request, agent_env, compile_runner, finish, fresh_scratch,
