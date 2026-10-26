@@ -59,7 +59,8 @@ for artifact in org.bouncycastle:bcprov-jdk15on:1.60 org.bouncycastle:bcpkix-jdk
     org.jacoco:org.jacoco.agent:0.8.15:jar:runtime org.apache.hadoop:hadoop-minikdc:3.4.3 \
     org.mockito:mockito-core:4.9.0 net.bytebuddy:byte-buddy:1.12.16 \
     net.bytebuddy:byte-buddy-agent:1.12.16 org.objenesis:objenesis:3.3 \
-    org.apache.kerby:kerb-simplekdc:2.0.3; do
+    org.apache.kerby:kerb-simplekdc:2.0.3 \
+    org.junit.platform:junit-platform-launcher:1.6.2; do
   mvn -q dependency:get -Dtransitive=true -Dartifact="${artifact}" \
     -Dmaven.repo.local="${CRASHFUZZ_M2:-${HOME}/.m2/repository}"
 done

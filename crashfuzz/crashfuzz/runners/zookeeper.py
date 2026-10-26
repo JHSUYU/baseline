@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import os
 import xml.etree.ElementTree as ET
+from pathlib import Path
 
 from .. import settings
 from .base import (JUPITER_RUNNER, Request, agent_env, compile_runner, finish, fresh_scratch,
@@ -43,7 +44,28 @@ def _test_classpath(test_class: str) -> tuple[str, Path]:
     if marker not in first:
         raise ValueError("Surefire classpath lacks the module's test classes")
     # The report may come from a tree built elsewhere: re-root it here.
-    return classpath.replace(first.split(marker, 1)[0], str(SOURCE)), report.parents[2]
+    classpath = classpath.replace(first.split(marker, 1)[0], str(SOURCE))
+    return classpath + _launcher(classpath), report.parents[2]
+
+
+def _launcher(classpath: str) -> str:
+    """The JUnit Platform launcher of the classpath's engine, when Surefire left it out.
+
+    Surefire brings its own launcher, so a module's recorded classpath may lack
+    one; the Jupiter runner needs the version matching junit-platform-engine.
+    """
+    jars = classpath.split(os.pathsep)
+    if any("/junit-platform-launcher-" in jar for jar in jars):
+        return ""
+    engine = next((jar for jar in jars if "/junit-platform-engine-" in jar), None)
+    if engine is None:
+        return ""
+    version = engine.rsplit("junit-platform-engine-", 1)[1][:-len(".jar")]
+    launcher = (settings.M2 / "org/junit/platform/junit-platform-launcher" / version /
+                f"junit-platform-launcher-{version}.jar")
+    if not launcher.is_file():
+        raise FileNotFoundError(f"JUnit Platform launcher {version} (scripts/setup-deps.sh): {launcher}")
+    return os.pathsep + str(launcher)
 
 
 def run(request: Request) -> int:
