@@ -1,0 +1,41 @@
+{
+  "case": "zk-bugs-election-offer",
+  "seed": 0,
+  "detected": true,
+  "trials": 61,
+  "applied_trials": 56,
+  "prepare_s": 83.8,
+  "healthy_s": 20.0,
+  "elapsed_s": 420.5,
+  "corpus_edges": 466,
+  "detection": {
+    "trial": "t00061",
+    "trial_index": 61,
+    "seconds_from_start": 400.5,
+    "seconds_with_healthy": 420.5,
+    "seconds_with_prepare": 504.3,
+    "faults": [
+      "FAULT:ZOOKEEPER:READ:KeeperException$ConnectionLossException @ ZooKeeper.getChildren#u25"
+    ],
+    "plan": [
+      {
+        "site": "<org.apache.zookeeper.ZooKeeper: java.util.List getChildren(java.lang.String,org.apache.zookeeper.Watcher)>#u25",
+        "root": "FAULT:ZOOKEEPER:READ:KeeperException$ConnectionLossException",
+        "occurrence": "226a03e60cf07986",
+        "invocation": 1,
+        "node": "auto0/client0#epoch0",
+        "line": "autoN/clientN#epochN | Thread-N",
+        "region": "REGION.9cf291b6-1fb2-3b02-95c1-376d8198b29c",
+        "context": "Root:CLIENT/test LeaderElectionSupportTest.runElectionSupportThread>LeaderElectionSupportTest$lambda_runElectionSupportThread_0__1202836583.run>LeaderElectionSupport.start",
+        "seq": 3506,
+        "place": "",
+        "nanos": 76722190847779
+      }
+    ],
+    "graph_added": 6,
+    "graph_removed": 4,
+    "fatal_at": [
+      ""
+    ]
+  }
+}

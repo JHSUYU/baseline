@@ -1,0 +1,74 @@
+{
+ "case_id": "SOLR-40",
+ "date": "2026-10-25",
+ "command": "python3 -m crashfuzz --checklist data/baseline-bugs.json run --case-id SOLR-40 --stop-at-candidate",
+ "runs": {
+  "a": {
+   "status": "candidate_review",
+   "cluster_test": "TimeRoutedAliasUpdateProcessorTest.test",
+   "fault_trials": 44,
+   "healthy_seconds": 21.787,
+   "first_candidate_trial": 44,
+   "first_candidate_seconds": 2719.3,
+   "total_elapsed_seconds": 2733.491,
+   "trials": 44,
+   "junit_seconds": 1954.0,
+   "first_candidate": {
+    "trial": 44,
+    "status": "target_exception_candidate",
+    "exit": 1,
+    "target_fatal_exceptions": 1,
+    "healthy_target_fatal_exceptions": 0,
+    "plan": [
+     {
+      "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+      "hitOrdinal": 1,
+      "marker": "FAULT:STATIC:IO",
+      "occurrence": "local/solr:watch:node1/<org.apache.solr.common.cloud.ZkStateReader$AliasesManager: void process(org.apache.zookeeper.WatchedEvent)>#u13",
+      "occurrenceOrdinal": 1,
+      "siteId": "<org.apache.solr.common.cloud.ZkStateReader$AliasesManager: void process(org.apache.zookeeper.WatchedEvent)>#u13",
+      "sourceKey": "<org.apache.solr.common.cloud.SolrZkClient: byte[] getData(java.lang.String,org.apache.zookeeper.Watcher,org.apache.zookeeper.data.Stat,boolean)>"
+     },
+     {
+      "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+      "hitOrdinal": 1,
+      "marker": "FAULT:STATIC:IO",
+      "occurrence": "local/solr:watch:node3/<org.apache.solr.common.cloud.ZkStateReader$AliasesManager: void process(org.apache.zookeeper.WatchedEvent)>#u13",
+      "occurrenceOrdinal": 1,
+      "siteId": "<org.apache.solr.common.cloud.ZkStateReader$AliasesManager: void process(org.apache.zookeeper.WatchedEvent)>#u13",
+      "sourceKey": "<org.apache.solr.common.cloud.SolrZkClient: byte[] getData(java.lang.String,org.apache.zookeeper.Watcher,org.apache.zookeeper.data.Stat,boolean)>"
+     }
+    ]
+   }
+  },
+  "b": {
+   "status": "candidate_review",
+   "cluster_test": "TimeRoutedAliasUpdateProcessorTest.test",
+   "fault_trials": 37,
+   "healthy_seconds": 20.831,
+   "first_candidate_trial": 37,
+   "first_candidate_seconds": 1999.0,
+   "total_elapsed_seconds": 2008.703,
+   "trials": 37,
+   "junit_seconds": 1479.1,
+   "first_candidate": {
+    "trial": 37,
+    "status": "target_exception_candidate",
+    "exit": 1,
+    "target_fatal_exceptions": 1,
+    "healthy_target_fatal_exceptions": 0,
+    "plan": [
+     {
+      "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+      "hitOrdinal": 1,
+      "marker": "FAULT:STATIC:IO",
+      "occurrence": "local/solr:watch:node1/<org.apache.solr.common.cloud.ZkStateReader$AliasesManager: void process(org.apache.zookeeper.WatchedEvent)>#u13",
+      "occurrenceOrdinal": 1,
+      "siteId": "<org.apache.solr.common.cloud.ZkStateReader$AliasesManager: void process(org.apache.zookeeper.WatchedEvent)>#u13",
+      "sourceKey": "<org.apache.solr.common.cloud.SolrZkClient: byte[] getData(java.lang.String,org.apache.zookeeper.Watcher,org.apache.zookeeper.data.Stat,boolean)>"
+     }
+    ]
+   }
+  }
+ }
+}

@@ -116,23 +116,40 @@ uncompressed for review.
 rerun table [`static102-rerun.tsv`](data/static102-rerun.tsv), per-case records,
 evidence and source reviews.
 
-One check failed under generic CrashFuzz: **SOLR-40**
-(`RoutedAliasUpdateProcessor.getAliasProps`: a `ConnectionLoss` on the aliases
-watch's `getData` leaves a node's alias cache stale, so a valid update is
-rejected). The 240-trial Soot-selected campaign first produced it at trial 31,
-2102 s after the campaign started (the whole campaign took 21292 s); see
-`data/evidence/SOLR-40/`. The refactored code replays it: the same single
-fault, injected strictly in all 10 replays, makes the target throw in 1, the
-run whose JUnit test fails (exit 1; the other nine pass), since whether the
-stale cache meets an update is a matter of timing
+## Time to detection on the baseline bugs (2026-10-26, CloudLab)
+
+[`data/baseline-bugs.json`](data/baseline-bugs.json) holds the bugs both baselines are measured on, each with
+its system's own unit test, unchanged. Each was run from nothing twice (Soot selection, healthy run, campaign)
+with `run --stop-at-candidate` (and `--max-trials 10000 --max-seconds 14400` where it was not detected); the
+time is wall clock from the case's start to the end of its first candidate trial
+(`data/evidence/<case>/time-to-detect-2026-10-25.json`).
+
+| bug | unit test | run a | run b |
+| --- | --- | --- | --- |
+| SOLR-40 (stale routed-alias cache after a ZooKeeper failure) | `TimeRoutedAliasUpdateProcessorTest#test` | trial 44, 2719 s | trial 37, 1999 s |
+| HBase backup lock (lost compare-and-set reply) | `TestBackupManager#testStartBackupExclusiveOperation` | trial 23, 1182 s | trial 11, 783 s |
+| ZooKeeper election recipe (orphaned offer) | `LeaderElectionSupportTest#testNodes3` | not in 273 trials (3523 s) | not in 271 trials (3523 s) |
+| HDFS-17967 (pipeline relay to a DataNode missing the block key) | `TestEncryptedTransfer#testLongLivedClientPipelineRecovery[0]` | not in 80 + 166 trials | not in 80 + 126 trials |
+
+Each candidate was checked against the bug's symptom: SOLR-40's runs fail the JUnit test with "Routed alias
+... appears to have been removed during request processing"; the HBase runs throw the lock's
+`ExclusiveOperationException` 275 and 276 times (healthy run: 2) and hang until the JUnit timeout. On the
+ZooKeeper recipe the Soot selection, built from the server-side check's static neighbourhood, holds 42 I/O
+calls of the server and the client library and none of the recipe's: the failing read that leaves the offer
+behind is outside its fault space. HDFS-17967's first 80 trials of each run ended by the adaptive budget;
+the runs given a 4-hour budget were stopped after 166 and 126 trials without a candidate.
+
+### Earlier campaigns
+
+SOLR-40 was first found by a 240-trial Soot-selected campaign of the 102-check list at trial 31, 2102 s
+after the campaign started (the whole campaign took 21292 s); see `data/evidence/SOLR-40/`. The refactored
+code replays its fault strictly in all 10 replays and fails the target in 1, the run whose JUnit test fails
 (`data/evidence/SOLR-40/replay-2026-10-25.json`).
 
-**HBASE-32** (`RegionReplicaFlushHandler.triggerFlushInPrimaryRegion`) is not a
-detection of generic CrashFuzz. Its Soot-selected rerun ran 80 trials (10915 s)
-with no candidate. The earlier candidates came from a case-specific agent that
-injected flush-RPC failures (185 trials plus a supplemental 272; 34934 s of
-JUnit time in all). Each one was a 360 s JUnit timeout reaching the check's rethrow,
-which is the documented reaction to a `DoNotRetryIOException`. Every isolated
-replay of those plans passed, so the record keeps `new_bug=false`
-(`data/cases/HBASE-32/`, `data/evidence/HBASE-32/`).
+**HBASE-32** (`RegionReplicaFlushHandler.triggerFlushInPrimaryRegion`) is not a detection of generic
+CrashFuzz. Its Soot-selected rerun ran 80 trials (10915 s) with no candidate. The earlier candidates came
+from a case-specific agent that injected flush-RPC failures (185 trials plus a supplemental 272; 34934 s of
+JUnit time in all). Each one was a 360 s JUnit timeout reaching the check's rethrow, which is the documented
+reaction to a `DoNotRetryIOException`. Every isolated replay of those plans passed, so the record keeps
+`new_bug=false` (`data/cases/HBASE-32/`, `data/evidence/HBASE-32/`).
 [`DESIGN.md`](DESIGN.md) records the campaign protocol.

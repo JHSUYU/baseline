@@ -1,0 +1,72 @@
+{
+ "case_id": "HBASE-BACKUP-LOCK",
+ "date": "2026-10-25",
+ "command": "python3 -m crashfuzz --checklist data/baseline-bugs.json run --case-id HBASE-BACKUP-LOCK --stop-at-candidate",
+ "runs": {
+  "a": {
+   "status": "candidate_review",
+   "cluster_test": "org.apache.hadoop.hbase.backup.TestBackupManager#testStartBackupExclusiveOperation",
+   "fault_trials": 23,
+   "healthy_seconds": 32.292,
+   "first_candidate_trial": 23,
+   "first_candidate_seconds": 1182.4,
+   "total_elapsed_seconds": 1184.145,
+   "trials": 23,
+   "junit_seconds": 1050.2,
+   "first_candidate": {
+    "trial": 23,
+    "status": "target_exception_candidate",
+    "exit": 124,
+    "target_fatal_exceptions": 275,
+    "healthy_target_fatal_exceptions": 2,
+    "plan": [
+     {
+      "hitOrdinal": 1,
+      "marker": "FAULT:STATIC:IO",
+      "occurrence": "local/Thread-190/<org.apache.hadoop.hbase.backup.impl.BackupSystemTable: void finishBackupExclusiveOperation()>#u15",
+      "occurrenceOrdinal": 1,
+      "siteId": "<org.apache.hadoop.hbase.backup.impl.BackupSystemTable: void finishBackupExclusiveOperation()>#u15",
+      "sourceKey": "<org.apache.hadoop.hbase.client.Table$CheckAndMutateBuilder: boolean thenPut(org.apache.hadoop.hbase.client.Put)>"
+     }
+    ]
+   }
+  },
+  "b": {
+   "status": "candidate_review",
+   "cluster_test": "org.apache.hadoop.hbase.backup.TestBackupManager#testStartBackupExclusiveOperation",
+   "fault_trials": 11,
+   "healthy_seconds": 32.798,
+   "first_candidate_trial": 11,
+   "first_candidate_seconds": 783.2,
+   "total_elapsed_seconds": 784.987,
+   "trials": 11,
+   "junit_seconds": 661.2,
+   "first_candidate": {
+    "trial": 11,
+    "status": "target_exception_candidate",
+    "exit": 124,
+    "target_fatal_exceptions": 276,
+    "healthy_target_fatal_exceptions": 2,
+    "plan": [
+     {
+      "exceptionClass": "java.io.InterruptedIOException",
+      "hitOrdinal": 1,
+      "marker": "FAULT:STATIC:IO",
+      "occurrence": "local/PEWorker-5/<org.apache.hadoop.hbase.master.TableNamespaceManager: void insertIntoNSTable(org.apache.hadoop.hbase.NamespaceDescriptor)>#u35",
+      "occurrenceOrdinal": 1,
+      "siteId": "<org.apache.hadoop.hbase.master.TableNamespaceManager: void insertIntoNSTable(org.apache.hadoop.hbase.NamespaceDescriptor)>#u35",
+      "sourceKey": "<org.apache.hadoop.hbase.client.Table: void put(org.apache.hadoop.hbase.client.Put)>"
+     },
+     {
+      "hitOrdinal": 1,
+      "marker": "FAULT:STATIC:IO",
+      "occurrence": "local/Thread-190/<org.apache.hadoop.hbase.backup.impl.BackupSystemTable: void finishBackupExclusiveOperation()>#u5",
+      "occurrenceOrdinal": 1,
+      "siteId": "<org.apache.hadoop.hbase.backup.impl.BackupSystemTable: void finishBackupExclusiveOperation()>#u5",
+      "sourceKey": "<org.apache.hadoop.hbase.client.Connection: org.apache.hadoop.hbase.client.Table getTable(org.apache.hadoop.hbase.TableName)>"
+     }
+    ]
+   }
+  }
+ }
+}

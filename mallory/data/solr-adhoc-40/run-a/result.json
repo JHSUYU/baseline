@@ -1,0 +1,45 @@
+{
+  "case": "solr-adhoc-40",
+  "seed": 0,
+  "detected": true,
+  "trials": 46,
+  "applied_trials": 45,
+  "prepare_s": 199.2,
+  "healthy_s": 94.0,
+  "elapsed_s": 1710.5,
+  "corpus_edges": 119359,
+  "detection": {
+    "trial": "t00046",
+    "trial_index": 46,
+    "seconds_from_start": 1426.1,
+    "seconds_with_healthy": 1710.1,
+    "seconds_with_prepare": 1909.3,
+    "faults": [
+      "FAULT:ZOOKEEPER:READ:KeeperException$SessionExpiredException @ SolrZkClient.getData#u28"
+    ],
+    "plan": [
+      {
+        "site": "<org.apache.solr.common.cloud.SolrZkClient: byte[] getData(java.lang.String,org.apache.zookeeper.Watcher,org.apache.zookeeper.data.Stat,boolean)>#u28",
+        "root": "FAULT:ZOOKEEPER:READ:KeeperException$SessionExpiredException",
+        "occurrence": "f7d0ee47a93bbdbc",
+        "invocation": 141,
+        "node": "auto0/node2#epoch0",
+        "line": "autoN/nodeN#epochN | qtpN-N",
+        "region": "REGION.83fdb7f6-dbae-3d2d-9686-5a186fe67084",
+        "context": "Anchor@SOLR_HTTP/OVERSEER_TASK CoreAdminOperation$lambda_static_0__1017763157.execute",
+        "seq": 451950,
+        "place": "",
+        "nanos": 75801466962518
+      }
+    ],
+    "graph_added": 7905,
+    "graph_removed": 14355,
+    "fatal_at": [
+      "workload/unregistered#epoch0/region/REGION.f3b5e0a2-86dc-3b3c-88ef-661c97e4a45f/ctx:Lost:UNKNOWN/idx:<org.apache.solr.update.processor.RoutedAliasUpdateProcessor: org.apache.solr.update.processor.UpdateRequestProcessor wrap(org.apache.solr.request.SolrQueryRequest,org.apache.solr.update.processor.UpdateRequestProcessor)>@0",
+      "workload/unregistered#epoch0/region/REGION.f3b5e0a2-86dc-3b3c-88ef-661c97e4a45f/ctx:Lost:UNKNOWN/idx:<org.apache.solr.update.processor.RoutedAliasUpdateProcessor: org.apache.solr.update.processor.UpdateRequestProcessor wrap(org.apache.solr.request.SolrQueryRequest,org.apache.solr.update.processor.UpdateRequestProcessor)>@0",
+      "workload/unregistered#epoch0/region/REGION.f3b5e0a2-86dc-3b3c-88ef-661c97e4a45f/ctx:Lost:UNKNOWN/idx:<org.apache.solr.update.processor.RoutedAliasUpdateProcessor: org.apache.solr.update.processor.UpdateRequestProcessor wrap(org.apache.solr.request.SolrQueryRequest,org.apache.solr.update.processor.UpdateRequestProcessor)>@1",
+      "workload/unregistered#epoch0/region/REGION.f3b5e0a2-86dc-3b3c-88ef-661c97e4a45f/ctx:Lost:UNKNOWN/idx:<org.apache.solr.update.processor.RoutedAliasUpdateProcessor: org.apache.solr.update.processor.UpdateRequestProcessor wrap(org.apache.solr.request.SolrQueryRequest,org.apache.solr.update.processor.UpdateRequestProcessor)>@1",
+      "workload/unregistered#epoch0/region/REGION.f3b5e0a2-86dc-3b3c-88ef-661c97e4a45f/ctx:Lost:UNKNOWN/idx:<org.apache.solr.update.processor.RoutedAliasUpdateProcessor: org.apache.solr.update.processor.UpdateRequestProcessor wrap(org.apache.solr.request.SolrQueryRequest,org.apache.solr.update.processor.UpdateRequestProcessor)>@2"
+    ]
+  }
+}

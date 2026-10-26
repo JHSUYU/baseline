@@ -30,8 +30,11 @@ oracle: PLANT_FATAL at the declared target occurrence, every planted fault appli
   the node that ran it (GraphChecker's source identity, e.g. `auto0/master0#epoch0`) and pairs what crosses
   nodes. Abstract events: method entries, branch outcomes, message sends and receipts, ZooKeeper store writes,
   reads and watch notifications, the injected faults and the target's fatal arm. Abstract happens-before edges:
-  program order on each node's timeline, a send to its receipt (transport, correlation id, attempt, half), a
-  store write to the reads and watch notifications of its version. A run's observation is its edge set.
+  program order within each GraphChecker occurrence (its node, region and context: one sequential
+  activation, whichever pool thread runs it), a send to its receipt (transport, correlation id, attempt,
+  half), a store write to the reads and watch notifications of its version. Nodes are named by their role
+  and an exchange by its transport and operation, since a run's placement and timing decide which DataNode
+  or anchor plays a part. A run's observation is its edge set.
 - **Fault points** (`mallory/faults.py`): every door of the system's transports in GraphChecker's library
   catalog is woven (`settings.System.doors`, added to the case's scope through `CAUSYNTH_EXTRA_SCOPE`), and
   a planted run states every evaluation of one, over the whole workload. Inside GraphChecker's recording
@@ -60,10 +63,16 @@ seeds run one after another.
 
 ## What Mallory takes from GraphChecker, and what it does not
 
-- **The workload and the oracle, as GraphChecker gets them.** A case's workload is its GraphChecker test
-  (`TestCausynth*`), which drives the bug's set-up and leaves the fault to be found; the oracle is the
-  case's declared target taking its fatal arm at the declared occurrence, which GraphChecker's native run
-  reports (`PLANT_FATAL`, the JVM halts there). Both tools get these same inputs.
+- **The workload: the system's own unit test.** A case runs a test of the system's repository, unchanged
+  (`LeaderElectionSupportTest`, `TestBackupManager`, `TimeRoutedAliasUpdateProcessorTest`), as CrashFuzz's
+  cases do; a test written to set up a bug is no workload of this baseline. GraphChecker's cluster adapter
+  names the test's nodes (`cluster_automatic`); `marked_as` lets such a case check the target another
+  GraphChecker case marked.
+- **The oracle: the case's marked target check, counted.** GraphChecker reports every time the planted run
+  takes the target's fatal arm (`PLANT_FATAL`). A run detects when it took it more often than any of three
+  fault-free runs did, and more than twice as often where those already take it (`failure_threshold`: a
+  test of the failure path, two sessions taking turns at a lock); the run goes on past the declared
+  occurrence (`causynth.plant.continue`), so a failure that repeats is counted whole.
 - **The graph.** GraphChecker records what its SEED selected: the full recorder is woven into the region
   skeleton methods of the target's backward Soot slice, transport and store events at every woven door
   and store hook, all inside the recording window. Mallory's feedback is therefore computed over the
@@ -75,32 +84,41 @@ seeds run one after another.
 
 ## GraphChecker and the systems
 
-| system | GraphChecker branch (`git@github.com:JHSUYU/GraphChecker.git`) | system tree (fork branch `baseline/mallory`) |
+| system | GraphChecker branch (`git@github.com:JHSUYU/GraphChecker.git`) | system tree |
 | --- | --- | --- |
-| HDFS | `baseline/mallory-hdfs` (= `system/hdfs-cloudlab` + native plant runs) | `JHSUYU/hadoop` 899c200cc8 (`graphchecker/hdfs-checks`, tree `hadoop-hdfs-study-r7`) |
-| HBase | `baseline/mallory-hbase` (= `system/hbase-cloudlab` + native plant runs) | `JHSUYU/hbase` b5d5cc6a20 (`graphchecker/hbase-checks`, tree `hbase-checks`) |
-| Solr | `baseline/mallory-solr` (= `system/solr-cloudlab` + native plant runs) | `JHSUYU/solr` 12d23091d1 (`graphchecker/solr-checks`, tree `lucene-solr-checks`) |
+| HBase | `baseline/mallory-hbase` (= `system/hbase-cloudlab` + the commits below) | `JHSUYU/hbase` `graphchecker/hbase-checks` (tree `hbase-checks`; `baseline/mallory` pins b5d5cc6a20) |
+| Solr | `baseline/mallory-solr` (= `system/solr-cloudlab` + the commits below) | `JHSUYU/solr` `graphchecker/solr-checks` (tree `lucene-solr-checks`; `baseline/mallory` pins 12d23091d1) |
+| ZooKeeper | `baseline/mallory-zookeeper` (= `system/zookeeper-cloudlab` + the commits below) | `JHSUYU/zookeeper` `graphchecker/zookeeper-checks` (tree `zookeeper-checks`) |
+| HDFS | `baseline/mallory-hdfs` (= `system/hdfs-cloudlab` + the commits below) | `JHSUYU/hadoop` `graphchecker/hdfs-checks` (tree `hadoop-hdfs-study-r7`; `baseline/mallory` pins 899c200cc8) |
 
-Mallory needs no change in a system tree: the system's adaptation (its door hooks, the cluster's node
-identities, the bug workloads) is GraphChecker's, in the fork's `graphchecker/*-checks` branch; `baseline/mallory`
-pins the commit Mallory ran on. The GraphChecker branches add two commits. *Native plant runs for the Mallory
-baseline*: the `PLANT_MARKER` observation in `RecordingPlant`, `explore.TargetRows` (a plant's TARGET rows for the
-declared target, as `ConfirmMain` writes them), `run_engine.sh plant-run <run dir> <plant> [bound]` and
-`campaign_stop_after=PLAN`. *Fail and observe doors outside the recording window*: `RecordingPlant`'s outside
-evaluations (`causynth.plant.outside`, `causynth.plant.outside.log`), `nanoTime` on marker rows and
-`CAUSYNTH_EXTRA_SCOPE` in `experiments/lib/case-env.sh`.
+Mallory needs no change in a system tree: the system's adaptation (its door hooks, the cluster adapter that
+names a test's nodes, the target markers) is GraphChecker's, in the fork's `graphchecker/*-checks` branch.
+The GraphChecker branches add:
+
+- *Native plant runs for the Mallory baseline*: the `PLANT_MARKER` observation in `RecordingPlant`,
+  `explore.TargetRows` (a plant's TARGET rows for the declared target, as `ConfirmMain` writes them),
+  `run_engine.sh plant-run <run dir> <plant> [bound]` and `campaign_stop_after=PLAN`;
+- *Fail and observe doors outside the recording window* and *name an outside door call by its nearest
+  callers*: `causynth.plant.outside`, `causynth.plant.outside.log`, `nanoTime` on marker rows and
+  `CAUSYNTH_EXTRA_SCOPE` in `experiments/lib/case-env.sh`;
+- `causynth.plant.continue`: a run goes on past the declared occurrence's fatal arm;
+- `marked_as` (`experiments/lib/case-env.sh`, `run.sh`) and the cases on the systems' own tests:
+  `hbase-bugs-backup-lock-upstream` (`TestBackupManager`), `hdfs-17967-pathA-upstream`
+  (`TestEncryptedTransfer`); `solr-adhoc-40` and `zk-bugs-election-offer` are GraphChecker's own cases,
+  already on the systems' tests.
 
 ## Running it (CloudLab, node0-node4)
 
 Set up the cluster, GraphChecker checkouts, VM image and system trees as GraphChecker's REPRODUCE.md says for
-`system/{hdfs,hbase,solr}-cloudlab`, but check out `baseline/mallory-<system>` at `/bulk/wt/gc-mallory-<system>`
+`system/{hdfs,hbase,solr,zookeeper}-cloudlab`, but check out `baseline/mallory-<system>` at `/bulk/wt/gc-mallory-<system>`
 (`mvn -q package -DskipTests`); trees under `GC_TREES=/bulk/wt`. Paths are in `mallory/settings.py`
 (`MALLORY_GC_<SYSTEM>`, `MALLORY_WORK`, `MALLORY_NODES`).
 
 ```sh
 cd mallory
-python3 -m mallory prepare hbase-bugs-backup-lock-reply-lost --node node0     # SEED + PLAN, TARGET rows
-python3 -m mallory run hbase-bugs-backup-lock-reply-lost --node node0         # the campaign
+python3 -m mallory prepare zk-bugs-election-offer --node node0     # SEED + PLAN, TARGET rows
+python3 -m mallory run zk-bugs-election-offer --node node0         # the campaign (prepares if needed)
+MALLORY_HEAP_BASIS_MB=32768 python3 -m mallory run hbase-bugs-backup-lock-upstream --node node0
 python3 -m mallory report                                                     # every case's result
 python3 -m unittest discover -s tests -t .
 ```
@@ -111,39 +129,36 @@ python3 -m unittest discover -s tests -t .
 every seed), `$MALLORY_WORK/<case>/seed-<n>/{runs,state.json,result.json}`; every run keeps its plant, its
 log, its gzipped trace and its log of door evaluations outside the window.
 
-## Results (2026-10-25, CloudLab)
+## Results (2026-10-26, CloudLab)
 
-The three targets are bugs a single injected fault exposes: HDFS-17967 (PR apache/hadoop#8698) on its
-`replaceBlock` proxy path, Solr's RESTORE retry that leaves a shard in CONSTRUCTION, and HBase's lost
-backup-lock reply. Each case ran alone on one node, one trial at a time; the time to detect counts from the first
-trial (the two healthy runs come before it). `data/<case>/` keeps each campaign's result, every trial
-(`trials.json`) and the detecting run's plant (`detecting-plant.jsonl`, the input of `run_engine.sh plant-run`).
+Each bug was run on its system's own unit test, the whole pipeline from nothing twice (GraphChecker's SEED and
+PLAN, three healthy runs, the campaign at the default seed), each run alone on one node. The time is wall clock
+from the start of SEED to the end of the detecting run. `data/<case>/run-{a,b}/` keeps each run's result, every
+trial (`trials.json`) and the detecting plant (`detecting.plant*.jsonl`, the input of `run_engine.sh plant-run`).
 
-| case | bug | node | trials | time to detect | healthy noise | the detecting run's fault |
-| --- | --- | --- | ---: | ---: | ---: | --- |
-| hdfs-17967-pathB | HDFS-17967, `DataXceiver.replaceBlock` proxy | node2 | 1 | 9 s | 66 edges | `FAULT:HADOOP_IPC:REQUEST` on the proxy DataNode's `sendHeartbeat` (`Client$Connection.sendRpcRequest#u41`) |
-| solr-bugs-restore-construction | a failed RESTORE leaves its slices in CONSTRUCTION | node1 | 51 | 893 s | 57 edges | `FAULT:SOLR_HTTP2:RESPONSE` on the Overseer's apply-buffered-updates shard request (`RestoreOnANewCollection.requestReplicasToApplyBufferUpdates`, `Http2SolrClient.processErrorsAndResponse#u11`) |
-| hbase-bugs-backup-lock-reply-lost | lost reply of the backup lock's checkAndMutate | node0 | 169 | 2579 s | 0 edges | `FAULT:HBASE_RPC:RESPONSE` on the lock CAS's reply (`RpcConnection.finishCall#u39`, occurrence `95f9b23c7997b9e9`) |
+| bug | unit test | run a | run b | the detecting runs' faults |
+| --- | --- | --- | --- | --- |
+| SOLR-40: after a ZooKeeper failure a node's alias cache misses a routed alias; a valid update is rejected | `TimeRoutedAliasUpdateProcessorTest#test` | 46 trials, 1909 s | 45 trials, 1819 s | `SessionExpiredException` on a node's `SolrZkClient.getData` |
+| HBase backup lock: a lost reply of the lock's compare-and-set; the retry finds its own lock forever | `TestBackupManager#testStartBackupExclusiveOperation` | 10 trials, 478 s | 9 trials, 464 s | lost or failed replies of the client's RPCs (`RpcConnection.finishCall`, `AbstractRpcClient.callMethod`) |
+| ZooKeeper election recipe: a contender that fails reading the offers leaves its own offer behind | `LeaderElectionSupportTest#testNodes3` | 61 trials, 504 s | 81 trials, 637 s | `ConnectionLossException` on a contender's `ZooKeeper.getChildren` |
 
-Every detecting run applied its one planted fault and ended at the target's fatal arm at the declared occurrence
-(GraphChecker's `AT_ANCHOR` end of a native run):
+Every detecting run was checked against the bug's symptom:
 
-- **HDFS**: the workload's first fault marker is the heartbeat whose loss keeps the new block key from the
-  DataNode, so the policy's first, optimistic choice found it (the run's graph: 62 edges added to the healthy
-  graph, 136 lost).
-- **Solr**: the failed shard request makes the first RESTORE fail ("operation: restore failed"); the test's
-  second RESTORE succeeds on the existing collection, a path that never marks the slices ACTIVE, and the next
-  update is refused with "No active slice servicing hash code ... in causynthRestore-target". This is the fault
-  the bug report names (an HTTP fault at a RESTORECORE or apply-buffer shard request), not the ZooKeeper
-  `setData` fault GraphChecker's own reproduction planted. 41 edges added, 119 lost.
-- **HBase**: the client's retry re-runs the committed CAS and fails on its own lock row
-  (`startBackupExclusiveOperation`'s throw arm). The policy reached it in its sweep of the healthy run's fault
-  points (index 207 of its 219, each in a state of its own); 9 edges added, 29 lost.
+- **SOLR-40**: the target throws 5 times (healthy runs: 0) and the log holds "Routed alias myalias appears
+  to have been removed during request processing" 50 times.
+- **HBase**: the target fails 214 times (healthy runs: 2, the second session waiting its turn); the test
+  hangs until the trial bound with "Waiting to acquire backup exclusive lock" every minute: a session never
+  acquires the lock again.
+- **ZooKeeper**: the server refuses a getData of a node that no longer exists (the check GraphChecker marks
+  for this bug), which no healthy run did. `testNodes3` itself passes: it asserts its failure count before
+  its threads have run, and `start()` reports a failure only by entering FAILED.
 
-Two fault-free runs of the same workload differ (thread interleavings, retries, timing): the healthy noise above is
-how many edges the second added to the first. Before the reward discounted it, every Solr trial looked novel
-(all of 38 trials had new edges, 32 of them no more than the noise) and the corpus filled with runs that showed
-nothing a fault caused. The HDFS and HBase campaigns started before that change; HDFS detected at its first choice and
-HBase's noise is 0, so neither run would differ under the current code. A second Solr case,
-`solr-bugs-migrate-buffer-leak` (any fault after the buffer step leaves the target core BUFFERING), ran on node2
-as a fallback and was stopped at 27 trials, undetected, once the RESTORE case had detected.
+Not detected: **HDFS-17967** (PR apache/hadoop#8698) on `TestEncryptedTransfer#testLongLivedClientPipelineRecovery`,
+the only HDFS test that rotates block keys around a pipeline between DataNodes. Two runs of 294 trials (9729 s)
+and 165 trials (4988 s) never failed the check more than its one deliberate stale-key rejection; the bug needs a
+lost key-carrying heartbeat reply on the DataNode a random block placement makes the next mirror, within the two
+seconds before the next rotation. Mallory was not run on it further.
+
+Earlier figures in this repository's history (2026-10-25: HDFS-17967 in 1 trial, Solr's RESTORE bug, HBase's
+lock on `TestCausynthBackupLockReplyLost`) came from GraphChecker's own bug-shaped tests (`TestCausynth*`),
+whose window and set-up leave only the fault to be found, and are withdrawn.
