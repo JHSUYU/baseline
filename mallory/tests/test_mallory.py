@@ -72,11 +72,14 @@ class GraphTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             run = graph.build(write_trace(Path(tmp), trace_rows()))
         client, master = graph.timeline(CLIENT, MAIN), graph.timeline(MASTER, HANDLER)
-        self.assertEqual(master, "auto0/master0#epoch0 | RpcServer.handler=N")
+        self.assertEqual(master, "autoN/masterN#epochN | RpcServer.handler=N")   # a role
         send = (client, "send HBASE_RPC REQUEST AbstractRpcClient.callMethod")
         receive = (master, "receive HBASE_RPC REQUEST")
-        write = (master, "write HBASE_ZK /hbase/lock")
-        read = (client, "read getData /hbase/lock")
+        # a store row names its occurrence: its events sit on that occurrence's timeline
+        write = (graph.occurrence_timeline(address(MASTER, "REGION.m", "Root:WAKE/x#2", CAS)),
+                 "write HBASE_ZK /hbase/lock")
+        read = (graph.occurrence_timeline(address(CLIENT, "REGION.cas", "Root:CLIENT/test#1", CAS, CALL)),
+                "read getData /hbase/lock")
         enter = (client, "enter BackupSystemTable.startBackupExclusiveOperation")
         self.assertIn((send, receive), run.edges)              # message
         self.assertIn((write, read), run.edges)                # store version
@@ -89,13 +92,14 @@ class GraphTest(unittest.TestCase):
             run = graph.build(write_trace(Path(tmp), trace_rows(fatal=True, applied=True)))
         self.assertTrue(run.fatal)
         self.assertEqual(run.applied_rows, {0})
-        # the planted fault sits on the timeline of the marker that planted it
-        self.assertIn((graph.timeline(CLIENT, NETTY), "fault FAULT:HBASE_RPC:RESPONSE"),
+        # the planted fault sits on the timeline of the occurrence whose marker planted it
+        reply = address(CLIENT, "REGION.finish", "Anchor:00aa@HBASE_RPC/test", FINISH)
+        self.assertIn((graph.occurrence_timeline(reply), "fault FAULT:HBASE_RPC:RESPONSE"),
                       [event for _, event in run.events])
 
     def test_context_keeps_the_exchange_and_the_call_path(self) -> None:
         reply = address(CLIENT, "REGION.finish", "Anchor:00aa@HBASE_RPC/test", FINISH)
-        self.assertEqual(graph.context_of(reply), "Anchor:00aa ")
+        self.assertEqual(graph.context_of(reply), "Anchor@HBASE_RPC/test ")   # not its producer's id
         request = address(CLIENT, "REGION.cas", "Root:CLIENT/test#1", CAS, CALL)
         self.assertEqual(graph.context_of(request),
                          "Root:CLIENT/test BackupSystemTable.startBackupExclusiveOperation")

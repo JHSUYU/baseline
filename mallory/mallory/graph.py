@@ -9,12 +9,18 @@ run as Lamport timelines, one per node, joined by those cross-node relations,
 and abstracts each event to a label that is stable across runs. The run's
 observation is its set of abstract happens-before edges:
 
-* program order: consecutive abstract events of one timeline: a node's thread,
-  its name's numbers folded so pool threads of one kind align across runs
-  (a mini cluster's nodes share one JVM; each thread is a sequential process);
+* program order: consecutive abstract events of one timeline: the GraphChecker
+  occurrence they run in (its node, region and context: the message exchange
+  or root kind it serves, and its call path), found from a row's own address
+  or its call's; a pool thread serves many occurrences in an order that
+  varies from run to run, an occurrence is one sequential activation. Rows of
+  no occurrence fall back to their node's thread, its name's numbers and
+  object hashes folded;
 * message: a send to its receipt;
 * state: a store write to each read or watch notification of its version.
 
+Nodes are named by their role, a message exchange by its transport and
+operation: what a run's placement and timing decide is no causal change.
 Comparing these edge sets between runs is Mallory's feedback: a run that adds
 edges no earlier run had changed the system's causal behavior.
 """
@@ -59,6 +65,19 @@ def node_of_address(address: str) -> str:
     return address.split("/region/", 1)[0] if "/region/" in address else ""
 
 
+_NODE_NUMBERS = re.compile(r"\d+")
+
+
+def role(node: str) -> str:
+    """A node as its role (``auto0/dn2#epoch0`` -> ``autoN/dnN#epochN``).
+
+    Nodes of one kind are symmetric: which DataNode, RegionServer or Solr node
+    a run's placement gives a part is chance, so the abstract graph names the
+    kind; a fault point still names its own node.
+    """
+    return _NODE_NUMBERS.sub("N", node or "")
+
+
 def region_of_address(address: str) -> str:
     """The region of an occurrence address (``.../region/<region>/ctx:...``)."""
     rest = address.split("/region/", 1)[1] if "/region/" in address else ""
@@ -69,14 +88,15 @@ def context_of(address: str, frames: int = 3) -> str:
     """Where in GraphChecker's graph an occurrence stands, stable across runs.
 
     Its context (``ctx:``) names the message exchange it serves
-    (``Anchor:<id>``, kept: GraphChecker names a message's handling by it) or
-    the kind of root it runs under (``Root:CLIENT/test``, its counter dropped);
-    its index (``idx:``) is the call path, of which the last frames before the
-    occurrence's own method are kept.
+    (``Anchor:<id>@<transport>/<operation>``: the exchange's transport and
+    operation are kept, its producer's id, which a run's placement decides,
+    is not) or the kind of root it runs under (``Root:CLIENT/test``, its
+    counter dropped); its index (``idx:``) is the call path, of which the last
+    frames before the occurrence's own method are kept.
     """
     ctx = address.split("/ctx:", 1)[1].split("/idx:", 1)[0] if "/ctx:" in address else ""
-    anchor = re.match(r"(Anchor:[0-9a-f]+)@", ctx)
-    ctx = anchor.group(1) if anchor else re.sub(r"#\d+$", "", ctx)
+    anchor = re.match(r"Anchor:[0-9a-f]+(@.*)?$", ctx)
+    ctx = "Anchor" + (anchor.group(1) or "") if anchor else re.sub(r"#\d+$", "", ctx)
     path = address.split("/idx:", 1)[1] if "/idx:" in address else ""
     calls = [short_method(frame.split(">@", 1)[0] + ">") for frame in re.split(r"/(?=<)", path) if frame]
     return ctx + " " + ">".join(calls[-frames - 1:-1])
@@ -98,11 +118,18 @@ def short_site(site: str) -> str:
 
 _NUMBERED = re.compile(r"\d{4,}")
 _DIGITS = re.compile(r"\d+")
+_HASHES = re.compile(r"(@|0x)[0-9a-fA-F]+")
 
 
 def timeline(node: str, thread: str) -> str:
-    """A node's thread as a timeline, its numbers folded (pool and handler threads)."""
-    return node + " | " + _DIGITS.sub("N", thread or "")
+    """A node's thread as a timeline: the node's role, the thread's numbers and object hashes folded."""
+    return role(node) + " | " + _DIGITS.sub("N", _HASHES.sub(r"\1H", thread or ""))
+
+
+def occurrence_timeline(address: str) -> str:
+    """The timeline of a GraphChecker occurrence: node role, region and context, stable across runs."""
+    return " | ".join((role(node_of_address(address)), region_of_address(address),
+                       context_of(address)))
 
 
 def stable_location(location: str) -> str:
@@ -155,7 +182,7 @@ def build(trace: Path, outside: Path | None = None) -> RunGraph:
             if row.get("event") == "OUTSIDE_APPLIED":
                 graph.outside_applied.add((row.get("siteId", ""), row.get("place", ""),
                                            row.get("invocation", 0)))
-    call_line: dict[int, str] = {}
+    call_line: dict[int, str] = {}       # call id -> the timeline of the occurrence it runs in
     marker_line = ""
     sends: dict[tuple, Event] = {}
     receipts: list[tuple[tuple, Event]] = []
@@ -177,17 +204,20 @@ def build(trace: Path, outside: Path | None = None) -> RunGraph:
         seq = row.get("seq", 0)
         if kind == "PLANT_MARKER":
             graph.markers.append(row)
-            # the fault a marker plants is stated next, from the same call on the same thread
-            marker_line = timeline(node_of_address(row.get("occurrenceAddress", "")) or "?",
-                                   row.get("threadName", ""))
+            # the fault a marker plants is stated next, from the same call
+            marker_line = (occurrence_timeline(row["occurrenceAddress"])
+                           if row.get("occurrenceAddress") else
+                           timeline("?", row.get("threadName", "")))
             continue
         if kind not in TIMELINE_EVENTS:
             continue
         if kind == "METHOD_ENTER":
             node = row.get("sourceKey") or node_of_address(row.get("occurrenceAddress", ""))
-            if not node:
+            line = (occurrence_timeline(row["occurrenceAddress"]) if row.get("occurrenceAddress")
+                    else call_line.get(row.get("parentCallId"))
+                    or (timeline(node, row.get("threadName", "")) if node else ""))
+            if not line:
                 continue
-            line = timeline(node, row.get("threadName", ""))
             if isinstance(row.get("callId"), int):
                 call_line[row["callId"]] = line
             add(seq, line, "enter " + short_method(row.get("method", "")))
@@ -196,7 +226,8 @@ def build(trace: Path, outside: Path | None = None) -> RunGraph:
             if line:
                 add(seq, line, f"branch {short_site(row.get('siteId', ''))}={row.get('outcome')}")
         elif kind in ("EXCHANGE_SEND", "EXCHANGE_RECEIVE"):
-            line = timeline(row.get("sourceKey") or "?", row.get("threadName", ""))
+            line = (call_line.get(row.get("callId"))
+                    or timeline(row.get("sourceKey") or "?", row.get("threadName", "")))
             key = (row.get("transport"), row.get("correlationId"), row.get("attemptId"),
                    row.get("half"))
             if kind == "EXCHANGE_SEND":
@@ -208,8 +239,8 @@ def build(trace: Path, outside: Path | None = None) -> RunGraph:
                 receipts.append((key, event))
         elif kind in ("STORE_WRITE", "STORE_READ", "WATCH_FIRED"):
             location = stable_location(row.get("location", ""))
-            line = timeline(node_of_address(row.get("occurrenceAddress", "")) or "?",
-                            row.get("threadName", ""))
+            line = (occurrence_timeline(row["occurrenceAddress"]) if row.get("occurrenceAddress")
+                    else timeline("?", row.get("threadName", "")))
             version = (row.get("location", ""), str(row.get("version", "")))
             if kind == "STORE_WRITE":
                 writes[version] = add(seq, line, f"write {row.get('transport')} {location}")
