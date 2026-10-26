@@ -14,7 +14,8 @@
    fault-free run fails the check (a test of the failure path, or two
    sessions contending for a lock) counts only further failures; runs go on
    past the declared occurrence (causynth.plant.continue), so a failure that
-   repeats is counted whole.
+   repeats is counted whole; where healthy runs fail it k > 0 times, a
+   detection fails it more than 2k times (``failure_threshold``).
 
 As in Mallory, one trial runs at a time and the next choice uses everything the
 earlier trials showed; a campaign runs on one node, so different cases (systems)
@@ -34,6 +35,18 @@ from . import engine, faults, graph, policy, settings
 
 
 HEALTHY_RUNS = 3
+
+
+def failure_threshold(healthy: int) -> int:
+    """The most fatal arms a run may take and still be no detection.
+
+    A workload whose fault-free runs never fail the check detects at its first
+    failure. One whose fault-free runs fail it k times (two sessions taking
+    turns at a lock, a test of the failure path) can fail it a few times more
+    when a fault only delays a step; a detection fails it more than twice as
+    often.
+    """
+    return 2 * healthy
 
 
 @dataclass
@@ -173,7 +186,7 @@ class Campaign:
         if run is None:
             return trial
         trial.applied = applied
-        trial.fatal = trial.applied and len(run.fatal_rows) > self.healthy_fatal
+        trial.fatal = trial.applied and len(run.fatal_rows) > failure_threshold(self.healthy_fatal)
         trial.fatal_at = [row.get("occurrenceAddress", "") for row in run.fatal_rows]
         trial.new_edges = len(run.edges - self.corpus_edges)
         trial.graph_added = len(run.edges - self.healthy_edges)
@@ -296,7 +309,8 @@ class Sweep(Campaign):
                                   "exit": status, "seconds": round(time.time() - started, 1),
                                   "applied": applied,
                                   "fatal": bool(run and applied and
-                                                len(run.fatal_rows) > done.get("healthy_fatal", 0))}
+                                                len(run.fatal_rows) >
+                                                failure_threshold(done.get("healthy_fatal", 0)))}
             self.directory.mkdir(parents=True, exist_ok=True)
             record.with_suffix(".tmp").write_text(json.dumps(done, indent=1) + "\n")
             record.with_suffix(".tmp").replace(record)

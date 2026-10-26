@@ -183,6 +183,13 @@ class FaultTest(unittest.TestCase):
         self.assertTrue(faults.compatible((first,), second))
 
 
+class OracleTest(unittest.TestCase):
+    def test_a_workload_that_fails_its_check_unfaulted_needs_twice_the_failures(self) -> None:
+        from mallory import campaign
+        self.assertEqual(campaign.failure_threshold(0), 0)    # the first failure detects
+        self.assertEqual(campaign.failure_threshold(2), 4)    # 3 is a delayed turn, 5 detects
+
+
 class PolicyTest(unittest.TestCase):
     def test_untried_actions_are_optimistic_and_rewards_rank_the_tried(self) -> None:
         q = policy.QPolicy(epsilon=0.0)
