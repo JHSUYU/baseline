@@ -45,6 +45,21 @@
     "site_id": "<org.apache.hadoop.hbase.backup.impl.BackupSystemTable: void startBackupExclusiveOperation()>#L481"
    },
    "note": "A lost reply of the backup lock's checkAndMutate: the client retries the committed compare-and-set, finds its own lock and throws, so the backup fails and the lock stays. Its test has two sessions contend for the lock, so a fault-free run already takes the throw while one waits; only a further failure is a candidate."
+  },
+  {
+   "case_id": "ZK-ELECTION-OFFER",
+   "system": "ZooKeeper 3.8.7",
+   "selection_group": "baseline_bug",
+   "cluster_test": "org.apache.zookeeper.recipes.leader.LeaderElectionSupportTest#testNodes3",
+   "check_code": "if (n == null) {\nthrow new KeeperException.NoNodeException();",
+   "exact_check_location": {
+    "check_start_line": 671,
+    "enclosing_function": "org.apache.zookeeper.server.FinalRequestProcessor.handleGetDataRequest(org.apache.jute.Record,org.apache.zookeeper.server.ServerCnxn,java.util.List)",
+    "file": "zookeeper-server/src/main/java/org/apache/zookeeper/server/FinalRequestProcessor.java",
+    "selected_line": 672,
+    "site_id": "<org.apache.zookeeper.server.FinalRequestProcessor: org.apache.jute.Record handleGetDataRequest(org.apache.jute.Record,org.apache.zookeeper.server.ServerCnxn,java.util.List)>#L672"
+   },
+   "note": "ZooKeeper LeaderElectionSupport (election recipe): a contender whose start() fails reading an offer goes FAILED without revoking its own offer. The check is the server refusing a getData of a node that no longer exists (GraphChecker zk-bugs-election-offer marks the same throw)."
   }
  ]
 }

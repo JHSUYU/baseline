@@ -45,6 +45,9 @@ SYSTEMS = {
                    Path(_env("MALLORY_IMAGE_SOLR", "/bulk/vm/solr/j2sdk-image")),
                    ("solrj:org/apache/solr/client/solrj/impl/HttpSolrClient",
                     "solrj:org/apache/solr/client/solrj/impl/Http2SolrClient")),
+    "zk": System("zk", Path(_env("MALLORY_GC_ZK", "/bulk/wt/gc-mallory-zookeeper")),
+                 Path(_env("MALLORY_IMAGE_ZK", "/bulk/vm/hbase/j2sdk-image")),
+                 ("server:org/apache/zookeeper/ZooKeeper",)),
 }
 
 WORK = Path(_env("MALLORY_WORK", "/bulk/mallory-work"))

@@ -1,8 +1,9 @@
 """One unchanged ZooKeeper 3.8.7 JUnit Jupiter method in a built source tree.
 
-The test classpath is the one Surefire recorded when the tree's
-``QuorumRestartTest`` ran once (``scripts/setup-deps.sh`` builds the tree
-and runs it).
+The test classpath is the one Surefire recorded when a test of the test's
+module ran once: the test's own report when there is one (a recipe module's
+test), else ``QuorumRestartTest``'s, which every zookeeper-server test shares
+(``scripts/setup-deps.sh`` builds the tree and runs it).
 """
 
 from __future__ import annotations
@@ -20,25 +21,40 @@ REPORT = (SOURCE / "zookeeper-server/target/surefire-reports/"
 BUILD = settings.BUILD / "zookeeper-junit"
 
 
-def _test_classpath() -> str:
-    properties = ET.parse(REPORT).getroot().findall("./properties/property")
+def _module(test_class: str) -> Path:
+    """The tree module whose tests hold ``test_class`` (zookeeper-server if none)."""
+    relative = Path(*test_class.split(".")).with_suffix(".java")
+    for tests in sorted(SOURCE.glob("**/src/test/java")):
+        if (tests / relative).is_file():
+            return tests.parents[2]
+    return SOURCE / "zookeeper-server"
+
+
+def _test_classpath(test_class: str) -> tuple[str, Path]:
+    module = _module(test_class)
+    report = module / "target/surefire-reports" / f"TEST-{test_class}.xml"
+    if not report.is_file():
+        report = REPORT
+    properties = ET.parse(report).getroot().findall("./properties/property")
     classpath = next(row.get("value") for row in properties
                      if row.get("name") == "java.class.path")
     first = classpath.split(os.pathsep, 1)[0]
-    marker = "/zookeeper-server/target/test-classes"
+    marker = "/" + str(report.parents[2].relative_to(SOURCE)) + "/target/test-classes"
     if marker not in first:
-        raise ValueError("Surefire classpath lacks ZooKeeper test classes")
+        raise ValueError("Surefire classpath lacks the module's test classes")
     # The report may come from a tree built elsewhere: re-root it here.
-    return classpath.replace(first.split(marker, 1)[0], str(SOURCE))
+    return classpath.replace(first.split(marker, 1)[0], str(SOURCE)), report.parents[2]
 
 
 def run(request: Request) -> int:
     require_selection(request)
+    suffix = request.case_id.rsplit("-", 1)[-1]
     worker_id = (request.worker_id if request.worker_id is not None else
-                 int(request.case_id.rsplit("-", 1)[1]) % request.worker_count)
+                 int(suffix) % request.worker_count if suffix.isdigit() else 0)
     scratch = fresh_scratch(request.output, "temp")
     agent = require_agent()
-    classpath = os.pathsep.join([str(BUILD), _test_classpath()])
+    test_classpath, module = _test_classpath(request.test_class)
+    classpath = os.pathsep.join([str(BUILD), test_classpath])
     compile_runner(JUPITER_RUNNER, classpath, BUILD)
     command = [java("java"), "-ea", "-Xmx1g", "-Djava.awt.headless=true",
                "-Dsun.reflect.noInflation=true",
@@ -48,7 +64,7 @@ def run(request: Request) -> int:
                "-Dzookeeper.junit.threadid=" + str(worker_id),
                "-javaagent:" + str(agent), "-cp", classpath, JUPITER_RUNNER,
                request.test_class, request.test_method]
-    code, elapsed = run_junit(command, SOURCE / "zookeeper-server", agent_env(request), request)
+    code, elapsed = run_junit(command, module, agent_env(request), request)
     finish(request, manifest(request, code, elapsed), scratch)
     return code
 

@@ -52,7 +52,10 @@ SYSTEMS = {
         ("solr-8.11.4/dist/solr-core-8.11.4.jar", "solr-8.11.4/dist/solr-solrj-8.11.4.jar")),
     "ZooKeeper": SystemSpec(
         "ZooKeeper", "zookeeper-3.8.7", 180,
-        ("apache-zookeeper-3.8.7-bin/lib/zookeeper-3.8.7.jar",)),
+        ("apache-zookeeper-3.8.7-bin/lib/zookeeper-3.8.7.jar",
+         # the election recipe, built in the source tree (the binary release has no recipes)
+         "sources/zookeeper-3.8.7/zookeeper-recipes/zookeeper-recipes-election/target/"
+         "zookeeper-recipes-election-3.8.7.jar")),
 }
 
 
