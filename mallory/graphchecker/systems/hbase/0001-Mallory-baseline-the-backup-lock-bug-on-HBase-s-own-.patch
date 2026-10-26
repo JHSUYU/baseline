@@ -1,0 +1,41 @@
+From b28c4de618ed35940897159c393263e66e882791 Mon Sep 17 00:00:00 2001
+From: ZhenyuLi
+ <ZhenyuLi@node0.experiment.silentfailure-pg0.clemson.cloudlab.us>
+Date: Mon, 26 Oct 2026 02:40:18 +0000
+Subject: [PATCH] Mallory baseline: the backup lock bug on HBase's own
+ TestBackupManager
+
+hbase-bugs-backup-lock-upstream runs testStartBackupExclusiveOperation
+unchanged (two sessions contend for the lock through BackupManager) against
+the target backup-lock-reply-lost marks (marked_as). TestFullBackup, recorded
+under the weave, exhausts a 16 GB heap.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ experiments/hbase/hbase-bugs/case.sh | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/experiments/hbase/hbase-bugs/case.sh b/experiments/hbase/hbase-bugs/case.sh
+index 552edf097..6b7a796bd 100644
+--- a/experiments/hbase/hbase-bugs/case.sh
++++ b/experiments/hbase/hbase-bugs/case.sh
+@@ -19,6 +19,19 @@ case "${1:?usage: case.sh <bug>}" in
+       common=:org/apache/hadoop/hbase/util/EnvironmentEdgeManager
+       common:org/apache/hadoop/hbase/util/DefaultEnvironmentEdge)
+     ;;
++  backup-lock-upstream)
++    # The Mallory baseline's workload for this bug: HBase's own test of the lock, unchanged
++    # (two sessions contend for it through BackupManager), not the bespoke one below.
++    # (TestFullBackup, recorded under the weave, exhausts a 16 GB heap: a full backup's
++    # MapReduce export and snapshot copy.)
++    test_class=org.apache.hadoop.hbase.backup.TestBackupManager
++    test_method=testStartBackupExclusiveOperation
++    marked_as=hbase-bugs-backup-lock-reply-lost
++    target_occurrence=first
++    scope=(
++      backup=:org/apache/hadoop/hbase/backup/impl/BackupSystemTable
++      backup=:org/apache/hadoop/hbase/backup/impl/BackupManager)
++    ;;
+   backup-lock-reply-lost)
+     test_class=org.apache.hadoop.hbase.backup.TestCausynthBackupLockReplyLost
+     test_method=takeAndReleaseTheBackupLock

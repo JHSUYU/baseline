@@ -1,9 +1,9 @@
 """Where Mallory's inputs and outputs live; every value can be overridden from the environment.
 
-Each system runs on its own GraphChecker branch ``baseline/mallory-<system>``
-(``system/<system>-cloudlab`` plus native plant runs, see README) checked out
-at ``MALLORY_GC_<SYSTEM>``, against the system tree its cases name (the fork's
-``graphchecker/*-checks`` branch, built under ``GC_TREES``).
+Each system runs on its own GraphChecker checkout at ``MALLORY_GC_<SYSTEM>``:
+GraphChecker's ``system/<system>-cloudlab`` with this baseline's patches
+(``graphchecker/apply.sh``, see README), against the system tree its cases name
+(the fork's ``baseline/mallory`` branch, built under ``GC_TREES``).
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ def _env(name: str, default: str) -> str:
 @dataclass(frozen=True)
 class System:
     name: str
-    checkout: Path       # the GraphChecker baseline/mallory-<name> checkout
+    checkout: Path       # the patched GraphChecker checkout (graphchecker/apply.sh)
     image: Path          # the concolic VM image (only GraphChecker's preflight reads it)
     # Every door family of the system's transports in GraphChecker's library
     # catalog, as scope entries: woven whatever the case's own scope reaches.

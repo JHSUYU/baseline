@@ -84,34 +84,41 @@ seeds run one after another.
 
 ## GraphChecker and the systems
 
-| system | GraphChecker branch (`git@github.com:JHSUYU/GraphChecker.git`) | system tree |
-| --- | --- | --- |
-| HBase | `baseline/mallory-hbase` (= `system/hbase-cloudlab` + the commits below) | `JHSUYU/hbase` `graphchecker/hbase-checks` (tree `hbase-checks`; `baseline/mallory` pins b5d5cc6a20) |
-| Solr | `baseline/mallory-solr` (= `system/solr-cloudlab` + the commits below) | `JHSUYU/solr` `graphchecker/solr-checks` (tree `lucene-solr-checks`; `baseline/mallory` pins 12d23091d1) |
-| ZooKeeper | `baseline/mallory-zookeeper` (= `system/zookeeper-cloudlab` + the commits below) | `JHSUYU/zookeeper` `graphchecker/zookeeper-checks` (tree `zookeeper-checks`) |
-| HDFS | `baseline/mallory-hdfs` (= `system/hdfs-cloudlab` + the commits below) | `JHSUYU/hadoop` `graphchecker/hdfs-checks` (tree `hadoop-hdfs-study-r7`; `baseline/mallory` pins 899c200cc8) |
+Mallory runs each system's cases on a GraphChecker checkout: GraphChecker's `system/<system>-cloudlab`
+(`git@github.com:JHSUYU/GraphChecker.git`, at the commit [`graphchecker/bases.tsv`](graphchecker/bases.tsv) pins)
+with the patches of [`graphchecker/`](graphchecker) applied. `graphchecker/apply.sh <GraphChecker clone>
+<system>` makes it at `/bulk/wt/gc-mallory-<system>`, where `mallory/settings.py` looks for it, and builds the
+jar.
 
-Mallory needs no change in a system tree: the system's adaptation (its door hooks, the cluster adapter that
-names a test's nodes, the target markers) is GraphChecker's, in the fork's `graphchecker/*-checks` branch.
-The GraphChecker branches add:
+- [`graphchecker/common/`](graphchecker/common), every system:
+  1. *Native plant runs*: the `PLANT_MARKER` observation in `RecordingPlant`, `explore.TargetRows` (a plant's
+     TARGET rows for the declared target, as `ConfirmMain` writes them), `run_engine.sh plant-run <run dir>
+     <plant> [bound]` and `campaign_stop_after=PLAN`;
+  2. *Doors outside the recording window*: `causynth.plant.outside`, `causynth.plant.outside.log`,
+     `nanoTime` on marker rows, `CAUSYNTH_EXTRA_SCOPE` in `experiments/lib/case-env.sh`;
+  3. an outside door call named by its nearest callers;
+  4. `causynth.plant.continue`: a run goes on past the declared occurrence's fatal arm;
+  5. `marked_as`: a case checking the target another case marked, with another workload.
+- [`graphchecker/systems/<system>/`](graphchecker/systems), the cases this baseline adds on the systems' own
+  tests: HBase `hbase-bugs-backup-lock-upstream` (`TestBackupManager`), HDFS `hdfs-17967-pathA-upstream`
+  (`TestEncryptedTransfer`). Solr's `solr-adhoc-40` and ZooKeeper's `zk-bugs-election-offer` are GraphChecker's
+  own cases, already on the systems' tests.
 
-- *Native plant runs for the Mallory baseline*: the `PLANT_MARKER` observation in `RecordingPlant`,
-  `explore.TargetRows` (a plant's TARGET rows for the declared target, as `ConfirmMain` writes them),
-  `run_engine.sh plant-run <run dir> <plant> [bound]` and `campaign_stop_after=PLAN`;
-- *Fail and observe doors outside the recording window* and *name an outside door call by its nearest
-  callers*: `causynth.plant.outside`, `causynth.plant.outside.log`, `nanoTime` on marker rows and
-  `CAUSYNTH_EXTRA_SCOPE` in `experiments/lib/case-env.sh`;
-- `causynth.plant.continue`: a run goes on past the declared occurrence's fatal arm;
-- `marked_as` (`experiments/lib/case-env.sh`, `run.sh`) and the cases on the systems' own tests:
-  `hbase-bugs-backup-lock-upstream` (`TestBackupManager`), `hdfs-17967-pathA-upstream`
-  (`TestEncryptedTransfer`); `solr-adhoc-40` and `zk-bugs-election-offer` are GraphChecker's own cases,
-  already on the systems' tests.
+The system trees are GraphChecker's (its door hooks, the cluster adapters that name a test's nodes, the target
+markers), unchanged; each fork's branch `baseline/mallory` pins the commit Mallory ran on:
+
+| system | fork | tree (under `GC_TREES=/bulk/wt`) | `baseline/mallory` |
+| --- | --- | --- | --- |
+| HBase | `JHSUYU/hbase` (`graphchecker/hbase-checks`) | `hbase-checks` | b5d5cc6a20 |
+| Solr | `JHSUYU/solr` (`graphchecker/solr-checks`) | `lucene-solr-checks` | 12d23091d1 |
+| ZooKeeper | `JHSUYU/zookeeper` (`graphchecker/zookeeper-checks`) | `zookeeper-checks` | 889f0e9616 |
+| HDFS | `JHSUYU/hadoop` (`graphchecker/hdfs-checks`) | `hadoop-hdfs-study-r7` | 899c200cc8 |
 
 ## Running it (CloudLab, node0-node4)
 
-Set up the cluster, GraphChecker checkouts, VM image and system trees as GraphChecker's REPRODUCE.md says for
-`system/{hdfs,hbase,solr,zookeeper}-cloudlab`, but check out `baseline/mallory-<system>` at `/bulk/wt/gc-mallory-<system>`
-(`mvn -q package -DskipTests`); trees under `GC_TREES=/bulk/wt`. Paths are in `mallory/settings.py`
+Set up the cluster, VM image and system trees as GraphChecker's REPRODUCE.md says for
+`system/{hdfs,hbase,solr,zookeeper}-cloudlab` (each tree at its fork's `baseline/mallory`, under
+`GC_TREES=/bulk/wt`), then `graphchecker/apply.sh <GraphChecker clone> <system>` for each system. Paths are in `mallory/settings.py`
 (`MALLORY_GC_<SYSTEM>`, `MALLORY_WORK`, `MALLORY_NODES`).
 
 ```sh
@@ -158,6 +165,11 @@ the only HDFS test that rotates block keys around a pipeline between DataNodes. 
 and 165 trials (4988 s) never failed the check more than its one deliberate stale-key rejection; the bug needs a
 lost key-carrying heartbeat reply on the DataNode a random block placement makes the next mirror, within the two
 seconds before the next rotation. Mallory was not run on it further.
+
+Held-out checks: with the code unchanged, Mallory also ran on three checks never used while it was built
+(Solr `solr-adhoc-09`, HBase `hbase-adhoc-08`, ZooKeeper `zk-adhoc-07`, each on its system's own test): every
+run completed (1 hour, or every fault point of the test tried) with no false detection
+([`data/heldout-2026-10-26.json`](data/heldout-2026-10-26.json); the repository README compares both baselines).
 
 Earlier figures in this repository's history (2026-10-25: HDFS-17967 in 1 trial, Solr's RESTORE bug, HBase's
 lock on `TestCausynthBackupLockReplyLost`) came from GraphChecker's own bug-shaped tests (`TestCausynth*`),

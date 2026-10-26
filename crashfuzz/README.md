@@ -139,6 +139,10 @@ calls of the server and the client library and none of the recipe's: the failing
 behind is outside its fault space. HDFS-17967's first 80 trials of each run ended by the adaptive budget;
 the runs given a 4-hour budget were stopped after 166 and 126 trials without a candidate.
 
+Held-out checks: with the code unchanged, CrashFuzz also ran on three checklist rows never used while the
+refactor was built (SOLR-09, HBASE-08, ZOOKEEPER-07): 120, 59 and 373 trials, no candidate, no trial failing the
+check ([`data/evidence/heldout-2026-10-26.json`](data/evidence/heldout-2026-10-26.json)).
+
 ### Earlier campaigns
 
 SOLR-40 was first found by a 240-trial Soot-selected campaign of the 102-check list at trial 31, 2102 s
