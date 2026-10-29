@@ -12,7 +12,8 @@ counts can grow while a case is running. `active_runtime_seconds` is the
 cumulative JUnit run time; `total_elapsed_seconds` includes any retained
 worker overhead and is never smaller than that run time after a resume.
 Only a finished row is a terminal case result.
-For completed cases whose raw trials were moved to preserve node0 disk space,
+For completed cases whose raw trials were moved to preserve node0 disk space (CloudLab, where these
+campaigns ran),
 `archive_host` and `archive_path` locate the checksum-verified copy. The local
 `campaign_result` remains available with the case summary.
 
