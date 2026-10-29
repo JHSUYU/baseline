@@ -308,5 +308,16 @@ def prepare(row: dict[str, Any], test_class: str, test_method: str,
 
 
 def analysis(workload: dict[str, Any], options: dict[str, Any]) -> dict[str, Any]:
-    """The Soot selector's input: the release analysis's options over the tree's classes."""
-    return {"process_dirs": list(workload["analysis_dirs"]), "classpath": [], **options}
+    """The Soot selector's input: the release analysis's options over the tree's classes.
+
+    The rest of the workload's main classpath is Soot's classpath: it selects
+    nothing from it (only the analysed classes are application classes), but
+    types against it, so a check throwing a library's exception (HBase's
+    ``InvalidToken`` is Hadoop's) gets its type rather than a phantom
+    ``Throwable``.
+    """
+    analysed = set(workload["analysis_dirs"])
+    return {"process_dirs": list(workload["analysis_dirs"]),
+            "classpath": [entry for entry in workload["classpath"]
+                          if entry not in analysed and not is_test_entry(entry)],
+            **options}

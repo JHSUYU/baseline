@@ -103,8 +103,12 @@ class TreeWorkloadTest(unittest.TestCase):
             self.assertEqual(workload['test_classes'], str(fixture.test_classes))
             self.assertEqual(workload['launcher'], 'jupiter')
             self.assertEqual(workload['heap'], '2g')
-            self.assertEqual(tree.analysis(workload, {'max_methods': 400})['process_dirs'],
-                             workload['analysis_dirs'])
+            selector = tree.analysis(workload, {'max_methods': 400})
+            self.assertEqual(selector['process_dirs'], workload['analysis_dirs'])
+            self.assertIn(str(fixture.third), selector['classpath'])      # types, selects nothing
+            self.assertNotIn(str(fixture.tree / 'common/target/classes'), selector['classpath'])
+            self.assertNotIn(str(fixture.test_classes), selector['classpath'])
+            self.assertEqual(selector['max_methods'], 400)
 
     def test_a_tree_without_the_release_modules_is_refused(self):
         with tempfile.TemporaryDirectory() as directory:
