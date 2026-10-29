@@ -44,31 +44,34 @@ the target after its faults and fewer than 30 do.
 
 | path | what |
 | --- | --- |
-| `crashfuzz/` | the Python package (stdlib only): `trace`, `faults`, `oracle`, `scheduler`, `campaign`, `selection`, `runners/`, `worker`, `cluster`, `report`, `settings`, `systems` |
-| `crashfuzz/runners/` | one module per system running one unchanged JUnit method under the agent; the JUnit 4 and Jupiter launchers (`java/`) and HBase's test-only SSL utility |
-| `runtime-agent/`, `static-selection/` | the Java agent and the Soot selector (Maven) |
-| `systems/hdfs/` | the HDFS RPC wire mapping the selector follows |
+| `crashfuzz/` | the Python package (stdlib only): `trace`, `faults`, `oracle`, `scheduler`, `campaign`, `selection`, `runners/`, `tree`, `worker`, `cluster`, `report`, `settings`, `systems` |
+| `crashfuzz/runners/` | one module per system running one unchanged JUnit method under the agent, and `tree` for a built source tree's; the JUnit 4 and Jupiter launchers (`java/`) and HBase's test-only SSL utility |
+| `runtime-agent/`, `static-selection/` | the Java agent (with the tree mode's `NeutralAdapter`) and the Soot selector (Maven) |
+| `systems/` | the HDFS RPC wire mapping the selector follows; the ZooKeeper tree workloads' logging configuration |
 | `scripts/setup-deps.sh` | the Apache releases and sources, verified, in the expected layout |
 | `tests/` | `python3 -m unittest discover -s crashfuzz/tests` (from the repository root) |
-| `data/` | the 102-check selection, the campaign records and the source reviews |
+| `data/` | the 102-check selection, the baseline bugs, the old-bug tree rows, the campaign records and the source reviews |
 | `vendor/` | the JUnit Platform launcher the Jupiter runner uses |
 
 ## Setup
 
 Paths come from the environment (`crashfuzz/settings.py`); the defaults are
-the CloudLab cluster's, where `/bulk` is NFS-shared by every node:
+the liftlab cluster's, where `/bigtemp/vnr3ne` is NFS-mounted at the same path
+on every lift (the home directory is NFS too, under a 100 G quota, so nothing
+bulky goes there; `/localtmp` is each lift's local disk):
 
 | variable | default | what |
 | --- | --- | --- |
-| `CRASHFUZZ_DEPS` | `/bulk/baseline-deps` | release binaries; `sources/` beside them |
-| `CRASHFUZZ_RESULTS` | `/bulk/crashfuzz-results` | results root |
-| `CRASHFUZZ_JAVA_HOME` | `/usr/lib/jvm/java-8-openjdk-amd64` | the JDK every JUnit runs on |
-| `CRASHFUZZ_M2` | `~/.m2/repository` | test-only jars (bouncycastle, minikdc, JaCoCo, ...) |
-| `CRASHFUZZ_BUILD` | `crashfuzz/build` | compiled launchers, unpacked test jars |
+| `CRASHFUZZ_DEPS` | `/bigtemp/vnr3ne/baseline-deps` | release binaries; `sources/` beside them |
+| `CRASHFUZZ_RESULTS` | `/bigtemp/vnr3ne/crashfuzz-results` | results root |
+| `CRASHFUZZ_JAVA_HOME` | `/usr/lib/jvm/java-8-openjdk-amd64` | the JDK every JUnit and every Maven build runs on |
+| `CRASHFUZZ_M2` | `/bigtemp/vnr3ne/m2/crashfuzz` | the Maven repository of every build and test-only jar (bouncycastle, minikdc, JaCoCo, ...) |
+| `CRASHFUZZ_MVN` | `mvn` on `PATH`, else `/usr/lib/maven/bin/mvn` | Maven (lift02-06 and lift08-10 have it on `PATH`, lift11-15 under `/usr/lib/maven/bin`) |
+| `CRASHFUZZ_BUILD` | `crashfuzz/build` | compiled launchers, unpacked test jars (shared by the nodes through the checkout) |
 
 ```sh
-crashfuzz/scripts/setup-deps.sh      # downloads, verifies, unpacks; builds the ZooKeeper tree,
-                                     # the agent and the selector
+crashfuzz/scripts/setup-deps.sh      # on a lift with Maven: downloads, verifies, unpacks; builds the
+                                     # ZooKeeper tree, the agent and the selector
 python3 -m unittest discover -s crashfuzz/tests
 ```
 
@@ -79,19 +82,50 @@ From `crashfuzz/` (the package directory's parent):
 ```sh
 python3 -m crashfuzz run --case-id SOLR-40                   # one case, end to end, resumable
 python3 -m crashfuzz worker --system HBase                   # every HBase case
-python3 -m crashfuzz cluster --nodes node0 node1 node2 node3 node4 --system Solr -- --max-trials 240
+python3 -m crashfuzz cluster --nodes lift08 lift09 lift10 lift12 lift13 lift14 --system Solr -- --max-trials 240
 python3 -m crashfuzz replay --case-id SOLR-40 --plan plan.json --repeats 10 --name aliases
-python3 -m crashfuzz report --output /bulk/crashfuzz-results/table.tsv
+python3 -m crashfuzz report --output /bigtemp/vnr3ne/crashfuzz-results/table.tsv
 ```
 
 `cluster` starts one detached worker per node over ssh, in this checkout's
 `crashfuzz/` directory: the repository must be at the same path on every node
-(on CloudLab a clone under `/bulk`; each node's home directory is its own).
+(on liftlab a checkout under `/bigtemp`, which every lift mounts).
 Node `i` of `N` takes every `N`-th case of the system. A case's flock and
 heartbeated lease keep two workers from running it at once, and a restarted
 worker resumes unfinished cases without rerunning finished trials. `replay` runs one fault sequence (a
 JSON list of fault points, or a trial's `fault-trial.json`) a number of times
 on the case's selection and healthy run, through the same matching and oracle.
+
+## Tree mode: a workload on a built source tree
+
+A checklist row normally runs its system's Apache release. A row with a
+`tree` field runs a built checkout instead -- for an old bug put back by hand
+on today's code, whose fix the releases already hold
+([`crashfuzz/tree.py`](crashfuzz/tree.py), [`runners/tree.py`](crashfuzz/runners/tree.py)):
+
+```json
+"tree": {"path": "/bigtemp/vnr3ne/wt/bd-trees-1/hadoop-hdfs-bug-11741",
+         "jvm_properties": ["-Dtest.build.data={data}", "-Dtest.cache.data={test_classes}"]}
+```
+
+- **Classpath:** the `java.class.path` the tree's own test run recorded in its JUnit XML report (Surefire's or
+  Ant's), with every jar of a tree module replaced by that module's compiled classes, and every entry holding
+  GraphChecker's classes (`edu/uva/liftlab/graphchecker`) dropped.
+- **Neutral adapter:** a tree may call an adapter API it builds against as a `provided` dependency
+  (GraphChecker's bug trees call GraphChecker's runtime doors, `MessageDoors`, `Sessions`, and Hadoop's
+  `CausynthMessagePropagation` shim). The agent jar's `NeutralAdapter` reads the tree's classes and writes a
+  stand-in for exactly the classes of that namespace they reference and nothing provides: every method returns
+  `false`, zero, `""`, an empty array, a neutral instance or `null`; a `void` door handed a `Runnable` runs it
+  (delivering a watch notification); nothing is recorded, held or deferred. No GraphChecker class is on the
+  classpath (`<case>/tree-adapter/neutral-adapter.json` lists every stand-in member and its answer).
+- **Selection:** Soot analyses the tree's classes of the modules the release analysis reads
+  (`SystemSpec.analysis_jars`: for HDFS hadoop-hdfs, -hdfs-client, -common; for Solr solr-core and solrj; ...).
+- **Run:** the test's JUnit flavour (Jupiter or JUnit 4) is read off its class; the JVM runs in a fresh scratch
+  directory, never in the tree, with the row's `jvm_properties` (`{tmp}`, `{data}`, `{scratch}`, `{tree}`,
+  `{test_classes}`, `{systems}`).
+- The oracle is the row's own: the typed throw at `exact_check_location` in the tree's source.
+
+[`data/old-bugs.json`](data/old-bugs.json) holds such rows for GraphChecker's buggy-detect cases.
 
 ## Results
 
