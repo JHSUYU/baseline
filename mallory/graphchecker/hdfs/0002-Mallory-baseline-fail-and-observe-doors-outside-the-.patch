@@ -1,0 +1,172 @@
+From fdc8a260219d8c16bad06c94256017534a7c1920 Mon Sep 17 00:00:00 2001
+From: ZhenyuLi
+ <ZhenyuLi@node0.experiment.silentfailure-pg0.clemson.cloudlab.us>
+Date: Sun, 25 Oct 2026 19:08:46 +0000
+Subject: [PATCH 2/6] Mallory baseline: fail and observe doors outside the
+ recording window
+
+RecordingPlant.marker answered nothing outside the window, so the baseline
+could fault only the doors GraphChecker's case window records. Outside it a
+marker evaluation is now named by its call site, its place (before the window
+opened or after it closed, the node and the thread's folded name) and its
+invocation per place: causynth.plant.outside lists those to fail and
+causynth.plant.outside.log states every one. PLANT_MARKER rows carry nanoTime
+so both orders merge. CAUSYNTH_EXTRA_SCOPE adds scope entries, so the baseline
+weaves every door family of the system's catalog whatever the case's scope.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ experiments/lib/case-env.sh                   |  6 ++
+ .../runtime/CausynthTraceRecorder.java        |  1 +
+ .../graphchecker/runtime/RecordingPlant.java  | 92 ++++++++++++++++++-
+ 3 files changed, 98 insertions(+), 1 deletion(-)
+
+diff --git a/experiments/lib/case-env.sh b/experiments/lib/case-env.sh
+index 1b8c7a8c4..7ef2fec47 100644
+--- a/experiments/lib/case-env.sh
++++ b/experiments/lib/case-env.sh
+@@ -17,6 +17,12 @@ source "${system_dir}/system.sh"
+ # shellcheck source=/dev/null
+ source "${case_dir}/case.sh" "${case_id}"
+ target_occurrence=${CAUSYNTH_TARGET_OCCURRENCE_OVERRIDE-${target_occurrence}}
++# The Mallory baseline weaves every door family of the system's catalog, not
++# only those the case's scope reaches: extra scope entries, space-separated.
++if [[ -n ${CAUSYNTH_EXTRA_SCOPE-} ]]; then
++  read -r -a extra_scope <<<"${CAUSYNTH_EXTRA_SCOPE}"
++  scope+=("${extra_scope[@]}")
++fi
+ case "${recording_window}" in
+   ""|startup) ;;
+   *) echo "unknown recording_window: '${recording_window}'" >&2; return 2 ;;
+diff --git a/src/main/java/edu/uva/liftlab/graphchecker/runtime/CausynthTraceRecorder.java b/src/main/java/edu/uva/liftlab/graphchecker/runtime/CausynthTraceRecorder.java
+index fbd29a66e..8a4092d05 100644
+--- a/src/main/java/edu/uva/liftlab/graphchecker/runtime/CausynthTraceRecorder.java
++++ b/src/main/java/edu/uva/liftlab/graphchecker/runtime/CausynthTraceRecorder.java
+@@ -1095,6 +1095,7 @@ public final class CausynthTraceRecorder {
+                     "schemaVersion", 3,
+                     "event", RecordingPlant.MARKER,
+                     "seq", EVENT_COUNTER.incrementAndGet(),
++                    "nanos", System.nanoTime(),
+                     "rootId", name,
+                     "siteId", siteId,
+                     "occurrences", occurrences,
+diff --git a/src/main/java/edu/uva/liftlab/graphchecker/runtime/RecordingPlant.java b/src/main/java/edu/uva/liftlab/graphchecker/runtime/RecordingPlant.java
+index 3ddda1fdb..ff2bfcfb9 100644
+--- a/src/main/java/edu/uva/liftlab/graphchecker/runtime/RecordingPlant.java
++++ b/src/main/java/edu/uva/liftlab/graphchecker/runtime/RecordingPlant.java
+@@ -74,6 +74,24 @@ public final class RecordingPlant {
+     static final String MARKER = "PLANT_MARKER";
+     private static final boolean OBSERVING =
+             Boolean.getBoolean(OBSERVE_PROPERTY);
++    /**
++     * The Mallory baseline fails a door anywhere in the run, not only inside
++     * the recording window, where occurrences name it. Outside the window a
++     * marker evaluation is named by its call site and its place -- whether the
++     * window has not opened yet or has closed, the node its thread serves and
++     * the thread's name with its numbers folded -- and counted per name.
++     * {@code causynth.plant.outside} lists the evaluations to fail ({siteId,
++     * place, invocation} rows); {@code causynth.plant.outside.log} receives
++     * every outside evaluation (OUTSIDE_MARKER) and every failed one
++     * (OUTSIDE_APPLIED). Rows carry the JVM's nanoTime, as PLANT_MARKER rows
++     * do, so a driver orders them with the window's.
++     */
++    static final String OUTSIDE_PROPERTY = "causynth.plant.outside";
++    static final String OUTSIDE_LOG_PROPERTY = "causynth.plant.outside.log";
++    private static final Set<String> OUTSIDE_FAULTS = outsideFaults();
++    private static final java.io.BufferedWriter OUTSIDE_LOG = outsideLog();
++    private static final Map<String, Integer> OUTSIDE_INVOCATIONS =
++            new ConcurrentHashMap<String, Integer>();
+     private static volatile Plant plant;
+     private static final AtomicBoolean ENDED = new AtomicBoolean();
+     private static final AtomicLong PLACES = new AtomicLong();
+@@ -204,7 +222,8 @@ public final class RecordingPlant {
+     }
+ 
+     static boolean marker(String name) {
+-        if (!PLANTING || !RecordingWindow.opened()) return false;
++        if (!PLANTING) return false;
++        if (!RecordingWindow.opened()) return outside(name);
+         CausynthTraceRecorder.ActiveCallSiteContext site =
+                 CausynthTraceRecorder.currentCallSiteContext();
+         if (site == null) return false;
+@@ -229,6 +248,77 @@ public final class RecordingPlant {
+         return value;
+     }
+ 
++    private static boolean outside(String name) {
++        if (OUTSIDE_LOG == null && OUTSIDE_FAULTS.isEmpty()) return false;
++        CausynthTraceRecorder.ActiveCallSiteContext site =
++                CausynthTraceRecorder.currentCallSiteContext();
++        if (site == null) return false;
++        String node = "";
++        try {
++            SourceRef source = RuntimeTraceContext.currentSource();
++            if (source != null) node = source.key();
++        } catch (RuntimeException unattributed) {
++        }
++        String thread = Thread.currentThread().getName();
++        String place = (RecordingWindow.index() == 0 ? "before" : "after")
++                + "|" + node + "|" + thread.replaceAll("[0-9]+", "N");
++        String key = site.siteId() + "|" + place;
++        int invocation = OUTSIDE_INVOCATIONS.merge(key, 1, Integer::sum);
++        boolean fail = OUTSIDE_FAULTS.contains(key + "|" + invocation);
++        if (OUTSIDE_LOG != null) {
++            JsonObject row = new JsonObject();
++            row.addProperty("event", fail ? "OUTSIDE_APPLIED" : "OUTSIDE_MARKER");
++            row.addProperty("nanos", System.nanoTime());
++            row.addProperty("rootId", name);
++            row.addProperty("siteId", site.siteId());
++            row.addProperty("place", place);
++            row.addProperty("invocation", invocation);
++            row.addProperty("threadName", thread);
++            synchronized (OUTSIDE_LOG) {
++                try {
++                    OUTSIDE_LOG.write(row.toString());
++                    OUTSIDE_LOG.newLine();
++                    OUTSIDE_LOG.flush();
++                } catch (IOException unwritten) {
++                }
++            }
++        }
++        return fail;
++    }
++
++    private static Set<String> outsideFaults() {
++        String file = System.getProperty(OUTSIDE_PROPERTY, "").trim();
++        Set<String> faults = new LinkedHashSet<String>();
++        if (file.isEmpty()) return faults;
++        try {
++            for (String line : java.nio.file.Files.readAllLines(Paths.get(file),
++                    java.nio.charset.StandardCharsets.UTF_8)) {
++                if (line.trim().isEmpty()) continue;
++                JsonObject row = new com.google.gson.JsonParser().parse(line)
++                        .getAsJsonObject();
++                faults.add(row.get(SITE).getAsString() + "|"
++                        + row.get("place").getAsString() + "|"
++                        + row.get(INVOCATION).getAsInt());
++            }
++        } catch (IOException | RuntimeException unreadable) {
++            throw new IllegalStateException("unreadable " + OUTSIDE_PROPERTY
++                    + " " + file, unreadable);
++        }
++        return faults;
++    }
++
++    private static java.io.BufferedWriter outsideLog() {
++        String file = System.getProperty(OUTSIDE_LOG_PROPERTY, "").trim();
++        if (file.isEmpty()) return null;
++        try {
++            return java.nio.file.Files.newBufferedWriter(Paths.get(file),
++                    java.nio.charset.StandardCharsets.UTF_8);
++        } catch (IOException unwritable) {
++            throw new IllegalStateException("unwritable "
++                    + OUTSIDE_LOG_PROPERTY + " " + file, unwritable);
++        }
++    }
++
+     private static void observed(String name, String siteId,
+                                  List<String> enclosing) {
+         List<String> ids = new ArrayList<String>(enclosing.size());
+-- 
+2.34.1
+

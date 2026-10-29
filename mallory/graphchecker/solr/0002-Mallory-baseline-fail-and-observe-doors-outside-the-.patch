@@ -1,4 +1,4 @@
-From 3422a451cf63904e28965525e7bee494029cb618 Mon Sep 17 00:00:00 2001
+From 0d44bc4122d7472f0c7c3590eb254d8b6c285460 Mon Sep 17 00:00:00 2001
 From: ZhenyuLi
  <ZhenyuLi@node0.experiment.silentfailure-pg0.clemson.cloudlab.us>
 Date: Sun, 25 Oct 2026 19:08:46 +0000
@@ -51,7 +51,7 @@ index fbd29a66e..8a4092d05 100644
                      "siteId", siteId,
                      "occurrences", occurrences,
 diff --git a/src/main/java/edu/uva/liftlab/graphchecker/runtime/RecordingPlant.java b/src/main/java/edu/uva/liftlab/graphchecker/runtime/RecordingPlant.java
-index 3ddda1fdb..ff2bfcfb9 100644
+index 8f4dad509..4f6e462d3 100644
 --- a/src/main/java/edu/uva/liftlab/graphchecker/runtime/RecordingPlant.java
 +++ b/src/main/java/edu/uva/liftlab/graphchecker/runtime/RecordingPlant.java
 @@ -74,6 +74,24 @@ public final class RecordingPlant {
@@ -79,7 +79,7 @@ index 3ddda1fdb..ff2bfcfb9 100644
      private static volatile Plant plant;
      private static final AtomicBoolean ENDED = new AtomicBoolean();
      private static final AtomicLong PLACES = new AtomicLong();
-@@ -204,7 +222,8 @@ public final class RecordingPlant {
+@@ -213,7 +231,8 @@ public final class RecordingPlant {
      }
  
      static boolean marker(String name) {
@@ -89,7 +89,7 @@ index 3ddda1fdb..ff2bfcfb9 100644
          CausynthTraceRecorder.ActiveCallSiteContext site =
                  CausynthTraceRecorder.currentCallSiteContext();
          if (site == null) return false;
-@@ -229,6 +248,77 @@ public final class RecordingPlant {
+@@ -238,6 +257,77 @@ public final class RecordingPlant {
          return value;
      }
  
@@ -167,3 +167,6 @@ index 3ddda1fdb..ff2bfcfb9 100644
      private static void observed(String name, String siteId,
                                   List<String> enclosing) {
          List<String> ids = new ArrayList<String>(enclosing.size());
+-- 
+2.34.1
+
