@@ -5,7 +5,7 @@
   worker   run (or resume) a system's cases, optionally one shard of them
   cluster  start one worker per node over ssh
   replay   run one fault sequence N times on a case
-  siblings write a trial's plan planted at all its siblings (a replay aid)
+  plan     write a trial's realized plan for replays (--siblings: at all its siblings)
   report   write the 102-check table of a results root
 """
 
@@ -20,7 +20,7 @@ from pathlib import Path
 
 from . import cluster, report, settings
 from .selection import select_case
-from .faults import point_from_event, sibling_plan
+from .faults import point_from_event, shape_ordinal_plan, sibling_plan
 from .systems import SYSTEMS, system_of
 from .worker import checklist_rows, replay_case, run_case
 
@@ -40,9 +40,13 @@ def _selector(sequence: list[dict]) -> list[dict]:
              not (key == "phase" and value == "before")} for point in sequence]
 
 
-def write_sibling_plan(trial: Path, output: Path) -> dict:
-    """The trial's plan planted at its siblings in the trial's own last attempt."""
+def write_plan(trial: Path, output: Path, siblings: bool = False) -> dict:
+    """A trial's plan for replays: its realized faults (a partial candidate's prefix),
+    each lost reply named by its shape ordinal in the trial's own run, and with
+    ``siblings`` planted at all its siblings there (a replay aid)."""
     plan = _selector(json.loads((trial / "fault-trial.json").read_text())["faults"])
+    realized = json.loads((trial / "result.json").read_text()).get("realized_fault_count")
+    plan = plan[:realized or len(plan)]
     attempt = sorted(trial.glob("attempt-*"))[-1] / "trace"
     trace = next(path for path in (attempt / "runtime_trace.jsonl",
                                    attempt / "runtime_trace.jsonl.gz") if path.is_file())
@@ -58,11 +62,13 @@ def write_sibling_plan(trial: Path, output: Path) -> dict:
                 point = point_from_event(event)
                 if point is not None:
                     observed.append(point)
-    siblings = sibling_plan(plan, observed)
+    written = shape_ordinal_plan(plan, observed)
+    if siblings:
+        written = sibling_plan(written, observed)
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(json.dumps(siblings, indent=1) + "\n")
-    return {"trial": str(trial), "plan": len(plan), "siblings": len(siblings),
-            "output": str(output)}
+    output.write_text(json.dumps(written, indent=1) + "\n")
+    return {"trial": str(trial), "plan": len(plan), "written": len(written),
+            "siblings": siblings, "output": str(output)}
 
 
 def _print(result: dict) -> None:
@@ -124,10 +130,13 @@ def main(argv: list[str] | None = None) -> int:
     replay.add_argument("--name", required=True, help="the replay directory's suffix")
     replay.add_argument("--results", type=Path, default=settings.RESULTS)
 
-    siblings = commands.add_parser("siblings")
-    siblings.add_argument("--trial", type=Path, required=True,
-                          help="a trial directory: its fault-trial.json and its last attempt's trace")
-    siblings.add_argument("--output", type=Path, required=True)
+    plan_command = commands.add_parser("plan")
+    plan_command.add_argument("--trial", type=Path, required=True,
+                              help="a trial directory: its fault-trial.json, result.json and its "
+                                   "last attempt's trace")
+    plan_command.add_argument("--output", type=Path, required=True)
+    plan_command.add_argument("--siblings", action="store_true",
+                              help="plant each fault at all its siblings (a replay aid)")
 
     table = commands.add_parser("report")
     table.add_argument("--results", type=Path, default=settings.RESULTS)
@@ -173,8 +182,8 @@ def main(argv: list[str] | None = None) -> int:
         sequence = _selector(plan["faults"] if isinstance(plan, dict) else plan)
         print(json.dumps(replay_case(_row(args.checklist, args.case_id), args.results,
                                      sequence, args.repeats, args.name)), flush=True)
-    elif args.command == "siblings":
-        print(json.dumps(write_sibling_plan(args.trial, args.output)), flush=True)
+    elif args.command == "plan":
+        print(json.dumps(write_plan(args.trial, args.output, args.siblings)), flush=True)
     elif args.command == "report":
         rows = report.table(args.results, args.checklist)
         report.write_tsv(rows, args.output)

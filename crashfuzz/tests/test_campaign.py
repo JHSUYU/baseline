@@ -626,6 +626,30 @@ class CoverageIoTest(unittest.TestCase):
         self.assertTrue(all(p['exceptionClass'] == 'example.ConnectionLoss' for p in siblings))
         self.assertTrue(independent_reply_fanout(siblings))   # one call on distinct nodes: unordered
 
+    def test_a_lost_reply_is_named_by_its_shape_ordinal(self):
+        from crashfuzz.faults import shape_ordinal_plan
+        call = {'marker': 'FAULT:STATIC:IO', 'siteId': '<example.RpcServer: void call()>#u18',
+                'sourceKey': '<example.Service: example.Message callBlockingMethod()>',
+                'phase': 'after', 'occurrence': 'local/handler=2,queue=0/<example.RpcServer: void call()>#u18'}
+        disable = 'example.DisableTableResponse'
+        observed = [{**call, 'hitOrdinal': n, 'occurrenceOrdinal': n,
+                     'responseShape': disable if n == 15 else 'example.GetProcedureResultResponse'}
+                    for n in range(1, 17)]
+        fault = {**observed[14], 'exceptionClass': 'java.io.IOException'}
+        plan = shape_ordinal_plan([fault], observed)
+        self.assertEqual(plan[0]['shapeOrdinal'], 1)       # the first DisableTableResponse
+        # another run's polls shift the hit ordinals; the reply is the same
+        actual = {**fault, 'hitOrdinal': 17, 'occurrenceOrdinal': 17, 'shapeOrdinal': 1}
+        result = {'applied_count': 1, 'matched_count': 1, 'applied_points': [actual],
+                  'applied_fault_ids': [fingerprint(plan[0])]}
+        self.assertTrue(strict_injection(result, plan))
+        self.assertFalse(strict_injection({**result, 'applied_points': [{**actual, 'shapeOrdinal': 2}]},
+                                          plan))
+        event = {'schemaVersion': 3, 'event': 'FAULT_APPLIED', 'marker': call['marker'],
+                 'siteId': call['siteId'], 'occurrenceAddress': call['occurrence'], 'hitOrdinal': 17,
+                 'phase': 'after', 'responseShape': disable, 'shapeOrdinal': 1}
+        self.assertEqual(point_from_event(event)['shapeOrdinal'], 1)
+
     def test_strict_injection_accepts_only_complete_unordered_reply_fanout(self):
         reply = {**A, 'phase': 'after',
                  'responseShape': 'example.Reply|commands=[example.Update]'}

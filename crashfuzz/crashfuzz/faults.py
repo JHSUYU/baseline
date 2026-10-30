@@ -3,7 +3,9 @@
 A fault point is one observed execution of a selected I/O callsite:
 ``{marker, siteId, occurrence, hitOrdinal}`` plus optional ``phase``
 ("after" for a completed call whose reply is lost), ``occurrenceOrdinal``,
-``sourceKey`` (the I/O call it wraps), ``responseShape`` and
+``sourceKey`` (the I/O call it wraps), ``responseShape``, ``shapeOrdinal``
+(a lost reply's ordinal among the actor's replies of that shape at the site;
+when present it names the reply instead of the hit ordinals) and
 ``exceptionClass``. A sequence is an ordered list of fault points.
 """
 
@@ -59,6 +61,9 @@ def point_from_event(event: dict[str, Any]) -> Point | None:
     if (phase == "after" and isinstance(response_shape, str)
             and 0 < len(response_shape) <= 1024):
         point["responseShape"] = response_shape
+        shape_ordinal = event.get("shapeOrdinal")
+        if isinstance(shape_ordinal, int) and not isinstance(shape_ordinal, bool) and shape_ordinal > 0:
+            point["shapeOrdinal"] = shape_ordinal
     if event.get("exceptionClass"):
         point["exceptionClass"] = event["exceptionClass"]
     return point
@@ -170,6 +175,35 @@ def actor_family(point: Point) -> str:
     return re.sub(r"[0-9]+", "#", actor.rsplit("|", 1)[0])
 
 
+def shape_ordinal_plan(plan: Sequence, observed: Sequence) -> Sequence:
+    """The plan with each lost reply named by its shape ordinal in the detecting run.
+
+    A lost reply's hit ordinals count every call of its site; how many other
+    calls (polls, heartbeats) the site served first is timing. Its ordinal
+    among the actor's replies of the same shape (the first
+    DisableTableResponse) names the same reply in every run. Counted from the
+    run's observed points, in order.
+    """
+    result: Sequence = []
+    for fault in plan:
+        if fault.get("phase") != "after" or not fault.get("responseShape") or "shapeOrdinal" in fault:
+            result.append(fault)
+            continue
+        family = lambda point: (point.get("siteId"), point.get("sourceKey"), point.get("phase"),
+                                stable_occurrence(point["occurrence"]), point.get("responseShape"))
+        count, found = 0, None
+        for point in observed:
+            if family(point) != family(fault):
+                continue
+            count += 1
+            if (point.get("hitOrdinal") == fault.get("hitOrdinal") and
+                    point.get("occurrenceOrdinal") == fault.get("occurrenceOrdinal")):
+                found = count
+                break
+        result.append({**fault, "shapeOrdinal": found} if found else fault)
+    return result
+
+
 def sibling_plan(plan: Sequence, observed: Sequence) -> Sequence:
     """The plan with each fault planted at all of its siblings the detecting run observed.
 
@@ -211,6 +245,12 @@ def strict_injection(result: dict[str, Any], sequence: Sequence) -> bool:
         # A selector without occurrenceOrdinal matches regardless of it.
         if "occurrenceOrdinal" not in requested:
             normalized.pop("occurrenceOrdinal", None)
+        # A reply named by its shape ordinal matches whatever its hit ordinals were.
+        if "shapeOrdinal" in requested:
+            normalized.pop("hitOrdinal", None)
+            normalized.pop("occurrenceOrdinal", None)
+        else:
+            normalized.pop("shapeOrdinal", None)
         return normalized
 
     observed = result.get("applied_points", [])
