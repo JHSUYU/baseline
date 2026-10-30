@@ -207,6 +207,14 @@ class CoverageIoTest(unittest.TestCase):
         first = 'local/OverseerStateUpdate-72075349130084366-127.0.0.1:41011_solr-n_0000000000' + site
         second = 'local/OverseerStateUpdate-72075395483484162-127.0.0.1:36011_solr-n_0000000000' + site
         self.assertEqual(stable_occurrence(first), stable_occurrence(second))
+        # an unnamed thread's number is no role: Thread-189 and Thread-190 are one actor
+        site2 = '/<example.BackupSystemTable: void finish()>#u10'
+        self.assertEqual(stable_occurrence('local/Thread-189' + site2),
+                         stable_occurrence('local/Thread-190' + site2))
+        self.assertEqual(stable_occurrence('local/Thread-7|hdfs:dn:data1' + site2),
+                         'local/Thread-anonymous|hdfs:dn:data1' + site2)
+        self.assertNotEqual(stable_occurrence('local/MyThread-189' + site2),
+                            stable_occurrence('local/MyThread-190' + site2))
         # short ordinals stay names: two handlers are two actors
         self.assertNotEqual(stable_occurrence('local/handler-1' + site),
                             stable_occurrence('local/handler-2' + site))

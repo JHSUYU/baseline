@@ -25,7 +25,11 @@ final class OccurrenceIdentity {
                 .replaceAll("\\bport\\s+[0-9]{2,5}\\b", "port port")
                 // A run of ten or more digits is a per-run identifier (a ZooKeeper
                 // session id, a hash code, a timestamp), never a stable name.
-                .replaceAll("(?<![0-9])[0-9]{10,}(?![0-9])", "id");
+                .replaceAll("(?<![0-9])[0-9]{10,}(?![0-9])", "id")
+                // The JVM names an unnamed thread Thread-<n>, n counting every unnamed
+                // thread made before it: no role. Its calls of one site are told apart
+                // by their order (occurrenceOrdinal), as volatile pool threads are.
+                .replaceAll("^Thread-[0-9]+(?=\\||$)", "Thread-anonymous");
         return address.substring(0, nodeEnd + 1) + actor
                 + address.substring(siteStart);
     }
