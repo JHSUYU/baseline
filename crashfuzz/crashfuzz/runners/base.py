@@ -40,6 +40,7 @@ class Request:
     classes_dir: Path | None = None
     worker_id: int | None = None
     worker_count: int = 8
+    tree: Path | None = None        # a tree workload (crashfuzz.tree), else the release
 
 
 def parse(argv: list[str] | None, default_timeout: int) -> Request:
@@ -54,11 +55,13 @@ def parse(argv: list[str] | None, default_timeout: int) -> Request:
     parser.add_argument("--classes-dir", type=Path)
     parser.add_argument("--worker-id", type=int)
     parser.add_argument("--worker-count", type=int, default=8)
+    parser.add_argument("--tree", type=Path, help="a tree-workload.json to run instead")
     args = parser.parse_args(argv)
     return Request(args.case_id, args.test_class, args.test_method, args.output.resolve(),
                    args.static_selection, args.fault_trial, args.timeout,
                    args.classes_dir.resolve() if args.classes_dir else None,
-                   args.worker_id, args.worker_count)
+                   args.worker_id, args.worker_count,
+                   args.tree.resolve() if args.tree else None)
 
 
 def java(tool: str) -> str:
@@ -90,7 +93,11 @@ def fresh_scratch(output: Path, *subdirectories: str) -> Path:
 
 def compile_runner(source: str, classpath: str, destination: Path,
                    lock: Path | None = None) -> None:
-    """Compile a launcher into ``destination`` unless its class is current."""
+    """Compile a launcher into ``destination`` unless its class is current.
+
+    Runners on several nodes share ``settings.BUILD``, so the compile is
+    locked (``lock``, by default beside ``destination``).
+    """
     path = JAVA_SOURCES / (source + ".java")
     target = destination / (source + ".class")
 
@@ -101,8 +108,7 @@ def compile_runner(source: str, classpath: str, destination: Path,
                            check=True)
 
     if lock is None:
-        compile_if_stale()
-        return
+        lock = destination.parent / f".{destination.name}.lock"
     lock.parent.mkdir(parents=True, exist_ok=True)
     with lock.open("a+") as handle:
         fcntl.flock(handle, fcntl.LOCK_EX)

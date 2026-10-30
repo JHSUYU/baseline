@@ -1,0 +1,121 @@
+{
+ "case_id": "HBASE-20642",
+ "date": "2026-10-29",
+ "cluster": "liftlab",
+ "checklist": "data/old-bugs.json",
+ "runs": {
+  "run": {
+   "results_root": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/old-bugs",
+   "host": "lift09",
+   "command": "python3 -m crashfuzz --checklist data/old-bugs.json run --case-id HBASE-20642 --stop-at-candidate --max-trials 10000 --max-seconds 14400 --results /bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/old-bugs",
+   "status": "candidate_review",
+   "finished": true,
+   "cluster_test": "org.apache.hadoop.hbase.master.procedure.TestCausynthDisableRetryNonce#disableTwoTables",
+   "selection_profile": null,
+   "static_io_calls": 204,
+   "healthy_seconds": 26.967,
+   "healthy_target_reached": true,
+   "healthy_target_fatal_exceptions": 0,
+   "healthy_fault_points": 266,
+   "trials": 46,
+   "trial_statuses": {
+    "lost_target": 5,
+    "checked": 32,
+    "unmatched": 8,
+    "target_exception_candidate": 1
+   },
+   "junit_seconds": 2424.0,
+   "first_candidate_trial": 46,
+   "first_candidate_seconds": 2669.2,
+   "total_elapsed_seconds": 2670.356,
+   "candidates": 1,
+   "first_candidate": {
+    "trial": 46,
+    "status": "target_exception_candidate",
+    "exit": 1,
+    "timed_out": false,
+    "target_fatal_exceptions": 1,
+    "healthy_target_fatal_exceptions": 0,
+    "elapsed_seconds": 21.713,
+    "realized_faults": 1,
+    "strict_injection": true,
+    "result": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/old-bugs/HBASE-20642/campaign/HBASE-20642/trials/0046-877d5eab411e63eec049/result.json",
+    "plan": [
+     {
+      "exceptionClass": "java.io.IOException",
+      "hitOrdinal": 15,
+      "marker": "FAULT:STATIC:IO",
+      "occurrence": "local/RpcServer.default.FPBQ.Fifo.handler=2,queue=0,port=port/<org.apache.hadoop.hbase.ipc.RpcServer: org.apache.hadoop.hbase.util.Pair call(org.apache.hadoop.hbase.ipc.RpcCall,org.apache.hadoop.hbase.monitoring.MonitoredRPCHandler)>#u18",
+      "occurrenceOrdinal": 15,
+      "phase": "after",
+      "responseShape": "org.apache.hadoop.hbase.shaded.protobuf.generated.MasterProtos$DisableTableResponse",
+      "siteId": "<org.apache.hadoop.hbase.ipc.RpcServer: org.apache.hadoop.hbase.util.Pair call(org.apache.hadoop.hbase.ipc.RpcCall,org.apache.hadoop.hbase.monitoring.MonitoredRPCHandler)>#u18",
+      "sourceKey": "<org.apache.hbase.thirdparty.com.google.protobuf.BlockingService: org.apache.hbase.thirdparty.com.google.protobuf.Message callBlockingMethod(org.apache.hbase.thirdparty.com.google.protobuf.Descriptors$MethodDescriptor,org.apache.hbase.thirdparty.com.google.protobuf.RpcController,org.apache.hbase.thirdparty.com.google.protobuf.Message)>"
+     }
+    ]
+   },
+   "replays": [
+    {
+     "name": "liftlab-trial46",
+     "plan_file": "data/evidence/HBASE-20642/plan-liftlab-trial46.json",
+     "command": "python3 -m crashfuzz --checklist data/old-bugs.json replay --case-id HBASE-20642 --plan data/evidence/HBASE-20642/plan-liftlab-trial46.json --repeats 10 --name liftlab-trial46 --results /bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/old-bugs",
+     "k": 2,
+     "n": 10,
+     "strict": 2,
+     "statuses": [
+      "unmatched",
+      "unmatched",
+      "unmatched",
+      "unmatched",
+      "unmatched",
+      "unmatched",
+      "unmatched",
+      "target_exception_candidate",
+      "unmatched",
+      "target_exception_candidate"
+     ],
+     "root": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/old-bugs/HBASE-20642/replay-liftlab-trial46/HBASE-20642",
+     "agent": "build/agent-v5",
+     "identity_rules": "9cb09d6b + any trailing -<n> masked",
+     "kind": "exact plan",
+     "started": 1793335709.3271391
+    },
+    {
+     "name": "liftlab-trial46-shape",
+     "plan_file": "data/evidence/HBASE-20642/plan-liftlab-trial46-shape.json",
+     "command": "python3 -m crashfuzz --checklist data/old-bugs.json replay --case-id HBASE-20642 --plan data/evidence/HBASE-20642/plan-liftlab-trial46-shape.json --repeats 10 --name liftlab-trial46-shape --results /bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/old-bugs",
+     "k": 9,
+     "n": 10,
+     "strict": 9,
+     "statuses": [
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "unmatched",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate"
+     ],
+     "root": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/old-bugs/HBASE-20642/replay-liftlab-trial46-shape/HBASE-20642",
+     "agent": "build/agent-v6",
+     "identity_rules": "f43a2b7f + shape ordinals",
+     "kind": "shape-ordinal plan (general replay variant)",
+     "started": 1793337178.9290814
+    }
+   ],
+   "tree": "/bigtemp/vnr3ne/wt/bd-trees-1/hbase-bug-20642",
+   "tree_commit": "1ba966bb6ca149a4d7994be50965510db13a1d67",
+   "neutral_adapter_classes": [
+    "edu.uva.liftlab.graphchecker.runtime.MessageDoors",
+    "edu.uva.liftlab.graphchecker.runtime.MessageDoors$Inbound",
+    "edu.uva.liftlab.graphchecker.runtime.MessageDoors$Outbound",
+    "edu.uva.liftlab.graphchecker.runtime.Sessions"
+   ],
+   "symptom": "the point's own throw, AbstractStateMachineTableProcedure.preflightChecks:163 on the tree (TableNotEnabledException): \"Operation: DISABLE ... failed with TableNotEnabledException\"; fatal 1, healthy 0; JUnit fails",
+   "mechanism": "a lost DisableTable reply of the master's RpcServer; the client retries with a new nonce and preflightChecks of the retried DisableTableProcedure throws (GraphChecker's HBASE-20642 mechanism exactly)"
+  }
+ }
+}

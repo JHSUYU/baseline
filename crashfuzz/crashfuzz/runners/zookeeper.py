@@ -72,6 +72,8 @@ def run(request: Request) -> int:
     require_selection(request)
     suffix = request.case_id.rsplit("-", 1)[-1]
     worker_id = (request.worker_id if request.worker_id is not None else
+                 int(os.environ["CRASHFUZZ_WORKER_ID"]) % request.worker_count
+                 if os.environ.get("CRASHFUZZ_WORKER_ID", "").isdigit() else
                  int(suffix) % request.worker_count if suffix.isdigit() else 0)
     scratch = fresh_scratch(request.output, "temp")
     agent = require_agent()

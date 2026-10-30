@@ -1,0 +1,44 @@
+{
+ "case_id": "HDFS-14075",
+ "date": "2026-10-29",
+ "cluster": "liftlab",
+ "checklist": "data/old-bugs.json",
+ "runs": {
+  "run": {
+   "results_root": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/old-bugs",
+   "host": null,
+   "command": "python3 -m crashfuzz --checklist data/old-bugs.json run --case-id HDFS-14075 --stop-at-candidate --max-trials 10000 --max-seconds 14400 --results /bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/old-bugs",
+   "status": "budget_or_queue_complete",
+   "finished": true,
+   "cluster_test": "org.apache.hadoop.hdfs.server.namenode.TestCausynthRollSegmentFailure#testNextRollAfterFailedStartLogSegment",
+   "selection_profile": null,
+   "static_io_calls": 127,
+   "healthy_seconds": 13.193,
+   "healthy_target_reached": true,
+   "healthy_target_fatal_exceptions": 0,
+   "healthy_fault_points": 40,
+   "trials": 918,
+   "trial_statuses": {
+    "checked": 399,
+    "lost_target": 200,
+    "unmatched": 319
+   },
+   "junit_seconds": 14406.4,
+   "first_candidate_trial": null,
+   "first_candidate_seconds": null,
+   "total_elapsed_seconds": 17257.941,
+   "candidates": 0,
+   "first_candidate": null,
+   "replays": [],
+   "tree": "/bigtemp/vnr3ne/wt/bd-trees-1/hadoop-hdfs-bug-14075",
+   "tree_commit": "7e8681a724dbe19f4f6b3ca470c28a677029e107",
+   "neutral_adapter_classes": [
+    "org.apache.hadoop.ipc.CausynthMessagePropagation",
+    "org.apache.hadoop.ipc.CausynthMessagePropagation$Inbound",
+    "org.apache.hadoop.ipc.CausynthMessagePropagation$Outbound",
+    "org.apache.hadoop.ipc.CausynthSymbolicSource"
+   ],
+   "note": "not detected in budget (14406 JUnit s). GraphChecker's witness is a LOCAL_IO fault on roll 1's edits open inside the NameNode; CrashFuzz's I/O fault space did not drive the FSEditLog into the bad state that makes endCurrentLogSegment throw."
+  }
+ }
+}

@@ -16,10 +16,17 @@ class SystemSpec:
     timeout: int                    # one JUnit run, seconds
     analysis_jars: tuple[str, ...]  # under settings.DEPS
     rpc_mappings: tuple[str, ...] = field(default=())   # under settings.SYSTEM_FILES
+    heap: str = "3g"                # a tree workload's JVM heap (the release runners set their own)
 
     @property
     def source(self) -> Path:
         return settings.SOURCES / self.source_dir
+
+    def analysis_options(self) -> dict[str, Any]:
+        """The selector's bounds and RPC mappings, whatever code it analyses."""
+        return {"rpc_mapping_files": [str(settings.SYSTEM_FILES / path)
+                                      for path in self.rpc_mappings],
+                "max_methods": 400, "post_call_rpc_enabled": True}
 
     def analysis(self) -> dict[str, Any]:
         """The Soot selector's input for this system's binaries."""
@@ -30,9 +37,7 @@ class SystemSpec:
         if not jars or any(not jar.is_file() for jar in jars):
             raise FileNotFoundError(f"missing distribution jars for {self.name}: {jars}")
         return {"process_dirs": [str(jar) for jar in jars], "classpath": [],
-                "rpc_mapping_files": [str(settings.SYSTEM_FILES / path)
-                                      for path in self.rpc_mappings],
-                "max_methods": 400, "post_call_rpc_enabled": True}
+                **self.analysis_options()}
 
 
 _HADOOP = "hadoop-3.4.3/share/hadoop"
@@ -41,21 +46,23 @@ SYSTEMS = {
         "HDFS", "hadoop-3.4.3", 240,
         (f"{_HADOOP}/hdfs/hadoop-hdfs-3.4.3.jar", f"{_HADOOP}/hdfs/hadoop-hdfs-client-3.4.3.jar",
          f"{_HADOOP}/common/hadoop-common-3.4.3.jar"),
-        ("hdfs/communication-mappings.jsonl",)),
+        ("hdfs/communication-mappings.jsonl",), "3g"),
     "HBase": SystemSpec(
         "HBase", "hbase-2.6.6", 300,
         tuple(f"hbase-2.6.6/lib/hbase-{module}-2.6.6.jar" for module in
               ("client", "server", "common", "procedure", "zookeeper", "protocol",
-               "protocol-shaded", "replication", "master", "regionserver", "backup"))),
+               "protocol-shaded", "replication", "master", "regionserver", "backup")),
+        heap="4g"),
     "Solr": SystemSpec(
         "Solr", "solr-8.11.4", 600,
-        ("solr-8.11.4/dist/solr-core-8.11.4.jar", "solr-8.11.4/dist/solr-solrj-8.11.4.jar")),
+        ("solr-8.11.4/dist/solr-core-8.11.4.jar", "solr-8.11.4/dist/solr-solrj-8.11.4.jar"),
+        heap="3g"),
     "ZooKeeper": SystemSpec(
         "ZooKeeper", "zookeeper-3.8.7", 180,
         ("apache-zookeeper-3.8.7-bin/lib/zookeeper-3.8.7.jar",
          # the election recipe, built in the source tree (the binary release has no recipes)
          "sources/zookeeper-3.8.7/zookeeper-recipes/zookeeper-recipes-election/target/"
-         "zookeeper-recipes-election-3.8.7.jar")),
+         "zookeeper-recipes-election-3.8.7.jar"), heap="1g"),
 }
 
 

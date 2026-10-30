@@ -1,0 +1,454 @@
+{
+ "schema_version": 1,
+ "about": "GraphChecker's buggy-detect cases: old bugs put back by hand on today's trees (fork branches graphchecker/<sys>-bug-<jira>), each with the workload GraphChecker used (the case's test_class#test_method on the bug's tree) and the point's own declared throw as the oracle, at its line on the bug tree. Each row's tree is a built checkout (crashfuzz/tree.py); jvm_properties are GraphChecker's workload JVM properties for the system (experiments/<sys>/system.sh, system_jvm_properties), without GraphChecker's own recording properties. A row's tree path is relative to CRASHFUZZ_TREES (default /bigtemp/vnr3ne/wt/bd-trees-1).",
+ "not_run": [
+  {
+   "case_id": "HBASE-28533",
+   "graphchecker_case": "hbase-buggy-28533",
+   "point": "hbase-adhoc-15",
+   "tree": {
+    "path": "hbase-bug-28533",
+    "branch": "graphchecker/hbase-bug-28533"
+   },
+   "reason": "no workload: GraphChecker found the point's throw (MergeTableRegionsProcedure.prepareMergeRegion :507) unreachable on today's code -- a merge after the failed split is refused earlier, in the procedure's constructor (checkRegionsToMerge -> checkOnline, another throw), so GraphChecker declared no case and no test; there is no workload to run CrashFuzz on."
+  },
+  {
+   "case_id": "SOLR-6763",
+   "graphchecker_case": "solr-buggy-6763",
+   "point": "solr-adhoc-38",
+   "reason": "no tree: GraphChecker found the throw not reachable on today's code (masked by SOLR-7844) and put the bug back on no branch."
+  }
+ ],
+ "rows": [
+  {
+   "case_id": "HDFS-11741",
+   "system": "HDFS",
+   "selection_group": "old_bug",
+   "cluster_test": "org.apache.hadoop.hdfs.server.balancer.TestCausynthExpiredBalancerKey#testBlockMoveWithCachedKeyAfterRotations",
+   "check_code": "if (key == null) {\nthrow new @CausynthExceptionTarget(\"hdfs-17897,hdfs-17899-bug1,\"\n+ \"hdfs-17899-bug2,hdfs-17899-bug3,hdfs-17967-pathA,\"\n+ \"hdfs-17967-pathB,hdfs-17967-pathC,hdfs-adhoc-11,\"\n+ \"hdfs-buggy-11741\") InvalidEncryptionKeyException(\n\"Can't re-compute encryption key\"\n+ \" for nonce, since the required block key (keyID=\" + keyId\n+ \") doesn't exist. Current key: \" + currentKey.getKeyId());",
+   "exact_check_location": {
+    "check_start_line": 583,
+    "enclosing_function": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrieveDataEncryptionKey(int,byte[])",
+    "file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+    "selected_line": 590,
+    "site_id": "<org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager: byte[] retrieveDataEncryptionKey(int,byte[])>#L590"
+   },
+   "tree": {
+    "path": "hadoop-hdfs-bug-11741",
+    "branch": "graphchecker/hdfs-bug-11741",
+    "commit": "c0af4cbcfe5211f838aa5e149b15d2a846e3da27",
+    "jvm_properties": [
+     "-Dtest.build.data={data}",
+     "-Dtest.cache.data={test_classes}"
+    ]
+   },
+   "graphchecker_case": "hdfs-buggy-11741",
+   "point": "hdfs-adhoc-11",
+   "checklist_row": "HDFS-11"
+  },
+  {
+   "case_id": "HDFS-17383",
+   "system": "HDFS",
+   "selection_group": "old_bug",
+   "cluster_test": "org.apache.hadoop.hdfs.server.datanode.TestCausynthStandbyCurrentKey#testTransferAfterStandbyKeyUpdate",
+   "check_code": "if (key == null) {\nthrow new @CausynthExceptionTarget(\"hdfs-adhoc-12,hdfs-buggy-17383\")\nInvalidToken(\"Can't re-compute password for \"\n+ identifier + \", since the required block key (keyID=\"\n+ identifier.getKeyId() + \") doesn't exist.\");",
+   "exact_check_location": {
+    "check_start_line": 539,
+    "enclosing_function": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrievePassword(org.apache.hadoop.hdfs.security.token.block.BlockTokenIdentifier)",
+    "file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+    "selected_line": 543,
+    "site_id": "<org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager: byte[] retrievePassword(org.apache.hadoop.hdfs.security.token.block.BlockTokenIdentifier)>#L543"
+   },
+   "tree": {
+    "path": "hadoop-hdfs-bug-17383",
+    "branch": "graphchecker/hdfs-bug-17383",
+    "commit": "1e519fa598a148136ebbf09c1b2ae9aea1a74f9a",
+    "jvm_properties": [
+     "-Dtest.build.data={data}",
+     "-Dtest.cache.data={test_classes}"
+    ]
+   },
+   "graphchecker_case": "hdfs-buggy-17383",
+   "point": "hdfs-adhoc-12",
+   "checklist_row": "HDFS-12"
+  },
+  {
+   "case_id": "HDFS-12931",
+   "system": "HDFS",
+   "selection_group": "old_bug",
+   "cluster_test": "org.apache.hadoop.hdfs.TestCausynthReplicatedChecksum#testStaleEncryptionKeyFailsReplicatedChecksum",
+   "check_code": "if (key == null) {\nthrow new @CausynthExceptionTarget(\"hdfs-17897,hdfs-17899-bug1,\"\n+ \"hdfs-17899-bug2,hdfs-17899-bug3,hdfs-17967-pathA,\"\n+ \"hdfs-17967-pathB,hdfs-17967-pathC,hdfs-adhoc-11,\"\n+ \"hdfs-buggy-12931\") InvalidEncryptionKeyException(\n\"Can't re-compute encryption key\"\n+ \" for nonce, since the required block key (keyID=\" + keyId\n+ \") doesn't exist. Current key: \" + currentKey.getKeyId());",
+   "exact_check_location": {
+    "check_start_line": 583,
+    "enclosing_function": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrieveDataEncryptionKey(int,byte[])",
+    "file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+    "selected_line": 590,
+    "site_id": "<org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager: byte[] retrieveDataEncryptionKey(int,byte[])>#L590"
+   },
+   "tree": {
+    "path": "hadoop-hdfs-bug-12931",
+    "branch": "graphchecker/hdfs-bug-12931",
+    "commit": "d9fde9f94807439adf903584161eebf358c8f6a3",
+    "jvm_properties": [
+     "-Dtest.build.data={data}",
+     "-Dtest.cache.data={test_classes}"
+    ]
+   },
+   "graphchecker_case": "hdfs-buggy-12931",
+   "point": "hdfs-adhoc-11",
+   "checklist_row": "HDFS-11"
+  },
+  {
+   "case_id": "HDFS-5766",
+   "system": "HDFS",
+   "selection_group": "old_bug",
+   "cluster_test": "org.apache.hadoop.hdfs.TestCausynthEncryptedPread#testStaleEncryptionKeyFailsPread",
+   "check_code": "if (key == null) {\nthrow new @CausynthExceptionTarget(\"hdfs-17897,hdfs-17899-bug1,\"\n+ \"hdfs-17899-bug2,hdfs-17899-bug3,hdfs-17967-pathA,\"\n+ \"hdfs-17967-pathB,hdfs-17967-pathC,hdfs-adhoc-11,\"\n+ \"hdfs-buggy-5766\") InvalidEncryptionKeyException(\n\"Can't re-compute encryption key\"\n+ \" for nonce, since the required block key (keyID=\" + keyId\n+ \") doesn't exist. Current key: \" + currentKey.getKeyId());",
+   "exact_check_location": {
+    "check_start_line": 583,
+    "enclosing_function": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrieveDataEncryptionKey(int,byte[])",
+    "file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+    "selected_line": 590,
+    "site_id": "<org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager: byte[] retrieveDataEncryptionKey(int,byte[])>#L590"
+   },
+   "tree": {
+    "path": "hadoop-hdfs-bug-5766",
+    "branch": "graphchecker/hdfs-bug-5766",
+    "commit": "a8f16edc154c1a2d148de1f216dfc66f309c6335",
+    "jvm_properties": [
+     "-Dtest.build.data={data}",
+     "-Dtest.cache.data={test_classes}"
+    ]
+   },
+   "graphchecker_case": "hdfs-buggy-5766",
+   "point": "hdfs-adhoc-11",
+   "checklist_row": "HDFS-11"
+  },
+  {
+   "case_id": "HDFS-10609",
+   "system": "HDFS",
+   "selection_group": "old_bug",
+   "cluster_test": "org.apache.hadoop.hdfs.TestCausynthEncryptedAppendTransfer#testStaleEncryptionKeyFailsAppendTransfer",
+   "check_code": "if (key == null) {\nthrow new @CausynthExceptionTarget(\"hdfs-17897,hdfs-17899-bug1,\"\n+ \"hdfs-17899-bug2,hdfs-17899-bug3,hdfs-17967-pathA,\"\n+ \"hdfs-17967-pathB,hdfs-17967-pathC,hdfs-adhoc-11,\"\n+ \"hdfs-buggy-10609\") InvalidEncryptionKeyException(\n\"Can't re-compute encryption key\"\n+ \" for nonce, since the required block key (keyID=\" + keyId\n+ \") doesn't exist. Current key: \" + currentKey.getKeyId());",
+   "exact_check_location": {
+    "check_start_line": 583,
+    "enclosing_function": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrieveDataEncryptionKey(int,byte[])",
+    "file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+    "selected_line": 590,
+    "site_id": "<org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager: byte[] retrieveDataEncryptionKey(int,byte[])>#L590"
+   },
+   "tree": {
+    "path": "hadoop-hdfs-bug-10609",
+    "branch": "graphchecker/hdfs-bug-10609",
+    "commit": "bec4a7e0e52dc2c1828a5bf5c21459cc1932872f",
+    "jvm_properties": [
+     "-Dtest.build.data={data}",
+     "-Dtest.cache.data={test_classes}"
+    ]
+   },
+   "graphchecker_case": "hdfs-buggy-10609",
+   "point": "hdfs-adhoc-11",
+   "checklist_row": "HDFS-11"
+  },
+  {
+   "case_id": "HDFS-14075",
+   "system": "HDFS",
+   "selection_group": "old_bug",
+   "cluster_test": "org.apache.hadoop.hdfs.server.namenode.TestCausynthRollSegmentFailure#testNextRollAfterFailedStartLogSegment",
+   "check_code": "if (!isSegmentOpen()) {\nthrow new @CausynthExceptionTarget(\"hdfs-adhoc-45,hdfs-buggy-14075\") IllegalStateException(\nString.format(\"Bad state: %s\", state));",
+   "exact_check_location": {
+    "check_start_line": 1465,
+    "enclosing_function": "org.apache.hadoop.hdfs.server.namenode.FSEditLog.endCurrentLogSegment(boolean)",
+    "file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLog.java",
+    "selected_line": 1467,
+    "site_id": "<org.apache.hadoop.hdfs.server.namenode.FSEditLog: void endCurrentLogSegment(boolean)>#L1467"
+   },
+   "tree": {
+    "path": "hadoop-hdfs-bug-14075",
+    "branch": "graphchecker/hdfs-bug-14075",
+    "commit": "7e8681a724dbe19f4f6b3ca470c28a677029e107",
+    "jvm_properties": [
+     "-Dtest.build.data={data}",
+     "-Dtest.cache.data={test_classes}"
+    ]
+   },
+   "graphchecker_case": "hdfs-buggy-14075",
+   "point": "hdfs-adhoc-45",
+   "checklist_row": "HDFS-45"
+  },
+  {
+   "case_id": "HDFS-14311",
+   "system": "HDFS",
+   "selection_group": "old_bug",
+   "cluster_test": "org.apache.hadoop.hdfs.TestDFSUpgrade#testParallelVolumeUpgrade",
+   "check_code": "if (this.layoutVersion > DataNodeLayoutVersion.getCurrentLayoutVersion()\n|| this.cTime < nsInfo.getCTime()) {\ndoUpgrade(sd, nsInfo, callables, conf); // upgrade\nreturn true;\n}\n// layoutVersion == LAYOUT_VERSION && this.cTime > nsInfo.cTime\n// must shutdown\nthrow new @CausynthExceptionTarget(\"hdfs-adhoc-24,hdfs-buggy-14311\")\nIOException(\"Datanode state: LV = \" + this.getLayoutVersion()\n+ \" CTime = \" + this.getCTime()\n+ \" is newer than the namespace state: LV = \"\n+ nsInfo.getLayoutVersion() + \" CTime = \" + nsInfo.getCTime());",
+   "exact_check_location": {
+    "check_start_line": 444,
+    "enclosing_function": "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,org.apache.hadoop.hdfs.server.common.HdfsServerConstants$StartupOption,java.util.List,org.apache.hadoop.conf.Configuration)",
+    "file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+    "selected_line": 455,
+    "site_id": "<org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage: boolean doTransition(org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,org.apache.hadoop.hdfs.server.common.HdfsServerConstants$StartupOption,java.util.List,org.apache.hadoop.conf.Configuration)>#L455"
+   },
+   "tree": {
+    "path": "hadoop-hdfs-bug-14311",
+    "branch": "graphchecker/hdfs-bug-14311",
+    "commit": "be29cd3c07456bc915d0f8f317f7034a210641a3",
+    "jvm_properties": [
+     "-Dtest.build.data={data}",
+     "-Dtest.cache.data={test_classes}",
+     "-Dcausynth.cluster.automatic=true"
+    ]
+   },
+   "graphchecker_case": "hdfs-buggy-14311",
+   "point": "hdfs-adhoc-24",
+   "checklist_row": "HDFS-24"
+  },
+  {
+   "case_id": "HBASE-15039",
+   "system": "HBase",
+   "selection_group": "old_bug",
+   "cluster_test": "org.apache.hadoop.hbase.security.token.TestCausynthTokenKeyWatch#theOtherServerValidatesATokenOfANewKey",
+   "check_code": "if (masterKey == null) {\nthrow new @edu.uva.liftlab.graphchecker.annotation.CausynthExceptionTarget(\"hbase-adhoc-34,hbase-buggy-15039\") InvalidToken(\"Unknown master key for token (id=\" + identifier.getKeyId() + \")\");",
+   "exact_check_location": {
+    "check_start_line": 138,
+    "enclosing_function": "org.apache.hadoop.hbase.security.token.AuthenticationTokenSecretManager.retrievePassword(org.apache.hadoop.hbase.security.token.AuthenticationTokenIdentifier)",
+    "file": "hbase-server/src/main/java/org/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager.java",
+    "selected_line": 139,
+    "site_id": "<org.apache.hadoop.hbase.security.token.AuthenticationTokenSecretManager: byte[] retrievePassword(org.apache.hadoop.hbase.security.token.AuthenticationTokenIdentifier)>#L139"
+   },
+   "tree": {
+    "path": "hbase-bug-15039",
+    "branch": "graphchecker/hbase-bug-15039",
+    "commit": "c2cecb37566a44b109d2e4dd604ce07586c0dc37",
+    "jvm_properties": [
+     "-Dtest.build.data.basedirectory={data}",
+     "-Djava.net.preferIPv4Stack=true",
+     "-Dio.netty.eventLoopThreads=3",
+     "-Djava.security.egd=file:/dev/./urandom",
+     "-Dcausynth.cluster.automatic=true"
+    ]
+   },
+   "graphchecker_case": "hbase-buggy-15039",
+   "point": "hbase-adhoc-34",
+   "checklist_row": "HBASE-34"
+  },
+  {
+   "case_id": "HBASE-20642",
+   "system": "HBase",
+   "selection_group": "old_bug",
+   "cluster_test": "org.apache.hadoop.hbase.master.procedure.TestCausynthDisableRetryNonce#disableTwoTables",
+   "check_code": "if (!ts.isEnabledOrEnabling()) {\nthrow new @edu.uva.liftlab.graphchecker.annotation.CausynthExceptionTarget(\"hbase-adhoc-04,hbase-buggy-20642\") TableNotEnabledException(tn);",
+   "exact_check_location": {
+    "check_start_line": 162,
+    "enclosing_function": "org.apache.hadoop.hbase.master.procedure.AbstractStateMachineTableProcedure.preflightChecks(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv,java.lang.Boolean)",
+    "file": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/procedure/AbstractStateMachineTableProcedure.java",
+    "selected_line": 163,
+    "site_id": "<org.apache.hadoop.hbase.master.procedure.AbstractStateMachineTableProcedure: void preflightChecks(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv,java.lang.Boolean)>#L163"
+   },
+   "tree": {
+    "path": "hbase-bug-20642",
+    "branch": "graphchecker/hbase-bug-20642",
+    "commit": "1ba966bb6ca149a4d7994be50965510db13a1d67",
+    "jvm_properties": [
+     "-Dtest.build.data.basedirectory={data}",
+     "-Djava.net.preferIPv4Stack=true",
+     "-Dio.netty.eventLoopThreads=3",
+     "-Djava.security.egd=file:/dev/./urandom",
+     "-Dcausynth.cluster.automatic=true"
+    ]
+   },
+   "graphchecker_case": "hbase-buggy-20642",
+   "point": "hbase-adhoc-04",
+   "checklist_row": "HBASE-04"
+  },
+  {
+   "case_id": "ZOOKEEPER-710",
+   "system": "ZooKeeper",
+   "selection_group": "old_bug",
+   "cluster_test": "org.apache.zookeeper.test.CausynthSessionMoved710Test#aMovedConnectionKeepsThrowing",
+   "check_code": "} else if (session.owner != owner) {\nthrow new KeeperException.@edu.uva.liftlab.graphchecker.annotation.CausynthExceptionTarget(\"zk-adhoc-02,zk-buggy-710\") SessionMovedException();",
+   "exact_check_location": {
+    "check_start_line": 366,
+    "enclosing_function": "org.apache.zookeeper.server.SessionTrackerImpl.checkSession(long,java.lang.Object)",
+    "file": "zookeeper-server/src/main/java/org/apache/zookeeper/server/SessionTrackerImpl.java",
+    "selected_line": 367,
+    "site_id": "<org.apache.zookeeper.server.SessionTrackerImpl: void checkSession(long,java.lang.Object)>#L367"
+   },
+   "tree": {
+    "path": "zookeeper-bug-710",
+    "branch": "graphchecker/zk-bug-710",
+    "commit": "4260614d255dedc2793ed50b1cf3750ab76b36ef",
+    "jvm_properties": [
+     "-Dbuild.test.dir={data}",
+     "-Dzookeeper.DigestAuthenticationProvider.superDigest=super:D/InIHSb7yEEbrWz8b9l71RjZJU=",
+     "-Dlogback.configurationFile={systems}/zookeeper/logback.xml",
+     "-Dcausynth.cluster.automatic=true",
+     "-Dzookeeper.commitProcessor.numWorkerThreads=1",
+     "-Dzookeeper.snapCount=1000000",
+     "-Dzookeeper.nio.numWorkerThreads=0",
+     "-Dzookeeper.junit.threadid={worker}",
+     "-Dtest.junit.threads={workers}"
+    ]
+   },
+   "graphchecker_case": "zk-buggy-710",
+   "point": "zk-adhoc-02",
+   "checklist_row": "ZOOKEEPER-02"
+  },
+  {
+   "case_id": "ZOOKEEPER-2886",
+   "system": "ZooKeeper",
+   "selection_group": "old_bug",
+   "cluster_test": "org.apache.zookeeper.test.CausynthSessionMoved2886Test#aMovedMultiOnlyConnectionKeepsThrowing",
+   "check_code": "} else if (session.owner != owner) {\nthrow new KeeperException.@edu.uva.liftlab.graphchecker.annotation.CausynthExceptionTarget(\"zk-adhoc-02,zk-buggy-2886\") SessionMovedException();",
+   "exact_check_location": {
+    "check_start_line": 366,
+    "enclosing_function": "org.apache.zookeeper.server.SessionTrackerImpl.checkSession(long,java.lang.Object)",
+    "file": "zookeeper-server/src/main/java/org/apache/zookeeper/server/SessionTrackerImpl.java",
+    "selected_line": 367,
+    "site_id": "<org.apache.zookeeper.server.SessionTrackerImpl: void checkSession(long,java.lang.Object)>#L367"
+   },
+   "tree": {
+    "path": "zookeeper-bug-2886",
+    "branch": "graphchecker/zk-bug-2886",
+    "commit": "b8b7149f44827986c15388c263314942bae643a1",
+    "jvm_properties": [
+     "-Dbuild.test.dir={data}",
+     "-Dzookeeper.DigestAuthenticationProvider.superDigest=super:D/InIHSb7yEEbrWz8b9l71RjZJU=",
+     "-Dlogback.configurationFile={systems}/zookeeper/logback.xml",
+     "-Dcausynth.cluster.automatic=true",
+     "-Dzookeeper.commitProcessor.numWorkerThreads=1",
+     "-Dzookeeper.snapCount=1000000",
+     "-Dzookeeper.nio.numWorkerThreads=0",
+     "-Dzookeeper.junit.threadid={worker}",
+     "-Dtest.junit.threads={workers}"
+    ]
+   },
+   "graphchecker_case": "zk-buggy-2886",
+   "point": "zk-adhoc-02",
+   "checklist_row": "ZOOKEEPER-02"
+  },
+  {
+   "case_id": "SOLR-9440",
+   "system": "Solr",
+   "selection_group": "old_bug",
+   "cluster_test": "org.apache.solr.cloud.TestCausynthForceLeaderStaleView#forceLeaderOnAWatchingNode",
+   "check_code": "if (leader != null && leader.getState() == State.ACTIVE) {\nthrow new @edu.uva.liftlab.graphchecker.annotation.CausynthExceptionTarget(\"solr-adhoc-31,solr-buggy-9440\") SolrException(ErrorCode.SERVER_ERROR,",
+   "exact_check_location": {
+    "check_start_line": 1476,
+    "enclosing_function": "org.apache.solr.handler.admin.CollectionsHandler.forceLeaderElection(org.apache.solr.request.SolrQueryRequest,org.apache.solr.handler.admin.CollectionsHandler)",
+    "file": "solr/core/src/java/org/apache/solr/handler/admin/CollectionsHandler.java",
+    "selected_line": 1477,
+    "site_id": "<org.apache.solr.handler.admin.CollectionsHandler: void forceLeaderElection(org.apache.solr.request.SolrQueryRequest,org.apache.solr.handler.admin.CollectionsHandler)>#L1477"
+   },
+   "tree": {
+    "path": "solr-bug-9440",
+    "branch": "graphchecker/solr-bug-9440",
+    "commit": "1e7324c4613968fb8d0deab892d896499e83767f",
+    "jvm_properties": [
+     "-DtempDir={tmp}",
+     "-Dtests.seed=F0993D5343E20BA4",
+     "-Dtests.src.home={tree}/solr/core",
+     "-Dcommon.dir={tree}/lucene",
+     "-Dtests.asserts=true",
+     "-Dtests.slow=true",
+     "-Dtests.nightly=false",
+     "-Dtests.badapples=true",
+     "-Dtests.awaitsfix=true",
+     "-Dtests.timeoutSuite=86400000",
+     "-Dtests.timeout=86400000",
+     "-Djetty.testMode=1",
+     "-Djetty.insecurerandom=1",
+     "-Dsolr.directoryFactory=org.apache.solr.core.MockDirectoryFactory",
+     "-Djdk.map.althashing.threshold=0",
+     "-Djava.security.egd=file:/dev/./urandom",
+     "-Dcausynth.cluster.automatic=true"
+    ]
+   },
+   "graphchecker_case": "solr-buggy-9440",
+   "point": "solr-adhoc-31",
+   "checklist_row": "SOLR-31"
+  },
+  {
+   "case_id": "SOLR-6101",
+   "system": "Solr",
+   "selection_group": "old_bug",
+   "cluster_test": "org.apache.solr.cloud.TestCausynthSplitShardLegacy#splitUnderLegacyCloud",
+   "check_code": "if (cd.getCloudDescriptor().getCoreNodeName() == null) {\nthrow new @edu.uva.liftlab.graphchecker.annotation.CausynthExceptionTarget(\"solr-adhoc-19,solr-buggy-6101\") SolrException(ErrorCode.SERVER_ERROR, \"non legacy mode coreNodeName missing \" + parameters.toString());",
+   "exact_check_location": {
+    "check_start_line": 1329,
+    "enclosing_function": "org.apache.solr.core.CoreContainer.create(java.lang.String,java.nio.file.Path,java.util.Map,boolean)",
+    "file": "solr/core/src/java/org/apache/solr/core/CoreContainer.java",
+    "selected_line": 1330,
+    "site_id": "<org.apache.solr.core.CoreContainer: org.apache.solr.core.SolrCore create(java.lang.String,java.nio.file.Path,java.util.Map,boolean)>#L1330"
+   },
+   "tree": {
+    "path": "solr-bug-6101",
+    "branch": "graphchecker/solr-bug-6101",
+    "commit": "040ae6d4c6f0f56139c1b2a8b1073d2e824ded14",
+    "jvm_properties": [
+     "-DtempDir={tmp}",
+     "-Dtests.seed=F0993D5343E20BA4",
+     "-Dtests.src.home={tree}/solr/core",
+     "-Dcommon.dir={tree}/lucene",
+     "-Dtests.asserts=true",
+     "-Dtests.slow=true",
+     "-Dtests.nightly=false",
+     "-Dtests.badapples=true",
+     "-Dtests.awaitsfix=true",
+     "-Dtests.timeoutSuite=86400000",
+     "-Dtests.timeout=86400000",
+     "-Djetty.testMode=1",
+     "-Djetty.insecurerandom=1",
+     "-Dsolr.directoryFactory=org.apache.solr.core.MockDirectoryFactory",
+     "-Djdk.map.althashing.threshold=0",
+     "-Djava.security.egd=file:/dev/./urandom",
+     "-Dcausynth.cluster.automatic=true"
+    ]
+   },
+   "graphchecker_case": "solr-buggy-6101",
+   "point": "solr-adhoc-19",
+   "checklist_row": "SOLR-19"
+  },
+  {
+   "case_id": "SOLR-6197",
+   "system": "Solr",
+   "selection_group": "old_bug",
+   "cluster_test": "org.apache.solr.cloud.TestCausynthMigrateLegacy#migrateUnderLegacyCloud",
+   "check_code": "if (cd.getCloudDescriptor().getCoreNodeName() == null) {\nthrow new @edu.uva.liftlab.graphchecker.annotation.CausynthExceptionTarget(\"solr-adhoc-19,solr-buggy-6197\") SolrException(ErrorCode.SERVER_ERROR, \"non legacy mode coreNodeName missing \" + parameters.toString());",
+   "exact_check_location": {
+    "check_start_line": 1329,
+    "enclosing_function": "org.apache.solr.core.CoreContainer.create(java.lang.String,java.nio.file.Path,java.util.Map,boolean)",
+    "file": "solr/core/src/java/org/apache/solr/core/CoreContainer.java",
+    "selected_line": 1330,
+    "site_id": "<org.apache.solr.core.CoreContainer: org.apache.solr.core.SolrCore create(java.lang.String,java.nio.file.Path,java.util.Map,boolean)>#L1330"
+   },
+   "tree": {
+    "path": "solr-bug-6197",
+    "branch": "graphchecker/solr-bug-6197",
+    "commit": "f5d86cbd8a1f24b36ca5e5619fa6a8298952f4ce",
+    "jvm_properties": [
+     "-DtempDir={tmp}",
+     "-Dtests.seed=F0993D5343E20BA4",
+     "-Dtests.src.home={tree}/solr/core",
+     "-Dcommon.dir={tree}/lucene",
+     "-Dtests.asserts=true",
+     "-Dtests.slow=true",
+     "-Dtests.nightly=false",
+     "-Dtests.badapples=true",
+     "-Dtests.awaitsfix=true",
+     "-Dtests.timeoutSuite=86400000",
+     "-Dtests.timeout=86400000",
+     "-Djetty.testMode=1",
+     "-Djetty.insecurerandom=1",
+     "-Dsolr.directoryFactory=org.apache.solr.core.MockDirectoryFactory",
+     "-Djdk.map.althashing.threshold=0",
+     "-Djava.security.egd=file:/dev/./urandom",
+     "-Dcausynth.cluster.automatic=true"
+    ]
+   },
+   "graphchecker_case": "solr-buggy-6197",
+   "point": "solr-adhoc-19",
+   "checklist_row": "SOLR-19"
+  }
+ ]
+}

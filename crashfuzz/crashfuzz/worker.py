@@ -1,8 +1,9 @@
 """One checklist case end to end: selection, healthy run, campaign.
 
 For each case the worker resolves the cluster JUnit and the target's
-exception type from the checklist and the release source, asks Soot for a
-selection, and runs the unchanged JUnit once under the agent. When that
+exception type from the checklist and the release source (or the row's
+built ``tree``, ``crashfuzz.tree``), asks Soot for a selection, and runs the
+unchanged JUnit once under the agent. When that
 healthy run observes no selected I/O, the selection widens (callers 6 deep,
 then 800 methods) and the JUnit runs again. The campaign then fuzzes from
 the healthy trace. Every step is resumable from ``<results>/<case>/``.
@@ -23,6 +24,7 @@ from pathlib import Path
 from typing import Any
 
 from . import settings
+from . import tree as trees
 from .campaign import campaign, replay
 from .faults import Sequence, point_from_event
 from .selection import select_case
@@ -74,7 +76,7 @@ def test_spec(row: dict[str, Any]) -> tuple[str, str]:
     if spec.name != "HDFS":
         method = re.sub(r"\[\d+\]$|\(.*\)$", "", method)
     if "." not in clazz:
-        matches = sorted(spec.source.rglob(clazz + ".java"))
+        matches = sorted(trees.source_root(row, spec.source).rglob(clazz + ".java"))
         if len(matches) != 1:
             raise ValueError(f"ambiguous test class {clazz}: {len(matches)} source matches")
         package = re.search(r"^package\s+([\w.]+)\s*;",
@@ -96,8 +98,10 @@ def exception_type(row: dict[str, Any]) -> str | None:
     None marks a state guard rather than a throw site: it still gives reach
     and coverage feedback, but no exception oracle.
     """
-    code = row.get("check_code", "")
-    source = system_of(row["system"]).source / row["exact_check_location"]["file"]
+    # A type annotation on the allocation (``throw new @Marker("x") E(...)``) is not the type.
+    code = re.sub(r"@[\w.]+(\s*\((?:[^()]|\([^()]*\))*\))?\s*", "", row.get("check_code", ""))
+    source = (trees.source_root(row, system_of(row["system"]).source) /
+              row["exact_check_location"]["file"])
     text = source.read_text(errors="replace") if source.is_file() else ""
     match = re.search(r"throw\s+new\s+([\w.]+)\s*\(", code)
     if not match:
@@ -189,12 +193,16 @@ def _resolve_class(name: str, text: str) -> str | None:
 # --- the healthy run ------------------------------------------------------------
 
 def runner_command(spec: SystemSpec, case_id: str, clazz: str, method: str, output: str,
-                   selection: Path, classes_dir: Path | None = None) -> list[str]:
+                   selection: Path, classes_dir: Path | None = None,
+                   tree: Path | None = None, timeout: int | None = None) -> list[str]:
     command = [sys.executable, "-m", "crashfuzz.runners", spec.name, "--case-id", case_id,
                "--test-class", clazz, "--test-method", method, "--output", output,
-               "--static-selection", str(selection), "--timeout", str(spec.timeout)]
+               "--static-selection", str(selection),
+               "--timeout", str(timeout or spec.timeout)]
     if classes_dir is not None:
         command += ["--classes-dir", str(classes_dir)]
+    if tree is not None:
+        command += ["--tree", str(tree)]
     return command
 
 
@@ -288,8 +296,22 @@ def _prepare(row: dict[str, Any], base: Path, summary: dict[str, Any], summary_p
     # A checklist site is a Soot unit (#u) or a source line (#L) of the method.
     target = location["site_id"].split("#", 1)[0]
     exc_type = exception_type(row)
+    timeout = int(row.get("timeout") or spec.timeout)
+    workload = None
+    if trees.tree_of(row) is not None:
+        # A built source tree: its own test run's classpath, its classes for Soot.
+        workload, workload_path = trees.prepare(row, clazz, method, spec.analysis_jars,
+                                                spec.heap, base)
+        analysis = trees.analysis(workload, spec.analysis_options())
+        summary.update(tree=workload["tree"], tree_commit=workload["commit"],
+                       tree_workload=str(workload_path),
+                       neutral_adapter_classes=workload["adapter"]["classes"])
     pinned = None if refresh_selection else live_selection_artifact(base, cid, target)
-    selection = select_case(target, location, None if pinned else spec.analysis(), base,
+
+    def width(overrides: dict[str, Any]) -> dict[str, Any]:
+        return {**(analysis if workload else spec.analysis()), **overrides}
+
+    selection = select_case(target, location, None if pinned else width({}), base,
                             artifact=pinned)
     exc_type = exc_type or selected_exception_type(selection, location)
     summary.update(status="healthy", test_class=clazz, test_method=method,
@@ -303,7 +325,7 @@ def _prepare(row: dict[str, Any], base: Path, summary: dict[str, Any], summary_p
         if index > start:
             # The workload executed no selected I/O: the check may be reached
             # through a deeper caller path than this width covers.
-            selection = select_case(target, location, {**spec.analysis(), **profile.analysis},
+            selection = select_case(target, location, width(profile.analysis),
                                     base / profile.subdirectory, profile=profile.name)
             summary.update(static_io_calls=len(selection["io_calls"]),
                            static_coverage_methods=len(selection["coverage_methods"]),
@@ -313,7 +335,8 @@ def _prepare(row: dict[str, Any], base: Path, summary: dict[str, Any], summary_p
         healthy = healthy_dir(base, selection, campaign_suffix)
         manifest = healthy / "manifest.json"
         if not healthy_matches(manifest, selection["input_digest"]):
-            argv = runner_command(spec, cid, clazz, method, str(healthy), artifact)
+            argv = runner_command(spec, cid, clazz, method, str(healthy), artifact,
+                                  tree=workload_path if workload else None, timeout=timeout)
             # The first run keeps the default run's log and message whatever
             # width a resumed case was pinned to.
             named = PROFILES[0] if index == start else profile
@@ -329,11 +352,16 @@ def _prepare(row: dict[str, Any], base: Path, summary: dict[str, Any], summary_p
     workspace.mkdir(exist_ok=True)
     temp.mkdir(exist_ok=True)
     command = runner_command(spec, cid, clazz, method, "{trace_dir}", artifact,
-                             healthy / "classes" if spec.name == "Solr" else None)
+                             healthy / "classes" if spec.name == "Solr" and not workload
+                             else None,
+                             tree=workload_path if workload else None, timeout=timeout)
     config = {"case_id": cid, "system": row["system"], "test_class": clazz,
               "test_method": method, "cwd": str(workspace),
               "workspaces": {"system_test": str(workspace), "temp": str(temp)},
               "env": runner_env(),
+              **({"tree": {key: workload[key] for key in
+                           ("tree", "commit", "classpath_sha256", "launcher", "jvm_properties",
+                            "heap")}} if workload else {}),
               "target": {"method": target,
                          "site_id": selected_site_id(selection, location, exc_type),
                          "check_events": ["CHECK_REACHED"], "exception_type": exc_type,
@@ -353,7 +381,7 @@ def _prepare(row: dict[str, Any], base: Path, summary: dict[str, Any], summary_p
                          "min_target_retained_trials": 30, "max_unmatched_retries": 1,
                          "stop_at_candidate": stop_at_candidate,
                          **({"max_seconds": max_seconds} if max_seconds else {})},
-              "timeout_seconds": spec.timeout + 30}
+              "timeout_seconds": timeout + 30}
     atomic_json(base / config_name, config)
     # A checkpoint made with another selection keeps its own directory.
     root = base / "campaign"

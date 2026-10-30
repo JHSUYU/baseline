@@ -58,9 +58,11 @@ def _build_selector() -> tuple[Path, str]:
                  any(item.stat().st_mtime_ns > compiled.stat().st_mtime_ns
                      for item in (tool / "src" / "main" / "java").rglob("*.java")))
         if stale:
-            subprocess.run(["mvn", "-q", "test", "package", "dependency:build-classpath",
+            subprocess.run([settings.MVN, "-q", "-Dmaven.repo.local=" + str(settings.M2),
+                            "test", "package", "dependency:build-classpath",
                             "-Dmdep.outputFile=target/runtime-classpath.txt"],
-                           cwd=tool, check=True)
+                           cwd=tool, check=True,
+                           env={**os.environ, "JAVA_HOME": str(settings.JAVA_HOME)})
     return classes, dependencies.read_text().strip()
 
 

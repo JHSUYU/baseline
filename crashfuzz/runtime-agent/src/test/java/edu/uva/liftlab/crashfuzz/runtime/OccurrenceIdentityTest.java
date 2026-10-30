@@ -47,6 +47,24 @@ public class OccurrenceIdentityTest {
     }
 
     @Test
+    public void perRunSessionIdInAThreadNameDoesNotBreakReplay() {
+        String site = "/<example.ZkStateWriter: void write()>#u7";
+        String first = "local/OverseerStateUpdate-72075349130084366-127.0.0.1:41011_solr-n_0000000000" + site;
+        String second = "local/OverseerStateUpdate-72075395483484162-127.0.0.1:36011_solr-n_0000000000" + site;
+        assertEquals(OccurrenceIdentity.stable(first), OccurrenceIdentity.stable(second));
+        assertNotEquals(OccurrenceIdentity.stable("local/handler-1" + site),
+                OccurrenceIdentity.stable("local/listener-1" + site));
+        assertEquals(OccurrenceIdentity.stable("local/Thread-189" + site),
+                OccurrenceIdentity.stable("local/Thread-190" + site));
+        assertEquals(OccurrenceIdentity.stable("local/PEWorker-5" + site),
+                OccurrenceIdentity.stable("local/PEWorker-3" + site));
+        assertEquals("local/pool-3-thread-anonymous" + site,
+                OccurrenceIdentity.stable("local/pool-3-thread-2" + site));
+        assertEquals("local/Thread-anonymous|hdfs:dn:data1" + site,
+                OccurrenceIdentity.stable("local/Thread-7|hdfs:dn:data1" + site));
+    }
+
+    @Test
     public void hbaseListenerSlashPortDoesNotBreakReplay() {
         String site = "/<example.Listener: void accept()>#u3";
         String first = "local/Listener at localhost/45157" + site;

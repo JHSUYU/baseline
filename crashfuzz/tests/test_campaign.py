@@ -202,6 +202,26 @@ class CoverageIoTest(unittest.TestCase):
                   'ms1140:33812' + site)
         self.assertEqual(stable_occurrence(first), stable_occurrence(second))
 
+    def test_a_per_run_session_id_in_a_thread_name_keeps_replayable_identity(self):
+        site = '/<example.ZkStateWriter: void write()>#u7'
+        first = 'local/OverseerStateUpdate-72075349130084366-127.0.0.1:41011_solr-n_0000000000' + site
+        second = 'local/OverseerStateUpdate-72075395483484162-127.0.0.1:36011_solr-n_0000000000' + site
+        self.assertEqual(stable_occurrence(first), stable_occurrence(second))
+        # an unnamed thread's number is no role: Thread-189 and Thread-190 are one actor
+        site2 = '/<example.BackupSystemTable: void finish()>#u10'
+        self.assertEqual(stable_occurrence('local/Thread-189' + site2),
+                         stable_occurrence('local/Thread-190' + site2))
+        self.assertEqual(stable_occurrence('local/Thread-7|hdfs:dn:data1' + site2),
+                         'local/Thread-anonymous|hdfs:dn:data1' + site2)
+        # nor is a pool worker's index: whichever worker was free ran the call
+        self.assertEqual(stable_occurrence('local/PEWorker-5' + site2),
+                         stable_occurrence('local/PEWorker-3' + site2))
+        self.assertEqual(stable_occurrence('local/pool-3-thread-2' + site2),
+                         'local/pool-3-thread-anonymous' + site2)
+        # the rest of a name stays: two pools are two actors
+        self.assertNotEqual(stable_occurrence('local/handler-1' + site),
+                            stable_occurrence('local/listener-1' + site))
+
     def test_hbase_listener_slash_port_keeps_replayable_actor_identity(self):
         site = '/<example.Listener: void accept()>#u3'
         first = 'local/Listener at localhost/45157' + site
@@ -576,6 +596,59 @@ class CoverageIoTest(unittest.TestCase):
                  'queue': [{'sequence': five, 'priority': 1000, 'created': 1},
                            {'sequence': four, 'priority': 1, 'created': 2}]}
         self.assertEqual(choose_next_sequence(state), 1)
+
+    def test_one_call_failed_on_distinct_nodes_applies_in_any_order(self):
+        watch = {'marker': 'FAULT:STATIC:IO', 'siteId': '<example.Watcher: void process()>#u13',
+                 'sourceKey': '<example.Store: byte[] getData()>', 'hitOrdinal': 1,
+                 'exceptionClass': 'example.ConnectionLoss'}
+        four = {**watch, 'occurrence': 'local/solr:watch:node4/<example.Watcher: void process()>#u13'}
+        two = {**watch, 'occurrence': 'local/solr:watch:node2/<example.Watcher: void process()>#u13'}
+        self.assertTrue(independent_reply_fanout([four, two]))
+        reversed_result = {'applied_count': 2, 'matched_count': 2, 'applied_points': [two, four],
+                           'applied_fault_ids': [fingerprint(two), fingerprint(four)]}
+        self.assertTrue(strict_injection(reversed_result, [four, two]))
+        self.assertFalse(independent_reply_fanout([four, four]))
+        self.assertFalse(independent_reply_fanout([four, {**two, 'phase': 'after'}]))
+
+    def test_a_plans_siblings_are_its_call_on_every_node_of_the_family(self):
+        from crashfuzz.faults import sibling_plan
+        watch = {'marker': 'FAULT:STATIC:IO', 'siteId': '<example.Watcher: void process()>#u13',
+                 'sourceKey': '<example.Store: byte[] getData()>', 'hitOrdinal': 1}
+        node = lambda n, hit=1: {**watch, 'hitOrdinal': hit,
+                                 'occurrence': f'local/solr:watch:node{n}/<example.Watcher: void process()>#u13'}
+        plan = [{**node(4), 'exceptionClass': 'example.ConnectionLoss'}]
+        observed = [node(2), node(3), node(1), node(4), node(2, 2),
+                    {**node(1), 'siteId': '<example.Other: void x()>#u1'}]
+        siblings = sibling_plan(plan, observed)
+        self.assertEqual([p['occurrence'].split('/')[1] for p in siblings],
+                         ['solr:watch:node2', 'solr:watch:node3', 'solr:watch:node1',
+                          'solr:watch:node4'])            # hit 1 everywhere, in observed order
+        self.assertTrue(all(p['exceptionClass'] == 'example.ConnectionLoss' for p in siblings))
+        self.assertTrue(independent_reply_fanout(siblings))   # one call on distinct nodes: unordered
+
+    def test_a_lost_reply_is_named_by_its_shape_ordinal(self):
+        from crashfuzz.faults import shape_ordinal_plan
+        call = {'marker': 'FAULT:STATIC:IO', 'siteId': '<example.RpcServer: void call()>#u18',
+                'sourceKey': '<example.Service: example.Message callBlockingMethod()>',
+                'phase': 'after', 'occurrence': 'local/handler=2,queue=0/<example.RpcServer: void call()>#u18'}
+        disable = 'example.DisableTableResponse'
+        observed = [{**call, 'hitOrdinal': n, 'occurrenceOrdinal': n,
+                     'responseShape': disable if n == 15 else 'example.GetProcedureResultResponse'}
+                    for n in range(1, 17)]
+        fault = {**observed[14], 'exceptionClass': 'java.io.IOException'}
+        plan = shape_ordinal_plan([fault], observed)
+        self.assertEqual(plan[0]['shapeOrdinal'], 1)       # the first DisableTableResponse
+        # another run's polls shift the hit ordinals; the reply is the same
+        actual = {**fault, 'hitOrdinal': 17, 'occurrenceOrdinal': 17, 'shapeOrdinal': 1}
+        result = {'applied_count': 1, 'matched_count': 1, 'applied_points': [actual],
+                  'applied_fault_ids': [fingerprint(plan[0])]}
+        self.assertTrue(strict_injection(result, plan))
+        self.assertFalse(strict_injection({**result, 'applied_points': [{**actual, 'shapeOrdinal': 2}]},
+                                          plan))
+        event = {'schemaVersion': 3, 'event': 'FAULT_APPLIED', 'marker': call['marker'],
+                 'siteId': call['siteId'], 'occurrenceAddress': call['occurrence'], 'hitOrdinal': 17,
+                 'phase': 'after', 'responseShape': disable, 'shapeOrdinal': 1}
+        self.assertEqual(point_from_event(event)['shapeOrdinal'], 1)
 
     def test_strict_injection_accepts_only_complete_unordered_reply_fanout(self):
         reply = {**A, 'phase': 'after',

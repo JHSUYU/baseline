@@ -1,0 +1,239 @@
+{
+ "case_id": "SOLR-40",
+ "date": "2026-10-29",
+ "cluster": "liftlab",
+ "checklist": "data/baseline-bugs.json",
+ "runs": {
+  "a": {
+   "results_root": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-a",
+   "host": "lift08",
+   "command": "python3 -m crashfuzz --checklist data/baseline-bugs.json run --case-id SOLR-40 --stop-at-candidate --results /bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-a",
+   "status": "candidate_review",
+   "finished": true,
+   "cluster_test": "TimeRoutedAliasUpdateProcessorTest.test",
+   "selection_profile": null,
+   "static_io_calls": 171,
+   "healthy_seconds": 24.559,
+   "healthy_target_reached": true,
+   "healthy_target_fatal_exceptions": 0,
+   "healthy_fault_points": 5480,
+   "trials": 33,
+   "trial_statuses": {
+    "unmatched": 15,
+    "lost_target": 5,
+    "checked": 12,
+    "target_exception_candidate": 1
+   },
+   "junit_seconds": 1256.7,
+   "first_candidate_trial": 33,
+   "first_candidate_seconds": 1595.2,
+   "total_elapsed_seconds": 1601.478,
+   "candidates": 1,
+   "first_candidate": {
+    "trial": 33,
+    "status": "target_exception_candidate",
+    "exit": 1,
+    "timed_out": false,
+    "target_fatal_exceptions": 1,
+    "healthy_target_fatal_exceptions": 0,
+    "elapsed_seconds": 13.643,
+    "realized_faults": 2,
+    "strict_injection": true,
+    "result": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-a/SOLR-40/campaign/SOLR-40/trials/0033-84becb71bad030ef81f4/result.json",
+    "plan": [
+     {
+      "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+      "hitOrdinal": 1,
+      "marker": "FAULT:STATIC:IO",
+      "occurrence": "local/solr:watch:node4/<org.apache.solr.common.cloud.ZkStateReader$AliasesManager: void process(org.apache.zookeeper.WatchedEvent)>#u13",
+      "occurrenceOrdinal": 1,
+      "siteId": "<org.apache.solr.common.cloud.ZkStateReader$AliasesManager: void process(org.apache.zookeeper.WatchedEvent)>#u13",
+      "sourceKey": "<org.apache.solr.common.cloud.SolrZkClient: byte[] getData(java.lang.String,org.apache.zookeeper.Watcher,org.apache.zookeeper.data.Stat,boolean)>"
+     },
+     {
+      "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+      "hitOrdinal": 1,
+      "marker": "FAULT:STATIC:IO",
+      "occurrence": "local/solr:watch:node2/<org.apache.solr.common.cloud.ZkStateReader$AliasesManager: void process(org.apache.zookeeper.WatchedEvent)>#u13",
+      "occurrenceOrdinal": 1,
+      "siteId": "<org.apache.solr.common.cloud.ZkStateReader$AliasesManager: void process(org.apache.zookeeper.WatchedEvent)>#u13",
+      "sourceKey": "<org.apache.solr.common.cloud.SolrZkClient: byte[] getData(java.lang.String,org.apache.zookeeper.Watcher,org.apache.zookeeper.data.Stat,boolean)>"
+     }
+    ]
+   },
+   "replays": [
+    {
+     "name": "liftlab-a-trial33",
+     "plan_file": "data/evidence/SOLR-40/plan-liftlab-a-trial33.json",
+     "command": "python3 -m crashfuzz --checklist data/baseline-bugs.json replay --case-id SOLR-40 --plan data/evidence/SOLR-40/plan-liftlab-a-trial33.json --repeats 10 --name liftlab-a-trial33 --results /bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-a",
+     "k": 4,
+     "n": 10,
+     "strict": 2,
+     "statuses": [
+      "unmatched",
+      "checked",
+      "target_exception_candidate",
+      "partial_target_exception_candidate",
+      "target_exception_candidate",
+      "checked",
+      "unmatched",
+      "checked",
+      "partial_target_exception_candidate",
+      "unmatched"
+     ],
+     "root": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-a/SOLR-40/replay-liftlab-a-trial33/SOLR-40",
+     "agent": "build/agent-idmask (first copy)",
+     "identity_rules": "c61c8d4b per-run ids masked",
+     "kind": "exact plan",
+     "started": 1793321042.7554824
+    },
+    {
+     "name": "liftlab-a-trial33-r2",
+     "plan_file": "data/evidence/SOLR-40/plan-liftlab-a-trial33.json",
+     "command": "python3 -m crashfuzz --checklist data/baseline-bugs.json replay --case-id SOLR-40 --plan data/evidence/SOLR-40/plan-liftlab-a-trial33.json --repeats 10 --name liftlab-a-trial33-r2 --results /bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-a",
+     "k": 2,
+     "n": 10,
+     "strict": 2,
+     "statuses": [
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "checked",
+      "checked",
+      "checked",
+      "checked",
+      "checked",
+      "checked",
+      "checked",
+      "checked"
+     ],
+     "root": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-a/SOLR-40/replay-liftlab-a-trial33-r2/SOLR-40",
+     "agent": "build/agent-v3",
+     "identity_rules": "46b90ae1 + unordered concurrent calls",
+     "kind": "exact plan",
+     "started": 1793322869.9279172
+    },
+    {
+     "name": "liftlab-a-trial33-siblings",
+     "plan_file": null,
+     "command": "python3 -m crashfuzz --checklist data/baseline-bugs.json replay --case-id SOLR-40 --plan None --repeats 10 --name liftlab-a-trial33-siblings --results /bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-a",
+     "k": 8,
+     "n": 10,
+     "strict": 8,
+     "statuses": [
+      "checked",
+      "target_exception_candidate",
+      "checked",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate"
+     ],
+     "root": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-a/SOLR-40/replay-liftlab-a-trial33-siblings/SOLR-40",
+     "agent": "build/agent-v5",
+     "identity_rules": "9cb09d6b + any trailing -<n> masked",
+     "kind": "siblings (replay aid, not the detection)",
+     "started": 1793327801.3236153
+    }
+   ],
+   "symptom": "JUnit fails: \"Routed alias myalias appears to have been removed during request processing\"; target fatal 1, healthy 0"
+  },
+  "b": {
+   "results_root": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-b",
+   "host": "lift09",
+   "command": "python3 -m crashfuzz --checklist data/baseline-bugs.json run --case-id SOLR-40 --stop-at-candidate --results /bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-b",
+   "status": "candidate_review",
+   "finished": true,
+   "cluster_test": "TimeRoutedAliasUpdateProcessorTest.test",
+   "selection_profile": null,
+   "static_io_calls": 171,
+   "healthy_seconds": 24.359,
+   "healthy_target_reached": true,
+   "healthy_target_fatal_exceptions": 0,
+   "healthy_fault_points": 5490,
+   "trials": 103,
+   "trial_statuses": {
+    "unmatched": 37,
+    "lost_target": 25,
+    "checked": 40,
+    "partial_target_exception_candidate": 1
+   },
+   "junit_seconds": 3812.6,
+   "first_candidate_trial": 103,
+   "first_candidate_seconds": 5748.6,
+   "total_elapsed_seconds": 5765.255,
+   "candidates": 1,
+   "first_candidate": {
+    "trial": 103,
+    "status": "partial_target_exception_candidate",
+    "exit": 1,
+    "timed_out": false,
+    "target_fatal_exceptions": 1,
+    "healthy_target_fatal_exceptions": 0,
+    "elapsed_seconds": 11.892,
+    "realized_faults": 2,
+    "strict_injection": false,
+    "result": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-b/SOLR-40/campaign/SOLR-40/trials/0103-f607b6116440bdc44680/result.json",
+    "plan": [
+     {
+      "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+      "hitOrdinal": 1,
+      "marker": "FAULT:STATIC:IO",
+      "occurrence": "local/solr:http:replica:core_node7/<org.apache.solr.cloud.ZkController: void setConfWatcher(java.lang.String,org.apache.zookeeper.Watcher,org.apache.zookeeper.data.Stat)>#u5",
+      "occurrenceOrdinal": 1,
+      "siteId": "<org.apache.solr.cloud.ZkController: void setConfWatcher(java.lang.String,org.apache.zookeeper.Watcher,org.apache.zookeeper.data.Stat)>#u5",
+      "sourceKey": "<org.apache.solr.common.cloud.SolrZkClient: org.apache.zookeeper.data.Stat exists(java.lang.String,org.apache.zookeeper.Watcher,boolean)>"
+     },
+     {
+      "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+      "hitOrdinal": 1,
+      "marker": "FAULT:STATIC:IO",
+      "occurrence": "local/solr:watch:node1/<org.apache.solr.common.cloud.ZkStateReader$AliasesManager: void process(org.apache.zookeeper.WatchedEvent)>#u13",
+      "occurrenceOrdinal": 1,
+      "siteId": "<org.apache.solr.common.cloud.ZkStateReader$AliasesManager: void process(org.apache.zookeeper.WatchedEvent)>#u13",
+      "sourceKey": "<org.apache.solr.common.cloud.SolrZkClient: byte[] getData(java.lang.String,org.apache.zookeeper.Watcher,org.apache.zookeeper.data.Stat,boolean)>"
+     },
+     {
+      "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+      "hitOrdinal": 2,
+      "marker": "FAULT:STATIC:IO",
+      "occurrence": "local/solr:watch:node2/<org.apache.solr.common.cloud.ZkStateReader: void refreshLiveNodes(org.apache.zookeeper.Watcher)>#u5",
+      "occurrenceOrdinal": 2,
+      "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void refreshLiveNodes(org.apache.zookeeper.Watcher)>#u5",
+      "sourceKey": "<org.apache.solr.common.cloud.SolrZkClient: java.util.List getChildren(java.lang.String,org.apache.zookeeper.Watcher,boolean)>"
+     }
+    ]
+   },
+   "replays": [
+    {
+     "name": "liftlab-b-trial103",
+     "plan_file": "data/evidence/SOLR-40/plan-liftlab-b-trial103.json",
+     "command": "python3 -m crashfuzz --checklist data/baseline-bugs.json replay --case-id SOLR-40 --plan data/evidence/SOLR-40/plan-liftlab-b-trial103.json --repeats 10 --name liftlab-b-trial103 --results /bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-b",
+     "k": 1,
+     "n": 10,
+     "strict": 1,
+     "statuses": [
+      "checked",
+      "checked",
+      "checked",
+      "checked",
+      "checked",
+      "target_exception_candidate",
+      "checked",
+      "checked",
+      "checked",
+      "checked"
+     ],
+     "root": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-b/SOLR-40/replay-liftlab-b-trial103/SOLR-40",
+     "agent": "build/agent-idmask (first copy)",
+     "identity_rules": "c61c8d4b per-run ids masked",
+     "kind": "exact plan",
+     "started": 1793321049.9563358
+    }
+   ],
+   "symptom": "JUnit fails: \"Routed alias myalias appears to have been removed during request processing\"; target fatal 1, healthy 0; a partial candidate: 2 of the plan's 3 faults realized (the third, refreshLiveNodes, never came)"
+  }
+ }
+}

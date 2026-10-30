@@ -2,9 +2,9 @@
 
 Node ``i`` of ``N`` runs ``worker --shard-index i --shard-count N``: every
 ``N``-th case of the system, starting at its own. The results root must be
-on storage every node mounts at the same path (``/bulk`` on CloudLab); a
-case's flock and lease keep two workers from ever running it at once, and a
-restarted worker resumes its unfinished cases.
+on storage every node mounts at the same path (``/bigtemp`` on liftlab, NFS
+on every lift); a case's flock and lease keep two workers from ever running
+it at once, and a restarted worker resumes its unfinished cases.
 """
 
 from __future__ import annotations

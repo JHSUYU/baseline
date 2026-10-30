@@ -22,7 +22,16 @@ final class OccurrenceIdentity {
                 .replaceAll("(\\[[0-9a-fA-F:]+\\]):[0-9]{2,5}\\b", "$1:port")
                 .replaceAll("(?i)\\b(localhost|127\\.0\\.0\\.1)/[0-9]{2,5}\\b", "$1/port")
                 .replaceAll("\\bport=[0-9]{2,5}\\b", "port=port")
-                .replaceAll("\\bport\\s+[0-9]{2,5}\\b", "port port");
+                .replaceAll("\\bport\\s+[0-9]{2,5}\\b", "port port")
+                // A run of ten or more digits is a per-run identifier (a ZooKeeper
+                // session id, a hash code, a timestamp), never a stable name.
+                .replaceAll("(?<![0-9])[0-9]{10,}(?![0-9])", "id")
+                // A trailing -<n> of a thread name is an index (the JVM's Thread-<n>
+                // counts every unnamed thread made before it; a pool's worker-<n> is
+                // whichever worker was free): no role. The calls of one site by such
+                // threads are told apart by their order (occurrenceOrdinal), as
+                // volatile pool threads are.
+                .replaceAll("^(.*?)-[0-9]+(?=\\||$)", "$1-anonymous");
         return address.substring(0, nodeEnd + 1) + actor
                 + address.substring(siteStart);
     }

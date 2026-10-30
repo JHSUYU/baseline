@@ -53,6 +53,9 @@ public final class SelectionProbe {
     private static final Set<String> seenBranches = new HashSet<>();
     private static final Set<String> seenIdentityGaps = new HashSet<>();
     private static final Map<String, Integer> occurrenceHits = new HashMap<>();
+    // A lost reply's ordinal among this actor's replies of the same shape at the site:
+    // the k-th DisableTableResponse, whatever polls the same call site served between.
+    private static final Map<String, Integer> shapeHits = new HashMap<>();
 
     static {
         try {
@@ -418,6 +421,12 @@ public final class SelectionProbe {
             String phaseOccurrence = phase + "|" + occurrence;
             int occurrenceOrdinal = occurrenceHits.getOrDefault(phaseOccurrence, 0) + 1;
             occurrenceHits.put(phaseOccurrence, occurrenceOrdinal);
+            int shapeOrdinal = 0;
+            if (AFTER.equals(phase) && responseShape != null) {
+                String shaped = phaseOccurrence + "|" + responseShape;
+                shapeOrdinal = shapeHits.getOrDefault(shaped, 0) + 1;
+                shapeHits.put(shaped, shapeOrdinal);
+            }
             if (identity.logicalNodeId != null
                     && identity.logicalNodeId.startsWith("solr:")) {
                 // Jetty and executor thread numbers change between cluster runs.
@@ -426,7 +435,7 @@ public final class SelectionProbe {
             }
             JsonObject observed = faultEvent("FAULT_POINT_OBSERVED", siteId,
                     callee, occurrence, hit, occurrenceOrdinal, identity, phase,
-                    responseShape);
+                    responseShape, shapeOrdinal);
             write(observed, true);
             // A missing HDFS actor slot must never match a different DN
             // merely because both thread names normalize to the same actor.
@@ -437,13 +446,15 @@ public final class SelectionProbe {
                 for (int index = 0; index < planned.size(); index++) {
                     if (!completedFanoutFaults.contains(index)
                             && matchesFault(planned.get(index).getAsJsonObject(), siteId,
-                            callee, occurrence, hit, occurrenceOrdinal, phase, responseShape)) {
+                            callee, occurrence, hit, occurrenceOrdinal, phase, responseShape,
+                            shapeOrdinal)) {
                         selectedIndex = index;
                         break;
                     }
                 }
             } else if (matchesFault(planned.get(nextFault).getAsJsonObject(), siteId,
-                    callee, occurrence, hit, occurrenceOrdinal, phase, responseShape)) {
+                    callee, occurrence, hit, occurrenceOrdinal, phase, responseShape,
+                    shapeOrdinal)) {
                 selectedIndex = nextFault;
             }
             if (selectedIndex < 0) return;
@@ -452,13 +463,13 @@ public final class SelectionProbe {
             selectedFault = makeFault(exceptionClass, siteId);
             JsonObject matched = faultEvent("FAULT_MATCHED", siteId, callee,
                     occurrence, hit, occurrenceOrdinal, identity, phase,
-                    responseShape);
+                    responseShape, shapeOrdinal);
             matched.addProperty("faultId", string(wanted, "faultId"));
             if (!exceptionClass.isEmpty()) matched.addProperty("exceptionClass", exceptionClass);
             write(matched, true);
             JsonObject appliedRow = faultEvent("FAULT_APPLIED", siteId, callee,
                     occurrence, hit, occurrenceOrdinal, identity, phase,
-                    responseShape);
+                    responseShape, shapeOrdinal);
             appliedRow.addProperty("faultId", string(wanted, "faultId"));
             if (!exceptionClass.isEmpty()) appliedRow.addProperty("exceptionClass", exceptionClass);
             write(appliedRow, true);
@@ -476,7 +487,18 @@ public final class SelectionProbe {
     private static boolean matchesFault(JsonObject wanted, String siteId,
                                         String callee, String occurrence, int hit,
                                         int occurrenceOrdinal, String phase,
-                                        String responseShape) {
+                                        String responseShape, int shapeOrdinal) {
+        if (wanted.has("shapeOrdinal")) {
+            // A reply named by its shape and its ordinal among replies of that shape.
+            return MARKER.equals(string(wanted, "marker"))
+                    && phase.equals(wanted.has("phase") ? string(wanted, "phase") : BEFORE)
+                    && siteId.equals(string(wanted, "siteId"))
+                    && callee.equals(string(wanted, "sourceKey"))
+                    && occurrence.equals(OccurrenceIdentity.stable(string(wanted, "occurrence")))
+                    && responseShape != null
+                    && responseShape.equals(string(wanted, "responseShape"))
+                    && shapeOrdinal == wanted.get("shapeOrdinal").getAsInt();
+        }
         return MARKER.equals(string(wanted, "marker"))
                 && phase.equals(wanted.has("phase") ? string(wanted, "phase") : BEFORE)
                 && siteId.equals(string(wanted, "siteId"))
@@ -525,7 +547,7 @@ public final class SelectionProbe {
     private static JsonObject faultEvent(String kind, String siteId, String callee,
                                          String occurrence, int hit, int occurrenceOrdinal,
                                          ActorIdentity.Resolution identity, String phase,
-                                         String responseShape) {
+                                         String responseShape, int shapeOrdinal) {
         JsonObject row = event(kind);
         row.addProperty("marker", MARKER);
         row.addProperty("siteId", siteId);
@@ -535,6 +557,7 @@ public final class SelectionProbe {
         row.addProperty("occurrenceOrdinal", occurrenceOrdinal);
         row.addProperty("phase", phase);
         if (responseShape != null) row.addProperty("responseShape", responseShape);
+        if (shapeOrdinal > 0) row.addProperty("shapeOrdinal", shapeOrdinal);
         if (identity.applies()) {
             row.addProperty("logicalNodeId", identity.logicalNodeId);
             if (identity.gap) row.addProperty("identityGap", true);

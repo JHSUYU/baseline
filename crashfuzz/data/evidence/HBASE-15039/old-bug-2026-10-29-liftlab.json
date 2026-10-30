@@ -1,0 +1,44 @@
+{
+ "case_id": "HBASE-15039",
+ "date": "2026-10-29",
+ "cluster": "liftlab",
+ "checklist": "data/old-bugs.json",
+ "runs": {
+  "run": {
+   "results_root": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/old-bugs",
+   "host": null,
+   "command": "python3 -m crashfuzz --checklist data/old-bugs.json run --case-id HBASE-15039 --stop-at-candidate --max-trials 10000 --max-seconds 14400 --results /bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/old-bugs",
+   "status": "budget_or_queue_complete",
+   "finished": true,
+   "cluster_test": "org.apache.hadoop.hbase.security.token.TestCausynthTokenKeyWatch#theOtherServerValidatesATokenOfANewKey",
+   "selection_profile": null,
+   "static_io_calls": 101,
+   "healthy_seconds": 13.748,
+   "healthy_target_reached": true,
+   "healthy_target_fatal_exceptions": 0,
+   "healthy_fault_points": 94,
+   "trials": 137,
+   "trial_statuses": {
+    "lost_target": 74,
+    "checked": 39,
+    "unmatched": 24
+   },
+   "junit_seconds": 14468.6,
+   "first_candidate_trial": null,
+   "first_candidate_seconds": null,
+   "total_elapsed_seconds": 14729.634,
+   "candidates": 0,
+   "first_candidate": null,
+   "replays": [],
+   "tree": "/bigtemp/vnr3ne/wt/bd-trees-1/hbase-bug-15039",
+   "tree_commit": "c2cecb37566a44b109d2e4dd604ce07586c0dc37",
+   "neutral_adapter_classes": [
+    "edu.uva.liftlab.graphchecker.runtime.MessageDoors",
+    "edu.uva.liftlab.graphchecker.runtime.MessageDoors$Inbound",
+    "edu.uva.liftlab.graphchecker.runtime.MessageDoors$Outbound",
+    "edu.uva.liftlab.graphchecker.runtime.Sessions"
+   ],
+   "note": "not detected in budget. The healthy run reaches the check (AuthenticationTokenSecretManager.retrievePassword:139) but never throws; GraphChecker's witness is a STATE race -- the ZKSecretWatcher adds the new master key after the other server validates a token signed with it -- which an injected RPC/socket failure does not create."
+  }
+ }
+}

@@ -1,0 +1,244 @@
+{
+ "case_id": "HBASE-BACKUP-LOCK",
+ "date": "2026-10-29",
+ "cluster": "liftlab",
+ "checklist": "data/baseline-bugs.json",
+ "runs": {
+  "a": {
+   "results_root": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-a",
+   "host": "lift08",
+   "command": "python3 -m crashfuzz --checklist data/baseline-bugs.json run --case-id HBASE-BACKUP-LOCK --stop-at-candidate --results /bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-a",
+   "status": "candidate_review",
+   "finished": true,
+   "cluster_test": "org.apache.hadoop.hbase.backup.TestBackupManager#testStartBackupExclusiveOperation",
+   "selection_profile": null,
+   "static_io_calls": 462,
+   "healthy_seconds": 31.621,
+   "healthy_target_reached": true,
+   "healthy_target_fatal_exceptions": 2,
+   "healthy_fault_points": 172,
+   "trials": 11,
+   "trial_statuses": {
+    "lost_target": 5,
+    "baseline_exception_recurrence": 3,
+    "unmatched": 2,
+    "target_exception_candidate": 1
+   },
+   "junit_seconds": 657.3,
+   "first_candidate_trial": 11,
+   "first_candidate_seconds": 759.8,
+   "total_elapsed_seconds": 760.899,
+   "candidates": 1,
+   "first_candidate": {
+    "trial": 11,
+    "status": "target_exception_candidate",
+    "exit": 124,
+    "timed_out": false,
+    "target_fatal_exceptions": 277,
+    "healthy_target_fatal_exceptions": 2,
+    "elapsed_seconds": 300.515,
+    "realized_faults": 2,
+    "strict_injection": true,
+    "result": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-a/HBASE-BACKUP-LOCK/campaign/HBASE-BACKUP-LOCK/trials/0011-230eb9c825bc638306da/result.json",
+    "plan": [
+     {
+      "exceptionClass": "java.io.InterruptedIOException",
+      "hitOrdinal": 1,
+      "marker": "FAULT:STATIC:IO",
+      "occurrence": "local/PEWorker-5/<org.apache.hadoop.hbase.master.TableNamespaceManager: void insertIntoNSTable(org.apache.hadoop.hbase.NamespaceDescriptor)>#u35",
+      "occurrenceOrdinal": 1,
+      "siteId": "<org.apache.hadoop.hbase.master.TableNamespaceManager: void insertIntoNSTable(org.apache.hadoop.hbase.NamespaceDescriptor)>#u35",
+      "sourceKey": "<org.apache.hadoop.hbase.client.Table: void put(org.apache.hadoop.hbase.client.Put)>"
+     },
+     {
+      "hitOrdinal": 1,
+      "marker": "FAULT:STATIC:IO",
+      "occurrence": "local/Thread-189/<org.apache.hadoop.hbase.backup.impl.BackupSystemTable: void finishBackupExclusiveOperation()>#u5",
+      "occurrenceOrdinal": 1,
+      "siteId": "<org.apache.hadoop.hbase.backup.impl.BackupSystemTable: void finishBackupExclusiveOperation()>#u5",
+      "sourceKey": "<org.apache.hadoop.hbase.client.Connection: org.apache.hadoop.hbase.client.Table getTable(org.apache.hadoop.hbase.TableName)>"
+     }
+    ]
+   },
+   "replays": [
+    {
+     "name": "liftlab-a-trial11",
+     "plan_file": "data/evidence/HBASE-BACKUP-LOCK/plan-liftlab-a-trial11.json",
+     "command": "python3 -m crashfuzz --checklist data/baseline-bugs.json replay --case-id HBASE-BACKUP-LOCK --plan data/evidence/HBASE-BACKUP-LOCK/plan-liftlab-a-trial11.json --repeats 10 --name liftlab-a-trial11 --results /bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-a",
+     "k": 5,
+     "n": 10,
+     "strict": 5,
+     "statuses": [
+      "target_exception_candidate",
+      "lost_target",
+      "lost_target",
+      "lost_target",
+      "lost_target",
+      "unmatched",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate"
+     ],
+     "root": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-a/HBASE-BACKUP-LOCK/replay-liftlab-a-trial11/HBASE-BACKUP-LOCK",
+     "agent": "build/agent-idmask (first copy)",
+     "identity_rules": "c61c8d4b per-run ids masked",
+     "kind": "exact plan",
+     "started": 1793321317.153672
+    },
+    {
+     "name": "liftlab-a-trial11-r2",
+     "plan_file": "data/evidence/HBASE-BACKUP-LOCK/plan-liftlab-a-trial11.json",
+     "command": "python3 -m crashfuzz --checklist data/baseline-bugs.json replay --case-id HBASE-BACKUP-LOCK --plan data/evidence/HBASE-BACKUP-LOCK/plan-liftlab-a-trial11.json --repeats 10 --name liftlab-a-trial11-r2 --results /bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-a",
+     "k": 9,
+     "n": 10,
+     "strict": 9,
+     "statuses": [
+      "unmatched",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate"
+     ],
+     "root": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-a/HBASE-BACKUP-LOCK/replay-liftlab-a-trial11-r2/HBASE-BACKUP-LOCK",
+     "agent": "build/agent-v4",
+     "identity_rules": "164b15e9 + Thread-<n> masked",
+     "kind": "exact plan",
+     "started": 1793323352.6329687
+    },
+    {
+     "name": "liftlab-a-trial11-r3",
+     "plan_file": "data/evidence/HBASE-BACKUP-LOCK/plan-liftlab-a-trial11.json",
+     "command": "python3 -m crashfuzz --checklist data/baseline-bugs.json replay --case-id HBASE-BACKUP-LOCK --plan data/evidence/HBASE-BACKUP-LOCK/plan-liftlab-a-trial11.json --repeats 10 --name liftlab-a-trial11-r3 --results /bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-a",
+     "k": 10,
+     "n": 10,
+     "strict": 10,
+     "statuses": [
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate"
+     ],
+     "root": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-a/HBASE-BACKUP-LOCK/replay-liftlab-a-trial11-r3/HBASE-BACKUP-LOCK",
+     "agent": "build/agent-v5",
+     "identity_rules": "9cb09d6b + any trailing -<n> masked",
+     "kind": "exact plan",
+     "started": 1793326330.212524
+    }
+   ],
+   "symptom": "the lock's ExclusiveOperationException 277 times (healthy 2); the other session logs 'Waiting to acquire backup exclusive lock' until the 300 s JUnit timeout (exit 124)"
+  },
+  "b": {
+   "results_root": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-b",
+   "host": "lift09",
+   "command": "python3 -m crashfuzz --checklist data/baseline-bugs.json run --case-id HBASE-BACKUP-LOCK --stop-at-candidate --results /bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-b",
+   "status": "candidate_review",
+   "finished": true,
+   "cluster_test": "org.apache.hadoop.hbase.backup.TestBackupManager#testStartBackupExclusiveOperation",
+   "selection_profile": null,
+   "static_io_calls": 462,
+   "healthy_seconds": 41.48,
+   "healthy_target_reached": true,
+   "healthy_target_fatal_exceptions": 2,
+   "healthy_fault_points": 172,
+   "trials": 17,
+   "trial_statuses": {
+    "lost_target": 8,
+    "baseline_exception_recurrence": 6,
+    "unmatched": 2,
+    "target_exception_candidate": 1
+   },
+   "junit_seconds": 854.6,
+   "first_candidate_trial": 17,
+   "first_candidate_seconds": 946.3,
+   "total_elapsed_seconds": 947.622,
+   "candidates": 1,
+   "first_candidate": {
+    "trial": 17,
+    "status": "target_exception_candidate",
+    "exit": 124,
+    "timed_out": false,
+    "target_fatal_exceptions": 278,
+    "healthy_target_fatal_exceptions": 2,
+    "elapsed_seconds": 300.366,
+    "realized_faults": 1,
+    "strict_injection": true,
+    "result": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-b/HBASE-BACKUP-LOCK/campaign/HBASE-BACKUP-LOCK/trials/0017-1f40073ddf5408b9e8ae/result.json",
+    "plan": [
+     {
+      "hitOrdinal": 1,
+      "marker": "FAULT:STATIC:IO",
+      "occurrence": "local/Thread-190/<org.apache.hadoop.hbase.backup.impl.BackupSystemTable: void finishBackupExclusiveOperation()>#u10",
+      "occurrenceOrdinal": 1,
+      "siteId": "<org.apache.hadoop.hbase.backup.impl.BackupSystemTable: void finishBackupExclusiveOperation()>#u10",
+      "sourceKey": "<org.apache.hadoop.hbase.client.Table: org.apache.hadoop.hbase.client.Table$CheckAndMutateBuilder checkAndMutate(byte[],byte[])>"
+     }
+    ]
+   },
+   "replays": [
+    {
+     "name": "liftlab-b-trial17",
+     "plan_file": "data/evidence/HBASE-BACKUP-LOCK/plan-liftlab-b-trial17.json",
+     "command": "python3 -m crashfuzz --checklist data/baseline-bugs.json replay --case-id HBASE-BACKUP-LOCK --plan data/evidence/HBASE-BACKUP-LOCK/plan-liftlab-b-trial17.json --repeats 10 --name liftlab-b-trial17 --results /bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-b",
+     "k": 4,
+     "n": 10,
+     "strict": 4,
+     "statuses": [
+      "lost_target",
+      "target_exception_candidate",
+      "lost_target",
+      "lost_target",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "lost_target",
+      "lost_target",
+      "lost_target"
+     ],
+     "root": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-b/HBASE-BACKUP-LOCK/replay-liftlab-b-trial17/HBASE-BACKUP-LOCK",
+     "agent": "build/agent-idmask (first copy)",
+     "identity_rules": "c61c8d4b per-run ids masked",
+     "kind": "exact plan",
+     "started": 1793321458.6723106
+    },
+    {
+     "name": "liftlab-b-trial17-r2",
+     "plan_file": "data/evidence/HBASE-BACKUP-LOCK/plan-liftlab-b-trial17.json",
+     "command": "python3 -m crashfuzz --checklist data/baseline-bugs.json replay --case-id HBASE-BACKUP-LOCK --plan data/evidence/HBASE-BACKUP-LOCK/plan-liftlab-b-trial17.json --repeats 10 --name liftlab-b-trial17-r2 --results /bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-b",
+     "k": 10,
+     "n": 10,
+     "strict": 10,
+     "statuses": [
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate"
+     ],
+     "root": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-b/HBASE-BACKUP-LOCK/replay-liftlab-b-trial17-r2/HBASE-BACKUP-LOCK",
+     "agent": "build/agent-v4",
+     "identity_rules": "164b15e9 + Thread-<n> masked",
+     "kind": "exact plan",
+     "started": 1793323141.7410383
+    }
+   ],
+   "symptom": "the lock's ExclusiveOperationException 278 times (healthy 2); the other session logs 'Waiting to acquire backup exclusive lock' until the 300 s JUnit timeout (exit 124)"
+  }
+ }
+}

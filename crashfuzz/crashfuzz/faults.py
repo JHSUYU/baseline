@@ -3,7 +3,9 @@
 A fault point is one observed execution of a selected I/O callsite:
 ``{marker, siteId, occurrence, hitOrdinal}`` plus optional ``phase``
 ("after" for a completed call whose reply is lost), ``occurrenceOrdinal``,
-``sourceKey`` (the I/O call it wraps), ``responseShape`` and
+``sourceKey`` (the I/O call it wraps), ``responseShape``, ``shapeOrdinal``
+(a lost reply's ordinal among the actor's replies of that shape at the site;
+when present it names the reply instead of the hit ordinals) and
 ``exceptionClass``. A sequence is an ordered list of fault points.
 """
 
@@ -59,6 +61,9 @@ def point_from_event(event: dict[str, Any]) -> Point | None:
     if (phase == "after" and isinstance(response_shape, str)
             and 0 < len(response_shape) <= 1024):
         point["responseShape"] = response_shape
+        shape_ordinal = event.get("shapeOrdinal")
+        if isinstance(shape_ordinal, int) and not isinstance(shape_ordinal, bool) and shape_ordinal > 0:
+            point["shapeOrdinal"] = shape_ordinal
     if event.get("exceptionClass"):
         point["exceptionClass"] = event["exceptionClass"]
     return point
@@ -143,6 +148,13 @@ def stable_occurrence(address: str) -> str:
     actor = re.sub(r"(?i)\b(localhost|127\.0\.0\.1)/[0-9]{2,5}\b", r"\1/port", actor)
     actor = re.sub(r"\bport=[0-9]{2,5}\b", "port=port", actor)
     actor = re.sub(r"\bport\s+[0-9]{2,5}\b", "port port", actor)
+    # A run of ten or more digits is a per-run identifier (a ZooKeeper session id,
+    # a hash code, a timestamp), never a stable name (the agent masks it alike).
+    actor = re.sub(r"(?<![0-9])[0-9]{10,}(?![0-9])", "id", actor)
+    # A trailing -<n> of a thread name is an index (the JVM's Thread-<n>; a pool's
+    # worker-<n>, whichever was free): no role; such threads' calls of one site are
+    # told apart by occurrenceOrdinal (the agent masks it alike).
+    actor = re.sub(r"^(.*?)-[0-9]+(?=\||$)", r"\1-anonymous", actor)
     return address[:node_end + 1] + actor + address[site_start:]
 
 
@@ -153,6 +165,71 @@ def sequence_id(sequence: Sequence) -> str:
 def actor_of(point: Point) -> str:
     """The runtime actor of an occurrence: the address before its site."""
     return point["occurrence"].rsplit("/<", 1)[0]
+
+
+# --- a replay aid: a plan's siblings ------------------------------------------
+
+def actor_family(point: Point) -> str:
+    """An occurrence's actor with its logical node and every number masked."""
+    actor = actor_of({**point, "occurrence": stable_occurrence(point["occurrence"])})
+    return re.sub(r"[0-9]+", "#", actor.rsplit("|", 1)[0])
+
+
+def shape_ordinal_plan(plan: Sequence, observed: Sequence) -> Sequence:
+    """The plan with each lost reply named by its shape ordinal in the detecting run.
+
+    A lost reply's hit ordinals count every call of its site; how many other
+    calls (polls, heartbeats) the site served first is timing. Its ordinal
+    among the actor's replies of the same shape (the first
+    DisableTableResponse) names the same reply in every run. Counted from the
+    run's observed points, in order.
+    """
+    result: Sequence = []
+    for fault in plan:
+        if fault.get("phase") != "after" or not fault.get("responseShape") or "shapeOrdinal" in fault:
+            result.append(fault)
+            continue
+        family = lambda point: (point.get("siteId"), point.get("sourceKey"), point.get("phase"),
+                                stable_occurrence(point["occurrence"]), point.get("responseShape"))
+        count, found = 0, None
+        for point in observed:
+            if family(point) != family(fault):
+                continue
+            count += 1
+            if (point.get("hitOrdinal") == fault.get("hitOrdinal") and
+                    point.get("occurrenceOrdinal") == fault.get("occurrenceOrdinal")):
+                found = count
+                break
+        result.append({**fault, "shapeOrdinal": found} if found else fault)
+    return result
+
+
+def sibling_plan(plan: Sequence, observed: Sequence) -> Sequence:
+    """The plan with each fault planted at all of its siblings the detecting run observed.
+
+    A sibling is the same I/O call (marker, site, source key, phase, hit
+    ordinal) by an actor of the same family on any logical node: every node's
+    watch for one store change, every session's call of one lock. A replay
+    aid for a race over which sibling's call is decisive; the detection
+    stays the exact plan. Siblings keep the run's observed order.
+    """
+    keys = ("marker", "siteId", "sourceKey", "hitOrdinal")
+    siblings: Sequence = []
+    seen: set[str] = set()
+    for fault in plan:
+        for point in observed:
+            if (any(point.get(key) != fault.get(key) for key in keys) or
+                    point.get("phase", "before") != fault.get("phase", "before") or
+                    actor_family(point) != actor_family(fault)):
+                continue
+            sibling = {key: value for key, value in point.items() if key != "exceptionClass"}
+            if fault.get("exceptionClass"):
+                sibling["exceptionClass"] = fault["exceptionClass"]
+            name = fingerprint(sibling)
+            if name not in seen:
+                seen.add(name)
+                siblings.append(sibling)
+    return siblings
 
 
 # --- did the trial apply exactly what was asked? ----------------------------
@@ -168,6 +245,12 @@ def strict_injection(result: dict[str, Any], sequence: Sequence) -> bool:
         # A selector without occurrenceOrdinal matches regardless of it.
         if "occurrenceOrdinal" not in requested:
             normalized.pop("occurrenceOrdinal", None)
+        # A reply named by its shape ordinal matches whatever its hit ordinals were.
+        if "shapeOrdinal" in requested:
+            normalized.pop("hitOrdinal", None)
+            normalized.pop("occurrenceOrdinal", None)
+        else:
+            normalized.pop("shapeOrdinal", None)
         return normalized
 
     observed = result.get("applied_points", [])
@@ -366,8 +449,33 @@ def repeated_nonempty_reply_profile(sequence: Sequence) -> tuple[int, int]:
                default=(0, 0))
 
 
+def logical_node(point: Point) -> str:
+    """An occurrence's logical node: its actor's ``|node`` suffix, else the actor."""
+    return actor_of(point).split("/", 1)[-1].rsplit("|", 1)[-1]
+
+
+def concurrent_calls(sequence: Sequence) -> bool:
+    """A whole plan failing one call site before the call, each fault on a distinct node.
+
+    Every node makes that call for the same event (each node's watch on one
+    changed store node fires), concurrently: which comes first is a race, not
+    part of the plan, so its faults apply in any order (the agent alike).
+    """
+    if len(sequence) < 2:
+        return False
+    fields = ("marker", "siteId", "sourceKey", "exceptionClass")
+    family = tuple(sequence[0].get(field) for field in fields)
+    nodes = [logical_node(point) for point in sequence]
+    return (all(point.get("phase", "before") == "before" and
+                tuple(point.get(field) for field in fields) == family for point in sequence) and
+            len(set(nodes)) == len(nodes))
+
+
 def independent_reply_fanout(sequence: Sequence) -> bool:
-    """A whole plan losing one reply shape, each fault on a distinct known node."""
+    """A plan without an order of its own: one reply shape lost on distinct known nodes,
+    or one call failed on distinct nodes (``concurrent_calls``)."""
+    if concurrent_calls(sequence):
+        return True
     if len(sequence) < 2 or not all(object_array_response(p) for p in sequence):
         return False
     fields = ("marker", "siteId", "sourceKey", "exceptionClass", "phase", "responseShape")

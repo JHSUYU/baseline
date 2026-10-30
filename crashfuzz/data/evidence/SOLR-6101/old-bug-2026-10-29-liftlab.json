@@ -1,0 +1,43 @@
+{
+ "case_id": "SOLR-6101",
+ "date": "2026-10-29",
+ "cluster": "liftlab",
+ "checklist": "data/old-bugs.json",
+ "runs": {
+  "run": {
+   "results_root": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/old-bugs",
+   "host": null,
+   "command": "python3 -m crashfuzz --checklist data/old-bugs.json run --case-id SOLR-6101 --stop-at-candidate --max-trials 10000 --max-seconds 14400 --results /bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/old-bugs",
+   "status": "no_valid_target_trial",
+   "finished": true,
+   "cluster_test": "org.apache.solr.cloud.TestCausynthSplitShardLegacy#splitUnderLegacyCloud",
+   "selection_profile": null,
+   "static_io_calls": 92,
+   "healthy_seconds": 29.314,
+   "healthy_target_reached": false,
+   "healthy_target_fatal_exceptions": 0,
+   "healthy_fault_points": 149,
+   "trials": 149,
+   "trial_statuses": {
+    "lost_target": 143,
+    "unmatched": 6
+   },
+   "junit_seconds": 6152.4,
+   "first_candidate_trial": null,
+   "first_candidate_seconds": null,
+   "total_elapsed_seconds": 6393.299,
+   "candidates": 0,
+   "first_candidate": null,
+   "replays": [],
+   "tree": "/bigtemp/vnr3ne/wt/bd-trees-1/solr-bug-6101",
+   "tree_commit": "040ae6d4c6f0f56139c1b2a8b1073d2e824ded14",
+   "neutral_adapter_classes": [
+    "edu.uva.liftlab.graphchecker.runtime.MessageDoors",
+    "edu.uva.liftlab.graphchecker.runtime.MessageDoors$Inbound",
+    "edu.uva.liftlab.graphchecker.runtime.MessageDoors$Outbound",
+    "edu.uva.liftlab.graphchecker.runtime.Sessions"
+   ],
+   "note": "not detected: the healthy run does not reach the check (CoreContainer.create:1330). The bug needs legacyCloud false cluster-wide (a CONFIG change GraphChecker makes field-backed); an I/O fault reaches the guard only by failing the cluster-property read, which the campaign did not realize into a throw."
+  }
+ }
+}
