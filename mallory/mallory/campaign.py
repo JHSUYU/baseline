@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import gzip
 import json
+import os
 import shutil
 import time
 from dataclasses import dataclass, field
@@ -35,6 +36,22 @@ from . import engine, faults, graph, policy, settings
 
 
 HEALTHY_RUNS = 3
+
+
+def _visible(path: Path, wait_s: float = 60.0) -> bool:
+    """Whether a file another node wrote is there, waiting out this host's NFS caches
+    (listing its directory revalidates them) for at most ``wait_s``."""
+    deadline = time.time() + wait_s
+    while True:
+        try:
+            os.listdir(path.parent)
+        except OSError:
+            pass
+        if path.is_file():
+            return True
+        if time.time() >= deadline:
+            return False
+        time.sleep(2)
 
 
 def failure_threshold(healthy: int) -> int:
@@ -135,9 +152,14 @@ class Campaign:
         trace = run / "runtime_trace.jsonl"
         outside = graph.outside_log(trace)
         outside.unlink(missing_ok=True)
+        # The node writes the run over NFS. A name this host looked up while it did not
+        # exist stays absent in this host's lookup cache for up to a minute (NFSv3,
+        # liftlab), so the run directory and the outside log exist here before the run.
+        run.mkdir(parents=True)
+        outside.touch()
         status = engine.plant_run(self.case, node, run, plant, faults.outside_plant(plant),
                                   outside, self.budget.trial_bound_s)
-        if not trace.is_file():
+        if not _visible(trace):
             return status, None, False
         built = graph.build(trace, outside)
         for path in (trace, outside):
@@ -321,6 +343,47 @@ class Sweep(Campaign):
         return {"case": self.case.case_id, "points": len(points), "run": len(merged),
                 "applied": sum(r["applied"] for r in runs), "expose": sum(r["fatal"] for r in runs),
                 "exposing": sorted(name for name, r in merged.items() if r["fatal"])}
+
+
+class Replay(Campaign):
+    """A campaign's detecting plan run again on its node, ``repeats`` times: how often it detects.
+
+    Not part of Mallory's search: the check a candidate gets before it is called a
+    bug (CrashFuzz's ``replay``), through the same plant, matching and oracle
+    (the campaign's healthy fatal arms set the threshold).
+    """
+
+    @property
+    def directory(self) -> Path:
+        return self.case.work / f"seed-{self.seed}" / "replay"
+
+    def replay(self, repeats: int) -> dict:
+        campaign = self.case.work / f"seed-{self.seed}"
+        detection = json.loads((campaign / "result.json").read_text()).get("detection")
+        if not detection:
+            raise RuntimeError(f"{self.case.case_id}: seed {self.seed} detected nothing to replay")
+        state = json.loads((campaign / "state.json").read_text())
+        healthy_fatal = state.get("healthy_fatal_arms", 0)
+        self.target_rows = json.loads((self.case.work / "prepared.json").read_text())["target_rows"]
+        # the campaign's bound: four times one healthy run, at least 120 s
+        self.budget.trial_bound_s = min(self.budget.trial_bound_s,
+                                        max(120, int(4 * state["healthy_s"] / HEALTHY_RUNS)))
+        plan = faults.from_json(detection["plan"])
+        runs = []
+        for k in range(1, repeats + 1):
+            started = time.time()
+            status, run, applied = self._run(f"r{k:02d}", plan, self.node)
+            fatal = len(run.fatal_rows) if run else 0
+            runs.append({"run": f"r{k:02d}", "exit": status, "seconds": round(time.time() - started, 1),
+                         "applied": applied, "fatal_arms": fatal,
+                         "detected": bool(run and applied and fatal > failure_threshold(healthy_fatal))})
+        record = {"case": self.case.case_id, "seed": self.seed, "trial": detection["trial"],
+                  "faults": detection["faults"], "healthy_fatal_arms": healthy_fatal,
+                  "repeats": repeats, "applied": sum(r["applied"] for r in runs),
+                  "detected": sum(r["detected"] for r in runs), "runs": runs}
+        self.directory.mkdir(parents=True, exist_ok=True)
+        (self.directory / "replay.json").write_text(json.dumps(record, indent=2) + "\n")
+        return record
 
 
 def _trial_json(trial: Trial) -> dict:

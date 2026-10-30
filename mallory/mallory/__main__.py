@@ -36,6 +36,12 @@ def main(argv: list[str] | None = None) -> int:
     sweep.add_argument("--reverse", action="store_true",
                        help="from the last point, beside a forward sweep of the same case")
 
+    replay = sub.add_parser("replay", help="a campaign's detecting plan run again, N times")
+    replay.add_argument("case")
+    replay.add_argument("--seed", type=int, default=0)
+    replay.add_argument("--repeats", type=int, default=10)
+    replay.add_argument("--node", default=settings.NODES[0])
+
     report = sub.add_parser("report", help="every case's result under the work directory")
     report.add_argument("--work", type=Path, default=settings.WORK)
 
@@ -52,6 +58,9 @@ def main(argv: list[str] | None = None) -> int:
     elif args.command == "sweep":
         print(json.dumps(campaign.Sweep(engine.Case.resolve(args.case), campaign.Budget(),
                                         args.node).sweep(args.limit, args.reverse), indent=2))
+    elif args.command == "replay":
+        print(json.dumps(campaign.Replay(engine.Case.resolve(args.case), campaign.Budget(), args.node,
+                                         seed=args.seed).replay(args.repeats), indent=2))
     else:
         rows = []
         for path in sorted(args.work.glob("*/seed-*/result.json")):
