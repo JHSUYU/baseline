@@ -1,0 +1,109 @@
+{
+ "case_id": "ZOOKEEPER-2886",
+ "date": "2026-10-29",
+ "cluster": "liftlab",
+ "checklist": "data/old-bugs.json",
+ "runs": {
+  "run": {
+   "results_root": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/old-bugs",
+   "host": "lift08",
+   "command": "python3 -m crashfuzz --checklist data/old-bugs.json run --case-id ZOOKEEPER-2886 --stop-at-candidate --max-trials 10000 --max-seconds 14400 --results /bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/old-bugs",
+   "status": "candidate_review",
+   "finished": true,
+   "cluster_test": "org.apache.zookeeper.test.CausynthSessionMoved2886Test#aMovedMultiOnlyConnectionKeepsThrowing",
+   "selection_profile": null,
+   "static_io_calls": 55,
+   "healthy_seconds": 7.798,
+   "healthy_target_reached": true,
+   "healthy_target_fatal_exceptions": 0,
+   "healthy_fault_points": 294,
+   "trials": 369,
+   "trial_statuses": {
+    "lost_target": 159,
+    "checked": 201,
+    "unmatched": 8,
+    "target_exception_candidate": 1
+   },
+   "junit_seconds": 4280.7,
+   "first_candidate_trial": 369,
+   "first_candidate_seconds": 6621.2,
+   "total_elapsed_seconds": 6627.813,
+   "candidates": 1,
+   "first_candidate": {
+    "trial": 369,
+    "status": "target_exception_candidate",
+    "exit": 1,
+    "timed_out": false,
+    "target_fatal_exceptions": 1,
+    "healthy_target_fatal_exceptions": 0,
+    "elapsed_seconds": 9.739,
+    "realized_faults": 3,
+    "strict_injection": true,
+    "result": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/old-bugs/ZOOKEEPER-2886/campaign/ZOOKEEPER-2886/trials/0369-1117f138b0de9f06c7e0/result.json",
+    "plan": [
+     {
+      "hitOrdinal": 9,
+      "marker": "FAULT:STATIC:IO",
+      "occurrence": "local/main-SendThread(127.0.0.1:port)/<org.apache.zookeeper.ClientCnxnSocketNIO: void doTransport(int,java.util.Queue,org.apache.zookeeper.ClientCnxn)>#u6",
+      "occurrenceOrdinal": 9,
+      "siteId": "<org.apache.zookeeper.ClientCnxnSocketNIO: void doTransport(int,java.util.Queue,org.apache.zookeeper.ClientCnxn)>#u6",
+      "sourceKey": "<java.nio.channels.Selector: int select(long)>"
+     },
+     {
+      "hitOrdinal": 1,
+      "marker": "FAULT:STATIC:IO",
+      "occurrence": "local/NIOServerCxnFactory.SelectorThread-anonymous/<org.apache.zookeeper.server.quorum.Learner: void validateSession(org.apache.zookeeper.server.ServerCnxn,long,int)>#u11",
+      "occurrenceOrdinal": 1,
+      "siteId": "<org.apache.zookeeper.server.quorum.Learner: void validateSession(org.apache.zookeeper.server.ServerCnxn,long,int)>#u11",
+      "sourceKey": "<java.io.DataOutputStream: void writeLong(long)>"
+     },
+     {
+      "hitOrdinal": 1,
+      "marker": "FAULT:STATIC:IO",
+      "occurrence": "local/NIOServerCxnFactory.SelectorThread-anonymous/<org.apache.zookeeper.server.quorum.Learner: void validateSession(org.apache.zookeeper.server.ServerCnxn,long,int)>#u12",
+      "occurrenceOrdinal": 1,
+      "siteId": "<org.apache.zookeeper.server.quorum.Learner: void validateSession(org.apache.zookeeper.server.ServerCnxn,long,int)>#u12",
+      "sourceKey": "<java.io.DataOutputStream: void writeInt(int)>"
+     }
+    ]
+   },
+   "replays": [
+    {
+     "name": "liftlab-trial369",
+     "plan_file": "data/evidence/ZOOKEEPER-2886/plan-liftlab-trial369.json",
+     "command": "python3 -m crashfuzz --checklist data/old-bugs.json replay --case-id ZOOKEEPER-2886 --plan data/evidence/ZOOKEEPER-2886/plan-liftlab-trial369.json --repeats 10 --name liftlab-trial369 --results /bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/old-bugs",
+     "k": 0,
+     "n": 10,
+     "strict": 0,
+     "statuses": [
+      "checked",
+      "checked",
+      "checked",
+      "checked",
+      "checked",
+      "checked",
+      "checked",
+      "checked",
+      "checked",
+      "checked"
+     ],
+     "root": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/old-bugs/ZOOKEEPER-2886/replay-liftlab-trial369/ZOOKEEPER-2886",
+     "agent": "build/agent-v5",
+     "identity_rules": "9cb09d6b + any trailing -<n> masked",
+     "kind": "exact plan",
+     "started": 1793336165.5327656
+    }
+   ],
+   "tree": "/bigtemp/vnr3ne/wt/bd-trees-1/zookeeper-bug-2886",
+   "tree_commit": "b8b7149f44827986c15388c263314942bae643a1",
+   "neutral_adapter_classes": [
+    "edu.uva.liftlab.graphchecker.runtime.MessageDoors",
+    "edu.uva.liftlab.graphchecker.runtime.MessageDoors$Inbound",
+    "edu.uva.liftlab.graphchecker.runtime.MessageDoors$Outbound",
+    "edu.uva.liftlab.graphchecker.runtime.Sessions"
+   ],
+   "symptom": "the point's own throw, SessionTrackerImpl.checkSession:367 on the tree (SessionMovedException); fatal 1 in the detecting trial, healthy 0; JUnit fails. NOT stably reproduced: the exact plan replays 0/10 (all three faults applied, no throw).",
+   "mechanism": "faults make the old client reconnect (IOException before SendThread's Selector.select) and the takeover's REVALIDATE write its session.owner; the throw needs the second old multi's checkSession to read the owner after the takeover set it, a race in the takeover thread's timing that the faults do not pin. GraphChecker reproduced it 10/10 by holding the write on its own thread (a scheduler CrashFuzz does not have); CrashFuzz's fault injection cannot order the two, so the candidate does not replay."
+  }
+ }
+}
