@@ -1,0 +1,44 @@
+{
+ "case_id": "HDFS-5766",
+ "date": "2026-10-29",
+ "cluster": "liftlab",
+ "checklist": "data/old-bugs.json",
+ "runs": {
+  "run": {
+   "results_root": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/old-bugs",
+   "host": null,
+   "command": "python3 -m crashfuzz --checklist data/old-bugs.json run --case-id HDFS-5766 --stop-at-candidate --max-trials 10000 --max-seconds 14400 --results /bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/old-bugs",
+   "status": "budget_or_queue_complete",
+   "finished": true,
+   "cluster_test": "org.apache.hadoop.hdfs.TestCausynthEncryptedPread#testStaleEncryptionKeyFailsPread",
+   "selection_profile": null,
+   "static_io_calls": 193,
+   "healthy_seconds": 16.944,
+   "healthy_target_reached": true,
+   "healthy_target_fatal_exceptions": 0,
+   "healthy_fault_points": 111,
+   "trials": 822,
+   "trial_statuses": {
+    "lost_target": 402,
+    "checked": 288,
+    "unmatched": 132
+   },
+   "junit_seconds": 14401.6,
+   "first_candidate_trial": null,
+   "first_candidate_seconds": null,
+   "total_elapsed_seconds": 23322.621,
+   "candidates": 0,
+   "first_candidate": null,
+   "replays": [],
+   "tree": "/bigtemp/vnr3ne/wt/bd-trees-1/hadoop-hdfs-bug-5766",
+   "tree_commit": "a8f16edc154c1a2d148de1f216dfc66f309c6335",
+   "neutral_adapter_classes": [
+    "org.apache.hadoop.ipc.CausynthMessagePropagation",
+    "org.apache.hadoop.ipc.CausynthMessagePropagation$Inbound",
+    "org.apache.hadoop.ipc.CausynthMessagePropagation$Outbound",
+    "org.apache.hadoop.ipc.CausynthSymbolicSource"
+   ],
+   "note": "not detected in 822 trials (14402 JUnit s). Lost-key-update family (as HDFS-11741, detected); the encrypted-pread path needs the target DataNode to miss the key update minting the client's key, which the heartbeat-reply-loss plans did not reach in budget."
+  }
+ }
+}

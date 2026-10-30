@@ -1,0 +1,44 @@
+{
+ "case_id": "ZOOKEEPER-710",
+ "date": "2026-10-29",
+ "cluster": "liftlab",
+ "checklist": "data/old-bugs.json",
+ "runs": {
+  "run": {
+   "results_root": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/old-bugs",
+   "host": "lift09",
+   "command": "python3 -m crashfuzz --checklist data/old-bugs.json run --case-id ZOOKEEPER-710 --stop-at-candidate --max-trials 10000 --max-seconds 14400 --results /bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/old-bugs",
+   "status": "budget_or_queue_complete",
+   "finished": true,
+   "cluster_test": "org.apache.zookeeper.test.CausynthSessionMoved710Test#aMovedConnectionKeepsThrowing",
+   "selection_profile": null,
+   "static_io_calls": 55,
+   "healthy_seconds": 8.63,
+   "healthy_target_reached": true,
+   "healthy_target_fatal_exceptions": 0,
+   "healthy_fault_points": 289,
+   "trials": 1072,
+   "trial_statuses": {
+    "unmatched": 131,
+    "checked": 474,
+    "lost_target": 467
+   },
+   "junit_seconds": 14403.6,
+   "first_candidate_trial": null,
+   "first_candidate_seconds": null,
+   "total_elapsed_seconds": 32563.108,
+   "candidates": 0,
+   "first_candidate": null,
+   "replays": [],
+   "tree": "/bigtemp/vnr3ne/wt/bd-trees-1/zookeeper-bug-710",
+   "tree_commit": "4260614d255dedc2793ed50b1cf3750ab76b36ef",
+   "neutral_adapter_classes": [
+    "edu.uva.liftlab.graphchecker.runtime.MessageDoors",
+    "edu.uva.liftlab.graphchecker.runtime.MessageDoors$Inbound",
+    "edu.uva.liftlab.graphchecker.runtime.MessageDoors$Outbound",
+    "edu.uva.liftlab.graphchecker.runtime.Sessions"
+   ],
+   "note": "not detected in budget (14404 JUnit s). Same session.owner re-pairing race as ZOOKEEPER-2886 (which reached a candidate that replayed 0/10); the throw needs the second write's checkSession to read the owner after the takeover thread set it, an order CrashFuzz's fault injection does not pin."
+  }
+ }
+}

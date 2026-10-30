@@ -1,0 +1,42 @@
+{
+ "case_id": "SOLR-6197",
+ "date": "2026-10-29",
+ "cluster": "liftlab",
+ "checklist": "data/old-bugs.json",
+ "runs": {
+  "run": {
+   "results_root": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/old-bugs",
+   "host": null,
+   "command": "python3 -m crashfuzz --checklist data/old-bugs.json run --case-id SOLR-6197 --stop-at-candidate --max-trials 10000 --max-seconds 14400 --results /bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/old-bugs",
+   "status": "no_valid_target_trial",
+   "finished": true,
+   "cluster_test": "org.apache.solr.cloud.TestCausynthMigrateLegacy#migrateUnderLegacyCloud",
+   "selection_profile": null,
+   "static_io_calls": 92,
+   "healthy_seconds": 22.106,
+   "healthy_target_reached": false,
+   "healthy_target_fatal_exceptions": 0,
+   "healthy_fault_points": 243,
+   "trials": 243,
+   "trial_statuses": {
+    "lost_target": 243
+   },
+   "junit_seconds": 12832.9,
+   "first_candidate_trial": null,
+   "first_candidate_seconds": null,
+   "total_elapsed_seconds": 13093.787,
+   "candidates": 0,
+   "first_candidate": null,
+   "replays": [],
+   "tree": "/bigtemp/vnr3ne/wt/bd-trees-1/solr-bug-6197",
+   "tree_commit": "f5d86cbd8a1f24b36ca5e5619fa6a8298952f4ce",
+   "neutral_adapter_classes": [
+    "edu.uva.liftlab.graphchecker.runtime.MessageDoors",
+    "edu.uva.liftlab.graphchecker.runtime.MessageDoors$Inbound",
+    "edu.uva.liftlab.graphchecker.runtime.MessageDoors$Outbound",
+    "edu.uva.liftlab.graphchecker.runtime.Sessions"
+   ],
+   "note": "not detected (no_valid_target_trial, 149-ish trials, 12833 JUnit s): same point and guard as SOLR-6101; the healthy run does not reach CoreContainer.create:1330 without legacyCloud false (a CONFIG change), so an I/O fault does not realize the throw."
+  }
+ }
+}

@@ -1,0 +1,67 @@
+{
+ "case_id": "HDFS-17967-A",
+ "date": "2026-10-29",
+ "cluster": "liftlab",
+ "checklist": "data/baseline-bugs.json",
+ "runs": {
+  "a": {
+   "results_root": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-a",
+   "host": "lift13",
+   "command": "python3 -m crashfuzz --checklist data/baseline-bugs.json run --case-id HDFS-17967-A --stop-at-candidate --max-trials 10000 --max-seconds 14400 --results /bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-a",
+   "status": "budget_or_queue_complete",
+   "finished": true,
+   "cluster_test": "org.apache.hadoop.hdfs.TestEncryptedTransfer#testLongLivedClientPipelineRecovery[0]",
+   "selection_profile": null,
+   "static_io_calls": 138,
+   "healthy_seconds": 24.452,
+   "healthy_target_reached": true,
+   "healthy_target_fatal_exceptions": 1,
+   "healthy_fault_points": 426,
+   "trials": 454,
+   "trial_statuses": {
+    "baseline_exception_recurrence": 229,
+    "lost_target": 108,
+    "unmatched": 89,
+    "checked": 28
+   },
+   "junit_seconds": 14426.5,
+   "first_candidate_trial": null,
+   "first_candidate_seconds": null,
+   "total_elapsed_seconds": 25316.181,
+   "candidates": 0,
+   "first_candidate": null,
+   "replays": [],
+   "symptom": "no candidate; the budget's 445/445 trials ended without a further block-key throw beyond the test's own deliberate stale-key rejection."
+  },
+  "b": {
+   "results_root": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-b",
+   "host": "lift14",
+   "command": "python3 -m crashfuzz --checklist data/baseline-bugs.json run --case-id HDFS-17967-A --stop-at-candidate --max-trials 10000 --max-seconds 14400 --results /bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-b",
+   "status": "budget_or_queue_complete",
+   "finished": true,
+   "cluster_test": "org.apache.hadoop.hdfs.TestEncryptedTransfer#testLongLivedClientPipelineRecovery[0]",
+   "selection_profile": null,
+   "static_io_calls": 138,
+   "healthy_seconds": 24.503,
+   "healthy_target_reached": true,
+   "healthy_target_fatal_exceptions": 1,
+   "healthy_fault_points": 426,
+   "trials": 445,
+   "trial_statuses": {
+    "baseline_exception_recurrence": 215,
+    "unmatched": 106,
+    "lost_target": 93,
+    "checked": 31
+   },
+   "junit_seconds": 14426.0,
+   "first_candidate_trial": null,
+   "first_candidate_seconds": null,
+   "total_elapsed_seconds": 24689.353,
+   "candidates": 0,
+   "first_candidate": null,
+   "replays": [],
+   "symptom": "no candidate; the budget's 445/445 trials ended without a further block-key throw beyond the test's own deliberate stale-key rejection."
+  }
+ },
+ "verdict": "not detected on liftlab, as on CloudLab (CloudLab stopped at 166/126 trials under the 4-hour budget; liftlab ran the full 14400 JUnit s, ~445 trials each, no candidate)."
+}

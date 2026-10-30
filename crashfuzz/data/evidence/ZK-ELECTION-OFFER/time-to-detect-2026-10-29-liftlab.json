@@ -1,0 +1,137 @@
+{
+ "case_id": "ZK-ELECTION-OFFER",
+ "date": "2026-10-29",
+ "cluster": "liftlab",
+ "checklist": "data/baseline-bugs.json",
+ "runs": {
+  "a": {
+   "results_root": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-a",
+   "host": "lift10",
+   "command": "python3 -m crashfuzz --checklist data/baseline-bugs.json run --case-id ZK-ELECTION-OFFER --stop-at-candidate --max-trials 10000 --max-seconds 14400 --results /bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-a",
+   "status": "candidate_review",
+   "finished": true,
+   "cluster_test": "org.apache.zookeeper.recipes.leader.LeaderElectionSupportTest#testNodes3",
+   "selection_profile": null,
+   "static_io_calls": 42,
+   "healthy_seconds": 5.237,
+   "healthy_target_reached": true,
+   "healthy_target_fatal_exceptions": 0,
+   "healthy_fault_points": 181,
+   "trials": 1326,
+   "trial_statuses": {
+    "lost_target": 828,
+    "checked": 485,
+    "unmatched": 12,
+    "target_exception_candidate": 1
+   },
+   "junit_seconds": 13742.8,
+   "first_candidate_trial": 1326,
+   "first_candidate_seconds": 40435.6,
+   "total_elapsed_seconds": 40457.701,
+   "candidates": 1,
+   "first_candidate": {
+    "trial": 1326,
+    "status": "target_exception_candidate",
+    "exit": 0,
+    "timed_out": false,
+    "target_fatal_exceptions": 1,
+    "healthy_target_fatal_exceptions": 0,
+    "elapsed_seconds": 12.792,
+    "realized_faults": 4,
+    "strict_injection": true,
+    "result": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-a/ZK-ELECTION-OFFER/campaign/ZK-ELECTION-OFFER/trials/1326-ce7fb3b4da7832cb7845/result.json",
+    "plan": [
+     {
+      "hitOrdinal": 1,
+      "marker": "FAULT:STATIC:IO",
+      "occurrence": "local/main-SendThread(127.0.0.1:port)/<org.apache.zookeeper.ClientCnxnSocketNIO: void doIO(java.util.Queue,org.apache.zookeeper.ClientCnxn)>#u88",
+      "occurrenceOrdinal": 1,
+      "siteId": "<org.apache.zookeeper.ClientCnxnSocketNIO: void doIO(java.util.Queue,org.apache.zookeeper.ClientCnxn)>#u88",
+      "sourceKey": "<java.nio.channels.SocketChannel: int write(java.nio.ByteBuffer)>"
+     },
+     {
+      "hitOrdinal": 1,
+      "marker": "FAULT:STATIC:IO",
+      "occurrence": "local/main-SendThread(127.0.0.1:port)/<org.apache.zookeeper.ClientCnxnSocketNIO: void doIO(java.util.Queue,org.apache.zookeeper.ClientCnxn)>#u14",
+      "occurrenceOrdinal": 1,
+      "siteId": "<org.apache.zookeeper.ClientCnxnSocketNIO: void doIO(java.util.Queue,org.apache.zookeeper.ClientCnxn)>#u14",
+      "sourceKey": "<java.nio.channels.SocketChannel: int read(java.nio.ByteBuffer)>"
+     },
+     {
+      "hitOrdinal": 6,
+      "marker": "FAULT:STATIC:IO",
+      "occurrence": "local/main-SendThread(127.0.0.1:port)/<org.apache.zookeeper.ClientCnxnSocketNIO: void doTransport(int,java.util.Queue,org.apache.zookeeper.ClientCnxn)>#u6",
+      "occurrenceOrdinal": 6,
+      "siteId": "<org.apache.zookeeper.ClientCnxnSocketNIO: void doTransport(int,java.util.Queue,org.apache.zookeeper.ClientCnxn)>#u6",
+      "sourceKey": "<java.nio.channels.Selector: int select(long)>"
+     },
+     {
+      "hitOrdinal": 3,
+      "marker": "FAULT:STATIC:IO",
+      "occurrence": "local/main-SendThread(127.0.0.1:port)/<org.apache.zookeeper.ClientCnxnSocketNIO: void doTransport(int,java.util.Queue,org.apache.zookeeper.ClientCnxn)>#u25",
+      "occurrenceOrdinal": 3,
+      "siteId": "<org.apache.zookeeper.ClientCnxnSocketNIO: void doTransport(int,java.util.Queue,org.apache.zookeeper.ClientCnxn)>#u25",
+      "sourceKey": "<java.nio.channels.SocketChannel: boolean finishConnect()>"
+     }
+    ]
+   },
+   "replays": [
+    {
+     "name": "liftlab-a-trial1326",
+     "plan_file": "data/evidence/ZK-ELECTION-OFFER/plan-liftlab-a-trial1326.json",
+     "command": "python3 -m crashfuzz --checklist data/baseline-bugs.json replay --case-id ZK-ELECTION-OFFER --plan data/evidence/ZK-ELECTION-OFFER/plan-liftlab-a-trial1326.json --repeats 10 --name liftlab-a-trial1326 --results /bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-a",
+     "k": 0,
+     "n": 10,
+     "strict": 0,
+     "statuses": [
+      "checked",
+      "checked",
+      "checked",
+      "checked",
+      "checked",
+      "checked",
+      "checked",
+      "checked",
+      "checked",
+      "checked"
+     ],
+     "root": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-a/ZK-ELECTION-OFFER/replay-liftlab-a-trial1326/ZK-ELECTION-OFFER",
+     "agent": "build/agent-v5 = runtime-agent at 9cb09d6b (the identity rules of this branch's head)",
+     "identity_rules": "9cb09d6b + any trailing -<n> masked",
+     "kind": "exact plan",
+     "started": 1793354215.516726
+    }
+   ],
+   "symptom": "NOT a detection. The oracle fired once (differential NoNodeException 0 -> 1 at FinalRequestProcessor.handleGetDataRequest:672) at trial 1326, but the JUnit test SUCCEEDS and the exact plan replays 0/10: the extra NoNodeException is a getData of a node the election recipe had already removed, which the recipe tolerates, not the orphaned-offer failure. A one-off oracle blip over the large liftlab budget."
+  },
+  "b": {
+   "results_root": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-b",
+   "host": "lift12",
+   "command": "python3 -m crashfuzz --checklist data/baseline-bugs.json run --case-id ZK-ELECTION-OFFER --stop-at-candidate --max-trials 10000 --max-seconds 14400 --results /bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/baseline-b",
+   "status": "budget_or_queue_complete",
+   "finished": true,
+   "cluster_test": "org.apache.zookeeper.recipes.leader.LeaderElectionSupportTest#testNodes3",
+   "selection_profile": null,
+   "static_io_calls": 42,
+   "healthy_seconds": 5.273,
+   "healthy_target_reached": true,
+   "healthy_target_fatal_exceptions": 0,
+   "healthy_fault_points": 182,
+   "trials": 1383,
+   "trial_statuses": {
+    "lost_target": 865,
+    "checked": 506,
+    "unmatched": 12
+   },
+   "junit_seconds": 14400.8,
+   "first_candidate_trial": null,
+   "first_candidate_seconds": null,
+   "total_elapsed_seconds": 43174.398,
+   "candidates": 0,
+   "first_candidate": null,
+   "replays": [],
+   "symptom": "no candidate in 1383 trials (14390 JUnit s)."
+  }
+ },
+ "verdict": "not detected on liftlab, as on CloudLab. CloudLab's two runs reached 273/271 trials with no candidate; liftlab's far larger budget (1326/1383 trials) produced one false-positive oracle hit in run a (JUnit passes, replays 0/10) and none in run b."
+}
