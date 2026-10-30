@@ -1,0 +1,55 @@
+{
+  "case": "hdfs-buggy-10609",
+  "seed": 0,
+  "detected": true,
+  "trials": 41,
+  "applied_trials": 39,
+  "prepare_s": 110.7,
+  "healthy_s": 31.3,
+  "elapsed_s": 454.0,
+  "corpus_edges": 1117,
+  "detection": {
+    "trial": "t00041",
+    "trial_index": 41,
+    "seconds_from_start": 422.6,
+    "seconds_with_healthy": 454.0,
+    "seconds_with_prepare": 564.7,
+    "faults": [
+      "FAULT:HADOOP_IPC:REQUEST @ Client$Connection.sendRpcRequest#u41",
+      "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException @ Client.getRpcResponse#u17"
+    ],
+    "plan": [
+      {
+        "site": "<org.apache.hadoop.ipc.Client$Connection: void sendRpcRequest(org.apache.hadoop.ipc.Client$Call)>#u41",
+        "root": "FAULT:HADOOP_IPC:REQUEST",
+        "occurrence": "outside:before||BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+        "invocation": 6,
+        "node": "",
+        "line": "? | BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+        "region": "outside before",
+        "context": "outside before DatanodeProtocolClientSideTranslatorPB.lambda$blockReport$2<DatanodeProtocolClientSideTranslatorPB.blockReport<BPServiceActor.blockReport<BPServiceActor.offerService<BPServiceActor.run",
+        "seq": -1,
+        "place": "before||BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+        "nanos": 279492309932679
+      },
+      {
+        "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u17",
+        "root": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+        "occurrence": "24e57b75338199a4",
+        "invocation": 1,
+        "node": "hdfs-10609/dn0#epoch0",
+        "line": "hdfs-N/dnN#epochN | main",
+        "region": "REGION.9ffdee3d-bc78-31d0-9907-5ae4fbc6a9ad",
+        "context": "Root:CLIENT/heartbeat HADOOP_IPC#REQUEST:DatanodeProtocol.sendHeartbeat@0>>Client.call>Client.call",
+        "seq": 15115,
+        "place": "",
+        "nanos": 279743086890440
+      }
+    ],
+    "graph_added": 22,
+    "graph_removed": 447,
+    "fatal_at": [
+      "hdfs-10609/dn0#epoch0/region/REGION.7c569c3f-b4d3-305a-bd9c-bebff1048122/ctx:Anchor:55736035d2da3dc4@HDFS_SASL/append-block/idx:<org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer$SaslServerCallbackHandler: void handle(javax.security.auth.callback.Callback[])>@0"
+    ]
+  }
+}

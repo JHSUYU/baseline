@@ -1,0 +1,591 @@
+{
+ "case": "zk-buggy-2886",
+ "seed": 0,
+ "healthy_fatal_arms": 0,
+ "healthy_noise_edges": 32,
+ "prepare_s": 84.6,
+ "healthy_s": 28.7,
+ "elapsed_s": 229.0,
+ "trials": [
+  {
+   "name": "t00001",
+   "plan": [
+    {
+     "site": "<org.apache.zookeeper.ZooKeeper: java.util.List multiInternal(org.apache.zookeeper.MultiOperationRecord)>#u35",
+     "root": "FAULT:ZOOKEEPER:WRITE:KeeperException$SessionExpiredException",
+     "occurrence": "a76dceaedcf03828",
+     "invocation": 1,
+     "node": "auto0/client0#epoch0",
+     "line": "autoN/clientN#epochN | main",
+     "region": "REGION.17cd68f8-60c3-3666-a7c7-b3ddba9348cb",
+     "context": "Root:CLIENT/test ZooKeeper.multi",
+     "seq": 11578,
+     "place": "",
+     "nanos": 280054410072019
+    }
+   ],
+   "state": "autoN/clientN#epochN | main | REGION.17cd68f8-60c3-3666-a7c7-b3ddba9348cb | Root:CLIENT/test ZooKeeper.multi | ",
+   "node": "lift06",
+   "seconds": 5.6,
+   "exit": 1,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 48,
+   "graph_added": 59,
+   "graph_removed": 103,
+   "reward": 0.7981,
+   "fatal_at": []
+  },
+  {
+   "name": "t00002",
+   "plan": [
+    {
+     "site": "<org.apache.zookeeper.server.quorum.Learner: void readSyncPacket(org.apache.zookeeper.server.quorum.QuorumPacket)>#u3",
+     "root": "FAULT:ZK_QUORUM:READ:SocketTimeoutException",
+     "occurrence": "outside:before||QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled)",
+     "invocation": 7,
+     "node": "",
+     "line": "? | QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled)",
+     "region": "outside before",
+     "context": "outside before ",
+     "seq": -1,
+     "place": "before||QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled)",
+     "nanos": 280054153188486
+    }
+   ],
+   "state": "? | QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled) | outside before | outside before  | ",
+   "node": "lift06",
+   "seconds": 9.4,
+   "exit": 0,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 9,
+   "graph_added": 32,
+   "graph_removed": 34,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00003",
+   "plan": [
+    {
+     "site": "<org.apache.zookeeper.ZooKeeper: java.util.List multiInternal(org.apache.zookeeper.MultiOperationRecord)>#u30",
+     "root": "FAULT:ZOOKEEPER:WRITE:KeeperException$ConnectionLossException",
+     "occurrence": "ed6a7802cb14ce85",
+     "invocation": 1,
+     "node": "auto0/client0#epoch0",
+     "line": "autoN/clientN#epochN | session-takeover",
+     "region": "REGION.17cd68f8-60c3-3666-a7c7-b3ddba9348cb",
+     "context": "Root:CLIENT/test CausynthSessionMoved2886Test.aMovedMultiOnlyConnectionKeepsThrowing>CausynthSessionMoved2886Test$lambda_aMovedMultiOnlyConnectionKeepsThrowing_0__1047400514.run>ZooKeeper.multi",
+     "seq": 20261,
+     "place": "",
+     "nanos": 280059465335634
+    }
+   ],
+   "state": "autoN/clientN#epochN | session-takeover | REGION.17cd68f8-60c3-3666-a7c7-b3ddba9348cb | Root:CLIENT/test CausynthSessionMoved2886Test.aMovedMultiOnlyConnectionKeepsThrowing>CausynthSessionMoved2886Test$lambda_aMovedMultiOnlyConnectionKeepsThrowing_0__1047400514.run>ZooKeeper.multi | ",
+   "node": "lift06",
+   "seconds": 14.5,
+   "exit": 1,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 9,
+   "graph_added": 35,
+   "graph_removed": 50,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00004",
+   "plan": [
+    {
+     "site": "<org.apache.zookeeper.ZooKeeper: java.util.List multiInternal(org.apache.zookeeper.MultiOperationRecord)>#u35",
+     "root": "FAULT:ZOOKEEPER:WRITE:KeeperException$SessionExpiredException",
+     "occurrence": "5760f5572b5fa05a",
+     "invocation": 1,
+     "node": "auto0/client0#epoch0",
+     "line": "autoN/clientN#epochN | old-connection-second-multi",
+     "region": "REGION.17cd68f8-60c3-3666-a7c7-b3ddba9348cb",
+     "context": "Root:CLIENT/test CausynthSessionMoved2886Test.aMovedMultiOnlyConnectionKeepsThrowing>CausynthSessionMoved2886Test$lambda_aMovedMultiOnlyConnectionKeepsThrowing_1__1707381064.run>ZooKeeper.multi",
+     "seq": 17109,
+     "place": "",
+     "nanos": 280054457940531
+    }
+   ],
+   "state": "autoN/clientN#epochN | old-connection-second-multi | REGION.17cd68f8-60c3-3666-a7c7-b3ddba9348cb | Root:CLIENT/test CausynthSessionMoved2886Test.aMovedMultiOnlyConnectionKeepsThrowing>CausynthSessionMoved2886Test$lambda_aMovedMultiOnlyConnectionKeepsThrowing_1__1707381064.run>ZooKeeper.multi | ",
+   "node": "lift06",
+   "seconds": 9.7,
+   "exit": 1,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 24,
+   "graph_added": 70,
+   "graph_removed": 60,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00005",
+   "plan": [
+    {
+     "site": "<org.apache.zookeeper.ZooKeeper: java.util.List multiInternal(org.apache.zookeeper.MultiOperationRecord)>#u30",
+     "root": "FAULT:ZOOKEEPER:WRITE:KeeperException$ConnectionLossException",
+     "occurrence": "a76dceaedcf03828",
+     "invocation": 1,
+     "node": "auto0/client0#epoch0",
+     "line": "autoN/clientN#epochN | main",
+     "region": "REGION.17cd68f8-60c3-3666-a7c7-b3ddba9348cb",
+     "context": "Root:CLIENT/test ZooKeeper.multi",
+     "seq": 11573,
+     "place": "",
+     "nanos": 280054408051151
+    }
+   ],
+   "state": "autoN/clientN#epochN | main | REGION.17cd68f8-60c3-3666-a7c7-b3ddba9348cb | Root:CLIENT/test ZooKeeper.multi | ",
+   "node": "lift06",
+   "seconds": 12.0,
+   "exit": 1,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 19,
+   "graph_added": 39,
+   "graph_removed": 111,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00006",
+   "plan": [
+    {
+     "site": "<org.apache.zookeeper.ZooKeeper: java.util.List multiInternal(org.apache.zookeeper.MultiOperationRecord)>#u35",
+     "root": "FAULT:ZOOKEEPER:WRITE:KeeperException$SessionExpiredException",
+     "occurrence": "ed6a7802cb14ce85",
+     "invocation": 1,
+     "node": "auto0/client0#epoch0",
+     "line": "autoN/clientN#epochN | session-takeover",
+     "region": "REGION.17cd68f8-60c3-3666-a7c7-b3ddba9348cb",
+     "context": "Root:CLIENT/test CausynthSessionMoved2886Test.aMovedMultiOnlyConnectionKeepsThrowing>CausynthSessionMoved2886Test$lambda_aMovedMultiOnlyConnectionKeepsThrowing_0__1047400514.run>ZooKeeper.multi",
+     "seq": 20270,
+     "place": "",
+     "nanos": 280059465573699
+    }
+   ],
+   "state": "autoN/clientN#epochN | session-takeover | REGION.17cd68f8-60c3-3666-a7c7-b3ddba9348cb | Root:CLIENT/test CausynthSessionMoved2886Test.aMovedMultiOnlyConnectionKeepsThrowing>CausynthSessionMoved2886Test$lambda_aMovedMultiOnlyConnectionKeepsThrowing_0__1047400514.run>ZooKeeper.multi | ",
+   "node": "lift06",
+   "seconds": 9.7,
+   "exit": 1,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 77,
+   "graph_added": 122,
+   "graph_removed": 45,
+   "reward": 0.9889,
+   "fatal_at": []
+  },
+  {
+   "name": "t00007",
+   "plan": [
+    {
+     "site": "<org.apache.zookeeper.ZooKeeper: java.util.List multiInternal(org.apache.zookeeper.MultiOperationRecord)>#u30",
+     "root": "FAULT:ZOOKEEPER:WRITE:KeeperException$ConnectionLossException",
+     "occurrence": "5760f5572b5fa05a",
+     "invocation": 1,
+     "node": "auto0/client0#epoch0",
+     "line": "autoN/clientN#epochN | old-connection-second-multi",
+     "region": "REGION.17cd68f8-60c3-3666-a7c7-b3ddba9348cb",
+     "context": "Root:CLIENT/test CausynthSessionMoved2886Test.aMovedMultiOnlyConnectionKeepsThrowing>CausynthSessionMoved2886Test$lambda_aMovedMultiOnlyConnectionKeepsThrowing_1__1707381064.run>ZooKeeper.multi",
+     "seq": 17086,
+     "place": "",
+     "nanos": 280054457840290
+    }
+   ],
+   "state": "autoN/clientN#epochN | old-connection-second-multi | REGION.17cd68f8-60c3-3666-a7c7-b3ddba9348cb | Root:CLIENT/test CausynthSessionMoved2886Test.aMovedMultiOnlyConnectionKeepsThrowing>CausynthSessionMoved2886Test$lambda_aMovedMultiOnlyConnectionKeepsThrowing_1__1707381064.run>ZooKeeper.multi | ",
+   "node": "lift06",
+   "seconds": 9.3,
+   "exit": 0,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 11,
+   "graph_added": 36,
+   "graph_removed": 37,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00008",
+   "plan": [
+    {
+     "site": "<org.apache.zookeeper.ZooKeeper: java.util.List multiInternal(org.apache.zookeeper.MultiOperationRecord)>#u35",
+     "root": "FAULT:ZOOKEEPER:WRITE:KeeperException$SessionExpiredException",
+     "occurrence": "e5c4e548dd46b019",
+     "invocation": 1,
+     "node": "auto0/client0#epoch0",
+     "line": "autoN/clientN#epochN | main",
+     "region": "REGION.17cd68f8-60c3-3666-a7c7-b3ddba9348cb",
+     "context": "Root:CLIENT/test ZooKeeper.multi",
+     "seq": 14451,
+     "place": "",
+     "nanos": 280054433295630
+    }
+   ],
+   "state": "autoN/clientN#epochN | main | REGION.17cd68f8-60c3-3666-a7c7-b3ddba9348cb | Root:CLIENT/test ZooKeeper.multi | ",
+   "node": "lift06",
+   "seconds": 9.3,
+   "exit": 1,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 13,
+   "graph_added": 67,
+   "graph_removed": 67,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00009",
+   "plan": [
+    {
+     "site": "<org.apache.zookeeper.server.quorum.Learner: void readSyncPacket(org.apache.zookeeper.server.quorum.QuorumPacket)>#u3",
+     "root": "FAULT:ZK_QUORUM:READ:SocketTimeoutException",
+     "occurrence": "outside:before||QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled)",
+     "invocation": 3,
+     "node": "",
+     "line": "? | QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled)",
+     "region": "outside before",
+     "context": "outside before ",
+     "seq": -1,
+     "place": "before||QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled)",
+     "nanos": 280054140536706
+    }
+   ],
+   "state": "? | QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled) | outside before | outside before  | ",
+   "node": "lift06",
+   "seconds": 9.3,
+   "exit": 0,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 0,
+   "graph_added": 40,
+   "graph_removed": 31,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00010",
+   "plan": [
+    {
+     "site": "<org.apache.zookeeper.server.quorum.Learner: void readSyncPacket(org.apache.zookeeper.server.quorum.QuorumPacket)>#u3",
+     "root": "FAULT:ZK_QUORUM:READ:SocketTimeoutException",
+     "occurrence": "outside:before||QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled)",
+     "invocation": 10,
+     "node": "",
+     "line": "? | QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled)",
+     "region": "outside before",
+     "context": "outside before ",
+     "seq": -1,
+     "place": "before||QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled)",
+     "nanos": 280054154176115
+    }
+   ],
+   "state": "? | QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled) | outside before | outside before  | ",
+   "node": "lift06",
+   "seconds": 9.4,
+   "exit": 0,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 13,
+   "graph_added": 47,
+   "graph_removed": 33,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00011",
+   "plan": [
+    {
+     "site": "<org.apache.zookeeper.server.quorum.Learner: void readSyncPacket(org.apache.zookeeper.server.quorum.QuorumPacket)>#u3",
+     "root": "FAULT:ZK_QUORUM:READ:SocketTimeoutException",
+     "occurrence": "outside:before||QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled)",
+     "invocation": 4,
+     "node": "",
+     "line": "? | QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled)",
+     "region": "outside before",
+     "context": "outside before ",
+     "seq": -1,
+     "place": "before||QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled)",
+     "nanos": 280054140536364
+    }
+   ],
+   "state": "? | QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled) | outside before | outside before  | ",
+   "node": "lift06",
+   "seconds": 9.7,
+   "exit": 0,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 1,
+   "graph_added": 37,
+   "graph_removed": 35,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00012",
+   "plan": [
+    {
+     "site": "<org.apache.zookeeper.server.quorum.Learner: void readSyncPacket(org.apache.zookeeper.server.quorum.QuorumPacket)>#u3",
+     "root": "FAULT:ZK_QUORUM:READ:SocketTimeoutException",
+     "occurrence": "outside:before||QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled)",
+     "invocation": 11,
+     "node": "",
+     "line": "? | QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled)",
+     "region": "outside before",
+     "context": "outside before ",
+     "seq": -1,
+     "place": "before||QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled)",
+     "nanos": 280054154183258
+    }
+   ],
+   "state": "? | QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled) | outside before | outside before  | ",
+   "node": "lift06",
+   "seconds": 9.3,
+   "exit": 0,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 3,
+   "graph_added": 39,
+   "graph_removed": 29,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00013",
+   "plan": [
+    {
+     "site": "<org.apache.zookeeper.server.quorum.Learner: void readSyncPacket(org.apache.zookeeper.server.quorum.QuorumPacket)>#u3",
+     "root": "FAULT:ZK_QUORUM:READ:SocketTimeoutException",
+     "occurrence": "outside:before||QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled)",
+     "invocation": 1,
+     "node": "",
+     "line": "? | QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled)",
+     "region": "outside before",
+     "context": "outside before ",
+     "seq": -1,
+     "place": "before||QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled)",
+     "nanos": 280054140536217
+    }
+   ],
+   "state": "? | QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled) | outside before | outside before  | ",
+   "node": "lift06",
+   "seconds": 9.6,
+   "exit": 0,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 3,
+   "graph_added": 33,
+   "graph_removed": 38,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00014",
+   "plan": [
+    {
+     "site": "<org.apache.zookeeper.server.quorum.Learner: void readSyncPacket(org.apache.zookeeper.server.quorum.QuorumPacket)>#u3",
+     "root": "FAULT:ZK_QUORUM:READ:SocketTimeoutException",
+     "occurrence": "outside:before||QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled)",
+     "invocation": 6,
+     "node": "",
+     "line": "? | QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled)",
+     "region": "outside before",
+     "context": "outside before ",
+     "seq": -1,
+     "place": "before||QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled)",
+     "nanos": 280054153188595
+    }
+   ],
+   "state": "? | QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled) | outside before | outside before  | ",
+   "node": "lift06",
+   "seconds": 9.9,
+   "exit": 0,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 0,
+   "graph_added": 32,
+   "graph_removed": 25,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00015",
+   "plan": [
+    {
+     "site": "<org.apache.zookeeper.server.quorum.Learner: void readSyncPacket(org.apache.zookeeper.server.quorum.QuorumPacket)>#u3",
+     "root": "FAULT:ZK_QUORUM:READ:SocketTimeoutException",
+     "occurrence": "outside:before||QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled)",
+     "invocation": 9,
+     "node": "",
+     "line": "? | QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled)",
+     "region": "outside before",
+     "context": "outside before ",
+     "seq": -1,
+     "place": "before||QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled)",
+     "nanos": 280054154162828
+    }
+   ],
+   "state": "? | QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled) | outside before | outside before  | ",
+   "node": "lift06",
+   "seconds": 14.9,
+   "exit": 0,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 0,
+   "graph_added": 31,
+   "graph_removed": 41,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00016",
+   "plan": [
+    {
+     "site": "<org.apache.zookeeper.server.quorum.Learner: void readSyncPacket(org.apache.zookeeper.server.quorum.QuorumPacket)>#u3",
+     "root": "FAULT:ZK_QUORUM:READ:SocketTimeoutException",
+     "occurrence": "outside:before||QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled)",
+     "invocation": 8,
+     "node": "",
+     "line": "? | QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled)",
+     "region": "outside before",
+     "context": "outside before ",
+     "seq": -1,
+     "place": "before||QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled)",
+     "nanos": 280054153190133
+    }
+   ],
+   "state": "? | QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled) | outside before | outside before  | ",
+   "node": "lift06",
+   "seconds": 9.5,
+   "exit": 0,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 0,
+   "graph_added": 33,
+   "graph_removed": 33,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00017",
+   "plan": [
+    {
+     "site": "<org.apache.zookeeper.server.quorum.Learner: void readSyncPacket(org.apache.zookeeper.server.quorum.QuorumPacket)>#u3",
+     "root": "FAULT:ZK_QUORUM:READ:SocketTimeoutException",
+     "occurrence": "outside:before||QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled)",
+     "invocation": 5,
+     "node": "",
+     "line": "? | QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled)",
+     "region": "outside before",
+     "context": "outside before ",
+     "seq": -1,
+     "place": "before||QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled)",
+     "nanos": 280054153186343
+    }
+   ],
+   "state": "? | QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled) | outside before | outside before  | ",
+   "node": "lift06",
+   "seconds": 9.3,
+   "exit": 0,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 2,
+   "graph_added": 46,
+   "graph_removed": 36,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00018",
+   "plan": [
+    {
+     "site": "<org.apache.zookeeper.server.quorum.Learner: void readSyncPacket(org.apache.zookeeper.server.quorum.QuorumPacket)>#u3",
+     "root": "FAULT:ZK_QUORUM:READ:SocketTimeoutException",
+     "occurrence": "outside:before||QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled)",
+     "invocation": 2,
+     "node": "",
+     "line": "? | QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled)",
+     "region": "outside before",
+     "context": "outside before ",
+     "seq": -1,
+     "place": "before||QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled)",
+     "nanos": 280054140536270
+    }
+   ],
+   "state": "? | QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled) | outside before | outside before  | ",
+   "node": "lift06",
+   "seconds": 9.9,
+   "exit": 0,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 0,
+   "graph_added": 24,
+   "graph_removed": 37,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00019",
+   "plan": [
+    {
+     "site": "<org.apache.zookeeper.server.quorum.Learner: void readSyncPacket(org.apache.zookeeper.server.quorum.QuorumPacket)>#u3",
+     "root": "FAULT:ZK_QUORUM:READ:SocketTimeoutException",
+     "occurrence": "outside:before||QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled)",
+     "invocation": 12,
+     "node": "",
+     "line": "? | QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled)",
+     "region": "outside before",
+     "context": "outside before ",
+     "seq": -1,
+     "place": "before||QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled)",
+     "nanos": 280054154234094
+    }
+   ],
+   "state": "? | QuorumPeer[myid=N](plain=N.N.N.N:N)(secure=disabled) | outside before | outside before  | ",
+   "node": "lift06",
+   "seconds": 10.0,
+   "exit": 0,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 0,
+   "graph_added": 35,
+   "graph_removed": 34,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00020",
+   "plan": [
+    {
+     "site": "<org.apache.zookeeper.ZooKeeper: java.util.List multiInternal(org.apache.zookeeper.MultiOperationRecord)>#u30",
+     "root": "FAULT:ZOOKEEPER:WRITE:KeeperException$ConnectionLossException",
+     "occurrence": "e5c4e548dd46b019",
+     "invocation": 1,
+     "node": "auto0/client0#epoch0",
+     "line": "autoN/clientN#epochN | main",
+     "region": "REGION.17cd68f8-60c3-3666-a7c7-b3ddba9348cb",
+     "context": "Root:CLIENT/test ZooKeeper.multi",
+     "seq": 14446,
+     "place": "",
+     "nanos": 280054433151563
+    }
+   ],
+   "state": "autoN/clientN#epochN | main | REGION.17cd68f8-60c3-3666-a7c7-b3ddba9348cb | Root:CLIENT/test ZooKeeper.multi | ",
+   "node": "lift06",
+   "seconds": 9.6,
+   "exit": 0,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 0,
+   "graph_added": 34,
+   "graph_removed": 29,
+   "reward": 0.0,
+   "fatal_at": []
+  }
+ ]
+}

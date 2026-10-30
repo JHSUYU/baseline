@@ -1,0 +1,55 @@
+{
+  "case": "hbase-buggy-20642",
+  "seed": 0,
+  "detected": true,
+  "trials": 113,
+  "applied_trials": 109,
+  "prepare_s": 167.7,
+  "healthy_s": 45.9,
+  "elapsed_s": 3721.1,
+  "corpus_edges": 206,
+  "detection": {
+    "trial": "t00113",
+    "trial_index": 113,
+    "seconds_from_start": 3675.0,
+    "seconds_with_healthy": 3721.0,
+    "seconds_with_prepare": 3888.7,
+    "faults": [
+      "FAULT:HBASE_RPC:REQUEST @ AbstractRpcClient.callMethod#u60",
+      "FAULT:HBASE_RPC:RESPONSE:CallTimeoutException @ RpcConnection.finishCall#u44"
+    ],
+    "plan": [
+      {
+        "site": "<org.apache.hadoop.hbase.ipc.AbstractRpcClient: org.apache.hadoop.hbase.ipc.Call callMethod(org.apache.hbase.thirdparty.com.google.protobuf.Descriptors$MethodDescriptor,org.apache.hadoop.hbase.ipc.HBaseRpcController,org.apache.hbase.thirdparty.com.google.protobuf.Message,org.apache.hbase.thirdparty.com.google.protobuf.Message,org.apache.hadoop.hbase.security.User,org.apache.hadoop.hbase.net.Address,org.apache.hbase.thirdparty.com.google.protobuf.RpcCallback)>#u60",
+        "root": "FAULT:HBASE_RPC:REQUEST",
+        "occurrence": "871d11efebe662a5",
+        "invocation": 1,
+        "node": "auto0/client0#epoch0",
+        "line": "autoN/clientN#epochN | main",
+        "region": "REGION.ac7e6e0e-946f-3a60-b846-20cd6341259d",
+        "context": "Root:CLIENT/test AbstractRpcBasedConnectionRegistry$lambda_null_10__1394703108.call>AbstractRpcClient$RpcChannelImplementation.callMethod>AbstractRpcClient.access$300",
+        "seq": 3324,
+        "place": "",
+        "nanos": 281207798768917
+      },
+      {
+        "site": "<org.apache.hadoop.hbase.ipc.RpcConnection: void finishCall(org.apache.hadoop.hbase.shaded.protobuf.generated.RPCProtos$ResponseHeader,java.io.InputStream,org.apache.hadoop.hbase.ipc.Call)>#u44",
+        "root": "FAULT:HBASE_RPC:RESPONSE:CallTimeoutException",
+        "occurrence": "a5fe07ecef0b627e",
+        "invocation": 1,
+        "node": "auto0/client0#epoch0",
+        "line": "autoN/clientN#epochN | RPCClient-NioEventLoopGroup-N-N",
+        "region": "REGION.678dfe9c-beca-356b-8093-22d00e179f4e",
+        "context": "Anchor@HBASE_RPC/test ",
+        "seq": 7260,
+        "place": "",
+        "nanos": 282200447420870
+      }
+    ],
+    "graph_added": 9,
+    "graph_removed": 0,
+    "fatal_at": [
+      "auto0/master0#epoch0/region/REGION.98cba534-e757-3508-990f-4855688e1e1e/ctx:Anchor:3bb35a7d1bfd5a5e@HBASE_RPC/test/idx:<org.apache.hadoop.hbase.master.procedure.AbstractStateMachineTableProcedure: void preflightChecks(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv,java.lang.Boolean)>@0"
+    ]
+  }
+}
