@@ -78,7 +78,8 @@ class TreeFixture:
         return {'case_id': 'OLD-1', 'system': 'HBase', 'cluster_test': TEST + '#check',
                 'tree': {'path': str(self.tree),
                          'jvm_properties': ['-Dtest.build.data={data}',
-                                            '-Dcache={test_classes}', '-Dflag=true']}}
+                                            '-Dcache={test_classes}', '-Dflag=true',
+                                            '-Dzookeeper.junit.threadid={worker}']}}
 
 
 class TreeWorkloadTest(unittest.TestCase):
@@ -110,6 +111,22 @@ class TreeWorkloadTest(unittest.TestCase):
             self.assertNotIn(str(fixture.test_classes), selector['classpath'])
             self.assertEqual(selector['max_methods'], 400)
 
+    def test_a_relative_tree_is_under_the_trees_root_and_a_moved_tree_is_rerooted(self):
+        with tempfile.TemporaryDirectory() as directory:
+            fixture = TreeFixture(Path(directory))
+            moved = Path(directory) / 'trees' / 'moved'
+            moved.parent.mkdir()
+            fixture.tree.rename(moved)
+            row = fixture.row()
+            row['tree']['path'] = 'moved'
+            with patch.object(settings, 'TREES', moved.parent):
+                self.assertEqual(tree.tree_of(row), moved)
+                workload = tree.resolve(row, TEST, 'check', ('lib/demo-server-1.0.jar',), '2g')
+            self.assertEqual(workload['tree'], str(moved.resolve()))
+            self.assertIn(str(moved / 'server/target/classes'), workload['classpath'])
+            self.assertIn(str(moved / 'common/target/classes'), workload['classpath'])
+            self.assertEqual(workload['test_classes'], str(moved / 'server/target/test-classes'))
+
     def test_a_tree_without_the_release_modules_is_refused(self):
         with tempfile.TemporaryDirectory() as directory:
             fixture = TreeFixture(Path(directory))
@@ -134,7 +151,8 @@ class TreeWorkloadTest(unittest.TestCase):
             request = base.Request('OLD-1', TEST, 'check', Path(directory) / 'out', None, None,
                                    60)
             scratch = Path(directory) / 'scratch'
-            with patch.object(tree_runner, 'compile_runner') as compiled, \
+            with patch.dict('os.environ', {'CRASHFUZZ_WORKER_ID': '2'}), \
+                    patch.object(tree_runner, 'compile_runner') as compiled, \
                     patch.object(tree_runner, 'require_agent', return_value=Path('/agent.jar')), \
                     patch.object(settings, 'BUILD', Path(directory) / 'build'):
                 argv = tree_runner.command(workload, request, scratch)
@@ -142,6 +160,7 @@ class TreeWorkloadTest(unittest.TestCase):
                 self.assertIn('-Dtest.build.data=' + str(scratch / 'data'), argv)
                 self.assertIn('-Dcache=' + str(fixture.test_classes), argv)
                 self.assertIn('-Dflag=true', argv)
+                self.assertIn('-Dzookeeper.junit.threadid=2', argv)   # this node's worker
                 self.assertIn('-Xmx2g', argv)
                 self.assertEqual(argv[-3:], ['RunJupiterMethod', TEST, 'check'])
                 self.assertNotIn('GraphChecker', argv[argv.index('-cp') + 1])

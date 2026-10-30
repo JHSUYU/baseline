@@ -61,7 +61,11 @@ def command(workload: dict[str, Any], request: Request, scratch: Path) -> list[s
     places = {"tmp": str(scratch / "tmp"), "data": str(scratch / "data"),
               "scratch": str(scratch), "tree": workload["tree"],
               "test_classes": workload.get("test_classes") or "",
-              "systems": str(settings.SYSTEM_FILES)}
+              "systems": str(settings.SYSTEM_FILES),
+              # Concurrent runs on one node: each its own worker id (a ZooKeeper
+              # test's PortAssignment takes its port range from it).
+              "worker": os.environ.get("CRASHFUZZ_WORKER_ID", "1"),
+              "workers": os.environ.get("CRASHFUZZ_WORKER_COUNT", "1")}
     properties = [value.format_map(places) for value in workload["jvm_properties"]]
     return [java("java"), "-ea", "-Xmx" + workload["heap"], "-Djava.awt.headless=true",
             "-Dsun.reflect.noInflation=true", "-Dorg.slf4j.simpleLogger.defaultLogLevel=warn",

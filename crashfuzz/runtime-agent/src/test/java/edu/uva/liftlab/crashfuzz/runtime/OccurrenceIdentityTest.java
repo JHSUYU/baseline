@@ -47,6 +47,16 @@ public class OccurrenceIdentityTest {
     }
 
     @Test
+    public void perRunSessionIdInAThreadNameDoesNotBreakReplay() {
+        String site = "/<example.ZkStateWriter: void write()>#u7";
+        String first = "local/OverseerStateUpdate-72075349130084366-127.0.0.1:41011_solr-n_0000000000" + site;
+        String second = "local/OverseerStateUpdate-72075395483484162-127.0.0.1:36011_solr-n_0000000000" + site;
+        assertEquals(OccurrenceIdentity.stable(first), OccurrenceIdentity.stable(second));
+        assertNotEquals(OccurrenceIdentity.stable("local/handler-1" + site),
+                OccurrenceIdentity.stable("local/handler-2" + site));
+    }
+
+    @Test
     public void hbaseListenerSlashPortDoesNotBreakReplay() {
         String site = "/<example.Listener: void accept()>#u3";
         String first = "local/Listener at localhost/45157" + site;

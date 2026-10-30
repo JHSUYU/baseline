@@ -30,6 +30,8 @@ RESULTS = Path(os.environ.get("CRASHFUZZ_RESULTS", "/bigtemp/vnr3ne/crashfuzz-re
 JAVA_HOME = Path(os.environ.get("CRASHFUZZ_JAVA_HOME", "/usr/lib/jvm/java-8-openjdk-amd64"))
 JAVA_BIN = JAVA_HOME / "bin"
 M2 = Path(os.environ.get("CRASHFUZZ_M2", "/bigtemp/vnr3ne/m2/crashfuzz"))
+# The built source trees tree-mode rows name by a relative path (crashfuzz/tree.py).
+TREES = Path(os.environ.get("CRASHFUZZ_TREES", "/bigtemp/vnr3ne/wt/bd-trees-1"))
 # Maven: on PATH on some lifts, only under /usr/lib/maven on others.
 MVN = os.environ.get("CRASHFUZZ_MVN") or shutil.which("mvn") or "/usr/lib/maven/bin/mvn"
 # Generated runner classes (compiled launchers, unpacked test jars).

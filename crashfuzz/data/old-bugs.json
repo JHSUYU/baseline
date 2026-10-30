@@ -1,13 +1,13 @@
 {
  "schema_version": 1,
- "about": "GraphChecker's buggy-detect cases: old bugs put back by hand on today's trees (fork branches graphchecker/<sys>-bug-<jira>), each with the workload GraphChecker used (the case's test_class#test_method on the bug's tree) and the point's own declared throw as the oracle, at its line on the bug tree. Each row's tree is a built checkout (crashfuzz/tree.py); jvm_properties are GraphChecker's workload JVM properties for the system (experiments/<sys>/system.sh, system_jvm_properties), without GraphChecker's own recording properties.",
+ "about": "GraphChecker's buggy-detect cases: old bugs put back by hand on today's trees (fork branches graphchecker/<sys>-bug-<jira>), each with the workload GraphChecker used (the case's test_class#test_method on the bug's tree) and the point's own declared throw as the oracle, at its line on the bug tree. Each row's tree is a built checkout (crashfuzz/tree.py); jvm_properties are GraphChecker's workload JVM properties for the system (experiments/<sys>/system.sh, system_jvm_properties), without GraphChecker's own recording properties. A row's tree path is relative to CRASHFUZZ_TREES (default /bigtemp/vnr3ne/wt/bd-trees-1).",
  "not_run": [
   {
    "case_id": "HBASE-28533",
    "graphchecker_case": "hbase-buggy-28533",
    "point": "hbase-adhoc-15",
    "tree": {
-    "path": "/bigtemp/vnr3ne/wt/bd-trees-1/hbase-bug-28533",
+    "path": "hbase-bug-28533",
     "branch": "graphchecker/hbase-bug-28533"
    },
    "reason": "no workload: GraphChecker found the point's throw (MergeTableRegionsProcedure.prepareMergeRegion :507) unreachable on today's code -- a merge after the failed split is refused earlier, in the procedure's constructor (checkRegionsToMerge -> checkOnline, another throw), so GraphChecker declared no case and no test; there is no workload to run CrashFuzz on."
@@ -34,7 +34,7 @@
     "site_id": "<org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager: byte[] retrieveDataEncryptionKey(int,byte[])>#L590"
    },
    "tree": {
-    "path": "/bigtemp/vnr3ne/wt/bd-trees-1/hadoop-hdfs-bug-11741",
+    "path": "hadoop-hdfs-bug-11741",
     "branch": "graphchecker/hdfs-bug-11741",
     "commit": "c0af4cbcfe5211f838aa5e149b15d2a846e3da27",
     "jvm_properties": [
@@ -60,7 +60,7 @@
     "site_id": "<org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager: byte[] retrievePassword(org.apache.hadoop.hdfs.security.token.block.BlockTokenIdentifier)>#L543"
    },
    "tree": {
-    "path": "/bigtemp/vnr3ne/wt/bd-trees-1/hadoop-hdfs-bug-17383",
+    "path": "hadoop-hdfs-bug-17383",
     "branch": "graphchecker/hdfs-bug-17383",
     "commit": "1e519fa598a148136ebbf09c1b2ae9aea1a74f9a",
     "jvm_properties": [
@@ -86,7 +86,7 @@
     "site_id": "<org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager: byte[] retrieveDataEncryptionKey(int,byte[])>#L590"
    },
    "tree": {
-    "path": "/bigtemp/vnr3ne/wt/bd-trees-1/hadoop-hdfs-bug-12931",
+    "path": "hadoop-hdfs-bug-12931",
     "branch": "graphchecker/hdfs-bug-12931",
     "commit": "d9fde9f94807439adf903584161eebf358c8f6a3",
     "jvm_properties": [
@@ -112,7 +112,7 @@
     "site_id": "<org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager: byte[] retrieveDataEncryptionKey(int,byte[])>#L590"
    },
    "tree": {
-    "path": "/bigtemp/vnr3ne/wt/bd-trees-1/hadoop-hdfs-bug-5766",
+    "path": "hadoop-hdfs-bug-5766",
     "branch": "graphchecker/hdfs-bug-5766",
     "commit": "a8f16edc154c1a2d148de1f216dfc66f309c6335",
     "jvm_properties": [
@@ -138,7 +138,7 @@
     "site_id": "<org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager: byte[] retrieveDataEncryptionKey(int,byte[])>#L590"
    },
    "tree": {
-    "path": "/bigtemp/vnr3ne/wt/bd-trees-1/hadoop-hdfs-bug-10609",
+    "path": "hadoop-hdfs-bug-10609",
     "branch": "graphchecker/hdfs-bug-10609",
     "commit": "bec4a7e0e52dc2c1828a5bf5c21459cc1932872f",
     "jvm_properties": [
@@ -164,7 +164,7 @@
     "site_id": "<org.apache.hadoop.hdfs.server.namenode.FSEditLog: void endCurrentLogSegment(boolean)>#L1467"
    },
    "tree": {
-    "path": "/bigtemp/vnr3ne/wt/bd-trees-1/hadoop-hdfs-bug-14075",
+    "path": "hadoop-hdfs-bug-14075",
     "branch": "graphchecker/hdfs-bug-14075",
     "commit": "7e8681a724dbe19f4f6b3ca470c28a677029e107",
     "jvm_properties": [
@@ -190,7 +190,7 @@
     "site_id": "<org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage: boolean doTransition(org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,org.apache.hadoop.hdfs.server.common.HdfsServerConstants$StartupOption,java.util.List,org.apache.hadoop.conf.Configuration)>#L455"
    },
    "tree": {
-    "path": "/bigtemp/vnr3ne/wt/bd-trees-1/hadoop-hdfs-bug-14311",
+    "path": "hadoop-hdfs-bug-14311",
     "branch": "graphchecker/hdfs-bug-14311",
     "commit": "be29cd3c07456bc915d0f8f317f7034a210641a3",
     "jvm_properties": [
@@ -217,7 +217,7 @@
     "site_id": "<org.apache.hadoop.hbase.security.token.AuthenticationTokenSecretManager: byte[] retrievePassword(org.apache.hadoop.hbase.security.token.AuthenticationTokenIdentifier)>#L139"
    },
    "tree": {
-    "path": "/bigtemp/vnr3ne/wt/bd-trees-1/hbase-bug-15039",
+    "path": "hbase-bug-15039",
     "branch": "graphchecker/hbase-bug-15039",
     "commit": "c2cecb37566a44b109d2e4dd604ce07586c0dc37",
     "jvm_properties": [
@@ -246,7 +246,7 @@
     "site_id": "<org.apache.hadoop.hbase.master.procedure.AbstractStateMachineTableProcedure: void preflightChecks(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv,java.lang.Boolean)>#L163"
    },
    "tree": {
-    "path": "/bigtemp/vnr3ne/wt/bd-trees-1/hbase-bug-20642",
+    "path": "hbase-bug-20642",
     "branch": "graphchecker/hbase-bug-20642",
     "commit": "1ba966bb6ca149a4d7994be50965510db13a1d67",
     "jvm_properties": [
@@ -275,7 +275,7 @@
     "site_id": "<org.apache.zookeeper.server.SessionTrackerImpl: void checkSession(long,java.lang.Object)>#L367"
    },
    "tree": {
-    "path": "/bigtemp/vnr3ne/wt/bd-trees-1/zookeeper-bug-710",
+    "path": "zookeeper-bug-710",
     "branch": "graphchecker/zk-bug-710",
     "commit": "4260614d255dedc2793ed50b1cf3750ab76b36ef",
     "jvm_properties": [
@@ -285,7 +285,9 @@
      "-Dcausynth.cluster.automatic=true",
      "-Dzookeeper.commitProcessor.numWorkerThreads=1",
      "-Dzookeeper.snapCount=1000000",
-     "-Dzookeeper.nio.numWorkerThreads=0"
+     "-Dzookeeper.nio.numWorkerThreads=0",
+     "-Dzookeeper.junit.threadid={worker}",
+     "-Dtest.junit.threads={workers}"
     ]
    },
    "graphchecker_case": "zk-buggy-710",
@@ -306,7 +308,7 @@
     "site_id": "<org.apache.zookeeper.server.SessionTrackerImpl: void checkSession(long,java.lang.Object)>#L367"
    },
    "tree": {
-    "path": "/bigtemp/vnr3ne/wt/bd-trees-1/zookeeper-bug-2886",
+    "path": "zookeeper-bug-2886",
     "branch": "graphchecker/zk-bug-2886",
     "commit": "b8b7149f44827986c15388c263314942bae643a1",
     "jvm_properties": [
@@ -316,7 +318,9 @@
      "-Dcausynth.cluster.automatic=true",
      "-Dzookeeper.commitProcessor.numWorkerThreads=1",
      "-Dzookeeper.snapCount=1000000",
-     "-Dzookeeper.nio.numWorkerThreads=0"
+     "-Dzookeeper.nio.numWorkerThreads=0",
+     "-Dzookeeper.junit.threadid={worker}",
+     "-Dtest.junit.threads={workers}"
     ]
    },
    "graphchecker_case": "zk-buggy-2886",
@@ -337,7 +341,7 @@
     "site_id": "<org.apache.solr.handler.admin.CollectionsHandler: void forceLeaderElection(org.apache.solr.request.SolrQueryRequest,org.apache.solr.handler.admin.CollectionsHandler)>#L1477"
    },
    "tree": {
-    "path": "/bigtemp/vnr3ne/wt/bd-trees-1/solr-bug-9440",
+    "path": "solr-bug-9440",
     "branch": "graphchecker/solr-bug-9440",
     "commit": "1e7324c4613968fb8d0deab892d896499e83767f",
     "jvm_properties": [
@@ -378,7 +382,7 @@
     "site_id": "<org.apache.solr.core.CoreContainer: org.apache.solr.core.SolrCore create(java.lang.String,java.nio.file.Path,java.util.Map,boolean)>#L1330"
    },
    "tree": {
-    "path": "/bigtemp/vnr3ne/wt/bd-trees-1/solr-bug-6101",
+    "path": "solr-bug-6101",
     "branch": "graphchecker/solr-bug-6101",
     "commit": "040ae6d4c6f0f56139c1b2a8b1073d2e824ded14",
     "jvm_properties": [
@@ -419,7 +423,7 @@
     "site_id": "<org.apache.solr.core.CoreContainer: org.apache.solr.core.SolrCore create(java.lang.String,java.nio.file.Path,java.util.Map,boolean)>#L1330"
    },
    "tree": {
-    "path": "/bigtemp/vnr3ne/wt/bd-trees-1/solr-bug-6197",
+    "path": "solr-bug-6197",
     "branch": "graphchecker/solr-bug-6197",
     "commit": "f5d86cbd8a1f24b36ca5e5619fa6a8298952f4ce",
     "jvm_properties": [

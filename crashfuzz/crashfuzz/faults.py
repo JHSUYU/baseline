@@ -143,6 +143,9 @@ def stable_occurrence(address: str) -> str:
     actor = re.sub(r"(?i)\b(localhost|127\.0\.0\.1)/[0-9]{2,5}\b", r"\1/port", actor)
     actor = re.sub(r"\bport=[0-9]{2,5}\b", "port=port", actor)
     actor = re.sub(r"\bport\s+[0-9]{2,5}\b", "port port", actor)
+    # A run of ten or more digits is a per-run identifier (a ZooKeeper session id,
+    # a hash code, a timestamp), never a stable name (the agent masks it alike).
+    actor = re.sub(r"(?<![0-9])[0-9]{10,}(?![0-9])", "id", actor)
     return address[:node_end + 1] + actor + address[site_start:]
 
 

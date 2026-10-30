@@ -4,7 +4,7 @@ A row normally runs its system's Apache release (``settings.DEPS``). A row
 with a ``tree`` field runs a built checkout instead -- an old bug put back
 by hand on today's code, whose fix the releases already hold::
 
-    "tree": {"path": "/.../hadoop-hdfs-bug-11741",
+    "tree": {"path": "hadoop-hdfs-bug-11741",       # under CRASHFUZZ_TREES, or absolute
              "jvm_properties": ["-Dtest.build.data={data}"],   # optional
              "report": "<path of the test's JUnit XML report>"}  # optional
 
@@ -28,7 +28,9 @@ Everything the run needs comes from the tree's own build:
 ``jvm_properties`` are the workload JVM's system properties; ``{tmp}``,
 ``{data}``, ``{scratch}``, ``{tree}``, ``{test_classes}`` and ``{systems}``
 name the run's scratch directories, the tree, its test classes and
-``crashfuzz/systems/``. The result is ``<case>/tree-workload.json``,
+``crashfuzz/systems/``; ``{worker}`` and ``{workers}`` the run's worker id and
+the node's worker count (``CRASHFUZZ_WORKER_ID``, ``CRASHFUZZ_WORKER_COUNT``,
+default 1), so concurrent runs on one node take disjoint ports. The result is ``<case>/tree-workload.json``,
 which the runner (``runners/tree.py``) executes.
 """
 
@@ -59,9 +61,12 @@ _JAR_VERSION = re.compile(r"^(?P<artifact>.+?)-(?P<version>\d[^/]*?)(?P<tests>-t
 
 
 def tree_of(row: dict[str, Any]) -> Path | None:
-    """The built tree a row runs on, or None for a release row."""
+    """The built tree a row runs on (a relative path is under ``settings.TREES``), or None."""
     tree = row.get("tree")
-    return Path(tree["path"]) if tree else None
+    if not tree:
+        return None
+    path = Path(tree["path"])
+    return path if path.is_absolute() else settings.TREES / path
 
 
 def source_root(row: dict[str, Any], release_source: Path) -> Path:
@@ -85,6 +90,21 @@ def report_path(tree: Path, test_class: str, declared: str | None = None) -> Pat
         if found:
             return found[0]
     raise FileNotFoundError(f"no JUnit report of {test_class} under {tree} (build the tree's test)")
+
+
+def recorded_root(properties: dict[str, str], report: Path, tree: Path) -> Path | None:
+    """Where the tree was when its test ran, from the report (Surefire's ``basedir``, the
+    test's module; Ant's ``common.dir``, the Lucene directory of a Lucene/Solr tree)."""
+    basedir = properties.get("basedir")
+    if basedir and report.parent.name == "surefire-reports":
+        module = report.parents[2].relative_to(tree)
+        recorded = Path(basedir)
+        if not module.parts:
+            return recorded
+        if recorded.parts[-len(module.parts):] == module.parts:
+            return Path(*recorded.parts[:-len(module.parts)])
+    common = properties.get("common.dir")
+    return Path(common).parent if common else None
 
 
 def report_properties(report: Path) -> dict[str, str]:
@@ -210,7 +230,7 @@ def launcher_kind(classpath: list[str], test_class: str) -> str:
 def resolve(row: dict[str, Any], test_class: str, test_method: str,
             analysis_jars: tuple[str, ...], heap: str) -> dict[str, Any]:
     """The workload of a tree row: classpath, analysis directories, launcher."""
-    tree = Path(row["tree"]["path"]).resolve()
+    tree = tree_of(row).resolve()
     if not tree.is_dir():
         raise FileNotFoundError(f"tree missing: {tree}")
     report = report_path(tree, test_class, row["tree"].get("report"))
@@ -218,6 +238,11 @@ def resolve(row: dict[str, Any], test_class: str, test_method: str,
     recorded = [entry for entry in properties.get("java.class.path", "").split(os.pathsep) if entry]
     if not recorded:
         raise ValueError(f"report states no java.class.path: {report}")
+    # A tree built (and tested) at another path: its own entries move with it.
+    root = recorded_root(properties, report, tree)
+    if root is not None and root != tree:
+        recorded = [str(tree) + entry[len(str(root)):] if entry.startswith(str(root) + "/")
+                    else entry for entry in recorded]
     modules = tree_modules(tree)
     classpath: list[str] = []
     dropped: list[str] = []

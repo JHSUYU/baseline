@@ -202,6 +202,15 @@ class CoverageIoTest(unittest.TestCase):
                   'ms1140:33812' + site)
         self.assertEqual(stable_occurrence(first), stable_occurrence(second))
 
+    def test_a_per_run_session_id_in_a_thread_name_keeps_replayable_identity(self):
+        site = '/<example.ZkStateWriter: void write()>#u7'
+        first = 'local/OverseerStateUpdate-72075349130084366-127.0.0.1:41011_solr-n_0000000000' + site
+        second = 'local/OverseerStateUpdate-72075395483484162-127.0.0.1:36011_solr-n_0000000000' + site
+        self.assertEqual(stable_occurrence(first), stable_occurrence(second))
+        # short ordinals stay names: two handlers are two actors
+        self.assertNotEqual(stable_occurrence('local/handler-1' + site),
+                            stable_occurrence('local/handler-2' + site))
+
     def test_hbase_listener_slash_port_keeps_replayable_actor_identity(self):
         site = '/<example.Listener: void accept()>#u3'
         first = 'local/Listener at localhost/45157' + site
