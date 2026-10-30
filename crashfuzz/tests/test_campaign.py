@@ -610,6 +610,22 @@ class CoverageIoTest(unittest.TestCase):
         self.assertFalse(independent_reply_fanout([four, four]))
         self.assertFalse(independent_reply_fanout([four, {**two, 'phase': 'after'}]))
 
+    def test_a_plans_siblings_are_its_call_on_every_node_of_the_family(self):
+        from crashfuzz.faults import sibling_plan
+        watch = {'marker': 'FAULT:STATIC:IO', 'siteId': '<example.Watcher: void process()>#u13',
+                 'sourceKey': '<example.Store: byte[] getData()>', 'hitOrdinal': 1}
+        node = lambda n, hit=1: {**watch, 'hitOrdinal': hit,
+                                 'occurrence': f'local/solr:watch:node{n}/<example.Watcher: void process()>#u13'}
+        plan = [{**node(4), 'exceptionClass': 'example.ConnectionLoss'}]
+        observed = [node(2), node(3), node(1), node(4), node(2, 2),
+                    {**node(1), 'siteId': '<example.Other: void x()>#u1'}]
+        siblings = sibling_plan(plan, observed)
+        self.assertEqual([p['occurrence'].split('/')[1] for p in siblings],
+                         ['solr:watch:node2', 'solr:watch:node3', 'solr:watch:node1',
+                          'solr:watch:node4'])            # hit 1 everywhere, in observed order
+        self.assertTrue(all(p['exceptionClass'] == 'example.ConnectionLoss' for p in siblings))
+        self.assertTrue(independent_reply_fanout(siblings))   # one call on distinct nodes: unordered
+
     def test_strict_injection_accepts_only_complete_unordered_reply_fanout(self):
         reply = {**A, 'phase': 'after',
                  'responseShape': 'example.Reply|commands=[example.Update]'}

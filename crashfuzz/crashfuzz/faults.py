@@ -162,6 +162,42 @@ def actor_of(point: Point) -> str:
     return point["occurrence"].rsplit("/<", 1)[0]
 
 
+# --- a replay aid: a plan's siblings ------------------------------------------
+
+def actor_family(point: Point) -> str:
+    """An occurrence's actor with its logical node and every number masked."""
+    actor = actor_of({**point, "occurrence": stable_occurrence(point["occurrence"])})
+    return re.sub(r"[0-9]+", "#", actor.rsplit("|", 1)[0])
+
+
+def sibling_plan(plan: Sequence, observed: Sequence) -> Sequence:
+    """The plan with each fault planted at all of its siblings the detecting run observed.
+
+    A sibling is the same I/O call (marker, site, source key, phase, hit
+    ordinal) by an actor of the same family on any logical node: every node's
+    watch for one store change, every session's call of one lock. A replay
+    aid for a race over which sibling's call is decisive; the detection
+    stays the exact plan. Siblings keep the run's observed order.
+    """
+    keys = ("marker", "siteId", "sourceKey", "hitOrdinal")
+    siblings: Sequence = []
+    seen: set[str] = set()
+    for fault in plan:
+        for point in observed:
+            if (any(point.get(key) != fault.get(key) for key in keys) or
+                    point.get("phase", "before") != fault.get("phase", "before") or
+                    actor_family(point) != actor_family(fault)):
+                continue
+            sibling = {key: value for key, value in point.items() if key != "exceptionClass"}
+            if fault.get("exceptionClass"):
+                sibling["exceptionClass"] = fault["exceptionClass"]
+            name = fingerprint(sibling)
+            if name not in seen:
+                seen.add(name)
+                siblings.append(sibling)
+    return siblings
+
+
 # --- did the trial apply exactly what was asked? ----------------------------
 
 def strict_injection(result: dict[str, Any], sequence: Sequence) -> bool:
