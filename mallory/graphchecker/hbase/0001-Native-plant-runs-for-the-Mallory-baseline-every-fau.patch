@@ -1,0 +1,275 @@
+From acd9f25f28d05cfdbeb84b5187e74eb2b8b392b2 Mon Sep 17 00:00:00 2001
+From: ZhenyuLi
+ <ZhenyuLi@node0.experiment.silentfailure-pg0.clemson.cloudlab.us>
+Date: Sun, 25 Oct 2026 14:26:12 +0000
+Subject: [PATCH 1/6] Native plant runs for the Mallory baseline: every fault
+ marker observed, a plant-run command, TARGET rows
+
+The Mallory baseline drives fault trials as native runs of a case's workload
+on its SEED's recording weave, planting faults as REPRODUCE does, and reads
+GraphChecker's graph of each run (schedule.jsonl, the trace's exchanges).
+
+- RecordingPlant: with -Dcausynth.plant.observe=true a planted run states
+  every fault marker it evaluates (PLANT_MARKER: root name, call site and
+  enclosing occurrence ids innermost first), so a driver can plant a FAULT
+  row at any marker invocation an earlier run reached; marker() reads the
+  enclosing occurrences once.
+- explore/TargetRows: a plant's TARGET rows for the declared target
+  occurrence, as ConfirmMain writes them (PLANT_FATAL atAnchor is the oracle).
+- run_engine.sh plant-run <run dir> <plant> [bound]: one native planted run
+  (run_configured_workload on analysis_classes_dir); campaign_stop_after=PLAN
+  stops once PLAN resolved the declared target (the schedule index's
+  target.occurrenceId).
+- experiments/lib/run.sh writes the output's declared-target.yaml once,
+  through a file of the writer's own: runs side by side share it.
+
+Checked on hbase-bugs-backup-lock-reply-lost: a TARGET-only plant ran 16 s
+with 216 PLANT_MARKER rows and no PLANT_FATAL; planting GraphChecker's one
+FAULT root (RpcConnection#finishCall's RESPONSE) stated PLANT_FATAL atAnchor.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ experiments/lib/run.sh                        | 11 ++--
+ run_engine.sh                                 | 34 ++++++++++--
+ .../graphchecker/explore/TargetRows.java      | 52 +++++++++++++++++++
+ .../runtime/CausynthTraceRecorder.java        | 15 ++++++
+ .../graphchecker/runtime/RecordingPlant.java  | 27 +++++++++-
+ 5 files changed, 131 insertions(+), 8 deletions(-)
+ create mode 100644 src/main/java/edu/uva/liftlab/graphchecker/explore/TargetRows.java
+
+diff --git a/experiments/lib/run.sh b/experiments/lib/run.sh
+index 6bd706c66..a4342ad59 100755
+--- a/experiments/lib/run.sh
++++ b/experiments/lib/run.sh
+@@ -34,9 +34,14 @@ export CAUSYNTH_OUTPUT_DIR=${output_dir}
+ if [[ ! -f ${target_spec} ]]; then
+   mkdir -p "${CAUSYNTH_OUTPUT_DIR}"
+   target_spec=${CAUSYNTH_OUTPUT_DIR}/declared-target.yaml
+-  python3 "${lib}/../../tools/lib/annotated.py" "${system_dir}" "${repo}" \
+-    "${tag}" >"${target_spec}.partial"
+-  mv -- "${target_spec}.partial" "${target_spec}"
++  # Several runs of one output (native plant runs side by side) share it:
++  # written once, through a file of each writer's own.
++  if [[ ! -s ${target_spec} ]]; then
++    partial=$(mktemp "${target_spec}.XXXXXX")
++    python3 "${lib}/../../tools/lib/annotated.py" "${system_dir}" "${repo}" \
++      "${tag}" >"${partial}"
++    mv -f -- "${partial}" "${target_spec}"
++  fi
+ fi
+ export CAUSYNTH_LOOP_BOUNDS=${loop_bounds}
+ export CAUSYNTH_TARGET_SPEC=${target_spec}
+diff --git a/run_engine.sh b/run_engine.sh
+index 6aa5558ab..92c1bca81 100755
+--- a/run_engine.sh
++++ b/run_engine.sh
+@@ -648,8 +648,8 @@ validate_config() {
+ campaign_reserve_s (${campaign_reserve_s}): the exploration would end before \
+ it began"
+   case "${campaign_stop_after}" in
+-    ''|SEED|IMPORT) ;;
+-    *) die "campaign_stop_after must be empty, SEED or IMPORT: \
++    ''|SEED|PLAN|IMPORT) ;;
++    *) die "campaign_stop_after must be empty, SEED, PLAN or IMPORT: \
+ ${campaign_stop_after}" ;;
+   esac
+   [[ "${causynth_scope_growth_budget}" =~ ^[0-9]+$ ]] \
+@@ -7598,6 +7598,13 @@ do_campaign() {
+   mkdir -p "${iteration_dir}"
+   campaign_member_rows=""
+   campaign_stage PLAN campaign_plan "${iteration_dir}"
++  if [[ "${campaign_stop_after}" == "PLAN" ]]; then
++    # The declared target is resolved to the recorded occurrence it names
++    # (the schedule index's target.occurrenceId): what a native plant's
++    # TARGET rows anchor at.
++    campaign_log "stopping after PLAN: campaign_stop_after=PLAN"
++    return 0
++  fi
+   campaign_stage INSTRUMENT campaign_instrument "${iteration_dir}"
+   campaign_stage REPLAY campaign_session_replay "${iteration_dir}"
+   campaign_stage IMPORT campaign_import_session "${iteration_dir}" \
+@@ -7623,6 +7630,26 @@ do_campaign() {
+   campaign_exit_verdict
+ }
+ 
++# plant-run <run dir> <plant> [<bound s>]: one native run of the case's workload
++# on the recording weave of its SEED (CAUSYNTH_OUTPUT_DIR's instrumented
++# classes), planting <plant> as REPRODUCE does: the run dir gets the run's
++# runtime_trace.jsonl (with its PLANT_* rows; PLANT_MARKER for every fault
++# marker evaluated when -Dcausynth.plant.observe=true is among
++# CAUSYNTH_WORKLOAD_JAVA_OPTS), schedule.jsonl and logs.  The Mallory
++# baseline drives its fault trials through this.
++do_plant_run() {
++  local run=${1:?plant-run needs a run directory} plant=${2:?plant-run needs a plant}
++  local bound=${3:-} status=0
++  require_directory "the SEED's recording weave" "${analysis_classes_dir}"
++  require_file "a plant" "${plant}"
++  mkdir -p "${run}"
++  hostname -s >"${run}/host.txt"
++  run_configured_workload "${run}" "${bound}" "${plant}" "" "" \
++    >"${run}/stdout.log" 2>"${run}/stderr.log" || status=$?
++  printf '%s\n' "${status}" >"${run}/exit"
++  return "${status}"
++}
++
+ do_reproduce() {
+   campaign_root="${schedule_output_dir}"
+   campaign_final="${campaign_root}/final"
+@@ -7676,7 +7703,7 @@ case "${command_name}" in
+   help)
+     usage
+     ;;
+-  campaign|config|validate|reproduce|--run-obligation|--run-placed)
++  campaign|config|validate|reproduce|plant-run|--run-obligation|--run-placed)
+     [[ -n "${config_file}" ]] || die "${command_name} requires --config FILE"
+     initialize_config "${config_file}"
+     case "${command_name}" in
+@@ -7688,6 +7715,7 @@ case "${command_name}" in
+         [[ $# -eq 0 ]] || die "reproduce takes no extra arguments"
+         do_reproduce
+         ;;
++      plant-run) do_plant_run "$@" ;;
+       config) print_normalized_config ;;
+       validate) validate_config ;;
+       --run-obligation) do_run_obligation "$@" ;;
+diff --git a/src/main/java/edu/uva/liftlab/graphchecker/explore/TargetRows.java b/src/main/java/edu/uva/liftlab/graphchecker/explore/TargetRows.java
+new file mode 100644
+index 000000000..cbefa3165
+--- /dev/null
++++ b/src/main/java/edu/uva/liftlab/graphchecker/explore/TargetRows.java
+@@ -0,0 +1,52 @@
++package edu.uva.liftlab.graphchecker.explore;
++
++import com.google.gson.JsonObject;
++import edu.uva.liftlab.graphchecker.contract.OccurrenceAddress;
++import edu.uva.liftlab.graphchecker.plan.StaticScopeMap;
++import edu.uva.liftlab.graphchecker.runtime.RecordingPlant;
++
++import java.io.IOException;
++import java.nio.file.Paths;
++
++/**
++ * The TARGET rows of a native plant for a case's declared target occurrence,
++ * as {@link ConfirmMain} writes them for a witness: every TARGET_SITE guard of
++ * the static scope map with a stated fatal outcome, anchored at the declared
++ * occurrence's id. A planted run then states PLANT_FATAL (atAnchor) when the
++ * target takes its fatal arm there. Usage: TargetRows &lt;static scope map&gt;
++ * &lt;declared target occurrence address&gt;; one JSON row per line on stdout.
++ */
++public final class TargetRows {
++    private TargetRows() {
++    }
++
++    public static void main(String[] args) throws IOException {
++        if (args.length != 2) {
++            System.err.println("usage: TargetRows <static scope map> "
++                    + "<declared target occurrence>");
++            System.exit(2);
++        }
++        String anchor = OccurrenceAddress.parse(args[1]).id();
++        int rows = 0;
++        for (StaticScopeMap.Site target
++                : StaticScopeMap.read(Paths.get(args[0])).targetSites()) {
++            for (int index = 0; index < target.guards.size()
++                    && index < target.guardOutcomes.size(); index++) {
++                if (target.guardOutcomes.get(index) == null) continue;
++                JsonObject row = new JsonObject();
++                row.addProperty(RecordingPlant.KIND, RecordingPlant.TARGET);
++                row.addProperty(RecordingPlant.OCCURRENCE, anchor);
++                row.addProperty(RecordingPlant.SITE, target.guards.get(index));
++                row.addProperty(RecordingPlant.VALUE,
++                        target.guardOutcomes.get(index));
++                System.out.println(row);
++                rows++;
++            }
++        }
++        if (rows == 0) {
++            System.err.println(args[0] + " states no fatal arm of a "
++                    + "TARGET_SITE guard");
++            System.exit(1);
++        }
++    }
++}
+diff --git a/src/main/java/edu/uva/liftlab/graphchecker/runtime/CausynthTraceRecorder.java b/src/main/java/edu/uva/liftlab/graphchecker/runtime/CausynthTraceRecorder.java
+index 69e02dae4..8666eaa6f 100644
+--- a/src/main/java/edu/uva/liftlab/graphchecker/runtime/CausynthTraceRecorder.java
++++ b/src/main/java/edu/uva/liftlab/graphchecker/runtime/CausynthTraceRecorder.java
+@@ -1117,6 +1117,21 @@ public final class CausynthTraceRecorder {
+         }
+     }
+ 
++    static void plantMarker(String name, String siteId,
++                            List<String> occurrences, String innermost) {
++        synchronized (LOCK) {
++            writeTraceRow(
++                    "schemaVersion", 3,
++                    "event", RecordingPlant.MARKER,
++                    "seq", EVENT_COUNTER.incrementAndGet(),
++                    "rootId", name,
++                    "siteId", siteId,
++                    "occurrences", occurrences,
++                    "occurrenceAddress", innermost,
++                    "threadName", Thread.currentThread().getName());
++        }
++    }
++
+     static void plantFatal(String siteId, String occurrence,
+                            boolean atAnchor, boolean byShape) {
+         synchronized (LOCK) {
+diff --git a/src/main/java/edu/uva/liftlab/graphchecker/runtime/RecordingPlant.java b/src/main/java/edu/uva/liftlab/graphchecker/runtime/RecordingPlant.java
+index 2bbf16146..9e29696e0 100644
+--- a/src/main/java/edu/uva/liftlab/graphchecker/runtime/RecordingPlant.java
++++ b/src/main/java/edu/uva/liftlab/graphchecker/runtime/RecordingPlant.java
+@@ -69,6 +69,18 @@ public final class RecordingPlant {
+     public static final String RECEIVER_CLASS = "receiverClass";
+ 
+     private static final boolean PLANTING = !file().isEmpty();
++    /**
++     * Every fault marker a planted run evaluates is stated (PLANT_MARKER: its
++     * call site, root name and enclosing occurrence ids, innermost first), so
++     * a driver of native runs (the Mallory baseline) can plant a fault at any
++     * marker invocation an earlier run reached: a FAULT row names the site, one
++     * enclosing occurrence id and the invocation counted over the site's
++     * evaluations under that occurrence, as {@link #marker} counts them.
++     */
++    static final String OBSERVE_PROPERTY = "causynth.plant.observe";
++    static final String MARKER = "PLANT_MARKER";
++    private static final boolean OBSERVING =
++            Boolean.getBoolean(OBSERVE_PROPERTY);
+     private static volatile Plant plant;
+     private static final AtomicBoolean ENDED = new AtomicBoolean();
+     private static final AtomicLong PLACES = new AtomicLong();
+@@ -332,10 +344,11 @@ public final class RecordingPlant {
+         CausynthTraceRecorder.ActiveCallSiteContext site =
+                 CausynthTraceRecorder.currentCallSiteContext();
+         if (site == null) return false;
++        List<String> enclosing = CausynthTraceRecorder.enclosingOccurrences();
++        if (OBSERVING) observed(name, site.siteId(), enclosing);
+         Map<String, Map<Integer, Root>> rows =
+                 plant().markers.get(site.siteId());
+-        String occurrence = plantedOccurrence(rows,
+-                CausynthTraceRecorder.enclosingOccurrences());
++        String occurrence = plantedOccurrence(rows, enclosing);
+         if (occurrence == null) return false;
+         String id = OccurrenceAddress.parse(occurrence).id();
+         int invocation = INVOCATIONS.merge(site.siteId() + "|" + id, 1,
+@@ -352,6 +365,16 @@ public final class RecordingPlant {
+         return value;
+     }
+ 
++    private static void observed(String name, String siteId,
++                                 List<String> enclosing) {
++        List<String> ids = new ArrayList<String>(enclosing.size());
++        for (String occurrence : enclosing) {
++            ids.add(OccurrenceAddress.parse(occurrence).id());
++        }
++        CausynthTraceRecorder.plantMarker(name, siteId, ids,
++                enclosing.isEmpty() ? "" : enclosing.get(0));
++    }
++
+     static boolean plantRefused(String name, String why) {
+         if (!PLANTING) return false;
+         Object[] answered = ANSWERED.get();
+-- 
+2.34.1
+

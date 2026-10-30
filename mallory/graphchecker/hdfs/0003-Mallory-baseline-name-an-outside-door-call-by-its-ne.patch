@@ -1,0 +1,76 @@
+From f5ff2b4d712f0a52259d2756eb13a451c8dc6961 Mon Sep 17 00:00:00 2001
+From: ZhenyuLi
+ <ZhenyuLi@node0.experiment.silentfailure-pg0.clemson.cloudlab.us>
+Date: Sun, 25 Oct 2026 19:14:21 +0000
+Subject: [PATCH 3/6] Mallory baseline: name an outside door call by its
+ nearest callers
+
+Inside the window an occurrence's context names the operation a door call
+serves; outside it the baseline knew only the thread, so every door call of
+a start-up thread looked alike. OUTSIDE_* rows now carry the call's five
+nearest callers outside the door's package, GraphChecker's runtime and
+reflection (e.g. DatanodeProtocolClientSideTranslatorPB.sendHeartbeat).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ .../graphchecker/runtime/RecordingPlant.java  | 30 ++++++++++++++++++-
+ 1 file changed, 29 insertions(+), 1 deletion(-)
+
+diff --git a/src/main/java/edu/uva/liftlab/graphchecker/runtime/RecordingPlant.java b/src/main/java/edu/uva/liftlab/graphchecker/runtime/RecordingPlant.java
+index ff2bfcfb9..db99d207d 100644
+--- a/src/main/java/edu/uva/liftlab/graphchecker/runtime/RecordingPlant.java
++++ b/src/main/java/edu/uva/liftlab/graphchecker/runtime/RecordingPlant.java
+@@ -84,7 +84,9 @@ public final class RecordingPlant {
+      * place, invocation} rows); {@code causynth.plant.outside.log} receives
+      * every outside evaluation (OUTSIDE_MARKER) and every failed one
+      * (OUTSIDE_APPLIED). Rows carry the JVM's nanoTime, as PLANT_MARKER rows
+-     * do, so a driver orders them with the window's.
++     * do, so a driver orders them with the window's, and the door call's
++     * nearest callers outside the door's own package (the operation it
++     * serves: what an occurrence's context names inside the window).
+      */
+     static final String OUTSIDE_PROPERTY = "causynth.plant.outside";
+     static final String OUTSIDE_LOG_PROPERTY = "causynth.plant.outside.log";
+@@ -274,6 +276,7 @@ public final class RecordingPlant {
+             row.addProperty("place", place);
+             row.addProperty("invocation", invocation);
+             row.addProperty("threadName", thread);
++            row.addProperty("callers", callers(site.siteId()));
+             synchronized (OUTSIDE_LOG) {
+                 try {
+                     OUTSIDE_LOG.write(row.toString());
+@@ -286,6 +289,31 @@ public final class RecordingPlant {
+         return fail;
+     }
+ 
++    private static final int CALLERS = 5;
++
++    /** The door call's nearest callers outside the door's package, the runtime and reflection. */
++    private static String callers(String siteId) {
++        String door = siteId.startsWith("<") ? siteId.substring(1, siteId.indexOf(':')) : "";
++        String doorPackage = door.contains(".") ? door.substring(0, door.lastIndexOf('.')) : door;
++        StringBuilder callers = new StringBuilder();
++        int kept = 0;
++        for (StackTraceElement frame : new Throwable().getStackTrace()) {
++            String type = frame.getClassName();
++            if (type.startsWith("edu.uva.liftlab.") || type.startsWith("java.lang.reflect.")
++                    || type.startsWith("sun.reflect.") || type.startsWith("jdk.internal.")
++                    || type.startsWith("com.sun.proxy.") || type.contains("$Proxy")
++                    || (!doorPackage.isEmpty() && type.startsWith(doorPackage + "."))) {
++                continue;
++            }
++            String simple = type.substring(type.lastIndexOf('.') + 1)
++                    .replaceAll("[0-9]+", "N");
++            if (callers.length() > 0) callers.append('<');
++            callers.append(simple).append('.').append(frame.getMethodName());
++            if (++kept == CALLERS) break;
++        }
++        return callers.toString();
++    }
++
+     private static Set<String> outsideFaults() {
+         String file = System.getProperty(OUTSIDE_PROPERTY, "").trim();
+         Set<String> faults = new LinkedHashSet<String>();
+-- 
+2.34.1
+

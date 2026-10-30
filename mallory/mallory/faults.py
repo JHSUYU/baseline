@@ -22,10 +22,12 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
-from .graph import RunGraph, context_of, node_of_address, region_of_address, short_site, timeline
+from .graph import (RunGraph, context_of, node_of_address, read_trace, region_of_address, role,
+                    short_site, timeline)
 
 
 @dataclass(frozen=True)
@@ -133,6 +135,77 @@ def write_plant(path: Path, plan: tuple[FaultPoint, ...], target_rows: list[dict
     outside_plant(path).write_text("".join(json.dumps(row) + "\n" for row in outside))
     return (list(range(len(inside))),
             {(p.site, p.place, p.invocation) for p in plan if p.outside})
+
+
+_COUNTERS = re.compile(r"([#@])\d+")
+
+
+def _fold(text: str) -> str:
+    """An address or endpoint with its instance counters folded (``#3``, ``@1``, ``att:0``)."""
+    return _COUNTERS.sub(r"\1N", re.sub(r"att:\d+", "att:N", text or ""))
+
+
+def generalized(trace: Path, plan: tuple[FaultPoint, ...]) -> list[tuple[FaultPoint, ...]]:
+    """Each of ``plan``'s window faults with its siblings in the run of ``trace``: the
+    evaluations of the same site and root, on a node of the same role, at the same
+    invocation, under an occurrence of the same shape -- its address with instance
+    counters folded, and for an occurrence serving a message exchange that
+    exchange's request (its producer's call path and operation), so that the same
+    request of another session or attempt is a sibling. Not Mallory's fault identity
+    (it is a replay's): planting every sibling makes the detecting failure happen
+    whichever of them the run's timing makes decisive. An outside fault stays alone.
+    """
+    rows = list(read_trace(trace))
+    anchor_correlation: dict[str, str] = {}
+    request: dict[str, str] = {}
+    for row in rows:
+        if row.get("event") != "EXCHANGE_SEND":
+            continue
+        anchor_correlation[row.get("producerEndpointId", "")] = row.get("correlationId", "")
+        if row.get("half") == "REQUEST":
+            request[row.get("correlationId", "")] = row.get("producerEndpoint", "")
+
+    def shape(address: str) -> str:
+        ctx = address.split("/ctx:", 1)[1].split("/idx:", 1)[0] if "/ctx:" in address else ""
+        anchor = re.match(r"Anchor:([0-9a-f]+)@", ctx)
+        if anchor and request.get(anchor_correlation.get(anchor.group(1), "")):
+            path = address.split("/idx:", 1)[1] if "/idx:" in address else ""
+            return ("exchange " + _fold(request[anchor_correlation[anchor.group(1)]])
+                    + " | " + _fold(path))
+        return _fold(address.split("/region/", 1)[-1])
+
+    counted: dict[tuple[str, str], int] = {}
+    evaluations = []                       # (site, root, occurrence, invocation, address)
+    for row in rows:
+        if row.get("event") != "PLANT_MARKER" or not row.get("occurrences"):
+            continue
+        innermost = row["occurrences"][0]
+        for occurrence in row["occurrences"]:
+            counted[(row["siteId"], occurrence)] = counted.get((row["siteId"], occurrence), 0) + 1
+        evaluations.append((row["siteId"], row.get("rootId", ""), innermost,
+                            counted[(row["siteId"], innermost)], row.get("occurrenceAddress", "")))
+    address_of = {(site, occurrence, invocation): address
+                  for site, _, occurrence, invocation, address in evaluations}
+    groups = []
+    for point in plan:
+        address = address_of.get(point.key)
+        if point.outside or address is None:
+            groups.append((point,))
+            continue
+        wanted = (point.site, point.root, role(node_of_address(address)), point.invocation,
+                  shape(address))
+        seen = {point.key}
+        group = [point]
+        for site, root, occurrence, invocation, other in evaluations:
+            if ((site, root, role(node_of_address(other)), invocation, shape(other)) == wanted
+                    and (site, occurrence, invocation) not in seen):
+                seen.add((site, occurrence, invocation))
+                group.append(FaultPoint(site=site, root=root, occurrence=occurrence,
+                                        invocation=invocation, node=node_of_address(other),
+                                        line=point.line, region=region_of_address(other),
+                                        context=context_of(other), seq=-1))
+        groups.append(tuple(group))
+    return groups
 
 
 def to_json(plan: tuple[FaultPoint, ...]) -> list[dict]:

@@ -1,0 +1,43 @@
+From c5fb04965fba8f1df5d7f1de8ad12bd90f27436f Mon Sep 17 00:00:00 2001
+From: ZhenyuLi
+ <ZhenyuLi@node0.experiment.silentfailure-pg0.clemson.cloudlab.us>
+Date: Sun, 25 Oct 2026 21:16:08 +0000
+Subject: [PATCH 4/5] Mallory baseline: causynth.plant.continue, a run goes on
+ past its anchor
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ .../liftlab/graphchecker/runtime/RecordingPlant.java   | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/src/main/java/edu/uva/liftlab/graphchecker/runtime/RecordingPlant.java b/src/main/java/edu/uva/liftlab/graphchecker/runtime/RecordingPlant.java
+index db99d207d..d0cda2f80 100644
+--- a/src/main/java/edu/uva/liftlab/graphchecker/runtime/RecordingPlant.java
++++ b/src/main/java/edu/uva/liftlab/graphchecker/runtime/RecordingPlant.java
+@@ -88,6 +88,14 @@ public final class RecordingPlant {
+      * nearest callers outside the door's own package (the operation it
+      * serves: what an occurrence's context names inside the window).
+      */
++    /**
++     * The Mallory baseline counts every fatal arm a run takes (its oracle is
++     * "more than any fault-free run"), so with {@code causynth.plant.continue}
++     * a native run goes on past the declared occurrence's fatal arm instead of
++     * ending there.
++     */
++    static final String CONTINUE_PROPERTY = "causynth.plant.continue";
++    private static final boolean CONTINUING = Boolean.getBoolean(CONTINUE_PROPERTY);
+     static final String OUTSIDE_PROPERTY = "causynth.plant.outside";
+     static final String OUTSIDE_LOG_PROPERTY = "causynth.plant.outside.log";
+     private static final Set<String> OUTSIDE_FAULTS = outsideFaults();
+@@ -558,7 +566,7 @@ public final class RecordingPlant {
+         String anchor = anchorOf(enclosing, rows.anchor);
+         CausynthTraceRecorder.plantFatal(siteId, anchor != null ? anchor
+                 : enclosing.isEmpty() ? "" : enclosing.get(0), anchor != null);
+-        if (anchor != null && ENDED.compareAndSet(false, true)) {
++        if (anchor != null && !CONTINUING && ENDED.compareAndSet(false, true)) {
+             end(siteId, anchor);
+         }
+     }
+-- 
+2.34.1
+

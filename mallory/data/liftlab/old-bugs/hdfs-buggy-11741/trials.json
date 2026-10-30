@@ -1,0 +1,1355 @@
+{
+ "case": "hdfs-buggy-11741",
+ "seed": 0,
+ "healthy_fatal_arms": 0,
+ "healthy_noise_edges": 0,
+ "prepare_s": 98.0,
+ "healthy_s": 33.3,
+ "elapsed_s": 474.1,
+ "trials": [
+  {
+   "name": "t00001",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u17",
+     "root": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+     "occurrence": "outside:before||Thread-N",
+     "invocation": 3,
+     "node": "",
+     "line": "? | Thread-N",
+     "region": "outside before",
+     "context": "outside before ClientNamenodeProtocolTranslatorPB.lambda$addBlock$11<ClientNamenodeProtocolTranslatorPB.addBlock<RetryInvocationHandler.invokeMethod<RetryInvocationHandler$Call.invokeMethod<RetryInvocationHandler$Call.invoke",
+     "seq": -1,
+     "place": "before||Thread-N",
+     "nanos": 279661753488075
+    }
+   ],
+   "state": "? | Thread-N | outside before | outside before ClientNamenodeProtocolTranslatorPB.lambda$addBlock$11<ClientNamenodeProtocolTranslatorPB.addBlock<RetryInvocationHandler.invokeMethod<RetryInvocationHandler$Call.invokeMethod<RetryInvocationHandler$Call.invoke | ",
+   "node": "lift05",
+   "seconds": 9.7,
+   "exit": 1,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 0,
+   "graph_added": 0,
+   "graph_removed": 407,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00002",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u7",
+     "root": "FAULT:HADOOP_IPC:RESPONSE",
+     "occurrence": "outside:before||main",
+     "invocation": 9,
+     "node": "",
+     "line": "? | main",
+     "region": "outside before",
+     "context": "outside before ClientNamenodeProtocolTranslatorPB.lambda$complete$13<ClientNamenodeProtocolTranslatorPB.complete<RetryInvocationHandler.invokeMethod<RetryInvocationHandler$Call.invokeMethod<RetryInvocationHandler$Call.invoke",
+     "seq": -1,
+     "place": "before||main",
+     "nanos": 279663069706929
+    }
+   ],
+   "state": "? | main | outside before | outside before ClientNamenodeProtocolTranslatorPB.lambda$complete$13<ClientNamenodeProtocolTranslatorPB.complete<RetryInvocationHandler.invokeMethod<RetryInvocationHandler$Call.invokeMethod<RetryInvocationHandler$Call.invoke | ",
+   "node": "lift05",
+   "seconds": 11.4,
+   "exit": 1,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 0,
+   "graph_added": 0,
+   "graph_removed": 407,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00003",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u17",
+     "root": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+     "occurrence": "outside:before||main",
+     "invocation": 10,
+     "node": "",
+     "line": "? | main",
+     "region": "outside before",
+     "context": "outside before ClientNamenodeProtocolTranslatorPB.lambda$getBlockLocations$0<ClientNamenodeProtocolTranslatorPB.getBlockLocations<RetryInvocationHandler.invokeMethod<RetryInvocationHandler$Call.invokeMethod<RetryInvocationHandler$Call.invoke",
+     "seq": -1,
+     "place": "before||main",
+     "nanos": 279663074447859
+    }
+   ],
+   "state": "? | main | outside before | outside before ClientNamenodeProtocolTranslatorPB.lambda$getBlockLocations$0<ClientNamenodeProtocolTranslatorPB.getBlockLocations<RetryInvocationHandler.invokeMethod<RetryInvocationHandler$Call.invokeMethod<RetryInvocationHandler$Call.invoke | ",
+   "node": "lift05",
+   "seconds": 9.2,
+   "exit": 1,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 0,
+   "graph_added": 0,
+   "graph_removed": 407,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00004",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.hdfs.protocol.datatransfer.Sender: void send(java.io.DataOutputStream,org.apache.hadoop.hdfs.protocol.datatransfer.Op,org.apache.hadoop.thirdparty.protobuf.Message)>#u11",
+     "root": "FAULT:HDFS_DATA_TRANSFER:REQUEST",
+     "occurrence": "230bb4264645b4c3",
+     "invocation": 1,
+     "node": "hdfs-11741/balancer#epoch0",
+     "line": "hdfs-N/balancer#epochN | main",
+     "region": "REGION.2edcf422-b124-3b93-a9e0-6496f3f35c8f",
+     "context": "Root:CLIENT/balance-block Sender.replaceBlock",
+     "seq": 16864,
+     "place": "",
+     "nanos": 279663499753717
+    }
+   ],
+   "state": "hdfs-N/balancer#epochN | main | REGION.2edcf422-b124-3b93-a9e0-6496f3f35c8f | Root:CLIENT/balance-block Sender.replaceBlock | ",
+   "node": "lift05",
+   "seconds": 11.5,
+   "exit": 1,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 2,
+   "graph_added": 2,
+   "graph_removed": 4,
+   "reward": 0.1813,
+   "fatal_at": []
+  },
+  {
+   "name": "t00005",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u17",
+     "root": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+     "occurrence": "outside:before||main",
+     "invocation": 3,
+     "node": "",
+     "line": "? | main",
+     "region": "outside before",
+     "context": "outside before ClientNamenodeProtocolTranslatorPB.lambda$create$2<ClientNamenodeProtocolTranslatorPB.create<RetryInvocationHandler.invokeMethod<RetryInvocationHandler$Call.invokeMethod<RetryInvocationHandler$Call.invoke",
+     "seq": -1,
+     "place": "before||main",
+     "nanos": 279661589906492
+    }
+   ],
+   "state": "? | main | outside before | outside before ClientNamenodeProtocolTranslatorPB.lambda$create$2<ClientNamenodeProtocolTranslatorPB.create<RetryInvocationHandler.invokeMethod<RetryInvocationHandler$Call.invokeMethod<RetryInvocationHandler$Call.invoke | ",
+   "node": "lift05",
+   "seconds": 10.7,
+   "exit": 1,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 0,
+   "graph_added": 0,
+   "graph_removed": 407,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00006",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client$Connection: void sendRpcRequest(org.apache.hadoop.ipc.Client$Call)>#u41",
+     "root": "FAULT:HADOOP_IPC:REQUEST",
+     "occurrence": "outside:before||BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "invocation": 7,
+     "node": "",
+     "line": "? | BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "region": "outside before",
+     "context": "outside before DatanodeProtocolClientSideTranslatorPB.lambda$blockReceivedAndDeleted$4<DatanodeProtocolClientSideTranslatorPB.blockReceivedAndDeleted<IncrementalBlockReportManager.sendIBRs<BPServiceActor.offerService<BPServiceActor.run",
+     "seq": -1,
+     "place": "before||BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "nanos": 279662132174716
+    }
+   ],
+   "state": "? | BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N | outside before | outside before DatanodeProtocolClientSideTranslatorPB.lambda$blockReceivedAndDeleted$4<DatanodeProtocolClientSideTranslatorPB.blockReceivedAndDeleted<IncrementalBlockReportManager.sendIBRs<BPServiceActor.offerService<BPServiceActor.run | ",
+   "node": "lift05",
+   "seconds": 11.4,
+   "exit": 0,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 0,
+   "graph_added": 0,
+   "graph_removed": 0,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00007",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u12",
+     "root": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+     "occurrence": "41b44e9fd6edcda4",
+     "invocation": 1,
+     "node": "hdfs-11741/proxy-dn#epoch0",
+     "line": "hdfs-N/proxy-dn#epochN | main",
+     "region": "REGION.9ffdee3d-bc78-31d0-9907-5ae4fbc6a9ad",
+     "context": "Root:CLIENT/heartbeat HADOOP_IPC#REQUEST:DatanodeProtocol.sendHeartbeat@0>>Client.call>Client.call",
+     "seq": 9448,
+     "place": "",
+     "nanos": 279663248409917
+    }
+   ],
+   "state": "hdfs-N/proxy-dn#epochN | main | REGION.9ffdee3d-bc78-31d0-9907-5ae4fbc6a9ad | Root:CLIENT/heartbeat HADOOP_IPC#REQUEST:DatanodeProtocol.sendHeartbeat@0>>Client.call>Client.call | ",
+   "node": "lift05",
+   "seconds": 11.8,
+   "exit": 0,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 3,
+   "graph_added": 3,
+   "graph_removed": 4,
+   "reward": 0.2592,
+   "fatal_at": []
+  },
+  {
+   "name": "t00008",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u12",
+     "root": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+     "occurrence": "41b44e9fd6edcda4",
+     "invocation": 1,
+     "node": "hdfs-11741/proxy-dn#epoch0",
+     "line": "hdfs-N/proxy-dn#epochN | main",
+     "region": "REGION.9ffdee3d-bc78-31d0-9907-5ae4fbc6a9ad",
+     "context": "Root:CLIENT/heartbeat HADOOP_IPC#REQUEST:DatanodeProtocol.sendHeartbeat@0>>Client.call>Client.call",
+     "seq": 9448,
+     "place": "",
+     "nanos": 279663248409917
+    },
+    {
+     "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u17",
+     "root": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+     "occurrence": "29fca05c92cb593b",
+     "invocation": 1,
+     "node": "hdfs-11741/target-dn#epoch0",
+     "line": "hdfs-N/target-dn#epochN | main",
+     "region": "REGION.9ffdee3d-bc78-31d0-9907-5ae4fbc6a9ad",
+     "context": "Root:CLIENT/heartbeat HADOOP_IPC#REQUEST:DatanodeProtocol.sendHeartbeat@0>>Client.call>Client.call",
+     "seq": 14988,
+     "place": "",
+     "nanos": 279762019211794
+    }
+   ],
+   "state": "hdfs-N/target-dn#epochN | main | REGION.9ffdee3d-bc78-31d0-9907-5ae4fbc6a9ad | Root:CLIENT/heartbeat HADOOP_IPC#REQUEST:DatanodeProtocol.sendHeartbeat@0>>Client.call>Client.call | ",
+   "node": "lift05",
+   "seconds": 11.8,
+   "exit": 1,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 2,
+   "graph_added": 5,
+   "graph_removed": 16,
+   "reward": 0.1813,
+   "fatal_at": []
+  },
+  {
+   "name": "t00009",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client$Connection: void sendRpcRequest(org.apache.hadoop.ipc.Client$Call)>#u41",
+     "root": "FAULT:HADOOP_IPC:REQUEST",
+     "occurrence": "59a4f712e2a0ed00",
+     "invocation": 1,
+     "node": "hdfs-11741/balancer#epoch0",
+     "line": "hdfs-N/balancer#epochN | main",
+     "region": "REGION.763d087e-89f1-3a45-a53b-21f4012a2fe8",
+     "context": "Root:CLIENT/fetch-block-keys KeyManager.<init>>Client.call>Client.call",
+     "seq": 10906,
+     "place": "",
+     "nanos": 279663269988261
+    }
+   ],
+   "state": "hdfs-N/balancer#epochN | main | REGION.763d087e-89f1-3a45-a53b-21f4012a2fe8 | Root:CLIENT/fetch-block-keys KeyManager.<init>>Client.call>Client.call | ",
+   "node": "lift05",
+   "seconds": 11.4,
+   "exit": 1,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 2,
+   "graph_added": 2,
+   "graph_removed": 265,
+   "reward": 0.1813,
+   "fatal_at": []
+  },
+  {
+   "name": "t00010",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u12",
+     "root": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+     "occurrence": "outside:before||main",
+     "invocation": 8,
+     "node": "",
+     "line": "? | main",
+     "region": "outside before",
+     "context": "outside before ClientNamenodeProtocolTranslatorPB.lambda$complete$13<ClientNamenodeProtocolTranslatorPB.complete<RetryInvocationHandler.invokeMethod<RetryInvocationHandler$Call.invokeMethod<RetryInvocationHandler$Call.invoke",
+     "seq": -1,
+     "place": "before||main",
+     "nanos": 279662661896593
+    }
+   ],
+   "state": "? | main | outside before | outside before ClientNamenodeProtocolTranslatorPB.lambda$complete$13<ClientNamenodeProtocolTranslatorPB.complete<RetryInvocationHandler.invokeMethod<RetryInvocationHandler$Call.invokeMethod<RetryInvocationHandler$Call.invoke | ",
+   "node": "lift05",
+   "seconds": 7.3,
+   "exit": 1,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 0,
+   "graph_added": 0,
+   "graph_removed": 407,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00011",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u7",
+     "root": "FAULT:HADOOP_IPC:RESPONSE",
+     "occurrence": "44e380f670449ead",
+     "invocation": 1,
+     "node": "hdfs-11741/target-dn#epoch0",
+     "line": "hdfs-N/target-dn#epochN | BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "region": "REGION.9ffdee3d-bc78-31d0-9907-5ae4fbc6a9ad",
+     "context": "Root:BP_SERVICE_ACTOR HADOOP_IPC#REQUEST:DatanodeProtocol.blockReceivedAndDeleted@0>>Client.call>Client.call",
+     "seq": 13286,
+     "place": "",
+     "nanos": 279663416145473
+    }
+   ],
+   "state": "hdfs-N/target-dn#epochN | BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N | REGION.9ffdee3d-bc78-31d0-9907-5ae4fbc6a9ad | Root:BP_SERVICE_ACTOR HADOOP_IPC#REQUEST:DatanodeProtocol.blockReceivedAndDeleted@0>>Client.call>Client.call | ",
+   "node": "lift05",
+   "seconds": 11.9,
+   "exit": 0,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 2,
+   "graph_added": 2,
+   "graph_removed": 7,
+   "reward": 0.1813,
+   "fatal_at": []
+  },
+  {
+   "name": "t00012",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u7",
+     "root": "FAULT:HADOOP_IPC:RESPONSE",
+     "occurrence": "44e380f670449ead",
+     "invocation": 1,
+     "node": "hdfs-11741/target-dn#epoch0",
+     "line": "hdfs-N/target-dn#epochN | BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "region": "REGION.9ffdee3d-bc78-31d0-9907-5ae4fbc6a9ad",
+     "context": "Root:BP_SERVICE_ACTOR HADOOP_IPC#REQUEST:DatanodeProtocol.blockReceivedAndDeleted@0>>Client.call>Client.call",
+     "seq": 13286,
+     "place": "",
+     "nanos": 279663416145473
+    },
+    {
+     "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u17",
+     "root": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+     "occurrence": "dc4a3727c9d2d9a1",
+     "invocation": 1,
+     "node": "hdfs-11741/balancer#epoch0",
+     "line": "hdfs-N/balancer#epochN | main",
+     "region": "REGION.b7266d53-6af3-3ae7-b116-9abba72658b2",
+     "context": "Root:CLIENT/refresh-block-keys ",
+     "seq": 15994,
+     "place": "",
+     "nanos": 279804603714931
+    }
+   ],
+   "state": "hdfs-N/balancer#epochN | main | REGION.b7266d53-6af3-3ae7-b116-9abba72658b2 | Root:CLIENT/refresh-block-keys  | ",
+   "node": "lift05",
+   "seconds": 11.4,
+   "exit": 1,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 2,
+   "graph_added": 4,
+   "graph_removed": 47,
+   "reward": 0.1813,
+   "fatal_at": []
+  },
+  {
+   "name": "t00013",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u7",
+     "root": "FAULT:HADOOP_IPC:RESPONSE",
+     "occurrence": "44e380f670449ead",
+     "invocation": 1,
+     "node": "hdfs-11741/target-dn#epoch0",
+     "line": "hdfs-N/target-dn#epochN | BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "region": "REGION.9ffdee3d-bc78-31d0-9907-5ae4fbc6a9ad",
+     "context": "Root:BP_SERVICE_ACTOR HADOOP_IPC#REQUEST:DatanodeProtocol.blockReceivedAndDeleted@0>>Client.call>Client.call",
+     "seq": 13286,
+     "place": "",
+     "nanos": 279663416145473
+    },
+    {
+     "site": "<org.apache.hadoop.ipc.Client$Connection: void sendRpcRequest(org.apache.hadoop.ipc.Client$Call)>#u41",
+     "root": "FAULT:HADOOP_IPC:REQUEST",
+     "occurrence": "fa220fa0dcdd06ea",
+     "invocation": 1,
+     "node": "hdfs-11741/target-dn#epoch0",
+     "line": "hdfs-N/target-dn#epochN | main",
+     "region": "REGION.763d087e-89f1-3a45-a53b-21f4012a2fe8",
+     "context": "Root:CLIENT/heartbeat HADOOP_IPC#REQUEST:DatanodeProtocol.sendHeartbeat@0>>Client.call>Client.call",
+     "seq": 14624,
+     "place": "",
+     "nanos": 279804588029402
+    }
+   ],
+   "state": "hdfs-N/target-dn#epochN | main | REGION.763d087e-89f1-3a45-a53b-21f4012a2fe8 | Root:CLIENT/heartbeat HADOOP_IPC#REQUEST:DatanodeProtocol.sendHeartbeat@0>>Client.call>Client.call | ",
+   "node": "lift05",
+   "seconds": 9.5,
+   "exit": 1,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 2,
+   "graph_added": 4,
+   "graph_removed": 16,
+   "reward": 0.1813,
+   "fatal_at": []
+  },
+  {
+   "name": "t00014",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u7",
+     "root": "FAULT:HADOOP_IPC:RESPONSE",
+     "occurrence": "44e380f670449ead",
+     "invocation": 1,
+     "node": "hdfs-11741/target-dn#epoch0",
+     "line": "hdfs-N/target-dn#epochN | BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "region": "REGION.9ffdee3d-bc78-31d0-9907-5ae4fbc6a9ad",
+     "context": "Root:BP_SERVICE_ACTOR HADOOP_IPC#REQUEST:DatanodeProtocol.blockReceivedAndDeleted@0>>Client.call>Client.call",
+     "seq": 13286,
+     "place": "",
+     "nanos": 279663416145473
+    },
+    {
+     "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u12",
+     "root": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+     "occurrence": "dc4a3727c9d2d9a1",
+     "invocation": 1,
+     "node": "hdfs-11741/balancer#epoch0",
+     "line": "hdfs-N/balancer#epochN | main",
+     "region": "REGION.b7266d53-6af3-3ae7-b116-9abba72658b2",
+     "context": "Root:CLIENT/refresh-block-keys ",
+     "seq": 15989,
+     "place": "",
+     "nanos": 279804603591490
+    }
+   ],
+   "state": "hdfs-N/balancer#epochN | main | REGION.b7266d53-6af3-3ae7-b116-9abba72658b2 | Root:CLIENT/refresh-block-keys  | ",
+   "node": "lift05",
+   "seconds": 11.4,
+   "exit": 1,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 2,
+   "graph_added": 4,
+   "graph_removed": 48,
+   "reward": 0.1813,
+   "fatal_at": []
+  },
+  {
+   "name": "t00015",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u12",
+     "root": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+     "occurrence": "outside:before||BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "invocation": 1,
+     "node": "",
+     "line": "? | BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "region": "outside before",
+     "context": "outside before DatanodeProtocolClientSideTranslatorPB.lambda$registerDatanode$0<DatanodeProtocolClientSideTranslatorPB.registerDatanode<BPServiceActor.register<BPServiceActor.connectToNNAndHandshake<BPServiceActor.run",
+     "seq": -1,
+     "place": "before||BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "nanos": 279661418192662
+    }
+   ],
+   "state": "? | BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N | outside before | outside before DatanodeProtocolClientSideTranslatorPB.lambda$registerDatanode$0<DatanodeProtocolClientSideTranslatorPB.registerDatanode<BPServiceActor.register<BPServiceActor.connectToNNAndHandshake<BPServiceActor.run | ",
+   "node": "lift05",
+   "seconds": 17.7,
+   "exit": 0,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 0,
+   "graph_added": 0,
+   "graph_removed": 0,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00016",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u7",
+     "root": "FAULT:HADOOP_IPC:RESPONSE",
+     "occurrence": "outside:before||Thread-N",
+     "invocation": 6,
+     "node": "",
+     "line": "? | Thread-N",
+     "region": "outside before",
+     "context": "outside before ClientNamenodeProtocolTranslatorPB.lambda$addBlock$11<ClientNamenodeProtocolTranslatorPB.addBlock<RetryInvocationHandler.invokeMethod<RetryInvocationHandler$Call.invokeMethod<RetryInvocationHandler$Call.invoke",
+     "seq": -1,
+     "place": "before||Thread-N",
+     "nanos": 279662646584372
+    }
+   ],
+   "state": "? | Thread-N | outside before | outside before ClientNamenodeProtocolTranslatorPB.lambda$addBlock$11<ClientNamenodeProtocolTranslatorPB.addBlock<RetryInvocationHandler.invokeMethod<RetryInvocationHandler$Call.invokeMethod<RetryInvocationHandler$Call.invoke | ",
+   "node": "lift05",
+   "seconds": 9.5,
+   "exit": 1,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 0,
+   "graph_added": 0,
+   "graph_removed": 407,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00017",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u12",
+     "root": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+     "occurrence": "outside:before||main",
+     "invocation": 6,
+     "node": "",
+     "line": "? | main",
+     "region": "outside before",
+     "context": "outside before ClientNamenodeProtocolTranslatorPB.lambda$getBlockLocations$0<ClientNamenodeProtocolTranslatorPB.getBlockLocations<RetryInvocationHandler.invokeMethod<RetryInvocationHandler$Call.invokeMethod<RetryInvocationHandler$Call.invoke",
+     "seq": -1,
+     "place": "before||main",
+     "nanos": 279662595865200
+    }
+   ],
+   "state": "? | main | outside before | outside before ClientNamenodeProtocolTranslatorPB.lambda$getBlockLocations$0<ClientNamenodeProtocolTranslatorPB.getBlockLocations<RetryInvocationHandler.invokeMethod<RetryInvocationHandler$Call.invokeMethod<RetryInvocationHandler$Call.invoke | ",
+   "node": "lift05",
+   "seconds": 9.7,
+   "exit": 1,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 0,
+   "graph_added": 0,
+   "graph_removed": 407,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00018",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u7",
+     "root": "FAULT:HADOOP_IPC:RESPONSE",
+     "occurrence": "44e380f670449ead",
+     "invocation": 1,
+     "node": "hdfs-11741/target-dn#epoch0",
+     "line": "hdfs-N/target-dn#epochN | BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "region": "REGION.9ffdee3d-bc78-31d0-9907-5ae4fbc6a9ad",
+     "context": "Root:BP_SERVICE_ACTOR HADOOP_IPC#REQUEST:DatanodeProtocol.blockReceivedAndDeleted@0>>Client.call>Client.call",
+     "seq": 13286,
+     "place": "",
+     "nanos": 279663416145473
+    },
+    {
+     "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u12",
+     "root": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+     "occurrence": "29fca05c92cb593b",
+     "invocation": 1,
+     "node": "hdfs-11741/target-dn#epoch0",
+     "line": "hdfs-N/target-dn#epochN | main",
+     "region": "REGION.9ffdee3d-bc78-31d0-9907-5ae4fbc6a9ad",
+     "context": "Root:CLIENT/heartbeat HADOOP_IPC#REQUEST:DatanodeProtocol.sendHeartbeat@0>>Client.call>Client.call",
+     "seq": 15170,
+     "place": "",
+     "nanos": 279804593522403
+    }
+   ],
+   "state": "hdfs-N/target-dn#epochN | main | REGION.9ffdee3d-bc78-31d0-9907-5ae4fbc6a9ad | Root:CLIENT/heartbeat HADOOP_IPC#REQUEST:DatanodeProtocol.sendHeartbeat@0>>Client.call>Client.call | ",
+   "node": "lift05",
+   "seconds": 11.6,
+   "exit": 1,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 2,
+   "graph_added": 4,
+   "graph_removed": 15,
+   "reward": 0.1813,
+   "fatal_at": []
+  },
+  {
+   "name": "t00019",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.hdfs.protocol.datatransfer.Sender: void send(java.io.DataOutputStream,org.apache.hadoop.hdfs.protocol.datatransfer.Op,org.apache.hadoop.thirdparty.protobuf.Message)>#u11",
+     "root": "FAULT:HDFS_DATA_TRANSFER:REQUEST",
+     "occurrence": "d6c12f6dda870a00",
+     "invocation": 1,
+     "node": "hdfs-11741/target-dn#epoch0",
+     "line": "hdfs-N/target-dn#epochN | DataXceiver for client /N.N.N.N:N [Replacing block BP-N-N.N.N.N-N:blk_N_N from aNeNf-fN-N-aN-NdNaeN]",
+     "region": "REGION.2edcf422-b124-3b93-a9e0-6496f3f35c8f",
+     "context": "Root:DATA_XCEIVER Sender.copyBlock",
+     "seq": 17228,
+     "place": "",
+     "nanos": 279663507299552
+    }
+   ],
+   "state": "hdfs-N/target-dn#epochN | DataXceiver for client /N.N.N.N:N [Replacing block BP-N-N.N.N.N-N:blk_N_N from aNeNf-fN-N-aN-NdNaeN] | REGION.2edcf422-b124-3b93-a9e0-6496f3f35c8f | Root:DATA_XCEIVER Sender.copyBlock | ",
+   "node": "lift05",
+   "seconds": 9.7,
+   "exit": 1,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 2,
+   "graph_added": 2,
+   "graph_removed": 4,
+   "reward": 0.1813,
+   "fatal_at": []
+  },
+  {
+   "name": "t00020",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u12",
+     "root": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+     "occurrence": "41b44e9fd6edcda4",
+     "invocation": 1,
+     "node": "hdfs-11741/proxy-dn#epoch0",
+     "line": "hdfs-N/proxy-dn#epochN | main",
+     "region": "REGION.9ffdee3d-bc78-31d0-9907-5ae4fbc6a9ad",
+     "context": "Root:CLIENT/heartbeat HADOOP_IPC#REQUEST:DatanodeProtocol.sendHeartbeat@0>>Client.call>Client.call",
+     "seq": 9448,
+     "place": "",
+     "nanos": 279663248409917
+    },
+    {
+     "site": "<org.apache.hadoop.ipc.Client$Connection: void sendRpcRequest(org.apache.hadoop.ipc.Client$Call)>#u46",
+     "root": "FAULT:HADOOP_IPC:REQUEST:ConnectTimeoutException",
+     "occurrence": "1a1ebbac0cff179c",
+     "invocation": 1,
+     "node": "hdfs-11741/target-dn#epoch0",
+     "line": "hdfs-N/target-dn#epochN | BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "region": "REGION.763d087e-89f1-3a45-a53b-21f4012a2fe8",
+     "context": "Root:BP_SERVICE_ACTOR HADOOP_IPC#REQUEST:DatanodeProtocol.blockReceivedAndDeleted@0>>Client.call>Client.call",
+     "seq": 17221,
+     "place": "",
+     "nanos": 279762124295489
+    }
+   ],
+   "state": "hdfs-N/target-dn#epochN | BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N | REGION.763d087e-89f1-3a45-a53b-21f4012a2fe8 | Root:BP_SERVICE_ACTOR HADOOP_IPC#REQUEST:DatanodeProtocol.blockReceivedAndDeleted@0>>Client.call>Client.call | ",
+   "node": "lift05",
+   "seconds": 12.1,
+   "exit": 0,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 2,
+   "graph_added": 5,
+   "graph_removed": 6,
+   "reward": 0.1813,
+   "fatal_at": []
+  },
+  {
+   "name": "t00021",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client$Connection: void sendRpcRequest(org.apache.hadoop.ipc.Client$Call)>#u41",
+     "root": "FAULT:HADOOP_IPC:REQUEST",
+     "occurrence": "outside:before||BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "invocation": 6,
+     "node": "",
+     "line": "? | BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "region": "outside before",
+     "context": "outside before DatanodeProtocolClientSideTranslatorPB.lambda$blockReport$2<DatanodeProtocolClientSideTranslatorPB.blockReport<BPServiceActor.blockReport<BPServiceActor.offerService<BPServiceActor.run",
+     "seq": -1,
+     "place": "before||BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "nanos": 279661475983632
+    }
+   ],
+   "state": "? | BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N | outside before | outside before DatanodeProtocolClientSideTranslatorPB.lambda$blockReport$2<DatanodeProtocolClientSideTranslatorPB.blockReport<BPServiceActor.blockReport<BPServiceActor.offerService<BPServiceActor.run | ",
+   "node": "lift05",
+   "seconds": 9.9,
+   "exit": 0,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 0,
+   "graph_added": 0,
+   "graph_removed": 0,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00022",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u12",
+     "root": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+     "occurrence": "outside:before||Thread-N",
+     "invocation": 6,
+     "node": "",
+     "line": "? | Thread-N",
+     "region": "outside before",
+     "context": "outside before ClientNamenodeProtocolTranslatorPB.lambda$addBlock$11<ClientNamenodeProtocolTranslatorPB.addBlock<RetryInvocationHandler.invokeMethod<RetryInvocationHandler$Call.invokeMethod<RetryInvocationHandler$Call.invoke",
+     "seq": -1,
+     "place": "before||Thread-N",
+     "nanos": 279662646751916
+    }
+   ],
+   "state": "? | Thread-N | outside before | outside before ClientNamenodeProtocolTranslatorPB.lambda$addBlock$11<ClientNamenodeProtocolTranslatorPB.addBlock<RetryInvocationHandler.invokeMethod<RetryInvocationHandler$Call.invokeMethod<RetryInvocationHandler$Call.invoke | ",
+   "node": "lift05",
+   "seconds": 9.7,
+   "exit": 1,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 0,
+   "graph_added": 0,
+   "graph_removed": 407,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00023",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client$Connection: void sendRpcRequest(org.apache.hadoop.ipc.Client$Call)>#u46",
+     "root": "FAULT:HADOOP_IPC:REQUEST:ConnectTimeoutException",
+     "occurrence": "outside:before||main",
+     "invocation": 9,
+     "node": "",
+     "line": "? | main",
+     "region": "outside before",
+     "context": "outside before ClientNamenodeProtocolTranslatorPB.lambda$complete$13<ClientNamenodeProtocolTranslatorPB.complete<RetryInvocationHandler.invokeMethod<RetryInvocationHandler$Call.invokeMethod<RetryInvocationHandler$Call.invoke",
+     "seq": -1,
+     "place": "before||main",
+     "nanos": 279663065616928
+    }
+   ],
+   "state": "? | main | outside before | outside before ClientNamenodeProtocolTranslatorPB.lambda$complete$13<ClientNamenodeProtocolTranslatorPB.complete<RetryInvocationHandler.invokeMethod<RetryInvocationHandler$Call.invokeMethod<RetryInvocationHandler$Call.invoke | ",
+   "node": "lift05",
+   "seconds": 9.3,
+   "exit": 1,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 0,
+   "graph_added": 0,
+   "graph_removed": 407,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00024",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client$Connection: void sendRpcRequest(org.apache.hadoop.ipc.Client$Call)>#u41",
+     "root": "FAULT:HADOOP_IPC:REQUEST",
+     "occurrence": "96405e05ffbd1112",
+     "invocation": 1,
+     "node": "hdfs-11741/proxy-dn#epoch0",
+     "line": "hdfs-N/proxy-dn#epochN | main",
+     "region": "REGION.763d087e-89f1-3a45-a53b-21f4012a2fe8",
+     "context": "Root:CLIENT/heartbeat HADOOP_IPC#REQUEST:DatanodeProtocol.sendHeartbeat@0>>Client.call>Client.call",
+     "seq": 8968,
+     "place": "",
+     "nanos": 279663233046549
+    }
+   ],
+   "state": "hdfs-N/proxy-dn#epochN | main | REGION.763d087e-89f1-3a45-a53b-21f4012a2fe8 | Root:CLIENT/heartbeat HADOOP_IPC#REQUEST:DatanodeProtocol.sendHeartbeat@0>>Client.call>Client.call | ",
+   "node": "lift05",
+   "seconds": 11.4,
+   "exit": 0,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 3,
+   "graph_added": 3,
+   "graph_removed": 5,
+   "reward": 0.2592,
+   "fatal_at": []
+  },
+  {
+   "name": "t00025",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client$Connection: void sendRpcRequest(org.apache.hadoop.ipc.Client$Call)>#u41",
+     "root": "FAULT:HADOOP_IPC:REQUEST",
+     "occurrence": "96405e05ffbd1112",
+     "invocation": 1,
+     "node": "hdfs-11741/proxy-dn#epoch0",
+     "line": "hdfs-N/proxy-dn#epochN | main",
+     "region": "REGION.763d087e-89f1-3a45-a53b-21f4012a2fe8",
+     "context": "Root:CLIENT/heartbeat HADOOP_IPC#REQUEST:DatanodeProtocol.sendHeartbeat@0>>Client.call>Client.call",
+     "seq": 8968,
+     "place": "",
+     "nanos": 279663233046549
+    },
+    {
+     "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u7",
+     "root": "FAULT:HADOOP_IPC:RESPONSE",
+     "occurrence": "dc4a3727c9d2d9a1",
+     "invocation": 1,
+     "node": "hdfs-11741/balancer#epoch0",
+     "line": "hdfs-N/balancer#epochN | main",
+     "region": "REGION.b7266d53-6af3-3ae7-b116-9abba72658b2",
+     "context": "Root:CLIENT/refresh-block-keys ",
+     "seq": 15317,
+     "place": "",
+     "nanos": 279947000494284
+    }
+   ],
+   "state": "hdfs-N/balancer#epochN | main | REGION.b7266d53-6af3-3ae7-b116-9abba72658b2 | Root:CLIENT/refresh-block-keys  | ",
+   "node": "lift05",
+   "seconds": 11.5,
+   "exit": 1,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 2,
+   "graph_added": 5,
+   "graph_removed": 51,
+   "reward": 0.1813,
+   "fatal_at": []
+  },
+  {
+   "name": "t00026",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client$Connection: void sendRpcRequest(org.apache.hadoop.ipc.Client$Call)>#u41",
+     "root": "FAULT:HADOOP_IPC:REQUEST",
+     "occurrence": "96405e05ffbd1112",
+     "invocation": 1,
+     "node": "hdfs-11741/proxy-dn#epoch0",
+     "line": "hdfs-N/proxy-dn#epochN | main",
+     "region": "REGION.763d087e-89f1-3a45-a53b-21f4012a2fe8",
+     "context": "Root:CLIENT/heartbeat HADOOP_IPC#REQUEST:DatanodeProtocol.sendHeartbeat@0>>Client.call>Client.call",
+     "seq": 8968,
+     "place": "",
+     "nanos": 279663233046549
+    },
+    {
+     "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u17",
+     "root": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+     "occurrence": "be3ad0bee3cd66a7",
+     "invocation": 1,
+     "node": "hdfs-11741/balancer#epoch0",
+     "line": "hdfs-N/balancer#epochN | main",
+     "region": "REGION.9ffdee3d-bc78-31d0-9907-5ae4fbc6a9ad",
+     "context": "Root:CLIENT/fetch-block-keys KeyManager.<init>>Client.call>Client.call",
+     "seq": 10371,
+     "place": "",
+     "nanos": 279946824939267
+    }
+   ],
+   "state": "hdfs-N/balancer#epochN | main | REGION.9ffdee3d-bc78-31d0-9907-5ae4fbc6a9ad | Root:CLIENT/fetch-block-keys KeyManager.<init>>Client.call>Client.call | ",
+   "node": "lift05",
+   "seconds": 13.8,
+   "exit": 1,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 3,
+   "graph_added": 5,
+   "graph_removed": 286,
+   "reward": 0.2592,
+   "fatal_at": []
+  },
+  {
+   "name": "t00027",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client$Connection: void sendRpcRequest(org.apache.hadoop.ipc.Client$Call)>#u41",
+     "root": "FAULT:HADOOP_IPC:REQUEST",
+     "occurrence": "96405e05ffbd1112",
+     "invocation": 1,
+     "node": "hdfs-11741/proxy-dn#epoch0",
+     "line": "hdfs-N/proxy-dn#epochN | main",
+     "region": "REGION.763d087e-89f1-3a45-a53b-21f4012a2fe8",
+     "context": "Root:CLIENT/heartbeat HADOOP_IPC#REQUEST:DatanodeProtocol.sendHeartbeat@0>>Client.call>Client.call",
+     "seq": 8968,
+     "place": "",
+     "nanos": 279663233046549
+    },
+    {
+     "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u7",
+     "root": "FAULT:HADOOP_IPC:RESPONSE",
+     "occurrence": "29fca05c92cb593b",
+     "invocation": 1,
+     "node": "hdfs-11741/target-dn#epoch0",
+     "line": "hdfs-N/target-dn#epochN | main",
+     "region": "REGION.9ffdee3d-bc78-31d0-9907-5ae4fbc6a9ad",
+     "context": "Root:CLIENT/heartbeat HADOOP_IPC#REQUEST:DatanodeProtocol.sendHeartbeat@0>>Client.call>Client.call",
+     "seq": 14498,
+     "place": "",
+     "nanos": 279946987430997
+    }
+   ],
+   "state": "hdfs-N/target-dn#epochN | main | REGION.9ffdee3d-bc78-31d0-9907-5ae4fbc6a9ad | Root:CLIENT/heartbeat HADOOP_IPC#REQUEST:DatanodeProtocol.sendHeartbeat@0>>Client.call>Client.call | ",
+   "node": "lift05",
+   "seconds": 9.6,
+   "exit": 1,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 2,
+   "graph_added": 5,
+   "graph_removed": 17,
+   "reward": 0.1813,
+   "fatal_at": []
+  },
+  {
+   "name": "t00028",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u12",
+     "root": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+     "occurrence": "outside:before||BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "invocation": 7,
+     "node": "",
+     "line": "? | BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "region": "outside before",
+     "context": "outside before DatanodeProtocolClientSideTranslatorPB.lambda$blockReceivedAndDeleted$4<DatanodeProtocolClientSideTranslatorPB.blockReceivedAndDeleted<IncrementalBlockReportManager.sendIBRs<BPServiceActor.offerService<BPServiceActor.run",
+     "seq": -1,
+     "place": "before||BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "nanos": 279662138293821
+    }
+   ],
+   "state": "? | BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N | outside before | outside before DatanodeProtocolClientSideTranslatorPB.lambda$blockReceivedAndDeleted$4<DatanodeProtocolClientSideTranslatorPB.blockReceivedAndDeleted<IncrementalBlockReportManager.sendIBRs<BPServiceActor.offerService<BPServiceActor.run | ",
+   "node": "lift05",
+   "seconds": 11.4,
+   "exit": 0,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 0,
+   "graph_added": 0,
+   "graph_removed": 0,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00029",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client$Connection: void sendRpcRequest(org.apache.hadoop.ipc.Client$Call)>#u46",
+     "root": "FAULT:HADOOP_IPC:REQUEST:ConnectTimeoutException",
+     "occurrence": "dc4a3727c9d2d9a1",
+     "invocation": 1,
+     "node": "hdfs-11741/balancer#epoch0",
+     "line": "hdfs-N/balancer#epochN | main",
+     "region": "REGION.b7266d53-6af3-3ae7-b116-9abba72658b2",
+     "context": "Root:CLIENT/refresh-block-keys ",
+     "seq": 15811,
+     "place": "",
+     "nanos": 279663439432257
+    }
+   ],
+   "state": "hdfs-N/balancer#epochN | main | REGION.b7266d53-6af3-3ae7-b116-9abba72658b2 | Root:CLIENT/refresh-block-keys  | ",
+   "node": "lift05",
+   "seconds": 12.0,
+   "exit": 1,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 2,
+   "graph_added": 2,
+   "graph_removed": 62,
+   "reward": 0.1813,
+   "fatal_at": []
+  },
+  {
+   "name": "t00030",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u7",
+     "root": "FAULT:HADOOP_IPC:RESPONSE",
+     "occurrence": "44e380f670449ead",
+     "invocation": 1,
+     "node": "hdfs-11741/target-dn#epoch0",
+     "line": "hdfs-N/target-dn#epochN | BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "region": "REGION.9ffdee3d-bc78-31d0-9907-5ae4fbc6a9ad",
+     "context": "Root:BP_SERVICE_ACTOR HADOOP_IPC#REQUEST:DatanodeProtocol.blockReceivedAndDeleted@0>>Client.call>Client.call",
+     "seq": 13286,
+     "place": "",
+     "nanos": 279663416145473
+    },
+    {
+     "site": "<org.apache.hadoop.ipc.Client$Connection: void sendRpcRequest(org.apache.hadoop.ipc.Client$Call)>#u46",
+     "root": "FAULT:HADOOP_IPC:REQUEST:ConnectTimeoutException",
+     "occurrence": "fa220fa0dcdd06ea",
+     "invocation": 1,
+     "node": "hdfs-11741/target-dn#epoch0",
+     "line": "hdfs-N/target-dn#epochN | main",
+     "region": "REGION.763d087e-89f1-3a45-a53b-21f4012a2fe8",
+     "context": "Root:CLIENT/heartbeat HADOOP_IPC#REQUEST:DatanodeProtocol.sendHeartbeat@0>>Client.call>Client.call",
+     "seq": 14629,
+     "place": "",
+     "nanos": 279804588149058
+    }
+   ],
+   "state": "hdfs-N/target-dn#epochN | main | REGION.763d087e-89f1-3a45-a53b-21f4012a2fe8 | Root:CLIENT/heartbeat HADOOP_IPC#REQUEST:DatanodeProtocol.sendHeartbeat@0>>Client.call>Client.call | ",
+   "node": "lift05",
+   "seconds": 9.6,
+   "exit": 1,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 5,
+   "graph_added": 5,
+   "graph_removed": 16,
+   "reward": 0.3935,
+   "fatal_at": []
+  },
+  {
+   "name": "t00031",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u7",
+     "root": "FAULT:HADOOP_IPC:RESPONSE",
+     "occurrence": "outside:before||BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "invocation": 3,
+     "node": "",
+     "line": "? | BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "region": "outside before",
+     "context": "outside before DatanodeProtocolClientSideTranslatorPB.lambda$sendHeartbeat$1<DatanodeProtocolClientSideTranslatorPB.sendHeartbeat<BPServiceActor.sendHeartBeat<BPServiceActor.offerService<BPServiceActor.run",
+     "seq": -1,
+     "place": "before||BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "nanos": 279661458361753
+    }
+   ],
+   "state": "? | BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N | outside before | outside before DatanodeProtocolClientSideTranslatorPB.lambda$sendHeartbeat$1<DatanodeProtocolClientSideTranslatorPB.sendHeartbeat<BPServiceActor.sendHeartBeat<BPServiceActor.offerService<BPServiceActor.run | ",
+   "node": "lift05",
+   "seconds": 12.1,
+   "exit": 0,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 0,
+   "graph_added": 0,
+   "graph_removed": 0,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00032",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client$Connection: void sendRpcRequest(org.apache.hadoop.ipc.Client$Call)>#u41",
+     "root": "FAULT:HADOOP_IPC:REQUEST",
+     "occurrence": "96405e05ffbd1112",
+     "invocation": 1,
+     "node": "hdfs-11741/proxy-dn#epoch0",
+     "line": "hdfs-N/proxy-dn#epochN | main",
+     "region": "REGION.763d087e-89f1-3a45-a53b-21f4012a2fe8",
+     "context": "Root:CLIENT/heartbeat HADOOP_IPC#REQUEST:DatanodeProtocol.sendHeartbeat@0>>Client.call>Client.call",
+     "seq": 8968,
+     "place": "",
+     "nanos": 279663233046549
+    },
+    {
+     "site": "<org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferClient: org.apache.hadoop.hdfs.protocol.datatransfer.IOStreamPair doSaslHandshake(java.net.InetAddress,java.io.OutputStream,java.io.InputStream,java.lang.String,java.util.Map,javax.security.auth.callback.CallbackHandler,org.apache.hadoop.security.token.Token)>#u14",
+     "root": "FAULT:HDFS_SASL:REQUEST",
+     "occurrence": "080c89fb2f1cf1e2",
+     "invocation": 1,
+     "node": "hdfs-11741/balancer#epoch0",
+     "line": "hdfs-N/balancer#epochN | main",
+     "region": "REGION.074f9e67-bf11-3cc3-a83a-cd67abb4b6bc",
+     "context": "Root:CLIENT/balance-block SaslDataTransferClient.checkTrustAndSend>SaslDataTransferClient.send>SaslDataTransferClient.getEncryptedStreams",
+     "seq": 15832,
+     "place": "",
+     "nanos": 279947013662987
+    }
+   ],
+   "state": "hdfs-N/balancer#epochN | main | REGION.074f9e67-bf11-3cc3-a83a-cd67abb4b6bc | Root:CLIENT/balance-block SaslDataTransferClient.checkTrustAndSend>SaslDataTransferClient.send>SaslDataTransferClient.getEncryptedStreams | ",
+   "node": "lift05",
+   "seconds": 13.4,
+   "exit": 1,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 2,
+   "graph_added": 5,
+   "graph_removed": 16,
+   "reward": 0.1813,
+   "fatal_at": []
+  },
+  {
+   "name": "t00033",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client$Connection: void sendRpcRequest(org.apache.hadoop.ipc.Client$Call)>#u41",
+     "root": "FAULT:HADOOP_IPC:REQUEST",
+     "occurrence": "outside:before||main",
+     "invocation": 3,
+     "node": "",
+     "line": "? | main",
+     "region": "outside before",
+     "context": "outside before ClientNamenodeProtocolTranslatorPB.lambda$create$2<ClientNamenodeProtocolTranslatorPB.create<RetryInvocationHandler.invokeMethod<RetryInvocationHandler$Call.invokeMethod<RetryInvocationHandler$Call.invoke",
+     "seq": -1,
+     "place": "before||main",
+     "nanos": 279661527054808
+    }
+   ],
+   "state": "? | main | outside before | outside before ClientNamenodeProtocolTranslatorPB.lambda$create$2<ClientNamenodeProtocolTranslatorPB.create<RetryInvocationHandler.invokeMethod<RetryInvocationHandler$Call.invokeMethod<RetryInvocationHandler$Call.invoke | ",
+   "node": "lift05",
+   "seconds": 8.4,
+   "exit": 1,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 0,
+   "graph_added": 0,
+   "graph_removed": 407,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00034",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u12",
+     "root": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+     "occurrence": "outside:before||main",
+     "invocation": 2,
+     "node": "",
+     "line": "? | main",
+     "region": "outside before",
+     "context": "outside before ClientNamenodeProtocolTranslatorPB.lambda$getDatanodeReport$28<ClientNamenodeProtocolTranslatorPB.getDatanodeReport<RetryInvocationHandler.invokeMethod<RetryInvocationHandler$Call.invokeMethod<RetryInvocationHandler$Call.invoke",
+     "seq": -1,
+     "place": "before||main",
+     "nanos": 279661514570639
+    }
+   ],
+   "state": "? | main | outside before | outside before ClientNamenodeProtocolTranslatorPB.lambda$getDatanodeReport$28<ClientNamenodeProtocolTranslatorPB.getDatanodeReport<RetryInvocationHandler.invokeMethod<RetryInvocationHandler$Call.invokeMethod<RetryInvocationHandler$Call.invoke | ",
+   "node": "lift05",
+   "seconds": 9.5,
+   "exit": 0,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 0,
+   "graph_added": 0,
+   "graph_removed": 0,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00035",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client$Connection: void sendRpcRequest(org.apache.hadoop.ipc.Client$Call)>#u46",
+     "root": "FAULT:HADOOP_IPC:REQUEST:ConnectTimeoutException",
+     "occurrence": "outside:before||Thread-N",
+     "invocation": 3,
+     "node": "",
+     "line": "? | Thread-N",
+     "region": "outside before",
+     "context": "outside before ClientNamenodeProtocolTranslatorPB.lambda$addBlock$11<ClientNamenodeProtocolTranslatorPB.addBlock<RetryInvocationHandler.invokeMethod<RetryInvocationHandler$Call.invokeMethod<RetryInvocationHandler$Call.invoke",
+     "seq": -1,
+     "place": "before||Thread-N",
+     "nanos": 279661670434661
+    }
+   ],
+   "state": "? | Thread-N | outside before | outside before ClientNamenodeProtocolTranslatorPB.lambda$addBlock$11<ClientNamenodeProtocolTranslatorPB.addBlock<RetryInvocationHandler.invokeMethod<RetryInvocationHandler$Call.invokeMethod<RetryInvocationHandler$Call.invoke | ",
+   "node": "lift05",
+   "seconds": 9.7,
+   "exit": 1,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 0,
+   "graph_added": 0,
+   "graph_removed": 407,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00036",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u17",
+     "root": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+     "occurrence": "outside:before||BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "invocation": 8,
+     "node": "",
+     "line": "? | BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "region": "outside before",
+     "context": "outside before DatanodeProtocolClientSideTranslatorPB.lambda$blockReceivedAndDeleted$4<DatanodeProtocolClientSideTranslatorPB.blockReceivedAndDeleted<IncrementalBlockReportManager.sendIBRs<BPServiceActor.offerService<BPServiceActor.run",
+     "seq": -1,
+     "place": "before||BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "nanos": 279662661702303
+    }
+   ],
+   "state": "? | BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N | outside before | outside before DatanodeProtocolClientSideTranslatorPB.lambda$blockReceivedAndDeleted$4<DatanodeProtocolClientSideTranslatorPB.blockReceivedAndDeleted<IncrementalBlockReportManager.sendIBRs<BPServiceActor.offerService<BPServiceActor.run | ",
+   "node": "lift05",
+   "seconds": 11.7,
+   "exit": 0,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 19,
+   "graph_added": 19,
+   "graph_removed": 0,
+   "reward": 0.8504,
+   "fatal_at": []
+  },
+  {
+   "name": "t00037",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u17",
+     "root": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+     "occurrence": "outside:before||BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "invocation": 7,
+     "node": "",
+     "line": "? | BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "region": "outside before",
+     "context": "outside before DatanodeProtocolClientSideTranslatorPB.lambda$blockReceivedAndDeleted$4<DatanodeProtocolClientSideTranslatorPB.blockReceivedAndDeleted<IncrementalBlockReportManager.sendIBRs<BPServiceActor.offerService<BPServiceActor.run",
+     "seq": -1,
+     "place": "before||BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "nanos": 279662138405175
+    }
+   ],
+   "state": "? | BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N | outside before | outside before DatanodeProtocolClientSideTranslatorPB.lambda$blockReceivedAndDeleted$4<DatanodeProtocolClientSideTranslatorPB.blockReceivedAndDeleted<IncrementalBlockReportManager.sendIBRs<BPServiceActor.offerService<BPServiceActor.run | ",
+   "node": "lift05",
+   "seconds": 11.7,
+   "exit": 0,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 0,
+   "graph_added": 0,
+   "graph_removed": 0,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00038",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u17",
+     "root": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+     "occurrence": "outside:before||BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "invocation": 8,
+     "node": "",
+     "line": "? | BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "region": "outside before",
+     "context": "outside before DatanodeProtocolClientSideTranslatorPB.lambda$blockReceivedAndDeleted$4<DatanodeProtocolClientSideTranslatorPB.blockReceivedAndDeleted<IncrementalBlockReportManager.sendIBRs<BPServiceActor.offerService<BPServiceActor.run",
+     "seq": -1,
+     "place": "before||BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "nanos": 279662661702303
+    },
+    {
+     "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u12",
+     "root": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+     "occurrence": "4c28dac3acc05b89",
+     "invocation": 1,
+     "node": "hdfs-11741/proxy-dn#epoch0",
+     "line": "hdfs-N/proxy-dn#epochN | BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "region": "REGION.9ffdee3d-bc78-31d0-9907-5ae4fbc6a9ad",
+     "context": "Root:BP_SERVICE_ACTOR HADOOP_IPC#REQUEST:DatanodeProtocol.blockReceivedAndDeleted@0>>Client.call>Client.call",
+     "seq": 18309,
+     "place": "",
+     "nanos": 280080671090354
+    }
+   ],
+   "state": "hdfs-N/proxy-dn#epochN | BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N | REGION.9ffdee3d-bc78-31d0-9907-5ae4fbc6a9ad | Root:BP_SERVICE_ACTOR HADOOP_IPC#REQUEST:DatanodeProtocol.blockReceivedAndDeleted@0>>Client.call>Client.call | ",
+   "node": "lift05",
+   "seconds": 11.4,
+   "exit": 0,
+   "applied": false,
+   "fatal": false,
+   "new_edges": 0,
+   "graph_added": 0,
+   "graph_removed": 0,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00039",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u17",
+     "root": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+     "occurrence": "outside:before||BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "invocation": 8,
+     "node": "",
+     "line": "? | BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "region": "outside before",
+     "context": "outside before DatanodeProtocolClientSideTranslatorPB.lambda$blockReceivedAndDeleted$4<DatanodeProtocolClientSideTranslatorPB.blockReceivedAndDeleted<IncrementalBlockReportManager.sendIBRs<BPServiceActor.offerService<BPServiceActor.run",
+     "seq": -1,
+     "place": "before||BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "nanos": 279662661702303
+    },
+    {
+     "site": "<org.apache.hadoop.ipc.Client$Connection: void sendRpcRequest(org.apache.hadoop.ipc.Client$Call)>#u46",
+     "root": "FAULT:HADOOP_IPC:REQUEST:ConnectTimeoutException",
+     "occurrence": "outside:before||main",
+     "invocation": 10,
+     "node": "",
+     "line": "? | main",
+     "region": "outside before",
+     "context": "outside before ClientNamenodeProtocolTranslatorPB.lambda$getBlockLocations$0<ClientNamenodeProtocolTranslatorPB.getBlockLocations<RetryInvocationHandler.invokeMethod<RetryInvocationHandler$Call.invokeMethod<RetryInvocationHandler$Call.invoke",
+     "seq": -1,
+     "place": "before||main",
+     "nanos": 280080068342825
+    }
+   ],
+   "state": "? | main | outside before | outside before ClientNamenodeProtocolTranslatorPB.lambda$getBlockLocations$0<ClientNamenodeProtocolTranslatorPB.getBlockLocations<RetryInvocationHandler.invokeMethod<RetryInvocationHandler$Call.invokeMethod<RetryInvocationHandler$Call.invoke | ",
+   "node": "lift05",
+   "seconds": 11.4,
+   "exit": 1,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 0,
+   "graph_added": 0,
+   "graph_removed": 407,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00040",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u17",
+     "root": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+     "occurrence": "outside:before||BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "invocation": 8,
+     "node": "",
+     "line": "? | BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "region": "outside before",
+     "context": "outside before DatanodeProtocolClientSideTranslatorPB.lambda$blockReceivedAndDeleted$4<DatanodeProtocolClientSideTranslatorPB.blockReceivedAndDeleted<IncrementalBlockReportManager.sendIBRs<BPServiceActor.offerService<BPServiceActor.run",
+     "seq": -1,
+     "place": "before||BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+     "nanos": 279662661702303
+    },
+    {
+     "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u17",
+     "root": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+     "occurrence": "9505fac546566ad5",
+     "invocation": 1,
+     "node": "hdfs-11741/proxy-dn#epoch0",
+     "line": "hdfs-N/proxy-dn#epochN | main",
+     "region": "REGION.9ffdee3d-bc78-31d0-9907-5ae4fbc6a9ad",
+     "context": "Root:CLIENT/heartbeat HADOOP_IPC#REQUEST:DatanodeProtocol.sendHeartbeat@0>>Client.call>Client.call",
+     "seq": 14058,
+     "place": "",
+     "nanos": 280080482287562
+    }
+   ],
+   "state": "hdfs-N/proxy-dn#epochN | main | REGION.9ffdee3d-bc78-31d0-9907-5ae4fbc6a9ad | Root:CLIENT/heartbeat HADOOP_IPC#REQUEST:DatanodeProtocol.sendHeartbeat@0>>Client.call>Client.call | ",
+   "node": "lift05",
+   "seconds": 11.8,
+   "exit": 1,
+   "applied": true,
+   "fatal": true,
+   "new_edges": 4,
+   "graph_added": 4,
+   "graph_removed": 9,
+   "reward": 0.3297,
+   "fatal_at": [
+    "hdfs-11741/proxy-dn#epoch0/region/REGION.7c569c3f-b4d3-305a-bd9c-bebff1048122/ctx:Anchor:a8e1ae8efbd68024@HDFS_SASL/DATA_XCEIVER/idx:<org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer$SaslServerCallbackHandler: void handle(javax.security.auth.callback.Callback[])>@0"
+   ]
+  }
+ ]
+}

@@ -84,13 +84,13 @@ seeds run one after another.
 
 ## GraphChecker and the systems
 
-Mallory runs each system's cases on a GraphChecker checkout: GraphChecker's `system/<system>-cloudlab`
-(`git@github.com:JHSUYU/GraphChecker.git`, at the commit [`graphchecker/bases.tsv`](graphchecker/bases.tsv) pins)
-with the patches of [`graphchecker/`](graphchecker) applied. `graphchecker/apply.sh <GraphChecker clone>
-<system>` makes it at `/bulk/wt/gc-mallory-<system>`, where `mallory/settings.py` looks for it, and builds the
-jar.
+Mallory runs each system's cases on a GraphChecker checkout: GraphChecker's `system/<system>-buggy-detect`
+(`git@github.com:JHSUYU/GraphChecker.git`, at the commit [`graphchecker/bases.tsv`](graphchecker/bases.tsv) pins: the
+liftlab branch that holds the system's ad hoc cases and its old-bug cases) with the patches of
+[`graphchecker/<system>/`](graphchecker) applied. `graphchecker/apply.sh <GraphChecker clone> <system>` makes it at
+`/bigtemp/vnr3ne/wt/gc-mallory-<system>`, where `mallory/settings.py` looks for it, and builds the jar.
 
-- [`graphchecker/common/`](graphchecker/common), every system:
+Each system's series is the same five changes, then the system's own case:
   1. *Native plant runs*: the `PLANT_MARKER` observation in `RecordingPlant`, `explore.TargetRows` (a plant's
      TARGET rows for the declared target, as `ConfirmMain` writes them), `run_engine.sh plant-run <run dir>
      <plant> [bound]` and `campaign_stop_after=PLAN`;
@@ -98,35 +98,53 @@ jar.
      `nanoTime` on marker rows, `CAUSYNTH_EXTRA_SCOPE` in `experiments/lib/case-env.sh`;
   3. an outside door call named by its nearest callers;
   4. `causynth.plant.continue`: a run goes on past the declared occurrence's fatal arm;
-  5. `marked_as`: a case checking the target another case marked, with another workload.
-- [`graphchecker/systems/<system>/`](graphchecker/systems), the cases this baseline adds on the systems' own
-  tests: HBase `hbase-bugs-backup-lock-upstream` (`TestBackupManager`), HDFS `hdfs-17967-pathA-upstream`
-  (`TestEncryptedTransfer`). Solr's `solr-adhoc-40` and ZooKeeper's `zk-bugs-election-offer` are GraphChecker's
-  own cases, already on the systems' tests.
+  5. `marked_as`: a case checking the target another case marked, with another workload;
+  6. the cases this baseline adds on the systems' own tests: HBase `hbase-bugs-backup-lock-upstream`
+     (`TestBackupManager`), HDFS `hdfs-17967-pathA-upstream` (`TestEncryptedTransfer`). Solr's `solr-adhoc-40` and
+     ZooKeeper's `zk-bugs-election-offer` are GraphChecker's own cases, already on the systems' tests.
+
+The series were first made on CloudLab's `system/<system>-cloudlab` (now GraphChecker's tags
+`archive/system/<system>-cloudlab`); on liftlab their added and removed lines are the same, and only HBase's
+fourth change sits in another context (the buggy-detect branch's `plantFatal` call carries one more argument).
 
 The system trees are GraphChecker's (its door hooks, the cluster adapters that name a test's nodes, the target
-markers), unchanged; each fork's branch `baseline/mallory` pins the commit Mallory ran on:
+markers), unchanged. For the baseline bugs each fork's branch `baseline/mallory` pins the commit Mallory runs on;
+`graphchecker/trees.sh <case>...` clones it under `MALLORY_GC_TREES` (default `/bigtemp/vnr3ne/wt/mallory-trees-1`)
+and builds it for the case (`run.sh <case> build`, Maven repository `MALLORY_GC_M2`, default
+`/bigtemp/vnr3ne/m2/mallory-1`):
 
-| system | fork | tree (under `GC_TREES=/bulk/wt`) | `baseline/mallory` |
+| system | fork | tree | `baseline/mallory` |
 | --- | --- | --- | --- |
 | HBase | `JHSUYU/hbase` (`graphchecker/hbase-checks`) | `hbase-checks` | b5d5cc6a20 |
 | Solr | `JHSUYU/solr` (`graphchecker/solr-checks`) | `lucene-solr-checks` | 12d23091d1 |
 | ZooKeeper | `JHSUYU/zookeeper` (`graphchecker/zookeeper-checks`) | `zookeeper-checks` | 889f0e9616 |
 | HDFS | `JHSUYU/hadoop` (`graphchecker/hdfs-checks`) | `hadoop-hdfs-study-r7` | 899c200cc8 |
 
-## Running it (CloudLab, node0-node4)
+The old bugs (below) run on the buggy-detect branches' own tree set, each bug's tree its fork's
+`graphchecker/<system>-bug-<jira>` (GraphChecker's `experiments/<system>/trees.tsv` and `prepare-trees.sh`), with
+`MALLORY_GC_TREES` and `MALLORY_GC_M2` pointing at it.
 
-Set up the cluster, VM image and system trees as GraphChecker's REPRODUCE.md says for
-`system/{hdfs,hbase,solr,zookeeper}-cloudlab` (each tree at its fork's `baseline/mallory`, under
-`GC_TREES=/bulk/wt`), then `graphchecker/apply.sh <GraphChecker clone> <system>` for each system. Paths are in `mallory/settings.py`
-(`MALLORY_GC_<SYSTEM>`, `MALLORY_WORK`, `MALLORY_NODES`).
+## Running it (liftlab)
+
+The liftlab cluster: workers lift02-06, lift08-10 and lift12-14 (`MALLORY_NODES`), each with Java 8 at
+`/usr/lib/jvm/java-8-openjdk-amd64`; lift11 is the control host the campaigns are driven from (a campaign's
+GraphChecker commands run on its node over ssh); `/bigtemp/vnr3ne` is NFS-shared by every lift, `/localtmp` is each
+lift's local disk. Maven is on the PATH of lift02-06 and lift08-10. The VM images are GraphChecker's
+(`/bigtemp/vnr3ne/vm-force12` for HDFS and HBase, `vm-force13` for ZooKeeper, `vm-force10` for Solr;
+`MALLORY_IMAGE_<SYSTEM>`). On a Maven host:
 
 ```sh
-cd mallory
-python3 -m mallory prepare zk-bugs-election-offer --node node0     # SEED + PLAN, TARGET rows
-python3 -m mallory run zk-bugs-election-offer --node node0         # the campaign (prepares if needed)
-MALLORY_HEAP_BASIS_MB=32768 python3 -m mallory run hbase-bugs-backup-lock-upstream --node node0
-python3 -m mallory report                                                     # every case's result
+graphchecker/apply.sh ~/GraphChecker <system>                    # for hdfs hbase solr zookeeper
+graphchecker/trees.sh solr-adhoc-40 hbase-bugs-backup-lock-upstream zk-bugs-election-offer hdfs-17967-pathA-upstream
+```
+
+Then, from `mallory/` on lift11 (paths in `mallory/settings.py`: `MALLORY_GC_<SYSTEM>`, `MALLORY_WORK`,
+`MALLORY_GC_TREES`, `MALLORY_GC_M2`, `MALLORY_NODES`):
+
+```sh
+python3 -m mallory prepare zk-bugs-election-offer --node lift02     # SEED + PLAN, TARGET rows
+python3 -m mallory run zk-bugs-election-offer --node lift02         # the campaign (prepares if needed)
+python3 -m mallory report                                           # every case's result
 python3 -m unittest discover -s tests -t .
 ```
 
@@ -135,6 +153,134 @@ python3 -m unittest discover -s tests -t .
 `--continue-after-detection`, `--seed`. Output: `$MALLORY_WORK/<case>/gc` and `prepared.json` (shared by
 every seed), `$MALLORY_WORK/<case>/seed-<n>/{runs,state.json,result.json}`; every run keeps its plant, its
 log, its gzipped trace and its log of door evaluations outside the window.
+
+`replay <case>` runs a campaign's detecting plan again (`--repeats`, 10), through the same plant, matching and oracle,
+into `seed-<n>/replay/replay.json`. `--generalize` plants each fault at its siblings in the detecting run instead, into
+`seed-<n>/replay-generalized/`; the sibling rule is in `faults.generalized`.
+
+### Reproducing the liftlab tables
+
+1. Checkouts and baseline-bug trees, on a Maven host: `apply.sh` for each system, then `trees.sh` for the four cases,
+   as above.
+2. The old-bug trees: in each system's checkout, run
+   `GC_TREES=<old-bug tree set> GC_M2=<its Maven repository> experiments/<system>/prepare-trees.sh <tree>...`. Use the
+   trees its `trees.tsv` names `*-bug-<jira>`: `hadoop-hdfs-bug-<jira>`, `hbase-bug-<jira>`, `zookeeper-bug-<jira>` and
+   `solr-bug-<jira>`. Each clones its fork's `graphchecker/<system>-bug-<jira>` from GitHub and builds it.
+3. Each baseline-bug run, from nothing, alone on a node:
+   `MALLORY_WORK=<work>/run-a python3 -m mallory run <case> --node <node>`; `run-b` is a second work directory.
+4. Each old bug, on any node:
+   `MALLORY_WORK=<work>/old MALLORY_GC_TREES=<old-bug tree set> MALLORY_GC_M2=<its Maven repository> python3 -m mallory run <case> --node <node>`.
+5. Every detection: `python3 -m mallory replay <case> --node <node>` with the same environment, and `--generalize` where
+   the exact plan replays less than 10/10.
+6. `scripts/export-liftlab.py <work> data run-a=liftlab/run-a run-b=liftlab/run-b old=liftlab/old-bugs` copies the
+   records into `data/`.
+
+On liftlab: `<work>` is `/bigtemp/vnr3ne/mallory-work`, the old-bug tree set `/bigtemp/vnr3ne/wt/bd-trees-1` with
+`/bigtemp/vnr3ne/m2/bd-1`.
+
+## Results on liftlab (2026-10-29)
+
+The CloudLab runs below were made again on liftlab, the cluster GraphChecker's results now come from:
+- the same bugs, unit tests and protocol;
+- each pipeline run from nothing (GraphChecker's SEED and PLAN, three healthy runs, the campaign at the default seed);
+- twice, and each run alone on one node (lift02-04).
+
+The time is wall clock from the start of SEED to the end of the detecting run. Every detection was then replayed 10 times
+(`python3 -m mallory replay <case>`: the detecting plan through the same plant, matching and oracle). Where the exact plan
+did not replay 10/10, it was also replayed generalized (`--generalize`: each fault planted at its siblings in the detecting
+run, a replay aid, not the detection). `data/liftlab/run-{a,b}/<case>/` keeps each run's result, every trial
+(`trials.json`), the detecting plant (`detecting.plant*.jsonl`) and the replays (`replay*.json`).
+
+| bug | unit test | run a | replay a | run b | replay b | CloudLab a / b |
+| --- | --- | --- | --- | --- | --- | --- |
+| solr-adhoc-40 | `TimeRoutedAliasUpdateProcessorTest#test` | trial 45, 2201 s | 10/10 | trial 44, 2083 s | 9/10 (generalized 0/10) | 46 trials, 1909 s / 45 trials, 1819 s |
+| hbase-bugs-backup-lock-upstream | `TestBackupManager#testStartBackupExclusiveOperation` | trial 14, 620 s | 3/10 (generalized 10/10) | trial 10, 656 s | 3/10 (generalized 10/10) | 10 trials, 478 s / 9 trials, 464 s |
+| zk-bugs-election-offer | `LeaderElectionSupportTest#testNodes3` | not detected (225 trials, 217 applied, every candidate tried, 1859 s) | - | not detected (210 trials, 193 applied, every candidate tried, 1785 s) | - | 61 trials, 504 s / 81 trials, 637 s |
+| hdfs-17967-pathA-upstream | `TestEncryptedTransfer#testLongLivedClientPipelineRecovery[1]` | not detected (370 trials, 272 applied, budget, 14712 s) | - | not detected (347 trials, 306 applied, budget, 14624 s) | - | not detected (294 + 165 trials) |
+
+- **SOLR-40** (both runs detected):
+  - Run a lost `SolrZkClient.create`'s session (`SessionExpiredException`), run b `SolrZkClient.getData`'s.
+  - The target throws 6 times (healthy runs: 0), and "Routed alias myalias appears to have been removed during
+    request processing" is logged 60 times.
+  - Run b's exact plan replays 9/10. Its generalized plan replays 0/10: failing every node's alias read changes what the
+    run does, so the exact plan is the reproduction there.
+- **HBase backup lock** (both runs detected):
+  - The detecting runs fail the target 211 and 204 times (healthy: 2) and hang to the trial bound, with "Waiting to acquire
+    backup exclusive lock" every minute.
+  - The exact plans replay 3/10. In every replay the lost reply is the same request, the first lock compare-and-set of
+    `startBackupExclusiveOperation`. Whether it matters depends on which of the test's two sessions commits its
+    compare-and-set first, a race the plan does not control.
+  - Generalized, the reply of every such compare-and-set (each session's) is lost. Both detections then replay 10/10
+    (140-170 target failures).
+- **ZooKeeper election recipe** (neither run detected):
+  - Both runs tried every fault point (225 and 210 trials).
+  - On liftlab, two of a run's three fault-free runs already take the check once: the test's own race, a contender
+    reading an offer another has just deleted. So Mallory's oracle asks for more than 2 failures in a run.
+  - 21 and 12 trials failed the check once: a detection by CloudLab's healthy runs (0), not by liftlab's.
+  - The oracle is kept as it is.
+- **HDFS-17967**: not detected, as on CloudLab. Both runs spent the 4-hour budget: 370 trials (272 applied) and 347 (306 applied), with 506 and 566 candidates left. No trial failed the check more than its one deliberate stale-key rejection, which every healthy run takes too. The 98 and 41 trials that did not apply have whole traces: their planted point did not recur in that run.
+
+A defect of the first liftlab runs, fixed before these:
+- The driver (on lift11) looked up a run's directory before the node wrote it, and the NFSv3 lookup cache then hid the
+  trace for up to a minute. About every other trial counted as not applied, though its fault and its fatal arm were in
+  the trace.
+- `campaign._run` now creates the run directory and the outside log first, and waits for a trace not yet visible.
+- Those runs were discarded and every run here was made from nothing after the fix.
+
+### The old bugs (liftlab, 2026-10-29)
+
+The old bugs GraphChecker's buggy-detect branches put back by hand (`docs/handover/BUGGY-DETECT.md` on
+`system/<system>-buggy-detect`): 16, of which 14 are runnable. HBASE-28533 has no workload (GraphChecker found its throw
+unreachable on today's code), and SOLR-6763 has no tree.
+
+Mallory ran each once, on GraphChecker's own case:
+- the bug's tree (`graphchecker/<system>-bug-<jira>`, the buggy-detect tree set: `MALLORY_GC_TREES`);
+- **the workload GraphChecker detected the bug with**, the case's `TestCausynth*` test. These are bug-shaped tests, which
+  Mallory's own protocol above excludes. They are given here so that Mallory and GraphChecker are compared on one input:
+  the release tests carry the fixes of these old bugs, and no existing test is known to reach most of them;
+- the oracle at the point's own declared throw, the standard GraphChecker's old-bug table uses;
+- the default budget (600 trials, 4 h), up to three campaigns per node.
+
+`data/liftlab/old-bugs/<case>/` keeps each record.
+
+| bug | case | Mallory (one run, 600 trials / 4 h) | replay | the detecting faults |
+| --- | --- | --- | --- | --- |
+| HDFS-11741 | `hdfs-buggy-11741` | trial 40, 572 s | 10/10 | FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException @ Client.getRpcResponse#u17; FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException @ Client.getRpcResponse#u17 |
+| HDFS-17383 | `hdfs-buggy-17383` | trial 32, 790 s | 10/10 | FAULT:HADOOP_IPC:RESPONSE @ Client.getRpcResponse#u7 |
+| HDFS-12931 | `hdfs-buggy-12931` | trial 5, 205 s | 10/10 | FAULT:HADOOP_IPC:REQUEST @ Client$Connection.sendRpcRequest#u41 |
+| HDFS-5766 | `hdfs-buggy-5766` | trial 6, 242 s | 10/10 | FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException @ Client.getRpcResponse#u17 |
+| HDFS-10609 | `hdfs-buggy-10609` | trial 41, 565 s | 10/10 | FAULT:HADOOP_IPC:REQUEST @ Client$Connection.sendRpcRequest#u41; FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException @ Client.getRpcResponse#u17 |
+| HDFS-14075 | `hdfs-buggy-14075` | trial 1, 308 s | 10/10 | FAULT:LOCAL_IO:OPEN:FileNotFoundException @ EditLogFileOutputStream.<init>#u26 |
+| HDFS-14311 | `hdfs-buggy-14311` | not detected (388 trials, 382 applied, budget, 14871 s) | - | - |
+| HBASE-15039 | `hbase-buggy-15039` | trial 5, 394 s | 10/10 | FAULT:ZOOKEEPER:READ:KeeperException$ConnectionLossException @ ZKSecretWatcher.nodeChildrenChanged#u7 |
+| HBASE-20642 | `hbase-buggy-20642` | trial 113, 3889 s | 10/10 | FAULT:HBASE_RPC:REQUEST @ AbstractRpcClient.callMethod#u60; FAULT:HBASE_RPC:RESPONSE:CallTimeoutException @ RpcConnection.finishCall#u44 |
+| ZOOKEEPER-710 | `zk-buggy-710` | not detected (20 trials, 20 applied, every candidate tried, 298 s) | - | - |
+| ZOOKEEPER-2886 | `zk-buggy-2886` | not detected (20 trials, 20 applied, every candidate tried, 314 s) | - | - |
+| SOLR-9440 | `solr-buggy-9440` | trial 25, 1497 s | 10/10 | FAULT:ZOOKEEPER:READ:KeeperException$SessionExpiredException @ SolrZkClient.getChildren#u10; FAULT:ZOOKEEPER:WRITE:KeeperException$ConnectionLossException @ SolrZkClient.setData#u16 |
+| SOLR-6101 | `solr-buggy-6101` | not detected (439 trials, 439 applied, budget, 14546 s) | - | - |
+| SOLR-6197 | `solr-buggy-6197` | not detected (276 trials, 264 applied, budget, 14616 s) | - | - |
+
+How each detection relates to its bug:
+- **HDFS-12931, -5766, -10609, -17383**: a lost heartbeat request or reply leaves the DataNode without the rotated key.
+  This is GraphChecker's mechanism for these bugs, with the same caveat for 12931, 5766 and 10609: the DataNode throws on
+  the fixed code too.
+- **HDFS-11741**: the same lost key-update heartbeat, on the Balancer's proxy DataNode. The point's own throw fires, but
+  not by HDFS-11741's mechanism: the Balancer's expired cached key, which GraphChecker's witness moves the clocks for.
+  The fix would not prevent this failure.
+- **HDFS-14075**: the first trial's fault is GraphChecker's mechanism, a failed open of roll 1's edits file.
+- **HBASE-15039**: the watcher's ZooKeeper read fails (`ZKSecretWatcher.nodeChildrenChanged`), the fault the case README
+  accepts for a MARKER claim of this bug.
+- **HBASE-20642**: a lost request, then a reply timeout; the client's retry, with a new nonce, meets the master's
+  `preflightChecks`. This is GraphChecker's mechanism family.
+- **SOLR-9440**: a `SessionExpiredException` before the window, then a lost `setData` of node0's Overseer state update.
+  These are other faults than GraphChecker's witness (node1's leader-election create); the point's throw is the same.
+- **ZOOKEEPER-710, -2886**: not detected. Their 20 fault points (the client's ZooKeeper calls) were all tried. The bugs
+  need a request paired with a session's move to another server (GraphChecker's STATE re-pairing), which no injected
+  failure makes.
+- **HDFS-14311**: not detected in 4 h (388 trials). GraphChecker does not detect it either: it needs a STATE re-pairing of a volume's layout-version read.
+- **SOLR-6101, -6197**: not detected in 4 h (439 and 276 trials, no failure of the check). Their mechanism is a cluster-wide configuration change (`legacyCloud` true -> false), which is not a fault.
+
+Tally: Mallory detects 9 of the 14 (every detection replays 10/10), GraphChecker 13. HDFS-11741's and SOLR-9440's detections fire the point's own throw by other faults than the bug's; HDFS-14311 neither tool detects.
 
 ## Results (2026-10-26, CloudLab)
 

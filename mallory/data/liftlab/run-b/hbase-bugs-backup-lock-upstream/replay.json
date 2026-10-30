@@ -1,0 +1,96 @@
+{
+  "case": "hbase-bugs-backup-lock-upstream",
+  "seed": 0,
+  "trial": "t00010",
+  "faults": [
+    "FAULT:HBASE_RPC:REQUEST @ AbstractRpcClient.callMethod#u60",
+    "FAULT:HBASE_RPC:REQUEST:ConnectionClosedException @ AbstractRpcClient.callMethod#u65",
+    "FAULT:HBASE_RPC:RESPONSE:ConnectionClosedException @ RpcConnection.finishCall#u49"
+  ],
+  "healthy_fatal_arms": 2,
+  "repeats": 10,
+  "applied": 10,
+  "detected": 3,
+  "runs": [
+    {
+      "run": "r01",
+      "exit": 0,
+      "seconds": 26.0,
+      "applied": true,
+      "fatal_arms": 2,
+      "detected": false
+    },
+    {
+      "run": "r02",
+      "exit": 0,
+      "seconds": 20.3,
+      "applied": true,
+      "fatal_arms": 2,
+      "detected": false
+    },
+    {
+      "run": "r03",
+      "exit": 124,
+      "seconds": 123.9,
+      "applied": true,
+      "fatal_arms": 214,
+      "detected": true
+    },
+    {
+      "run": "r04",
+      "exit": 124,
+      "seconds": 123.7,
+      "applied": true,
+      "fatal_arms": 210,
+      "detected": true
+    },
+    {
+      "run": "r05",
+      "exit": 0,
+      "seconds": 20.5,
+      "applied": true,
+      "fatal_arms": 2,
+      "detected": false
+    },
+    {
+      "run": "r06",
+      "exit": 0,
+      "seconds": 22.5,
+      "applied": true,
+      "fatal_arms": 2,
+      "detected": false
+    },
+    {
+      "run": "r07",
+      "exit": 124,
+      "seconds": 152.7,
+      "applied": true,
+      "fatal_arms": 2,
+      "detected": false
+    },
+    {
+      "run": "r08",
+      "exit": 0,
+      "seconds": 20.6,
+      "applied": true,
+      "fatal_arms": 2,
+      "detected": false
+    },
+    {
+      "run": "r09",
+      "exit": 124,
+      "seconds": 124.9,
+      "applied": true,
+      "fatal_arms": 212,
+      "detected": true
+    },
+    {
+      "run": "r10",
+      "exit": 0,
+      "seconds": 22.0,
+      "applied": true,
+      "fatal_arms": 2,
+      "detected": false
+    }
+  ]
+}

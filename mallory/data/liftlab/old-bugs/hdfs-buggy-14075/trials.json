@@ -1,0 +1,42 @@
+{
+ "case": "hdfs-buggy-14075",
+ "seed": 0,
+ "healthy_fatal_arms": 0,
+ "healthy_noise_edges": 0,
+ "prepare_s": 275.6,
+ "healthy_s": 24.9,
+ "elapsed_s": 32.7,
+ "trials": [
+  {
+   "name": "t00001",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.hdfs.server.namenode.EditLogFileOutputStream: void <init>(org.apache.hadoop.conf.Configuration,java.io.File,int)>#u26",
+     "root": "FAULT:LOCAL_IO:OPEN:FileNotFoundException",
+     "occurrence": "4cb12accc040be29",
+     "invocation": 1,
+     "node": "roll/client0#epoch0",
+     "line": "roll/clientN#epochN | main",
+     "region": "REGION.da7b10a5-52cf-30a4-b138-aa4202114a13",
+     "context": "Root:CLIENT/roll-1 FSEditLog.rollEditLog>FSEditLog.startLogSegmentAndWriteHeaderTxn",
+     "seq": 13868,
+     "place": "",
+     "nanos": 279908555275426
+    }
+   ],
+   "state": "roll/clientN#epochN | main | REGION.da7b10a5-52cf-30a4-b138-aa4202114a13 | Root:CLIENT/roll-1 FSEditLog.rollEditLog>FSEditLog.startLogSegmentAndWriteHeaderTxn | ",
+   "node": "lift06",
+   "seconds": 7.8,
+   "exit": 1,
+   "applied": true,
+   "fatal": true,
+   "new_edges": 31,
+   "graph_added": 31,
+   "graph_removed": 596,
+   "reward": 0.955,
+   "fatal_at": [
+    "roll/client0#epoch0/region/REGION.08181728-581c-34d3-a3b3-c56c8c745343/ctx:Root:CLIENT/roll-2#1/idx:<org.apache.hadoop.hdfs.server.namenode.FSEditLog: long rollEditLog(int)>@0/<org.apache.hadoop.hdfs.server.namenode.FSEditLog: void endCurrentLogSegment(boolean)>@0"
+   ]
+  }
+ ]
+}

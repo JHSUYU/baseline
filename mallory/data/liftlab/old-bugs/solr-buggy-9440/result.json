@@ -1,0 +1,55 @@
+{
+  "case": "solr-buggy-9440",
+  "seed": 0,
+  "detected": true,
+  "trials": 25,
+  "applied_trials": 23,
+  "prepare_s": 221.4,
+  "healthy_s": 176.4,
+  "elapsed_s": 1275.5,
+  "corpus_edges": 4309,
+  "detection": {
+    "trial": "t00025",
+    "trial_index": 25,
+    "seconds_from_start": 1098.8,
+    "seconds_with_healthy": 1275.4,
+    "seconds_with_prepare": 1496.8,
+    "faults": [
+      "FAULT:ZOOKEEPER:READ:KeeperException$SessionExpiredException @ SolrZkClient.getChildren#u10",
+      "FAULT:ZOOKEEPER:WRITE:KeeperException$ConnectionLossException @ SolrZkClient.setData#u16"
+    ],
+    "plan": [
+      {
+        "site": "<org.apache.solr.common.cloud.SolrZkClient: java.util.List getChildren(java.lang.String,org.apache.zookeeper.Watcher,boolean)>#u10",
+        "root": "FAULT:ZOOKEEPER:READ:KeeperException$SessionExpiredException",
+        "occurrence": "outside:before||ScheduledTrigger-N-thread-N",
+        "invocation": 2,
+        "node": "",
+        "line": "? | ScheduledTrigger-N-thread-N",
+        "region": "outside before",
+        "context": "outside before ZkDistributedQueue.fetchZkChildren<ZkDistributedQueue.firstChild<ZkDistributedQueue.firstElement<ZkDistributedQueue.peek<TriggerEventQueue.peekEvent",
+        "seq": -1,
+        "place": "before||ScheduledTrigger-N-thread-N",
+        "nanos": 280416800184529
+      },
+      {
+        "site": "<org.apache.solr.common.cloud.SolrZkClient: org.apache.zookeeper.data.Stat setData(java.lang.String,byte[],int,boolean)>#u16",
+        "root": "FAULT:ZOOKEEPER:WRITE:KeeperException$ConnectionLossException",
+        "occurrence": "ee498689781cdc02",
+        "invocation": 1,
+        "node": "auto0/node0#epoch0",
+        "line": "autoN/nodeN#epochN | OverseerStateUpdate-N-N.N.N.N:N_solr-n_N",
+        "region": "REGION.60e7e9e9-3120-3ca1-9d5b-21c98e2a0e97",
+        "context": "Root:OVERSEER_STATE_UPDATE ",
+        "seq": 52085,
+        "place": "",
+        "nanos": 281140234909144
+      }
+    ],
+    "graph_added": 617,
+    "graph_removed": 204,
+    "fatal_at": [
+      "auto0/node0#epoch0/region/REGION.93f4c3de-5802-365a-a683-b154c7a88426/ctx:Anchor:e3147a9ba59c1a3d@SOLR_HTTP/.admin.collections:FORCELEADER/idx:<org.apache.solr.handler.admin.CollectionsHandler: void handleRequestBody(org.apache.solr.request.SolrQueryRequest,org.apache.solr.response.SolrQueryResponse)>@0/<org.apache.solr.handler.admin.CollectionsHandler: void invokeAction(org.apache.solr.request.SolrQueryRequest,org.apache.solr.response.SolrQueryResponse,org.apache.solr.core.CoreContainer,org.apache.solr.common.params.CollectionParams$CollectionAction,org.apache.solr.handler.admin.CollectionsHandler$CollectionOperation)>@0"
+    ]
+  }
+}

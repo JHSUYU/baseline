@@ -1,0 +1,55 @@
+{
+  "case": "hdfs-buggy-11741",
+  "seed": 0,
+  "detected": true,
+  "trials": 40,
+  "applied_trials": 39,
+  "prepare_s": 98.0,
+  "healthy_s": 33.3,
+  "elapsed_s": 474.1,
+  "corpus_edges": 472,
+  "detection": {
+    "trial": "t00040",
+    "trial_index": 40,
+    "seconds_from_start": 440.8,
+    "seconds_with_healthy": 474.1,
+    "seconds_with_prepare": 572.1,
+    "faults": [
+      "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException @ Client.getRpcResponse#u17",
+      "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException @ Client.getRpcResponse#u17"
+    ],
+    "plan": [
+      {
+        "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u17",
+        "root": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+        "occurrence": "outside:before||BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+        "invocation": 8,
+        "node": "",
+        "line": "? | BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+        "region": "outside before",
+        "context": "outside before DatanodeProtocolClientSideTranslatorPB.lambda$blockReceivedAndDeleted$4<DatanodeProtocolClientSideTranslatorPB.blockReceivedAndDeleted<IncrementalBlockReportManager.sendIBRs<BPServiceActor.offerService<BPServiceActor.run",
+        "seq": -1,
+        "place": "before||BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:N",
+        "nanos": 279662661702303
+      },
+      {
+        "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u17",
+        "root": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+        "occurrence": "9505fac546566ad5",
+        "invocation": 1,
+        "node": "hdfs-11741/proxy-dn#epoch0",
+        "line": "hdfs-N/proxy-dn#epochN | main",
+        "region": "REGION.9ffdee3d-bc78-31d0-9907-5ae4fbc6a9ad",
+        "context": "Root:CLIENT/heartbeat HADOOP_IPC#REQUEST:DatanodeProtocol.sendHeartbeat@0>>Client.call>Client.call",
+        "seq": 14058,
+        "place": "",
+        "nanos": 280080482287562
+      }
+    ],
+    "graph_added": 4,
+    "graph_removed": 9,
+    "fatal_at": [
+      "hdfs-11741/proxy-dn#epoch0/region/REGION.7c569c3f-b4d3-305a-bd9c-bebff1048122/ctx:Anchor:a8e1ae8efbd68024@HDFS_SASL/DATA_XCEIVER/idx:<org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer$SaslServerCallbackHandler: void handle(javax.security.auth.callback.Callback[])>@0"
+    ]
+  }
+}

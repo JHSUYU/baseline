@@ -1,0 +1,41 @@
+{
+  "case": "hdfs-buggy-17383",
+  "seed": 0,
+  "detected": true,
+  "trials": 32,
+  "applied_trials": 32,
+  "prepare_s": 193.5,
+  "healthy_s": 33.0,
+  "elapsed_s": 596.9,
+  "corpus_edges": 1082,
+  "detection": {
+    "trial": "t00032",
+    "trial_index": 32,
+    "seconds_from_start": 563.9,
+    "seconds_with_healthy": 596.9,
+    "seconds_with_prepare": 790.4,
+    "faults": [
+      "FAULT:HADOOP_IPC:RESPONSE @ Client.getRpcResponse#u7"
+    ],
+    "plan": [
+      {
+        "site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection)>#u7",
+        "root": "FAULT:HADOOP_IPC:RESPONSE",
+        "occurrence": "cbfc9909c8a89ff3",
+        "invocation": 1,
+        "node": "hdfs-buggy-17383/target-dn#epoch0",
+        "line": "hdfs-buggy-N/target-dn#epochN | main",
+        "region": "REGION.e9c461ed-34b4-3243-a367-ab679c7f5118",
+        "context": "Root:CLIENT/heartbeat ",
+        "seq": 381958,
+        "place": "",
+        "nanos": 279572133273872
+      }
+    ],
+    "graph_added": 10,
+    "graph_removed": 175,
+    "fatal_at": [
+      "hdfs-buggy-17383/target-dn#epoch0/region/REGION.7f08d6f5-b1ef-323d-8084-ce44a2259712/ctx:Root:DATA_XCEIVER#1/idx:<org.apache.hadoop.hdfs.security.token.block.BlockPoolTokenSecretManager: void checkAccess(org.apache.hadoop.security.token.Token,java.lang.String,org.apache.hadoop.hdfs.protocol.ExtendedBlock,org.apache.hadoop.hdfs.security.token.block.BlockTokenIdentifier$AccessMode,org.apache.hadoop.fs.StorageType[],java.lang.String[])>@0"
+    ]
+  }
+}

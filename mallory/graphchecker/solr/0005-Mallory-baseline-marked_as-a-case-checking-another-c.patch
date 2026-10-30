@@ -1,0 +1,42 @@
+From f2d206a2194222781275063902bdb0a127d19793 Mon Sep 17 00:00:00 2001
+From: ZhenyuLi
+ <ZhenyuLi@node0.experiment.silentfailure-pg0.clemson.cloudlab.us>
+Date: Sun, 25 Oct 2026 20:14:09 +0000
+Subject: [PATCH 5/5] Mallory baseline: marked_as, a case checking another
+ case's marked target
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ experiments/lib/case-env.sh | 2 ++
+ experiments/lib/run.sh      | 2 +-
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/experiments/lib/case-env.sh b/experiments/lib/case-env.sh
+index 7ef2fec47..6c9dcbaed 100644
+--- a/experiments/lib/case-env.sh
++++ b/experiments/lib/case-env.sh
+@@ -8,6 +8,8 @@ loop_bounds=${case_dir}/loop-bounds.jsonl
+ target_spec=${case_dir}/target.yaml
+ target_occurrence=
+ recording_window=
++# a case checking another case's marked target with another workload names it here
++marked_as=
+ scope=()
+ system_scope=()
+ # shellcheck source=../../tools/lib/gc-env.sh
+diff --git a/experiments/lib/run.sh b/experiments/lib/run.sh
+index a4342ad59..d9ff0e5f3 100755
+--- a/experiments/lib/run.sh
++++ b/experiments/lib/run.sh
+@@ -39,7 +39,7 @@ if [[ ! -f ${target_spec} ]]; then
+   if [[ ! -s ${target_spec} ]]; then
+     partial=$(mktemp "${target_spec}.XXXXXX")
+     python3 "${lib}/../../tools/lib/annotated.py" "${system_dir}" "${repo}" \
+-      "${tag}" >"${partial}"
++      "${marked_as:-${tag}}" >"${partial}"
+     mv -f -- "${partial}" "${target_spec}"
+   fi
+ fi
+-- 
+2.34.1
+

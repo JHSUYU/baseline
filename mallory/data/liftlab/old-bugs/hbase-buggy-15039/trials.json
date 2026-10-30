@@ -1,0 +1,158 @@
+{
+ "case": "hbase-buggy-15039",
+ "seed": 0,
+ "healthy_fatal_arms": 0,
+ "healthy_noise_edges": 23,
+ "prepare_s": 165.8,
+ "healthy_s": 41.1,
+ "elapsed_s": 228.6,
+ "trials": [
+  {
+   "name": "t00001",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.hbase.ipc.RpcConnection: void finishCall(org.apache.hadoop.hbase.shaded.protobuf.generated.RPCProtos$ResponseHeader,java.io.InputStream,org.apache.hadoop.hbase.ipc.Call)>#u39",
+     "root": "FAULT:HBASE_RPC:RESPONSE",
+     "occurrence": "outside:before||HMaster-EventLoopGroup-N-N",
+     "invocation": 5,
+     "node": "",
+     "line": "? | HMaster-EventLoopGroup-N-N",
+     "region": "outside before",
+     "context": "outside before AbstractChannelHandlerContext.invokeChannelRead<AbstractChannelHandlerContext.invokeChannelRead<AbstractChannelHandlerContext.fireChannelRead<ByteToMessageDecoder.fireChannelRead<ByteToMessageDecoder.channelRead",
+     "seq": -1,
+     "place": "before||HMaster-EventLoopGroup-N-N",
+     "nanos": 281198964356416
+    }
+   ],
+   "state": "? | HMaster-EventLoopGroup-N-N | outside before | outside before AbstractChannelHandlerContext.invokeChannelRead<AbstractChannelHandlerContext.invokeChannelRead<AbstractChannelHandlerContext.fireChannelRead<ByteToMessageDecoder.fireChannelRead<ByteToMessageDecoder.channelRead | ",
+   "node": "lift05",
+   "seconds": 16.2,
+   "exit": 0,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 1,
+   "graph_added": 21,
+   "graph_removed": 18,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00002",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper: java.lang.String create(java.lang.String,byte[],java.util.List,org.apache.zookeeper.CreateMode)>#u13",
+     "root": "FAULT:ZOOKEEPER:WRITE:KeeperException$SessionExpiredException",
+     "occurrence": "outside:before||main",
+     "invocation": 9,
+     "node": "",
+     "line": "? | main",
+     "region": "outside before",
+     "context": "outside before ZKSecretWatcher.start<AuthenticationTokenSecretManager.start<NettyRpcServer.start<HBaseRpcServicesBase.internalStart<MasterRpcServices.start",
+     "seq": -1,
+     "place": "before||main",
+     "nanos": 281196222346387
+    }
+   ],
+   "state": "? | main | outside before | outside before ZKSecretWatcher.start<AuthenticationTokenSecretManager.start<NettyRpcServer.start<HBaseRpcServicesBase.internalStart<MasterRpcServices.start | ",
+   "node": "lift05",
+   "seconds": 122.4,
+   "exit": 124,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 0,
+   "graph_added": 0,
+   "graph_removed": 66,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00003",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.hbase.ipc.RpcConnection: void finishCall(org.apache.hadoop.hbase.shaded.protobuf.generated.RPCProtos$ResponseHeader,java.io.InputStream,org.apache.hadoop.hbase.ipc.Call)>#u49",
+     "root": "FAULT:HBASE_RPC:RESPONSE:ConnectionClosedException",
+     "occurrence": "outside:before||HMaster-EventLoopGroup-N-N",
+     "invocation": 3,
+     "node": "",
+     "line": "? | HMaster-EventLoopGroup-N-N",
+     "region": "outside before",
+     "context": "outside before AbstractChannelHandlerContext.invokeChannelRead<AbstractChannelHandlerContext.invokeChannelRead<AbstractChannelHandlerContext.fireChannelRead<ByteToMessageDecoder.fireChannelRead<ByteToMessageDecoder.channelRead",
+     "seq": -1,
+     "place": "before||HMaster-EventLoopGroup-N-N",
+     "nanos": 281198758833530
+    }
+   ],
+   "state": "? | HMaster-EventLoopGroup-N-N | outside before | outside before AbstractChannelHandlerContext.invokeChannelRead<AbstractChannelHandlerContext.invokeChannelRead<AbstractChannelHandlerContext.fireChannelRead<ByteToMessageDecoder.fireChannelRead<ByteToMessageDecoder.channelRead | ",
+   "node": "lift05",
+   "seconds": 21.6,
+   "exit": 0,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 0,
+   "graph_added": 0,
+   "graph_removed": 0,
+   "reward": 0.0,
+   "fatal_at": []
+  },
+  {
+   "name": "t00004",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.hbase.security.token.ZKSecretWatcher: void nodeChildrenChanged(java.lang.String)>#u7",
+     "root": "FAULT:ZOOKEEPER:READ:KeeperException$ConnectionLossException",
+     "occurrence": "4fdbb1bd8feec4a8",
+     "invocation": 3,
+     "node": "workload/unregistered#epoch0",
+     "line": "workload/unregistered#epochN | zk-event-processor-pool-N",
+     "region": "REGION.21415721-48c9-39df-8427-8e1effa5563f",
+     "context": "Lost:UNKNOWN ZKWatcher$lambda_process_5__578195361.run>ZKWatcher$lambda_processEvent_4__1738899854.run>ZKWatcher$lambda_null_3__1314902408.run",
+     "seq": 3865,
+     "place": "",
+     "nanos": 281199716831057
+    }
+   ],
+   "state": "workload/unregistered#epochN | zk-event-processor-pool-N | REGION.21415721-48c9-39df-8427-8e1effa5563f | Lost:UNKNOWN ZKWatcher$lambda_process_5__578195361.run>ZKWatcher$lambda_processEvent_4__1738899854.run>ZKWatcher$lambda_null_3__1314902408.run | ",
+   "node": "lift05",
+   "seconds": 13.5,
+   "exit": 0,
+   "applied": true,
+   "fatal": false,
+   "new_edges": 82,
+   "graph_added": 99,
+   "graph_removed": 25,
+   "reward": 0.9973,
+   "fatal_at": []
+  },
+  {
+   "name": "t00005",
+   "plan": [
+    {
+     "site": "<org.apache.hadoop.hbase.security.token.ZKSecretWatcher: void nodeChildrenChanged(java.lang.String)>#u7",
+     "root": "FAULT:ZOOKEEPER:READ:KeeperException$ConnectionLossException",
+     "occurrence": "2909021f275a4d98",
+     "invocation": 3,
+     "node": "workload/unregistered#epoch0",
+     "line": "workload/unregistered#epochN | zk-event-processor-pool-N",
+     "region": "REGION.21415721-48c9-39df-8427-8e1effa5563f",
+     "context": "Lost:UNKNOWN ZKWatcher$lambda_process_5__578195361.run>ZKWatcher$lambda_processEvent_4__1738899854.run>ZKWatcher$lambda_null_3__1314902408.run",
+     "seq": 3866,
+     "place": "",
+     "nanos": 281199716877575
+    }
+   ],
+   "state": "workload/unregistered#epochN | zk-event-processor-pool-N | REGION.21415721-48c9-39df-8427-8e1effa5563f | Lost:UNKNOWN ZKWatcher$lambda_process_5__578195361.run>ZKWatcher$lambda_processEvent_4__1738899854.run>ZKWatcher$lambda_null_3__1314902408.run | ",
+   "node": "lift05",
+   "seconds": 13.5,
+   "exit": 1,
+   "applied": true,
+   "fatal": true,
+   "new_edges": 32,
+   "graph_added": 52,
+   "graph_removed": 30,
+   "reward": 0.5934,
+   "fatal_at": [
+    "auto0/client0#epoch0/region/REGION.5f745bf3-665d-3cc2-9ebd-a839446f5935/ctx:Root:CLIENT/test#1/idx:<org.apache.hadoop.hbase.security.token.AuthenticationTokenSecretManager: byte[] retrievePassword(org.apache.hadoop.hbase.security.token.AuthenticationTokenIdentifier)>@0"
+   ]
+  }
+ ]
+}

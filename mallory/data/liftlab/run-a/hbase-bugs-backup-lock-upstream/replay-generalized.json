@@ -1,0 +1,102 @@
+{
+  "case": "hbase-bugs-backup-lock-upstream",
+  "seed": 0,
+  "trial": "t00014",
+  "faults": [
+    "FAULT:HBASE_RPC:REQUEST @ AbstractRpcClient.callMethod#u60",
+    "FAULT:HBASE_RPC:REQUEST:ConnectionClosedException @ AbstractRpcClient.callMethod#u65",
+    "FAULT:HBASE_RPC:RESPONSE:ConnectionClosedException @ RpcConnection.finishCall#u49"
+  ],
+  "generalized": true,
+  "planted": [
+    2,
+    2,
+    422
+  ],
+  "healthy_fatal_arms": 2,
+  "repeats": 10,
+  "applied": 10,
+  "detected": 10,
+  "runs": [
+    {
+      "run": "r01",
+      "exit": 124,
+      "seconds": 125.7,
+      "applied": true,
+      "fatal_arms": 140,
+      "detected": true
+    },
+    {
+      "run": "r02",
+      "exit": 124,
+      "seconds": 126.6,
+      "applied": true,
+      "fatal_arms": 168,
+      "detected": true
+    },
+    {
+      "run": "r03",
+      "exit": 124,
+      "seconds": 126.1,
+      "applied": true,
+      "fatal_arms": 166,
+      "detected": true
+    },
+    {
+      "run": "r04",
+      "exit": 124,
+      "seconds": 125.4,
+      "applied": true,
+      "fatal_arms": 166,
+      "detected": true
+    },
+    {
+      "run": "r05",
+      "exit": 124,
+      "seconds": 125.2,
+      "applied": true,
+      "fatal_arms": 168,
+      "detected": true
+    },
+    {
+      "run": "r06",
+      "exit": 124,
+      "seconds": 124.6,
+      "applied": true,
+      "fatal_arms": 160,
+      "detected": true
+    },
+    {
+      "run": "r07",
+      "exit": 124,
+      "seconds": 127.0,
+      "applied": true,
+      "fatal_arms": 163,
+      "detected": true
+    },
+    {
+      "run": "r08",
+      "exit": 124,
+      "seconds": 125.5,
+      "applied": true,
+      "fatal_arms": 164,
+      "detected": true
+    },
+    {
+      "run": "r09",
+      "exit": 124,
+      "seconds": 126.5,
+      "applied": true,
+      "fatal_arms": 160,
+      "detected": true
+    },
+    {
+      "run": "r10",
+      "exit": 124,
+      "seconds": 126.0,
+      "applied": true,
+      "fatal_arms": 160,
+      "detected": true
+    }
+  ]
+}

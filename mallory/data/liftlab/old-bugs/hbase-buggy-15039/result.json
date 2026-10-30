@@ -1,0 +1,41 @@
+{
+  "case": "hbase-buggy-15039",
+  "seed": 0,
+  "detected": true,
+  "trials": 5,
+  "applied_trials": 5,
+  "prepare_s": 165.8,
+  "healthy_s": 41.1,
+  "elapsed_s": 228.6,
+  "corpus_edges": 205,
+  "detection": {
+    "trial": "t00005",
+    "trial_index": 5,
+    "seconds_from_start": 187.4,
+    "seconds_with_healthy": 228.5,
+    "seconds_with_prepare": 394.3,
+    "faults": [
+      "FAULT:ZOOKEEPER:READ:KeeperException$ConnectionLossException @ ZKSecretWatcher.nodeChildrenChanged#u7"
+    ],
+    "plan": [
+      {
+        "site": "<org.apache.hadoop.hbase.security.token.ZKSecretWatcher: void nodeChildrenChanged(java.lang.String)>#u7",
+        "root": "FAULT:ZOOKEEPER:READ:KeeperException$ConnectionLossException",
+        "occurrence": "2909021f275a4d98",
+        "invocation": 3,
+        "node": "workload/unregistered#epoch0",
+        "line": "workload/unregistered#epochN | zk-event-processor-pool-N",
+        "region": "REGION.21415721-48c9-39df-8427-8e1effa5563f",
+        "context": "Lost:UNKNOWN ZKWatcher$lambda_process_5__578195361.run>ZKWatcher$lambda_processEvent_4__1738899854.run>ZKWatcher$lambda_null_3__1314902408.run",
+        "seq": 3866,
+        "place": "",
+        "nanos": 281199716877575
+      }
+    ],
+    "graph_added": 52,
+    "graph_removed": 30,
+    "fatal_at": [
+      "auto0/client0#epoch0/region/REGION.5f745bf3-665d-3cc2-9ebd-a839446f5935/ctx:Root:CLIENT/test#1/idx:<org.apache.hadoop.hbase.security.token.AuthenticationTokenSecretManager: byte[] retrievePassword(org.apache.hadoop.hbase.security.token.AuthenticationTokenIdentifier)>@0"
+    ]
+  }
+}
