@@ -213,11 +213,14 @@ class CoverageIoTest(unittest.TestCase):
                          stable_occurrence('local/Thread-190' + site2))
         self.assertEqual(stable_occurrence('local/Thread-7|hdfs:dn:data1' + site2),
                          'local/Thread-anonymous|hdfs:dn:data1' + site2)
-        self.assertNotEqual(stable_occurrence('local/MyThread-189' + site2),
-                            stable_occurrence('local/MyThread-190' + site2))
-        # short ordinals stay names: two handlers are two actors
+        # nor is a pool worker's index: whichever worker was free ran the call
+        self.assertEqual(stable_occurrence('local/PEWorker-5' + site2),
+                         stable_occurrence('local/PEWorker-3' + site2))
+        self.assertEqual(stable_occurrence('local/pool-3-thread-2' + site2),
+                         'local/pool-3-thread-anonymous' + site2)
+        # the rest of a name stays: two pools are two actors
         self.assertNotEqual(stable_occurrence('local/handler-1' + site),
-                            stable_occurrence('local/handler-2' + site))
+                            stable_occurrence('local/listener-1' + site))
 
     def test_hbase_listener_slash_port_keeps_replayable_actor_identity(self):
         site = '/<example.Listener: void accept()>#u3'

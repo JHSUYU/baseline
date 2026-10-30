@@ -53,9 +53,13 @@ public class OccurrenceIdentityTest {
         String second = "local/OverseerStateUpdate-72075395483484162-127.0.0.1:36011_solr-n_0000000000" + site;
         assertEquals(OccurrenceIdentity.stable(first), OccurrenceIdentity.stable(second));
         assertNotEquals(OccurrenceIdentity.stable("local/handler-1" + site),
-                OccurrenceIdentity.stable("local/handler-2" + site));
+                OccurrenceIdentity.stable("local/listener-1" + site));
         assertEquals(OccurrenceIdentity.stable("local/Thread-189" + site),
                 OccurrenceIdentity.stable("local/Thread-190" + site));
+        assertEquals(OccurrenceIdentity.stable("local/PEWorker-5" + site),
+                OccurrenceIdentity.stable("local/PEWorker-3" + site));
+        assertEquals("local/pool-3-thread-anonymous" + site,
+                OccurrenceIdentity.stable("local/pool-3-thread-2" + site));
         assertEquals("local/Thread-anonymous|hdfs:dn:data1" + site,
                 OccurrenceIdentity.stable("local/Thread-7|hdfs:dn:data1" + site));
     }

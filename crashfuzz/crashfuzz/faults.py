@@ -146,9 +146,10 @@ def stable_occurrence(address: str) -> str:
     # A run of ten or more digits is a per-run identifier (a ZooKeeper session id,
     # a hash code, a timestamp), never a stable name (the agent masks it alike).
     actor = re.sub(r"(?<![0-9])[0-9]{10,}(?![0-9])", "id", actor)
-    # The JVM names an unnamed thread Thread-<n>, n counting every unnamed thread made
-    # before it: no role; its calls of one site are told apart by occurrenceOrdinal.
-    actor = re.sub(r"^Thread-[0-9]+(?=\||$)", "Thread-anonymous", actor)
+    # A trailing -<n> of a thread name is an index (the JVM's Thread-<n>; a pool's
+    # worker-<n>, whichever was free): no role; such threads' calls of one site are
+    # told apart by occurrenceOrdinal (the agent masks it alike).
+    actor = re.sub(r"^(.*?)-[0-9]+(?=\||$)", r"\1-anonymous", actor)
     return address[:node_end + 1] + actor + address[site_start:]
 
 
