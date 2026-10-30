@@ -369,8 +369,33 @@ def repeated_nonempty_reply_profile(sequence: Sequence) -> tuple[int, int]:
                default=(0, 0))
 
 
+def logical_node(point: Point) -> str:
+    """An occurrence's logical node: its actor's ``|node`` suffix, else the actor."""
+    return actor_of(point).split("/", 1)[-1].rsplit("|", 1)[-1]
+
+
+def concurrent_calls(sequence: Sequence) -> bool:
+    """A whole plan failing one call site before the call, each fault on a distinct node.
+
+    Every node makes that call for the same event (each node's watch on one
+    changed store node fires), concurrently: which comes first is a race, not
+    part of the plan, so its faults apply in any order (the agent alike).
+    """
+    if len(sequence) < 2:
+        return False
+    fields = ("marker", "siteId", "sourceKey", "exceptionClass")
+    family = tuple(sequence[0].get(field) for field in fields)
+    nodes = [logical_node(point) for point in sequence]
+    return (all(point.get("phase", "before") == "before" and
+                tuple(point.get(field) for field in fields) == family for point in sequence) and
+            len(set(nodes)) == len(nodes))
+
+
 def independent_reply_fanout(sequence: Sequence) -> bool:
-    """A whole plan losing one reply shape, each fault on a distinct known node."""
+    """A plan without an order of its own: one reply shape lost on distinct known nodes,
+    or one call failed on distinct nodes (``concurrent_calls``)."""
+    if concurrent_calls(sequence):
+        return True
     if len(sequence) < 2 or not all(object_array_response(p) for p in sequence):
         return False
     fields = ("marker", "siteId", "sourceKey", "exceptionClass", "phase", "responseShape")

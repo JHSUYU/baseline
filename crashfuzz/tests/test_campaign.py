@@ -586,6 +586,19 @@ class CoverageIoTest(unittest.TestCase):
                            {'sequence': four, 'priority': 1, 'created': 2}]}
         self.assertEqual(choose_next_sequence(state), 1)
 
+    def test_one_call_failed_on_distinct_nodes_applies_in_any_order(self):
+        watch = {'marker': 'FAULT:STATIC:IO', 'siteId': '<example.Watcher: void process()>#u13',
+                 'sourceKey': '<example.Store: byte[] getData()>', 'hitOrdinal': 1,
+                 'exceptionClass': 'example.ConnectionLoss'}
+        four = {**watch, 'occurrence': 'local/solr:watch:node4/<example.Watcher: void process()>#u13'}
+        two = {**watch, 'occurrence': 'local/solr:watch:node2/<example.Watcher: void process()>#u13'}
+        self.assertTrue(independent_reply_fanout([four, two]))
+        reversed_result = {'applied_count': 2, 'matched_count': 2, 'applied_points': [two, four],
+                           'applied_fault_ids': [fingerprint(two), fingerprint(four)]}
+        self.assertTrue(strict_injection(reversed_result, [four, two]))
+        self.assertFalse(independent_reply_fanout([four, four]))
+        self.assertFalse(independent_reply_fanout([four, {**two, 'phase': 'after'}]))
+
     def test_strict_injection_accepts_only_complete_unordered_reply_fanout(self):
         reply = {**A, 'phase': 'after',
                  'responseShape': 'example.Reply|commands=[example.Update]'}
