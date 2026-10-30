@@ -41,6 +41,8 @@ def main(argv: list[str] | None = None) -> int:
     replay.add_argument("--seed", type=int, default=0)
     replay.add_argument("--repeats", type=int, default=10)
     replay.add_argument("--node", default=settings.NODES[0])
+    replay.add_argument("--generalize", action="store_true",
+                        help="plant each fault at all its siblings in the detecting run")
 
     report = sub.add_parser("report", help="every case's result under the work directory")
     report.add_argument("--work", type=Path, default=settings.WORK)
@@ -59,8 +61,10 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(campaign.Sweep(engine.Case.resolve(args.case), campaign.Budget(),
                                         args.node).sweep(args.limit, args.reverse), indent=2))
     elif args.command == "replay":
-        print(json.dumps(campaign.Replay(engine.Case.resolve(args.case), campaign.Budget(), args.node,
-                                         seed=args.seed).replay(args.repeats), indent=2))
+        replaying = campaign.Replay(engine.Case.resolve(args.case), campaign.Budget(), args.node,
+                                    seed=args.seed)
+        replaying.generalize = args.generalize
+        print(json.dumps(replaying.replay(args.repeats), indent=2))
     else:
         rows = []
         for path in sorted(args.work.glob("*/seed-*/result.json")):

@@ -353,11 +353,16 @@ class Replay(Campaign):
     (the campaign's healthy fatal arms set the threshold).
     """
 
+    generalize: bool = False
+
     @property
     def directory(self) -> Path:
-        return self.case.work / f"seed-{self.seed}" / "replay"
+        return self.case.work / f"seed-{self.seed}" / ("replay-generalized" if self.generalize
+                                                        else "replay")
 
     def replay(self, repeats: int) -> dict:
+        """With ``generalize``, every fault is planted at all its siblings in the detecting run
+        (``faults.generalized``), and a run applies a fault when it applied any of them."""
         campaign = self.case.work / f"seed-{self.seed}"
         detection = json.loads((campaign / "result.json").read_text()).get("detection")
         if not detection:
@@ -369,16 +374,31 @@ class Replay(Campaign):
         self.budget.trial_bound_s = min(self.budget.trial_bound_s,
                                         max(120, int(4 * state["healthy_s"] / HEALTHY_RUNS)))
         plan = faults.from_json(detection["plan"])
+        groups = [(point,) for point in plan]
+        if self.generalize:
+            trace = campaign / "runs" / detection["trial"] / "runtime_trace.jsonl.gz"
+            groups = faults.generalized(trace, plan)
+            plan = tuple(point for group in groups for point in group)
+        rows = {}                             # a window fault's plant row: its group
+        for point, index in ((p, i) for i, g in enumerate(groups) for p in g):
+            if not point.outside:
+                rows[len(rows)] = index
         runs = []
         for k in range(1, repeats + 1):
             started = time.time()
             status, run, applied = self._run(f"r{k:02d}", plan, self.node)
+            if run is not None and self.generalize:
+                hit = {rows[row] for row in run.applied_rows if row in rows}
+                hit |= {i for i, g in enumerate(groups) if g[0].outside and
+                        (g[0].site, g[0].place, g[0].invocation) in run.outside_applied}
+                applied = len(hit) == len(groups)
             fatal = len(run.fatal_rows) if run else 0
             runs.append({"run": f"r{k:02d}", "exit": status, "seconds": round(time.time() - started, 1),
                          "applied": applied, "fatal_arms": fatal,
                          "detected": bool(run and applied and fatal > failure_threshold(healthy_fatal))})
         record = {"case": self.case.case_id, "seed": self.seed, "trial": detection["trial"],
-                  "faults": detection["faults"], "healthy_fatal_arms": healthy_fatal,
+                  "faults": detection["faults"], "generalized": self.generalize,
+                  "planted": [len(group) for group in groups], "healthy_fatal_arms": healthy_fatal,
                   "repeats": repeats, "applied": sum(r["applied"] for r in runs),
                   "detected": sum(r["detected"] for r in runs), "runs": runs}
         self.directory.mkdir(parents=True, exist_ok=True)
