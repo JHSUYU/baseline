@@ -1,0 +1,131 @@
+{
+ "case_id": "HDFS-11741",
+ "date": "2026-10-29",
+ "cluster": "liftlab",
+ "checklist": "data/old-bugs.json",
+ "runs": {
+  "run": {
+   "results_root": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/old-bugs",
+   "host": "lift08",
+   "command": "python3 -m crashfuzz --checklist data/old-bugs.json run --case-id HDFS-11741 --stop-at-candidate --max-trials 10000 --max-seconds 14400 --results /bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/old-bugs",
+   "status": "candidate_review",
+   "finished": true,
+   "cluster_test": "org.apache.hadoop.hdfs.server.balancer.TestCausynthExpiredBalancerKey#testBlockMoveWithCachedKeyAfterRotations",
+   "selection_profile": null,
+   "static_io_calls": 193,
+   "healthy_seconds": 11.336,
+   "healthy_target_reached": true,
+   "healthy_target_fatal_exceptions": 0,
+   "healthy_fault_points": 241,
+   "trials": 7,
+   "trial_statuses": {
+    "checked": 3,
+    "lost_target": 3,
+    "target_exception_candidate": 1
+   },
+   "junit_seconds": 84.9,
+   "first_candidate_trial": 7,
+   "first_candidate_seconds": 164.3,
+   "total_elapsed_seconds": 164.652,
+   "candidates": 1,
+   "first_candidate": {
+    "trial": 7,
+    "status": "target_exception_candidate",
+    "exit": 1,
+    "timed_out": false,
+    "target_fatal_exceptions": 1,
+    "healthy_target_fatal_exceptions": 0,
+    "elapsed_seconds": 9.436,
+    "realized_faults": 2,
+    "strict_injection": true,
+    "result": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/old-bugs/HDFS-11741/campaign/HDFS-11741/trials/0007-47948fb974238b917d0a/result.json",
+    "plan": [
+     {
+      "exceptionClass": "java.io.IOException",
+      "hitOrdinal": 1,
+      "marker": "FAULT:STATIC:IO",
+      "occurrence": "local/main|hdfs:dn:data1/<org.apache.hadoop.hdfs.server.datanode.BPServiceActor: org.apache.hadoop.hdfs.server.protocol.HeartbeatResponse sendHeartBeat(boolean)>#u75",
+      "occurrenceOrdinal": 1,
+      "phase": "after",
+      "responseShape": "org.apache.hadoop.hdfs.server.protocol.HeartbeatResponse|commands=[org.apache.hadoop.hdfs.server.protocol.KeyUpdateCommand]",
+      "siteId": "<org.apache.hadoop.hdfs.server.datanode.BPServiceActor: org.apache.hadoop.hdfs.server.protocol.HeartbeatResponse sendHeartBeat(boolean)>#u75",
+      "sourceKey": "<org.apache.hadoop.hdfs.protocolPB.DatanodeProtocolClientSideTranslatorPB: org.apache.hadoop.hdfs.server.protocol.HeartbeatResponse sendHeartbeat(org.apache.hadoop.hdfs.server.protocol.DatanodeRegistration,org.apache.hadoop.hdfs.server.protocol.StorageReport[],long,long,int,int,int,org.apache.hadoop.hdfs.server.protocol.VolumeFailureSummary,boolean,org.apache.hadoop.hdfs.server.protocol.SlowPeerReports,org.apache.hadoop.hdfs.server.protocol.SlowDiskReports)>"
+     },
+     {
+      "exceptionClass": "java.io.IOException",
+      "hitOrdinal": 3,
+      "marker": "FAULT:STATIC:IO",
+      "occurrence": "local/main|hdfs:dn:data1/<org.apache.hadoop.hdfs.server.datanode.BPServiceActor: org.apache.hadoop.hdfs.server.protocol.HeartbeatResponse sendHeartBeat(boolean)>#u75",
+      "occurrenceOrdinal": 2,
+      "phase": "after",
+      "responseShape": "org.apache.hadoop.hdfs.server.protocol.HeartbeatResponse|commands=[org.apache.hadoop.hdfs.server.protocol.KeyUpdateCommand]",
+      "siteId": "<org.apache.hadoop.hdfs.server.datanode.BPServiceActor: org.apache.hadoop.hdfs.server.protocol.HeartbeatResponse sendHeartBeat(boolean)>#u75",
+      "sourceKey": "<org.apache.hadoop.hdfs.protocolPB.DatanodeProtocolClientSideTranslatorPB: org.apache.hadoop.hdfs.server.protocol.HeartbeatResponse sendHeartbeat(org.apache.hadoop.hdfs.server.protocol.DatanodeRegistration,org.apache.hadoop.hdfs.server.protocol.StorageReport[],long,long,int,int,int,org.apache.hadoop.hdfs.server.protocol.VolumeFailureSummary,boolean,org.apache.hadoop.hdfs.server.protocol.SlowPeerReports,org.apache.hadoop.hdfs.server.protocol.SlowDiskReports)>"
+     }
+    ]
+   },
+   "replays": [
+    {
+     "name": "trial7",
+     "plan_file": "data/evidence/HDFS-11741/plan-liftlab-trial7.json",
+     "command": "python3 -m crashfuzz --checklist data/old-bugs.json replay --case-id HDFS-11741 --plan data/evidence/HDFS-11741/plan-liftlab-trial7.json --repeats 10 --name trial7 --results /bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/old-bugs",
+     "k": 10,
+     "n": 10,
+     "strict": 10,
+     "statuses": [
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate"
+     ],
+     "root": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/old-bugs/HDFS-11741/replay-trial7/HDFS-11741",
+     "agent": "runtime-agent/target (the run's own agent)",
+     "identity_rules": "9a2e9512 tree mode",
+     "kind": "exact plan",
+     "started": 1793319204.0894408
+    },
+    {
+     "name": "liftlab-trial7",
+     "plan_file": "data/evidence/HDFS-11741/plan-liftlab-trial7.json",
+     "command": "python3 -m crashfuzz --checklist data/old-bugs.json replay --case-id HDFS-11741 --plan data/evidence/HDFS-11741/plan-liftlab-trial7.json --repeats 10 --name liftlab-trial7 --results /bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/old-bugs",
+     "k": 10,
+     "n": 10,
+     "strict": 10,
+     "statuses": [
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate",
+      "target_exception_candidate"
+     ],
+     "root": "/bigtemp/vnr3ne/crashfuzz-results/liftlab-2026-10-29/old-bugs/HDFS-11741/replay-liftlab-trial7/HDFS-11741",
+     "agent": "build/agent-v5 = runtime-agent at 9cb09d6b (the identity rules of this branch's head)",
+     "identity_rules": "9cb09d6b + any trailing -<n> masked",
+     "kind": "exact plan",
+     "started": 1793326186.2105427
+    }
+   ],
+   "tree": "/bigtemp/vnr3ne/wt/bd-trees-1/hadoop-hdfs-bug-11741",
+   "tree_commit": "c0af4cbcfe5211f838aa5e149b15d2a846e3da27",
+   "neutral_adapter_classes": [
+    "org.apache.hadoop.ipc.CausynthMessagePropagation",
+    "org.apache.hadoop.ipc.CausynthMessagePropagation$Inbound",
+    "org.apache.hadoop.ipc.CausynthMessagePropagation$Outbound",
+    "org.apache.hadoop.ipc.CausynthSymbolicSource"
+   ],
+   "symptom": "the point's own throw, BlockTokenSecretManager.retrieveDataEncryptionKey:590 on the tree: \"Can't re-compute encryption key for nonce, since the required block key (keyID=182908) doesn't exist. Current key: 182905\"; target fatal 1, healthy 0; the JUnit test fails",
+   "mechanism": "lost replies (carrying KeyUpdateCommand) of DataNode data1's 1st and 3rd heartbeats: the DataNode never takes the rotated block keys, so the Balancer's key id is unknown to it. This is the lost-key-update mechanism of GraphChecker's HDFS-12931/-5766/-10609 cases, not HDFS-11741's expired cached key (a clock skew); HDFS-11741's fix (re-mint by the Balancer's clock) would not prevent it."
+  }
+ }
+}
