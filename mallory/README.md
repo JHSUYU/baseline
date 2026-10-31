@@ -189,7 +189,7 @@ The time is wall clock from the start of SEED to the end of the detecting run. E
 (`python3 -m mallory replay <case>`: the detecting plan through the same plant, matching and oracle). Where the exact plan
 did not replay 10/10, it was also replayed generalized (`--generalize`: each fault planted at its siblings in the detecting
 run, a replay aid, not the detection). `data/liftlab/run-{a,b}/<case>/` keeps each run's result, every trial
-(`trials.json`), the detecting plant (`detecting.plant*.jsonl`) and the replays (`replay*.json`).
+(`trials.json`), the detecting plant (`detecting.plant*.jsonl`), the detecting run's trace (`detecting.trace.jsonl.gz`) and the replays (`replay*.json`).
 
 | bug | unit test | run a | replay a | run b | replay b | CloudLab a / b |
 | --- | --- | --- | --- | --- | --- | --- |

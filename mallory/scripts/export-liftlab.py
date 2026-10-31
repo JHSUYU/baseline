@@ -3,8 +3,9 @@
 
 For each <label> (a MALLORY_WORK, e.g. run-a) and each case under it, data/<dir>/<case>/ receives what the README's
 tables are read from: result.json and prepared.json, trials.json (every trial of the campaign), the detecting run's
-plant (detecting.plant.jsonl and detecting.plant-outside.jsonl, the input of `run_engine.sh plant-run`), and the
-replays (replay.json, replay-generalized.json). Run traces and logs stay in the work directory.
+plant (detecting.plant.jsonl and detecting.plant-outside.jsonl, the input of `run_engine.sh plant-run`), its
+GraphChecker trace (detecting.trace.jsonl.gz: the evidence of the detection, with the target's PLANT_FATAL rows), and
+the replays (replay.json, replay-generalized.json). The other runs' traces and logs stay in the work directory.
 """
 import json
 import shutil
@@ -34,6 +35,9 @@ for spec in sys.argv[3:]:
                 plant = seed / "runs" / (detection["trial"] + suffix)
                 if plant.is_file():
                     shutil.copy(plant, out / ("detecting" + suffix))
+            trace = seed / "runs" / detection["trial"] / "runtime_trace.jsonl.gz"
+            if trace.is_file():
+                shutil.copy(trace, out / "detecting.trace.jsonl.gz")
         for replay in ("replay", "replay-generalized"):
             record = seed / replay / "replay.json"
             if record.is_file():
