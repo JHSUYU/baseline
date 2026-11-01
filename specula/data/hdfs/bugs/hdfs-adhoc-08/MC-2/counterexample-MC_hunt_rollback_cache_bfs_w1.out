@@ -1,0 +1,2548 @@
+TLC2 Version 2026.10.24.013619 (rev: 2ef2af8)
+Running breadth-first search Model-Checking with fp 7 and seed -3413732355873311414 with 1 worker on 64 cores with 11776MB heap and 12288MB offheap memory [pid: 1072524] (Linux 5.15.0-198-generic amd64, Eclipse Adoptium 21.0.13 64bit, OffHeapDiskFPSet, DiskStateQueue).
+Parsing file /bulk/specula-adhoc/specula-runs/20261028-194804-49b4/hdfs-adhoc-08/.specula-output/spec/MC.tla
+Parsing file /bulk/specula-adhoc/specula-runs/20261028-194804-49b4/hdfs-adhoc-08/.specula-output/spec/base.tla
+Parsing file /tmp/tlc-2151257270130809790/_TLCTrace.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/_TLCTrace.tla)
+Parsing file /tmp/tlc-2151257270130809790/Naturals.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Naturals.tla)
+Parsing file /tmp/tlc-2151257270130809790/Integers.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Integers.tla)
+Parsing file /tmp/tlc-2151257270130809790/Sequences.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Sequences.tla)
+Parsing file /tmp/tlc-2151257270130809790/FiniteSets.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/FiniteSets.tla)
+Parsing file /tmp/tlc-2151257270130809790/TLC.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLC.tla)
+Parsing file /tmp/tlc-2151257270130809790/TLCExt.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLCExt.tla)
+Semantic processing of module Naturals
+Semantic processing of module Integers
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module TLC
+Semantic processing of module base
+Semantic processing of module TLCExt
+Semantic processing of module _TLCTrace
+Semantic processing of module MC
+Linting of module base
+Linting of module TLCExt
+Linting of module _TLCTrace
+Linting of module MC
+Starting... (2026-10-28 21:51:09)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-10-28 21:51:16.
+Progress(21) at 2026-10-28 21:51:19: 10,192 states generated (10,192 s/min), 3,030 distinct states found (3,030 ds/min), 569 states left on queue.
+Progress(45) at 2026-10-28 21:52:19: 459,735 states generated (449,543 s/min), 130,893 distinct states found (127,863 ds/min), 14,115 states left on queue.
+Progress(52) at 2026-10-28 21:53:19: 940,697 states generated (480,962 s/min), 262,521 distinct states found (131,628 ds/min), 19,053 states left on queue.
+Progress(58) at 2026-10-28 21:54:19: 1,436,577 states generated (495,880 s/min), 398,511 distinct states found (135,990 ds/min), 22,958 states left on queue.
+Error: Invariant TargetSafe is violated.
+Error: The behavior up to this point is:
+State 1: <Initial predicate>
+/\ wRnd = <<0, 0, 0, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"idle", "idle", "idle", "idle">>
+/\ prev = ( j0 :> [promise |-> -1, seg |-> FALSE] @@
+  j1 :> [promise |-> -1, seg |-> FALSE] @@
+  j2 :> [promise |-> -1, seg |-> FALSE] )
+/\ wEpoch = <<-1, -1, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 0 @@ j1 :> 0 @@ j2 :> 0)
+/\ faults = [loss |-> 0, stop |-> 0, restart |-> 0, upgrade |-> 0, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<-1, -1, -1, -1>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1)
+
+State 2: <MCWriterStart(1) line 93, col 28 to line 93, col 80 of module MC>
+/\ wRnd = <<1, 0, 0, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"gjs", "idle", "idle", "idle">>
+/\ prev = ( j0 :> [promise |-> -1, seg |-> FALSE] @@
+  j1 :> [promise |-> -1, seg |-> FALSE] @@
+  j2 :> [promise |-> -1, seg |-> FALSE] )
+/\ wEpoch = <<-1, -1, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 0 @@ j1 :> 0 @@ j2 :> 0)
+/\ faults = [loss |-> 0, stop |-> 0, restart |-> 0, upgrade |-> 0, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<-1, -1, -1, -1>>
+/\ chan = << ( j0 :> <<[kind |-> "GJS", rnd |-> 1, epoch |-> -1]>> @@
+     j1 :> <<[kind |-> "GJS", rnd |-> 1, epoch |-> -1]>> @@
+     j2 :> <<[kind |-> "GJS", rnd |-> 1, epoch |-> -1]>> ),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1)
+
+State 3: <MCHandleGetJournalState(j0,1) line 108, col 34 to line 108, col 92 of module MC>
+/\ wRnd = <<1, 0, 0, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"gjs", "idle", "idle", "idle">>
+/\ prev = ( j0 :> [promise |-> -1, seg |-> FALSE] @@
+  j1 :> [promise |-> -1, seg |-> FALSE] @@
+  j2 :> [promise |-> -1, seg |-> FALSE] )
+/\ wEpoch = <<-1, -1, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 0 @@ j1 :> 0 @@ j2 :> 0)
+/\ faults = [loss |-> 0, stop |-> 0, restart |-> 0, upgrade |-> 0, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "GJS", rnd |-> 1, ok |-> TRUE, val |-> 0] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<-1, -1, -1, -1>>
+/\ chan = << ( j0 :> <<>> @@
+     j1 :> <<[kind |-> "GJS", rnd |-> 1, epoch |-> -1]>> @@
+     j2 :> <<[kind |-> "GJS", rnd |-> 1, epoch |-> -1]>> ),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 0 @@ j1 :> -1 @@ j2 :> -1)
+
+State 4: <MCRecvReply(1,j0) line 111, col 34 to line 111, col 92 of module MC>
+/\ wRnd = <<1, 0, 0, 0>>
+/\ wVal = << (j0 :> 0 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"gjs", "idle", "idle", "idle">>
+/\ prev = ( j0 :> [promise |-> -1, seg |-> FALSE] @@
+  j1 :> [promise |-> -1, seg |-> FALSE] @@
+  j2 :> [promise |-> -1, seg |-> FALSE] )
+/\ wEpoch = <<-1, -1, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 0 @@ j1 :> 0 @@ j2 :> 0)
+/\ faults = [loss |-> 0, stop |-> 0, restart |-> 0, upgrade |-> 0, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<-1, -1, -1, -1>>
+/\ chan = << ( j0 :> <<>> @@
+     j1 :> <<[kind |-> "GJS", rnd |-> 1, epoch |-> -1]>> @@
+     j2 :> <<[kind |-> "GJS", rnd |-> 1, epoch |-> -1]>> ),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "ok" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 0 @@ j1 :> -1 @@ j2 :> -1)
+
+State 5: <MCHandleGetJournalState(j1,1) line 108, col 34 to line 108, col 92 of module MC>
+/\ wRnd = <<1, 0, 0, 0>>
+/\ wVal = << (j0 :> 0 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"gjs", "idle", "idle", "idle">>
+/\ prev = ( j0 :> [promise |-> -1, seg |-> FALSE] @@
+  j1 :> [promise |-> -1, seg |-> FALSE] @@
+  j2 :> [promise |-> -1, seg |-> FALSE] )
+/\ wEpoch = <<-1, -1, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 0 @@ j1 :> 0 @@ j2 :> 0)
+/\ faults = [loss |-> 0, stop |-> 0, restart |-> 0, upgrade |-> 0, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "GJS", rnd |-> 1, ok |-> TRUE, val |-> 0] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<-1, -1, -1, -1>>
+/\ chan = << ( j0 :> <<>> @@
+     j1 :> <<>> @@
+     j2 :> <<[kind |-> "GJS", rnd |-> 1, epoch |-> -1]>> ),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "ok" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 0 @@ j1 :> 0 @@ j2 :> -1)
+
+State 6: <MCRecvReply(1,j1) line 111, col 34 to line 111, col 92 of module MC>
+/\ wRnd = <<1, 0, 0, 0>>
+/\ wVal = << (j0 :> 0 @@ j1 :> 0 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"gjs", "idle", "idle", "idle">>
+/\ prev = ( j0 :> [promise |-> -1, seg |-> FALSE] @@
+  j1 :> [promise |-> -1, seg |-> FALSE] @@
+  j2 :> [promise |-> -1, seg |-> FALSE] )
+/\ wEpoch = <<-1, -1, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 0 @@ j1 :> 0 @@ j2 :> 0)
+/\ faults = [loss |-> 0, stop |-> 0, restart |-> 0, upgrade |-> 0, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<-1, -1, -1, -1>>
+/\ chan = << ( j0 :> <<>> @@
+     j1 :> <<>> @@
+     j2 :> <<[kind |-> "GJS", rnd |-> 1, epoch |-> -1]>> ),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "ok" @@ j1 :> "ok" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 0 @@ j1 :> 0 @@ j2 :> -1)
+
+State 7: <MCChooseEpoch(1) line 94, col 28 to line 94, col 80 of module MC>
+/\ wRnd = <<2, 0, 0, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"ne", "idle", "idle", "idle">>
+/\ prev = ( j0 :> [promise |-> -1, seg |-> FALSE] @@
+  j1 :> [promise |-> -1, seg |-> FALSE] @@
+  j2 :> [promise |-> -1, seg |-> FALSE] )
+/\ wEpoch = <<-1, -1, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 0 @@ j1 :> 0 @@ j2 :> 0)
+/\ faults = [loss |-> 0, stop |-> 0, restart |-> 0, upgrade |-> 0, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, -1, -1, -1>>
+/\ chan = << ( j0 :> <<[kind |-> "NE", rnd |-> 2, epoch |-> 1]>> @@
+     j1 :> <<[kind |-> "NE", rnd |-> 2, epoch |-> 1]>> @@
+     j2 :>
+         << [kind |-> "GJS", rnd |-> 1, epoch |-> -1],
+            [kind |-> "NE", rnd |-> 2, epoch |-> 1] >> ),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 0 @@ j1 :> 0 @@ j2 :> -1)
+
+State 8: <MCHandleNewEpoch(j0,1) line 109, col 34 to line 109, col 92 of module MC>
+/\ wRnd = <<2, 0, 0, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"ne", "idle", "idle", "idle">>
+/\ prev = ( j0 :> [promise |-> -1, seg |-> FALSE] @@
+  j1 :> [promise |-> -1, seg |-> FALSE] @@
+  j2 :> [promise |-> -1, seg |-> FALSE] )
+/\ wEpoch = <<-1, -1, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 1 @@ j1 :> 0 @@ j2 :> 0)
+/\ faults = [loss |-> 0, stop |-> 0, restart |-> 0, upgrade |-> 0, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "NE", rnd |-> 2, ok |-> TRUE, val |-> 0] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, -1, -1, -1>>
+/\ chan = << ( j0 :> <<>> @@
+     j1 :> <<[kind |-> "NE", rnd |-> 2, epoch |-> 1]>> @@
+     j2 :>
+         << [kind |-> "GJS", rnd |-> 1, epoch |-> -1],
+            [kind |-> "NE", rnd |-> 2, epoch |-> 1] >> ),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 1 @@ j1 :> 0 @@ j2 :> -1)
+
+State 9: <MCRecvReply(1,j0) line 111, col 34 to line 111, col 92 of module MC>
+/\ wRnd = <<2, 0, 0, 0>>
+/\ wVal = << (j0 :> 0 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"ne", "idle", "idle", "idle">>
+/\ prev = ( j0 :> [promise |-> -1, seg |-> FALSE] @@
+  j1 :> [promise |-> -1, seg |-> FALSE] @@
+  j2 :> [promise |-> -1, seg |-> FALSE] )
+/\ wEpoch = <<-1, -1, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 1 @@ j1 :> 0 @@ j2 :> 0)
+/\ faults = [loss |-> 0, stop |-> 0, restart |-> 0, upgrade |-> 0, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, -1, -1, -1>>
+/\ chan = << ( j0 :> <<>> @@
+     j1 :> <<[kind |-> "NE", rnd |-> 2, epoch |-> 1]>> @@
+     j2 :>
+         << [kind |-> "GJS", rnd |-> 1, epoch |-> -1],
+            [kind |-> "NE", rnd |-> 2, epoch |-> 1] >> ),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "ok" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 1 @@ j1 :> 0 @@ j2 :> -1)
+
+State 10: <MCHandleNewEpoch(j1,1) line 109, col 34 to line 109, col 92 of module MC>
+/\ wRnd = <<2, 0, 0, 0>>
+/\ wVal = << (j0 :> 0 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"ne", "idle", "idle", "idle">>
+/\ prev = ( j0 :> [promise |-> -1, seg |-> FALSE] @@
+  j1 :> [promise |-> -1, seg |-> FALSE] @@
+  j2 :> [promise |-> -1, seg |-> FALSE] )
+/\ wEpoch = <<-1, -1, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 1 @@ j1 :> 1 @@ j2 :> 0)
+/\ faults = [loss |-> 0, stop |-> 0, restart |-> 0, upgrade |-> 0, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "NE", rnd |-> 2, ok |-> TRUE, val |-> 0] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, -1, -1, -1>>
+/\ chan = << ( j0 :> <<>> @@
+     j1 :> <<>> @@
+     j2 :>
+         << [kind |-> "GJS", rnd |-> 1, epoch |-> -1],
+            [kind |-> "NE", rnd |-> 2, epoch |-> 1] >> ),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "ok" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 1 @@ j1 :> 1 @@ j2 :> -1)
+
+State 11: <MCRecvReply(1,j1) line 111, col 34 to line 111, col 92 of module MC>
+/\ wRnd = <<2, 0, 0, 0>>
+/\ wVal = << (j0 :> 0 @@ j1 :> 0 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"ne", "idle", "idle", "idle">>
+/\ prev = ( j0 :> [promise |-> -1, seg |-> FALSE] @@
+  j1 :> [promise |-> -1, seg |-> FALSE] @@
+  j2 :> [promise |-> -1, seg |-> FALSE] )
+/\ wEpoch = <<-1, -1, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 1 @@ j1 :> 1 @@ j2 :> 0)
+/\ faults = [loss |-> 0, stop |-> 0, restart |-> 0, upgrade |-> 0, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, -1, -1, -1>>
+/\ chan = << ( j0 :> <<>> @@
+     j1 :> <<>> @@
+     j2 :>
+         << [kind |-> "GJS", rnd |-> 1, epoch |-> -1],
+            [kind |-> "NE", rnd |-> 2, epoch |-> 1] >> ),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "ok" @@ j1 :> "ok" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 1 @@ j1 :> 1 @@ j2 :> -1)
+
+State 12: <MCEstablish(1) line 95, col 28 to line 95, col 80 of module MC>
+/\ wRnd = <<2, 0, 0, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"ready", "idle", "idle", "idle">>
+/\ prev = ( j0 :> [promise |-> -1, seg |-> FALSE] @@
+  j1 :> [promise |-> -1, seg |-> FALSE] @@
+  j2 :> [promise |-> -1, seg |-> FALSE] )
+/\ wEpoch = <<1, -1, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 1 @@ j1 :> 1 @@ j2 :> 0)
+/\ faults = [loss |-> 0, stop |-> 0, restart |-> 0, upgrade |-> 0, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, -1, -1, -1>>
+/\ chan = << ( j0 :> <<>> @@
+     j1 :> <<>> @@
+     j2 :>
+         << [kind |-> "GJS", rnd |-> 1, epoch |-> -1],
+            [kind |-> "NE", rnd |-> 2, epoch |-> 1] >> ),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 1 @@ j1 :> 1 @@ j2 :> -1)
+
+State 13: <MCHandleGetJournalState(j2,1) line 108, col 34 to line 108, col 92 of module MC>
+/\ wRnd = <<2, 0, 0, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"ready", "idle", "idle", "idle">>
+/\ prev = ( j0 :> [promise |-> -1, seg |-> FALSE] @@
+  j1 :> [promise |-> -1, seg |-> FALSE] @@
+  j2 :> [promise |-> -1, seg |-> FALSE] )
+/\ wEpoch = <<1, -1, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 1 @@ j1 :> 1 @@ j2 :> 0)
+/\ faults = [loss |-> 0, stop |-> 0, restart |-> 0, upgrade |-> 0, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "GJS", rnd |-> 1, ok |-> TRUE, val |-> 0] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, -1, -1, -1>>
+/\ chan = << ( j0 :> <<>> @@
+     j1 :> <<>> @@
+     j2 :> <<[kind |-> "NE", rnd |-> 2, epoch |-> 1]>> ),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 1 @@ j1 :> 1 @@ j2 :> 0)
+
+State 14: <MCRecvReply(1,j2) line 111, col 34 to line 111, col 92 of module MC>
+/\ wRnd = <<2, 0, 0, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"ready", "idle", "idle", "idle">>
+/\ prev = ( j0 :> [promise |-> -1, seg |-> FALSE] @@
+  j1 :> [promise |-> -1, seg |-> FALSE] @@
+  j2 :> [promise |-> -1, seg |-> FALSE] )
+/\ wEpoch = <<1, -1, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 1 @@ j1 :> 1 @@ j2 :> 0)
+/\ faults = [loss |-> 0, stop |-> 0, restart |-> 0, upgrade |-> 0, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, -1, -1, -1>>
+/\ chan = << ( j0 :> <<>> @@
+     j1 :> <<>> @@
+     j2 :> <<[kind |-> "NE", rnd |-> 2, epoch |-> 1]>> ),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 1 @@ j1 :> 1 @@ j2 :> 0)
+
+State 15: <MCHandleNewEpoch(j2,1) line 109, col 34 to line 109, col 92 of module MC>
+/\ wRnd = <<2, 0, 0, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"ready", "idle", "idle", "idle">>
+/\ prev = ( j0 :> [promise |-> -1, seg |-> FALSE] @@
+  j1 :> [promise |-> -1, seg |-> FALSE] @@
+  j2 :> [promise |-> -1, seg |-> FALSE] )
+/\ wEpoch = <<1, -1, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 1 @@ j1 :> 1 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 0, restart |-> 0, upgrade |-> 0, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "NE", rnd |-> 2, ok |-> TRUE, val |-> 0] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, -1, -1, -1>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 1 @@ j1 :> 1 @@ j2 :> 1)
+
+State 16: <MCRecvReply(1,j2) line 111, col 34 to line 111, col 92 of module MC>
+/\ wRnd = <<2, 0, 0, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"ready", "idle", "idle", "idle">>
+/\ prev = ( j0 :> [promise |-> -1, seg |-> FALSE] @@
+  j1 :> [promise |-> -1, seg |-> FALSE] @@
+  j2 :> [promise |-> -1, seg |-> FALSE] )
+/\ wEpoch = <<1, -1, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 1 @@ j1 :> 1 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 0, restart |-> 0, upgrade |-> 0, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, -1, -1, -1>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 1 @@ j1 :> 1 @@ j2 :> 1)
+
+State 17: <MCUpgrade(1) line 79, col 5 to line 82, col 50 of module MC>
+/\ wRnd = <<2, 0, 0, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"ready", "idle", "idle", "idle">>
+/\ prev = ( j0 :> [promise |-> 1, seg |-> FALSE] @@
+  j1 :> [promise |-> 1, seg |-> FALSE] @@
+  j2 :> [promise |-> 1, seg |-> FALSE] )
+/\ wEpoch = <<1, -1, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 1 @@ j1 :> 1 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 0, restart |-> 0, upgrade |-> 1, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, -1, -1, -1>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 1 @@ j1 :> 1 @@ j2 :> 1)
+
+State 18: <MCWriterStop(1) line 63, col 5 to line 67, col 47 of module MC>
+/\ wRnd = <<0, 0, 0, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "idle", "idle", "idle">>
+/\ prev = ( j0 :> [promise |-> 1, seg |-> FALSE] @@
+  j1 :> [promise |-> 1, seg |-> FALSE] @@
+  j2 :> [promise |-> 1, seg |-> FALSE] )
+/\ wEpoch = <<1, -1, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 1 @@ j1 :> 1 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 1, restart |-> 0, upgrade |-> 1, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, -1, -1, -1>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 1 @@ j1 :> 1 @@ j2 :> 1)
+
+State 19: <MCWriterStart(2) line 93, col 28 to line 93, col 80 of module MC>
+/\ wRnd = <<0, 1, 0, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "gjs", "idle", "idle">>
+/\ prev = ( j0 :> [promise |-> 1, seg |-> FALSE] @@
+  j1 :> [promise |-> 1, seg |-> FALSE] @@
+  j2 :> [promise |-> 1, seg |-> FALSE] )
+/\ wEpoch = <<1, -1, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 1 @@ j1 :> 1 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 1, restart |-> 0, upgrade |-> 1, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, -1, -1, -1>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   ( j0 :> <<[kind |-> "GJS", rnd |-> 1, epoch |-> -1]>> @@
+     j1 :> <<[kind |-> "GJS", rnd |-> 1, epoch |-> -1]>> @@
+     j2 :> <<[kind |-> "GJS", rnd |-> 1, epoch |-> -1]>> ),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 1 @@ j1 :> 1 @@ j2 :> 1)
+
+State 20: <MCHandleGetJournalState(j0,2) line 108, col 34 to line 108, col 92 of module MC>
+/\ wRnd = <<0, 1, 0, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "gjs", "idle", "idle">>
+/\ prev = ( j0 :> [promise |-> 1, seg |-> FALSE] @@
+  j1 :> [promise |-> 1, seg |-> FALSE] @@
+  j2 :> [promise |-> 1, seg |-> FALSE] )
+/\ wEpoch = <<1, -1, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 1 @@ j1 :> 1 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 1, restart |-> 0, upgrade |-> 1, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "GJS", rnd |-> 1, ok |-> TRUE, val |-> 1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, -1, -1, -1>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   ( j0 :> <<>> @@
+     j1 :> <<[kind |-> "GJS", rnd |-> 1, epoch |-> -1]>> @@
+     j2 :> <<[kind |-> "GJS", rnd |-> 1, epoch |-> -1]>> ),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 1 @@ j1 :> 1 @@ j2 :> 1)
+
+State 21: <MCRecvReply(2,j0) line 111, col 34 to line 111, col 92 of module MC>
+/\ wRnd = <<0, 1, 0, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> 1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "gjs", "idle", "idle">>
+/\ prev = ( j0 :> [promise |-> 1, seg |-> FALSE] @@
+  j1 :> [promise |-> 1, seg |-> FALSE] @@
+  j2 :> [promise |-> 1, seg |-> FALSE] )
+/\ wEpoch = <<1, -1, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 1 @@ j1 :> 1 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 1, restart |-> 0, upgrade |-> 1, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, -1, -1, -1>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   ( j0 :> <<>> @@
+     j1 :> <<[kind |-> "GJS", rnd |-> 1, epoch |-> -1]>> @@
+     j2 :> <<[kind |-> "GJS", rnd |-> 1, epoch |-> -1]>> ),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "ok" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 1 @@ j1 :> 1 @@ j2 :> 1)
+
+State 22: <MCHandleGetJournalState(j1,2) line 108, col 34 to line 108, col 92 of module MC>
+/\ wRnd = <<0, 1, 0, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> 1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "gjs", "idle", "idle">>
+/\ prev = ( j0 :> [promise |-> 1, seg |-> FALSE] @@
+  j1 :> [promise |-> 1, seg |-> FALSE] @@
+  j2 :> [promise |-> 1, seg |-> FALSE] )
+/\ wEpoch = <<1, -1, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 1 @@ j1 :> 1 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 1, restart |-> 0, upgrade |-> 1, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "GJS", rnd |-> 1, ok |-> TRUE, val |-> 1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, -1, -1, -1>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   ( j0 :> <<>> @@
+     j1 :> <<>> @@
+     j2 :> <<[kind |-> "GJS", rnd |-> 1, epoch |-> -1]>> ),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "ok" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 1 @@ j1 :> 1 @@ j2 :> 1)
+
+State 23: <MCRecvReply(2,j1) line 111, col 34 to line 111, col 92 of module MC>
+/\ wRnd = <<0, 1, 0, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> 1 @@ j1 :> 1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "gjs", "idle", "idle">>
+/\ prev = ( j0 :> [promise |-> 1, seg |-> FALSE] @@
+  j1 :> [promise |-> 1, seg |-> FALSE] @@
+  j2 :> [promise |-> 1, seg |-> FALSE] )
+/\ wEpoch = <<1, -1, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 1 @@ j1 :> 1 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 1, restart |-> 0, upgrade |-> 1, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, -1, -1, -1>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   ( j0 :> <<>> @@
+     j1 :> <<>> @@
+     j2 :> <<[kind |-> "GJS", rnd |-> 1, epoch |-> -1]>> ),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "ok" @@ j1 :> "ok" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 1 @@ j1 :> 1 @@ j2 :> 1)
+
+State 24: <MCChooseEpoch(2) line 94, col 28 to line 94, col 80 of module MC>
+/\ wRnd = <<0, 2, 0, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "ne", "idle", "idle">>
+/\ prev = ( j0 :> [promise |-> 1, seg |-> FALSE] @@
+  j1 :> [promise |-> 1, seg |-> FALSE] @@
+  j2 :> [promise |-> 1, seg |-> FALSE] )
+/\ wEpoch = <<1, -1, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 1 @@ j1 :> 1 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 1, restart |-> 0, upgrade |-> 1, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, 2, -1, -1>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   ( j0 :> <<[kind |-> "NE", rnd |-> 2, epoch |-> 2]>> @@
+     j1 :> <<[kind |-> "NE", rnd |-> 2, epoch |-> 2]>> @@
+     j2 :>
+         << [kind |-> "GJS", rnd |-> 1, epoch |-> -1],
+            [kind |-> "NE", rnd |-> 2, epoch |-> 2] >> ),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 1 @@ j1 :> 1 @@ j2 :> 1)
+
+State 25: <MCHandleNewEpoch(j0,2) line 109, col 34 to line 109, col 92 of module MC>
+/\ wRnd = <<0, 2, 0, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "ne", "idle", "idle">>
+/\ prev = ( j0 :> [promise |-> 1, seg |-> FALSE] @@
+  j1 :> [promise |-> 1, seg |-> FALSE] @@
+  j2 :> [promise |-> 1, seg |-> FALSE] )
+/\ wEpoch = <<1, -1, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 2 @@ j1 :> 1 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 1, restart |-> 0, upgrade |-> 1, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "NE", rnd |-> 2, ok |-> TRUE, val |-> 0] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, 2, -1, -1>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   ( j0 :> <<>> @@
+     j1 :> <<[kind |-> "NE", rnd |-> 2, epoch |-> 2]>> @@
+     j2 :>
+         << [kind |-> "GJS", rnd |-> 1, epoch |-> -1],
+            [kind |-> "NE", rnd |-> 2, epoch |-> 2] >> ),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 2 @@ j1 :> 1 @@ j2 :> 1)
+
+State 26: <MCRecvReply(2,j0) line 111, col 34 to line 111, col 92 of module MC>
+/\ wRnd = <<0, 2, 0, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> 0 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "ne", "idle", "idle">>
+/\ prev = ( j0 :> [promise |-> 1, seg |-> FALSE] @@
+  j1 :> [promise |-> 1, seg |-> FALSE] @@
+  j2 :> [promise |-> 1, seg |-> FALSE] )
+/\ wEpoch = <<1, -1, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 2 @@ j1 :> 1 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 1, restart |-> 0, upgrade |-> 1, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, 2, -1, -1>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   ( j0 :> <<>> @@
+     j1 :> <<[kind |-> "NE", rnd |-> 2, epoch |-> 2]>> @@
+     j2 :>
+         << [kind |-> "GJS", rnd |-> 1, epoch |-> -1],
+            [kind |-> "NE", rnd |-> 2, epoch |-> 2] >> ),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "ok" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 2 @@ j1 :> 1 @@ j2 :> 1)
+
+State 27: <MCHandleNewEpoch(j1,2) line 109, col 34 to line 109, col 92 of module MC>
+/\ wRnd = <<0, 2, 0, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> 0 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "ne", "idle", "idle">>
+/\ prev = ( j0 :> [promise |-> 1, seg |-> FALSE] @@
+  j1 :> [promise |-> 1, seg |-> FALSE] @@
+  j2 :> [promise |-> 1, seg |-> FALSE] )
+/\ wEpoch = <<1, -1, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 2 @@ j1 :> 2 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 1, restart |-> 0, upgrade |-> 1, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "NE", rnd |-> 2, ok |-> TRUE, val |-> 0] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, 2, -1, -1>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   ( j0 :> <<>> @@
+     j1 :> <<>> @@
+     j2 :>
+         << [kind |-> "GJS", rnd |-> 1, epoch |-> -1],
+            [kind |-> "NE", rnd |-> 2, epoch |-> 2] >> ),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "ok" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 2 @@ j1 :> 2 @@ j2 :> 1)
+
+State 28: <MCRecvReply(2,j1) line 111, col 34 to line 111, col 92 of module MC>
+/\ wRnd = <<0, 2, 0, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> 0 @@ j1 :> 0 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "ne", "idle", "idle">>
+/\ prev = ( j0 :> [promise |-> 1, seg |-> FALSE] @@
+  j1 :> [promise |-> 1, seg |-> FALSE] @@
+  j2 :> [promise |-> 1, seg |-> FALSE] )
+/\ wEpoch = <<1, -1, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 2 @@ j1 :> 2 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 1, restart |-> 0, upgrade |-> 1, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, 2, -1, -1>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   ( j0 :> <<>> @@
+     j1 :> <<>> @@
+     j2 :>
+         << [kind |-> "GJS", rnd |-> 1, epoch |-> -1],
+            [kind |-> "NE", rnd |-> 2, epoch |-> 2] >> ),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "ok" @@ j1 :> "ok" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 2 @@ j1 :> 2 @@ j2 :> 1)
+
+State 29: <MCEstablish(2) line 95, col 28 to line 95, col 80 of module MC>
+/\ wRnd = <<0, 2, 0, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "ready", "idle", "idle">>
+/\ prev = ( j0 :> [promise |-> 1, seg |-> FALSE] @@
+  j1 :> [promise |-> 1, seg |-> FALSE] @@
+  j2 :> [promise |-> 1, seg |-> FALSE] )
+/\ wEpoch = <<1, 2, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 2 @@ j1 :> 2 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 1, restart |-> 0, upgrade |-> 1, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, 2, -1, -1>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   ( j0 :> <<>> @@
+     j1 :> <<>> @@
+     j2 :>
+         << [kind |-> "GJS", rnd |-> 1, epoch |-> -1],
+            [kind |-> "NE", rnd |-> 2, epoch |-> 2] >> ),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 2 @@ j1 :> 2 @@ j2 :> 1)
+
+State 30: <MCWriterStop(2) line 63, col 5 to line 67, col 47 of module MC>
+/\ wRnd = <<0, 0, 0, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "stopped", "idle", "idle">>
+/\ prev = ( j0 :> [promise |-> 1, seg |-> FALSE] @@
+  j1 :> [promise |-> 1, seg |-> FALSE] @@
+  j2 :> [promise |-> 1, seg |-> FALSE] )
+/\ wEpoch = <<1, 2, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 2 @@ j1 :> 2 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 2, restart |-> 0, upgrade |-> 1, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, 2, -1, -1>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 2 @@ j1 :> 2 @@ j2 :> 1)
+
+State 31: <MCWriterStart(3) line 93, col 28 to line 93, col 80 of module MC>
+/\ wRnd = <<0, 0, 1, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "stopped", "gjs", "idle">>
+/\ prev = ( j0 :> [promise |-> 1, seg |-> FALSE] @@
+  j1 :> [promise |-> 1, seg |-> FALSE] @@
+  j2 :> [promise |-> 1, seg |-> FALSE] )
+/\ wEpoch = <<1, 2, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 2 @@ j1 :> 2 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 2, restart |-> 0, upgrade |-> 1, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, 2, -1, -1>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   ( j0 :> <<[kind |-> "GJS", rnd |-> 1, epoch |-> -1]>> @@
+     j1 :> <<[kind |-> "GJS", rnd |-> 1, epoch |-> -1]>> @@
+     j2 :> <<[kind |-> "GJS", rnd |-> 1, epoch |-> -1]>> ),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 2 @@ j1 :> 2 @@ j2 :> 1)
+
+State 32: <MCHandleGetJournalState(j0,3) line 108, col 34 to line 108, col 92 of module MC>
+/\ wRnd = <<0, 0, 1, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "stopped", "gjs", "idle">>
+/\ prev = ( j0 :> [promise |-> 1, seg |-> FALSE] @@
+  j1 :> [promise |-> 1, seg |-> FALSE] @@
+  j2 :> [promise |-> 1, seg |-> FALSE] )
+/\ wEpoch = <<1, 2, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 2 @@ j1 :> 2 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 2, restart |-> 0, upgrade |-> 1, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "GJS", rnd |-> 1, ok |-> TRUE, val |-> 2] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, 2, -1, -1>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   ( j0 :> <<>> @@
+     j1 :> <<[kind |-> "GJS", rnd |-> 1, epoch |-> -1]>> @@
+     j2 :> <<[kind |-> "GJS", rnd |-> 1, epoch |-> -1]>> ),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 2 @@ j1 :> 2 @@ j2 :> 1)
+
+State 33: <MCRecvReply(3,j0) line 111, col 34 to line 111, col 92 of module MC>
+/\ wRnd = <<0, 0, 1, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> 2 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "stopped", "gjs", "idle">>
+/\ prev = ( j0 :> [promise |-> 1, seg |-> FALSE] @@
+  j1 :> [promise |-> 1, seg |-> FALSE] @@
+  j2 :> [promise |-> 1, seg |-> FALSE] )
+/\ wEpoch = <<1, 2, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 2 @@ j1 :> 2 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 2, restart |-> 0, upgrade |-> 1, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, 2, -1, -1>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   ( j0 :> <<>> @@
+     j1 :> <<[kind |-> "GJS", rnd |-> 1, epoch |-> -1]>> @@
+     j2 :> <<[kind |-> "GJS", rnd |-> 1, epoch |-> -1]>> ),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "ok" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 2 @@ j1 :> 2 @@ j2 :> 1)
+
+State 34: <MCHandleGetJournalState(j1,3) line 108, col 34 to line 108, col 92 of module MC>
+/\ wRnd = <<0, 0, 1, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> 2 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "stopped", "gjs", "idle">>
+/\ prev = ( j0 :> [promise |-> 1, seg |-> FALSE] @@
+  j1 :> [promise |-> 1, seg |-> FALSE] @@
+  j2 :> [promise |-> 1, seg |-> FALSE] )
+/\ wEpoch = <<1, 2, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 2 @@ j1 :> 2 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 2, restart |-> 0, upgrade |-> 1, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "GJS", rnd |-> 1, ok |-> TRUE, val |-> 2] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, 2, -1, -1>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   ( j0 :> <<>> @@
+     j1 :> <<>> @@
+     j2 :> <<[kind |-> "GJS", rnd |-> 1, epoch |-> -1]>> ),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "ok" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 2 @@ j1 :> 2 @@ j2 :> 1)
+
+State 35: <MCRecvReply(3,j1) line 111, col 34 to line 111, col 92 of module MC>
+/\ wRnd = <<0, 0, 1, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> 2 @@ j1 :> 2 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "stopped", "gjs", "idle">>
+/\ prev = ( j0 :> [promise |-> 1, seg |-> FALSE] @@
+  j1 :> [promise |-> 1, seg |-> FALSE] @@
+  j2 :> [promise |-> 1, seg |-> FALSE] )
+/\ wEpoch = <<1, 2, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 2 @@ j1 :> 2 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 2, restart |-> 0, upgrade |-> 1, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, 2, -1, -1>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   ( j0 :> <<>> @@
+     j1 :> <<>> @@
+     j2 :> <<[kind |-> "GJS", rnd |-> 1, epoch |-> -1]>> ),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "ok" @@ j1 :> "ok" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 2 @@ j1 :> 2 @@ j2 :> 1)
+
+State 36: <MCChooseEpoch(3) line 94, col 28 to line 94, col 80 of module MC>
+/\ wRnd = <<0, 0, 2, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "stopped", "ne", "idle">>
+/\ prev = ( j0 :> [promise |-> 1, seg |-> FALSE] @@
+  j1 :> [promise |-> 1, seg |-> FALSE] @@
+  j2 :> [promise |-> 1, seg |-> FALSE] )
+/\ wEpoch = <<1, 2, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 2 @@ j1 :> 2 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 2, restart |-> 0, upgrade |-> 1, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, 2, 3, -1>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   ( j0 :> <<[kind |-> "NE", rnd |-> 2, epoch |-> 3]>> @@
+     j1 :> <<[kind |-> "NE", rnd |-> 2, epoch |-> 3]>> @@
+     j2 :>
+         << [kind |-> "GJS", rnd |-> 1, epoch |-> -1],
+            [kind |-> "NE", rnd |-> 2, epoch |-> 3] >> ),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 2 @@ j1 :> 2 @@ j2 :> 1)
+
+State 37: <MCHandleNewEpoch(j0,3) line 109, col 34 to line 109, col 92 of module MC>
+/\ wRnd = <<0, 0, 2, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "stopped", "ne", "idle">>
+/\ prev = ( j0 :> [promise |-> 1, seg |-> FALSE] @@
+  j1 :> [promise |-> 1, seg |-> FALSE] @@
+  j2 :> [promise |-> 1, seg |-> FALSE] )
+/\ wEpoch = <<1, 2, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 3 @@ j1 :> 2 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 2, restart |-> 0, upgrade |-> 1, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "NE", rnd |-> 2, ok |-> TRUE, val |-> 0] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, 2, 3, -1>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   ( j0 :> <<>> @@
+     j1 :> <<[kind |-> "NE", rnd |-> 2, epoch |-> 3]>> @@
+     j2 :>
+         << [kind |-> "GJS", rnd |-> 1, epoch |-> -1],
+            [kind |-> "NE", rnd |-> 2, epoch |-> 3] >> ),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 3 @@ j1 :> 2 @@ j2 :> 1)
+
+State 38: <MCRecvReply(3,j0) line 111, col 34 to line 111, col 92 of module MC>
+/\ wRnd = <<0, 0, 2, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> 0 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "stopped", "ne", "idle">>
+/\ prev = ( j0 :> [promise |-> 1, seg |-> FALSE] @@
+  j1 :> [promise |-> 1, seg |-> FALSE] @@
+  j2 :> [promise |-> 1, seg |-> FALSE] )
+/\ wEpoch = <<1, 2, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 3 @@ j1 :> 2 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 2, restart |-> 0, upgrade |-> 1, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, 2, 3, -1>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   ( j0 :> <<>> @@
+     j1 :> <<[kind |-> "NE", rnd |-> 2, epoch |-> 3]>> @@
+     j2 :>
+         << [kind |-> "GJS", rnd |-> 1, epoch |-> -1],
+            [kind |-> "NE", rnd |-> 2, epoch |-> 3] >> ),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "ok" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 3 @@ j1 :> 2 @@ j2 :> 1)
+
+State 39: <MCHandleNewEpoch(j1,3) line 109, col 34 to line 109, col 92 of module MC>
+/\ wRnd = <<0, 0, 2, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> 0 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "stopped", "ne", "idle">>
+/\ prev = ( j0 :> [promise |-> 1, seg |-> FALSE] @@
+  j1 :> [promise |-> 1, seg |-> FALSE] @@
+  j2 :> [promise |-> 1, seg |-> FALSE] )
+/\ wEpoch = <<1, 2, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 3 @@ j1 :> 3 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 2, restart |-> 0, upgrade |-> 1, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "NE", rnd |-> 2, ok |-> TRUE, val |-> 0] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, 2, 3, -1>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   ( j0 :> <<>> @@
+     j1 :> <<>> @@
+     j2 :>
+         << [kind |-> "GJS", rnd |-> 1, epoch |-> -1],
+            [kind |-> "NE", rnd |-> 2, epoch |-> 3] >> ),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "ok" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 3 @@ j1 :> 3 @@ j2 :> 1)
+
+State 40: <MCRecvReply(3,j1) line 111, col 34 to line 111, col 92 of module MC>
+/\ wRnd = <<0, 0, 2, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> 0 @@ j1 :> 0 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "stopped", "ne", "idle">>
+/\ prev = ( j0 :> [promise |-> 1, seg |-> FALSE] @@
+  j1 :> [promise |-> 1, seg |-> FALSE] @@
+  j2 :> [promise |-> 1, seg |-> FALSE] )
+/\ wEpoch = <<1, 2, -1, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 3 @@ j1 :> 3 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 2, restart |-> 0, upgrade |-> 1, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, 2, 3, -1>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   ( j0 :> <<>> @@
+     j1 :> <<>> @@
+     j2 :>
+         << [kind |-> "GJS", rnd |-> 1, epoch |-> -1],
+            [kind |-> "NE", rnd |-> 2, epoch |-> 3] >> ),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "ok" @@ j1 :> "ok" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 3 @@ j1 :> 3 @@ j2 :> 1)
+
+State 41: <MCEstablish(3) line 95, col 28 to line 95, col 80 of module MC>
+/\ wRnd = <<0, 0, 2, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "stopped", "ready", "idle">>
+/\ prev = ( j0 :> [promise |-> 1, seg |-> FALSE] @@
+  j1 :> [promise |-> 1, seg |-> FALSE] @@
+  j2 :> [promise |-> 1, seg |-> FALSE] )
+/\ wEpoch = <<1, 2, 3, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 3 @@ j1 :> 3 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 2, restart |-> 0, upgrade |-> 1, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, 2, 3, -1>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   ( j0 :> <<>> @@
+     j1 :> <<>> @@
+     j2 :>
+         << [kind |-> "GJS", rnd |-> 1, epoch |-> -1],
+            [kind |-> "NE", rnd |-> 2, epoch |-> 3] >> ),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 3 @@ j1 :> 3 @@ j2 :> 1)
+
+State 42: <MCWriterStop(3) line 63, col 5 to line 67, col 47 of module MC>
+/\ wRnd = <<0, 0, 0, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "stopped", "stopped", "idle">>
+/\ prev = ( j0 :> [promise |-> 1, seg |-> FALSE] @@
+  j1 :> [promise |-> 1, seg |-> FALSE] @@
+  j2 :> [promise |-> 1, seg |-> FALSE] )
+/\ wEpoch = <<1, 2, 3, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 3 @@ j1 :> 3 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 3, restart |-> 0, upgrade |-> 1, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, 2, 3, -1>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 3 @@ j1 :> 3 @@ j2 :> 1)
+
+State 43: <MCJNRestart(j0) line 72, col 5 to line 76, col 50 of module MC>
+/\ wRnd = <<0, 0, 0, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "stopped", "stopped", "idle">>
+/\ prev = ( j0 :> [promise |-> 1, seg |-> FALSE] @@
+  j1 :> [promise |-> 1, seg |-> FALSE] @@
+  j2 :> [promise |-> 1, seg |-> FALSE] )
+/\ wEpoch = <<1, 2, 3, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 3 @@ j1 :> 3 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 3, restart |-> 1, upgrade |-> 1, rollback |-> 0]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, 2, 3, -1>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> -1 @@ j1 :> 3 @@ j2 :> 1)
+
+State 44: <MCRollback line 85, col 5 to line 88, col 51 of module MC>
+/\ wRnd = <<0, 0, 0, 0>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "stopped", "stopped", "idle">>
+/\ prev = ( j0 :> [promise |-> -1, seg |-> FALSE] @@
+  j1 :> [promise |-> -1, seg |-> FALSE] @@
+  j2 :> [promise |-> -1, seg |-> FALSE] )
+/\ wEpoch = <<1, 2, 3, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 1 @@ j1 :> 1 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 3, restart |-> 1, upgrade |-> 1, rollback |-> 1]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, 2, 3, -1>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> -1 @@ j1 :> 3 @@ j2 :> 1)
+
+State 45: <MCWriterStart(4) line 93, col 28 to line 93, col 80 of module MC>
+/\ wRnd = <<0, 0, 0, 1>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "stopped", "stopped", "gjs">>
+/\ prev = ( j0 :> [promise |-> -1, seg |-> FALSE] @@
+  j1 :> [promise |-> -1, seg |-> FALSE] @@
+  j2 :> [promise |-> -1, seg |-> FALSE] )
+/\ wEpoch = <<1, 2, 3, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 1 @@ j1 :> 1 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 3, restart |-> 1, upgrade |-> 1, rollback |-> 1]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, 2, 3, -1>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   ( j0 :> <<[kind |-> "GJS", rnd |-> 1, epoch |-> -1]>> @@
+     j1 :> <<[kind |-> "GJS", rnd |-> 1, epoch |-> -1]>> @@
+     j2 :> <<[kind |-> "GJS", rnd |-> 1, epoch |-> -1]>> ) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> -1 @@ j1 :> 3 @@ j2 :> 1)
+
+State 46: <MCHandleGetJournalState(j0,4) line 108, col 34 to line 108, col 92 of module MC>
+/\ wRnd = <<0, 0, 0, 1>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "stopped", "stopped", "gjs">>
+/\ prev = ( j0 :> [promise |-> -1, seg |-> FALSE] @@
+  j1 :> [promise |-> -1, seg |-> FALSE] @@
+  j2 :> [promise |-> -1, seg |-> FALSE] )
+/\ wEpoch = <<1, 2, 3, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 1 @@ j1 :> 1 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 3, restart |-> 1, upgrade |-> 1, rollback |-> 1]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "GJS", rnd |-> 1, ok |-> TRUE, val |-> 1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, 2, 3, -1>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   ( j0 :> <<>> @@
+     j1 :> <<[kind |-> "GJS", rnd |-> 1, epoch |-> -1]>> @@
+     j2 :> <<[kind |-> "GJS", rnd |-> 1, epoch |-> -1]>> ) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 1 @@ j1 :> 3 @@ j2 :> 1)
+
+State 47: <MCRecvReply(4,j0) line 111, col 34 to line 111, col 92 of module MC>
+/\ wRnd = <<0, 0, 0, 1>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> 1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "stopped", "stopped", "gjs">>
+/\ prev = ( j0 :> [promise |-> -1, seg |-> FALSE] @@
+  j1 :> [promise |-> -1, seg |-> FALSE] @@
+  j2 :> [promise |-> -1, seg |-> FALSE] )
+/\ wEpoch = <<1, 2, 3, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 1 @@ j1 :> 1 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 3, restart |-> 1, upgrade |-> 1, rollback |-> 1]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, 2, 3, -1>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   ( j0 :> <<>> @@
+     j1 :> <<[kind |-> "GJS", rnd |-> 1, epoch |-> -1]>> @@
+     j2 :> <<[kind |-> "GJS", rnd |-> 1, epoch |-> -1]>> ) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "ok" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 1 @@ j1 :> 3 @@ j2 :> 1)
+
+State 48: <MCHandleGetJournalState(j1,4) line 108, col 34 to line 108, col 92 of module MC>
+/\ wRnd = <<0, 0, 0, 1>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> 1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "stopped", "stopped", "gjs">>
+/\ prev = ( j0 :> [promise |-> -1, seg |-> FALSE] @@
+  j1 :> [promise |-> -1, seg |-> FALSE] @@
+  j2 :> [promise |-> -1, seg |-> FALSE] )
+/\ wEpoch = <<1, 2, 3, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 1 @@ j1 :> 1 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 3, restart |-> 1, upgrade |-> 1, rollback |-> 1]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "GJS", rnd |-> 1, ok |-> TRUE, val |-> 3] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, 2, 3, -1>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   ( j0 :> <<>> @@
+     j1 :> <<>> @@
+     j2 :> <<[kind |-> "GJS", rnd |-> 1, epoch |-> -1]>> ) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "ok" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 1 @@ j1 :> 3 @@ j2 :> 1)
+
+State 49: <MCHandleGetJournalState(j2,4) line 108, col 34 to line 108, col 92 of module MC>
+/\ wRnd = <<0, 0, 0, 1>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> 1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "stopped", "stopped", "gjs">>
+/\ prev = ( j0 :> [promise |-> -1, seg |-> FALSE] @@
+  j1 :> [promise |-> -1, seg |-> FALSE] @@
+  j2 :> [promise |-> -1, seg |-> FALSE] )
+/\ wEpoch = <<1, 2, 3, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 1 @@ j1 :> 1 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 3, restart |-> 1, upgrade |-> 1, rollback |-> 1]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "GJS", rnd |-> 1, ok |-> TRUE, val |-> 3] @@
+     j2 :> [kind |-> "GJS", rnd |-> 1, ok |-> TRUE, val |-> 1] ) >>
+/\ wCand = <<1, 2, 3, -1>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "ok" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 1 @@ j1 :> 3 @@ j2 :> 1)
+
+State 50: <MCRecvReply(4,j2) line 111, col 34 to line 111, col 92 of module MC>
+/\ wRnd = <<0, 0, 0, 1>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> 1 @@ j1 :> -1 @@ j2 :> 1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "stopped", "stopped", "gjs">>
+/\ prev = ( j0 :> [promise |-> -1, seg |-> FALSE] @@
+  j1 :> [promise |-> -1, seg |-> FALSE] @@
+  j2 :> [promise |-> -1, seg |-> FALSE] )
+/\ wEpoch = <<1, 2, 3, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 1 @@ j1 :> 1 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 3, restart |-> 1, upgrade |-> 1, rollback |-> 1]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "GJS", rnd |-> 1, ok |-> TRUE, val |-> 3] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, 2, 3, -1>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "ok" @@ j1 :> "none" @@ j2 :> "ok") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 1 @@ j1 :> 3 @@ j2 :> 1)
+
+State 51: <MCChooseEpoch(4) line 94, col 28 to line 94, col 80 of module MC>
+/\ wRnd = <<0, 0, 0, 2>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "stopped", "stopped", "ne">>
+/\ prev = ( j0 :> [promise |-> -1, seg |-> FALSE] @@
+  j1 :> [promise |-> -1, seg |-> FALSE] @@
+  j2 :> [promise |-> -1, seg |-> FALSE] )
+/\ wEpoch = <<1, 2, 3, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 1 @@ j1 :> 1 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 3, restart |-> 1, upgrade |-> 1, rollback |-> 1]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "GJS", rnd |-> 1, ok |-> TRUE, val |-> 3] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, 2, 3, 2>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   ( j0 :> <<[kind |-> "NE", rnd |-> 2, epoch |-> 2]>> @@
+     j1 :> <<[kind |-> "NE", rnd |-> 2, epoch |-> 2]>> @@
+     j2 :> <<[kind |-> "NE", rnd |-> 2, epoch |-> 2]>> ) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 1 @@ j1 :> 3 @@ j2 :> 1)
+
+State 52: <MCHandleNewEpoch(j0,4) line 109, col 34 to line 109, col 92 of module MC>
+/\ wRnd = <<0, 0, 0, 2>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "stopped", "stopped", "ne">>
+/\ prev = ( j0 :> [promise |-> -1, seg |-> FALSE] @@
+  j1 :> [promise |-> -1, seg |-> FALSE] @@
+  j2 :> [promise |-> -1, seg |-> FALSE] )
+/\ wEpoch = <<1, 2, 3, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 2 @@ j1 :> 1 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 3, restart |-> 1, upgrade |-> 1, rollback |-> 1]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "NE", rnd |-> 2, ok |-> TRUE, val |-> 0] @@
+     j1 :> [kind |-> "GJS", rnd |-> 1, ok |-> TRUE, val |-> 3] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, 2, 3, 2>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   ( j0 :> <<>> @@
+     j1 :> <<[kind |-> "NE", rnd |-> 2, epoch |-> 2]>> @@
+     j2 :> <<[kind |-> "NE", rnd |-> 2, epoch |-> 2]>> ) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 2 @@ j1 :> 3 @@ j2 :> 1)
+
+State 53: <MCRecvReply(4,j0) line 111, col 34 to line 111, col 92 of module MC>
+/\ wRnd = <<0, 0, 0, 2>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> 0 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "stopped", "stopped", "ne">>
+/\ prev = ( j0 :> [promise |-> -1, seg |-> FALSE] @@
+  j1 :> [promise |-> -1, seg |-> FALSE] @@
+  j2 :> [promise |-> -1, seg |-> FALSE] )
+/\ wEpoch = <<1, 2, 3, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 2 @@ j1 :> 1 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 3, restart |-> 1, upgrade |-> 1, rollback |-> 1]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "GJS", rnd |-> 1, ok |-> TRUE, val |-> 3] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, 2, 3, 2>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   ( j0 :> <<>> @@
+     j1 :> <<[kind |-> "NE", rnd |-> 2, epoch |-> 2]>> @@
+     j2 :> <<[kind |-> "NE", rnd |-> 2, epoch |-> 2]>> ) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "ok" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 2 @@ j1 :> 3 @@ j2 :> 1)
+
+State 54: <MCRecvReply(4,j1) line 111, col 34 to line 111, col 92 of module MC>
+/\ wRnd = <<0, 0, 0, 2>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> 0 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "stopped", "stopped", "ne">>
+/\ prev = ( j0 :> [promise |-> -1, seg |-> FALSE] @@
+  j1 :> [promise |-> -1, seg |-> FALSE] @@
+  j2 :> [promise |-> -1, seg |-> FALSE] )
+/\ wEpoch = <<1, 2, 3, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 2 @@ j1 :> 1 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 3, restart |-> 1, upgrade |-> 1, rollback |-> 1]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, 2, 3, 2>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   ( j0 :> <<>> @@
+     j1 :> <<[kind |-> "NE", rnd |-> 2, epoch |-> 2]>> @@
+     j2 :> <<[kind |-> "NE", rnd |-> 2, epoch |-> 2]>> ) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "ok" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 2 @@ j1 :> 3 @@ j2 :> 1)
+
+State 55: <MCHandleNewEpoch(j1,4) line 109, col 34 to line 109, col 92 of module MC>
+/\ wRnd = <<0, 0, 0, 2>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> 0 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "stopped", "stopped", "ne">>
+/\ prev = ( j0 :> [promise |-> -1, seg |-> FALSE] @@
+  j1 :> [promise |-> -1, seg |-> FALSE] @@
+  j2 :> [promise |-> -1, seg |-> FALSE] )
+/\ wEpoch = <<1, 2, 3, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 2 @@ j1 :> 1 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 3, restart |-> 1, upgrade |-> 1, rollback |-> 1]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "NE", rnd |-> 2, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, 2, 3, 2>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   ( j0 :> <<>> @@
+     j1 :> <<>> @@
+     j2 :> <<[kind |-> "NE", rnd |-> 2, epoch |-> 2]>> ) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "ok" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 2 @@ j1 :> 3 @@ j2 :> 1)
+
+State 56: <MCRecvReply(4,j1) line 111, col 34 to line 111, col 92 of module MC>
+/\ wRnd = <<0, 0, 0, 2>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> 0 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "stopped", "stopped", "ne">>
+/\ prev = ( j0 :> [promise |-> -1, seg |-> FALSE] @@
+  j1 :> [promise |-> -1, seg |-> FALSE] @@
+  j2 :> [promise |-> -1, seg |-> FALSE] )
+/\ wEpoch = <<1, 2, 3, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 2 @@ j1 :> 1 @@ j2 :> 1)
+/\ faults = [loss |-> 0, stop |-> 3, restart |-> 1, upgrade |-> 1, rollback |-> 1]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, 2, 3, 2>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   ( j0 :> <<>> @@
+     j1 :> <<>> @@
+     j2 :> <<[kind |-> "NE", rnd |-> 2, epoch |-> 2]>> ) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "ok" @@ j1 :> "err" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 2 @@ j1 :> 3 @@ j2 :> 1)
+
+State 57: <MCHandleNewEpoch(j2,4) line 109, col 34 to line 109, col 92 of module MC>
+/\ wRnd = <<0, 0, 0, 2>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> 0 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "stopped", "stopped", "ne">>
+/\ prev = ( j0 :> [promise |-> -1, seg |-> FALSE] @@
+  j1 :> [promise |-> -1, seg |-> FALSE] @@
+  j2 :> [promise |-> -1, seg |-> FALSE] )
+/\ wEpoch = <<1, 2, 3, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 2 @@ j1 :> 1 @@ j2 :> 2)
+/\ faults = [loss |-> 0, stop |-> 3, restart |-> 1, upgrade |-> 1, rollback |-> 1]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "NE", rnd |-> 2, ok |-> TRUE, val |-> 0] ) >>
+/\ wCand = <<1, 2, 3, 2>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "ok" @@ j1 :> "err" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 2 @@ j1 :> 3 @@ j2 :> 2)
+
+State 58: <MCRecvReply(4,j2) line 111, col 34 to line 111, col 92 of module MC>
+/\ wRnd = <<0, 0, 0, 2>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> 0 @@ j1 :> -1 @@ j2 :> 0) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "stopped", "stopped", "ne">>
+/\ prev = ( j0 :> [promise |-> -1, seg |-> FALSE] @@
+  j1 :> [promise |-> -1, seg |-> FALSE] @@
+  j2 :> [promise |-> -1, seg |-> FALSE] )
+/\ wEpoch = <<1, 2, 3, -1>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 2 @@ j1 :> 1 @@ j2 :> 2)
+/\ faults = [loss |-> 0, stop |-> 3, restart |-> 1, upgrade |-> 1, rollback |-> 1]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, 2, 3, 2>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "ok" @@ j1 :> "err" @@ j2 :> "ok") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 2 @@ j1 :> 3 @@ j2 :> 2)
+
+State 59: <MCEstablish(4) line 95, col 28 to line 95, col 80 of module MC>
+/\ wRnd = <<0, 0, 0, 2>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "stopped", "stopped", "ready">>
+/\ prev = ( j0 :> [promise |-> -1, seg |-> FALSE] @@
+  j1 :> [promise |-> -1, seg |-> FALSE] @@
+  j2 :> [promise |-> -1, seg |-> FALSE] )
+/\ wEpoch = <<1, 2, 3, 2>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 2 @@ j1 :> 1 @@ j2 :> 2)
+/\ faults = [loss |-> 0, stop |-> 3, restart |-> 1, upgrade |-> 1, rollback |-> 1]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, 2, 3, 2>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 0>>
+/\ cache = (j0 :> 2 @@ j1 :> 3 @@ j2 :> 2)
+
+State 60: <MCStartLogSegment(4) line 100, col 28 to line 100, col 80 of module MC>
+/\ wRnd = <<0, 0, 0, 3>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = FALSE
+/\ wst = <<"stopped", "stopped", "stopped", "sls">>
+/\ prev = ( j0 :> [promise |-> -1, seg |-> FALSE] @@
+  j1 :> [promise |-> -1, seg |-> FALSE] @@
+  j2 :> [promise |-> -1, seg |-> FALSE] )
+/\ wEpoch = <<1, 2, 3, 2>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 2 @@ j1 :> 1 @@ j2 :> 2)
+/\ faults = [loss |-> 0, stop |-> 3, restart |-> 1, upgrade |-> 1, rollback |-> 1]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, 2, 3, 2>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   ( j0 :> <<[kind |-> "SLS", rnd |-> 3, epoch |-> 2]>> @@
+     j1 :> <<[kind |-> "SLS", rnd |-> 3, epoch |-> 2]>> @@
+     j2 :> <<[kind |-> "SLS", rnd |-> 3, epoch |-> 2]>> ) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 1>>
+/\ cache = (j0 :> 2 @@ j1 :> 3 @@ j2 :> 2)
+
+State 61: <MCTargetCheck(j1,4) line 110, col 34 to line 110, col 92 of module MC>
+/\ wRnd = <<0, 0, 0, 3>>
+/\ wVal = << (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1),
+   (j0 :> -1 @@ j1 :> -1 @@ j2 :> -1) >>
+/\ targetFired = TRUE
+/\ wst = <<"stopped", "stopped", "stopped", "sls">>
+/\ prev = ( j0 :> [promise |-> -1, seg |-> FALSE] @@
+  j1 :> [promise |-> -1, seg |-> FALSE] @@
+  j2 :> [promise |-> -1, seg |-> FALSE] )
+/\ wEpoch = <<1, 2, 3, 2>>
+/\ hasSeg = (j0 :> FALSE @@ j1 :> FALSE @@ j2 :> FALSE)
+/\ disk = (j0 :> 2 @@ j1 :> 1 @@ j2 :> 2)
+/\ faults = [loss |-> 0, stop |-> 3, restart |-> 1, upgrade |-> 1, rollback |-> 1]
+/\ rep = << ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ),
+   ( j0 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] @@
+     j1 :> [kind |-> "SLS", rnd |-> 3, ok |-> FALSE, val |-> -1] @@
+     j2 :> [kind |-> "none", rnd |-> 0, ok |-> FALSE, val |-> -1] ) >>
+/\ wCand = <<1, 2, 3, 2>>
+/\ chan = << (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   (j0 :> <<>> @@ j1 :> <<>> @@ j2 :> <<>>),
+   ( j0 :> <<[kind |-> "SLS", rnd |-> 3, epoch |-> 2]>> @@
+     j1 :> <<>> @@
+     j2 :> <<[kind |-> "SLS", rnd |-> 3, epoch |-> 2]>> ) >>
+/\ wResp = << (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none"),
+   (j0 :> "none" @@ j1 :> "none" @@ j2 :> "none") >>
+/\ wSeg = <<0, 0, 0, 1>>
+/\ cache = (j0 :> 2 @@ j1 :> 3 @@ j2 :> 2)
+
+1706669 states generated, 471897 distinct states found, 23989 states left on queue.
+The depth of the complete state graph search is 61.
+Checkpointing of run /tmp/tlc-states-SKyb6O/26-10-28-21-51-08.182
+Checkpointing completed at (2026-10-28 21:54:55)
+Finished in 03min 47s at (2026-10-28 21:54:55)
+Trace exploration spec path: ./MC_TTrace_1793224268.tla

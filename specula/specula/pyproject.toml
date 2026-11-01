@@ -1,0 +1,91 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "specula"
+version = "1.2.0"
+description = "Specula: a framework for finding deep bugs in system code using TLA+."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+    "mcp>=1.0.0",
+    "jsonschema>=4.0.0",
+    "mypy",
+]
+
+# The repo-root `specula` launcher is a shim to the same dispatcher.
+[project.scripts]
+specula = "specula.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["specula*"]
+
+# Ship the externalized agent-prompt templates (markdown) inside the wheel.
+[tool.setuptools.package-data]
+"specula.prompts" = ["**/*.md"]
+
+# mypy gates only the typed migration code; the rest of the repo is untyped.
+[tool.mypy]
+python_version = "3.10"
+strict = true
+files = [
+    "src/specula",
+    "tests",
+]
+mypy_path = "src"
+
+# Ruff config for the Specula main repo (code-cleanliness gate; see .github/workflows/ci.yml).
+# Submodules (case-studies, tools/tlaplus*, tools/SysMoBench) and experiment/vendor
+# dirs are excluded so they are linted in their own repos, not here.
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+extend-exclude = [
+    "case-studies",
+    "tools/tlaplus",
+    "tools/tlaplus-ai-tools",
+    "tools/SysMoBench",
+    "experiments",
+    "data",
+    "traces",
+    "logs",
+    "_build",
+    "lib",
+    ".specula-output",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "F",    # Pyflakes
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "SIM",  # flake8-simplify
+    "I",    # isort
+]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+    "SIM102", # nested if statements
+    "SIM115", # open() w/o context manager: dual-mode readers accept caller-owned handles
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests manipulate sys.path before importing project modules.
+"**/tests/**/*.py" = ["E402"]
+# Dual-mode entry: a sys.path bootstrap must run before the package import
+# so the file also works invoked by path (launch_pipeline.sh shim).
+"src/specula/pipelinelib.py" = ["E402"]
+
+[tool.ruff.format]
+quote-style = "double"
+docstring-code-format = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

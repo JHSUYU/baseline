@@ -1,11 +1,12 @@
 # Baselines for GraphChecker's ad hoc coordination checks
 
-Two baselines, each reproducing a paper's approach on the same systems GraphChecker checks:
+Three baselines, each reproducing a paper's approach on the same systems GraphChecker checks:
 
 | directory | approach | what it is |
 | --- | --- | --- |
 | [`crashfuzz/`](crashfuzz/README.md) | CrashFuzz | coverage-guided fault injection into a system's own cluster JUnit tests, Soot-selected I/O sites, the target check as oracle |
 | [`mallory/`](mallory/README.md) | Mallory | greybox fuzzing guided by changes in the run's causal graph: GraphChecker's graph of every native run, Q-learning over injected faults |
+| [`specula/`](specula/README.md) | Specula | an LLM-agent pipeline (code analysis, TLA+ spec, trace-validated model checking with TLC, confirmation in the real system), run once per ad hoc check with the check as its only property |
 
 Each directory holds its code, its per-system setup, how to run it on the liftlab cluster (lift02-14, the cluster
 GraphChecker's results come from), and its results; the first results were made on CloudLab and are kept below.
@@ -19,6 +20,9 @@ Neither baseline changes a system's source:
   liftlab branches) with the patches in `mallory/graphchecker/<system>/` (`apply.sh` applies them). The system trees
   it runs against are pinned by each fork's `baseline/mallory` branch (`JHSUYU/hadoop`, `JHSUYU/hbase`, `JHSUYU/solr`,
   `JHSUYU/zookeeper`) for the baseline bugs, and by its `graphchecker/<system>-bug-<jira>` branches for the old bugs.
+- Specula runs on clean upstream clones pinned at each system's base commit (HDFS: apache/hadoop `734dd8a67cd`); its
+  agents instrument a private copy of the tree per check for traces and reproductions, never the target check. Its
+  code, run scripts, results and each bug's TLC files are in `specula/`; `specula/OPERATIONS.md` is how to run it.
 
 ## Results on liftlab (2026-10-29/30)
 

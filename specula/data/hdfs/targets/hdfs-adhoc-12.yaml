@@ -1,0 +1,33 @@
+id: hdfs-adhoc-12
+system: Apache Hadoop HDFS
+source_tree: /set/by/run-case.sh
+base_commit: 734dd8a67cd
+check:
+  file: hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java
+  line: 518
+  method: BlockTokenSecretManager.retrievePassword(BlockTokenIdentifier)
+  thrown: org.apache.hadoop.security.token.SecretManager.InvalidToken
+  guard: "key == null   (key = allKeys.get(identifier.getKeyId()))"
+workload:
+  module: hadoop-hdfs-project/hadoop-hdfs
+  test: org.apache.hadoop.hdfs.server.datanode.TestAdhocWorkload12#run
+  note: the test reaches the check's method and passes; the check does not fail in it
+scope_hint:
+  - org.apache.hadoop.ipc.Client
+  - org.apache.hadoop.security.token.delegation.DelegationKey
+  - org.apache.hadoop.hdfs.protocol.datatransfer.sasl.DataTransferSaslUtil
+  - org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferClient
+  - org.apache.hadoop.hdfs.security.token.block.DataEncryptionKey
+  - org.apache.hadoop.hdfs.protocolPB.PBHelperClient
+  - org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer
+  - org.apache.hadoop.hdfs.protocolPB.PBHelper
+  - org.apache.hadoop.hdfs.security.token.block.BlockKey
+  - org.apache.hadoop.hdfs.security.token.block.BlockPoolTokenSecretManager
+  - org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager
+  - org.apache.hadoop.hdfs.security.token.block.ExportedBlockKeys
+  - org.apache.hadoop.hdfs.server.datanode.BPOfferService
+  - org.apache.hadoop.hdfs.server.datanode.DataNode
+build:
+  env: /set/by/run-case.sh
+  prepare: "mvn -B install -DskipTests -Dmaven.javadoc.skip=true -pl hadoop-hdfs-project/hadoop-hdfs -am   (already done once)"
+  test_command: "mvn -B -o surefire:test -pl hadoop-hdfs-project/hadoop-hdfs -Dtest='<Class>#<method>' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false"

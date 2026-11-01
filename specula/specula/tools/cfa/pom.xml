@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.tlaplus</groupId>
+    <artifactId>tlaplus-parser</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <antlr4.version>4.13.1</antlr4.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+   <dependencies>
+       <!-- ==================================================================== -->
+       <!-- MODIFICATION 1: Removed <scope>test</scope> from antlr4 dependency   -->
+       <!-- This ensures the ANTLR tool is available for the build process.      -->
+       <!-- ==================================================================== -->
+       <dependency>
+           <groupId>org.antlr</groupId>
+           <artifactId>antlr4</artifactId>
+           <version>${antlr4.version}</version>
+       </dependency>
+       
+       <dependency>
+           <groupId>org.antlr</groupId>
+           <artifactId>antlr4-runtime</artifactId>
+           <version>${antlr4.version}</version>
+       </dependency>
+       
+       <dependency>
+           <groupId>junit</groupId>
+           <artifactId>junit</artifactId>
+           <version>4.13.2</version>
+           <scope>test</scope> <!-- JUnit is correctly scoped to 'test' -->
+       </dependency>
+       
+       <!-- TLA2tools for SANY parser -->
+       <dependency>
+           <groupId>org.tlaplus</groupId>
+           <artifactId>tla2tools</artifactId>
+           <version>1.0</version>
+           <scope>system</scope>
+           <systemPath>${basedir}/../../lib/tla2tools.jar</systemPath>
+       </dependency>
+   </dependencies>
+
+<build>
+    <plugins>
+        <!-- Your existing antlr4-maven-plugin remains unchanged. It's correct. -->
+        <plugin>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4-maven-plugin</artifactId>
+            <version>${antlr4.version}</version>
+            <configuration>
+                <!-- Assuming your .g4 files are in src/main/java/grammar -->
+                <!-- If they are in another location, please update this path. -->
+                <sourceDirectory>${basedir}/src/main/java/grammar</sourceDirectory>
+                <outputDirectory>${project.build.directory}/generated-sources/antlr4</outputDirectory>
+                <listener>true</listener>
+                <treatWarningsAsErrors>true</treatWarningsAsErrors>
+                <arguments>
+                    <argument>-visitor</argument>
+                </arguments>
+                <!-- Let's specify the package for the generated sources -->
+                <packageName>parser.antlr</packageName>
+            </configuration>
+            <executions>
+                <execution>
+                    <id>generate-antlr-sources</id>
+                    <phase>generate-sources</phase>
+                    <goals>
+                        <goal>antlr4</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+        
+        <!-- Your existing maven-compiler-plugin remains unchanged. It's correct. -->
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.8.1</version>
+            <configuration>
+                <source>${maven.compiler.source}</source>
+                <target>${maven.compiler.target}</target>
+                <encoding>${project.build.sourceEncoding}</encoding>
+            </configuration>
+        </plugin>
+
+        <!-- ==================================================================== -->
+        <!-- MODIFICATION 2: Added maven-assembly-plugin to create a runnable JAR  -->
+        <!-- This is the key change to make your project a distributable tool.    -->
+        <!-- ==================================================================== -->
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <version>3.6.0</version> <!-- Using a recent version -->
+            <configuration>
+                <archive>
+                    <manifest>
+                        <!-- IMPORTANT: Replace 'parser.CfaTransformerCli' with the -->
+                        <!-- fully qualified name of your main class if it's different. -->
+                        <mainClass>CFG.SANYTransformerCli</mainClass>
+                    </manifest>
+                </archive>
+                <descriptorRefs>
+                    <descriptorRef>jar-with-dependencies</descriptorRef>
+                </descriptorRefs>
+            </configuration>
+            <executions>
+                <execution>
+                    <id>make-assembly</id> <!-- this is used for inheritance merges -->
+                    <phase>package</phase> <!-- bind to the packaging phase -->
+                    <goals>
+                        <goal>single</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+    </plugins>
+</build>
+</project>

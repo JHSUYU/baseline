@@ -1,0 +1,789 @@
+TLC2 Version 2026.10.24.013619 (rev: 2ef2af8)
+Running breadth-first search Model-Checking with fp 16 and seed 6488265931627380419 with 1 worker on 64 cores with 1963MB heap and 1024MB offheap memory [pid: 4194039] (Linux 5.15.0-198-generic amd64, Eclipse Adoptium 21.0.13 64bit, OffHeapDiskFPSet, DiskStateQueue).
+Parsing file /bulk/specula-adhoc/specula-runs/20261029-002846-4bd6/hdfs-adhoc-14/.specula-output/spec/output/hunt/guided/MCGuided.tla
+Parsing file /bulk/specula-adhoc/specula-runs/20261029-002846-4bd6/hdfs-adhoc-14/.specula-output/spec/output/hunt/guided/MC.tla
+Parsing file /tmp/tlc-2916118180358470701/_JsonTrace.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/_JsonTrace.tla)
+Parsing file /tmp/tlc-2916118180358470701/_TLCTrace.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/_TLCTrace.tla)
+Parsing file /bulk/specula-adhoc/specula-runs/20261029-002846-4bd6/hdfs-adhoc-14/.specula-output/spec/output/hunt/guided/base.tla
+Parsing file /tmp/tlc-2916118180358470701/TLC.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLC.tla)
+Parsing file /tmp/tlc-2916118180358470701/Naturals.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Naturals.tla)
+Parsing file /tmp/tlc-2916118180358470701/Sequences.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Sequences.tla)
+Parsing file /tmp/tlc-2916118180358470701/FiniteSets.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/FiniteSets.tla)
+Parsing file /tmp/tlc-2916118180358470701/TLCExt.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLCExt.tla)
+Parsing file /tmp/tlc-2916118180358470701/Json.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Json.tla)
+Parsing file /tmp/tlc-2916118180358470701/Integers.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Integers.tla)
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module TLC
+Semantic processing of module base
+Semantic processing of module MC
+Semantic processing of module Integers
+Semantic processing of module TLCExt
+Semantic processing of module Json
+Semantic processing of module _JsonTrace
+Semantic processing of module _TLCTrace
+Semantic processing of module MCGuided
+Linting of module base
+Linting of module MC
+Linting of module TLCExt
+Linting of module Json
+Linting of module _JsonTrace
+Linting of module _TLCTrace
+Linting of module MCGuided
+Starting... (2026-10-29 11:02:13)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-10-29 11:02:14.
+Error: Invariant TargetSafe is violated.
+Error: The behavior up to this point is:
+State 1: <Initial predicate>
+/\ nnEp = (n1 :> 0)
+/\ nnCur = (n1 :> 1)
+/\ mc = [rot |-> 0, fo |-> 0, rs |-> 0, dead |-> 0, w |-> 0, r |-> 0, x |-> 0]
+/\ actTerm = (n1 :> 1)
+/\ targetFired = FALSE
+/\ nnNext = (n1 :> 2)
+/\ dnCur = (d1 :> 1 @@ d2 :> 1 @@ d3 :> 1)
+/\ cliDek = None
+/\ bpActive = (d1 :> n1 @@ d2 :> n1 @@ d3 :> n1)
+/\ astate = (d1 :> (n1 :> "active") @@ d2 :> (n1 :> "active") @@ d3 :> (n1 :> "active"))
+/\ cmdQ = (d1 :> (n1 :> <<>>) @@ d2 :> (n1 :> <<>>) @@ d3 :> (n1 :> <<>>))
+/\ markPending = (n1 :> FALSE)
+/\ needKU = (n1 :> {})
+/\ reg = ( n1 :>
+      ( d1 :> [st |-> "none", ex |-> [cur |-> None, keys |-> {}]] @@
+        d2 :> [st |-> "none", ex |-> [cur |-> None, keys |-> {}]] @@
+        d3 :> [st |-> "none", ex |-> [cur |-> None, keys |-> {}]] ) )
+/\ fireInfo = [k |-> None, rsr |-> None, kid |-> None, sk |-> None, dn |-> None]
+/\ nnInc = (n1 :> 1)
+/\ dnKeys = (d1 :> {1, 2} @@ d2 :> {1, 2} @@ d3 :> {1, 2})
+/\ xferQ = (n1 :> (d1 :> <<>> @@ d2 :> <<>> @@ d3 :> <<>>))
+/\ regCurFromStandby = (d1 :> FALSE @@ d2 :> FALSE @@ d3 :> FALSE)
+/\ hb = ( n1 :>
+      ( d1 :>
+            [ reg |-> FALSE,
+              st |-> "idle",
+              ku |-> [cur |-> None, keys |-> {}],
+              xfer |-> <<>>,
+              ha |-> "standby",
+              tm |-> 0 ] @@
+        d2 :>
+            [ reg |-> FALSE,
+              st |-> "idle",
+              ku |-> [cur |-> None, keys |-> {}],
+              xfer |-> <<>>,
+              ha |-> "standby",
+              tm |-> 0 ] @@
+        d3 :>
+            [ reg |-> FALSE,
+              st |-> "idle",
+              ku |-> [cur |-> None, keys |-> {}],
+              xfer |-> <<>>,
+              ha |-> "standby",
+              tm |-> 0 ] ) )
+/\ act = (d1 :> (n1 :> "run") @@ d2 :> (n1 :> "run") @@ d3 :> (n1 :> "run"))
+/\ known = (n1 :> {d1, d2, d3})
+/\ term = 1
+/\ role = (n1 :> "active")
+/\ live = (n1 :> {d1, d2, d3})
+/\ nextOp = 1
+/\ ops = {}
+/\ keyOwner = <<n1, n1>>
+/\ nnKeys = (n1 :> {1, 2})
+/\ lastClaim = (d1 :> 1 @@ d2 :> 1 @@ d3 :> 1)
+
+State 2: <MCNNRotate(n1) line 56, col 5 to line 59, col 34 of module MC>
+/\ nnEp = (n1 :> 1)
+/\ nnCur = (n1 :> 2)
+/\ mc = [rot |-> 1, fo |-> 0, rs |-> 0, dead |-> 0, w |-> 0, r |-> 0, x |-> 0]
+/\ actTerm = (n1 :> 1)
+/\ targetFired = FALSE
+/\ nnNext = (n1 :> 3)
+/\ dnCur = (d1 :> 1 @@ d2 :> 1 @@ d3 :> 1)
+/\ cliDek = None
+/\ bpActive = (d1 :> n1 @@ d2 :> n1 @@ d3 :> n1)
+/\ astate = (d1 :> (n1 :> "active") @@ d2 :> (n1 :> "active") @@ d3 :> (n1 :> "active"))
+/\ cmdQ = (d1 :> (n1 :> <<>>) @@ d2 :> (n1 :> <<>>) @@ d3 :> (n1 :> <<>>))
+/\ markPending = (n1 :> TRUE)
+/\ needKU = (n1 :> {})
+/\ reg = ( n1 :>
+      ( d1 :> [st |-> "none", ex |-> [cur |-> None, keys |-> {}]] @@
+        d2 :> [st |-> "none", ex |-> [cur |-> None, keys |-> {}]] @@
+        d3 :> [st |-> "none", ex |-> [cur |-> None, keys |-> {}]] ) )
+/\ fireInfo = [k |-> None, rsr |-> None, kid |-> None, sk |-> None, dn |-> None]
+/\ nnInc = (n1 :> 1)
+/\ dnKeys = (d1 :> {1, 2} @@ d2 :> {1, 2} @@ d3 :> {1, 2})
+/\ xferQ = (n1 :> (d1 :> <<>> @@ d2 :> <<>> @@ d3 :> <<>>))
+/\ regCurFromStandby = (d1 :> FALSE @@ d2 :> FALSE @@ d3 :> FALSE)
+/\ hb = ( n1 :>
+      ( d1 :>
+            [ reg |-> FALSE,
+              st |-> "idle",
+              ku |-> [cur |-> None, keys |-> {}],
+              xfer |-> <<>>,
+              ha |-> "standby",
+              tm |-> 0 ] @@
+        d2 :>
+            [ reg |-> FALSE,
+              st |-> "idle",
+              ku |-> [cur |-> None, keys |-> {}],
+              xfer |-> <<>>,
+              ha |-> "standby",
+              tm |-> 0 ] @@
+        d3 :>
+            [ reg |-> FALSE,
+              st |-> "idle",
+              ku |-> [cur |-> None, keys |-> {}],
+              xfer |-> <<>>,
+              ha |-> "standby",
+              tm |-> 0 ] ) )
+/\ act = (d1 :> (n1 :> "run") @@ d2 :> (n1 :> "run") @@ d3 :> (n1 :> "run"))
+/\ known = (n1 :> {d1, d2, d3})
+/\ term = 1
+/\ role = (n1 :> "active")
+/\ live = (n1 :> {d1, d2, d3})
+/\ nextOp = 1
+/\ ops = {}
+/\ keyOwner = <<n1, n1, n1>>
+/\ nnKeys = (n1 :> {1, 2, 3})
+/\ lastClaim = (d1 :> 1 @@ d2 :> 1 @@ d3 :> 1)
+
+State 3: <MCNNMarkKeyUpdate(n1) line 99, col 25 to line 99, col 70 of module MC>
+/\ nnEp = (n1 :> 1)
+/\ nnCur = (n1 :> 2)
+/\ mc = [rot |-> 1, fo |-> 0, rs |-> 0, dead |-> 0, w |-> 0, r |-> 0, x |-> 0]
+/\ actTerm = (n1 :> 1)
+/\ targetFired = FALSE
+/\ nnNext = (n1 :> 3)
+/\ dnCur = (d1 :> 1 @@ d2 :> 1 @@ d3 :> 1)
+/\ cliDek = None
+/\ bpActive = (d1 :> n1 @@ d2 :> n1 @@ d3 :> n1)
+/\ astate = (d1 :> (n1 :> "active") @@ d2 :> (n1 :> "active") @@ d3 :> (n1 :> "active"))
+/\ cmdQ = (d1 :> (n1 :> <<>>) @@ d2 :> (n1 :> <<>>) @@ d3 :> (n1 :> <<>>))
+/\ markPending = (n1 :> FALSE)
+/\ needKU = (n1 :> {d1, d2, d3})
+/\ reg = ( n1 :>
+      ( d1 :> [st |-> "none", ex |-> [cur |-> None, keys |-> {}]] @@
+        d2 :> [st |-> "none", ex |-> [cur |-> None, keys |-> {}]] @@
+        d3 :> [st |-> "none", ex |-> [cur |-> None, keys |-> {}]] ) )
+/\ fireInfo = [k |-> None, rsr |-> None, kid |-> None, sk |-> None, dn |-> None]
+/\ nnInc = (n1 :> 1)
+/\ dnKeys = (d1 :> {1, 2} @@ d2 :> {1, 2} @@ d3 :> {1, 2})
+/\ xferQ = (n1 :> (d1 :> <<>> @@ d2 :> <<>> @@ d3 :> <<>>))
+/\ regCurFromStandby = (d1 :> FALSE @@ d2 :> FALSE @@ d3 :> FALSE)
+/\ hb = ( n1 :>
+      ( d1 :>
+            [ reg |-> FALSE,
+              st |-> "idle",
+              ku |-> [cur |-> None, keys |-> {}],
+              xfer |-> <<>>,
+              ha |-> "standby",
+              tm |-> 0 ] @@
+        d2 :>
+            [ reg |-> FALSE,
+              st |-> "idle",
+              ku |-> [cur |-> None, keys |-> {}],
+              xfer |-> <<>>,
+              ha |-> "standby",
+              tm |-> 0 ] @@
+        d3 :>
+            [ reg |-> FALSE,
+              st |-> "idle",
+              ku |-> [cur |-> None, keys |-> {}],
+              xfer |-> <<>>,
+              ha |-> "standby",
+              tm |-> 0 ] ) )
+/\ act = (d1 :> (n1 :> "run") @@ d2 :> (n1 :> "run") @@ d3 :> (n1 :> "run"))
+/\ known = (n1 :> {d1, d2, d3})
+/\ term = 1
+/\ role = (n1 :> "active")
+/\ live = (n1 :> {d1, d2, d3})
+/\ nextOp = 1
+/\ ops = {}
+/\ keyOwner = <<n1, n1, n1>>
+/\ nnKeys = (n1 :> {1, 2, 3})
+/\ lastClaim = (d1 :> 1 @@ d2 :> 1 @@ d3 :> 1)
+
+State 4: <MCClientAddBlock(n1,<<d1, d2>>) line 80, col 5 to line 83, col 34 of module MC>
+/\ nnEp = (n1 :> 1)
+/\ nnCur = (n1 :> 2)
+/\ mc = [rot |-> 1, fo |-> 0, rs |-> 0, dead |-> 0, w |-> 1, r |-> 0, x |-> 0]
+/\ actTerm = (n1 :> 1)
+/\ targetFired = FALSE
+/\ nnNext = (n1 :> 3)
+/\ dnCur = (d1 :> 1 @@ d2 :> 1 @@ d3 :> 1)
+/\ cliDek = None
+/\ bpActive = (d1 :> n1 @@ d2 :> n1 @@ d3 :> n1)
+/\ astate = (d1 :> (n1 :> "active") @@ d2 :> (n1 :> "active") @@ d3 :> (n1 :> "active"))
+/\ cmdQ = (d1 :> (n1 :> <<>>) @@ d2 :> (n1 :> <<>>) @@ d3 :> (n1 :> <<>>))
+/\ markPending = (n1 :> FALSE)
+/\ needKU = (n1 :> {d1, d2, d3})
+/\ reg = ( n1 :>
+      ( d1 :> [st |-> "none", ex |-> [cur |-> None, keys |-> {}]] @@
+        d2 :> [st |-> "none", ex |-> [cur |-> None, keys |-> {}]] @@
+        d3 :> [st |-> "none", ex |-> [cur |-> None, keys |-> {}]] ) )
+/\ fireInfo = [k |-> None, rsr |-> None, kid |-> None, sk |-> None, dn |-> None]
+/\ nnInc = (n1 :> 1)
+/\ dnKeys = (d1 :> {1, 2} @@ d2 :> {1, 2} @@ d3 :> {1, 2})
+/\ xferQ = (n1 :> (d1 :> <<>> @@ d2 :> <<>> @@ d3 :> <<>>))
+/\ regCurFromStandby = (d1 :> FALSE @@ d2 :> FALSE @@ d3 :> FALSE)
+/\ hb = ( n1 :>
+      ( d1 :>
+            [ reg |-> FALSE,
+              st |-> "idle",
+              ku |-> [cur |-> None, keys |-> {}],
+              xfer |-> <<>>,
+              ha |-> "standby",
+              tm |-> 0 ] @@
+        d2 :>
+            [ reg |-> FALSE,
+              st |-> "idle",
+              ku |-> [cur |-> None, keys |-> {}],
+              xfer |-> <<>>,
+              ha |-> "standby",
+              tm |-> 0 ] @@
+        d3 :>
+            [ reg |-> FALSE,
+              st |-> "idle",
+              ku |-> [cur |-> None, keys |-> {}],
+              xfer |-> <<>>,
+              ha |-> "standby",
+              tm |-> 0 ] ) )
+/\ act = (d1 :> (n1 :> "run") @@ d2 :> (n1 :> "run") @@ d3 :> (n1 :> "run"))
+/\ known = (n1 :> {d1, d2, d3})
+/\ term = 1
+/\ role = (n1 :> "active")
+/\ live = (n1 :> {d1, d2, d3})
+/\ nextOp = 2
+/\ ops = { [ ph |-> "connect",
+    pipe |-> <<d1, d2>>,
+    pos |-> 0,
+    k |-> "write",
+    tok |-> [kid |-> 2, sk |-> 2, iss |-> n1, inc |-> 1, ep |-> 1],
+    src |-> "client",
+    id |-> 1,
+    sec |-> None,
+    dek |-> None ] }
+/\ keyOwner = <<n1, n1, n1>>
+/\ nnKeys = (n1 :> {1, 2, 3})
+/\ lastClaim = (d1 :> 1 @@ d2 :> 1 @@ d3 :> 1)
+
+State 5: <MCClientFetchDEK(n1) line 124, col 24 to line 124, col 68 of module MC>
+/\ nnEp = (n1 :> 1)
+/\ nnCur = (n1 :> 2)
+/\ mc = [rot |-> 1, fo |-> 0, rs |-> 0, dead |-> 0, w |-> 1, r |-> 0, x |-> 0]
+/\ actTerm = (n1 :> 1)
+/\ targetFired = FALSE
+/\ nnNext = (n1 :> 3)
+/\ dnCur = (d1 :> 1 @@ d2 :> 1 @@ d3 :> 1)
+/\ cliDek = 2
+/\ bpActive = (d1 :> n1 @@ d2 :> n1 @@ d3 :> n1)
+/\ astate = (d1 :> (n1 :> "active") @@ d2 :> (n1 :> "active") @@ d3 :> (n1 :> "active"))
+/\ cmdQ = (d1 :> (n1 :> <<>>) @@ d2 :> (n1 :> <<>>) @@ d3 :> (n1 :> <<>>))
+/\ markPending = (n1 :> FALSE)
+/\ needKU = (n1 :> {d1, d2, d3})
+/\ reg = ( n1 :>
+      ( d1 :> [st |-> "none", ex |-> [cur |-> None, keys |-> {}]] @@
+        d2 :> [st |-> "none", ex |-> [cur |-> None, keys |-> {}]] @@
+        d3 :> [st |-> "none", ex |-> [cur |-> None, keys |-> {}]] ) )
+/\ fireInfo = [k |-> None, rsr |-> None, kid |-> None, sk |-> None, dn |-> None]
+/\ nnInc = (n1 :> 1)
+/\ dnKeys = (d1 :> {1, 2} @@ d2 :> {1, 2} @@ d3 :> {1, 2})
+/\ xferQ = (n1 :> (d1 :> <<>> @@ d2 :> <<>> @@ d3 :> <<>>))
+/\ regCurFromStandby = (d1 :> FALSE @@ d2 :> FALSE @@ d3 :> FALSE)
+/\ hb = ( n1 :>
+      ( d1 :>
+            [ reg |-> FALSE,
+              st |-> "idle",
+              ku |-> [cur |-> None, keys |-> {}],
+              xfer |-> <<>>,
+              ha |-> "standby",
+              tm |-> 0 ] @@
+        d2 :>
+            [ reg |-> FALSE,
+              st |-> "idle",
+              ku |-> [cur |-> None, keys |-> {}],
+              xfer |-> <<>>,
+              ha |-> "standby",
+              tm |-> 0 ] @@
+        d3 :>
+            [ reg |-> FALSE,
+              st |-> "idle",
+              ku |-> [cur |-> None, keys |-> {}],
+              xfer |-> <<>>,
+              ha |-> "standby",
+              tm |-> 0 ] ) )
+/\ act = (d1 :> (n1 :> "run") @@ d2 :> (n1 :> "run") @@ d3 :> (n1 :> "run"))
+/\ known = (n1 :> {d1, d2, d3})
+/\ term = 1
+/\ role = (n1 :> "active")
+/\ live = (n1 :> {d1, d2, d3})
+/\ nextOp = 2
+/\ ops = { [ ph |-> "connect",
+    pipe |-> <<d1, d2>>,
+    pos |-> 0,
+    k |-> "write",
+    tok |-> [kid |-> 2, sk |-> 2, iss |-> n1, inc |-> 1, ep |-> 1],
+    src |-> "client",
+    id |-> 1,
+    sec |-> None,
+    dek |-> None ] }
+/\ keyOwner = <<n1, n1, n1>>
+/\ nnKeys = (n1 :> {1, 2, 3})
+/\ lastClaim = (d1 :> 1 @@ d2 :> 1 @@ d3 :> 1)
+
+State 6: <MCClientConnect(1,d1) line 125, col 26 to line 125, col 72 of module MC>
+/\ nnEp = (n1 :> 1)
+/\ nnCur = (n1 :> 2)
+/\ mc = [rot |-> 1, fo |-> 0, rs |-> 0, dead |-> 0, w |-> 1, r |-> 0, x |-> 0]
+/\ actTerm = (n1 :> 1)
+/\ targetFired = FALSE
+/\ nnNext = (n1 :> 3)
+/\ dnCur = (d1 :> 1 @@ d2 :> 1 @@ d3 :> 1)
+/\ cliDek = 2
+/\ bpActive = (d1 :> n1 @@ d2 :> n1 @@ d3 :> n1)
+/\ astate = (d1 :> (n1 :> "active") @@ d2 :> (n1 :> "active") @@ d3 :> (n1 :> "active"))
+/\ cmdQ = (d1 :> (n1 :> <<>>) @@ d2 :> (n1 :> <<>>) @@ d3 :> (n1 :> <<>>))
+/\ markPending = (n1 :> FALSE)
+/\ needKU = (n1 :> {d1, d2, d3})
+/\ reg = ( n1 :>
+      ( d1 :> [st |-> "none", ex |-> [cur |-> None, keys |-> {}]] @@
+        d2 :> [st |-> "none", ex |-> [cur |-> None, keys |-> {}]] @@
+        d3 :> [st |-> "none", ex |-> [cur |-> None, keys |-> {}]] ) )
+/\ fireInfo = [k |-> None, rsr |-> None, kid |-> None, sk |-> None, dn |-> None]
+/\ nnInc = (n1 :> 1)
+/\ dnKeys = (d1 :> {1, 2} @@ d2 :> {1, 2} @@ d3 :> {1, 2})
+/\ xferQ = (n1 :> (d1 :> <<>> @@ d2 :> <<>> @@ d3 :> <<>>))
+/\ regCurFromStandby = (d1 :> FALSE @@ d2 :> FALSE @@ d3 :> FALSE)
+/\ hb = ( n1 :>
+      ( d1 :>
+            [ reg |-> FALSE,
+              st |-> "idle",
+              ku |-> [cur |-> None, keys |-> {}],
+              xfer |-> <<>>,
+              ha |-> "standby",
+              tm |-> 0 ] @@
+        d2 :>
+            [ reg |-> FALSE,
+              st |-> "idle",
+              ku |-> [cur |-> None, keys |-> {}],
+              xfer |-> <<>>,
+              ha |-> "standby",
+              tm |-> 0 ] @@
+        d3 :>
+            [ reg |-> FALSE,
+              st |-> "idle",
+              ku |-> [cur |-> None, keys |-> {}],
+              xfer |-> <<>>,
+              ha |-> "standby",
+              tm |-> 0 ] ) )
+/\ act = (d1 :> (n1 :> "run") @@ d2 :> (n1 :> "run") @@ d3 :> (n1 :> "run"))
+/\ known = (n1 :> {d1, d2, d3})
+/\ term = 1
+/\ role = (n1 :> "active")
+/\ live = (n1 :> {d1, d2, d3})
+/\ nextOp = 2
+/\ ops = { [ ph |-> "sasl",
+    pipe |-> <<d1, d2>>,
+    pos |-> 1,
+    k |-> "write",
+    tok |-> [kid |-> 2, sk |-> 2, iss |-> n1, inc |-> 1, ep |-> 1],
+    src |-> "client",
+    id |-> 1,
+    sec |-> None,
+    dek |-> 2 ] }
+/\ keyOwner = <<n1, n1, n1>>
+/\ nnKeys = (n1 :> {1, 2, 3})
+/\ lastClaim = (d1 :> 1 @@ d2 :> 1 @@ d3 :> 1)
+
+State 7: <MCDNSaslReceiveEncrypted(1) line 128, col 32 to line 128, col 84 of module MC>
+/\ nnEp = (n1 :> 1)
+/\ nnCur = (n1 :> 2)
+/\ mc = [rot |-> 1, fo |-> 0, rs |-> 0, dead |-> 0, w |-> 1, r |-> 0, x |-> 0]
+/\ actTerm = (n1 :> 1)
+/\ targetFired = FALSE
+/\ nnNext = (n1 :> 3)
+/\ dnCur = (d1 :> 1 @@ d2 :> 1 @@ d3 :> 1)
+/\ cliDek = 2
+/\ bpActive = (d1 :> n1 @@ d2 :> n1 @@ d3 :> n1)
+/\ astate = (d1 :> (n1 :> "active") @@ d2 :> (n1 :> "active") @@ d3 :> (n1 :> "active"))
+/\ cmdQ = (d1 :> (n1 :> <<>>) @@ d2 :> (n1 :> <<>>) @@ d3 :> (n1 :> <<>>))
+/\ markPending = (n1 :> FALSE)
+/\ needKU = (n1 :> {d1, d2, d3})
+/\ reg = ( n1 :>
+      ( d1 :> [st |-> "none", ex |-> [cur |-> None, keys |-> {}]] @@
+        d2 :> [st |-> "none", ex |-> [cur |-> None, keys |-> {}]] @@
+        d3 :> [st |-> "none", ex |-> [cur |-> None, keys |-> {}]] ) )
+/\ fireInfo = [k |-> None, rsr |-> None, kid |-> None, sk |-> None, dn |-> None]
+/\ nnInc = (n1 :> 1)
+/\ dnKeys = (d1 :> {1, 2} @@ d2 :> {1, 2} @@ d3 :> {1, 2})
+/\ xferQ = (n1 :> (d1 :> <<>> @@ d2 :> <<>> @@ d3 :> <<>>))
+/\ regCurFromStandby = (d1 :> FALSE @@ d2 :> FALSE @@ d3 :> FALSE)
+/\ hb = ( n1 :>
+      ( d1 :>
+            [ reg |-> FALSE,
+              st |-> "idle",
+              ku |-> [cur |-> None, keys |-> {}],
+              xfer |-> <<>>,
+              ha |-> "standby",
+              tm |-> 0 ] @@
+        d2 :>
+            [ reg |-> FALSE,
+              st |-> "idle",
+              ku |-> [cur |-> None, keys |-> {}],
+              xfer |-> <<>>,
+              ha |-> "standby",
+              tm |-> 0 ] @@
+        d3 :>
+            [ reg |-> FALSE,
+              st |-> "idle",
+              ku |-> [cur |-> None, keys |-> {}],
+              xfer |-> <<>>,
+              ha |-> "standby",
+              tm |-> 0 ] ) )
+/\ act = (d1 :> (n1 :> "run") @@ d2 :> (n1 :> "run") @@ d3 :> (n1 :> "run"))
+/\ known = (n1 :> {d1, d2, d3})
+/\ term = 1
+/\ role = (n1 :> "active")
+/\ live = (n1 :> {d1, d2, d3})
+/\ nextOp = 2
+/\ ops = { [ ph |-> "check",
+    pipe |-> <<d1, d2>>,
+    pos |-> 1,
+    k |-> "write",
+    tok |-> [kid |-> 2, sk |-> 2, iss |-> n1, inc |-> 1, ep |-> 1],
+    src |-> "client",
+    id |-> 1,
+    sec |-> None,
+    dek |-> 2 ] }
+/\ keyOwner = <<n1, n1, n1>>
+/\ nnKeys = (n1 :> {1, 2, 3})
+/\ lastClaim = (d1 :> 1 @@ d2 :> 1 @@ d3 :> 1)
+
+State 8: <MCTargetCheck(1) line 129, col 21 to line 129, col 62 of module MC>
+/\ nnEp = (n1 :> 1)
+/\ nnCur = (n1 :> 2)
+/\ mc = [rot |-> 1, fo |-> 0, rs |-> 0, dead |-> 0, w |-> 1, r |-> 0, x |-> 0]
+/\ actTerm = (n1 :> 1)
+/\ targetFired = FALSE
+/\ nnNext = (n1 :> 3)
+/\ dnCur = (d1 :> 1 @@ d2 :> 1 @@ d3 :> 1)
+/\ cliDek = 2
+/\ bpActive = (d1 :> n1 @@ d2 :> n1 @@ d3 :> n1)
+/\ astate = (d1 :> (n1 :> "active") @@ d2 :> (n1 :> "active") @@ d3 :> (n1 :> "active"))
+/\ cmdQ = (d1 :> (n1 :> <<>>) @@ d2 :> (n1 :> <<>>) @@ d3 :> (n1 :> <<>>))
+/\ markPending = (n1 :> FALSE)
+/\ needKU = (n1 :> {d1, d2, d3})
+/\ reg = ( n1 :>
+      ( d1 :> [st |-> "none", ex |-> [cur |-> None, keys |-> {}]] @@
+        d2 :> [st |-> "none", ex |-> [cur |-> None, keys |-> {}]] @@
+        d3 :> [st |-> "none", ex |-> [cur |-> None, keys |-> {}]] ) )
+/\ fireInfo = [k |-> None, rsr |-> None, kid |-> None, sk |-> None, dn |-> None]
+/\ nnInc = (n1 :> 1)
+/\ dnKeys = (d1 :> {1, 2} @@ d2 :> {1, 2} @@ d3 :> {1, 2})
+/\ xferQ = (n1 :> (d1 :> <<>> @@ d2 :> <<>> @@ d3 :> <<>>))
+/\ regCurFromStandby = (d1 :> FALSE @@ d2 :> FALSE @@ d3 :> FALSE)
+/\ hb = ( n1 :>
+      ( d1 :>
+            [ reg |-> FALSE,
+              st |-> "idle",
+              ku |-> [cur |-> None, keys |-> {}],
+              xfer |-> <<>>,
+              ha |-> "standby",
+              tm |-> 0 ] @@
+        d2 :>
+            [ reg |-> FALSE,
+              st |-> "idle",
+              ku |-> [cur |-> None, keys |-> {}],
+              xfer |-> <<>>,
+              ha |-> "standby",
+              tm |-> 0 ] @@
+        d3 :>
+            [ reg |-> FALSE,
+              st |-> "idle",
+              ku |-> [cur |-> None, keys |-> {}],
+              xfer |-> <<>>,
+              ha |-> "standby",
+              tm |-> 0 ] ) )
+/\ act = (d1 :> (n1 :> "run") @@ d2 :> (n1 :> "run") @@ d3 :> (n1 :> "run"))
+/\ known = (n1 :> {d1, d2, d3})
+/\ term = 1
+/\ role = (n1 :> "active")
+/\ live = (n1 :> {d1, d2, d3})
+/\ nextOp = 2
+/\ ops = { [ ph |-> "mirror",
+    pipe |-> <<d1, d2>>,
+    pos |-> 1,
+    k |-> "write",
+    tok |-> [kid |-> 2, sk |-> 2, iss |-> n1, inc |-> 1, ep |-> 1],
+    src |-> "client",
+    id |-> 1,
+    sec |-> None,
+    dek |-> 2 ] }
+/\ keyOwner = <<n1, n1, n1>>
+/\ nnKeys = (n1 :> {1, 2, 3})
+/\ lastClaim = (d1 :> 1 @@ d2 :> 1 @@ d3 :> 1)
+
+State 9: <MCDNWriteBlockMirrorSecret(1) line 130, col 34 to line 130, col 88 of module MC>
+/\ nnEp = (n1 :> 1)
+/\ nnCur = (n1 :> 2)
+/\ mc = [rot |-> 1, fo |-> 0, rs |-> 0, dead |-> 0, w |-> 1, r |-> 0, x |-> 0]
+/\ actTerm = (n1 :> 1)
+/\ targetFired = FALSE
+/\ nnNext = (n1 :> 3)
+/\ dnCur = (d1 :> 1 @@ d2 :> 1 @@ d3 :> 1)
+/\ cliDek = 2
+/\ bpActive = (d1 :> n1 @@ d2 :> n1 @@ d3 :> n1)
+/\ astate = (d1 :> (n1 :> "active") @@ d2 :> (n1 :> "active") @@ d3 :> (n1 :> "active"))
+/\ cmdQ = (d1 :> (n1 :> <<>>) @@ d2 :> (n1 :> <<>>) @@ d3 :> (n1 :> <<>>))
+/\ markPending = (n1 :> FALSE)
+/\ needKU = (n1 :> {d1, d2, d3})
+/\ reg = ( n1 :>
+      ( d1 :> [st |-> "none", ex |-> [cur |-> None, keys |-> {}]] @@
+        d2 :> [st |-> "none", ex |-> [cur |-> None, keys |-> {}]] @@
+        d3 :> [st |-> "none", ex |-> [cur |-> None, keys |-> {}]] ) )
+/\ fireInfo = [k |-> None, rsr |-> None, kid |-> None, sk |-> None, dn |-> None]
+/\ nnInc = (n1 :> 1)
+/\ dnKeys = (d1 :> {1, 2} @@ d2 :> {1, 2} @@ d3 :> {1, 2})
+/\ xferQ = (n1 :> (d1 :> <<>> @@ d2 :> <<>> @@ d3 :> <<>>))
+/\ regCurFromStandby = (d1 :> FALSE @@ d2 :> FALSE @@ d3 :> FALSE)
+/\ hb = ( n1 :>
+      ( d1 :>
+            [ reg |-> FALSE,
+              st |-> "idle",
+              ku |-> [cur |-> None, keys |-> {}],
+              xfer |-> <<>>,
+              ha |-> "standby",
+              tm |-> 0 ] @@
+        d2 :>
+            [ reg |-> FALSE,
+              st |-> "idle",
+              ku |-> [cur |-> None, keys |-> {}],
+              xfer |-> <<>>,
+              ha |-> "standby",
+              tm |-> 0 ] @@
+        d3 :>
+            [ reg |-> FALSE,
+              st |-> "idle",
+              ku |-> [cur |-> None, keys |-> {}],
+              xfer |-> <<>>,
+              ha |-> "standby",
+              tm |-> 0 ] ) )
+/\ act = (d1 :> (n1 :> "run") @@ d2 :> (n1 :> "run") @@ d3 :> (n1 :> "run"))
+/\ known = (n1 :> {d1, d2, d3})
+/\ term = 1
+/\ role = (n1 :> "active")
+/\ live = (n1 :> {d1, d2, d3})
+/\ nextOp = 2
+/\ ops = { [ ph |-> "dek",
+    pipe |-> <<d1, d2>>,
+    pos |-> 1,
+    k |-> "write",
+    tok |-> [kid |-> 2, sk |-> 2, iss |-> n1, inc |-> 1, ep |-> 1],
+    src |-> "client",
+    id |-> 1,
+    sec |-> 1,
+    dek |-> 2 ] }
+/\ keyOwner = <<n1, n1, n1>>
+/\ nnKeys = (n1 :> {1, 2, 3})
+/\ lastClaim = (d1 :> 1 @@ d2 :> 1 @@ d3 :> 1)
+
+State 10: <MCDNSaslSendEncrypted(1) line 127, col 29 to line 127, col 78 of module MC>
+/\ nnEp = (n1 :> 1)
+/\ nnCur = (n1 :> 2)
+/\ mc = [rot |-> 1, fo |-> 0, rs |-> 0, dead |-> 0, w |-> 1, r |-> 0, x |-> 0]
+/\ actTerm = (n1 :> 1)
+/\ targetFired = FALSE
+/\ nnNext = (n1 :> 3)
+/\ dnCur = (d1 :> 1 @@ d2 :> 1 @@ d3 :> 1)
+/\ cliDek = 2
+/\ bpActive = (d1 :> n1 @@ d2 :> n1 @@ d3 :> n1)
+/\ astate = (d1 :> (n1 :> "active") @@ d2 :> (n1 :> "active") @@ d3 :> (n1 :> "active"))
+/\ cmdQ = (d1 :> (n1 :> <<>>) @@ d2 :> (n1 :> <<>>) @@ d3 :> (n1 :> <<>>))
+/\ markPending = (n1 :> FALSE)
+/\ needKU = (n1 :> {d1, d2, d3})
+/\ reg = ( n1 :>
+      ( d1 :> [st |-> "none", ex |-> [cur |-> None, keys |-> {}]] @@
+        d2 :> [st |-> "none", ex |-> [cur |-> None, keys |-> {}]] @@
+        d3 :> [st |-> "none", ex |-> [cur |-> None, keys |-> {}]] ) )
+/\ fireInfo = [k |-> None, rsr |-> None, kid |-> None, sk |-> None, dn |-> None]
+/\ nnInc = (n1 :> 1)
+/\ dnKeys = (d1 :> {1, 2} @@ d2 :> {1, 2} @@ d3 :> {1, 2})
+/\ xferQ = (n1 :> (d1 :> <<>> @@ d2 :> <<>> @@ d3 :> <<>>))
+/\ regCurFromStandby = (d1 :> FALSE @@ d2 :> FALSE @@ d3 :> FALSE)
+/\ hb = ( n1 :>
+      ( d1 :>
+            [ reg |-> FALSE,
+              st |-> "idle",
+              ku |-> [cur |-> None, keys |-> {}],
+              xfer |-> <<>>,
+              ha |-> "standby",
+              tm |-> 0 ] @@
+        d2 :>
+            [ reg |-> FALSE,
+              st |-> "idle",
+              ku |-> [cur |-> None, keys |-> {}],
+              xfer |-> <<>>,
+              ha |-> "standby",
+              tm |-> 0 ] @@
+        d3 :>
+            [ reg |-> FALSE,
+              st |-> "idle",
+              ku |-> [cur |-> None, keys |-> {}],
+              xfer |-> <<>>,
+              ha |-> "standby",
+              tm |-> 0 ] ) )
+/\ act = (d1 :> (n1 :> "run") @@ d2 :> (n1 :> "run") @@ d3 :> (n1 :> "run"))
+/\ known = (n1 :> {d1, d2, d3})
+/\ term = 1
+/\ role = (n1 :> "active")
+/\ live = (n1 :> {d1, d2, d3})
+/\ nextOp = 2
+/\ ops = { [ ph |-> "sasl",
+    pipe |-> <<d1, d2>>,
+    pos |-> 2,
+    k |-> "write",
+    tok |-> [kid |-> 2, sk |-> 1, iss |-> n1, inc |-> 1, ep |-> 1],
+    src |-> "client",
+    id |-> 1,
+    sec |-> None,
+    dek |-> 1 ] }
+/\ keyOwner = <<n1, n1, n1>>
+/\ nnKeys = (n1 :> {1, 2, 3})
+/\ lastClaim = (d1 :> 1 @@ d2 :> 1 @@ d3 :> 1)
+
+State 11: <MCDNSaslReceiveEncrypted(1) line 128, col 32 to line 128, col 84 of module MC>
+/\ nnEp = (n1 :> 1)
+/\ nnCur = (n1 :> 2)
+/\ mc = [rot |-> 1, fo |-> 0, rs |-> 0, dead |-> 0, w |-> 1, r |-> 0, x |-> 0]
+/\ actTerm = (n1 :> 1)
+/\ targetFired = FALSE
+/\ nnNext = (n1 :> 3)
+/\ dnCur = (d1 :> 1 @@ d2 :> 1 @@ d3 :> 1)
+/\ cliDek = 2
+/\ bpActive = (d1 :> n1 @@ d2 :> n1 @@ d3 :> n1)
+/\ astate = (d1 :> (n1 :> "active") @@ d2 :> (n1 :> "active") @@ d3 :> (n1 :> "active"))
+/\ cmdQ = (d1 :> (n1 :> <<>>) @@ d2 :> (n1 :> <<>>) @@ d3 :> (n1 :> <<>>))
+/\ markPending = (n1 :> FALSE)
+/\ needKU = (n1 :> {d1, d2, d3})
+/\ reg = ( n1 :>
+      ( d1 :> [st |-> "none", ex |-> [cur |-> None, keys |-> {}]] @@
+        d2 :> [st |-> "none", ex |-> [cur |-> None, keys |-> {}]] @@
+        d3 :> [st |-> "none", ex |-> [cur |-> None, keys |-> {}]] ) )
+/\ fireInfo = [k |-> None, rsr |-> None, kid |-> None, sk |-> None, dn |-> None]
+/\ nnInc = (n1 :> 1)
+/\ dnKeys = (d1 :> {1, 2} @@ d2 :> {1, 2} @@ d3 :> {1, 2})
+/\ xferQ = (n1 :> (d1 :> <<>> @@ d2 :> <<>> @@ d3 :> <<>>))
+/\ regCurFromStandby = (d1 :> FALSE @@ d2 :> FALSE @@ d3 :> FALSE)
+/\ hb = ( n1 :>
+      ( d1 :>
+            [ reg |-> FALSE,
+              st |-> "idle",
+              ku |-> [cur |-> None, keys |-> {}],
+              xfer |-> <<>>,
+              ha |-> "standby",
+              tm |-> 0 ] @@
+        d2 :>
+            [ reg |-> FALSE,
+              st |-> "idle",
+              ku |-> [cur |-> None, keys |-> {}],
+              xfer |-> <<>>,
+              ha |-> "standby",
+              tm |-> 0 ] @@
+        d3 :>
+            [ reg |-> FALSE,
+              st |-> "idle",
+              ku |-> [cur |-> None, keys |-> {}],
+              xfer |-> <<>>,
+              ha |-> "standby",
+              tm |-> 0 ] ) )
+/\ act = (d1 :> (n1 :> "run") @@ d2 :> (n1 :> "run") @@ d3 :> (n1 :> "run"))
+/\ known = (n1 :> {d1, d2, d3})
+/\ term = 1
+/\ role = (n1 :> "active")
+/\ live = (n1 :> {d1, d2, d3})
+/\ nextOp = 2
+/\ ops = { [ ph |-> "check",
+    pipe |-> <<d1, d2>>,
+    pos |-> 2,
+    k |-> "write",
+    tok |-> [kid |-> 2, sk |-> 1, iss |-> n1, inc |-> 1, ep |-> 1],
+    src |-> "client",
+    id |-> 1,
+    sec |-> None,
+    dek |-> 1 ] }
+/\ keyOwner = <<n1, n1, n1>>
+/\ nnKeys = (n1 :> {1, 2, 3})
+/\ lastClaim = (d1 :> 1 @@ d2 :> 1 @@ d3 :> 1)
+
+State 12: <MCTargetCheck(1) line 129, col 21 to line 129, col 62 of module MC>
+/\ nnEp = (n1 :> 1)
+/\ nnCur = (n1 :> 2)
+/\ mc = [rot |-> 1, fo |-> 0, rs |-> 0, dead |-> 0, w |-> 1, r |-> 0, x |-> 0]
+/\ actTerm = (n1 :> 1)
+/\ targetFired = TRUE
+/\ nnNext = (n1 :> 3)
+/\ dnCur = (d1 :> 1 @@ d2 :> 1 @@ d3 :> 1)
+/\ cliDek = 2
+/\ bpActive = (d1 :> n1 @@ d2 :> n1 @@ d3 :> n1)
+/\ astate = (d1 :> (n1 :> "active") @@ d2 :> (n1 :> "active") @@ d3 :> (n1 :> "active"))
+/\ cmdQ = (d1 :> (n1 :> <<>>) @@ d2 :> (n1 :> <<>>) @@ d3 :> (n1 :> <<>>))
+/\ markPending = (n1 :> FALSE)
+/\ needKU = (n1 :> {d1, d2, d3})
+/\ reg = ( n1 :>
+      ( d1 :> [st |-> "none", ex |-> [cur |-> None, keys |-> {}]] @@
+        d2 :> [st |-> "none", ex |-> [cur |-> None, keys |-> {}]] @@
+        d3 :> [st |-> "none", ex |-> [cur |-> None, keys |-> {}]] ) )
+/\ fireInfo = [k |-> "write", rsr |-> d1, kid |-> 2, sk |-> 1, dn |-> d2]
+/\ nnInc = (n1 :> 1)
+/\ dnKeys = (d1 :> {1, 2} @@ d2 :> {1, 2} @@ d3 :> {1, 2})
+/\ xferQ = (n1 :> (d1 :> <<>> @@ d2 :> <<>> @@ d3 :> <<>>))
+/\ regCurFromStandby = (d1 :> FALSE @@ d2 :> FALSE @@ d3 :> FALSE)
+/\ hb = ( n1 :>
+      ( d1 :>
+            [ reg |-> FALSE,
+              st |-> "idle",
+              ku |-> [cur |-> None, keys |-> {}],
+              xfer |-> <<>>,
+              ha |-> "standby",
+              tm |-> 0 ] @@
+        d2 :>
+            [ reg |-> FALSE,
+              st |-> "idle",
+              ku |-> [cur |-> None, keys |-> {}],
+              xfer |-> <<>>,
+              ha |-> "standby",
+              tm |-> 0 ] @@
+        d3 :>
+            [ reg |-> FALSE,
+              st |-> "idle",
+              ku |-> [cur |-> None, keys |-> {}],
+              xfer |-> <<>>,
+              ha |-> "standby",
+              tm |-> 0 ] ) )
+/\ act = (d1 :> (n1 :> "run") @@ d2 :> (n1 :> "run") @@ d3 :> (n1 :> "run"))
+/\ known = (n1 :> {d1, d2, d3})
+/\ term = 1
+/\ role = (n1 :> "active")
+/\ live = (n1 :> {d1, d2, d3})
+/\ nextOp = 2
+/\ ops = { [ ph |-> "check",
+    pipe |-> <<d1, d2>>,
+    pos |-> 2,
+    k |-> "write",
+    tok |-> [kid |-> 2, sk |-> 1, iss |-> n1, inc |-> 1, ep |-> 1],
+    src |-> "client",
+    id |-> 1,
+    sec |-> None,
+    dek |-> 1 ] }
+/\ keyOwner = <<n1, n1, n1>>
+/\ nnKeys = (n1 :> {1, 2, 3})
+/\ lastClaim = (d1 :> 1 @@ d2 :> 1 @@ d3 :> 1)
+
+"CounterExample written: /users/ZhenyuLi/Specula/runs/20261029-002846-4bd6/hdfs-adhoc-14/.specula-output/spec/output/hunt/guided/s1_rotation_skew_w1_steady.json"
+2600 states generated, 921 distinct states found, 270 states left on queue.
+The depth of the complete state graph search is 12.
+Checkpointing of run /tmp/tlc-states-8KQuBZ/26-10-29-11-02-13.122
+Checkpointing completed at (2026-10-29 11:02:14)
+Finished in 01s at (2026-10-29 11:02:14)
+Trace exploration spec path: ./MCGuided_TTrace_1793271733.tla
