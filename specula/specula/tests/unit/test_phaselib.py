@@ -1,0 +1,4863 @@
+"""Behavior tests for the phase launchers (src/specula/phaselib.py).
+
+With the characterization goldens retired there is no bash to diff against, so
+these tests ARE the pin for each `launch_<phase>.sh`'s observable contract — the
+part no other test crosses (the e2e dry-run stops at the pipeline layer, which
+only *prints* the launcher command lines and never enters phaselib):
+
+  - the precondition gate: missing inputs -> the phase's own fail message and
+    exit 1 (the deleted gate_* goldens);
+  - the --dry-run adapter command line + the prompt file each phase assembles:
+    the adapter invocation, the per-phase log/prompt filenames, the --prompt vs
+    --prompt-file quirk, the skill guide each defers to, and the output paths
+    (the deleted dryrun_* / check_ok_* goldens);
+  - the review agent's prompt contract (the deleted review_* goldens).
+
+Each phase runs in-process under an isolated SPECULA_RUN_DIR, so every output
+lands in a tmp run dir; --dry-run means no adapter is spawned and no network is
+touched. SPECULA_ROOT is patched to a tmp tree so skill/case-dir paths resolve
+hermetically (LAUNCH_DIR — the real adapter the gate checks exists — is a
+module global and stays pointed at the repo).
+
+stdlib unittest, collected natively by pytest:
+
+    uv run python -m unittest tests.unit.test_phaselib -v
+"""
+
+from __future__ import annotations
+
+import contextlib
+import io
+import json
+import os
+import shlex
+import signal
+import subprocess
+import sys
+import tempfile
+import time
+import unittest
+from dataclasses import replace
+from pathlib import Path
+from typing import Any, TypedDict, cast
+from unittest import mock
+
+SRC = Path(__file__).resolve().parents[2] / "src"
+if str(SRC) not in sys.path:  # test the tree this file lives in, installed or not
+    sys.path.insert(0, str(SRC))
+
+import specula.progress as progress_module  # noqa: E402
+import specula.quota as quota  # noqa: E402
+from specula import phaselib, resource_summary, resumelib, snapshotlib  # noqa: E402
+from specula.adapters.utils.policy import POLICY_BLOCKED_RC  # noqa: E402
+from specula.adapters.utils.transient import TRANSIENT_FAILURE_RC  # noqa: E402
+from specula.output_index import BYOM_REPORT_FILENAME  # noqa: E402
+from specula.progress import ProgressConfig, RunningAgent  # noqa: E402
+from specula.skill_refs import CODEX_PLUGIN_NAME, prompt_skill_ids  # noqa: E402
+
+NAME = "footest"
+
+
+class PhaseSpec(TypedDict):
+    key: str
+    artifact: bool  # whether the phase accepts --artifact (bug_classification does not)
+    inputs: list[str]  # files, relative to the work dir, check() needs to pass
+    fail: str  # gate message when a prerequisite is missing
+    ok: str  # --check success message
+    log: str  # agent log filename
+    prompt: str  # written prompt filename
+    flag: str  # dry-run prompt flag: --prompt or --prompt-file
+    skill: str  # installed skill name the prompt invokes
+    out: str  # a key output/input path the prompt must carry
+
+
+# Per-phase contract table. `fail`/`ok`/`skill`/`out` are spelled out here rather
+# than read back off the phase object, so a reworded gate, a typo'd skill name,
+# or a dropped output path is caught rather than mirrored.
+PHASES: list[PhaseSpec] = [
+    {
+        "key": "code_analysis",
+        "artifact": True,
+        "inputs": [],
+        "fail": "Some repositories are missing",
+        "ok": "All repos OK.",
+        "log": "agent.log",
+        "prompt": ".prompt.md",
+        "flag": "--prompt",
+        "skill": "code-analysis",
+        "out": "modeling-brief.md",
+    },
+    {
+        "key": "spec_generation",
+        "artifact": True,
+        "inputs": ["modeling-brief.md"],
+        "fail": "Run code analysis first.",
+        "ok": "All prerequisites OK.",
+        "log": "spec-gen.log",
+        "prompt": ".spec-gen-prompt.md",
+        "flag": "--prompt",
+        "skill": "spec-generation",
+        "out": "spec/base.tla",
+    },
+    {
+        "key": "harness_generation",
+        "artifact": True,
+        "inputs": ["spec/base.tla", "spec/Trace.tla", "spec/instrumentation-spec.md"],
+        "fail": "Run spec generation (Phase 2) first.",
+        "ok": "All prerequisites OK.",
+        "log": "harness-gen.log",
+        "prompt": ".harness-gen-prompt.md",
+        "flag": "--prompt",
+        "skill": "harness-generation",
+        "out": "harness",
+    },
+    {
+        "key": "spec_validation",
+        "artifact": True,
+        "inputs": ["spec/base.tla", "spec/MC.tla", "spec/Trace.tla", "spec/instrumentation-spec.md"],
+        "fail": "Run spec generation first.",
+        "ok": "Required path checks passed; review any warnings above.",
+        "log": "spec-validation.log",
+        "prompt": ".spec-validation-prompt.md",
+        "flag": "--prompt",
+        "skill": "validation-workflow",
+        "out": "modeling-brief.md",
+    },
+    {
+        "key": "bug_confirmation",
+        "artifact": True,
+        "inputs": ["spec/bug-report.md", "modeling-brief.md"],
+        "fail": "Run full pipeline first.",
+        "ok": "All prerequisites OK.",
+        "log": "bug-confirmation.log",
+        "prompt": ".bug-confirmation-prompt.md",
+        "flag": "--prompt",
+        "skill": "bug-confirmation",
+        "out": "confirmed-bugs.md",
+    },
+    {
+        # the outlier: no --artifact (accepts_artifact=False) and its dry-run
+        # line shows --prompt-file, not --prompt.
+        "key": "bug_classification",
+        "artifact": False,
+        "inputs": ["confirmed-bugs.md"],
+        "fail": "Run Phase 4a ('specula confirm') first.",
+        "ok": "All prerequisites OK.",
+        "log": "bug-classification.log",
+        "prompt": ".bug-classification-prompt.md",
+        "flag": "--prompt-file",
+        "skill": "bug-classification",
+        "out": "bug-severity.md",
+    },
+]
+BY_KEY = {p["key"]: p for p in PHASES}
+PUBLIC_COMMANDS = {
+    "code_analysis": "analyze",
+    "spec_generation": "specgen",
+    "harness_generation": "harness",
+    "spec_validation": "validate",
+    "bug_confirmation": "confirm",
+    "bug_classification": "classify",
+}
+
+
+class PhaseCase(unittest.TestCase):
+    """A phase run in-process under an isolated, hermetic tmp SPECULA_ROOT +
+    SPECULA_RUN_DIR."""
+
+    def setUp(self) -> None:
+        self.root = self.tmp()  # patched SPECULA_ROOT: skills/case dirs resolve here
+        self.run_dir = self.tmp()  # SPECULA_RUN_DIR: every output lands here
+        self.patch_attr(phaselib, "SPECULA_ROOT", self.root)
+        # Env the driver reads; restore so one test can't leak into the next.
+        for var in (
+            "SPECULA_RUN_DIR",
+            "SPECULA_PHASE",
+            "SPECULA_WORK_DIR",
+            "SPECULA_STOP_GATE",
+            "SPECULA_STOP_GATE_WORK_DIR",
+            "SPECULA_SANDBOX",
+            "SPECULA_SANDBOX_CONFIG",
+            "SPECULA_SANDBOX_EXTRA_WRITE",
+            "SPECULA_PROGRESS",
+            "SPECULA_ACTIVITY_LOG",
+            "SPECULA_PIPELINE_LOG",
+            "SPECULA_RATE_LIMIT_REACTIVE",
+            "SPECULA_RATE_LIMIT_RETRIES",
+            "SPECULA_TLC_SCOPE",
+            "SPECULA_TLC_MEMORY_LIMIT",
+            "SPECULA_TLC_WORKER_LIMIT",
+            "SPECULA_QUOTA_5H",
+            "SPECULA_QUOTA_7D",
+            "SPECULA_QUOTA_MAX_WAITS",
+            "SPECULA_CLAUDE_ALIAS",
+            "SPECULA_MODEL",
+            "SPECULA_EFFORT",
+            phaselib.BYOM_PATH_ENV,
+            "CLAUDE_ALIAS",
+            "CLAUDE_EFFORT",
+            "SPECULA_SOURCE_SNAPSHOT",
+            "GIT_CEILING_DIRECTORIES",
+            resumelib.INVOCATION_ENV,
+            resumelib.MANUAL_ENV,
+            resumelib.FRESH_ENV,
+            resource_summary.RESOURCE_INVOCATION_ENV,
+            resource_summary.RESOURCE_ROOT_ENV,
+            resource_summary.RESOURCE_PHASE_ENV,
+        ):
+            self.set_env(var, str(self.run_dir) if var == "SPECULA_RUN_DIR" else None)
+
+    def tmp(self) -> Path:
+        d = tempfile.TemporaryDirectory()
+        self.addCleanup(d.cleanup)
+        return Path(d.name).resolve()
+
+    def patch_attr(self, module: Any, attr: str, value: Any) -> None:
+        old = getattr(module, attr)
+
+        def restore() -> None:
+            setattr(module, attr, old)
+
+        self.addCleanup(restore)
+        setattr(module, attr, value)
+
+    def set_env(self, var: str, value: str | None) -> None:
+        old = os.environ.get(var)
+
+        def restore() -> None:
+            if old is None:
+                os.environ.pop(var, None)
+            else:
+                os.environ[var] = old
+
+        self.addCleanup(restore)
+        if value is None:
+            os.environ.pop(var, None)
+        else:
+            os.environ[var] = value
+
+    def work_dir(self, name: str = NAME) -> Path:
+        return self.run_dir / name / ".specula-output"
+
+    def seed(self, inputs: list[str], name: str = NAME) -> None:
+        for rel in inputs:
+            p = self.work_dir(name) / rel
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text("seeded\n")  # non-empty: some gates check st_size > 0
+
+    def artifact_flag(self) -> str:
+        repo = self.tmp() / "repo"
+        repo.mkdir()
+        return f"--artifact={repo}"
+
+    def run_phase(self, key: str, args: list[str]) -> tuple[int, str]:
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            rc = phaselib.PHASES[key].run(args)
+        return rc, buf.getvalue()
+
+    def dry_run(self, spec: PhaseSpec, extra: list[str] | None = None, name: str = NAME) -> tuple[int, str]:
+        self.seed(spec["inputs"], name)
+        args = ["--dry-run", *(extra or [])]
+        if spec["artifact"]:
+            args.append(self.artifact_flag())
+        args.append(name)
+        return self.run_phase(spec["key"], args)
+
+
+class TestDirectExecution(unittest.TestCase):
+    def test_clean_path_invocation_bootstraps_package_imports(self) -> None:
+        with tempfile.TemporaryDirectory() as cwd:
+            env = os.environ.copy()
+            env.pop("PYTHONPATH", None)
+            env["PYTHONNOUSERSITE"] = "1"
+            proc = subprocess.run(
+                [sys.executable, "-S", str(SRC / "specula" / "phaselib.py"), "bug_confirmation", "--help"],
+                cwd=cwd,
+                env=env,
+                capture_output=True,
+                text=True,
+            )
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("Bug confirmation", proc.stdout)
+
+    def test_path_invocation_shares_resource_recorder_with_confirmation_workers(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            run_dir = root / "run"
+            work_dir = run_dir / NAME / ".specula-output"
+            spec_dir = work_dir / "spec"
+            spec_dir.mkdir(parents=True)
+            (spec_dir / "bug-report.md").write_text("# Bug report\n")
+            (work_dir / "modeling-brief.md").write_text("# Modeling brief\n")
+            artifact = root / "artifact"
+            artifact.mkdir()
+            fake_bin = root / "bin"
+            fake_bin.mkdir()
+            marker = root / "claude-called"
+            fake_claude = fake_bin / "claude"
+            fake_claude.write_text('#!/bin/sh\nprintf "called\\n" > "$FAKE_CLAUDE_MARKER"\nexit 9\n')
+            fake_claude.chmod(0o755)
+            invocation_id = "e" * 32
+            record_path = work_dir / resource_summary.INVOCATION_DIRNAME / f"{invocation_id}.json"
+            env = os.environ.copy()
+            env["PATH"] = f"{fake_bin}{os.pathsep}{env.get('PATH', '')}"
+            env["FAKE_CLAUDE_MARKER"] = str(marker)
+            env["SPECULA_RUN_DIR"] = str(run_dir)
+            env["SPECULA_SANDBOX"] = "off"
+            env[resource_summary.RESOURCE_ROOT_ENV] = str(run_dir)
+            env[resource_summary.RESOURCE_INVOCATION_ENV] = invocation_id
+            env[resource_summary.RESOURCE_PHASE_ENV] = "phase4a"
+
+            proc = subprocess.run(
+                [
+                    sys.executable,
+                    str(SRC / "specula" / "phaselib.py"),
+                    "bug_confirmation",
+                    "--agent=claude-code",
+                    "--policy-retries=0",
+                    "--transient-resumes=0",
+                    f"--artifact={artifact}",
+                    NAME,
+                ],
+                cwd=root,
+                env=env,
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+
+            self.assertNotEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+            self.assertTrue(marker.is_file())
+            record = json.loads(record_path.read_text())
+            self.assertEqual(record["status"], "completed")
+            self.assertFalse(record["usage_complete"])
+            self.assertEqual(record["usage"], [])
+
+
+class TestPreconditionGate(PhaseCase):
+    """Missing inputs -> the phase's fail message on stdout + exit 1, before any
+    agent is launched."""
+
+    def test_each_phase_gate_fails_without_inputs(self) -> None:
+        for spec in PHASES:
+            with self.subTest(phase=spec["key"]):
+                rc, out = self.run_phase(spec["key"], [NAME])  # no inputs, no --artifact
+                self.assertEqual(rc, 1, out)
+                self.assertIn(spec["fail"], out)  # the phase's own, distinct fail message
+                self.assertNotIn("[DRY RUN]", out)  # gate stops before the launch loop
+
+    def test_index_write_error_does_not_change_phase_result(self) -> None:
+        err = io.StringIO()
+        with (
+            mock.patch.object(phaselib, "write_target_index", side_effect=OSError("disk full")),
+            contextlib.redirect_stderr(err),
+        ):
+            rc, out = self.run_phase("code_analysis", [NAME])
+
+        self.assertEqual(rc, 1, out)
+        self.assertIn(BY_KEY["code_analysis"]["fail"], out)
+        self.assertIn("cannot update output index", err.getvalue())
+
+    def test_byom_spec_generation_does_not_require_phase1_output(self) -> None:
+        supplied = self.tmp() / "Model.tla"
+        supplied.write_text("---- MODULE Model ----\n====\n")
+        self.set_env(phaselib.BYOM_PATH_ENV, str(supplied))
+
+        rc, out = self.run_phase("spec_generation", ["--check", self.artifact_flag(), NAME])
+
+        self.assertEqual(rc, 0, out)
+        self.assertIn("BYOM input OK", out)
+        self.assertNotIn("MISSING modeling-brief.md", out)
+
+
+class TestCheckOnly(PhaseCase):
+    """--check with prerequisites satisfied -> the ok message + exit 0, no launch."""
+
+    def test_each_phase_check_ok(self) -> None:
+        for spec in PHASES:
+            with self.subTest(phase=spec["key"]):
+                self.seed(spec["inputs"])
+                args = ["--check"]
+                if spec["artifact"]:
+                    args.append(self.artifact_flag())
+                args.append(NAME)
+                rc, out = self.run_phase(spec["key"], args)
+                self.assertEqual(rc, 0, out)
+                self.assertIn(spec["ok"], out)
+                self.assertNotIn("[DRY RUN]", out)
+                self.assertFalse((self.work_dir() / "index.md").exists())
+
+    def test_each_artifact_phase_expands_home_directory(self) -> None:
+        home = self.tmp()
+        repo = home / "cass-operator"
+        repo.mkdir()
+        self.set_env("HOME", str(home))
+
+        for spec in PHASES:
+            if not spec["artifact"]:
+                continue
+            with self.subTest(phase=spec["key"]):
+                self.seed(spec["inputs"])
+                rc, out = self.run_phase(spec["key"], ["--check", "--artifact=~/cass-operator", NAME])
+                self.assertEqual(rc, 0, out)
+                self.assertIn(spec["ok"], out)
+
+    def test_validation_check_remains_a_shallow_preflight(self) -> None:
+        spec_dir = self.work_dir() / "spec"
+        spec_dir.mkdir(parents=True)
+        for name in ("base.tla", "MC.tla", "Trace.tla", "instrumentation-spec.md"):
+            (spec_dir / name).touch()
+
+        rc, out = self.run_phase("spec_validation", ["--check", self.artifact_flag(), NAME])
+
+        self.assertEqual(rc, 0, out)
+        self.assertIn("specs OK (0L)", out)
+        self.assertIn("traces WARN (0 ndjson files)", out)
+        self.assertIn("Required path checks passed; review any warnings above.", out)
+
+
+class TestDryRunCommand(PhaseCase):
+    """The dry-run adapter command line + the assembled prompt file."""
+
+    def test_each_phase_command_and_prompt(self) -> None:
+        adapter = phaselib.LAUNCH_DIR / "adapters" / "claude-code.sh"
+        for spec in PHASES:
+            with self.subTest(phase=spec["key"]):
+                # bug_confirmation now defaults to parallel per-finding; the
+                # single-agent adapter command this test pins is the
+                # --legacy-confirm path (parallel default has its own test below).
+                extra = ["--legacy-confirm"] if spec["key"] == "bug_confirmation" else None
+                rc, out = self.dry_run(spec, extra=extra)
+                self.assertEqual(rc, 0, out)
+
+                wd = self.work_dir()
+                log = wd / spec["log"]
+                prompt = wd / spec["prompt"]
+
+                # the [DRY RUN] adapter line, piece by piece
+                self.assertIn("[DRY RUN]", out)
+                self.assertIn(str(adapter), out)
+                self.assertIn(f"{spec['flag']}=<prompt>", out)  # --prompt vs --prompt-file quirk
+                self.assertIn("--max-turns=0", out)
+                self.assertIn("--effort=max", out)  # Claude phase safety default
+                self.assertIn(f"--log={log}", out)
+                self.assertIn("--background", out)
+                self.assertIn(f"Prompt saved: {prompt}", out)
+
+                # the prompt file the agent would receive
+                self.assertTrue(prompt.is_file(), "prompt file not written")
+                body = prompt.read_text()
+                self.assertIn(f"**{spec['skill']}**", body)  # standalone installed skill ID
+                self.assertNotIn(f"${spec['skill']}", body)
+                self.assertNotIn(f"${CODEX_PLUGIN_NAME}:{spec['skill']}", body)
+                self.assertNotIn("<!-- specula-skill:", body)
+                self.assertNotIn("/skills/", body)
+                self.assertNotIn(".claude/skills", body)
+                self.assertIn(str(wd / spec["out"]), body)  # a key output/inputs path
+
+    def test_codex_prompt_materializes_exactly_one_installed_id(self) -> None:
+        spec = BY_KEY["code_analysis"]
+        for plugin_enabled in (False, True):
+            with (
+                self.subTest(plugin_enabled=plugin_enabled),
+                mock.patch(
+                    "specula.skill_refs._codex_plugin_enabled",
+                    return_value=plugin_enabled,
+                ),
+            ):
+                rc, out = self.dry_run(spec, extra=["--agent=codex"])
+                self.assertEqual(rc, 0, out)
+                body = (self.work_dir() / spec["prompt"]).read_text()
+                selected = f"${CODEX_PLUGIN_NAME}:{spec['skill']}" if plugin_enabled else f"${spec['skill']}"
+                rejected = f"${spec['skill']}" if plugin_enabled else f"${CODEX_PLUGIN_NAME}:{spec['skill']}"
+                self.assertIn(selected, body)
+                self.assertNotIn(rejected, body)
+                self.assertNotIn("<!-- specula-skill:", body)
+
+    def test_local_skill_adapter_prompt_includes_skill_file_path(self) -> None:
+        spec = BY_KEY["code_analysis"]
+        for adapter in ("opencode", "pi"):
+            with self.subTest(adapter=adapter):
+                rc, out = self.dry_run(spec, extra=[f"--agent={adapter}"])
+                self.assertEqual(rc, 0, out)
+                body = (self.work_dir() / spec["prompt"]).read_text()
+
+                self.assertIn("**code-analysis**", body)
+                self.assertIn("/skills/code_analysis/SKILL.md", body)
+                self.assertIn("read the local Specula skill file", body)
+                self.assertNotIn("<!-- specula-skill:", body)
+
+    def test_bug_confirmation_defaults_to_parallel(self) -> None:
+        # No --legacy-confirm: Phase 4a runs parallel per-finding confirmation
+        # (confirmlib), NOT the single-agent adapter launch.
+        rc, out = self.dry_run(BY_KEY["bug_confirmation"])
+        self.assertEqual(rc, 0, out)
+        self.assertIn("Max parallel: 4", out)
+        self.assertIn("Parallel confirmation", out)
+        self.assertIn("max_parallel=4", out)
+        self.assertNotIn("--background", out)  # not the single-agent _launch command
+
+    def test_bug_confirmation_explicit_one_is_a_hard_limit(self) -> None:
+        rc, out = self.dry_run(BY_KEY["bug_confirmation"], extra=["--max-parallel=1"])
+        self.assertEqual(rc, 0, out)
+        self.assertIn("Max parallel: 1", out)
+        self.assertIn("Parallel confirmation", out)
+        self.assertIn("max_parallel=1", out)
+
+    def test_bug_confirmation_legacy_default_stays_one(self) -> None:
+        rc, out = self.dry_run(BY_KEY["bug_confirmation"], extra=["--legacy-confirm"])
+        self.assertEqual(rc, 0, out)
+        self.assertIn("Max parallel: 1", out)
+        self.assertNotIn("Parallel confirmation", out)
+
+    def test_bug_confirmation_legacy_prompt_has_canonical_report_contract(self) -> None:
+        rc, out = self.dry_run(BY_KEY["bug_confirmation"], extra=["--legacy-confirm"])
+        self.assertEqual(rc, 0, out)
+        body = (self.work_dir() / ".bug-confirmation-prompt.md").read_text()
+        self.assertIn("Dispositions: <N> total =", body)
+        self.assertIn("<I> incomplete + <DEF> deferred", body)
+        self.assertIn("| Entry | Finding | Status | Counts as final bug? |", body)
+        self.assertIn("## Entry N: <title>", body)
+        self.assertIn("Number sections consecutively from 1", body)
+        self.assertIn("exactly one row and one section for each entry", body)
+
+    def test_bug_classification_uses_current_phase4_status_contract(self) -> None:
+        rc, out = self.dry_run(BY_KEY["bug_classification"])
+        self.assertEqual(rc, 0, out)
+        body = (self.work_dir() / ".bug-classification-prompt.md").read_text()
+        self.assertIn(str(self.work_dir() / "bug-severity.md"), body)
+        self.assertIn(str(self.work_dir() / ".summary-findings.md"), body)
+        self.assertLess(body.index("bug-severity.md"), body.index(".summary-findings.md"))
+        self.assertIn("Complete and validate bug-severity.md before starting .summary-findings.md", body)
+        self.assertIn("must not contain severity classifications, internal reproduction levels", body)
+        for status in (
+            "REPRODUCED",
+            "ENV_LIMITED",
+            "MASKED",
+            "FALSE POSITIVE",
+            "NEEDS MORE INFO",
+            "DROPPED",
+            "PENDING REPAIR",
+            "DEFERRED",
+            "INCOMPLETE",
+        ):
+            self.assertIn(status, body)
+
+        guide = (SRC.parent / "skills" / "bug-classification" / "guide.md").read_text()
+        self.assertNotIn("REPRODUCTION FAILED", guide)
+        self.assertIn("- Total entries: N", guide)
+        self.assertIn("- Reproduced bugs: N", guide)
+        self.assertIn("- Severity-bearing findings: N", guide)
+        self.assertIn("- No-severity dispositions: N", guide)
+        self.assertIn("## Findings summary", guide)
+        self.assertIn("## Findings", guide)
+        self.assertIn("## Validation limits", guide)
+        self.assertIn("Do not include Severity labels", guide)
+        self.assertIn("Do not include internal reproduction tiers or levels", guide)
+        self.assertIn("Do not include URLs, Markdown links", guide)
+
+    def test_confirmation_docs_have_no_recheck_pass_and_allow_deferred_terminal(self) -> None:
+        skill = SRC.parent / "skills" / "bug-confirmation"
+        reproduction = (skill / "phases" / "02-reproduction.md").read_text()
+        self.assertNotIn("returns it to you in re-check", reproduction)
+
+        repair_format = (skill / "references" / "repair-request-format.md").read_text()
+        self.assertIn("OPEN | IN_REPAIR | CONSUMED | DEFERRED", repair_format)
+        self.assertIn("| `OPEN` → `DEFERRED` | pipeline orchestrator |", repair_format)
+        self.assertIn("Terminal states: `CONSUMED`", repair_format)
+
+    def test_byom_wraps_phase2_phase2_5_and_final_reporting_prompts(self) -> None:
+        supplied = self.tmp() / "provided"
+        supplied.mkdir()
+        self.set_env(phaselib.BYOM_PATH_ENV, str(supplied))
+        self.seed(["modeling-brief.md"])
+        (self.work_dir() / ".prompt-extra.md").write_text("Use the supplied replay command.\n")
+
+        for key, expected in (
+            ("spec_generation", "Phase 2 responsibilities"),
+            ("harness_generation", "Phase 2.5 responsibilities"),
+            ("bug_classification", "BYOM Modification Report"),
+        ):
+            with self.subTest(key=key):
+                rc, out = self.dry_run(BY_KEY[key])
+                self.assertEqual(rc, 0, out)
+                body = (self.work_dir() / BY_KEY[key]["prompt"]).read_text()
+                self.assertIn("**byom**", body)
+                self.assertIn(str(supplied), body)
+                self.assertIn(expected, body)
+                self.assertIn("Use the supplied replay command.", body)
+
+        classification = (self.work_dir() / ".bug-classification-prompt.md").read_text()
+        self.assertIn("**bug-classification**", classification)
+        self.assertIn("byom-modification-report.md", classification)
+
+    def test_adhoc_target_scopes_every_phase_prompt_to_the_check(self) -> None:
+        target = self.tmp() / "hdfs-adhoc-10.yaml"
+        target.write_text("id: hdfs-adhoc-10\n")
+        self.set_env(phaselib.ADHOC_TARGET_ENV, str(target))
+        self.seed(["modeling-brief.md"])
+        (self.work_dir() / ".prompt-extra.md").write_text("Use the supplied replay command.\n")
+
+        rc, out = self.dry_run(BY_KEY["code_analysis"])
+        self.assertEqual(rc, 0, out)
+        analysis = (self.work_dir() / BY_KEY["code_analysis"]["prompt"]).read_text()
+        self.assertIn("# Code Analysis Task", analysis)  # Phase 1 keeps the native prompt
+        self.assertIn("**code-analysis**", analysis)
+        self.assertIn("**adhoc-coordination**", analysis)
+        self.assertIn("## Ad Hoc Coordination Target", analysis)
+        self.assertIn("Phase 1: Code Analysis", analysis)
+        self.assertIn(str(target), analysis)
+        self.assertIn("Use the supplied replay command.", analysis)
+
+        for key, section in (
+            ("spec_generation", "Phase 2: Spec Generation"),
+            ("harness_generation", "Phase 2.5: Harness Generation"),
+            ("bug_classification", "Phase 4b: Classification and the Ad Hoc Result"),
+        ):
+            with self.subTest(key=key):
+                rc, out = self.dry_run(BY_KEY[key])
+                self.assertEqual(rc, 0, out)
+                body = (self.work_dir() / BY_KEY[key]["prompt"]).read_text()
+                self.assertIn("## Ad Hoc Coordination Target", body)
+                self.assertIn(section, body)
+                self.assertIn(str(target), body)
+                if key != "bug_classification":  # Phase 4b appends guidance only under BYOM
+                    self.assertIn("Use the supplied replay command.", body)
+
+        classification = (self.work_dir() / ".bug-classification-prompt.md").read_text()
+        self.assertIn(phaselib.ADHOC_RESULT_FILENAME, classification)
+
+    def test_adhoc_prompt_section_is_empty_outside_ad_hoc_mode(self) -> None:
+        self.set_env(phaselib.ADHOC_TARGET_ENV, "")
+        self.assertEqual(phaselib._adhoc_prompt_section("spec_generation"), "")
+
+    def test_adhoc_result_issue_checks_the_result_shape(self) -> None:
+        result = self.tmp() / phaselib.ADHOC_RESULT_FILENAME
+        self.assertEqual(phaselib.adhoc_result_issue(result), "missing")
+        result.write_text("{")
+        self.assertIn("is not JSON", phaselib.adhoc_result_issue(result) or "")
+        result.write_text(json.dumps({"target": "t", "verdict": "MAYBE", "bounds": []}))
+        self.assertIn("verdict 'MAYBE'", phaselib.adhoc_result_issue(result) or "")
+        result.write_text(json.dumps({"target": "t", "verdict": "NOT_REACHED_BOUNDED", "bounds": {}}))
+        self.assertEqual(phaselib.adhoc_result_issue(result), "bounds is not a list")
+        result.write_text(json.dumps({"target": "t", "verdict": "NOT_REACHED_BOUNDED", "bounds": []}))
+        self.assertIsNone(phaselib.adhoc_result_issue(result))
+
+    def test_ordinary_phase_default_max_parallel_stays_one(self) -> None:
+        rc, out = self.dry_run(BY_KEY["code_analysis"])
+        self.assertEqual(rc, 0, out)
+        self.assertIn("Max parallel: 1", out)
+
+    def test_bug_confirmation_forwards_max_turns(self) -> None:
+        from specula import confirmlib
+
+        seen: list[tuple[int, str]] = []
+
+        def fake_confirmation(cfg: confirmlib.ConfirmConfig, **_kwargs: object) -> int:
+            seen.append((cfg.max_parallel, cfg.max_turns))
+            return 0
+
+        self.patch_attr(confirmlib, "run_parallel_confirmation", fake_confirmation)
+        rc, out = self.dry_run(
+            BY_KEY["bug_confirmation"],
+            extra=["--max-parallel=1", "--max-turns=7"],
+        )
+        self.assertEqual(rc, 0, out)
+        self.assertEqual(seen, [(1, "7")])
+
+    def test_max_turns_forwarded_verbatim(self) -> None:
+        rc, out = self.dry_run(BY_KEY["code_analysis"], extra=["--max-turns=7"])
+        self.assertEqual(rc, 0, out)
+        self.assertIn("--max-turns=7", out)
+
+    def test_model_effort_and_explicit_empty_visible_in_dry_run(self) -> None:
+        rc, out = self.dry_run(
+            BY_KEY["code_analysis"],
+            extra=["--model=gpt-5.5", "--effort=high"],
+        )
+        self.assertEqual(rc, 0, out)
+        self.assertIn("--model=gpt-5.5", out)
+        self.assertIn("--effort=high", out)
+        self.assertNotIn("--effort=max", out)
+
+        self.set_env("SPECULA_MODEL", "env-model")
+        self.set_env("SPECULA_EFFORT", "low")
+        rc, out = self.dry_run(
+            BY_KEY["code_analysis"],
+            extra=["--model=", "--effort="],
+        )
+        self.assertEqual(rc, 0, out)
+        self.assertIn("--model= ", out)
+        self.assertIn("--effort= ", out)
+        self.assertNotIn("env-model", out)
+        self.assertNotIn("--effort=low", out)
+        self.assertNotIn("--effort=max", out)
+
+    def test_bug_classification_rejects_artifact(self) -> None:
+        rc, out = self.run_phase("bug_classification", ["--artifact=/x", NAME])
+        self.assertEqual(rc, 1)
+        self.assertEqual(
+            out,
+            "ERROR: classify does not accept --artifact; this phase reads the existing "
+            ".specula-output/confirmed-bugs.md and does not inspect source code.\n",
+        )
+
+
+class TestRepairMode(PhaseCase):
+    """Spec-validation repair mode swaps the prompt template and the log/prompt
+    filenames (but keeps the canonical .pid)."""
+
+    def test_spec_validation_repair(self) -> None:
+        rc, out = self.dry_run(BY_KEY["spec_validation"], extra=["--repair"])
+        self.assertEqual(rc, 0, out)
+        wd = self.work_dir()
+        self.assertIn(f"--log={wd / 'spec-repair.log'}", out)
+        body = (wd / ".spec-repair-prompt.md").read_text()
+        self.assertIn("REPAIR MODE", body)
+        self.assertIn("request's cited evidence", body)
+        self.assertIn("do not optimize merely for making the artifact disappear", body)
+        for skill in ("bug-confirmation", "validation-workflow", "tla-trace-workflow", "tla-checking-workflow"):
+            self.assertIn(f"**{skill}**", body)
+            self.assertNotIn(f"${skill}", body)
+            self.assertNotIn(f"${CODEX_PLUGIN_NAME}:{skill}", body)
+        self.assertNotIn("<!-- specula-skill:", body)
+        self.assertNotIn("/skills/", body)
+        self.assertNotIn(".claude/skills", body)
+
+
+class TestArgErrors(PhaseCase):
+    def test_unknown_agent(self) -> None:
+        rc, out = self.run_phase("code_analysis", ["--agent=bogus", NAME])
+        self.assertEqual(rc, 1)
+        self.assertIn("Unknown agent 'bogus'", out)
+
+    def test_unknown_option(self) -> None:
+        rc, out = self.run_phase("code_analysis", ["--bogus", NAME])
+        self.assertEqual(rc, 1)
+        self.assertIn("Unknown option", out)
+
+    def test_bad_max_parallel(self) -> None:
+        rc, out = self.run_phase("code_analysis", ["--max-parallel=abc", self.artifact_flag(), NAME])
+        self.assertEqual(rc, 1)
+        self.assertIn("Invalid --max-parallel", out)
+
+    def test_nonpositive_max_parallel(self) -> None:
+        for value in ("0", "-1"):
+            with self.subTest(value=value):
+                rc, out = self.run_phase("code_analysis", [f"--max-parallel={value}", self.artifact_flag(), NAME])
+                self.assertEqual(rc, 1)
+                self.assertIn("expected an integer >= 1", out)
+
+    def test_missing_artifact_directory_is_rejected(self) -> None:
+        missing = self.tmp() / "missing"
+        rc, out = self.run_phase("code_analysis", ["--check", f"--artifact={missing}", NAME])
+        self.assertEqual(rc, 1)
+        self.assertIn("--artifact must be an existing directory", out)
+
+    def test_empty_artifact_value_is_rejected(self) -> None:
+        rc, out = self.run_phase("code_analysis", ["--check", "--artifact=", NAME])
+        self.assertEqual(rc, 1)
+        self.assertIn("--artifact must be an existing directory", out)
+
+    def test_artifact_expansion_failure_uses_existing_error_contract(self) -> None:
+        with mock.patch.object(Path, "expanduser", side_effect=RuntimeError("home unavailable")):
+            rc, out = self.run_phase("code_analysis", ["--check", "--artifact=~/repo", NAME])
+
+        self.assertEqual(rc, 1)
+        self.assertEqual(out, "ERROR: --artifact must be an existing directory: ~/repo\n")
+
+    def test_bug_confirmation_rejects_invalid_rounds(self) -> None:
+        for value in ("abc", "0", "-1", "6"):
+            with self.subTest(value=value):
+                rc, out = self.run_phase("bug_confirmation", [f"--rounds={value}", NAME])
+                self.assertEqual(rc, 1)
+                self.assertIn("Invalid --rounds", out)
+                self.assertIn("integer from 1 to 5", out)
+
+    def test_bug_confirmation_accepts_round_five(self) -> None:
+        rc, out = self.dry_run(BY_KEY["bug_confirmation"], extra=["--rounds=5"])
+        self.assertEqual(rc, 0, out)
+
+    def test_bug_confirmation_rejects_legacy_debate_combination(self) -> None:
+        rc, out = self.run_phase("bug_confirmation", ["--legacy-confirm", "--debate", NAME])
+        self.assertEqual(rc, 1)
+        self.assertIn("--legacy-confirm and --debate cannot be used together", out)
+
+    def test_policy_retries_rejects_non_decimal_values(self) -> None:
+        for value in ("", "-1", "1.5", "bad", "+1"):
+            with self.subTest(value=value):
+                rc, out = self.run_phase("code_analysis", [f"--policy-retries={value}", NAME])
+                self.assertEqual(rc, 1)
+                self.assertIn("Invalid --policy-retries", out)
+                self.assertIn("non-negative integer", out)
+
+    def test_transient_resumes_rejects_non_decimal_values(self) -> None:
+        for value in ("", "-1", "1.5", "bad", "+1"):
+            with self.subTest(value=value):
+                rc, out = self.run_phase("code_analysis", [f"--transient-resumes={value}", NAME])
+                self.assertEqual(rc, 1)
+                self.assertIn("Invalid --transient-resumes", out)
+                self.assertIn("non-negative integer", out)
+
+    def test_help_prints_usage(self) -> None:
+        for spec in PHASES:
+            with self.subTest(phase=spec["key"]):
+                rc, out = self.run_phase(spec["key"], ["--help"])
+                self.assertEqual(rc, 0)
+                self.assertIn("Usage:", out)
+                self.assertIn(f"specula {PUBLIC_COMMANDS[spec['key']]}", out)
+                self.assertNotIn("bash scripts/", out)
+                self.assertNotIn("launch_", out)
+                self.assertIn("--model=NAME", out)
+                self.assertIn("--effort=LEVEL", out)
+                self.assertIn("--policy-retries=N", out)
+                self.assertIn("--transient-resumes=N", out)
+                self.assertIn("default: 20", out)
+
+
+class TestReactiveRateLimitWait(unittest.TestCase):
+    def test_non_claude_agent_uses_fixed_fallback_sleep(self) -> None:
+        phase = phaselib.Phase()
+        phase._rate_limit_agent = "codex"
+        out = io.StringIO()
+
+        with (
+            contextlib.redirect_stdout(out),
+            mock.patch.object(quota, "wait_for_quota") as wait_for_quota,
+            mock.patch("specula.phaselib.time.sleep") as sleep,
+        ):
+            phase._wait_for_rate_limit()
+
+        wait_for_quota.assert_not_called()
+        sleep.assert_called_once_with(quota.RATE_LIMIT_FALLBACK_SECONDS)
+        self.assertIn("No quota reset endpoint for codex", out.getvalue())
+
+    def test_claude_agent_uses_quota_wait(self) -> None:
+        phase = phaselib.Phase()
+        phase._rate_limit_agent = "claude-code"
+
+        with (
+            mock.patch.object(quota, "wait_for_quota") as wait_for_quota,
+            mock.patch("specula.phaselib.time.sleep") as sleep,
+        ):
+            phase._wait_for_rate_limit()
+
+        wait_for_quota.assert_called_once()
+        self.assertTrue(wait_for_quota.call_args.kwargs["reactive"])
+        sleep.assert_not_called()
+
+
+class TestBugConfirmationAlternate(PhaseCase):
+    def _patch_confirmation(self, codes: list[int]) -> list[tuple[int, str]]:
+        from specula import confirmlib
+
+        calls: list[tuple[int, str]] = []
+
+        def fake_confirmation(cfg: confirmlib.ConfirmConfig, **_kwargs: object) -> int:
+            calls.append((cfg.max_parallel, cfg.max_turns))
+            return codes[min(len(calls) - 1, len(codes) - 1)]
+
+        self.patch_attr(confirmlib, "run_parallel_confirmation", fake_confirmation)
+        return calls
+
+    def test_permanent_failure_propagates(self) -> None:
+        calls = self._patch_confirmation([9])
+        rc, out = self.dry_run(BY_KEY["bug_confirmation"])
+        self.assertEqual(rc, 9, out)
+        self.assertEqual(calls, [(4, "0")])
+
+    def test_zero_agent_confirmation_records_an_empty_usage_list(self) -> None:
+        self._patch_confirmation([0])
+        invocation_id = "a" * 32
+        recorder = resource_summary.ResourceInvocationRecorder(
+            self.run_dir,
+            "phase4a",
+            invocation_id,
+        )
+        self.patch_attr(phaselib, "_RESOURCE_RECORDER", recorder)
+
+        rc, out = self.dry_run(BY_KEY["bug_confirmation"])
+
+        self.assertEqual(rc, 0, out)
+        record_path = self.work_dir() / resource_summary.INVOCATION_DIRNAME / f"{invocation_id}.json"
+        record = json.loads(record_path.read_text())
+        self.assertEqual(record["status"], "completed")
+        self.assertTrue(record["usage_complete"])
+        self.assertEqual(record["usage"], [])
+
+    def test_rate_limit_retries_current_target(self) -> None:
+        calls = self._patch_confirmation([quota.RATE_LIMIT_RC, 0])
+        waits: list[int] = []
+        invocation_id = "8" * 32
+        recorder = resource_summary.ResourceInvocationRecorder(
+            self.run_dir,
+            "phase4a",
+            invocation_id,
+        )
+        self.patch_attr(phaselib, "_RESOURCE_RECORDER", recorder)
+        self.patch_attr(phaselib.Phase, "_wait_for_rate_limit", lambda _self: waits.append(1))
+        self.set_env("SPECULA_RATE_LIMIT_REACTIVE", "1")
+        self.set_env("SPECULA_RATE_LIMIT_RETRIES", "1")
+        clock = mock.Mock()
+        clock.monotonic.side_effect = [0.0, 1.0, 100.0, 104.0]
+        with mock.patch.object(resource_summary, "time", clock):
+            rc, out = self.dry_run(BY_KEY["bug_confirmation"])
+        self.assertEqual(rc, 0, out)
+        self.assertEqual(len(calls), 2)
+        self.assertEqual(waits, [1])
+        self.assertIn("Rate limited: waiting before retrying", out)
+        record_path = self.work_dir() / resource_summary.INVOCATION_DIRNAME / f"{invocation_id}.json"
+        self.assertEqual(json.loads(record_path.read_text())["elapsed_seconds"], 5.0)
+
+    def test_rate_limit_retries_are_bounded(self) -> None:
+        calls = self._patch_confirmation([quota.RATE_LIMIT_RC])
+        waits: list[int] = []
+        self.patch_attr(phaselib.Phase, "_wait_for_rate_limit", lambda _self: waits.append(1))
+        self.set_env("SPECULA_RATE_LIMIT_REACTIVE", "1")
+        self.set_env("SPECULA_RATE_LIMIT_RETRIES", "1")
+        rc, out = self.dry_run(BY_KEY["bug_confirmation"])
+        self.assertEqual(rc, quota.RATE_LIMIT_RC, out)
+        self.assertEqual(len(calls), 2)
+        self.assertEqual(waits, [1])
+
+    def test_confirmation_arms_runtime_lease_only_for_an_actual_outer_retry(self) -> None:
+        from specula import confirmlib
+
+        retained: list[bool] = []
+
+        def fake_confirmation(
+            _cfg: confirmlib.ConfirmConfig,
+            *,
+            retain_rate_limited_state: bool = False,
+        ) -> int:
+            retained.append(retain_rate_limited_state)
+            return quota.RATE_LIMIT_RC
+
+        self.patch_attr(confirmlib, "run_parallel_confirmation", fake_confirmation)
+        self.patch_attr(phaselib.Phase, "_wait_for_rate_limit", lambda _self: None)
+        self.set_env("SPECULA_RATE_LIMIT_REACTIVE", "1")
+        self.set_env("SPECULA_RATE_LIMIT_RETRIES", "1")
+
+        rc, out = self.dry_run(BY_KEY["bug_confirmation"])
+
+        self.assertEqual(rc, quota.RATE_LIMIT_RC, out)
+        self.assertEqual(retained, [True, False])
+
+    def test_confirmation_does_not_arm_runtime_lease_without_reactive_retry(self) -> None:
+        from specula import confirmlib
+
+        retained: list[bool] = []
+
+        def fake_confirmation(
+            _cfg: confirmlib.ConfirmConfig,
+            *,
+            retain_rate_limited_state: bool = False,
+        ) -> int:
+            retained.append(retain_rate_limited_state)
+            return quota.RATE_LIMIT_RC
+
+        self.patch_attr(confirmlib, "run_parallel_confirmation", fake_confirmation)
+
+        rc, out = self.dry_run(BY_KEY["bug_confirmation"])
+
+        self.assertEqual(rc, quota.RATE_LIMIT_RC, out)
+        self.assertEqual(retained, [False])
+
+    def test_confirmation_clears_retained_runtime_when_quota_wait_aborts(self) -> None:
+        from specula import confirmlib
+
+        def fake_confirmation(
+            _cfg: confirmlib.ConfirmConfig,
+            *,
+            retain_rate_limited_state: bool = False,
+        ) -> int:
+            self.assertTrue(retain_rate_limited_state)
+            return quota.RATE_LIMIT_RC
+
+        def abort_wait(_self: phaselib.Phase) -> None:
+            raise RuntimeError("quota wait aborted")
+
+        self.patch_attr(confirmlib, "run_parallel_confirmation", fake_confirmation)
+        self.patch_attr(phaselib.Phase, "_wait_for_rate_limit", abort_wait)
+        self.set_env("SPECULA_RATE_LIMIT_REACTIVE", "1")
+        self.set_env("SPECULA_RATE_LIMIT_RETRIES", "1")
+
+        with (
+            mock.patch.object(confirmlib.ConfirmConfig, "clear_retry_runtime", autospec=True) as clear,
+            self.assertRaisesRegex(RuntimeError, "quota wait aborted"),
+        ):
+            self.dry_run(BY_KEY["bug_confirmation"])
+
+        clear.assert_called_once()
+
+    def test_policy_retry_budget_reaches_parallel_confirmation(self) -> None:
+        from specula import confirmlib
+
+        seen: list[int] = []
+
+        def fake_confirmation(cfg: confirmlib.ConfirmConfig, **_kwargs: object) -> int:
+            seen.append(cfg.policy_retries)
+            return 0
+
+        self.patch_attr(confirmlib, "run_parallel_confirmation", fake_confirmation)
+        rc, out = self.dry_run(BY_KEY["bug_confirmation"], extra=["--policy-retries=100"])
+
+        self.assertEqual(rc, 0, out)
+        self.assertEqual(seen, [100])
+
+    def test_successful_live_confirmation_requires_classification_prerequisites(self) -> None:
+        from specula import confirmlib
+
+        self.seed(BY_KEY["bug_confirmation"]["inputs"])
+        self.patch_attr(phaselib.Phase, "_acceptance", lambda _self, _ws, _names: None)
+
+        def fake_confirmation(cfg: confirmlib.ConfirmConfig, **_kwargs: object) -> int:
+            return 0
+
+        self.patch_attr(confirmlib, "run_parallel_confirmation", fake_confirmation)
+        rc, out = self.run_phase("bug_confirmation", [self.artifact_flag(), NAME])
+
+        self.assertEqual(rc, 1, out)
+        self.assertIn("confirmed-bugs MISSING", out)
+        self.assertIn("Handoff validation failures:", out)
+
+    def test_successful_live_confirmation_hands_nonempty_report_to_classification(self) -> None:
+        from specula import confirmlib
+
+        self.seed(BY_KEY["bug_confirmation"]["inputs"])
+        self.patch_attr(phaselib.Phase, "_acceptance", lambda _self, _ws, _names: None)
+
+        def fake_confirmation(cfg: confirmlib.ConfirmConfig, **_kwargs: object) -> int:
+            report = cfg.ws.work_dir(cfg.name) / "confirmed-bugs.md"
+            report.parent.mkdir(parents=True, exist_ok=True)
+            report.write_text("# Confirmed Bugs\n")
+            return 0
+
+        self.patch_attr(confirmlib, "run_parallel_confirmation", fake_confirmation)
+        rc, out = self.run_phase("bug_confirmation", [self.artifact_flag(), NAME])
+
+        self.assertEqual(rc, 0, out)
+        self.assertIn("confirmed-bugs OK", out)
+        index = (self.work_dir() / "index.md").read_text()
+        self.assertIn("[Confirmation report](confirmed-bugs.md)", index)
+
+
+class TestHandoffGate(PhaseCase):
+    def setUp(self) -> None:
+        super().setUp()
+        adapters = self.tmp() / "adapters"
+        adapters.mkdir()
+        self.patch_attr(phaselib, "LAUNCH_DIR", adapters.parent)
+        self.patch_attr(phaselib.Phase, "_acceptance", lambda _self, _ws, _names: None)
+        self.patch_attr(phaselib.Phase, "progress_config", ProgressConfig(poll_seconds=0.005))
+        self.set_env("SPECULA_PROGRESS", "off")
+        self.adapter = adapters / "fake.sh"
+
+    def write_adapter(self, body: str) -> None:
+        self.adapter.write_text("#!/usr/bin/env sh\nset -eu\n" + body)
+        self.adapter.chmod(0o755)
+
+    def run_analysis(
+        self,
+        targets: list[str] | None = None,
+        options: list[str] | None = None,
+    ) -> tuple[int, str]:
+        return self.run_phase(
+            "code_analysis",
+            [*(options or []), f"--agent={self.adapter.stem}", self.artifact_flag(), *(targets or [NAME])],
+        )
+
+    def test_zero_adapter_exit_without_brief_fails_the_analysis_handoff(self) -> None:
+        self.write_adapter(":\n")
+
+        rc, out = self.run_analysis()
+
+        self.assertEqual(rc, 1, out)
+        self.assertIn("Checking handoff to spec_generation...", out)
+        self.assertIn("MISSING modeling-brief.md", out)
+        self.assertIn("Handoff validation failures:", out)
+
+    def test_live_analysis_refreshes_human_index_after_success(self) -> None:
+        (self.run_dir / "pipeline.log").write_text("pipeline\n")
+        self.write_adapter(
+            'printf "brief\\n" > "$SPECULA_WORK_DIR/modeling-brief.md"\n'
+            'printf "analysis\\n" > "$SPECULA_WORK_DIR/analysis-report.md"\n'
+        )
+
+        rc, out = self.run_analysis()
+
+        self.assertEqual(rc, 0, out)
+        index = (self.work_dir() / "index.md").read_text()
+        self.assertIn("[Modeling brief](modeling-brief.md)", index)
+        self.assertIn("[Analysis report](analysis-report.md)", index)
+        self.assertIn("[pipeline.log](../../pipeline.log)", index)
+
+    def test_resume_completion_failure_keeps_completed_resource_record(self) -> None:
+        self.write_adapter('printf "brief\\n" > "$SPECULA_WORK_DIR/modeling-brief.md"\n')
+        invocation_id = "d" * 32
+        recorder = resource_summary.ResourceInvocationRecorder(
+            self.run_dir,
+            "phase1",
+            invocation_id,
+        )
+        self.patch_attr(phaselib, "_RESOURCE_RECORDER", recorder)
+        self.patch_attr(
+            resumelib,
+            "mark_completed",
+            mock.Mock(side_effect=resumelib.ResumeError("cannot complete call")),
+        )
+
+        rc, out = self.run_analysis()
+
+        self.assertEqual(rc, 1, out)
+        self.assertIn("ERROR: cannot complete call", out)
+        record_path = self.work_dir() / resource_summary.INVOCATION_DIRNAME / f"{invocation_id}.json"
+        record = json.loads(record_path.read_text())
+        self.assertEqual(record["status"], "completed")
+        self.assertGreaterEqual(record["elapsed_seconds"], 0.0)
+
+    def test_live_analysis_failure_keeps_partial_results_browsable(self) -> None:
+        self.write_adapter('printf "analysis\\n" > "$SPECULA_WORK_DIR/analysis-report.md"\nexit 9\n')
+
+        rc, out = self.run_analysis()
+
+        self.assertEqual(rc, 9, out)
+        index = (self.work_dir() / "index.md").read_text()
+        self.assertIn("Modeling brief: Not available", index)
+        self.assertIn("[Analysis report](analysis-report.md)", index)
+
+    def test_analysis_handoff_reuses_spec_generation_check(self) -> None:
+        calls: list[list[str]] = []
+
+        def check(_self: phaselib.SpecGenerationPhase, _ws: phaselib.Workspace, names: list[str]) -> bool:
+            calls.append(names)
+            return True
+
+        self.patch_attr(phaselib.SpecGenerationPhase, "check", check)
+        self.write_adapter(":\n")
+
+        rc, out = self.run_analysis()
+
+        self.assertEqual(rc, 0, out)
+        self.assertEqual(calls, [[NAME]])
+
+    def test_handoff_checks_only_successful_targets(self) -> None:
+        calls: list[list[str]] = []
+
+        def check(_self: phaselib.SpecGenerationPhase, _ws: phaselib.Workspace, names: list[str]) -> bool:
+            calls.append(names)
+            return True
+
+        self.patch_attr(phaselib.SpecGenerationPhase, "check", check)
+        self.write_adapter('name=$(basename "$(dirname "$SPECULA_WORK_DIR")")\n[ "$name" != failed ] || exit 9\n')
+
+        rc, out = self.run_analysis(["failed|g|Go|r", "passed|g|Go|r"])
+
+        self.assertEqual(rc, 9, out)
+        self.assertEqual(calls, [["passed"]])
+
+    def test_handoff_failures_are_attributed_per_target(self) -> None:
+        self.write_adapter(
+            'name=$(basename "$(dirname "$SPECULA_WORK_DIR")")\n'
+            '[ "$name" != passed ] || printf "brief\\n" > "$SPECULA_WORK_DIR/modeling-brief.md"\n'
+        )
+
+        rc, out = self.run_analysis(["missing|g|Go|r", "passed|g|Go|r"])
+
+        self.assertEqual(rc, 1, out)
+        self.assertIn("FAILED  missing: next-phase prerequisites not met", out)
+        self.assertNotIn("FAILED  passed: next-phase prerequisites not met", out)
+
+    def test_policy_block_with_complete_handoff_still_requires_continuation(self) -> None:
+        count = self.tmp() / "count"
+        handoff_calls: list[list[str]] = []
+
+        def check(_self: phaselib.SpecGenerationPhase, ws: phaselib.Workspace, names: list[str]) -> bool:
+            handoff_calls.append(names)
+            return all((ws.work_dir(name) / "modeling-brief.md").is_file() for name in names)
+
+        self.patch_attr(phaselib.SpecGenerationPhase, "check", check)
+        self.set_env("COUNT_FILE", str(count))
+        self.write_adapter(
+            'printf x >> "$COUNT_FILE"\n'
+            'printf "brief\\n" > "$SPECULA_WORK_DIR/modeling-brief.md"\n'
+            '[ "$(wc -c < "$COUNT_FILE")" -ne 1 ] || exit 76\n'
+        )
+
+        rc, out = self.run_analysis()
+
+        self.assertEqual(rc, 0, out)
+        self.assertEqual(count.read_text(), "xx")
+        self.assertEqual(handoff_calls, [[NAME]])
+        self.assertIn("retrying with a revised request (1/20)", out)
+
+    def test_repeated_policy_block_is_not_whitened_by_preexisting_handoff(self) -> None:
+        count = self.tmp() / "count"
+        brief = self.work_dir() / "modeling-brief.md"
+        brief.parent.mkdir(parents=True, exist_ok=True)
+        brief.write_text("stale brief\n")
+        self.set_env("COUNT_FILE", str(count))
+        self.write_adapter('printf x >> "$COUNT_FILE"\nexit 76\n')
+
+        rc, out = self.run_analysis(options=["--policy-retries=1"])
+
+        self.assertEqual(rc, POLICY_BLOCKED_RC, out)
+        self.assertEqual(count.read_text(), "xx")
+
+    def test_policy_block_continues_with_changed_prompt_in_same_workspace(self) -> None:
+        count = self.tmp() / "count"
+        captures = self.tmp()
+        self.set_env("COUNT_FILE", str(count))
+        self.set_env("CAPTURE_DIR", str(captures))
+        self.write_adapter(
+            'printf x >> "$COUNT_FILE"\n'
+            'attempt=$(wc -c < "$COUNT_FILE")\n'
+            'for arg do case "$arg" in --prompt-file=*) prompt=${arg#*=} ;; esac; done\n'
+            'cp "$prompt" "$CAPTURE_DIR/prompt-$attempt.md"\n'
+            'printf "%s\\n" "$SPECULA_WORK_DIR" >> "$CAPTURE_DIR/workspaces"\n'
+            '[ "$attempt" -ne 1 ] || exit 76\n'
+            'printf "brief\\n" > "$SPECULA_WORK_DIR/modeling-brief.md"\n'
+        )
+
+        rc, out = self.run_analysis()
+
+        self.assertEqual(rc, 0, out)
+        self.assertEqual(count.read_text(), "xx")
+        first = (captures / "prompt-1.md").read_text()
+        second = (captures / "prompt-2.md").read_text()
+        self.assertNotIn("Continue After Provider Policy Interruption", first)
+        self.assertIn("Continue After Provider Policy Interruption", second)
+        self.assertTrue(second.startswith(first.rstrip()))
+        self.assertEqual((captures / "workspaces").read_text().splitlines(), [str(self.work_dir())] * 2)
+        self.assertIn("retrying with a revised request (1/20)", out)
+
+    def test_default_policy_retry_budget_stops_after_twenty_continuations(self) -> None:
+        count = self.tmp() / "count"
+        self.set_env("COUNT_FILE", str(count))
+        self.write_adapter('printf x >> "$COUNT_FILE"\nexit 76\n')
+
+        rc, out = self.run_analysis()
+
+        self.assertEqual(rc, POLICY_BLOCKED_RC, out)
+        self.assertEqual(count.read_text(), "x" * 21)
+        self.assertIn("retrying with a revised request (20/20)", out)
+        self.assertNotIn("(21/20)", out)
+        self.assertIn(f"adapter exited {POLICY_BLOCKED_RC}", out)
+
+    def test_zero_policy_retries_disables_continuation(self) -> None:
+        count = self.tmp() / "count"
+        self.set_env("COUNT_FILE", str(count))
+        self.write_adapter('printf x >> "$COUNT_FILE"\nexit 76\n')
+
+        rc, out = self.run_analysis(options=["--policy-retries=0"])
+
+        self.assertEqual(rc, POLICY_BLOCKED_RC, out)
+        self.assertEqual(count.read_text(), "x")
+        self.assertNotIn("retrying with a revised request", out)
+
+    def test_transient_failure_resumes_exact_session_with_lightweight_prompt(self) -> None:
+        count = self.tmp() / "count"
+        captures = self.tmp()
+        self.set_env("COUNT_FILE", str(count))
+        self.set_env("CAPTURE_DIR", str(captures))
+        self.patch_attr(phaselib, "_transient_resume_delay", lambda _attempt: 0.0)
+        self.write_adapter(
+            'printf x >> "$COUNT_FILE"\n'
+            'attempt=$(wc -c < "$COUNT_FILE")\n'
+            'for arg do case "$arg" in '
+            "--prompt-file=*) prompt=${arg#*=} ;; "
+            "--log=*) log=${arg#*=} ;; "
+            "--resume-state=*) resume=${arg#*=} ;; "
+            "esac; done\n"
+            'cp "$prompt" "$CAPTURE_DIR/prompt-$attempt.md"\n'
+            'printf "%s\\n" "$resume" >> "$CAPTURE_DIR/resume-paths"\n'
+            'if [ "$attempt" -eq 1 ]; then\n'
+            '  printf "session-exact-123\\n" > "$resume"\n'
+            '  printf "temporary failure\\n" > "$log"\n'
+            "  exit 74\n"
+            "fi\n"
+            '[ "$(cat "$resume")" = "session-exact-123" ]\n'
+            'printf "continued in session-exact-123\\n" > "$log"\n'
+            'printf "brief\\n" > "$SPECULA_WORK_DIR/modeling-brief.md"\n'
+        )
+
+        rc, out = self.run_analysis(options=["--transient-resumes=1"])
+
+        self.assertEqual(rc, 0, out)
+        self.assertEqual(count.read_text(), "xx")
+        first_prompt = (captures / "prompt-1.md").read_text()
+        resumed_prompt = (captures / "prompt-2.md").read_text()
+        self.assertIn("modeling-brief.md", first_prompt)
+        self.assertEqual(resumed_prompt, phaselib._SESSION_RESUME_PROMPT)
+        self.assertLess(len(resumed_prompt), len(first_prompt))
+        resume_paths = (captures / "resume-paths").read_text().splitlines()
+        self.assertEqual(resume_paths, [str(self.work_dir() / "agent.resume.json")] * 2)
+        self.assertEqual((self.work_dir() / "agent.attempt-1.log").read_text(), "temporary failure\n")
+        self.assertEqual((self.work_dir() / "agent.log").read_text(), "continued in session-exact-123\n")
+        self.assertIn("resuming the exact session (1/1)", out)
+
+    def test_manual_resume_uses_exact_session_latest_extra_and_attempt_archive(self) -> None:
+        count = self.tmp() / "count"
+        captures = self.tmp()
+        artifact = self.tmp() / "repo"
+        artifact.mkdir()
+        self.patch_attr(self, "artifact_flag", lambda: f"--artifact={artifact}")
+        self.set_env("COUNT_FILE", str(count))
+        self.set_env("CAPTURE_DIR", str(captures))
+        resumelib.initialize_run(self.run_dir)
+        resumelib.save_configuration(self.run_dir, {"agent": self.adapter.stem})
+        self.set_env(resumelib.INVOCATION_ENV, "invocation-1")
+        extra = self.work_dir() / ".prompt-extra.md"
+        extra.parent.mkdir(parents=True, exist_ok=True)
+        extra.write_text("Original priority\n")
+        self.write_adapter(
+            'printf x >> "$COUNT_FILE"\n'
+            'attempt=$(wc -c < "$COUNT_FILE")\n'
+            'for arg do case "$arg" in '
+            "--prompt-file=*) prompt=${arg#*=} ;; "
+            "--log=*) log=${arg#*=} ;; "
+            "--resume-state=*) resume=${arg#*=} ;; "
+            "esac; done\n"
+            'cp "$prompt" "$CAPTURE_DIR/prompt-$attempt.md"\n'
+            'if [ "$attempt" -eq 1 ]; then\n'
+            '  printf "session-manual-123\\n" > "$resume"\n'
+            '  printf "interrupted\\n" > "$log"\n'
+            "  exit 9\n"
+            "fi\n"
+            '[ "$(cat "$resume")" = "session-manual-123" ]\n'
+            'printf "continued\\n" > "$log"\n'
+            'printf "brief\\n" > "$SPECULA_WORK_DIR/modeling-brief.md"\n'
+        )
+
+        first_rc, first_out = self.run_analysis(options=["--transient-resumes=0"])
+        self.assertEqual(first_rc, 9, first_out)
+        self.assertEqual(len(resumelib.active_entries(self.run_dir)), 1)
+
+        extra.write_text("Focus on trace fidelity\n")
+        self.set_env(resumelib.INVOCATION_ENV, "invocation-2")
+        self.set_env(resumelib.MANUAL_ENV, "1")
+        resumed_rc, resumed_out = self.run_analysis(options=["--transient-resumes=0"])
+
+        self.assertEqual(resumed_rc, 0, resumed_out)
+        self.assertEqual(count.read_text(), "xx")
+        original_prompt = (captures / "prompt-1.md").read_text()
+        resumed_prompt = (captures / "prompt-2.md").read_text()
+        self.assertIn("modeling-brief.md", original_prompt)
+        self.assertEqual(
+            resumed_prompt,
+            phaselib._MANUAL_SESSION_RESUME_PROMPT + "\n## Target-Specific Instructions\n\nFocus on trace fidelity\n",
+        )
+        self.assertNotIn("Original priority", resumed_prompt)
+        self.assertEqual((self.work_dir() / "agent.attempt-1.log").read_text(), "interrupted\n")
+        self.assertEqual((self.work_dir() / "agent.log").read_text(), "continued\n")
+        self.assertEqual(resumelib.active_entries(self.run_dir), [])
+
+    def test_manual_resume_reaches_exact_session_for_each_single_agent_phase(self) -> None:
+        captures = self.tmp()
+        self.set_env("CAPTURE_DIR", str(captures))
+        self.write_adapter(
+            'count="$CAPTURE_DIR/$RESUME_CASE.count"\n'
+            "prompt= log= resume=\n"
+            'for arg do case "$arg" in '
+            "--prompt-file=*) prompt=${arg#*=} ;; "
+            "--log=*) log=${arg#*=} ;; "
+            "--resume-state=*) resume=${arg#*=} ;; "
+            "esac; done\n"
+            'printf x >> "$count"\n'
+            'attempt=$(wc -c < "$count")\n'
+            'if [ "$attempt" -eq 1 ]; then\n'
+            '  printf "%s-session\n" "$RESUME_CASE" > "$resume"\n'
+            '  printf "interrupted\n" > "$log"\n'
+            "  exit 9\n"
+            "fi\n"
+            'test "$(cat "$resume")" = "$RESUME_CASE-session"\n'
+            'case "$SPECULA_PHASE" in\n'
+            '  code_analysis) printf "brief\n" > "$SPECULA_WORK_DIR/modeling-brief.md" ;;\n'
+            "  spec_generation)\n"
+            '    mkdir -p "$SPECULA_WORK_DIR/spec"\n'
+            "    for file in base.tla MC.tla Trace.tla instrumentation-spec.md; do\n"
+            '      printf "output\n" > "$SPECULA_WORK_DIR/spec/$file"\n'
+            "    done\n"
+            "    ;;\n"
+            "  harness_generation)\n"
+            '    mkdir -p "$SPECULA_WORK_DIR/harness" "$SPECULA_WORK_DIR/traces"\n'
+            '    printf "#!/bin/sh\n" > "$SPECULA_WORK_DIR/harness/run.sh"\n'
+            '    printf "guide\n" > "$SPECULA_WORK_DIR/harness/INSTRUMENTATION.md"\n'
+            '    printf "{}\n" > "$SPECULA_WORK_DIR/traces/one.ndjson"\n'
+            "    ;;\n"
+            '  spec_validation) printf "bug report\n" > "$SPECULA_WORK_DIR/spec/bug-report.md" ;;\n'
+            '  bug_confirmation) printf "confirmed\n" > "$SPECULA_WORK_DIR/confirmed-bugs.md" ;;\n'
+            "  bug_classification)\n"
+            '    printf "# Severity Classification\\n\\n## Summary\\n\\n## Per-entry classification\\n" '
+            '> "$SPECULA_WORK_DIR/bug-severity.md"\n'
+            '    printf "No impact-bearing findings were recorded.\\n\\n## Findings\\n\\n- Other dispositions: 0.\\n\\n## Validation limits\\n\\nNo finding-specific validation limits were recorded.\\n" '
+            '> "$SPECULA_WORK_DIR/.summary-findings.md"\n'
+            "    ;;\n"
+            "esac\n"
+            'printf "continued\n" > "$log"\n'
+        )
+        cases: list[tuple[PhaseSpec, list[str], str, str]] = [
+            (spec, [], spec["prompt"], spec["key"]) for spec in PHASES
+        ]
+        cases.append((BY_KEY["spec_validation"], ["--repair"], ".spec-repair-prompt.md", "spec_validation_repair"))
+
+        for spec, extra_args, prompt_rel, case_name in cases:
+            with self.subTest(phase=case_name):
+                self.run_dir = self.tmp()
+                self.set_env("SPECULA_RUN_DIR", str(self.run_dir))
+                self.set_env("RESUME_CASE", case_name)
+                self.set_env(resumelib.INVOCATION_ENV, f"{case_name}-invocation-1")
+                self.set_env(resumelib.MANUAL_ENV, None)
+                self.seed(spec["inputs"])
+                if spec["key"] == "harness_generation":
+                    self.seed(["spec/MC.tla"])
+                elif spec["key"] == "spec_validation":
+                    self.seed(["modeling-brief.md"])
+                resumelib.initialize_run(self.run_dir)
+                resumelib.save_configuration(self.run_dir, {"agent": self.adapter.stem})
+                args = [f"--agent={self.adapter.stem}", *extra_args]
+                if spec["key"] == "bug_confirmation":
+                    args.append("--legacy-confirm")
+                if spec["artifact"]:
+                    args.append(self.artifact_flag())
+                args.append(NAME)
+
+                first_rc, first_out = self.run_phase(spec["key"], args)
+                self.assertEqual(first_rc, 9, first_out)
+                active = resumelib.active_entries(self.run_dir)
+                self.assertEqual([entry["phase"] for entry in active], [spec["key"]])
+
+                self.set_env(resumelib.INVOCATION_ENV, f"{case_name}-invocation-2")
+                self.set_env(resumelib.MANUAL_ENV, "1")
+                resumed_rc, resumed_out = self.run_phase(spec["key"], args)
+
+                self.assertEqual(resumed_rc, 0, resumed_out)
+                self.assertEqual((captures / f"{case_name}.count").read_text(), "xx")
+                self.assertEqual((self.work_dir() / prompt_rel).read_text(), phaselib._MANUAL_SESSION_RESUME_PROMPT)
+                self.assertEqual(resumelib.active_entries(self.run_dir), [])
+                self.assertEqual(resumelib.completed_entries(self.run_dir), [])
+
+    def test_manual_resume_skips_accepted_targets_then_runs_pending_targets(self) -> None:
+        artifact = self.tmp() / "repo"
+        artifact.mkdir()
+        captures = self.tmp()
+        self.patch_attr(self, "artifact_flag", lambda: f"--artifact={artifact}")
+        self.set_env("CAPTURE_DIR", str(captures))
+        resumelib.initialize_run(self.run_dir)
+        resumelib.save_configuration(self.run_dir, {"agent": self.adapter.stem})
+        self.set_env(resumelib.INVOCATION_ENV, "invocation-1")
+        self.write_adapter(
+            'name=$(basename "$(dirname "$SPECULA_WORK_DIR")")\n'
+            'printf x >> "$CAPTURE_DIR/$name-count"\n'
+            'attempt=$(wc -c < "$CAPTURE_DIR/$name-count")\n'
+            'for arg do case "$arg" in '
+            "--log=*) log=${arg#*=} ;; "
+            "--resume-state=*) resume=${arg#*=} ;; "
+            "esac; done\n"
+            'if [ "$name" = active ] && [ "$attempt" -eq 1 ]; then\n'
+            '  printf "active-session\\n" > "$resume"\n'
+            '  printf "rate limited\\n" > "$log"\n'
+            "  exit 75\n"
+            "fi\n"
+            'if [ "$name" = active ]; then test "$(cat "$resume")" = active-session; fi\n'
+            'printf "brief\\n" > "$SPECULA_WORK_DIR/modeling-brief.md"\n'
+            'printf "done\\n" > "$log"\n'
+        )
+        targets = ["accepted|g|Go|r", "active|g|Go|r", "pending|g|Go|r"]
+
+        first_rc, first_out = self.run_analysis(targets, options=["--max-parallel=1"])
+        self.assertEqual(first_rc, quota.RATE_LIMIT_RC, first_out)
+        self.assertEqual((captures / "accepted-count").read_text(), "x")
+        self.assertEqual((captures / "active-count").read_text(), "x")
+        self.assertFalse((captures / "pending-count").exists())
+        self.assertEqual(
+            resumelib.completed_logicals(("phase", "code_analysis")),
+            {("phase", "code_analysis", "accepted")},
+        )
+
+        self.set_env(resumelib.INVOCATION_ENV, "invocation-2")
+        self.set_env(resumelib.MANUAL_ENV, "1")
+        resource_invocation = "f" * 32
+        recorder = resource_summary.ResourceInvocationRecorder(
+            self.run_dir,
+            "phase1",
+            resource_invocation,
+        )
+        self.patch_attr(phaselib, "_RESOURCE_RECORDER", recorder)
+        resumed_rc, resumed_out = self.run_analysis(targets, options=["--max-parallel=1"])
+
+        self.assertEqual(resumed_rc, 0, resumed_out)
+        self.assertEqual((captures / "accepted-count").read_text(), "x")
+        self.assertEqual((captures / "active-count").read_text(), "xx")
+        self.assertEqual((captures / "pending-count").read_text(), "x")
+        self.assertEqual(resumelib.active_entries(self.run_dir), [])
+        self.assertEqual(resumelib.completed_entries(self.run_dir), [])
+        accepted_record = (
+            self.work_dir("accepted") / resource_summary.INVOCATION_DIRNAME / f"{resource_invocation}.json"
+        )
+        self.assertFalse(accepted_record.exists())
+        for name in ("active", "pending"):
+            record_path = self.work_dir(name) / resource_summary.INVOCATION_DIRNAME / f"{resource_invocation}.json"
+            record = json.loads(record_path.read_text())
+            self.assertEqual(record["status"], "completed")
+            self.assertFalse(record["usage_complete"])
+
+    def test_default_transient_resume_budget_stops_after_twenty_continuations(self) -> None:
+        count = self.tmp() / "count"
+        self.set_env("COUNT_FILE", str(count))
+        self.patch_attr(phaselib, "_transient_resume_delay", lambda _attempt: 0.0)
+        self.write_adapter('printf x >> "$COUNT_FILE"\nexit 74\n')
+
+        rc, out = self.run_analysis()
+
+        self.assertEqual(rc, TRANSIENT_FAILURE_RC, out)
+        self.assertEqual(count.read_text(), "x" * 21)
+        self.assertIn("temporary provider failure", out)
+        self.assertIn("(20/20)", out)
+        self.assertNotIn("(21/20)", out)
+        self.assertIn(f"adapter exited {TRANSIENT_FAILURE_RC}", out)
+
+    def test_zero_transient_resumes_disables_continuation(self) -> None:
+        count = self.tmp() / "count"
+        self.set_env("COUNT_FILE", str(count))
+        self.patch_attr(phaselib, "_transient_resume_delay", lambda _attempt: 0.0)
+        self.write_adapter('printf x >> "$COUNT_FILE"\nexit 74\n')
+
+        rc, out = self.run_analysis(options=["--transient-resumes=0"])
+
+        self.assertEqual(rc, TRANSIENT_FAILURE_RC, out)
+        self.assertEqual(count.read_text(), "x")
+        self.assertNotIn("temporary provider failure", out)
+
+    def test_transient_resume_budget_exhaustion_preserves_each_attempt_log(self) -> None:
+        count = self.tmp() / "count"
+        self.set_env("COUNT_FILE", str(count))
+        self.patch_attr(phaselib, "_transient_resume_delay", lambda _attempt: 0.0)
+        self.write_adapter(
+            'printf x >> "$COUNT_FILE"\n'
+            'attempt=$(wc -c < "$COUNT_FILE")\n'
+            'for arg do case "$arg" in --log=*) log=${arg#*=} ;; esac; done\n'
+            'printf "failure-%s\\n" "$attempt" > "$log"\n'
+            "exit 74\n"
+        )
+
+        rc, out = self.run_analysis(options=["--transient-resumes=2"])
+
+        self.assertEqual(rc, TRANSIENT_FAILURE_RC, out)
+        self.assertEqual(count.read_text(), "xxx")
+        self.assertEqual((self.work_dir() / "agent.attempt-1.log").read_text(), "failure-1\n")
+        self.assertEqual((self.work_dir() / "agent.attempt-2.log").read_text(), "failure-2\n")
+        self.assertEqual((self.work_dir() / "agent.log").read_text(), "failure-3\n")
+        self.assertIn("(2/2)", out)
+
+    def test_policy_and_rate_limit_retry_budgets_are_independent(self) -> None:
+        count = self.tmp() / "count"
+        self.set_env("COUNT_FILE", str(count))
+        self.write_adapter(
+            'printf x >> "$COUNT_FILE"\n'
+            'attempt=$(wc -c < "$COUNT_FILE")\n'
+            '[ "$attempt" -ne 1 ] || exit 76\n'
+            '[ "$attempt" -ne 2 ] || exit 75\n'
+            '[ "$attempt" -ne 3 ] || exit 76\n'
+            'printf "brief\\n" > "$SPECULA_WORK_DIR/modeling-brief.md"\n'
+        )
+        waits: list[int] = []
+        self.patch_attr(phaselib.Phase, "_wait_for_rate_limit", lambda _self: waits.append(1))
+        self.set_env("SPECULA_RATE_LIMIT_REACTIVE", "1")
+        self.set_env("SPECULA_RATE_LIMIT_RETRIES", "1")
+
+        rc, out = self.run_analysis(options=["--policy-retries=2"])
+
+        self.assertEqual(rc, 0, out)
+        self.assertEqual(count.read_text(), "xxxx")
+        self.assertEqual(waits, [1])
+
+    def test_policy_recovery_does_not_reset_spent_rate_limit_retries(self) -> None:
+        count = self.tmp() / "count"
+        self.set_env("COUNT_FILE", str(count))
+        self.write_adapter(
+            'printf x >> "$COUNT_FILE"\n'
+            'attempt=$(wc -c < "$COUNT_FILE")\n'
+            '[ "$attempt" -ne 1 ] || exit 75\n'
+            '[ "$attempt" -ne 2 ] || exit 76\n'
+            '[ "$attempt" -ne 3 ] || exit 75\n'
+            'printf "brief\\n" > "$SPECULA_WORK_DIR/modeling-brief.md"\n'
+        )
+        waits: list[int] = []
+        self.patch_attr(phaselib.Phase, "_wait_for_rate_limit", lambda _self: waits.append(1))
+        self.set_env("SPECULA_RATE_LIMIT_REACTIVE", "1")
+        self.set_env("SPECULA_RATE_LIMIT_RETRIES", "1")
+
+        rc, out = self.run_analysis()
+
+        self.assertEqual(rc, quota.RATE_LIMIT_RC, out)
+        self.assertEqual(count.read_text(), "xxx")
+        self.assertEqual(waits, [1])
+
+    def test_policy_recovery_is_independent_per_parallel_target(self) -> None:
+        counts = self.tmp()
+        self.set_env("COUNT_DIR", str(counts))
+        self.write_adapter(
+            'name=$(basename "$(dirname "$SPECULA_WORK_DIR")")\n'
+            'printf x >> "$COUNT_DIR/$name"\n'
+            'attempt=$(wc -c < "$COUNT_DIR/$name")\n'
+            'if [ "$name" = a ] && [ "$attempt" -le 2 ]; then exit 76; fi\n'
+            'if [ "$name" = b ] && [ "$attempt" -le 1 ]; then exit 76; fi\n'
+            'printf "brief\\n" > "$SPECULA_WORK_DIR/modeling-brief.md"\n'
+        )
+
+        rc, out = self.run_phase(
+            "code_analysis",
+            [
+                "--max-parallel=2",
+                "--policy-retries=2",
+                f"--agent={self.adapter.stem}",
+                self.artifact_flag(),
+                "a|g|Go|r",
+                "b|g|Go|r",
+            ],
+        )
+
+        self.assertEqual(rc, 0, out)
+        self.assertEqual((counts / "a").read_text(), "xxx")
+        self.assertEqual((counts / "b").read_text(), "xx")
+
+    def test_ordinary_adapter_failure_is_not_retried(self) -> None:
+        count = self.tmp() / "count"
+        self.set_env("COUNT_FILE", str(count))
+        self.write_adapter('printf x >> "$COUNT_FILE"\nexit 9\n')
+
+        rc, out = self.run_analysis()
+
+        self.assertEqual(rc, 9, out)
+        self.assertEqual(count.read_text(), "x")
+
+
+class TestBugClassificationOutputs(PhaseCase):
+    CONFIRMED = "| Entry | Finding | Status | Counts as final bug? |\n|---|---|---|---|\n\n"
+    SEVERITY = (
+        "# Severity Classification — target\n\n"
+        "## Summary\n\n"
+        "- Total entries: 0\n"
+        "- Reproduced bugs: 0\n"
+        "- Severity-bearing findings: 0\n"
+        "- Critical: 0\n"
+        "- High: 0\n"
+        "- Medium: 0\n"
+        "- Low: 0\n"
+        "- No-severity dispositions: 0\n\n"
+        "## Per-entry classification\n\n"
+        "| Entry | Finding | Status | Severity | Reasoning |\n"
+        "|-------|---------|--------|----------|-----------|\n"
+    )
+    FINDINGS = (
+        "No impact-bearing findings were recorded.\n\n"
+        "## Findings\n\n"
+        "- Other dispositions: 0.\n\n"
+        "## Validation limits\n\n"
+        "No finding-specific validation limits were recorded.\n"
+    )
+
+    def setUp(self) -> None:
+        super().setUp()
+        adapters = self.tmp() / "adapters"
+        adapters.mkdir()
+        self.patch_attr(phaselib, "LAUNCH_DIR", adapters.parent)
+        self.patch_attr(phaselib.Phase, "_acceptance", lambda _self, _ws, _names: None)
+        self.patch_attr(phaselib.Phase, "progress_config", ProgressConfig(poll_seconds=0.005))
+        self.set_env("SPECULA_PROGRESS", "off")
+        self.adapter = adapters / "fake.sh"
+        self.seed(BY_KEY["bug_classification"]["inputs"])
+        (self.work_dir() / "confirmed-bugs.md").write_text(self.CONFIRMED)
+
+    def write_adapter(self, body: str) -> None:
+        self.adapter.write_text("#!/usr/bin/env sh\nset -eu\n" + body)
+        self.adapter.chmod(0o755)
+
+    @staticmethod
+    def write_output(filename: str, content: str) -> str:
+        return f'printf %s {shlex.quote(content)} > "$SPECULA_WORK_DIR/{filename}"\n'
+
+    def run_classification(self, options: list[str] | None = None) -> tuple[int, str]:
+        return self.run_phase(
+            "bug_classification",
+            [*(options or []), f"--agent={self.adapter.stem}", NAME],
+        )
+
+    def seed_complete_summary(self, marker: str = "OLD FINDINGS", name: str = NAME) -> None:
+        work_dir = self.work_dir(name)
+        work_dir.mkdir(parents=True, exist_ok=True)
+        (work_dir / "confirmed-bugs.md").write_text(self.CONFIRMED)
+        (work_dir / ".summary-findings.md").write_text(
+            f"{marker}\n\n## Findings\n\n- Other dispositions: 0.\n\n## Validation limits\n\nNone recorded.\n"
+        )
+        tracker = resource_summary.ResourceSummaryTracker(
+            {name: work_dir},
+            output_root=self.run_dir,
+            maximum_parallelism="1",
+            tlc_memory_limit="8G",
+            tlc_worker_limit="4",
+            run_details=resource_summary.RunDetails(
+                original_source_commit="original",
+                attempt_source_commit="attempt",
+                agent="codex",
+                model="model",
+                reasoning_effort="high",
+            ),
+            validation_limits=(resource_summary.CLASSIFICATION_SKIPPED_LIMIT,),
+        )
+        tracker.initialize(resume=False)
+        tracker.complete_run((name,))
+
+    def test_missing_findings_fragment_is_fail_soft(self) -> None:
+        self.write_adapter(self.write_output("bug-severity.md", self.SEVERITY))
+
+        rc, out = self.run_classification()
+
+        self.assertEqual(rc, 0, out)
+        self.assertIn(".summary-findings.md missing", out)
+        self.assertNotIn("Output validation failures:", out)
+        summary = (self.work_dir() / "summary.md").read_text()
+        self.assertIn("Run status: **Incomplete**", summary)
+        self.assertIn("The findings summary is unavailable", summary)
+
+    def test_requires_severity_output(self) -> None:
+        self.seed_complete_summary()
+        self.write_adapter(self.write_output(".summary-findings.md", self.FINDINGS))
+
+        rc, out = self.run_classification()
+
+        self.assertEqual(rc, 1, out)
+        self.assertIn("bug-severity.md missing", out)
+        self.assertFalse((self.work_dir() / "summary.md").exists())
+
+    def test_accepts_complete_final_reporting_outputs(self) -> None:
+        self.write_adapter(
+            self.write_output("bug-severity.md", self.SEVERITY)
+            + self.write_output(".summary-findings.md", self.FINDINGS)
+        )
+
+        rc, out = self.run_classification()
+
+        self.assertEqual(rc, 0, out)
+        self.assertIn("summary=yes", out)
+
+    def test_byom_requires_modification_report(self) -> None:
+        supplied = self.tmp() / "provided"
+        supplied.mkdir()
+        self.set_env(phaselib.BYOM_PATH_ENV, str(supplied))
+        (self.work_dir() / BYOM_REPORT_FILENAME).write_text("stale\n")
+        self.write_adapter(
+            self.write_output("bug-severity.md", self.SEVERITY)
+            + self.write_output(".summary-findings.md", self.FINDINGS)
+        )
+
+        rc, out = self.run_classification()
+
+        self.assertEqual(rc, 1, out)
+        self.assertIn("byom-modification-report.md missing", out)
+        self.assertFalse((self.work_dir() / BYOM_REPORT_FILENAME).exists())
+        self.assertFalse((self.work_dir() / "summary.md").exists())
+
+    def test_byom_accepts_nonempty_modification_report(self) -> None:
+        supplied = self.tmp() / "provided"
+        supplied.mkdir()
+        self.set_env(phaselib.BYOM_PATH_ENV, str(supplied))
+        self.write_adapter(
+            self.write_output("bug-severity.md", self.SEVERITY)
+            + self.write_output(".summary-findings.md", self.FINDINGS)
+            + self.write_output(BYOM_REPORT_FILENAME, "No supplied assets were modified.\n")
+        )
+
+        rc, out = self.run_classification()
+
+        self.assertEqual(rc, 0, out)
+        self.assertTrue((self.work_dir() / BYOM_REPORT_FILENAME).is_file())
+
+    def test_adhoc_requires_a_well_formed_result(self) -> None:
+        target = self.tmp() / "t.yaml"
+        target.write_text("id: t\n")
+        self.set_env(phaselib.ADHOC_TARGET_ENV, str(target))
+        (self.work_dir() / phaselib.ADHOC_RESULT_FILENAME).write_text("stale\n")
+        self.write_adapter(
+            self.write_output("bug-severity.md", self.SEVERITY)
+            + self.write_output(".summary-findings.md", self.FINDINGS)
+        )
+
+        rc, out = self.run_classification()
+
+        self.assertEqual(rc, 1, out)
+        self.assertIn("adhoc-result.json missing", out)
+        self.assertFalse((self.work_dir() / phaselib.ADHOC_RESULT_FILENAME).exists())
+
+    def test_adhoc_accepts_a_well_formed_result(self) -> None:
+        target = self.tmp() / "t.yaml"
+        target.write_text("id: t\n")
+        self.set_env(phaselib.ADHOC_TARGET_ENV, str(target))
+        result = json.dumps({"target": "t", "verdict": "NOT_REACHED_BOUNDED", "bounds": []})
+        self.write_adapter(
+            self.write_output("bug-severity.md", self.SEVERITY)
+            + self.write_output(".summary-findings.md", self.FINDINGS)
+            + self.write_output(phaselib.ADHOC_RESULT_FILENAME, result + "\n")
+        )
+
+        rc, out = self.run_classification()
+
+        self.assertEqual(rc, 0, out)
+
+    def test_standalone_success_rebuilds_summary_after_invalidating_old_findings(self) -> None:
+        self.seed_complete_summary()
+        self.assertIn("OLD FINDINGS", (self.work_dir() / "summary.md").read_text())
+        new_findings = self.FINDINGS.replace(
+            "No impact-bearing findings were recorded.",
+            "NEW FINDINGS",
+        )
+        self.write_adapter(
+            'test ! -e "$SPECULA_WORK_DIR/summary.md"\n'
+            + self.write_output("bug-severity.md", self.SEVERITY)
+            + self.write_output(".summary-findings.md", new_findings)
+        )
+
+        rc, out = self.run_classification()
+
+        self.assertEqual(rc, 0, out)
+        summary = (self.work_dir() / "summary.md").read_text()
+        self.assertIn("Run status: **Complete**", summary)
+        self.assertIn("NEW FINDINGS", summary)
+        self.assertNotIn("OLD FINDINGS", summary)
+        self.assertNotIn(resource_summary.CLASSIFICATION_SKIPPED_LIMIT, summary)
+
+    def test_standalone_success_preserves_an_incomplete_run_status(self) -> None:
+        tracker = resource_summary.ResourceSummaryTracker(
+            {NAME: self.work_dir()},
+            output_root=self.run_dir,
+            maximum_parallelism="1",
+            tlc_memory_limit="8G",
+            tlc_worker_limit="4",
+        )
+        tracker.initialize(resume=False)
+        self.write_adapter(
+            self.write_output("bug-severity.md", self.SEVERITY)
+            + self.write_output(".summary-findings.md", self.FINDINGS)
+        )
+
+        rc, out = self.run_classification()
+
+        self.assertEqual(rc, 0, out)
+        summary = (self.work_dir() / "summary.md").read_text()
+        self.assertIn("Run status: **Incomplete**", summary)
+        self.assertIn("The findings summary is unavailable", summary)
+
+    def test_standalone_failure_leaves_old_summary_unavailable(self) -> None:
+        self.seed_complete_summary()
+        self.write_adapter('test ! -e "$SPECULA_WORK_DIR/summary.md"\nexit 9\n')
+
+        rc, out = self.run_classification()
+
+        self.assertEqual(rc, 9, out)
+        self.assertFalse((self.work_dir() / "summary.md").exists())
+
+    def test_failed_adapter_cannot_publish_its_own_summary(self) -> None:
+        self.write_adapter('printf "FORGED_AFTER_START\\n" > "$SPECULA_WORK_DIR/summary.md"\nexit 9\n')
+
+        rc, out = self.run_classification()
+
+        self.assertEqual(rc, 9, out)
+        self.assertFalse((self.work_dir() / "summary.md").exists())
+
+    def test_check_only_does_not_invalidate_completed_summary(self) -> None:
+        self.seed_complete_summary()
+        self.write_adapter("exit 0\n")
+        summary = self.work_dir() / "summary.md"
+        before = summary.read_bytes()
+
+        rc, out = self.run_classification(options=["--check"])
+
+        self.assertEqual(rc, 0, out)
+        self.assertEqual(summary.read_bytes(), before)
+
+    def test_unstarted_sibling_keeps_its_completed_summary(self) -> None:
+        self.seed_complete_summary("ALPHA OLD", NAME)
+        self.seed_complete_summary("BETA OLD", "beta")
+        beta_summary = self.work_dir("beta") / "summary.md"
+        before = beta_summary.read_bytes()
+        self.write_adapter("exit 75\n")
+
+        rc, out = self.run_phase(
+            "bug_classification",
+            ["--max-parallel=1", f"--agent={self.adapter.stem}", NAME, "beta"],
+        )
+
+        self.assertEqual(rc, 75, out)
+        self.assertFalse((self.work_dir() / "summary.md").exists())
+        self.assertEqual(beta_summary.read_bytes(), before)
+
+    def test_manual_resume_does_not_republish_completed_target_summary(self) -> None:
+        self.seed_complete_summary()
+        (self.work_dir() / "bug-severity.md").write_text(self.SEVERITY)
+        summary = self.work_dir() / "summary.md"
+        before = summary.read_bytes()
+        resumelib.initialize_run(self.run_dir)
+        self.set_env(resumelib.INVOCATION_ENV, "classify-finished-invocation")
+        logical = ("phase", "bug_classification", NAME)
+        resumelib.prepare_turn(
+            logical,
+            phase="bug_classification",
+            target=NAME,
+            kind="phase",
+            adapter=self.adapter,
+            model=None,
+            effort=None,
+            claude_alias="claude",
+            cwd=self.tmp(),
+            resume_state=self.work_dir() / ".bug-classification.resume",
+            prompt_file=self.work_dir() / ".bug-classification-prompt.md",
+            log_file=self.work_dir() / "bug-classification.log",
+        )
+        resumelib.mark_completed(logical)
+        self.set_env(resumelib.INVOCATION_ENV, "classify-resume-invocation")
+        self.set_env(resumelib.MANUAL_ENV, "1")
+        self.write_adapter("exit 99\n")
+
+        with mock.patch.object(phaselib, "publish_findings_summary") as publish:
+            rc, out = self.run_classification()
+
+        self.assertEqual(rc, 0, out)
+        publish.assert_not_called()
+        self.assertEqual(summary.read_bytes(), before)
+
+    def test_manual_resume_restores_summary_after_durable_completion_marker(self) -> None:
+        self.seed_complete_summary()
+        resumelib.initialize_run(self.run_dir)
+        self.set_env(resumelib.INVOCATION_ENV, "classify-first-invocation")
+        self.write_adapter(
+            self.write_output("bug-severity.md", self.SEVERITY)
+            + self.write_output(".summary-findings.md", self.FINDINGS)
+        )
+        real_mark_completed = resumelib.mark_completed
+
+        def fail_after_completion(logical: tuple[str, ...]) -> None:
+            real_mark_completed(logical)
+            raise resumelib.ResumeError("injected post-commit failure")
+
+        with mock.patch.object(resumelib, "mark_completed", side_effect=fail_after_completion):
+            first_rc, first_out = self.run_classification()
+
+        self.assertEqual(first_rc, 1, first_out)
+        self.assertFalse((self.work_dir() / "summary.md").exists())
+        self.assertEqual(
+            resumelib.completed_logicals(("phase", "bug_classification")),
+            {("phase", "bug_classification", NAME)},
+        )
+
+        self.set_env(resumelib.INVOCATION_ENV, "classify-resume-invocation")
+        self.set_env(resumelib.MANUAL_ENV, "1")
+        resumed_rc, resumed_out = self.run_classification()
+
+        self.assertEqual(resumed_rc, 0, resumed_out)
+        self.assertTrue((self.work_dir() / "summary.md").is_file())
+        self.assertEqual(resumelib.completed_logicals(("phase", "bug_classification")), set())
+
+    def test_inconsistent_findings_fragment_is_hidden_without_failing_classification(self) -> None:
+        self.seed_complete_summary()
+        (self.work_dir() / "confirmed-bugs.md").write_text(
+            "| Entry | Finding | Status | Counts as final bug? |\n"
+            "|---|---|---|---|\n"
+            "| 1 | MC-1 | REPRODUCED | yes |\n\n"
+        )
+        self.write_adapter(
+            self.write_output("bug-severity.md", self.SEVERITY)
+            + self.write_output(".summary-findings.md", self.FINDINGS)
+        )
+
+        rc, out = self.run_classification()
+
+        self.assertEqual(rc, 0, out)
+        self.assertIn("finding IDs or statuses do not match confirmed-bugs.md", out)
+        summary = (self.work_dir() / "summary.md").read_text()
+        self.assertIn("Run status: **Complete**", summary)
+        self.assertIn("The findings summary is unavailable", summary)
+        self.assertNotIn("OLD FINDINGS", summary)
+
+    def test_fresh_run_cannot_reuse_stale_outputs(self) -> None:
+        wd = self.work_dir()
+        (wd / "bug-severity.md").write_text(self.SEVERITY)
+        (wd / ".summary-findings.md").write_text(self.FINDINGS)
+        self.write_adapter(
+            'test ! -e "$SPECULA_WORK_DIR/bug-severity.md"\ntest ! -e "$SPECULA_WORK_DIR/.summary-findings.md"\n'
+        )
+
+        rc, out = self.run_classification()
+
+        self.assertEqual(rc, 1, out)
+        self.assertFalse((wd / "bug-severity.md").exists())
+        self.assertFalse((wd / ".summary-findings.md").exists())
+        self.assertIn("bug-severity.md missing", out)
+        self.assertIn(".summary-findings.md missing", out)
+
+    def test_rejects_symlink_output(self) -> None:
+        external = self.tmp() / "external-severity.md"
+        external.write_text(self.SEVERITY)
+        self.set_env("EXTERNAL_OUTPUT", str(external))
+        self.write_adapter(
+            'ln -s "$EXTERNAL_OUTPUT" "$SPECULA_WORK_DIR/bug-severity.md"\n'
+            + self.write_output(".summary-findings.md", self.FINDINGS)
+        )
+
+        rc, out = self.run_classification()
+
+        self.assertEqual(rc, 1, out)
+        self.assertIn("bug-severity.md is not a regular file", out)
+
+    def test_findings_fragment_display_violations_are_fail_soft(self) -> None:
+        invalid = (
+            ("- [Detailed evidence](confirmed-bugs.md)", "contains a URL or link markup"),
+            (
+                "- [Detailed evidence][report]\n\n[report]: confirmed-bugs.md",
+                "contains a URL or link markup",
+            ),
+            ('- <a href="confirmed-bugs.md">Detailed evidence</a>', "contains a URL or link markup"),
+            ("- <confirmed-bugs.md>", "contains a URL or link markup"),
+            ("- Evidence: https://example.invalid/report", "contains a URL or link markup"),
+        )
+        for body, expected in invalid:
+            with self.subTest(body=body):
+                findings = (
+                    f"One issue was reproduced.\n\n## Findings\n\n{body}\n\n## Validation limits\n\nNone recorded.\n"
+                )
+                self.write_adapter(
+                    self.write_output("bug-severity.md", self.SEVERITY)
+                    + self.write_output(".summary-findings.md", findings)
+                )
+
+                rc, out = self.run_classification()
+
+                self.assertEqual(rc, 0, out)
+                self.assertIn(expected, out)
+                self.assertNotIn("Output validation failures:", out)
+
+    def test_accepts_incidental_policy_words_in_findings_prose(self) -> None:
+        findings = (
+            "One issue was reproduced.\n\n"
+            "## Findings\n\n"
+            "- The severity field stayed unchanged while the Level 3 cache recovered.\n\n"
+            "## Validation limits\n\n"
+            "None recorded.\n"
+        )
+        self.write_adapter(
+            self.write_output("bug-severity.md", self.SEVERITY) + self.write_output(".summary-findings.md", findings)
+        )
+
+        rc, out = self.run_classification()
+
+        self.assertEqual(rc, 0, out)
+
+    def test_non_utf8_findings_fragment_is_fail_soft(self) -> None:
+        self.write_adapter(
+            self.write_output("bug-severity.md", self.SEVERITY)
+            + 'printf "Result.\\n\\n## Findings\\n\\n\\377\\n\\n## Validation limits\\n\\nNone.\\n" '
+            '> "$SPECULA_WORK_DIR/.summary-findings.md"\n'
+        )
+
+        rc, out = self.run_classification()
+
+        self.assertEqual(rc, 0, out)
+        self.assertIn(".summary-findings.md or confirmed-bugs.md is unreadable", out)
+
+    def test_policy_retry_preserves_first_attempt_output(self) -> None:
+        count = self.tmp() / "count"
+        self.set_env("COUNT_FILE", str(count))
+        self.write_adapter(
+            'printf x >> "$COUNT_FILE"\n'
+            'attempt=$(wc -c < "$COUNT_FILE")\n'
+            'if [ "$attempt" -eq 1 ]; then\n'
+            + self.write_output("bug-severity.md", self.SEVERITY)
+            + "  exit 76\n"
+            + "fi\n"
+            + 'test -s "$SPECULA_WORK_DIR/bug-severity.md"\n'
+            + self.write_output(".summary-findings.md", self.FINDINGS)
+        )
+
+        rc, out = self.run_classification(options=["--policy-retries=1"])
+
+        self.assertEqual(rc, 0, out)
+        self.assertEqual(count.read_text(), "xx")
+        self.assertEqual((self.work_dir() / "bug-severity.md").read_text(), self.SEVERITY)
+
+    def test_manual_resume_preserves_partial_output(self) -> None:
+        count = self.tmp() / "count"
+        self.set_env("COUNT_FILE", str(count))
+        resumelib.initialize_run(self.run_dir)
+        resumelib.save_configuration(self.run_dir, {"agent": self.adapter.stem})
+        self.set_env(resumelib.INVOCATION_ENV, "classify-invocation-1")
+        self.write_adapter(
+            'printf x >> "$COUNT_FILE"\n'
+            'attempt=$(wc -c < "$COUNT_FILE")\n'
+            'for arg do case "$arg" in --resume-state=*) resume=${arg#*=} ;; esac; done\n'
+            'if [ "$attempt" -eq 1 ]; then\n'
+            + self.write_output("bug-severity.md", self.SEVERITY)
+            + '  printf "classify-session\\n" > "$resume"\n'
+            + "  exit 9\n"
+            + "fi\n"
+            + 'test -s "$SPECULA_WORK_DIR/bug-severity.md"\n'
+            + self.write_output(".summary-findings.md", self.FINDINGS)
+        )
+
+        first_rc, first_out = self.run_classification(options=["--transient-resumes=0"])
+        self.assertEqual(first_rc, 9, first_out)
+        self.assertEqual((self.work_dir() / "bug-severity.md").read_text(), self.SEVERITY)
+
+        self.set_env(resumelib.INVOCATION_ENV, "classify-invocation-2")
+        self.set_env(resumelib.MANUAL_ENV, "1")
+        resumed_rc, resumed_out = self.run_classification(options=["--transient-resumes=0"])
+
+        self.assertEqual(resumed_rc, 0, resumed_out)
+        self.assertEqual(count.read_text(), "xx")
+        self.assertEqual((self.work_dir() / "bug-severity.md").read_text(), self.SEVERITY)
+        self.assertEqual((self.work_dir() / ".summary-findings.md").read_text(), self.FINDINGS)
+
+
+class TestLegacyRepairIdentityFinalization(PhaseCase):
+    def setUp(self) -> None:
+        super().setUp()
+        adapters = self.tmp() / "adapters"
+        adapters.mkdir()
+        self.patch_attr(phaselib, "LAUNCH_DIR", adapters.parent)
+        self.patch_attr(phaselib.Phase, "_acceptance", lambda _self, _ws, _names: None)
+        self.patch_attr(
+            phaselib.Phase,
+            "progress_config",
+            replace(phaselib.Phase.progress_config, poll_seconds=0.005),
+        )
+        self.adapter = adapters / "fake.sh"
+        self.adapter.write_text(
+            "#!/usr/bin/env sh\n"
+            "set -eu\n"
+            'cp "$LEGACY_REPORT_FIXTURE" "$SPECULA_WORK_DIR/confirmed-bugs.md"\n'
+            'if [ "${LEGACY_NO_RR:-0}" != 1 ]; then\n'
+            '  mkdir -p "$SPECULA_WORK_DIR/spec/repair-requests"\n'
+            '  if [ "${LEGACY_DELETE_RR:-0}" = 1 ]; then rm -f "$SPECULA_WORK_DIR/spec/repair-requests/RR-001.md"; fi\n'
+            '  cp "$LEGACY_RR_FIXTURE" "$SPECULA_WORK_DIR/spec/repair-requests/${LEGACY_RR_NAME:-RR-001.md}"\n'
+            "fi\n"
+            'exit "${LEGACY_ADAPTER_RC:-0}"\n'
+        )
+        self.adapter.chmod(0o755)
+        self.seed(BY_KEY["bug_confirmation"]["inputs"])
+
+    def _legacy_fixture(
+        self,
+        report: str,
+        *,
+        emitted_finding_id: str | None = None,
+        emitted_rid: str = "RR-001",
+    ) -> Path:
+        from specula import confirmlib
+
+        rr = confirmlib._merge_rr(
+            emitted_rid,
+            "Bug 1",
+            "fallback.out",
+            (
+                "---\n"
+                "target: SPEC_REPAIR\n"
+                "counterexample: spec/output/x.out\n"
+                "scope:\n"
+                "  actions: [Foo]\n"
+                "  invariants: [Inv]\n"
+                "  hunt_cfgs: [MC_hunt.cfg]\n"
+                "  fault_actions: []\n"
+                "---\n\n"
+                "## Trigger\n"
+                "The counterexample requires a transition the implementation rejects.\n\n"
+                "## Evidence\n"
+                "The trace disagrees with src/node.py:42.\n"
+            ),
+            finding_id=emitted_finding_id or "MC-1",
+        )
+        if emitted_finding_id is None:
+            rr = rr.replace("finding_id: MC-1\n", "", 1)
+        fixtures = self.tmp()
+        report_path = fixtures / "confirmed-bugs.md"
+        request_path = fixtures / f"{emitted_rid}.md"
+        report_path.write_text(report)
+        request_path.write_text(rr)
+        self.set_env("LEGACY_REPORT_FIXTURE", str(report_path))
+        self.set_env("LEGACY_RR_FIXTURE", str(request_path))
+        return request_path
+
+    def _run_legacy(self) -> tuple[int, str]:
+        return self.run_phase(
+            "bug_confirmation",
+            ["--legacy-confirm", f"--agent={self.adapter.stem}", self.artifact_flag(), NAME],
+        )
+
+    def _seed_consumed_audit(self) -> tuple[Path, bytes]:
+        from specula import confirmlib
+
+        rr_dir = self.work_dir() / "spec" / "repair-requests"
+        rr_dir.mkdir(parents=True, exist_ok=True)
+        request = rr_dir / "RR-001.md"
+        request.write_text(
+            confirmlib._merge_rr(
+                "RR-001",
+                "Bug 7",
+                "fallback.out",
+                (
+                    "---\n"
+                    "target: SPEC_REPAIR\n"
+                    "counterexample: spec/output/x.out\n"
+                    "scope:\n"
+                    "  actions: [Foo]\n"
+                    "  invariants: [Inv]\n"
+                    "  hunt_cfgs: [MC_hunt.cfg]\n"
+                    "  fault_actions: []\n"
+                    "---\n\n"
+                    "## Trigger\n"
+                    "Historical trigger.\n\n"
+                    "## Evidence\n"
+                    "Historical evidence at src/node.py:42.\n"
+                ),
+                finding_id="MC-1",
+                allocation_key="terminal-key",
+                status="CONSUMED",
+                history=["- immutable consumed audit"],
+            )
+        )
+        return request, request.read_bytes()
+
+    def _seed_active_audit(self) -> tuple[Path, bytes]:
+        request, _ = self._seed_consumed_audit()
+        request.write_text(request.read_text().replace("status: CONSUMED", "status: OPEN", 1))
+        return request, request.read_bytes()
+
+    def test_successful_legacy_phase_enriches_agent_output_with_stable_identity(self) -> None:
+        self._legacy_fixture(
+            "# Confirmed Bugs — footest\n\n"
+            "| Bug | Finding | Status |\n"
+            "|---|---|---|\n"
+            "| 1 | MC-1 | PENDING REPAIR (RR-001) |\n\n"
+            "## Bug 1: one\n\n"
+            "- **Finding ID**: MC-1\n"
+            "- **Status**: PENDING REPAIR (RR-001)\n"
+        )
+
+        rc, out = self._run_legacy()
+
+        self.assertEqual(rc, 0, out)
+        request = self.work_dir() / "spec" / "repair-requests" / "RR-001.md"
+        text = request.read_text()
+        self.assertIn("finding_id: MC-1", text)
+        self.assertRegex(text, r"(?m)^allocation_key: [0-9a-f]{64}$")
+
+    def test_ambiguous_legacy_identity_turns_zero_adapter_exit_into_failure(self) -> None:
+        original = self._legacy_fixture(
+            "# Confirmed Bugs — footest\n\n"
+            "| Bug | Finding | Status |\n"
+            "|---|---|---|\n"
+            "| 1 | MC-1 | PENDING REPAIR (RR-001) |\n"
+            "| 2 | MC-2 | PENDING REPAIR (RR-001) |\n\n"
+            "## Bug 1: one\n\n"
+            "- **Finding ID**: MC-1\n\n"
+            "## Bug 2: two\n\n"
+            "- **Finding ID**: MC-2\n"
+        ).read_bytes()
+
+        rc, out = self._run_legacy()
+
+        self.assertEqual(rc, 1, out)
+        self.assertIn("legacy repair identity validation FAILED", out)
+        self.assertIn("expected exactly one RR-bearing report row, found 2", out)
+        self.assertIn("Output validation failures:", out)
+        request = self.work_dir() / "spec" / "repair-requests" / "RR-001.md"
+        self.assertEqual(request.read_bytes(), original)
+        self.assertNotIn("finding_id:", request.read_text())
+
+    def test_legacy_phase_rejects_agent_supplied_finding_id_that_conflicts_with_report(self) -> None:
+        self._legacy_fixture(
+            "# Confirmed Bugs — footest\n\n"
+            "| Bug | Finding | Status |\n"
+            "|---|---|---|\n"
+            "| 1 | MC-1 | PENDING REPAIR (RR-001) |\n\n"
+            "## Bug 1: one\n\n"
+            "- **Finding ID**: MC-1\n"
+            "- **Status**: PENDING REPAIR (RR-001)\n",
+            emitted_finding_id="MC-WRONG",
+        )
+
+        rc, out = self._run_legacy()
+
+        self.assertEqual(rc, 1, out)
+        self.assertIn("finding_id 'MC-WRONG' conflicts with report identity 'MC-1'", out)
+
+    def test_report_referenced_terminal_rr_cannot_bypass_identity_check(self) -> None:
+        request = self._legacy_fixture(
+            "# Confirmed Bugs — footest\n\n"
+            "| Bug | Finding | Status |\n"
+            "|---|---|---|\n"
+            "| 1 | MC-1 | PENDING REPAIR (RR-001) |\n\n"
+            "## Bug 1: one\n\n"
+            "- **Finding ID**: MC-1\n"
+            "- **Status**: PENDING REPAIR (RR-001)\n",
+            emitted_finding_id="MC-WRONG",
+        )
+        request.write_text(request.read_text().replace("status: OPEN", "status: CONSUMED", 1))
+
+        rc, out = self._run_legacy()
+
+        self.assertEqual(rc, 1, out)
+        self.assertIn("finding_id 'MC-WRONG' conflicts with report identity 'MC-1'", out)
+
+    def test_legacy_report_without_repair_requests_is_a_noop(self) -> None:
+        self._legacy_fixture(
+            "# Confirmed Bugs — footest\n\n"
+            "| Bug | Finding | Status |\n"
+            "|---|---|---|\n"
+            "| 1 | MC-1 | FALSE POSITIVE |\n\n"
+            "## Bug 1: one\n\n"
+            "- **Finding ID**: MC-1\n"
+            "- **Status**: FALSE POSITIVE\n"
+        )
+        self.set_env("LEGACY_NO_RR", "1")
+
+        rc, out = self._run_legacy()
+
+        self.assertEqual(rc, 0, out)
+        self.assertFalse((self.work_dir() / "spec" / "repair-requests").exists())
+
+    def test_legacy_preflight_migrates_old_rr_before_zero_pending_report_overwrite(self) -> None:
+        from specula import confirmlib
+
+        work_spec = self.work_dir() / "spec"
+        (work_spec.parent / "confirmed-bugs.md").write_text(
+            "# Confirmed Bugs — footest\n\n"
+            "| Bug | Finding | Status |\n"
+            "|---|---|---|\n"
+            "| 1 | MC-1 | PENDING REPAIR (RR-001) |\n\n"
+            "## Bug 1: old\n\n"
+            "- **Finding ID**: MC-1\n"
+            "- **Status**: PENDING REPAIR (RR-001)\n"
+        )
+        rr_dir = work_spec / "repair-requests"
+        rr_dir.mkdir()
+        request = rr_dir / "RR-001.md"
+        request.write_text(
+            confirmlib._merge_rr(
+                "RR-001",
+                "Bug 1",
+                "fallback.out",
+                (
+                    "---\n"
+                    "target: SPEC_REPAIR\n"
+                    "counterexample: spec/output/x.out\n"
+                    "scope:\n"
+                    "  actions: [Foo]\n"
+                    "  invariants: [Inv]\n"
+                    "  hunt_cfgs: [MC_hunt.cfg]\n"
+                    "  fault_actions: []\n"
+                    "---\n\n"
+                    "## Trigger\n"
+                    "The counterexample requires an impossible transition.\n\n"
+                    "## Evidence\n"
+                    "The real guard is at src/node.py:42.\n"
+                ),
+                finding_id="MC-1",
+            ).replace("finding_id: MC-1\n", "", 1)
+        )
+        self._legacy_fixture(
+            "# Confirmed Bugs — footest\n\n"
+            "| Bug | Finding | Status |\n"
+            "|---|---|---|\n"
+            "| 1 | MC-1 | FALSE POSITIVE |\n\n"
+            "## Bug 1: fresh\n\n"
+            "- **Finding ID**: MC-1\n"
+            "- **Status**: FALSE POSITIVE\n"
+        )
+        self.set_env("LEGACY_NO_RR", "1")
+
+        rc, out = self._run_legacy()
+
+        self.assertEqual(rc, 1, out)
+        self.assertIn("RR-001 is OPEN but is not linked", out)
+        self.assertNotIn("RR-001", (work_spec.parent / "confirmed-bugs.md").read_text())
+        migrated = request.read_text()
+        self.assertIn("finding_id: MC-1", migrated)
+        self.assertRegex(migrated, r"(?m)^allocation_key: [0-9a-f]{64}$")
+
+    def test_failed_legacy_agent_leaves_partial_request_untouched(self) -> None:
+        original = self._legacy_fixture(
+            "# Confirmed Bugs — footest\n\n"
+            "| Bug | Finding | Status |\n"
+            "|---|---|---|\n"
+            "| 1 | MC-1 | PENDING REPAIR (RR-001) |\n\n"
+            "## Bug 1: one\n\n"
+            "- **Finding ID**: MC-1\n"
+        ).read_bytes()
+        self.set_env("LEGACY_ADAPTER_RC", "9")
+
+        rc, out = self._run_legacy()
+
+        self.assertEqual(rc, 9, out)
+        request = self.work_dir() / "spec" / "repair-requests" / "RR-001.md"
+        self.assertEqual(request.read_bytes(), original)
+        self.assertNotIn("legacy repair identity validation", out)
+
+    def test_successful_legacy_agent_cannot_overwrite_consumed_audit(self) -> None:
+        request, original = self._seed_consumed_audit()
+        self._legacy_fixture(
+            "| Bug | Finding | Status |\n"
+            "|---|---|---|\n"
+            "| 1 | MC-1 | PENDING REPAIR (RR-001) |\n\n"
+            "## Bug 1: fresh\n\n"
+            "- **Finding ID**: MC-1\n"
+            "- **Status**: PENDING REPAIR (RR-001)\n"
+        )
+
+        rc, out = self._run_legacy()
+
+        self.assertEqual(rc, 1, out)
+        self.assertEqual(request.read_bytes(), original)
+        self.assertIn("RR-001 terminal audit was modified, moved, or deleted and was restored", out)
+        self.assertIn("Output integrity failures:", out)
+
+    def test_failed_legacy_agent_tamper_is_restored_before_returning_adapter_error(self) -> None:
+        request, original = self._seed_consumed_audit()
+        self._legacy_fixture(
+            "| Bug | Finding | Status |\n"
+            "|---|---|---|\n"
+            "| 1 | MC-1 | PENDING REPAIR (RR-001) |\n\n"
+            "## Bug 1: fresh\n\n"
+            "- **Finding ID**: MC-1\n"
+            "- **Status**: PENDING REPAIR (RR-001)\n"
+        )
+        self.set_env("LEGACY_ADAPTER_RC", "9")
+
+        rc, out = self._run_legacy()
+
+        self.assertEqual(rc, 9, out)
+        self.assertEqual(request.read_bytes(), original)
+        self.assertIn("RR-001 terminal audit was modified, moved, or deleted and was restored", out)
+        self.assertIn("Output integrity failures:", out)
+
+    def test_legacy_agent_cannot_delete_active_id_and_reallocate_same_finding(self) -> None:
+        request, original = self._seed_active_audit()
+        self._legacy_fixture(
+            "| Bug | Finding | Status |\n"
+            "|---|---|---|\n"
+            "| 1 | MC-1 | PENDING REPAIR (RR-002) |\n\n"
+            "## Bug 1: fresh\n\n"
+            "- **Finding ID**: MC-1\n"
+            "- **Status**: PENDING REPAIR (RR-002)\n",
+            emitted_finding_id="MC-1",
+            emitted_rid="RR-002",
+        )
+        self.set_env("LEGACY_DELETE_RR", "1")
+        self.set_env("LEGACY_RR_NAME", "RR-002.md")
+
+        rc, out = self._run_legacy()
+
+        self.assertEqual(rc, 1, out)
+        self.assertEqual(request.read_bytes(), original)
+        self.assertIn("RR-001 active identity was modified, moved, or deleted and was restored", out)
+
+
+class TestRunAgentBlocking(PhaseCase):
+    def test_blocking_turn_records_its_expected_usage_path(self) -> None:
+        work_dir = self.work_dir()
+        log_file = work_dir / "confirmation" / "MC-1" / "turn01_A.log"
+        log_file.parent.mkdir(parents=True)
+        adapter = self.tmp() / "adapter.sh"
+        adapter.write_text(
+            "#!/bin/sh\n"
+            'for arg do case "$arg" in --log=*) log=${arg#*=} ;; esac; done\n'
+            'printf "done\\n" > "$log"\n'
+            "usage=${log%.log}.usage.json\n"
+            "printf '%s\\n' "
+            '\'{"agent":"fake","total_cost_usd":0,"usage":{"total_tokens":0,'
+            '"cached_input_tokens":0}}\' > "$usage"\n'
+        )
+        adapter.chmod(0o755)
+        invocation_id = "c" * 32
+        recorder = resource_summary.ResourceInvocationRecorder(
+            self.run_dir,
+            "phase4a",
+            invocation_id,
+        )
+        recorder.start_target(NAME, work_dir)
+        self.patch_attr(phaselib, "_RESOURCE_RECORDER", recorder)
+
+        rc, _ = phaselib.run_agent_blocking(
+            adapter,
+            "prompt body",
+            log_file.with_suffix(".prompt.md"),
+            log_file,
+            phase_key="bug_confirmation",
+            work_dir=work_dir,
+            claude_alias="profile",
+        )
+        recorder.finish_target(NAME)
+
+        record_path = work_dir / resource_summary.INVOCATION_DIRNAME / f"{invocation_id}.json"
+        record = json.loads(record_path.read_text())
+        self.assertEqual(
+            [entry["path"] for entry in record["usage"]],
+            ["confirmation/MC-1/turn01_A.usage.json"],
+        )
+
+    def test_blocking_retry_records_nested_archived_usage(self) -> None:
+        work_dir = self.work_dir()
+        log_file = work_dir / "confirmation" / "MC-1" / "turn01_A.log"
+        log_file.parent.mkdir(parents=True)
+        adapter = self.tmp() / "adapter.sh"
+        count = self.tmp() / "count"
+        adapter.write_text(
+            "#!/bin/sh\n"
+            'printf x >> "$COUNT_FILE"\n'
+            'attempt=$(wc -c < "$COUNT_FILE")\n'
+            'for arg do case "$arg" in --log=*) log=${arg#*=} ;; esac; done\n'
+            "usage=${log%.log}.usage.json\n"
+            'printf "attempt-%s\\n" "$attempt" > "$log"\n'
+            'if [ "$attempt" -eq 1 ]; then\n'
+            "  printf '%s\\n' "
+            '\'{"session_id":"claude-turn","total_cost_usd":0.001784,'
+            '"usage":{"input_tokens":400,"cache_creation_input_tokens":100,'
+            '"cache_read_input_tokens":200,"output_tokens":40},"model_usage":{}}\' > "$usage"\n'
+            "  exit 74\n"
+            "fi\n"
+            "printf '%s\\n' "
+            '\'{"session_id":"claude-turn","total_cost_usd":0.00143,'
+            '"usage":{"input_tokens":100,"cache_creation_input_tokens":50,'
+            '"cache_read_input_tokens":70,"output_tokens":30},"model_usage":{}}\' > "$usage"\n'
+        )
+        adapter.chmod(0o755)
+        self.set_env("COUNT_FILE", str(count))
+        invocation_id = "d" * 32
+        recorder = resource_summary.ResourceInvocationRecorder(
+            self.run_dir,
+            "phase4a",
+            invocation_id,
+        )
+        recorder.start_target(NAME, work_dir)
+        self.patch_attr(phaselib, "_RESOURCE_RECORDER", recorder)
+
+        with mock.patch("specula.phaselib.time.sleep"):
+            rc, text = phaselib.run_agent_blocking(
+                adapter,
+                "prompt body",
+                log_file.with_suffix(".prompt.md"),
+                log_file,
+                phase_key="bug_confirmation",
+                work_dir=work_dir,
+                claude_alias="profile",
+                transient_resumes=1,
+            )
+        recorder.finish_target(NAME)
+
+        self.assertEqual((rc, text), (0, "attempt-2\n"))
+        record_path = work_dir / resource_summary.INVOCATION_DIRNAME / f"{invocation_id}.json"
+        record = json.loads(record_path.read_text())
+        self.assertTrue(record["usage_complete"])
+        self.assertEqual(
+            [entry["path"] for entry in record["usage"]],
+            [
+                "confirmation/MC-1/turn01_A.usage.attempt-1.json",
+                "confirmation/MC-1/turn01_A.usage.json",
+            ],
+        )
+
+    def test_snapshot_turn_clears_repository_git_environment(self) -> None:
+        outer = self.tmp()
+        subprocess.run(["git", "init", "--quiet", str(outer)], check=True)
+        config = outer / ".git" / "config"
+        before = config.read_bytes()
+        target = outer / "runs" / "run-1" / "demo"
+        source = target / "source"
+        work_dir = target / ".specula-output"
+        trusted_cwd = work_dir / "confirmation" / "MC-1" / ".agent-cwd"
+        source.mkdir(parents=True)
+        trusted_cwd.mkdir(parents=True)
+        adapter = self.tmp() / "adapter.sh"
+        capture = self.tmp() / "capture"
+        adapter.write_text(
+            "#!/bin/sh\n"
+            'for arg do case "$arg" in --log=*) log=${arg#*=} ;; esac; done\n'
+            'cd "$PRIVATE_SOURCE"\n'
+            "git config --local specula.private-probe touched >/dev/null 2>&1\n"
+            "probe_rc=$?\n"
+            f'printf "%s\\n%s\\n%s\\n%s\\n" "$probe_rc" "${{GIT_DIR-unset}}" '
+            f'"$GIT_SSH_COMMAND" "$GIT_CEILING_DIRECTORIES" > "{capture}"\n'
+            'printf "done\\n" > "$log"\n'
+        )
+        adapter.chmod(0o755)
+        self.set_env("SPECULA_SOURCE_SNAPSHOT", "1")
+        self.set_env("GIT_DIR", str(outer / ".git"))
+        self.set_env("GIT_WORK_TREE", str(outer))
+        self.set_env("GIT_SSH_COMMAND", "ssh -i private-key")
+        self.set_env("PRIVATE_SOURCE", str(source))
+
+        rc, text = phaselib.run_agent_blocking(
+            adapter,
+            "prompt body",
+            self.tmp() / "prompt.md",
+            self.tmp() / "turn.log",
+            phase_key="bug_confirmation",
+            work_dir=work_dir,
+            cwd=trusted_cwd,
+            claude_alias="profile",
+        )
+
+        self.assertEqual((rc, text), (0, "done\n"))
+        probe_rc, git_dir, ssh_command, ceiling = capture.read_text().splitlines()
+        self.assertNotEqual(probe_rc, "0")
+        self.assertEqual(git_dir, "unset")
+        self.assertEqual(ssh_command, "ssh -i private-key")
+        self.assertEqual(ceiling, str(target))
+        self.assertEqual(config.read_bytes(), before)
+
+    def test_policy_block_retries_with_one_non_accumulating_recovery_note(self) -> None:
+        adapter = self.tmp() / "adapter.sh"
+        count = self.tmp() / "count"
+        captures = self.tmp()
+        adapter.write_text(
+            "#!/bin/sh\n"
+            'printf x >> "$COUNT_FILE"\n'
+            'attempt=$(wc -c < "$COUNT_FILE")\n'
+            'for arg do case "$arg" in --prompt-file=*) prompt=${arg#*=} ;; --log=*) log=${arg#*=} ;; esac; done\n'
+            'cp "$prompt" "$CAPTURE_DIR/prompt-$attempt.md"\n'
+            '[ "$attempt" -gt 2 ] || exit 76\n'
+            'printf "continued\\n" > "$log"\n'
+        )
+        adapter.chmod(0o755)
+        self.set_env("COUNT_FILE", str(count))
+        self.set_env("CAPTURE_DIR", str(captures))
+
+        rc, text = phaselib.run_agent_blocking(
+            adapter,
+            "original prompt",
+            captures / "prompt.md",
+            captures / "turn.log",
+            phase_key="bug_confirmation",
+            work_dir=self.work_dir(),
+            claude_alias="profile",
+            policy_retries=2,
+        )
+
+        self.assertEqual(rc, 0)
+        self.assertEqual(text, "continued\n")
+        self.assertEqual(count.read_text(), "xxx")
+        self.assertEqual((captures / "prompt-1.md").read_text(), "original prompt")
+        second_prompt = (captures / "prompt-2.md").read_text()
+        third_prompt = (captures / "prompt-3.md").read_text()
+        self.assertTrue(second_prompt.startswith("original prompt"))
+        self.assertIn(
+            "Continue After Provider Policy Interruption",
+            second_prompt,
+        )
+        self.assertEqual(third_prompt, second_prompt)
+        self.assertEqual(second_prompt.count("Continue After Provider Policy Interruption"), 1)
+
+    def test_default_policy_retry_budget_bounds_blocking_turn(self) -> None:
+        adapter = self.tmp() / "adapter.sh"
+        count = self.tmp() / "count"
+        adapter.write_text('#!/bin/sh\nprintf x >> "$COUNT_FILE"\nexit 76\n')
+        adapter.chmod(0o755)
+        self.set_env("COUNT_FILE", str(count))
+
+        rc, _ = phaselib.run_agent_blocking(
+            adapter,
+            "original prompt",
+            self.tmp() / "prompt.md",
+            self.tmp() / "turn.log",
+            phase_key="bug_confirmation",
+            work_dir=self.work_dir(),
+            claude_alias="profile",
+        )
+
+        self.assertEqual(rc, POLICY_BLOCKED_RC)
+        self.assertEqual(count.read_text(), "x" * 21)
+
+    def test_zero_policy_retries_disables_blocking_continuation(self) -> None:
+        adapter = self.tmp() / "adapter.sh"
+        count = self.tmp() / "count"
+        adapter.write_text('#!/bin/sh\nprintf x >> "$COUNT_FILE"\nexit 76\n')
+        adapter.chmod(0o755)
+        self.set_env("COUNT_FILE", str(count))
+
+        rc, _ = phaselib.run_agent_blocking(
+            adapter,
+            "original prompt",
+            self.tmp() / "prompt.md",
+            self.tmp() / "turn.log",
+            phase_key="bug_confirmation",
+            work_dir=self.work_dir(),
+            claude_alias="profile",
+            policy_retries=0,
+        )
+
+        self.assertEqual(rc, POLICY_BLOCKED_RC)
+        self.assertEqual(count.read_text(), "x")
+
+    def test_fresh_blocking_turn_fails_if_stale_resume_state_cannot_be_cleared(self) -> None:
+        marker = self.tmp() / "launched"
+        adapter = self.tmp() / "adapter.sh"
+        adapter.write_text(f'#!/bin/sh\ntouch "{marker}"\n')
+        adapter.chmod(0o755)
+        log_file = self.tmp() / "turn.log"
+        log_file.with_suffix(".resume.json").mkdir()
+        state = phaselib.PolicyRetryState()
+
+        for _ in range(2):
+            with self.assertRaisesRegex(RuntimeError, "cannot clear stale resume state"):
+                phaselib.run_agent_blocking(
+                    adapter,
+                    "fresh prompt",
+                    self.tmp() / "prompt.md",
+                    log_file,
+                    phase_key="bug_confirmation",
+                    work_dir=self.work_dir(),
+                    claude_alias="profile",
+                    policy_state=state,
+                )
+            self.assertIsNone(state.resume_state)
+
+        self.assertFalse(marker.exists())
+
+    def test_transient_failure_resumes_blocking_turn_in_exact_session(self) -> None:
+        adapter = self.tmp() / "adapter.sh"
+        count = self.tmp() / "count"
+        captures = self.tmp()
+        adapter.write_text(
+            "#!/bin/sh\n"
+            "set -eu\n"
+            'printf x >> "$COUNT_FILE"\n'
+            'attempt=$(wc -c < "$COUNT_FILE")\n'
+            'for arg do case "$arg" in '
+            "--prompt-file=*) prompt=${arg#*=} ;; "
+            "--log=*) log=${arg#*=} ;; "
+            "--resume-state=*) resume=${arg#*=} ;; "
+            "esac; done\n"
+            'cp "$prompt" "$CAPTURE_DIR/prompt-$attempt.md"\n'
+            'printf "%s\\n" "$resume" >> "$CAPTURE_DIR/resume-paths"\n'
+            'if [ "$attempt" -eq 1 ]; then\n'
+            '  printf "blocking-session-456\\n" > "$resume"\n'
+            '  printf "capacity failure\\n" > "$log"\n'
+            "  exit 74\n"
+            "fi\n"
+            '[ "$(cat "$resume")" = "blocking-session-456" ]\n'
+            'printf "continued answer\\n" > "$log"\n'
+        )
+        adapter.chmod(0o755)
+        self.set_env("COUNT_FILE", str(count))
+        self.set_env("CAPTURE_DIR", str(captures))
+        prompt_file = captures / "prompt.md"
+        log_file = captures / "turn.log"
+
+        with mock.patch("specula.phaselib.time.sleep") as sleep:
+            rc, text = phaselib.run_agent_blocking(
+                adapter,
+                "original blocking prompt with detailed evidence",
+                prompt_file,
+                log_file,
+                phase_key="bug_confirmation",
+                work_dir=self.work_dir(),
+                claude_alias="profile",
+                transient_resumes=1,
+            )
+
+        self.assertEqual(rc, 0)
+        self.assertEqual(text, "continued answer\n")
+        self.assertEqual(count.read_text(), "xx")
+        sleep.assert_called_once_with(phaselib._transient_resume_delay(1))
+        self.assertEqual((captures / "prompt-1.md").read_text(), "original blocking prompt with detailed evidence")
+        self.assertEqual((captures / "prompt-2.md").read_text(), phaselib._SESSION_RESUME_PROMPT)
+        self.assertEqual((captures / "resume-paths").read_text().splitlines(), [str(captures / "turn.resume.json")] * 2)
+        self.assertEqual((captures / "turn.attempt-1.log").read_text(), "capacity failure\n")
+        self.assertEqual(log_file.read_text(), "continued answer\n")
+
+    def test_rate_limit_replay_preserves_exact_session_and_spent_retry_budgets(self) -> None:
+        adapter = self.tmp() / "adapter.sh"
+        count = self.tmp() / "count"
+        captures = self.tmp()
+        adapter.write_text(
+            "#!/bin/sh\n"
+            "set -eu\n"
+            'printf x >> "$COUNT_FILE"\n'
+            'attempt=$(wc -c < "$COUNT_FILE")\n'
+            'for arg do case "$arg" in '
+            "--prompt-file=*) prompt=${arg#*=} ;; "
+            "--log=*) log=${arg#*=} ;; "
+            "--resume-state=*) resume=${arg#*=} ;; "
+            "esac; done\n"
+            'if [ ! -f "$resume" ]; then printf "shared-session-789\\n" > "$resume"; fi\n'
+            '[ "$(cat "$resume")" = "shared-session-789" ]\n'
+            'cp "$prompt" "$CAPTURE_DIR/prompt-$attempt.md"\n'
+            'cat "$resume" >> "$CAPTURE_DIR/sessions"\n'
+            'printf "attempt-%s\\n" "$attempt" > "$log"\n'
+            'case "$attempt" in\n'
+            "  1) exit 74 ;;\n"
+            "  2) exit 76 ;;\n"
+            "  3) exit 75 ;;\n"
+            "  4) exit 76 ;;\n"
+            "  *) exit 99 ;;\n"
+            "esac\n"
+        )
+        adapter.chmod(0o755)
+        self.set_env("COUNT_FILE", str(count))
+        self.set_env("CAPTURE_DIR", str(captures))
+        state = phaselib.PolicyRetryState()
+        prompt_file = captures / "prompt.md"
+        log_file = captures / "turn.log"
+        with mock.patch("specula.phaselib.time.sleep") as sleep:
+            first_rc, first_text = phaselib.run_agent_blocking(
+                adapter,
+                "original prompt",
+                prompt_file,
+                log_file,
+                phase_key="bug_confirmation",
+                work_dir=self.work_dir(),
+                claude_alias="profile",
+                policy_retries=1,
+                transient_resumes=1,
+                policy_state=state,
+            )
+            second_rc, second_text = phaselib.run_agent_blocking(
+                adapter,
+                "original prompt",
+                prompt_file,
+                log_file,
+                phase_key="bug_confirmation",
+                work_dir=self.work_dir(),
+                claude_alias="profile",
+                policy_retries=1,
+                transient_resumes=1,
+                policy_state=state,
+            )
+
+        self.assertEqual((first_rc, first_text), (quota.RATE_LIMIT_RC, "attempt-3\n"))
+        self.assertEqual((second_rc, second_text), (POLICY_BLOCKED_RC, "attempt-4\n"))
+        self.assertEqual(count.read_text(), "xxxx")
+        sleep.assert_called_once_with(phaselib._transient_resume_delay(1))
+        self.assertEqual(state.policy_attempt, 1)
+        self.assertEqual(state.transient_attempt, 1)
+        self.assertEqual(state.invocation_attempt, 4)
+        self.assertEqual(state.resume_state, captures / "turn.resume.json")
+        self.assertEqual((captures / "sessions").read_text().splitlines(), ["shared-session-789"] * 4)
+        self.assertEqual((captures / "prompt-1.md").read_text(), "original prompt")
+        self.assertEqual((captures / "prompt-2.md").read_text(), phaselib._SESSION_RESUME_PROMPT)
+        self.assertEqual((captures / "prompt-3.md").read_text(), phaselib._POLICY_SESSION_RESUME_PROMPT)
+        self.assertEqual((captures / "prompt-4.md").read_text(), phaselib._SESSION_RESUME_PROMPT)
+        self.assertEqual((captures / "turn.attempt-3.log").read_text(), "attempt-3\n")
+        self.assertEqual(log_file.read_text(), "attempt-4\n")
+
+    def test_manual_blocking_resume_restores_retry_cursor_and_archive_number(self) -> None:
+        adapter = self.tmp() / "adapter.sh"
+        count = self.tmp() / "count"
+        captures = self.tmp()
+        adapter.write_text(
+            "#!/bin/sh\n"
+            "set -eu\n"
+            'printf x >> "$COUNT_FILE"\n'
+            'attempt=$(wc -c < "$COUNT_FILE")\n'
+            'for arg do case "$arg" in '
+            "--prompt-file=*) prompt=${arg#*=} ;; "
+            "--log=*) log=${arg#*=} ;; "
+            "--resume-state=*) resume=${arg#*=} ;; "
+            "esac; done\n"
+            'if [ ! -f "$resume" ]; then printf "manual-session\n" > "$resume"; fi\n'
+            'cp "$prompt" "$CAPTURE_DIR/prompt-$attempt.md"\n'
+            'printf "attempt-%s\n" "$attempt" > "$log"\n'
+            'case "$attempt" in\n'
+            "  1) exit 74 ;;\n"
+            "  2) exit 76 ;;\n"
+            "  3) exit 75 ;;\n"
+            "  4) exit 76 ;;\n"
+            "  *) exit 99 ;;\n"
+            "esac\n"
+        )
+        adapter.chmod(0o755)
+        run_dir = self.tmp()
+        resumelib.initialize_run(run_dir)
+        resumelib.save_configuration(run_dir, {"agent": adapter.stem})
+        self.set_env("SPECULA_RUN_DIR", str(run_dir))
+        self.set_env(resumelib.INVOCATION_ENV, "invocation-1")
+        self.set_env("COUNT_FILE", str(count))
+        self.set_env("CAPTURE_DIR", str(captures))
+        prompt_file = captures / "prompt.md"
+        log_file = captures / "turn.log"
+        logical = ("confirm", NAME, "finding", "MC-1", "1", "A")
+
+        with mock.patch("specula.phaselib.time.sleep"):
+            first_rc, _ = phaselib.run_agent_blocking(
+                adapter,
+                "original prompt",
+                prompt_file,
+                log_file,
+                phase_key="bug_confirmation",
+                work_dir=self.work_dir(),
+                claude_alias="profile",
+                policy_retries=1,
+                transient_resumes=1,
+                resume_logical=logical,
+                resume_phase="bug_confirmation",
+                resume_target=NAME,
+                resume_kind="finding-turn",
+                resume_finding_id="MC-1",
+            )
+        self.assertEqual(first_rc, quota.RATE_LIMIT_RC)
+
+        self.set_env(resumelib.INVOCATION_ENV, "invocation-2")
+        self.set_env(resumelib.MANUAL_ENV, "1")
+        second_rc, _ = phaselib.run_agent_blocking(
+            adapter,
+            "original prompt",
+            prompt_file,
+            log_file,
+            phase_key="bug_confirmation",
+            work_dir=self.work_dir(),
+            claude_alias="profile",
+            policy_retries=1,
+            transient_resumes=1,
+            resume_logical=logical,
+            resume_phase="bug_confirmation",
+            resume_target=NAME,
+            resume_kind="finding-turn",
+            resume_finding_id="MC-1",
+        )
+
+        self.assertEqual(second_rc, POLICY_BLOCKED_RC)
+        self.assertEqual(count.read_text(), "xxxx")
+        self.assertEqual((captures / "prompt-4.md").read_text(), phaselib._MANUAL_SESSION_RESUME_PROMPT)
+        for attempt in range(1, 4):
+            self.assertEqual(
+                (captures / f"turn.attempt-{attempt}.log").read_text(),
+                f"attempt-{attempt}\n",
+            )
+        entry = resumelib.active_entries(run_dir)[0]
+        self.assertEqual(entry["policy_attempt"], 1)
+        self.assertEqual(entry["transient_attempt"], 1)
+        self.assertEqual(entry["invocation_attempt"], 4)
+
+    def test_turn_phase_scopes_stop_gate_sets_cwd_and_removes_stale_log(self) -> None:
+        adapter = self.tmp() / "adapter.sh"
+        capture = self.tmp() / "capture.txt"
+        adapter.write_text(
+            "#!/bin/sh\n"
+            'printf \'%s\\n\' "$SPECULA_PHASE" "${SPECULA_STOP_GATE-unset}" '
+            '"$SPECULA_WORK_DIR" "$SPECULA_STOP_GATE_WORK_DIR" "$PWD" '
+            '"${SPECULA_SANDBOX_CONFIG-unset}" "$@" > "$CAPTURE_FILE"\n'
+            "exit 9\n"
+        )
+        adapter.chmod(0o755)
+        prompt_file = self.tmp() / "prompt.md"
+        log_file = self.tmp() / "turn.log"
+        log_file.write_text("stale output\n")
+        target_work_dir = self.work_dir()
+        target_work_dir.mkdir(parents=True)
+        gate_work_dir = self.tmp() / "finding"
+        gate_work_dir.mkdir()
+        agent_cwd = self.tmp()
+        malicious_config = agent_cwd / ".specula" / "sandbox.json"
+        malicious_config.parent.mkdir()
+        malicious_config.write_text('{"enabled": false}\n')
+        self.set_env("CAPTURE_FILE", str(capture))
+        self.set_env("SPECULA_STOP_GATE", "on")
+        self.set_env("SPECULA_SANDBOX", "on")
+
+        rc, text = phaselib.run_agent_blocking(
+            adapter,
+            "prompt body",
+            prompt_file,
+            log_file,
+            phase_key="bug_confirmation",
+            work_dir=target_work_dir,
+            claude_alias="profile",
+            gate_work_dir=gate_work_dir,
+            cwd=agent_cwd,
+            max_turns="7",
+        )
+
+        self.assertEqual(rc, 9)
+        self.assertEqual(text, "")
+        self.assertFalse(log_file.exists())
+        recorded = capture.read_text().splitlines()
+        self.assertEqual(
+            recorded[:5],
+            ["bug_confirmation_turn", "on", str(target_work_dir), str(gate_work_dir), str(agent_cwd)],
+        )
+        trusted_config = Path(recorded[5])
+        self.assertTrue(trusted_config.is_absolute())
+        self.assertTrue(trusted_config.is_file())
+        self.assertNotEqual(trusted_config, malicious_config)
+        self.assertIn("--max-turns=7", recorded)
+
+    def test_relative_paths_are_absolutized_before_cwd_switch(self) -> None:
+        base = self.tmp()
+        adapter = base / "adapter.sh"
+        capture = base / "capture.txt"
+        adapter.write_text(
+            "#!/bin/sh\n"
+            'printf \'%s\\n\' "$PWD" "$SPECULA_WORK_DIR" "$SPECULA_STOP_GATE_WORK_DIR" "$@" > "$CAPTURE_FILE"\n'
+        )
+        adapter.chmod(0o755)
+        for directory in ("target", "gate", "agent"):
+            (base / directory).mkdir()
+        old_cwd = Path.cwd()
+        os.chdir(base)
+        self.addCleanup(os.chdir, old_cwd)
+        self.set_env("CAPTURE_FILE", str(capture))
+
+        rc, _ = phaselib.run_agent_blocking(
+            Path("adapter.sh"),
+            "prompt body",
+            Path("finding/prompt.md"),
+            Path("finding/turn.log"),
+            phase_key="bug_confirmation",
+            work_dir=Path("target"),
+            gate_work_dir=Path("gate"),
+            cwd=Path("agent"),
+            claude_alias="profile",
+        )
+
+        self.assertEqual(rc, 0)
+        recorded = capture.read_text().splitlines()
+        self.assertEqual(recorded[:3], [str(base / "agent"), str(base / "target"), str(base / "gate")])
+        self.assertIn(f"--prompt-file={base / 'finding' / 'prompt.md'}", recorded)
+        self.assertIn(f"--log={base / 'finding' / 'turn.log'}", recorded)
+
+    def test_opencode_trusted_cwd_synchronizes_real_cwd_and_pwd(self) -> None:
+        base = self.tmp()
+        adapter = base / "opencode"
+        capture = base / "capture.json"
+        adapter.write_text(
+            "#!/usr/bin/env python3\n"
+            "import json, os\n"
+            "from pathlib import Path\n"
+            "Path(os.environ['CAPTURE_FILE']).write_text("
+            "json.dumps({'cwd': os.getcwd(), 'pwd': os.environ.get('PWD')}))\n"
+        )
+        adapter.chmod(0o755)
+        trusted_cwd = base / ".agent-cwd"
+        trusted_cwd.mkdir()
+        stale_cwd = base / "untrusted-repository"
+        stale_cwd.mkdir()
+        self.set_env("CAPTURE_FILE", str(capture))
+        self.set_env("PWD", str(stale_cwd))
+
+        rc, _ = phaselib.run_agent_blocking(
+            adapter,
+            "prompt body",
+            base / "finding" / "prompt.md",
+            base / "finding" / "turn.log",
+            phase_key="bug_confirmation",
+            work_dir=self.work_dir(),
+            cwd=trusted_cwd,
+            claude_alias="profile",
+        )
+
+        self.assertEqual(rc, 0)
+        recorded = json.loads(capture.read_text())
+        self.assertEqual(recorded, {"cwd": str(trusted_cwd), "pwd": str(trusted_cwd)})
+
+    def test_codex_returns_final_message_and_keeps_transcript(self) -> None:
+        adapter = self.tmp() / "codex.sh"
+        adapter.write_text("#!/bin/sh\nexit 0\n")
+        adapter.chmod(0o755)
+        prompt_file = self.tmp() / "prompt.md"
+        log_file = self.tmp() / "turn.log"
+
+        class _Result:
+            returncode = 0
+
+        def fake_run(_cmd: list[str], **_kwargs: Any) -> _Result:
+            log_file.write_text("Codex CLI transcript\ncommand output\n")
+            log_file.with_suffix(".last-message.txt").write_text("VERDICT: REPRODUCED\n")
+            return _Result()
+
+        with mock.patch("specula.phaselib.subprocess.run", fake_run):
+            rc, text = phaselib.run_agent_blocking(
+                adapter,
+                "prompt body",
+                prompt_file,
+                log_file,
+                phase_key="bug_confirmation",
+                work_dir=self.work_dir(),
+                claude_alias="profile",
+            )
+
+        self.assertEqual(rc, 0)
+        self.assertEqual(text, "VERDICT: REPRODUCED\n")
+        self.assertEqual(log_file.read_text(), "Codex CLI transcript\ncommand output\n")
+
+    def test_codex_missing_final_message_does_not_return_transcript(self) -> None:
+        adapter = self.tmp() / "codex.sh"
+        adapter.write_text("#!/bin/sh\nexit 0\n")
+        adapter.chmod(0o755)
+        prompt_file = self.tmp() / "prompt.md"
+        log_file = self.tmp() / "turn.log"
+
+        class _Result:
+            returncode = 0
+
+        def fake_run(_cmd: list[str], **_kwargs: Any) -> _Result:
+            log_file.write_text("successful CLI transcript without a final-message sidecar\n")
+            return _Result()
+
+        with mock.patch("specula.phaselib.subprocess.run", fake_run):
+            rc, text = phaselib.run_agent_blocking(
+                adapter,
+                "prompt body",
+                prompt_file,
+                log_file,
+                phase_key="bug_confirmation",
+                work_dir=self.work_dir(),
+                claude_alias="profile",
+            )
+
+        self.assertEqual(rc, 0)
+        self.assertEqual(text, "")
+        self.assertIn("successful CLI transcript", log_file.read_text())
+
+    def test_codex_non_log_suffix_uses_bash_compatible_sidecar(self) -> None:
+        adapter = self.tmp() / "codex.sh"
+        adapter.write_text("#!/bin/sh\nexit 0\n")
+        adapter.chmod(0o755)
+        prompt_file = self.tmp() / "prompt.md"
+        log_file = self.tmp() / "turn.output"
+        last_message_file = Path(str(log_file) + ".last-message.txt")
+
+        class _Result:
+            returncode = 0
+
+        def fake_run(_cmd: list[str], **_kwargs: Any) -> _Result:
+            log_file.write_text("transcript\n")
+            last_message_file.write_text("final answer\n")
+            return _Result()
+
+        with mock.patch("specula.phaselib.subprocess.run", fake_run):
+            rc, text = phaselib.run_agent_blocking(
+                adapter,
+                "prompt body",
+                prompt_file,
+                log_file,
+                phase_key="bug_confirmation",
+                work_dir=self.work_dir(),
+                claude_alias="profile",
+            )
+
+        self.assertEqual(rc, 0)
+        self.assertEqual(text, "final answer\n")
+        self.assertTrue(last_message_file.is_file())
+
+    def test_codex_does_not_reuse_stale_final_message(self) -> None:
+        adapter = self.tmp() / "codex.sh"
+        adapter.write_text("#!/bin/sh\nexit 9\n")
+        adapter.chmod(0o755)
+        prompt_file = self.tmp() / "prompt.md"
+        log_file = self.tmp() / "turn.log"
+        log_file.write_text("old transcript\n")
+        log_file.with_suffix(".last-message.txt").write_text("old answer\n")
+
+        rc, text = phaselib.run_agent_blocking(
+            adapter,
+            "prompt body",
+            prompt_file,
+            log_file,
+            phase_key="bug_confirmation",
+            work_dir=self.work_dir(),
+            claude_alias="profile",
+        )
+
+        self.assertEqual(rc, 9)
+        self.assertEqual(text, "")
+        self.assertFalse(log_file.with_suffix(".last-message.txt").exists())
+
+
+class TestProgressReporting(PhaseCase):
+    """Portable workspace monitoring plus richer events where supported."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        adapters = self.tmp() / "adapters"
+        adapters.mkdir()
+        self.patch_attr(phaselib, "LAUNCH_DIR", adapters.parent)
+        self.patch_attr(phaselib.Phase, "_acceptance", lambda _self, _ws, _names: None)
+        # These tests exercise process/progress handling, not the analysis or
+        # handoff gates. Keep their optional probes out of subprocess accounting.
+        self.patch_attr(phaselib.CodeAnalysisPhase, "check", lambda _self, _ws, _names: True)
+        self.patch_attr(phaselib.SpecGenerationPhase, "check", lambda _self, _ws, _names: True)
+        self.config = ProgressConfig(
+            poll_seconds=0.005,
+            change_report_seconds=0.0,
+            status_after_seconds=0.01,
+            status_repeat_seconds=0.01,
+        )
+        self.patch_attr(phaselib.Phase, "progress_config", self.config)
+        self.adapter = adapters / "fake.sh"
+
+    def write_adapter(self, body: str) -> None:
+        self.adapter.write_text("#!/usr/bin/env sh\nset -eu\n" + body)
+        self.adapter.chmod(0o755)
+
+    def run_fake(self) -> tuple[int, str]:
+        return self.run_phase(
+            "code_analysis",
+            [f"--agent={self.adapter.stem}", self.artifact_flag(), NAME],
+        )
+
+    def test_reports_agent_created_workspace_files(self) -> None:
+        self.write_adapter('printf "draft\\n" > "$SPECULA_WORK_DIR/modeling-brief.md"\nsleep 0.04\n')
+        rc, out = self.run_fake()
+        self.assertEqual(rc, 0, out)
+        self.assertIn(f"{NAME}: created modeling-brief.md", out)
+        self.assertIn(f"{NAME}: completed (exit 0)", out)
+
+    def test_main_writes_target_runtime_and_usage_record(self) -> None:
+        inherited = self.tmp() / "resource-env"
+        stale_usage = self.work_dir() / "agent.usage.json"
+        stale_usage.parent.mkdir(parents=True)
+        stale_usage.write_text(
+            '{"agent":"fake","total_cost_usd":9,"usage":{"total_tokens":999,"cached_input_tokens":900}}\n'
+        )
+        self.write_adapter(
+            'for arg do case "$arg" in --log=*) log=${arg#*=} ;; esac; done\n'
+            'printf "draft\\n" > "$SPECULA_WORK_DIR/modeling-brief.md"\n'
+            "usage=${log%.log}.usage.json\n"
+            'test ! -e "$usage"\n'
+            "printf '%s\\n' "
+            '\'{"agent":"fake","total_cost_usd":0,"usage":{"total_tokens":0,'
+            '"cached_input_tokens":0}}\' > "$usage"\n'
+            f'printf "%s\\n%s\\n%s\\n" "${{{resource_summary.RESOURCE_ROOT_ENV}-<unset>}}" '
+            f'"${{{resource_summary.RESOURCE_INVOCATION_ENV}-<unset>}}" '
+            f'"${{{resource_summary.RESOURCE_PHASE_ENV}-<unset>}}" > "{inherited}"\n'
+        )
+        invocation_id = "b" * 32
+        self.set_env(resource_summary.RESOURCE_ROOT_ENV, str(self.run_dir))
+        self.set_env(resource_summary.RESOURCE_INVOCATION_ENV, invocation_id)
+        self.set_env(resource_summary.RESOURCE_PHASE_ENV, "phase1")
+        output = io.StringIO()
+
+        with contextlib.redirect_stdout(output):
+            rc = phaselib.main(
+                [
+                    "code_analysis",
+                    f"--agent={self.adapter.stem}",
+                    self.artifact_flag(),
+                    NAME,
+                ]
+            )
+
+        self.assertEqual(rc, 0, output.getvalue())
+        record_path = self.work_dir() / resource_summary.INVOCATION_DIRNAME / f"{invocation_id}.json"
+        record = json.loads(record_path.read_text())
+        self.assertEqual(record["status"], "completed")
+        self.assertGreaterEqual(record["elapsed_seconds"], 0.0)
+        self.assertEqual([entry["path"] for entry in record["usage"]], ["agent.usage.json"])
+        self.assertEqual(inherited.read_text().splitlines(), ["<unset>", "<unset>", "<unset>"])
+
+    def test_usage_cleanup_failure_does_not_block_agent(self) -> None:
+        self.write_adapter(
+            'for arg do case "$arg" in --log=*) log=${arg#*=} ;; esac; done\n'
+            'printf "draft\\n" > "$SPECULA_WORK_DIR/modeling-brief.md"\n'
+            "usage=${log%.log}.usage.json\n"
+            "printf '%s\\n' "
+            '\'{"agent":"fake","total_cost_usd":1,"usage":{"total_tokens":100,'
+            '"cached_input_tokens":80}}\' > "$usage"\n'
+        )
+        invocation_id = "c" * 32
+        self.set_env(resource_summary.RESOURCE_ROOT_ENV, str(self.run_dir))
+        self.set_env(resource_summary.RESOURCE_INVOCATION_ENV, invocation_id)
+        self.set_env(resource_summary.RESOURCE_PHASE_ENV, "phase1")
+        output = io.StringIO()
+
+        with (
+            mock.patch.object(resource_summary, "_clear_stale_usage", side_effect=PermissionError("denied")),
+            contextlib.redirect_stdout(output),
+            contextlib.redirect_stderr(output),
+        ):
+            rc = phaselib.main(
+                [
+                    "code_analysis",
+                    f"--agent={self.adapter.stem}",
+                    self.artifact_flag(),
+                    NAME,
+                ]
+            )
+
+        self.assertEqual(rc, 0, output.getvalue())
+        self.assertIn("WARNING: resource summary", output.getvalue())
+        record_path = self.work_dir() / resource_summary.INVOCATION_DIRNAME / f"{invocation_id}.json"
+        record = json.loads(record_path.read_text())
+        self.assertFalse(record["usage_complete"])
+        self.assertEqual(record["usage"], [])
+
+    def test_main_keeps_completed_record_when_post_processing_raises(self) -> None:
+        invocation_id = "d" * 32
+        self.set_env(resource_summary.RESOURCE_ROOT_ENV, str(self.run_dir))
+        self.set_env(resource_summary.RESOURCE_INVOCATION_ENV, invocation_id)
+        self.set_env(resource_summary.RESOURCE_PHASE_ENV, "phase1")
+
+        def fail_after_success(_args: list[str]) -> int:
+            phaselib._resource_start_target(NAME, self.work_dir())
+            phaselib._resource_finish_target(NAME)
+            raise RuntimeError("post-processing failed")
+
+        with (
+            mock.patch.object(phaselib.PHASES["code_analysis"], "run", side_effect=fail_after_success),
+            self.assertRaisesRegex(RuntimeError, "post-processing failed"),
+        ):
+            phaselib.main(["code_analysis"])
+
+        record_path = self.work_dir() / resource_summary.INVOCATION_DIRNAME / f"{invocation_id}.json"
+        record = json.loads(record_path.read_text())
+        self.assertEqual(record["status"], "completed")
+
+    def test_direct_multi_target_command_shares_one_tlc_scope(self) -> None:
+        launch_dir = self.tmp()
+        capture_dir = self.tmp()
+        self.set_env("SPECULA_RUN_DIR", None)
+        self.set_env("SPECULA_TLC_SCOPE", None)
+        self.write_adapter(
+            'name=$(basename "$(dirname "$SPECULA_WORK_DIR")")\n'
+            f'printf "%s\\n" "$SPECULA_TLC_SCOPE" > "{capture_dir}/$name"\n'
+        )
+        previous = Path.cwd()
+        os.chdir(launch_dir)
+        self.addCleanup(os.chdir, previous)
+
+        rc, out = self.run_phase(
+            "code_analysis",
+            [f"--agent={self.adapter.stem}", self.artifact_flag(), "a|g|Go|r", "b|g|Go|r"],
+        )
+
+        self.assertEqual(rc, 0, out)
+        scopes = {(capture_dir / name).read_text().strip() for name in ("a", "b")}
+        self.assertEqual(len(scopes), 1)
+        self.assertTrue(Path(scopes.pop()).is_absolute())
+
+    def test_direct_phase_restores_isolated_run_tlc_policy(self) -> None:
+        capture = self.tmp() / "resources"
+        (self.run_dir / "tlc-resources.json").write_text(
+            '{"version": 1, "memory_limit": "64G", "worker_limit": "12"}\n'
+        )
+        self.write_adapter(f'printf "%s\\n" "$SPECULA_TLC_MEMORY_LIMIT" "$SPECULA_TLC_WORKER_LIMIT" > "{capture}"\n')
+
+        rc, out = self.run_fake()
+
+        self.assertEqual(rc, 0, out)
+        self.assertEqual(capture.read_text().splitlines(), ["64G", "12"])
+
+    def test_changes_during_cooldown_are_flushed_on_completion(self) -> None:
+        self.patch_attr(phaselib.Phase, "progress_config", replace(self.config, change_report_seconds=10.0))
+        self.write_adapter(
+            'printf "first\\n" > "$SPECULA_WORK_DIR/first.md"\n'
+            "sleep 0.03\n"
+            'printf "second\\n" > "$SPECULA_WORK_DIR/second.md"\n'
+            "sleep 0.03\n"
+        )
+        rc, out = self.run_fake()
+        self.assertEqual(rc, 0, out)
+        self.assertIn("first.md", out)
+        self.assertIn("second.md", out)
+
+    def test_sustained_agent_output_gets_sparse_status(self) -> None:
+        self.write_adapter(
+            'printf "starting\\n" > "$SPECULA_WORK_DIR/agent.log"\n'
+            "sleep 0.02\n"
+            'printf "working\\n" >> "$SPECULA_WORK_DIR/agent.log"\n'
+            "sleep 0.02\n"
+        )
+        rc, out = self.run_fake()
+        self.assertEqual(rc, 0, out)
+        self.assertIn(f"{NAME}: agent output is active", out)
+        self.assertIn(f"{NAME}: agent output is still active", out)
+
+    def test_codex_stream_events_are_shown_in_cli_output(self) -> None:
+        self.adapter = self.adapter.with_name("codex.sh")
+        events = [
+            json.dumps(
+                {
+                    "type": "item.started",
+                    "item": {
+                        "type": "command_execution",
+                        "command": "/bin/bash -lc rg editorRefreshScreen kilo.c",
+                    },
+                }
+            ),
+            json.dumps(
+                {
+                    "type": "item.completed",
+                    "item": {"type": "agent_message", "text": "I am tracing editor state."},
+                }
+            ),
+        ]
+        self.write_adapter(
+            f"printf '%s\\n' {' '.join(shlex.quote(event) for event in events)} "
+            '> "$SPECULA_ACTIVITY_LOG"\n'
+            "sleep 0.04\n"
+        )
+        rc, out = self.run_fake()
+        self.assertEqual(rc, 0, out)
+        self.assertIn(f"{NAME}: running rg editorRefreshScreen kilo.c", out)
+        self.assertIn(f"{NAME}: I am tracing editor state.", out)
+
+    def test_claude_stream_events_are_shown_in_cli_output(self) -> None:
+        self.adapter = self.adapter.with_name("claude-code.sh")
+        event = json.dumps(
+            {
+                "type": "assistant",
+                "message": {
+                    "content": [
+                        {"type": "text", "text": "Inspecting editor state."},
+                        {"type": "tool_use", "name": "Read", "input": {"file_path": "kilo.c"}},
+                    ]
+                },
+            }
+        )
+        self.write_adapter(f"printf '%s\\n' {shlex.quote(event)} > \"$SPECULA_ACTIVITY_LOG\"\nsleep 0.04\n")
+        rc, out = self.run_fake()
+        self.assertEqual(rc, 0, out)
+        self.assertIn(f"{NAME}: Inspecting editor state.", out)
+        self.assertIn(f"{NAME}: reading kilo.c", out)
+
+    def test_copilot_stream_events_are_shown_in_cli_output(self) -> None:
+        self.adapter = self.adapter.with_name("copilot-cli.sh")
+        events = [
+            json.dumps({"type": "assistant.message", "data": {"content": "Tracing input handling."}}),
+            json.dumps(
+                {
+                    "type": "tool.execution_start",
+                    "data": {"toolName": "bash", "arguments": {"command": "rg editorReadKey kilo.c"}},
+                }
+            ),
+        ]
+        self.write_adapter(
+            f"printf '%s\\n' {' '.join(shlex.quote(event) for event in events)} "
+            '> "$SPECULA_ACTIVITY_LOG"\n'
+            "sleep 0.04\n"
+        )
+        rc, out = self.run_fake()
+        self.assertEqual(rc, 0, out)
+        self.assertIn(f"{NAME}: Tracing input handling.", out)
+        self.assertIn(f"{NAME}: running rg editorReadKey kilo.c", out)
+
+    def test_structured_adapter_errors_are_shown_in_cli_output(self) -> None:
+        self.adapter = self.adapter.with_name("copilot-cli.sh")
+        event = json.dumps({"type": "session.error", "data": {"message": "BYOK providers require an explicit model."}})
+        self.write_adapter(f"printf '%s\\n' {shlex.quote(event)} > \"$SPECULA_ACTIVITY_LOG\"\nexit 1\n")
+        rc, out = self.run_fake()
+        self.assertEqual(rc, 1, out)
+        self.assertIn(f"{NAME}: adapter error: BYOK providers require an explicit model.", out)
+        self.assertIn(f"FAILED  {NAME}: adapter exited 1", out)
+
+    def test_quiet_agent_only_reports_completion(self) -> None:
+        self.write_adapter("sleep 0.06\n")
+        rc, out = self.run_fake()
+        self.assertEqual(rc, 0, out)
+        self.assertNotIn(f"{NAME}: no observable activity", out)
+        self.assertNotIn(f"{NAME}: quiet for", out)
+        self.assertIn(f"{NAME}: completed (exit 0)", out)
+
+        self.set_env("SPECULA_PROGRESS", "off")
+        rc, out = self.run_fake()
+        self.assertEqual(rc, 0, out)
+        self.assertNotIn(f"{NAME}: no observable activity", out)
+        self.assertNotIn(f"{NAME}: quiet for", out)
+        self.assertNotIn(f"{NAME}: completed (exit", out)
+
+    def test_progress_off_is_a_full_opt_out_not_a_mute(self) -> None:
+        # off must also restore the adapters' legacy argv: without the sidecar env
+        # they stay on --output-format json. It is the only escape hatch for a CLI
+        # that predates the streaming flags, and adapter failures now abort the run.
+        seen = self.work_dir() / "seen-env"
+        self.write_adapter(f'printf "%s\\n" "${{SPECULA_ACTIVITY_LOG:-<unset>}}" > "{seen}"\n')
+
+        rc, out = self.run_fake()
+        self.assertEqual(rc, 0, out)
+        self.assertTrue(seen.read_text().strip().endswith(".activity.jsonl"), seen.read_text())
+
+        self.set_env("SPECULA_PROGRESS", "off")
+        rc, out = self.run_fake()
+        self.assertEqual(rc, 0, out)
+        self.assertEqual(seen.read_text().strip(), "<unset>")
+
+    def test_progress_off_ignores_an_inherited_activity_log(self) -> None:
+        seen = self.work_dir() / "seen-env"
+        self.set_env("SPECULA_PROGRESS", "off")
+        self.set_env("SPECULA_ACTIVITY_LOG", "/tmp/leaked.jsonl")
+        self.write_adapter(f'printf "%s\\n" "${{SPECULA_ACTIVITY_LOG:-<unset>}}" > "{seen}"\n')
+        rc, out = self.run_fake()
+        self.assertEqual(rc, 0, out)
+        self.assertEqual(seen.read_text().strip(), "<unset>")
+
+    def test_sigterm_reaches_the_agent_cleanup_path(self) -> None:
+        # agents live in their own session now, so a `kill <launcher>` that does
+        # not unwind through run()'s cleanup would orphan them
+        previous = signal.getsignal(signal.SIGTERM)
+        with self.assertRaises(SystemExit) as ctx, phaselib._cleanup_on_signal():
+            self.assertIsNot(signal.getsignal(signal.SIGTERM), previous)  # armed before we fire
+            os.kill(os.getpid(), signal.SIGTERM)
+            for _ in range(200):  # the handler runs at the next bytecode boundary
+                time.sleep(0.005)
+        self.assertEqual(ctx.exception.code, 128 + signal.SIGTERM)
+        self.assertIs(signal.getsignal(signal.SIGTERM), previous)
+
+    def test_interrupt_cleanup_terminates_agent_process_group(self) -> None:
+        proc = subprocess.Popen(["sh", "-c", "sleep 30"], start_new_session=True)
+
+        def cleanup() -> None:
+            if proc.poll() is None:
+                with contextlib.suppress(ProcessLookupError):
+                    os.killpg(proc.pid, signal.SIGKILL)
+                proc.wait()
+
+        self.addCleanup(cleanup)
+        root = self.work_dir()
+        root.mkdir(parents=True, exist_ok=True)
+        agent = RunningAgent(
+            name=NAME,
+            proc=proc,
+            work_dir=root,
+            log=root / "agent.log",
+            activity_log=root / "agent.activity.jsonl",
+            ignored=set(),
+            reported_snapshot={},
+            log_stamp=None,
+            activity_stamp=None,
+            adapter_name="fake",
+        )
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            phaselib.Phase._terminate_agents([agent])
+        self.assertIsNotNone(proc.poll())
+        self.assertIn("stopping 1 agent", output.getvalue())
+
+    @unittest.skipUnless(Path("/proc").is_dir(), "requires procfs")
+    def test_cleanup_kills_descendant_after_group_leader_exits(self) -> None:
+        child_code = (
+            "import os,signal,time; "
+            "signal.signal(signal.SIGTERM, signal.SIG_IGN); "
+            "print(os.getpid(), flush=True); time.sleep(30)"
+        )
+        parent_code = (
+            "import subprocess,sys,time; "
+            "child=subprocess.Popen([sys.executable,'-c',sys.argv[1]], stdout=subprocess.PIPE, text=True); "
+            "print(child.stdout.readline().strip(), flush=True); time.sleep(30)"
+        )
+        proc = subprocess.Popen(
+            [sys.executable, "-c", parent_code, child_code],
+            stdout=subprocess.PIPE,
+            text=True,
+            start_new_session=True,
+        )
+        assert proc.stdout is not None
+        child_pid = int(proc.stdout.readline())
+        self.patch_attr(phaselib, "AGENT_TERMINATION_GRACE_SECONDS", 0.05)
+        root = self.work_dir()
+        root.mkdir(parents=True, exist_ok=True)
+        agent = RunningAgent(
+            name=NAME,
+            proc=proc,  # type: ignore[arg-type]  # text mode does not affect process-group operations
+            work_dir=root,
+            log=root / "agent.log",
+            activity_log=root / "agent.activity.jsonl",
+            ignored=set(),
+            reported_snapshot={},
+            log_stamp=None,
+            activity_stamp=None,
+            adapter_name="fake",
+        )
+        try:
+            phaselib.Phase._terminate_agents([agent], announce=False)
+            deadline = time.time() + 1.0
+            while Path(f"/proc/{child_pid}/status").exists() and time.time() < deadline:
+                status = Path(f"/proc/{child_pid}/status").read_text(errors="replace")
+                if "State:\tZ" in status:
+                    break
+                time.sleep(0.01)
+            status_path = Path(f"/proc/{child_pid}/status")
+            self.assertTrue(
+                not status_path.exists() or "State:\tZ" in status_path.read_text(errors="replace"),
+                "SIGTERM-ignoring descendant remained active",
+            )
+        finally:
+            with contextlib.suppress(ProcessLookupError):
+                os.killpg(proc.pid, signal.SIGKILL)
+            with contextlib.suppress(subprocess.TimeoutExpired):
+                proc.wait(timeout=1)
+
+    def test_cleanup_still_signals_when_progress_output_is_closed(self) -> None:
+        class BrokenOutput(io.StringIO):
+            def write(self, value: str) -> int:
+                raise BrokenPipeError
+
+        proc = subprocess.Popen(["sleep", "30"], start_new_session=True)
+        self.patch_attr(phaselib, "AGENT_TERMINATION_GRACE_SECONDS", 0.05)
+        root = self.work_dir()
+        root.mkdir(parents=True, exist_ok=True)
+        agent = RunningAgent(
+            name=NAME,
+            proc=proc,
+            work_dir=root,
+            log=root / "agent.log",
+            activity_log=root / "agent.activity.jsonl",
+            ignored=set(),
+            reported_snapshot={},
+            log_stamp=None,
+            activity_stamp=None,
+            adapter_name="fake",
+        )
+        with contextlib.redirect_stdout(BrokenOutput()):
+            phaselib.Phase._terminate_agents([agent])
+        self.assertIsNotNone(proc.poll())
+
+    def test_cleanup_reaps_leader_after_process_group_disappears(self) -> None:
+        class ExitedProc:
+            pid = 12345
+            waits = 0
+
+            def wait(self, timeout: float | None = None) -> int:
+                self.waits += 1
+                return 0
+
+        proc = ExitedProc()
+        self.patch_attr(phaselib.Phase, "_group_exists", staticmethod(lambda _pgid: False))
+        root = self.work_dir()
+        agent = RunningAgent(
+            name=NAME,
+            proc=proc,  # type: ignore[arg-type]
+            work_dir=root,
+            log=root / "agent.log",
+            activity_log=root / "agent.activity.jsonl",
+            ignored=set(),
+            reported_snapshot={},
+            log_stamp=None,
+            activity_stamp=None,
+            adapter_name="fake",
+        )
+        phaselib.Phase._terminate_agents([agent], announce=False)
+        self.assertEqual(proc.waits, 1)
+
+    def test_final_event_is_drained_when_reaper_first_observes_completion(self) -> None:
+        root = self.work_dir()
+        root.mkdir(parents=True, exist_ok=True)
+        activity = root / "agent.activity.jsonl"
+        activity.write_text("")
+        proc = subprocess.Popen(["true"], start_new_session=True)
+        proc.wait()
+        agent = RunningAgent(
+            name=NAME,
+            proc=proc,
+            work_dir=root,
+            log=root / "agent.log",
+            activity_log=activity,
+            ignored=set(),
+            reported_snapshot={},
+            log_stamp=None,
+            activity_stamp=progress_module.file_stamp(activity),
+            adapter_name="codex",
+        )
+        activity.write_text(json.dumps({"type": "item.completed", "item": {"type": "agent_message", "text": "final"}}))
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            live, completed = phaselib.Phase()._reap_agents([agent], show_progress=True)
+        self.assertEqual(live, [])
+        self.assertEqual(completed[0][1], 0)
+        self.assertIn(f"{NAME}: final", output.getvalue())
+        self.assertIn(f"{NAME}: completed (exit 0)", output.getvalue())
+
+    def test_post_spawn_pid_write_failure_cleans_up_unregistered_agent(self) -> None:
+        self.write_adapter("sleep 30\n")
+        pid_path = self.work_dir() / "agent.pid"
+        pid_path.mkdir(parents=True)
+        spawned: list[subprocess.Popen[bytes]] = []
+        real_popen = subprocess.Popen
+
+        def recording_popen(*args: Any, **kwargs: Any) -> subprocess.Popen[bytes]:
+            proc = cast("subprocess.Popen[bytes]", real_popen(*args, **kwargs))
+            spawned.append(proc)
+            return proc
+
+        self.patch_attr(subprocess, "Popen", recording_popen)
+        with self.assertRaises(IsADirectoryError):
+            self.run_fake()
+        self.assertEqual(len(spawned), 1)
+        self.assertIsNotNone(spawned[0].poll())
+        self.assertFalse(phaselib.Phase._group_exists(spawned[0].pid))
+
+    def test_post_spawn_agent_construction_failure_cleans_up_process(self) -> None:
+        class ConstructionFailure(Exception):
+            pass
+
+        self.write_adapter("sleep 30\n")
+        spawned: list[subprocess.Popen[bytes]] = []
+        real_popen = subprocess.Popen
+
+        def recording_popen(*args: Any, **kwargs: Any) -> subprocess.Popen[bytes]:
+            proc = cast("subprocess.Popen[bytes]", real_popen(*args, **kwargs))
+            spawned.append(proc)
+            return proc
+
+        def fail_construction(*args: Any, **kwargs: Any) -> RunningAgent:
+            raise ConstructionFailure
+
+        self.patch_attr(subprocess, "Popen", recording_popen)
+        self.patch_attr(progress_module, "RunningAgent", fail_construction)
+        self.patch_attr(phaselib, "AGENT_TERMINATION_GRACE_SECONDS", 0.05)
+        with self.assertRaises(ConstructionFailure):
+            self.run_fake()
+        self.assertEqual(len(spawned), 1)
+        self.assertIsNotNone(spawned[0].poll())
+        self.assertFalse(phaselib.Phase._group_exists(spawned[0].pid))
+
+    def test_rate_limit_retries_only_the_failed_target(self) -> None:
+        marker = self.tmp() / "limited-once"
+        counts = self.tmp()
+        invocation_id = "9" * 32
+        recorder = resource_summary.ResourceInvocationRecorder(
+            self.run_dir,
+            "phase1",
+            invocation_id,
+        )
+        self.patch_attr(phaselib, "_RESOURCE_RECORDER", recorder)
+        self.write_adapter(
+            'name=$(basename "$(dirname "$SPECULA_WORK_DIR")")\n'
+            f'printf x >> "{counts}/$name"\n'
+            f'if [ "$name" = b ] && [ ! -e "{marker}" ]; then touch "{marker}"; exit 75; fi\n'
+        )
+        waits: list[int] = []
+        self.patch_attr(phaselib.Phase, "_wait_for_rate_limit", lambda _self: waits.append(1))
+        self.set_env("SPECULA_RATE_LIMIT_REACTIVE", "1")
+        self.set_env("SPECULA_RATE_LIMIT_RETRIES", "2")
+        clock = mock.Mock()
+        clock.monotonic.side_effect = [0.0, 1.0, 10.0, 11.0, 100.0, 104.0]
+        with mock.patch.object(resource_summary, "time", clock):
+            rc, out = self.run_phase(
+                "code_analysis",
+                [
+                    "--max-parallel=1",
+                    f"--agent={self.adapter.stem}",
+                    self.artifact_flag(),
+                    "a|g|Go|r",
+                    "b|g|Go|r",
+                ],
+            )
+        self.assertEqual(rc, 0, out)
+        self.assertEqual((counts / "a").read_text(), "x")
+        self.assertEqual((counts / "b").read_text(), "xx")
+        self.assertEqual(waits, [1])
+        a_record = json.loads(
+            (self.work_dir("a") / resource_summary.INVOCATION_DIRNAME / f"{invocation_id}.json").read_text()
+        )
+        b_record = json.loads(
+            (self.work_dir("b") / resource_summary.INVOCATION_DIRNAME / f"{invocation_id}.json").read_text()
+        )
+        self.assertEqual(a_record["elapsed_seconds"], 1.0)
+        self.assertEqual(b_record["elapsed_seconds"], 5.0)
+
+    def test_retry_records_archived_and_final_usage(self) -> None:
+        count = self.tmp() / "count"
+        invocation_id = "7" * 32
+        recorder = resource_summary.ResourceInvocationRecorder(
+            self.run_dir,
+            "phase1",
+            invocation_id,
+        )
+        self.patch_attr(phaselib, "_RESOURCE_RECORDER", recorder)
+        self.set_env("COUNT_FILE", str(count))
+        self.set_env("SPECULA_RATE_LIMIT_REACTIVE", "1")
+        self.set_env("SPECULA_RATE_LIMIT_RETRIES", "1")
+        self.patch_attr(phaselib.Phase, "_wait_for_rate_limit", lambda _self: None)
+        self.write_adapter(
+            'printf x >> "$COUNT_FILE"\n'
+            'attempt=$(wc -c < "$COUNT_FILE")\n'
+            'for arg do case "$arg" in --log=*) log=${arg#*=} ;; esac; done\n'
+            "usage=${log%.log}.usage.json\n"
+            'if [ "$attempt" -eq 1 ]; then\n'
+            "  printf '%s\\n' "
+            '\'{"session_id":"claude-retry","total_cost_usd":0.001784,'
+            '"usage":{"input_tokens":400,"cache_creation_input_tokens":100,'
+            '"cache_read_input_tokens":200,"output_tokens":40},"model_usage":{}}\' > "$usage"\n'
+            "  stale=${usage%.json}.attempt-99.json\n"
+            "  printf '%s\\n' "
+            '\'{"session_id":"stale","total_cost_usd":99,'
+            '"usage":{"input_tokens":9999,"cache_creation_input_tokens":0,'
+            '"cache_read_input_tokens":0,"output_tokens":0},"model_usage":{}}\' > "$stale"\n'
+            "  exit 75\n"
+            "fi\n"
+            "printf '%s\\n' "
+            '\'{"session_id":"claude-retry","total_cost_usd":0.00143,'
+            '"usage":{"input_tokens":100,"cache_creation_input_tokens":50,'
+            '"cache_read_input_tokens":70,"output_tokens":30},"model_usage":{}}\' > "$usage"\n'
+            'printf "brief\\n" > "$SPECULA_WORK_DIR/modeling-brief.md"\n'
+        )
+
+        rc, out = self.run_fake()
+
+        self.assertEqual(rc, 0, out)
+        self.assertTrue((self.work_dir() / "agent.usage.attempt-99.json").is_file())
+        record_path = self.work_dir() / resource_summary.INVOCATION_DIRNAME / f"{invocation_id}.json"
+        record = json.loads(record_path.read_text())
+        self.assertTrue(record["usage_complete"])
+        self.assertEqual(
+            [entry["path"] for entry in record["usage"]],
+            ["agent.usage.attempt-1.json", "agent.usage.json"],
+        )
+        self.assertEqual([entry["total_tokens"] for entry in record["usage"]], [740, 250])
+
+    def test_all_agents_launched_is_announced_after_pending_is_empty(self) -> None:
+        self.write_adapter("sleep 0.02\n")
+        rc, out = self.run_phase(
+            "code_analysis",
+            ["--max-parallel=1", f"--agent={self.adapter.stem}", self.artifact_flag(), "a|g|Go|r", "b|g|Go|r"],
+        )
+        self.assertEqual(rc, 0, out)
+        self.assertLess(out.index("Launching agent: b"), out.index("All agents launched. Waiting..."))
+
+    def test_rate_limit_stops_launching_unstarted_targets_without_reactive_retry(self) -> None:
+        counts = self.tmp()
+        self.write_adapter(
+            'name=$(basename "$(dirname "$SPECULA_WORK_DIR")")\n'
+            f'printf x >> "{counts}/$name"\n'
+            '[ "$name" != a ] || exit 75\n'
+        )
+        rc, out = self.run_phase(
+            "code_analysis",
+            ["--max-parallel=1", f"--agent={self.adapter.stem}", self.artifact_flag(), "a|g|Go|r", "b|g|Go|r"],
+        )
+        self.assertEqual(rc, quota.RATE_LIMIT_RC, out)
+        self.assertEqual((counts / "a").read_text(), "x")
+        self.assertFalse((counts / "b").exists())
+        self.assertIn("skipping 1 unstarted target(s): b", out)
+        self.assertNotIn("All agents launched. Waiting...", out)
+
+    def test_rate_limit_retries_are_bounded_per_target(self) -> None:
+        count = self.tmp() / "count"
+        self.write_adapter(f'printf x >> "{count}"\nexit 75\n')
+        waits: list[int] = []
+        self.patch_attr(phaselib.Phase, "_wait_for_rate_limit", lambda _self: waits.append(1))
+        self.set_env("SPECULA_RATE_LIMIT_REACTIVE", "1")
+        self.set_env("SPECULA_RATE_LIMIT_RETRIES", "1")
+        rc, out = self.run_fake()
+        self.assertEqual(rc, quota.RATE_LIMIT_RC, out)
+        self.assertEqual(count.read_text(), "xx")
+        self.assertEqual(waits, [1])
+
+    def test_exhausted_rate_limit_reports_unstarted_targets(self) -> None:
+        counts = self.tmp()
+        self.write_adapter(
+            'name=$(basename "$(dirname "$SPECULA_WORK_DIR")")\n'
+            f'printf x >> "{counts}/$name"\n'
+            '[ "$name" != a ] || exit 75\n'
+        )
+        waits: list[int] = []
+        self.patch_attr(phaselib.Phase, "_wait_for_rate_limit", lambda _self: waits.append(1))
+        self.set_env("SPECULA_RATE_LIMIT_REACTIVE", "1")
+        self.set_env("SPECULA_RATE_LIMIT_RETRIES", "1")
+        rc, out = self.run_phase(
+            "code_analysis",
+            ["--max-parallel=1", f"--agent={self.adapter.stem}", self.artifact_flag(), "a|g|Go|r", "b|g|Go|r"],
+        )
+        self.assertEqual(rc, quota.RATE_LIMIT_RC, out)
+        self.assertEqual((counts / "a").read_text(), "xx")
+        self.assertFalse((counts / "b").exists())
+        self.assertEqual(waits, [1])
+        self.assertIn("skipping 1 unstarted target(s): b", out)
+
+    def test_concurrent_permanent_failure_prevents_rate_limit_retry(self) -> None:
+        self.write_adapter('name=$(basename "$(dirname "$SPECULA_WORK_DIR")")\n[ "$name" = a ] && exit 75\nexit 9\n')
+        waits: list[int] = []
+        self.patch_attr(phaselib.Phase, "_wait_for_rate_limit", lambda _self: waits.append(1))
+        self.set_env("SPECULA_RATE_LIMIT_REACTIVE", "1")
+        rc, out = self.run_phase(
+            "code_analysis",
+            ["--max-parallel=2", f"--agent={self.adapter.stem}", self.artifact_flag(), "a|g|Go|r", "b|g|Go|r"],
+        )
+        self.assertEqual(rc, 9, out)
+        self.assertEqual(waits, [])
+
+    def test_permanent_failure_does_not_skip_independent_pending_targets(self) -> None:
+        counts = self.tmp()
+        self.write_adapter(
+            'name=$(basename "$(dirname "$SPECULA_WORK_DIR")")\n'
+            f'printf x >> "{counts}/$name"\n'
+            '[ "$name" != a ] || exit 9\n'
+        )
+        rc, out = self.run_phase(
+            "code_analysis",
+            ["--max-parallel=1", f"--agent={self.adapter.stem}", self.artifact_flag(), "a|g|Go|r", "b|g|Go|r"],
+        )
+        self.assertEqual(rc, 9, out)
+        self.assertEqual((counts / "a").read_text(), "x")
+        self.assertEqual((counts / "b").read_text(), "x")
+
+    def test_permanent_failure_takes_precedence_over_rate_limit(self) -> None:
+        self.assertEqual(phaselib.Phase._failure_code([("limited", 75), ("broken", 9)]), 9)
+
+
+class TestSummarize(PhaseCase):
+    """The post-launch Results block each phase prints. Dry-run/--check return
+    before the launch loop, so nothing else reaches summarize(); these seed the
+    output files and call it directly (no agent). Replaces the retired summary_*
+    goldens, incl. the non-UTF-8 _wc_l byte-count case."""
+
+    class Case(TypedDict):
+        name: str
+        phase: str
+        files: dict[str, str | bytes]
+        want: list[str]
+
+    CASES: list[Case] = [
+        {
+            "name": "code_analysis/brief",
+            "phase": "code_analysis",
+            "files": {"modeling-brief.md": "a\nb\nc\n"},
+            "want": [f"OK  {NAME} -> modeling-brief.md (3 lines)"],
+        },
+        {
+            "name": "code_analysis/report-only",
+            "phase": "code_analysis",
+            "files": {"analysis-report.md": "x\ny\n"},
+            "want": [f"~~  {NAME} -> analysis-report.md only (2 lines, no modeling brief)"],
+        },
+        {
+            "name": "code_analysis/none",
+            "phase": "code_analysis",
+            "files": {},
+            "want": [f"--  {NAME} (no output)"],
+        },
+        {
+            # _wc_l counts \n by bytes (wc -l): a \xff line with no trailing newline
+            # must count, not crash. Replaces summary_code_analysis_nonutf8.
+            "name": "code_analysis/nonutf8-bytes",
+            "phase": "code_analysis",
+            "files": {"modeling-brief.md": b"line1\n\xff\xfe line2 no newline"},
+            "want": [f"OK  {NAME} -> modeling-brief.md (1 lines)"],
+        },
+        {
+            "name": "spec_generation/complete",
+            "phase": "spec_generation",
+            "files": {f"spec/{f}": "l1\nl2\n" for f in ("base.tla", "MC.tla", "Trace.tla", "instrumentation-spec.md")},
+            "want": [f"OK  {NAME} -> 4/4 files (base.tla: 2 lines)"],
+        },
+        {
+            "name": "spec_generation/incomplete",
+            "phase": "spec_generation",
+            "files": {"spec/MC.tla": "x\n"},
+            "want": [f"~~  {NAME} -> 1/4 files (incomplete)", "missing: base.tla"],
+        },
+        {
+            "name": "harness_generation/run+traces",
+            "phase": "harness_generation",
+            "files": {"harness/run.sh": "#!/bin/sh\n", "traces/t1.ndjson": "{}\n"},
+            "want": [f"OK  {NAME} -> run.sh: yes, traces: 1", "warning: missing INSTRUMENTATION.md"],
+        },
+        {
+            "name": "harness_generation/none",
+            "phase": "harness_generation",
+            "files": {},
+            "want": [f"--  {NAME} (no harness output)"],
+        },
+        {
+            "name": "spec_validation/changelog",
+            "phase": "spec_validation",
+            "files": {"spec/changelog.md": "c1\nc2\nc3\n"},
+            "want": [f"{NAME}: changelog written (3 lines)"],
+        },
+        {
+            "name": "spec_validation/empty-changelog",
+            "phase": "spec_validation",
+            "files": {"spec/changelog.md": ""},
+            "want": [f"{NAME}: changelog empty (check log)"],
+        },
+        {
+            "name": "bug_confirmation/repro-count",
+            "phase": "bug_confirmation",
+            "files": {
+                "confirmed-bugs.md": "b1\nb2\n",
+                "repro/test_bug1.py": "assert True\n",
+                "repro/nested/test_bug2.py": "assert True\n",
+            },
+            "want": [f"{NAME}: confirmed-bugs.md written (2 lines, repro/ tests: 2)"],
+        },
+        {
+            "name": "bug_classification/severity",
+            "phase": "bug_classification",
+            "files": {
+                "bug-severity.md": (
+                    "- Total entries: 9\n"
+                    "- Reproduced bugs: 2\n"
+                    "- Severity-bearing findings: 2\n"
+                    "- Critical: 1\n"
+                    "- High: 1\n"
+                    "- Medium: 1\n"
+                    "- Low: 1\n"
+                    "- No-severity dispositions: 5\n"
+                )
+            },
+            "want": [f"{NAME}: entries=9  bugs=2 findings=2  C=1 H=1 M=1 L=1  dispositions=5"],
+        },
+        {
+            "name": "bug_classification/no-report",
+            "phase": "bug_classification",
+            "files": {},
+            "want": [f"{NAME}: (no report — check log)"],
+        },
+    ]
+
+    def test_results_block(self) -> None:
+        for i, tc in enumerate(self.CASES):
+            with self.subTest(tc["name"]):
+                name = f"t{i}"  # fresh work dir per case so seeds don't leak
+                for rel, content in tc["files"].items():
+                    p = self.work_dir(name) / rel
+                    p.parent.mkdir(parents=True, exist_ok=True)
+                    p.write_bytes(content) if isinstance(content, bytes) else p.write_text(content)
+                buf = io.StringIO()
+                with contextlib.redirect_stdout(buf):
+                    phaselib.PHASES[tc["phase"]].summarize(phaselib.Workspace([name]), [name])
+                got = buf.getvalue()
+                for want in tc["want"]:
+                    self.assertIn(want.replace(NAME, name), got)
+
+
+class TestModelEffortLiveLaunch(PhaseCase):
+    """Normal batch launch path (the non-blocking sibling of confirmation)."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.adapters = self.tmp() / "adapters"
+        self.adapters.mkdir()
+        self.patch_attr(phaselib, "LAUNCH_DIR", self.adapters.parent)
+        self.patch_attr(phaselib.Phase, "_acceptance", lambda _self, _ws, _names: None)
+        self.patch_attr(phaselib.SpecGenerationPhase, "check", lambda _self, _ws, _names: True)
+        self.set_env("SPECULA_PROGRESS", "off")
+
+    def launch(self, adapter_name: str, extra: list[str] | None = None) -> list[str]:
+        record = self.tmp() / "argv"
+        adapter = self.adapters / f"{adapter_name}.sh"
+        adapter.write_text(f'#!/usr/bin/env sh\nprintf "%s\\n" "$@" > "{record}"\n')
+        adapter.chmod(0o755)
+        rc, out = self.run_phase(
+            "code_analysis",
+            [f"--agent={adapter_name}", *(extra or []), self.artifact_flag(), NAME],
+        )
+        self.assertEqual(rc, 0, out)
+        return record.read_text().splitlines()
+
+    def test_claude_default_max_blocks_ambient_downgrade(self) -> None:
+        self.set_env("CLAUDE_EFFORT", "low")
+        argv = self.launch("claude-code")
+        self.assertIn("--effort=max", argv)
+
+    def test_non_claude_adapters_have_no_forced_effort(self) -> None:
+        for adapter in ("codex", "copilot-cli"):
+            with self.subTest(adapter=adapter):
+                argv = self.launch(adapter)
+                self.assertFalse(any(a.startswith("--effort=") for a in argv))
+
+    def test_specula_env_and_explicit_empty_precedence(self) -> None:
+        self.set_env("SPECULA_MODEL", "env-model")
+        self.set_env("SPECULA_EFFORT", "high")
+        argv = self.launch("codex")
+        self.assertIn("--model=env-model", argv)
+        self.assertIn("--effort=high", argv)
+
+        argv = self.launch("claude-code", ["--model=", "--effort="])
+        self.assertIn("--model=", argv)
+        self.assertIn("--effort=", argv)
+        self.assertNotIn("--effort=max", argv)
+        self.assertNotIn("--model=env-model", argv)
+        self.assertNotIn("--effort=high", argv)
+
+    def test_fresh_phase_fails_if_stale_resume_state_cannot_be_cleared(self) -> None:
+        marker = self.tmp() / "launched"
+        adapter = self.adapters / "codex.sh"
+        adapter.write_text(f'#!/usr/bin/env sh\ntouch "{marker}"\n')
+        adapter.chmod(0o755)
+        state = self.work_dir() / "agent.resume.json"
+        state.mkdir(parents=True)
+
+        with self.assertRaisesRegex(RuntimeError, "cannot clear stale resume state"):
+            self.run_phase(
+                "code_analysis",
+                ["--agent=codex", self.artifact_flag(), NAME],
+            )
+
+        self.assertFalse(marker.exists())
+
+    def test_snapshot_agent_runs_from_private_source(self) -> None:
+        launch_cwd = self.tmp()
+        launch_config = launch_cwd / ".specula" / "sandbox.json"
+        launch_config.parent.mkdir()
+        launch_config.write_text('{"enabled": true}\n')
+        run_dir = launch_cwd / "relative-run"
+        run_dir.mkdir()
+        original = self.tmp() / "original"
+        original.mkdir()
+        (original / "tracked.txt").write_text("original\n")
+        private = snapshotlib.prepare_sources(run_dir, {NAME: original})[NAME].source
+        private_config = private / ".specula" / "sandbox.json"
+        private_config.parent.mkdir()
+        private_config.write_text('{"enabled": false}\n')
+        record = self.tmp() / "cwd"
+        adapter = self.adapters / "fake.sh"
+        adapter.write_text(
+            "#!/usr/bin/env sh\n"
+            "for arg do\n"
+            '  case "$arg" in --prompt-file=*) [ -f "${arg#*=}" ] || exit 42 ;; esac\n'
+            "done\n"
+            f'printf "%s\\n%s\\n%s\\n%s\\n%s\\n" "$(pwd -P)" "$PWD" "$SPECULA_TARGET_REPO_DIR" '
+            f'"$SPECULA_SANDBOX_CONFIG" "$SPECULA_SANDBOX_EXTRA_WRITE" > "{record}"\n'
+            'printf "agent change\\n" > agent-relative.txt\n'
+        )
+        adapter.chmod(0o755)
+        old_cwd = Path.cwd()
+        os.chdir(launch_cwd)
+        self.addCleanup(os.chdir, old_cwd)
+        self.set_env("PWD", str(launch_cwd))
+        self.set_env("SPECULA_RUN_DIR", "relative-run")
+        self.set_env("SPECULA_SANDBOX", "on")
+        self.set_env("SPECULA_SANDBOX_EXTRA_WRITE", "/cache")
+
+        rc, out = self.run_phase("code_analysis", ["--agent=fake", NAME])
+
+        self.assertEqual(rc, 0, out)
+        recorded = record.read_text().splitlines()
+        self.assertEqual(recorded[:4], [str(private), str(private), str(private), str(launch_config)])
+        self.assertEqual(recorded[4].split(os.pathsep), ["/cache", str(private)])
+        self.assertTrue((private / "agent-relative.txt").is_file())
+        self.assertFalse((original / "agent-relative.txt").exists())
+        self.assertFalse((launch_cwd / "agent-relative.txt").exists())
+        snapshotlib.capture_changes(run_dir)
+        self.assertIn(b"agent-relative.txt", (run_dir / NAME / "changes.patch").read_bytes())
+
+    def test_snapshot_metadata_without_map_stops_before_agent_launch(self) -> None:
+        original = self.tmp() / "original"
+        original.mkdir()
+        private = self.run_dir / NAME / "source"
+        private.mkdir(parents=True)
+        (self.run_dir / "run.json").write_text('{"source_mode": "snapshot"}\n')
+        marker = self.tmp() / "launched"
+        adapter = self.adapters / "fake.sh"
+        adapter.write_text(f'#!/usr/bin/env sh\ntouch "{marker}"\nprintf x > agent-relative.txt\n')
+        adapter.chmod(0o755)
+        old_cwd = Path.cwd()
+        os.chdir(original)
+        self.addCleanup(os.chdir, old_cwd)
+        self.set_env("PWD", str(original))
+
+        rc, out = self.run_phase(
+            "code_analysis",
+            ["--agent=fake", f"--artifact={original}", NAME],
+        )
+
+        self.assertEqual(rc, 1, out)
+        self.assertIn("private source map is missing or unsafe", out)
+        self.assertFalse(marker.exists())
+        self.assertFalse((original / "agent-relative.txt").exists())
+        self.assertFalse((private / "agent-relative.txt").exists())
+
+    def test_non_git_snapshot_cannot_discover_outer_repository(self) -> None:
+        outer = self.tmp()
+        subprocess.run(["git", "init", "--quiet", str(outer)], check=True)
+        outer_config = outer / ".git" / "config"
+        config_before = outer_config.read_bytes()
+        run_dir = outer / "runs" / "test"
+        run_dir.mkdir(parents=True)
+        original = self.tmp()
+        (original / "plain.txt").write_text("plain source\n")
+        private = snapshotlib.prepare_sources(run_dir, {NAME: original})[NAME].source
+        record = self.tmp() / "git-discovery"
+        adapter = self.adapters / "fake.sh"
+        adapter.write_text(
+            "#!/usr/bin/env sh\n"
+            "git config --local specula.private-probe touched >/dev/null 2>&1\n"
+            "probe_rc=$?\n"
+            f'printf "%s\\n%s\\n%s\\n%s\\n%s\\n%s\\n%s\\n" "$GIT_CEILING_DIRECTORIES" "$probe_rc" '
+            f'"${{GIT_DIR-unset}}" "${{GIT_EXTERNAL_DIFF-unset}}" "$GIT_SSH_COMMAND" "$GIT_ASKPASS" '
+            f'"$SPECULA_SOURCE_SNAPSHOT" > "{record}"\n'
+        )
+        adapter.chmod(0o755)
+        self.set_env("SPECULA_RUN_DIR", str(run_dir))
+        self.set_env("GIT_DIR", str(outer / ".git"))
+        self.set_env("GIT_WORK_TREE", str(outer))
+        self.set_env("GIT_CEILING_DIRECTORIES", "/untrusted")
+        self.set_env("GIT_EXTERNAL_DIFF", str(original / "external-diff.sh"))
+        self.set_env("GIT_SSH_COMMAND", "ssh -i private-key")
+        self.set_env("GIT_ASKPASS", "/usr/bin/askpass")
+
+        rc, out = self.run_phase("code_analysis", ["--agent=fake", NAME])
+
+        self.assertEqual(rc, 0, out)
+        ceiling, probe_rc, git_dir, external_diff, ssh_command, askpass, snapshot_mode = record.read_text().splitlines()
+        self.assertEqual(ceiling, str(private.parent))
+        self.assertNotEqual(probe_rc, "0")
+        self.assertEqual(git_dir, "unset")
+        self.assertEqual(external_diff, "unset")
+        self.assertEqual(ssh_command, "ssh -i private-key")
+        self.assertEqual(askpass, "/usr/bin/askpass")
+        self.assertEqual(snapshot_mode, "1")
+        self.assertEqual(outer_config.read_bytes(), config_before)
+
+    def test_in_place_agent_keeps_launch_cwd(self) -> None:
+        launch_cwd = self.tmp()
+        artifact = self.tmp() / "artifact"
+        artifact.mkdir()
+        record = self.tmp() / "cwd"
+        adapter = self.adapters / "fake.sh"
+        adapter.write_text(f'#!/usr/bin/env sh\nprintf "%s\\n%s\\n" "$(pwd -P)" "$PWD" > "{record}"\n')
+        adapter.chmod(0o755)
+        old_cwd = Path.cwd()
+        os.chdir(launch_cwd)
+        self.addCleanup(os.chdir, old_cwd)
+        self.set_env("PWD", str(launch_cwd))
+
+        rc, out = self.run_phase("code_analysis", ["--agent=fake", f"--artifact={artifact}", NAME])
+
+        self.assertEqual(rc, 0, out)
+        self.assertEqual(record.read_text().splitlines(), [str(launch_cwd), str(launch_cwd)])
+
+
+class TestReviewPhase(PhaseCase):
+    """The review agent overrides run() wholesale; its contract is the prompt it
+    assembles (no --dry-run, so drive the pure builders directly to stay off the
+    network) plus its arg validation."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.patch_attr(phaselib.Phase, "progress_config", ProgressConfig(poll_seconds=0.005))
+
+    def review(self) -> phaselib.ReviewPhase:
+        return phaselib.ReviewPhase()
+
+    def install_adapter(self, name: str, body: str) -> Path:
+        adapters = self.tmp() / "adapters"
+        adapters.mkdir()
+        self.patch_attr(phaselib, "LAUNCH_DIR", adapters.parent)
+        adapter = adapters / f"{name}.sh"
+        adapter.write_text("#!/usr/bin/env sh\nset -eu\n" + body)
+        adapter.chmod(0o755)
+        return adapter
+
+    def test_analysis_prompt_contract(self) -> None:
+        wd = self.work_dir()
+        body = self.review()._analysis_prompt(wd, NAME)
+        self.assertIn(f"Write your review to: {wd}/review-analysis.md", body)
+        self.assertIn(str(wd / "modeling-brief.md"), body)
+        self.assertIn("## Overall: X/35", body)
+
+    def test_specgen_prompt_contract(self) -> None:
+        wd = self.work_dir()
+        body = self.review()._specgen_prompt(wd, NAME)
+        self.assertIn(str(wd / "spec" / "review-specgen.md"), body)
+        self.assertIn(str(wd / "spec" / "base.tla"), body)
+        self.assertIn("## Overall: X/40", body)
+
+    def test_validation_prompt_contract(self) -> None:
+        wd = self.work_dir()
+        body = self.review()._validation_prompt(wd, NAME)
+        self.assertIn(str(wd / "spec" / "review-validation.md"), body)
+        self.assertIn("Ready for trace validation", body)
+
+    def test_requires_phase_and_targets(self) -> None:
+        for argv in ([], ["analysis"]):  # no phase / no targets
+            with self.subTest(argv=argv):
+                rc, out = self.run_phase("review", argv)
+                self.assertEqual(rc, 1)
+                self.assertIn("review <analysis|specgen|validation>", out)
+
+    def test_unknown_agent(self) -> None:
+        rc, out = self.run_phase("review", ["analysis", "--agent=bogus", NAME])
+        self.assertEqual(rc, 1)
+        self.assertIn("Unknown agent 'bogus'", out)
+
+    def test_help(self) -> None:
+        for argv in (["--help"], ["-h"], ["analysis", "--help"], ["analysis", "-h"]):
+            with self.subTest(argv=argv):
+                rc, out = self.run_phase("review", argv)
+                self.assertEqual(rc, 0)
+                self.assertIn("Run a review agent", out)
+                self.assertIn("specula review <phase>", out)
+                self.assertIn("--model=NAME", out)
+                self.assertIn("--effort=LEVEL", out)
+                self.assertIn("--policy-retries=N", out)
+                self.assertIn("default: 20", out)
+                self.assertIn(".specula-output/review-analysis.md", out)
+                self.assertIn(".specula-output/spec/review-specgen.md", out)
+                self.assertIn(".specula-output/spec/review-validation.md", out)
+
+    def test_review_rejects_invalid_policy_retry_values(self) -> None:
+        for value in ("", "-1", "1.5", "bad", "+1"):
+            with self.subTest(value=value):
+                rc, out = self.run_phase("review", ["analysis", f"--policy-retries={value}", NAME])
+                self.assertEqual(rc, 1)
+                self.assertIn("Invalid --policy-retries", out)
+                self.assertIn("non-negative integer", out)
+
+    def test_fresh_review_fails_if_stale_resume_state_cannot_be_cleared(self) -> None:
+        marker = self.tmp() / "launched"
+        adapter = self.install_adapter("codex", f'touch "{marker}"\n')
+        state = self.work_dir() / "review-analysis.resume.json"
+        state.mkdir(parents=True)
+
+        with self.assertRaisesRegex(RuntimeError, "cannot clear stale resume state"):
+            self.review()._launch_review(
+                phaselib.Workspace([NAME]),
+                NAME,
+                "analysis",
+                adapter,
+                "profile",
+            )
+
+        self.assertFalse(marker.exists())
+
+    def test_review_finishes_resource_record_before_resume_completion(self) -> None:
+        self.seed(["modeling-brief.md"])
+        self.install_adapter(
+            "fake",
+            "log=\n"
+            'for arg do case "$arg" in --log=*) log=${arg#*=} ;; esac; done\n'
+            'printf "review\\n" > "$SPECULA_WORK_DIR/review-analysis.md"\n'
+            'printf "done\\n" > "$log"\n',
+        )
+        invocation_id = "a" * 32
+        recorder = resource_summary.ResourceInvocationRecorder(
+            self.run_dir,
+            "phase1",
+            invocation_id,
+        )
+        self.patch_attr(phaselib, "_RESOURCE_RECORDER", recorder)
+        record_path = self.work_dir() / resource_summary.INVOCATION_DIRNAME / f"{invocation_id}.json"
+
+        def fail_after_check(_logical: tuple[str, ...]) -> None:
+            self.assertEqual(json.loads(record_path.read_text())["status"], "completed")
+            raise RuntimeError("completion interrupted")
+
+        self.patch_attr(resumelib, "mark_completed", fail_after_check)
+
+        with self.assertRaisesRegex(RuntimeError, "completion interrupted"):
+            self.run_phase("review", ["analysis", "--agent=fake", NAME])
+
+        self.assertEqual(json.loads(record_path.read_text())["status"], "completed")
+
+    def test_manual_resume_reaches_exact_session_for_each_review_phase(self) -> None:
+        captures = self.tmp()
+        self.set_env("CAPTURE_DIR", str(captures))
+        self.set_env("SPECULA_PROGRESS", "off")
+        self.install_adapter(
+            "fake",
+            "log= resume=\n"
+            'for arg do case "$arg" in '
+            "--log=*) log=${arg#*=} ;; "
+            "--resume-state=*) resume=${arg#*=} ;; "
+            "esac; done\n"
+            'stem=$(basename "$log" .log)\n'
+            'count="$CAPTURE_DIR/$stem.count"\n'
+            'printf x >> "$count"\n'
+            'attempt=$(wc -c < "$count")\n'
+            'if [ "$attempt" -eq 1 ]; then\n'
+            '  printf "%s-session\n" "$stem" > "$resume"\n'
+            '  printf "interrupted\n" > "$log"\n'
+            "  exit 9\n"
+            "fi\n"
+            'test "$(cat "$resume")" = "$stem-session"\n'
+            'case "$stem" in\n'
+            '  review-analysis) output="$SPECULA_WORK_DIR/review-analysis.md" ;;\n'
+            '  review-specgen) output="$SPECULA_WORK_DIR/spec/review-specgen.md" ;;\n'
+            '  review-validation) output="$SPECULA_WORK_DIR/spec/review-validation.md" ;;\n'
+            "esac\n"
+            'mkdir -p "$(dirname "$output")"\n'
+            'printf "review\n" > "$output"\n'
+            'printf "continued\n" > "$log"\n',
+        )
+        cases = (
+            ("analysis", ".review-analysis-prompt.md"),
+            ("specgen", "spec/.review-specgen-prompt.md"),
+            ("validation", "spec/.review-validation-prompt.md"),
+        )
+
+        for phase, prompt_rel in cases:
+            with self.subTest(phase=phase):
+                self.run_dir = self.tmp()
+                self.set_env("SPECULA_RUN_DIR", str(self.run_dir))
+                self.set_env(resumelib.INVOCATION_ENV, f"review-{phase}-invocation-1")
+                self.set_env(resumelib.MANUAL_ENV, None)
+                resumelib.initialize_run(self.run_dir)
+                resumelib.save_configuration(self.run_dir, {"agent": "fake"})
+                args = [phase, "--agent=fake", "--transient-resumes=0", NAME]
+
+                first_rc, first_out = self.run_phase("review", args)
+                self.assertEqual(first_rc, 9, first_out)
+                active = resumelib.active_entries(self.run_dir)
+                self.assertEqual([entry["phase"] for entry in active], [f"review:{phase}"])
+
+                self.set_env(resumelib.INVOCATION_ENV, f"review-{phase}-invocation-2")
+                self.set_env(resumelib.MANUAL_ENV, "1")
+                resumed_rc, resumed_out = self.run_phase("review", args)
+
+                self.assertEqual(resumed_rc, 0, resumed_out)
+                self.assertEqual((captures / f"review-{phase}.count").read_text(), "xx")
+                self.assertEqual((self.work_dir() / prompt_rel).read_text(), phaselib._MANUAL_SESSION_RESUME_PROMPT)
+                self.assertEqual(resumelib.active_entries(self.run_dir), [])
+                self.assertEqual(resumelib.completed_entries(self.run_dir), [])
+
+    def test_manual_resume_does_not_record_reused_review_target(self) -> None:
+        captures = self.tmp()
+        self.set_env("CAPTURE_DIR", str(captures))
+        self.set_env("SPECULA_PROGRESS", "off")
+        self.install_adapter(
+            "fake",
+            'name=$(basename "$(dirname "$SPECULA_WORK_DIR")")\n'
+            'printf x >> "$CAPTURE_DIR/$name-count"\n'
+            'attempt=$(wc -c < "$CAPTURE_DIR/$name-count")\n'
+            "log= resume=\n"
+            'for arg do case "$arg" in '
+            "--log=*) log=${arg#*=} ;; "
+            "--resume-state=*) resume=${arg#*=} ;; "
+            "esac; done\n"
+            'if [ "$name" = pending ] && [ "$attempt" -eq 1 ]; then\n'
+            '  printf "pending-session\\n" > "$resume"\n'
+            '  printf "rate limited\\n" > "$log"\n'
+            "  exit 75\n"
+            "fi\n"
+            'if [ "$name" = pending ]; then test "$(cat "$resume")" = pending-session; fi\n'
+            'printf "review\\n" > "$SPECULA_WORK_DIR/review-analysis.md"\n'
+            'printf "done\\n" > "$log"\n',
+        )
+        resumelib.initialize_run(self.run_dir)
+        resumelib.save_configuration(self.run_dir, {"agent": "fake"})
+        self.set_env(resumelib.INVOCATION_ENV, "review-invocation-1")
+        targets = ["accepted", "pending"]
+        args = ["analysis", "--agent=fake", "--transient-resumes=0", *targets]
+
+        first_rc, first_out = self.run_phase("review", args)
+
+        self.assertEqual(first_rc, quota.RATE_LIMIT_RC, first_out)
+        self.assertEqual((captures / "accepted-count").read_text(), "x")
+        self.assertEqual((captures / "pending-count").read_text(), "x")
+        self.assertEqual(
+            resumelib.completed_logicals(("review", "analysis")),
+            {("review", "analysis", "accepted")},
+        )
+
+        self.set_env(resumelib.INVOCATION_ENV, "review-invocation-2")
+        self.set_env(resumelib.MANUAL_ENV, "1")
+        resource_invocation = "e" * 32
+        recorder = resource_summary.ResourceInvocationRecorder(
+            self.run_dir,
+            "phase1",
+            resource_invocation,
+        )
+        self.patch_attr(phaselib, "_RESOURCE_RECORDER", recorder)
+
+        resumed_rc, resumed_out = self.run_phase("review", args)
+
+        self.assertEqual(resumed_rc, 0, resumed_out)
+        self.assertEqual((captures / "accepted-count").read_text(), "x")
+        self.assertEqual((captures / "pending-count").read_text(), "xx")
+        accepted_record = (
+            self.work_dir("accepted") / resource_summary.INVOCATION_DIRNAME / f"{resource_invocation}.json"
+        )
+        self.assertFalse(accepted_record.exists())
+        pending_record_path = (
+            self.work_dir("pending") / resource_summary.INVOCATION_DIRNAME / f"{resource_invocation}.json"
+        )
+        pending_record = json.loads(pending_record_path.read_text())
+        self.assertEqual(pending_record["status"], "completed")
+        self.assertFalse(pending_record["usage_complete"])
+
+    def test_review_streams_activity_through_shared_monitor(self) -> None:
+        event = json.dumps({"type": "item.completed", "item": {"type": "agent_message", "text": "reviewing"}})
+        self.install_adapter("codex", f"printf '%s\\n' {shlex.quote(event)} > \"$SPECULA_ACTIVITY_LOG\"\n")
+        self.patch_attr(
+            phaselib.Phase,
+            "progress_config",
+            ProgressConfig(poll_seconds=0.005, change_report_seconds=0.0),
+        )
+        rc, out = self.run_phase("review", ["analysis", "--agent=codex", NAME])
+        self.assertEqual(rc, 0, out)
+        self.assertIn(f"{NAME}: reviewing", out)
+        pid = self.work_dir() / "review-analysis.pid"
+        self.assertTrue(pid.read_text().strip().isdigit())
+        self.assertTrue((self.work_dir() / "review-analysis.activity.jsonl").is_file())
+
+    def test_review_progress_off_restores_legacy_adapter_contract(self) -> None:
+        seen = self.tmp() / "seen"
+        self.install_adapter("fake", f'printf "%s\\n" "${{SPECULA_ACTIVITY_LOG:-<unset>}}" > "{seen}"\n')
+        self.set_env("SPECULA_PROGRESS", "off")
+        rc, out = self.run_phase("review", ["analysis", "--agent=fake", NAME])
+        self.assertEqual(rc, 0, out)
+        self.assertEqual(seen.read_text().strip(), "<unset>")
+        self.assertFalse((self.work_dir() / "review-analysis.activity.jsonl").exists())
+
+    def test_standalone_review_refreshes_index_but_does_not_list_review_files(self) -> None:
+        modeling_brief = self.work_dir() / "modeling-brief.md"
+        modeling_brief.parent.mkdir(parents=True)
+        modeling_brief.write_text("brief\n")
+        self.install_adapter("fake", "exit 9\n")
+        self.set_env("SPECULA_PROGRESS", "off")
+
+        rc, out = self.run_phase("review", ["analysis", "--agent=fake", NAME])
+
+        self.assertEqual(rc, 9, out)
+        index = (self.work_dir() / "index.md").read_text()
+        self.assertIn("[Modeling brief](modeling-brief.md)", index)
+        self.assertNotIn("review-analysis", index)
+        self.assertNotIn("## Reviews", index)
+
+    def test_review_exports_external_workspace_to_adapter(self) -> None:
+        seen = self.tmp() / "work-dir"
+        self.install_adapter("fake", f'printf "%s\\n" "$SPECULA_WORK_DIR" > "{seen}"\n')
+        self.set_env("SPECULA_PROGRESS", "off")
+        rc, out = self.run_phase("review", ["analysis", "--agent=fake", NAME])
+        self.assertEqual(rc, 0, out)
+        self.assertEqual(seen.read_text().strip(), str(self.work_dir()))
+
+    def test_snapshot_review_runs_from_private_source(self) -> None:
+        original = self.tmp() / "original"
+        original.mkdir()
+        private = snapshotlib.prepare_sources(self.run_dir, {NAME: original})[NAME].source
+        seen = self.tmp() / "cwd"
+        self.install_adapter(
+            "fake",
+            f'printf "%s\\n%s\\n%s\\n%s\\n%s\\n%s\\n%s\\n" "$(pwd -P)" "$PWD" '
+            f'"$SPECULA_TARGET_REPO_DIR" "${{GIT_DIR-unset}}" "$GIT_SSH_COMMAND" '
+            f'"$SPECULA_SANDBOX_CONFIG" "$SPECULA_SANDBOX_EXTRA_WRITE" > "{seen}"\n'
+            'printf "review change\\n" > review-relative.txt\n',
+        )
+        self.set_env("SPECULA_PROGRESS", "off")
+        launch_cwd = self.tmp()
+        old_cwd = Path.cwd()
+        os.chdir(launch_cwd)
+        self.addCleanup(os.chdir, old_cwd)
+        self.set_env("PWD", str(launch_cwd))
+        relative_config = launch_cwd / "review-sandbox.json"
+        relative_config.write_text('{"enabled": true}\n')
+        self.set_env("SPECULA_SANDBOX", "on")
+        self.set_env("SPECULA_SANDBOX_CONFIG", relative_config.name)
+        self.set_env("SPECULA_SANDBOX_EXTRA_WRITE", "/cache")
+        self.set_env("GIT_DIR", str(original / ".git"))
+        self.set_env("GIT_SSH_COMMAND", "ssh -i private-key")
+
+        rc, out = self.run_phase("review", ["analysis", "--agent=fake", NAME])
+
+        self.assertEqual(rc, 0, out)
+        recorded = seen.read_text().splitlines()
+        self.assertEqual(
+            recorded[:6],
+            [str(private), str(private), str(private), "unset", "ssh -i private-key", str(relative_config)],
+        )
+        self.assertEqual(recorded[6].split(os.pathsep), ["/cache", str(private)])
+        self.assertTrue((private / "review-relative.txt").is_file())
+        self.assertFalse((original / "review-relative.txt").exists())
+        self.assertFalse((launch_cwd / "review-relative.txt").exists())
+
+    def test_snapshot_review_metadata_without_map_stops_before_launch(self) -> None:
+        original = self.tmp() / "original"
+        original.mkdir()
+        private = self.run_dir / NAME / "source"
+        private.mkdir(parents=True)
+        (self.run_dir / "run.json").write_text('{"source_mode": "snapshot"}\n')
+        marker = self.tmp() / "launched"
+        self.install_adapter("fake", f'touch "{marker}"\nprintf x > review-relative.txt\n')
+        self.set_env("SPECULA_PROGRESS", "off")
+        old_cwd = Path.cwd()
+        os.chdir(original)
+        self.addCleanup(os.chdir, old_cwd)
+        self.set_env("PWD", str(original))
+
+        rc, out = self.run_phase("review", ["analysis", "--agent=fake", NAME])
+
+        self.assertEqual(rc, 1, out)
+        self.assertIn("private source map is missing or unsafe", out)
+        self.assertFalse(marker.exists())
+        self.assertFalse((original / "review-relative.txt").exists())
+        self.assertFalse((private / "review-relative.txt").exists())
+
+    def test_review_claude_default_max_blocks_ambient_downgrade(self) -> None:
+        seen = self.tmp() / "argv"
+        self.install_adapter("claude-code", f'printf "%s\\n" "$@" > "{seen}"\n')
+        self.set_env("SPECULA_PROGRESS", "off")
+        self.set_env("CLAUDE_EFFORT", "low")
+        rc, out = self.run_phase("review", ["analysis", NAME])
+        self.assertEqual(rc, 0, out)
+        self.assertIn("--effort=max", seen.read_text().splitlines())
+
+    def test_review_explicit_empty_clears_specula_env(self) -> None:
+        seen = self.tmp() / "argv"
+        self.install_adapter("claude-code", f'printf "%s\\n" "$@" > "{seen}"\n')
+        self.set_env("SPECULA_PROGRESS", "off")
+        self.set_env("SPECULA_MODEL", "env-model")
+        self.set_env("SPECULA_EFFORT", "high")
+        rc, out = self.run_phase("review", ["analysis", "--model=", "--effort=", NAME])
+        self.assertEqual(rc, 0, out)
+        argv = seen.read_text().splitlines()
+        self.assertIn("--model=", argv)
+        self.assertIn("--effort=", argv)
+        self.assertNotIn("--model=env-model", argv)
+        self.assertNotIn("--effort=high", argv)
+        self.assertNotIn("--effort=max", argv)
+
+    def test_review_rate_limit_retries_only_current_target(self) -> None:
+        count = self.tmp() / "count"
+        self.install_adapter(
+            "fake",
+            f'printf x >> "{count}"\n[ "$(wc -c < "{count}")" -gt 1 ] || exit 75\n',
+        )
+        waits: list[int] = []
+        self.patch_attr(phaselib.Phase, "_wait_for_rate_limit", lambda _self: waits.append(1))
+        self.set_env("SPECULA_RATE_LIMIT_REACTIVE", "1")
+        self.set_env("SPECULA_RATE_LIMIT_RETRIES", "2")
+        rc, out = self.run_phase("review", ["analysis", "--agent=fake", NAME])
+        self.assertEqual(rc, 0, out)
+        self.assertEqual(count.read_text(), "xx")
+        self.assertEqual(waits, [1])
+
+    def test_review_policy_block_retries_with_non_accumulating_revised_prompt(self) -> None:
+        count = self.tmp() / "count"
+        prompts = self.tmp()
+        self.install_adapter(
+            "fake",
+            'printf x >> "$COUNT_FILE"\n'
+            'attempt=$(wc -c < "$COUNT_FILE")\n'
+            'for arg do case "$arg" in --prompt=*) prompt=${arg#*=} ;; esac; done\n'
+            'printf "%s" "$prompt" > "$PROMPT_DIR/prompt-$attempt.md"\n'
+            '[ "$attempt" -gt 2 ] || exit 76\n',
+        )
+        self.set_env("COUNT_FILE", str(count))
+        self.set_env("PROMPT_DIR", str(prompts))
+        self.set_env("SPECULA_PROGRESS", "off")
+
+        rc, out = self.run_phase(
+            "review",
+            ["analysis", "--agent=fake", "--policy-retries=2", NAME],
+        )
+
+        self.assertEqual(rc, 0, out)
+        self.assertEqual(count.read_text(), "xxx")
+        self.assertNotIn(
+            "Continue After Provider Policy Interruption",
+            (prompts / "prompt-1.md").read_text(),
+        )
+        first_prompt = (prompts / "prompt-1.md").read_text()
+        second_prompt = (prompts / "prompt-2.md").read_text()
+        third_prompt = (prompts / "prompt-3.md").read_text()
+        self.assertTrue(second_prompt.startswith(first_prompt.rstrip()))
+        self.assertIn(
+            "Continue After Provider Policy Interruption",
+            second_prompt,
+        )
+        self.assertEqual(third_prompt, second_prompt)
+        self.assertEqual(second_prompt.count("Continue After Provider Policy Interruption"), 1)
+
+    def test_review_policy_block_is_bounded(self) -> None:
+        count = self.tmp() / "count"
+        self.install_adapter("fake", 'printf x >> "$COUNT_FILE"\nexit 76\n')
+        self.set_env("COUNT_FILE", str(count))
+        self.set_env("SPECULA_PROGRESS", "off")
+
+        rc, out = self.run_phase(
+            "review",
+            ["analysis", "--agent=fake", "--policy-retries=1", NAME],
+        )
+
+        self.assertEqual(rc, POLICY_BLOCKED_RC, out)
+        self.assertEqual(count.read_text(), "xx")
+
+    def test_manual_review_resume_keeps_exhausted_policy_budget(self) -> None:
+        count = self.tmp() / "count"
+        self.install_adapter(
+            "fake",
+            'printf x >> "$COUNT_FILE"\n'
+            'attempt=$(wc -c < "$COUNT_FILE")\n'
+            'for arg do case "$arg" in --log=*) log=${arg#*=} ;; --resume-state=*) resume=${arg#*=} ;; esac; done\n'
+            'test -f "$resume" || printf "review-session\n" > "$resume"\n'
+            'printf "attempt-%s\n" "$attempt" > "$log"\n'
+            'case "$attempt" in 1) exit 76 ;; 2) exit 75 ;; 3) exit 76 ;; *) exit 99 ;; esac\n',
+        )
+        resumelib.initialize_run(self.run_dir)
+        resumelib.save_configuration(self.run_dir, {"agent": "fake"})
+        self.set_env(resumelib.INVOCATION_ENV, "invocation-1")
+        self.set_env("COUNT_FILE", str(count))
+        self.set_env("SPECULA_PROGRESS", "off")
+
+        first_rc, first_out = self.run_phase(
+            "review",
+            ["analysis", "--agent=fake", "--policy-retries=1", NAME],
+        )
+        self.assertEqual(first_rc, quota.RATE_LIMIT_RC, first_out)
+
+        self.set_env(resumelib.INVOCATION_ENV, "invocation-2")
+        self.set_env(resumelib.MANUAL_ENV, "1")
+        resumed_rc, resumed_out = self.run_phase(
+            "review",
+            ["analysis", "--agent=fake", "--policy-retries=1", NAME],
+        )
+
+        self.assertEqual(resumed_rc, POLICY_BLOCKED_RC, resumed_out)
+        self.assertEqual(count.read_text(), "xxx")
+
+    def test_review_zero_policy_retries_disables_continuation(self) -> None:
+        count = self.tmp() / "count"
+        self.install_adapter("fake", 'printf x >> "$COUNT_FILE"\nexit 76\n')
+        self.set_env("COUNT_FILE", str(count))
+        self.set_env("SPECULA_PROGRESS", "off")
+
+        rc, out = self.run_phase(
+            "review",
+            ["analysis", "--agent=fake", "--policy-retries=0", NAME],
+        )
+
+        self.assertEqual(rc, POLICY_BLOCKED_RC, out)
+        self.assertEqual(count.read_text(), "x")
+        self.assertNotIn("retrying with a revised request", out)
+
+    def test_review_policy_recovery_does_not_reset_rate_limit_retries(self) -> None:
+        count = self.tmp() / "count"
+        self.install_adapter(
+            "fake",
+            'printf x >> "$COUNT_FILE"\n'
+            'attempt=$(wc -c < "$COUNT_FILE")\n'
+            '[ "$attempt" -ne 1 ] || exit 75\n'
+            '[ "$attempt" -ne 2 ] || exit 76\n'
+            '[ "$attempt" -ne 3 ] || exit 75\n',
+        )
+        waits: list[int] = []
+        self.patch_attr(phaselib.Phase, "_wait_for_rate_limit", lambda _self: waits.append(1))
+        self.set_env("COUNT_FILE", str(count))
+        self.set_env("SPECULA_PROGRESS", "off")
+        self.set_env("SPECULA_RATE_LIMIT_REACTIVE", "1")
+        self.set_env("SPECULA_RATE_LIMIT_RETRIES", "1")
+
+        rc, out = self.run_phase("review", ["analysis", "--agent=fake", NAME])
+
+        self.assertEqual(rc, quota.RATE_LIMIT_RC, out)
+        self.assertEqual(count.read_text(), "xxx")
+        self.assertEqual(waits, [1])
+
+    def test_review_normalizes_signal_exit_status(self) -> None:
+        self.install_adapter("fake", "kill -TERM $$\n")
+        self.set_env("SPECULA_PROGRESS", "off")
+        rc, out = self.run_phase("review", ["analysis", "--agent=fake", NAME])
+        self.assertEqual(rc, 128 + signal.SIGTERM, out)
+
+    def test_review_construction_failure_cleans_up_process(self) -> None:
+        class ConstructionFailure(Exception):
+            pass
+
+        self.install_adapter("fake", "sleep 30\n")
+        spawned: list[subprocess.Popen[bytes]] = []
+        real_popen = subprocess.Popen
+
+        def recording_popen(*args: Any, **kwargs: Any) -> subprocess.Popen[bytes]:
+            proc = cast("subprocess.Popen[bytes]", real_popen(*args, **kwargs))
+            spawned.append(proc)
+            return proc
+
+        def fail_construction(*args: Any, **kwargs: Any) -> RunningAgent:
+            raise ConstructionFailure
+
+        self.patch_attr(subprocess, "Popen", recording_popen)
+        self.patch_attr(progress_module, "RunningAgent", fail_construction)
+        self.patch_attr(phaselib, "AGENT_TERMINATION_GRACE_SECONDS", 0.05)
+        with self.assertRaises(ConstructionFailure):
+            self.run_phase("review", ["analysis", "--agent=fake", NAME])
+        self.assertEqual(len(spawned), 1)
+        self.assertIsNotNone(spawned[0].poll())
+        self.assertFalse(phaselib.Phase._group_exists(spawned[0].pid))
+
+
+class TestModelEffortForwarding(unittest.TestCase):
+    """Agent-aware tuning for the blocking confirmation path."""
+
+    def test_argv_helper(self) -> None:
+        codex = Path("/x/codex.sh")
+        claude = Path("/x/claude-code.sh")
+        self.assertEqual(phaselib._model_effort_argv(codex, None, None), [])
+        self.assertEqual(phaselib._model_effort_argv(claude, None, None), ["--effort=max"])
+        self.assertEqual(phaselib._model_effort_argv(codex, "gpt-5.5", None), ["--model=gpt-5.5"])
+        self.assertEqual(phaselib._model_effort_argv(codex, None, "ultra"), ["--effort=ultra"])
+        self.assertEqual(
+            phaselib._model_effort_argv(claude, "", ""),
+            ["--model=", "--effort="],
+        )
+
+    def _blocking_cmd(
+        self,
+        *,
+        adapter_name: str = "codex",
+        model: str | None = None,
+        effort: str | None = None,
+    ) -> list[str]:
+        captured: list[list[str]] = []
+
+        class _Result:
+            returncode = 0
+
+        def fake_run(cmd: list[str], **_: Any) -> _Result:
+            captured.append(cmd)
+            return _Result()
+
+        with tempfile.TemporaryDirectory() as d, mock.patch("specula.phaselib.subprocess.run", fake_run):
+            dp = Path(d)
+            phaselib.run_agent_blocking(
+                Path(f"/x/{adapter_name}.sh"),
+                "prompt",
+                dp / "p.md",
+                dp / "o.log",
+                phase_key="k",
+                work_dir=dp,
+                claude_alias="claude",
+                model=model,
+                effort=effort,
+            )
+        return captured[0]
+
+    def test_forwarded_when_set(self) -> None:
+        cmd = self._blocking_cmd(model="gpt-5.5", effort="ultra")
+        self.assertIn("--model=gpt-5.5", cmd)
+        self.assertIn("--effort=ultra", cmd)
+
+    def test_unspecified_effort_is_agent_specific(self) -> None:
+        claude = self._blocking_cmd(adapter_name="claude-code")
+        self.assertIn("--effort=max", claude)
+        for adapter in ("codex", "copilot-cli"):
+            with self.subTest(adapter=adapter):
+                cmd = self._blocking_cmd(adapter_name=adapter)
+                self.assertFalse(any(c.startswith("--effort=") for c in cmd))
+
+    def test_explicit_empty_is_forwarded_not_defaulted(self) -> None:
+        cmd = self._blocking_cmd(adapter_name="claude-code", model="", effort="")
+        self.assertIn("--model=", cmd)
+        self.assertIn("--effort=", cmd)
+        self.assertNotIn("--effort=max", cmd)
+
+    def test_blocking_codex_prompt_materializes_one_plugin_id(self) -> None:
+        class _Result:
+            returncode = 0
+
+        with (
+            tempfile.TemporaryDirectory() as d,
+            mock.patch("specula.phaselib.subprocess.run", return_value=_Result()),
+            mock.patch("specula.skill_refs._codex_plugin_enabled", return_value=True),
+        ):
+            root = Path(d)
+            prompt_file = root / "prompt.md"
+            phaselib.run_agent_blocking(
+                Path("/x/codex.sh"),
+                f"Use {prompt_skill_ids('bug-confirmation')}",
+                prompt_file,
+                root / "out.log",
+                phase_key="bug_confirmation",
+                work_dir=root,
+                claude_alias="claude",
+            )
+
+            prompt = prompt_file.read_text()
+            self.assertIn(f"${CODEX_PLUGIN_NAME}:bug-confirmation", prompt)
+            self.assertNotIn("$bug-confirmation", prompt)
+            self.assertNotIn("<!-- specula-skill:", prompt)
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -1,0 +1,145 @@
+# General
+.DS_Store
+*.log
+*~
+.vscode/
+.idea/
+.env
+.specula
+
+# Runtime logs
+logs/
+
+# TLC scratch (state files, checkpoints)
+tlc-tmp/
+
+# Build output
+results/
+target/
+experiments/syntax_phase/results/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+pip-selfcheck.json
+*.egg-info/
+
+# Maven
+.mvn/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.m2/
+archive/
+lib/
+!scripts/exp/ablation/lib/
+tools/cfa/input/test
+tools/cfa/output/test
+data/repositories
+
+# Embedded git repositories
+systems/etcd/raft/
+systems/asterinas/asterinas/
+scripts/tlc-cmd/
+data/workloads/**/spec/*_TTrace_*
+data/workloads/**/code/
+data/workloads/**/artifact/
+
+# TLA+ generated files
+*.st
+*.fp
+states/
+traces
+traces/
+**/output/
+output/autosave/
+generation_summary.json
+# (an unanchored `specula` pattern lived here — a rename artifact from the
+# `specula+` era that ignored the CLI entrypoint and the src/ package, and would
+# silently swallow any future path component named `specula`; nothing generates
+# bare `specula` paths — pipeline output goes to .specula-output/)
+models/
+
+# claude
+CLAUDE.md
+TLA+Parser.md
+
+# Experiment outputs (generated specs)
+src/prompts/skill_doc/experiments/output_*/
+
+# Java compiled files
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+
+# Test files and debug files
+tools/cfa/Test*.java
+tools/cfa/*Test*.java
+tools/cfa/*Test*.class
+tools/cfa/classpath.txt
+tools/cfa/test_*.tla
+tools/cfa/*Test*.tla
+tools/cfa/input/debug_*.tla
+tools/cfa/input/test_*.tla
+tools/cfa/tests
+
+*.mcp.json
+.gemini/*
+.claude/skills
+.agents/skills
+.github/skills
+.specula-codex/
+.codex/
+src/skills/.system
+
+.venv/
+venv/
+env/
+.envrc
+nohup.out
+!tools/inv_checking_tool/tests/test_data/nohup.out
+counterexample.json
+# Experiment runtime artifacts (keep scripts/prompts/configs)
+scripts/exp/ablation/results/
+scripts/exp/tasks_*.queue
+scripts/exp/tasks-*.queue
+scripts/exp/ablation/eval/
+# Phase 4 V0/V1/V2 controlled-comparison archive (local-only, not for github)
+experiments/phase4/
+scripts/exp/ablation/targets_rq2_libspdm.txt
+
+# Precious experiment data (bug violations + BFS depths) — keep local, back up off-repo
+experiments/specula-bug-data/
+
+# Machine-/incident-specific local helper (hardcoded paths) — keep local, not a shippable tool
+scripts/tlc/cleanup-tmp-tlc.sh
+
+# ── Release-prep: local-only / confidential / generated (not for the public repo) ──
+# Paper checked out inside the tree (own private repo specula-org/Specula-Paper)
+docs/Specula-Paper/
+docs/main.pdf
+docs/pipeline-cost-time.md
+# All experiment outputs / run data (nothing here is tracked)
+experiments/
+# RQ2 baseline target lists: machine-specific paths; libspdm one is confidential
+scripts/exp/ablation/targets_rq2*.txt
+# Generated output / caches
+.specula-output/
+.specula-lite/
+# Per-run isolated workspaces (launch_pipeline.sh --isolate); experiment
+# results, never curated content — that lives in case-studies/
+/runs/
+_build/
+.pytest_cache/

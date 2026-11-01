@@ -1,0 +1,23 @@
+id: hdfs-adhoc-25
+system: Apache Hadoop HDFS
+source_tree: /set/by/run-case.sh
+base_commit: 734dd8a67cd
+check:
+  file: hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java
+  line: 185
+  method: BlockPoolSliceStorage.loadStorageDirectory(NamespaceInfo, StorageLocation, StartupOption, List<Callable<StorageDirectory>>, Configuration)
+  thrown: java.io.IOException
+  guard: "!doTransition(sd, nsInfo, startOpt, callables, conf) && getCTime() != nsInfo.getCTime()"
+workload:
+  module: hadoop-hdfs-project/hadoop-hdfs
+  test: org.apache.hadoop.hdfs.TestDFSStartupVersions#testVersions
+  note: the test reaches the check's method and passes; the check does not fail in it
+scope_hint:
+  - org.apache.hadoop.hdfs.server.datanode.DataStorage
+  - org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage
+  - org.apache.hadoop.hdfs.server.common.Storage
+  - org.apache.hadoop.hdfs.server.common.StorageInfo
+build:
+  env: /set/by/run-case.sh
+  prepare: "mvn -B install -DskipTests -Dmaven.javadoc.skip=true -pl hadoop-hdfs-project/hadoop-hdfs -am   (already done once)"
+  test_command: "mvn -B -o surefire:test -pl hadoop-hdfs-project/hadoop-hdfs -Dtest='<Class>#<method>' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false"

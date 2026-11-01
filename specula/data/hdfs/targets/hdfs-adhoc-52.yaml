@@ -1,0 +1,34 @@
+id: hdfs-adhoc-52
+system: Apache Hadoop HDFS
+source_tree: /set/by/run-case.sh
+base_commit: 734dd8a67cd
+check:
+  file: hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/FSImageFormatPBSnapshot.java
+  line: 466
+  method: FSImageFormatPBSnapshot.Saver.serializeSnapshotSection(OutputStream)
+  thrown: java.lang.IllegalStateException
+  guard: "Preconditions.checkState(i == sm.getNumSnapshots());   (fails when the count of serialized snapshots differs)"
+workload:
+  module: hadoop-hdfs-project/hadoop-hdfs
+  test: org.apache.hadoop.hdfs.server.namenode.TestFSImageWithSnapshot#testSaveLoadImage
+  note: the test reaches the check's method and passes; the check does not fail in it
+scope_hint:
+  - org.apache.hadoop.ipc.Client
+  - org.apache.hadoop.ipc.Server
+  - org.apache.hadoop.hdfs.server.namenode.FSEditLogLoader
+  - org.apache.hadoop.hdfs.server.namenode.FSDirSnapshotOp
+  - org.apache.hadoop.hdfs.server.namenode.FSDirectory
+  - org.apache.hadoop.hdfs.server.namenode.FSImage
+  - org.apache.hadoop.hdfs.server.namenode.FSImageFormatProtobuf
+  - org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot
+  - org.apache.hadoop.hdfs.server.namenode.FSNamesystem
+  - org.apache.hadoop.hdfs.server.namenode.INodeDirectory
+  - org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer
+  - org.apache.hadoop.hdfs.server.namenode.snapshot.DirectorySnapshottableFeature
+  - org.apache.hadoop.hdfs.server.namenode.snapshot.Snapshot
+  - org.apache.hadoop.hdfs.server.namenode.snapshot.SnapshotManager
+  - org.apache.hadoop.hdfs.util.ReadOnlyList
+build:
+  env: /set/by/run-case.sh
+  prepare: "mvn -B install -DskipTests -Dmaven.javadoc.skip=true -pl hadoop-hdfs-project/hadoop-hdfs -am   (already done once)"
+  test_command: "mvn -B -o surefire:test -pl hadoop-hdfs-project/hadoop-hdfs -Dtest='<Class>#<method>' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false"

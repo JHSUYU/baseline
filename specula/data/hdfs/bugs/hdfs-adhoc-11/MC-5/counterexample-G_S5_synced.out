@@ -1,0 +1,395 @@
+TLC2 Version 2026.10.24.013619 (rev: 2ef2af8)
+Running breadth-first search Model-Checking with fp 116 and seed -1585349757402507988 with 1 worker on 64 cores with 3925MB heap and 2048MB offheap memory [pid: 3378352] (Linux 5.15.0-198-generic amd64, Eclipse Adoptium 21.0.13 64bit, OffHeapDiskFPSet, DiskStateQueue).
+Parsing file /bulk/specula-adhoc/specula-runs/20261029-002846-8337/hdfs-adhoc-11/.specula-output/spec/output/hunt/gated/MCGated.tla
+Parsing file /bulk/specula-adhoc/specula-runs/20261029-002846-8337/hdfs-adhoc-11/.specula-output/spec/output/hunt/gated/MC.tla
+Parsing file /tmp/tlc-14051727321852971431/_JsonTrace.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/_JsonTrace.tla)
+Parsing file /tmp/tlc-14051727321852971431/_TLCTrace.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/_TLCTrace.tla)
+Parsing file /bulk/specula-adhoc/specula-runs/20261029-002846-8337/hdfs-adhoc-11/.specula-output/spec/output/hunt/gated/base.tla
+Parsing file /tmp/tlc-14051727321852971431/Naturals.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Naturals.tla)
+Parsing file /tmp/tlc-14051727321852971431/Sequences.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Sequences.tla)
+Parsing file /tmp/tlc-14051727321852971431/FiniteSets.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/FiniteSets.tla)
+Parsing file /tmp/tlc-14051727321852971431/TLC.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLC.tla)
+Parsing file /tmp/tlc-14051727321852971431/TLCExt.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLCExt.tla)
+Parsing file /tmp/tlc-14051727321852971431/Json.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Json.tla)
+Parsing file /tmp/tlc-14051727321852971431/Integers.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Integers.tla)
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module TLC
+Semantic processing of module base
+Semantic processing of module MC
+Semantic processing of module Integers
+Semantic processing of module TLCExt
+Semantic processing of module Json
+Semantic processing of module _JsonTrace
+Semantic processing of module _TLCTrace
+Semantic processing of module MCGated
+Linting of module base
+Linting of module MC
+Linting of module TLCExt
+Linting of module Json
+Linting of module _JsonTrace
+Linting of module _TLCTrace
+Linting of module MCGated
+Starting... (2026-10-29 05:53:13)
+Computing initial states...
+Computed 2 initial states...
+Finished computing initial states: 4 distinct states generated at 2026-10-29 05:53:14.
+Progress(10) at 2026-10-29 05:53:17: 87,236 states generated (87,236 s/min), 32,734 distinct states found (32,734 ds/min), 17,755 states left on queue.
+Error: Invariant TargetSafe is violated.
+Error: The behavior up to this point is:
+State 1: <Initial predicate>
+/\ dnQ = (n1 :> (d1 :> <<>>) @@ n2 :> (d1 :> <<>>))
+/\ rolls = (n1 :> 0 @@ n2 :> 0)
+/\ nnHA = (n1 :> "active" @@ n2 :> "standby")
+/\ targetFired = FALSE
+/\ nnTop = (n1 :> 2 @@ n2 :> 2)
+/\ actor = (n1 :> (d1 :> "conn") @@ n2 :> (d1 :> "conn"))
+/\ dnCur = (d1 :> Null)
+/\ sweepPending = (n1 :> FALSE @@ n2 :> FALSE)
+/\ bpActive = (d1 :> Null)
+/\ resp = (n1 :> (d1 :> Null) @@ n2 :> (d1 :> Null))
+/\ haEpoch = 1
+/\ faults = [safe |-> 0, lost |-> 0, nnrst |-> 0, dnrst |-> 0, fo |-> 0]
+/\ needKU = (n1 :> (d1 :> FALSE) @@ n2 :> (d1 :> FALSE))
+/\ reReg = (n1 :> (d1 :> FALSE) @@ n2 :> (d1 :> FALSE))
+/\ reg = (n1 :> (d1 :> Null) @@ n2 :> (d1 :> Null))
+/\ dnUp = (d1 :> TRUE)
+/\ nnInc = (n1 :> 1 @@ n2 :> 1)
+/\ dnKeys = (d1 :> {})
+/\ firstPass = (n1 :> TRUE @@ n2 :> TRUE)
+/\ nnSafe = (n1 :> "startup" @@ n2 :> "startup")
+/\ cDek = Null
+/\ actorState = (n1 :> (d1 :> "none") @@ n2 :> (d1 :> "none"))
+/\ bpState = (d1 :> "none")
+/\ hbSet = (n1 :> {} @@ n2 :> {})
+/\ brDone = (n1 :> (d1 :> FALSE) @@ n2 :> (d1 :> FALSE))
+/\ lastClaim = (d1 :> 0)
+
+State 2: <MCMonitorFirstPass(n2) line 104, col 35 to line 104, col 90 of module MC>
+/\ dnQ = (n1 :> (d1 :> <<>>) @@ n2 :> (d1 :> <<>>))
+/\ rolls = (n1 :> 0 @@ n2 :> 0)
+/\ nnHA = (n1 :> "active" @@ n2 :> "standby")
+/\ targetFired = FALSE
+/\ nnTop = (n1 :> 2 @@ n2 :> 2)
+/\ actor = (n1 :> (d1 :> "conn") @@ n2 :> (d1 :> "conn"))
+/\ dnCur = (d1 :> Null)
+/\ sweepPending = (n1 :> FALSE @@ n2 :> FALSE)
+/\ bpActive = (d1 :> Null)
+/\ resp = (n1 :> (d1 :> Null) @@ n2 :> (d1 :> Null))
+/\ haEpoch = 1
+/\ faults = [safe |-> 0, lost |-> 0, nnrst |-> 0, dnrst |-> 0, fo |-> 0]
+/\ needKU = (n1 :> (d1 :> FALSE) @@ n2 :> (d1 :> FALSE))
+/\ reReg = (n1 :> (d1 :> FALSE) @@ n2 :> (d1 :> FALSE))
+/\ reg = (n1 :> (d1 :> Null) @@ n2 :> (d1 :> Null))
+/\ dnUp = (d1 :> TRUE)
+/\ nnInc = (n1 :> 1 @@ n2 :> 1)
+/\ dnKeys = (d1 :> {})
+/\ firstPass = (n1 :> TRUE @@ n2 :> FALSE)
+/\ nnSafe = (n1 :> "startup" @@ n2 :> "startup")
+/\ cDek = Null
+/\ actorState = (n1 :> (d1 :> "none") @@ n2 :> (d1 :> "none"))
+/\ bpState = (d1 :> "none")
+/\ hbSet = (n1 :> {} @@ n2 :> {})
+/\ brDone = (n1 :> (d1 :> FALSE) @@ n2 :> (d1 :> FALSE))
+/\ lastClaim = (d1 :> 0)
+
+State 3: <MCNNRegisterDatanode(n2,d1) line 120, col 35 to line 120, col 90 of module MC>
+/\ dnQ = (n1 :> (d1 :> <<>>) @@ n2 :> (d1 :> <<>>))
+/\ rolls = (n1 :> 0 @@ n2 :> 0)
+/\ nnHA = (n1 :> "active" @@ n2 :> "standby")
+/\ targetFired = FALSE
+/\ nnTop = (n1 :> 2 @@ n2 :> 2)
+/\ actor = (n1 :> (d1 :> "conn") @@ n2 :> (d1 :> "conn"))
+/\ dnCur = (d1 :> Null)
+/\ sweepPending = (n1 :> FALSE @@ n2 :> FALSE)
+/\ bpActive = (d1 :> Null)
+/\ resp = (n1 :> (d1 :> Null) @@ n2 :> (d1 :> Null))
+/\ haEpoch = 1
+/\ faults = [safe |-> 0, lost |-> 0, nnrst |-> 0, dnrst |-> 0, fo |-> 0]
+/\ needKU = (n1 :> (d1 :> FALSE) @@ n2 :> (d1 :> FALSE))
+/\ reReg = (n1 :> (d1 :> FALSE) @@ n2 :> (d1 :> FALSE))
+/\ reg = ( n1 :> (d1 :> Null) @@
+  n2 :> (d1 :> [exp |-> [nn |-> n2, inc |-> 1, top |-> 2], ph |-> "replied"]) )
+/\ dnUp = (d1 :> TRUE)
+/\ nnInc = (n1 :> 1 @@ n2 :> 1)
+/\ dnKeys = (d1 :> {})
+/\ firstPass = (n1 :> TRUE @@ n2 :> FALSE)
+/\ nnSafe = (n1 :> "startup" @@ n2 :> "startup")
+/\ cDek = Null
+/\ actorState = (n1 :> (d1 :> "none") @@ n2 :> (d1 :> "standby"))
+/\ bpState = (d1 :> "none")
+/\ hbSet = (n1 :> {} @@ n2 :> {d1})
+/\ brDone = (n1 :> (d1 :> FALSE) @@ n2 :> (d1 :> FALSE))
+/\ lastClaim = (d1 :> 0)
+
+State 4: <MCDNRegistrationSucceeded(n2,d1) line 122, col 36 to line 122, col 92 of module MC>
+/\ dnQ = (n1 :> (d1 :> <<>>) @@ n2 :> (d1 :> <<>>))
+/\ rolls = (n1 :> 0 @@ n2 :> 0)
+/\ nnHA = (n1 :> "active" @@ n2 :> "standby")
+/\ targetFired = FALSE
+/\ nnTop = (n1 :> 2 @@ n2 :> 2)
+/\ actor = (n1 :> (d1 :> "conn") @@ n2 :> (d1 :> "reg"))
+/\ dnCur = (d1 :> <<n2, 1, 1>>)
+/\ sweepPending = (n1 :> FALSE @@ n2 :> FALSE)
+/\ bpActive = (d1 :> Null)
+/\ resp = (n1 :> (d1 :> Null) @@ n2 :> (d1 :> Null))
+/\ haEpoch = 1
+/\ faults = [safe |-> 0, lost |-> 0, nnrst |-> 0, dnrst |-> 0, fo |-> 0]
+/\ needKU = (n1 :> (d1 :> FALSE) @@ n2 :> (d1 :> FALSE))
+/\ reReg = (n1 :> (d1 :> FALSE) @@ n2 :> (d1 :> FALSE))
+/\ reg = (n1 :> (d1 :> Null) @@ n2 :> (d1 :> Null))
+/\ dnUp = (d1 :> TRUE)
+/\ nnInc = (n1 :> 1 @@ n2 :> 1)
+/\ dnKeys = (d1 :> {<<n2, 1, 1>>, <<n2, 1, 2>>})
+/\ firstPass = (n1 :> TRUE @@ n2 :> FALSE)
+/\ nnSafe = (n1 :> "startup" @@ n2 :> "startup")
+/\ cDek = Null
+/\ actorState = (n1 :> (d1 :> "none") @@ n2 :> (d1 :> "standby"))
+/\ bpState = (d1 :> "keyed")
+/\ hbSet = (n1 :> {} @@ n2 :> {d1})
+/\ brDone = (n1 :> (d1 :> FALSE) @@ n2 :> (d1 :> FALSE))
+/\ lastClaim = (d1 :> 0)
+
+State 5: <MCDNBlockReport(n2,d1) line 119, col 35 to line 119, col 90 of module MC>
+/\ dnQ = (n1 :> (d1 :> <<>>) @@ n2 :> (d1 :> <<>>))
+/\ rolls = (n1 :> 0 @@ n2 :> 0)
+/\ nnHA = (n1 :> "active" @@ n2 :> "standby")
+/\ targetFired = FALSE
+/\ nnTop = (n1 :> 2 @@ n2 :> 2)
+/\ actor = (n1 :> (d1 :> "conn") @@ n2 :> (d1 :> "reg"))
+/\ dnCur = (d1 :> <<n2, 1, 1>>)
+/\ sweepPending = (n1 :> FALSE @@ n2 :> FALSE)
+/\ bpActive = (d1 :> Null)
+/\ resp = (n1 :> (d1 :> Null) @@ n2 :> (d1 :> Null))
+/\ haEpoch = 1
+/\ faults = [safe |-> 0, lost |-> 0, nnrst |-> 0, dnrst |-> 0, fo |-> 0]
+/\ needKU = (n1 :> (d1 :> FALSE) @@ n2 :> (d1 :> FALSE))
+/\ reReg = (n1 :> (d1 :> FALSE) @@ n2 :> (d1 :> FALSE))
+/\ reg = (n1 :> (d1 :> Null) @@ n2 :> (d1 :> Null))
+/\ dnUp = (d1 :> TRUE)
+/\ nnInc = (n1 :> 1 @@ n2 :> 1)
+/\ dnKeys = (d1 :> {<<n2, 1, 1>>, <<n2, 1, 2>>})
+/\ firstPass = (n1 :> TRUE @@ n2 :> FALSE)
+/\ nnSafe = (n1 :> "startup" @@ n2 :> "off")
+/\ cDek = Null
+/\ actorState = (n1 :> (d1 :> "none") @@ n2 :> (d1 :> "standby"))
+/\ bpState = (d1 :> "keyed")
+/\ hbSet = (n1 :> {} @@ n2 :> {d1})
+/\ brDone = (n1 :> (d1 :> FALSE) @@ n2 :> (d1 :> TRUE))
+/\ lastClaim = (d1 :> 0)
+
+State 6: <MCEnterSafeMode(n2) line 69, col 5 to line 73, col 47 of module MC>
+/\ dnQ = (n1 :> (d1 :> <<>>) @@ n2 :> (d1 :> <<>>))
+/\ rolls = (n1 :> 0 @@ n2 :> 0)
+/\ nnHA = (n1 :> "active" @@ n2 :> "standby")
+/\ targetFired = FALSE
+/\ nnTop = (n1 :> 2 @@ n2 :> 2)
+/\ actor = (n1 :> (d1 :> "conn") @@ n2 :> (d1 :> "reg"))
+/\ dnCur = (d1 :> <<n2, 1, 1>>)
+/\ sweepPending = (n1 :> FALSE @@ n2 :> FALSE)
+/\ bpActive = (d1 :> Null)
+/\ resp = (n1 :> (d1 :> Null) @@ n2 :> (d1 :> Null))
+/\ haEpoch = 1
+/\ faults = [safe |-> 1, lost |-> 0, nnrst |-> 0, dnrst |-> 0, fo |-> 0]
+/\ needKU = (n1 :> (d1 :> FALSE) @@ n2 :> (d1 :> FALSE))
+/\ reReg = (n1 :> (d1 :> FALSE) @@ n2 :> (d1 :> FALSE))
+/\ reg = (n1 :> (d1 :> Null) @@ n2 :> (d1 :> Null))
+/\ dnUp = (d1 :> TRUE)
+/\ nnInc = (n1 :> 1 @@ n2 :> 1)
+/\ dnKeys = (d1 :> {<<n2, 1, 1>>, <<n2, 1, 2>>})
+/\ firstPass = (n1 :> TRUE @@ n2 :> FALSE)
+/\ nnSafe = (n1 :> "startup" @@ n2 :> "manual")
+/\ cDek = Null
+/\ actorState = (n1 :> (d1 :> "none") @@ n2 :> (d1 :> "standby"))
+/\ bpState = (d1 :> "keyed")
+/\ hbSet = (n1 :> {} @@ n2 :> {d1})
+/\ brDone = (n1 :> (d1 :> FALSE) @@ n2 :> (d1 :> TRUE))
+/\ lastClaim = (d1 :> 0)
+
+State 7: <MCRollKeys(n2) line 63, col 5 to line 66, col 23 of module MC>
+/\ dnQ = (n1 :> (d1 :> <<>>) @@ n2 :> (d1 :> <<>>))
+/\ rolls = (n1 :> 0 @@ n2 :> 1)
+/\ nnHA = (n1 :> "active" @@ n2 :> "standby")
+/\ targetFired = FALSE
+/\ nnTop = (n1 :> 2 @@ n2 :> 3)
+/\ actor = (n1 :> (d1 :> "conn") @@ n2 :> (d1 :> "reg"))
+/\ dnCur = (d1 :> <<n2, 1, 1>>)
+/\ sweepPending = (n1 :> FALSE @@ n2 :> TRUE)
+/\ bpActive = (d1 :> Null)
+/\ resp = (n1 :> (d1 :> Null) @@ n2 :> (d1 :> Null))
+/\ haEpoch = 1
+/\ faults = [safe |-> 1, lost |-> 0, nnrst |-> 0, dnrst |-> 0, fo |-> 0]
+/\ needKU = (n1 :> (d1 :> FALSE) @@ n2 :> (d1 :> FALSE))
+/\ reReg = (n1 :> (d1 :> FALSE) @@ n2 :> (d1 :> FALSE))
+/\ reg = (n1 :> (d1 :> Null) @@ n2 :> (d1 :> Null))
+/\ dnUp = (d1 :> TRUE)
+/\ nnInc = (n1 :> 1 @@ n2 :> 1)
+/\ dnKeys = (d1 :> {<<n2, 1, 1>>, <<n2, 1, 2>>})
+/\ firstPass = (n1 :> TRUE @@ n2 :> FALSE)
+/\ nnSafe = (n1 :> "startup" @@ n2 :> "manual")
+/\ cDek = Null
+/\ actorState = (n1 :> (d1 :> "none") @@ n2 :> (d1 :> "standby"))
+/\ bpState = (d1 :> "keyed")
+/\ hbSet = (n1 :> {} @@ n2 :> {d1})
+/\ brDone = (n1 :> (d1 :> FALSE) @@ n2 :> (d1 :> TRUE))
+/\ lastClaim = (d1 :> 0)
+
+State 8: <MCSweepNeedKeyUpdate(n2) line 105, col 35 to line 105, col 90 of module MC>
+/\ dnQ = (n1 :> (d1 :> <<>>) @@ n2 :> (d1 :> <<>>))
+/\ rolls = (n1 :> 0 @@ n2 :> 1)
+/\ nnHA = (n1 :> "active" @@ n2 :> "standby")
+/\ targetFired = FALSE
+/\ nnTop = (n1 :> 2 @@ n2 :> 3)
+/\ actor = (n1 :> (d1 :> "conn") @@ n2 :> (d1 :> "reg"))
+/\ dnCur = (d1 :> <<n2, 1, 1>>)
+/\ sweepPending = (n1 :> FALSE @@ n2 :> FALSE)
+/\ bpActive = (d1 :> Null)
+/\ resp = (n1 :> (d1 :> Null) @@ n2 :> (d1 :> Null))
+/\ haEpoch = 1
+/\ faults = [safe |-> 1, lost |-> 0, nnrst |-> 0, dnrst |-> 0, fo |-> 0]
+/\ needKU = (n1 :> (d1 :> FALSE) @@ n2 :> (d1 :> TRUE))
+/\ reReg = (n1 :> (d1 :> FALSE) @@ n2 :> (d1 :> FALSE))
+/\ reg = (n1 :> (d1 :> Null) @@ n2 :> (d1 :> Null))
+/\ dnUp = (d1 :> TRUE)
+/\ nnInc = (n1 :> 1 @@ n2 :> 1)
+/\ dnKeys = (d1 :> {<<n2, 1, 1>>, <<n2, 1, 2>>})
+/\ firstPass = (n1 :> TRUE @@ n2 :> FALSE)
+/\ nnSafe = (n1 :> "startup" @@ n2 :> "manual")
+/\ cDek = Null
+/\ actorState = (n1 :> (d1 :> "none") @@ n2 :> (d1 :> "standby"))
+/\ bpState = (d1 :> "keyed")
+/\ hbSet = (n1 :> {} @@ n2 :> {d1})
+/\ brDone = (n1 :> (d1 :> FALSE) @@ n2 :> (d1 :> TRUE))
+/\ lastClaim = (d1 :> 0)
+
+State 9: <MCRollKeys(n2) line 63, col 5 to line 66, col 23 of module MC>
+/\ dnQ = (n1 :> (d1 :> <<>>) @@ n2 :> (d1 :> <<>>))
+/\ rolls = (n1 :> 0 @@ n2 :> 2)
+/\ nnHA = (n1 :> "active" @@ n2 :> "standby")
+/\ targetFired = FALSE
+/\ nnTop = (n1 :> 2 @@ n2 :> 4)
+/\ actor = (n1 :> (d1 :> "conn") @@ n2 :> (d1 :> "reg"))
+/\ dnCur = (d1 :> <<n2, 1, 1>>)
+/\ sweepPending = (n1 :> FALSE @@ n2 :> TRUE)
+/\ bpActive = (d1 :> Null)
+/\ resp = (n1 :> (d1 :> Null) @@ n2 :> (d1 :> Null))
+/\ haEpoch = 1
+/\ faults = [safe |-> 1, lost |-> 0, nnrst |-> 0, dnrst |-> 0, fo |-> 0]
+/\ needKU = (n1 :> (d1 :> FALSE) @@ n2 :> (d1 :> TRUE))
+/\ reReg = (n1 :> (d1 :> FALSE) @@ n2 :> (d1 :> FALSE))
+/\ reg = (n1 :> (d1 :> Null) @@ n2 :> (d1 :> Null))
+/\ dnUp = (d1 :> TRUE)
+/\ nnInc = (n1 :> 1 @@ n2 :> 1)
+/\ dnKeys = (d1 :> {<<n2, 1, 1>>, <<n2, 1, 2>>})
+/\ firstPass = (n1 :> TRUE @@ n2 :> FALSE)
+/\ nnSafe = (n1 :> "startup" @@ n2 :> "manual")
+/\ cDek = Null
+/\ actorState = (n1 :> (d1 :> "none") @@ n2 :> (d1 :> "standby"))
+/\ bpState = (d1 :> "keyed")
+/\ hbSet = (n1 :> {} @@ n2 :> {d1})
+/\ brDone = (n1 :> (d1 :> FALSE) @@ n2 :> (d1 :> TRUE))
+/\ lastClaim = (d1 :> 0)
+
+State 10: <MCClientGetDek(n2) line 114, col 22 to line 114, col 87 of module MC>
+/\ dnQ = (n1 :> (d1 :> <<>>) @@ n2 :> (d1 :> <<>>))
+/\ rolls = (n1 :> 0 @@ n2 :> 2)
+/\ nnHA = (n1 :> "active" @@ n2 :> "standby")
+/\ targetFired = FALSE
+/\ nnTop = (n1 :> 2 @@ n2 :> 4)
+/\ actor = (n1 :> (d1 :> "conn") @@ n2 :> (d1 :> "reg"))
+/\ dnCur = (d1 :> <<n2, 1, 1>>)
+/\ sweepPending = (n1 :> FALSE @@ n2 :> TRUE)
+/\ bpActive = (d1 :> Null)
+/\ resp = (n1 :> (d1 :> Null) @@ n2 :> (d1 :> Null))
+/\ haEpoch = 1
+/\ faults = [safe |-> 1, lost |-> 0, nnrst |-> 0, dnrst |-> 0, fo |-> 0]
+/\ needKU = (n1 :> (d1 :> FALSE) @@ n2 :> (d1 :> TRUE))
+/\ reReg = (n1 :> (d1 :> FALSE) @@ n2 :> (d1 :> FALSE))
+/\ reg = (n1 :> (d1 :> Null) @@ n2 :> (d1 :> Null))
+/\ dnUp = (d1 :> TRUE)
+/\ nnInc = (n1 :> 1 @@ n2 :> 1)
+/\ dnKeys = (d1 :> {<<n2, 1, 1>>, <<n2, 1, 2>>})
+/\ firstPass = (n1 :> TRUE @@ n2 :> FALSE)
+/\ nnSafe = (n1 :> "startup" @@ n2 :> "manual")
+/\ cDek = [key |-> <<n2, 1, 3>>, iss |-> n2, r0 |-> 2]
+/\ actorState = (n1 :> (d1 :> "none") @@ n2 :> (d1 :> "standby"))
+/\ bpState = (d1 :> "keyed")
+/\ hbSet = (n1 :> {} @@ n2 :> {d1})
+/\ brDone = (n1 :> (d1 :> FALSE) @@ n2 :> (d1 :> TRUE))
+/\ lastClaim = (d1 :> 0)
+
+State 11: <MCClientConnect(d1) line 124, col 35 to line 124, col 90 of module MC>
+/\ dnQ = (n1 :> (d1 :> <<>>) @@ n2 :> (d1 :> <<>>))
+/\ rolls = (n1 :> 0 @@ n2 :> 2)
+/\ nnHA = (n1 :> "active" @@ n2 :> "standby")
+/\ targetFired = TRUE
+/\ nnTop = (n1 :> 2 @@ n2 :> 4)
+/\ actor = (n1 :> (d1 :> "conn") @@ n2 :> (d1 :> "reg"))
+/\ dnCur = (d1 :> <<n2, 1, 1>>)
+/\ sweepPending = (n1 :> FALSE @@ n2 :> TRUE)
+/\ bpActive = (d1 :> Null)
+/\ resp = (n1 :> (d1 :> Null) @@ n2 :> (d1 :> Null))
+/\ haEpoch = 1
+/\ faults = [safe |-> 1, lost |-> 0, nnrst |-> 0, dnrst |-> 0, fo |-> 0]
+/\ needKU = (n1 :> (d1 :> FALSE) @@ n2 :> (d1 :> TRUE))
+/\ reReg = (n1 :> (d1 :> FALSE) @@ n2 :> (d1 :> FALSE))
+/\ reg = (n1 :> (d1 :> Null) @@ n2 :> (d1 :> Null))
+/\ dnUp = (d1 :> TRUE)
+/\ nnInc = (n1 :> 1 @@ n2 :> 1)
+/\ dnKeys = (d1 :> {<<n2, 1, 1>>, <<n2, 1, 2>>})
+/\ firstPass = (n1 :> TRUE @@ n2 :> FALSE)
+/\ nnSafe = (n1 :> "startup" @@ n2 :> "manual")
+/\ cDek = [key |-> <<n2, 1, 3>>, iss |-> n2, r0 |-> 2]
+/\ actorState = (n1 :> (d1 :> "none") @@ n2 :> (d1 :> "standby"))
+/\ bpState = (d1 :> "keyed")
+/\ hbSet = (n1 :> {} @@ n2 :> {d1})
+/\ brDone = (n1 :> (d1 :> FALSE) @@ n2 :> (d1 :> TRUE))
+/\ lastClaim = (d1 :> 0)
+
+"CounterExample written: /users/ZhenyuLi/Specula/runs/20261029-002846-8337/hdfs-adhoc-11/.specula-output/spec/output/hunt/gated/G_S5_synced_cex.json"
+189997 states generated, 65566 distinct states found, 34017 states left on queue.
+The depth of the complete state graph search is 11.
+Finished in 06s at (2026-10-29 05:53:19)
+Trace exploration spec path: ./MCGated_TTrace_1793253192.tla
+ n2 :> (d1 :> TRUE))
+/\ lastClaim = (d1 :> 0)
+
+State 11: <MCClientConnect(d1) line 124, col 35 to line 124, col 90 of module MC>
+/\ dnQ = (n1 :> (d1 :> <<>>) @@ n2 :> (d1 :> <<>>))
+/\ rolls = (n1 :> 0 @@ n2 :> 2)
+/\ nnHA = (n1 :> "active" @@ n2 :> "standby")
+/\ targetFired = TRUE
+/\ nnTop = (n1 :> 2 @@ n2 :> 4)
+/\ actor = (n1 :> (d1 :> "conn") @@ n2 :> (d1 :> "reg"))
+/\ dnCur = (d1 :> <<n2, 1, 1>>)
+/\ sweepPending = (n1 :> FALSE @@ n2 :> TRUE)
+/\ bpActive = (d1 :> Null)
+/\ resp = (n1 :> (d1 :> Null) @@ n2 :> (d1 :> Null))
+/\ haEpoch = 1
+/\ faults = [safe |-> 1, lost |-> 0, nnrst |-> 0, dnrst |-> 0, fo |-> 0]
+/\ needKU = (n1 :> (d1 :> FALSE) @@ n2 :> (d1 :> TRUE))
+/\ reReg = (n1 :> (d1 :> FALSE) @@ n2 :> (d1 :> FALSE))
+/\ reg = (n1 :> (d1 :> Null) @@ n2 :> (d1 :> Null))
+/\ dnUp = (d1 :> TRUE)
+/\ nnInc = (n1 :> 1 @@ n2 :> 1)
+/\ dnKeys = (d1 :> {<<n2, 1, 1>>, <<n2, 1, 2>>})
+/\ firstPass = (n1 :> TRUE @@ n2 :> FALSE)
+/\ nnSafe = (n1 :> "startup" @@ n2 :> "manual")
+/\ cDek = [key |-> <<n2, 1, 3>>, iss |-> n2, r0 |-> 2]
+/\ actorState = (n1 :> (d1 :> "none") @@ n2 :> (d1 :> "standby"))
+/\ bpState = (d1 :> "keyed")
+/\ hbSet = (n1 :> {} @@ n2 :> {d1})
+/\ brDone = (n1 :> (d1 :> FALSE) @@ n2 :> (d1 :> TRUE))
+/\ lastClaim = (d1 :> 0)
+
+"CounterExample written: /users/ZhenyuLi/Specula/runs/20261029-002846-8337/hdfs-adhoc-11/.specula-output/spec/output/hunt/gated/G_S5_synced_cex.json"
+189997 states generated, 65566 distinct states found, 34017 states left on queue.
+The depth of the complete state graph search is 11.
+Finished in 06s at (2026-10-29 05:53:19)
+Trace exploration spec path: ./MCGated_TTrace_1793253192.tla
+
+[0;32m================================[0m
+[1;33m⚠ Invariant violation found![0m
+[1;33mPlease check log: /users/ZhenyuLi/Specula/runs/20261029-002846-8337/hdfs-adhoc-11/.specula-output/spec/output/hunt/gated/G_S5_synced.out[0m
+[0;32m================================[0m

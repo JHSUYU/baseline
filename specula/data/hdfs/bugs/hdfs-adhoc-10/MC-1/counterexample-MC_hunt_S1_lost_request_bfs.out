@@ -1,0 +1,4035 @@
+TLC2 Version 2026.10.24.013619 (rev: 2ef2af8)
+Running breadth-first search Model-Checking with fp 20 and seed 3975287928768475040 with 1 worker on 64 cores with 3925MB heap and 4096MB offheap memory [pid: 1075452] (Linux 5.15.0-198-generic amd64, Eclipse Adoptium 21.0.13 64bit, OffHeapDiskFPSet, DiskStateQueue).
+Parsing file /bulk/specula-adhoc/specula-runs/20261028-194745-c40a/hdfs-adhoc-10/.specula-output/spec/MC.tla
+Parsing file /bulk/specula-adhoc/specula-runs/20261028-194745-c40a/hdfs-adhoc-10/.specula-output/spec/base.tla
+Parsing file /tmp/tlc-6316011867765245040/_TLCTrace.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/_TLCTrace.tla)
+Parsing file /tmp/tlc-6316011867765245040/Naturals.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Naturals.tla)
+Parsing file /tmp/tlc-6316011867765245040/Integers.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Integers.tla)
+Parsing file /tmp/tlc-6316011867765245040/Sequences.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Sequences.tla)
+Parsing file /tmp/tlc-6316011867765245040/FiniteSets.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/FiniteSets.tla)
+Parsing file /tmp/tlc-6316011867765245040/TLC.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLC.tla)
+Parsing file /tmp/tlc-6316011867765245040/TLCExt.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLCExt.tla)
+Semantic processing of module Naturals
+Semantic processing of module Integers
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module TLC
+Semantic processing of module base
+Semantic processing of module TLCExt
+Semantic processing of module _TLCTrace
+Semantic processing of module MC
+Linting of module base
+Linting of module TLCExt
+Linting of module _TLCTrace
+Linting of module MC
+Starting... (2026-10-28 21:51:45)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-10-28 21:51:48.
+Error: Invariant TargetSafe is violated.
+Error: The behavior up to this point is:
+State 1: <Initial predicate>
+/\ chQ = <<(j1 :> <<>> @@ j2 :> <<>> @@ j3 :> <<>>)>>
+/\ wCid = <<0>>
+/\ targetFired = FALSE
+/\ wOp = <<[op |-> "none", a1 |-> 0, a2 |-> 0, a3 |-> 0, cid |-> 0]>>
+/\ wPhase = <<"idle">>
+/\ wEpoch = <<-1>>
+/\ wCommitted = <<-12345>>
+/\ wRec = <<[seg |-> 0, end |-> 0]>>
+/\ faults = [lost |-> 0, crash |-> 0, wcrash |-> 0, late |-> 0, disk |-> 0]
+/\ outOfSync = <<(j1 :> FALSE @@ j2 :> FALSE @@ j3 :> FALSE)>>
+/\ wRes = << ( j1 :>
+         [ committed |-> -12345,
+           st |-> "none",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j2 :>
+         [ committed |-> -12345,
+           st |-> "none",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j3 :>
+         [ committed |-> -12345,
+           st |-> "none",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] ) >>
+/\ inflight = << ( j1 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j2 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j3 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] ) >>
+/\ nextSerial = <<(j1 :> 0 @@ j2 :> 0 @@ j3 :> 0)>>
+/\ up = (j1 :> TRUE @@ j2 :> TRUE @@ j3 :> TRUE)
+/\ srvPend = (j1 :> {} @@ j2 :> {} @@ j3 :> {})
+/\ jn = ( j1 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j2 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j3 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] )
+/\ wSeg = <<0>>
+
+State 2: <MCWriterBegin(1) line 73, col 30 to line 73, col 80 of module MC>
+/\ chQ = <<(j1 :> <<>> @@ j2 :> <<>> @@ j3 :> <<>>)>>
+/\ wCid = <<0>>
+/\ targetFired = FALSE
+/\ wOp = <<[op |-> "gjs", a1 |-> 0, a2 |-> 0, a3 |-> 0, cid |-> 0]>>
+/\ wPhase = <<"fanout">>
+/\ wEpoch = <<-1>>
+/\ wCommitted = <<-12345>>
+/\ wRec = <<[seg |-> 0, end |-> 0]>>
+/\ faults = [lost |-> 0, crash |-> 0, wcrash |-> 0, late |-> 0, disk |-> 0]
+/\ outOfSync = <<(j1 :> FALSE @@ j2 :> FALSE @@ j3 :> FALSE)>>
+/\ wRes = << ( j1 :>
+         [ committed |-> -12345,
+           st |-> "none",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j2 :>
+         [ committed |-> -12345,
+           st |-> "none",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j3 :>
+         [ committed |-> -12345,
+           st |-> "none",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] ) >>
+/\ inflight = << ( j1 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j2 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j3 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] ) >>
+/\ nextSerial = <<(j1 :> 0 @@ j2 :> 0 @@ j3 :> 0)>>
+/\ up = (j1 :> TRUE @@ j2 :> TRUE @@ j3 :> TRUE)
+/\ srvPend = (j1 :> {} @@ j2 :> {} @@ j3 :> {})
+/\ jn = ( j1 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j2 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j3 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] )
+/\ wSeg = <<0>>
+
+State 3: <MCWriterFanOut(1) line 74, col 30 to line 74, col 80 of module MC>
+/\ chQ = << ( j1 :> <<[op |-> "gjs", a1 |-> 0, a2 |-> 0, a3 |-> 0, cid |-> 1]>> @@
+     j2 :> <<[op |-> "gjs", a1 |-> 0, a2 |-> 0, a3 |-> 0, cid |-> 1]>> @@
+     j3 :> <<[op |-> "gjs", a1 |-> 0, a2 |-> 0, a3 |-> 0, cid |-> 1]>> ) >>
+/\ wCid = <<1>>
+/\ targetFired = FALSE
+/\ wOp = <<[op |-> "gjs", a1 |-> 0, a2 |-> 0, a3 |-> 0, cid |-> 0]>>
+/\ wPhase = <<"wait">>
+/\ wEpoch = <<-1>>
+/\ wCommitted = <<-12345>>
+/\ wRec = <<[seg |-> 0, end |-> 0]>>
+/\ faults = [lost |-> 0, crash |-> 0, wcrash |-> 0, late |-> 0, disk |-> 0]
+/\ outOfSync = <<(j1 :> FALSE @@ j2 :> FALSE @@ j3 :> FALSE)>>
+/\ wRes = << ( j1 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j2 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j3 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] ) >>
+/\ inflight = << ( j1 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j2 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j3 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] ) >>
+/\ nextSerial = <<(j1 :> 0 @@ j2 :> 0 @@ j3 :> 0)>>
+/\ up = (j1 :> TRUE @@ j2 :> TRUE @@ j3 :> TRUE)
+/\ srvPend = (j1 :> {} @@ j2 :> {} @@ j3 :> {})
+/\ jn = ( j1 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j2 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j3 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] )
+/\ wSeg = <<0>>
+
+State 4: <MCChannelDispatch(1,j1) line 84, col 33 to line 84, col 86 of module MC>
+/\ chQ = << ( j1 :> <<>> @@
+     j2 :> <<[op |-> "gjs", a1 |-> 0, a2 |-> 0, a3 |-> 0, cid |-> 1]>> @@
+     j3 :> <<[op |-> "gjs", a1 |-> 0, a2 |-> 0, a3 |-> 0, cid |-> 1]>> ) >>
+/\ wCid = <<1>>
+/\ targetFired = FALSE
+/\ wOp = <<[op |-> "gjs", a1 |-> 0, a2 |-> 0, a3 |-> 0, cid |-> 0]>>
+/\ wPhase = <<"wait">>
+/\ wEpoch = <<-1>>
+/\ wCommitted = <<-12345>>
+/\ wRec = <<[seg |-> 0, end |-> 0]>>
+/\ faults = [lost |-> 0, crash |-> 0, wcrash |-> 0, late |-> 0, disk |-> 0]
+/\ outOfSync = <<(j1 :> FALSE @@ j2 :> FALSE @@ j3 :> FALSE)>>
+/\ wRes = << ( j1 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j2 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j3 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] ) >>
+/\ inflight = << ( j1 :>
+         [ w |-> 1,
+           op |-> "gjs",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 1,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "sent" ] @@
+     j2 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j3 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] ) >>
+/\ nextSerial = <<(j1 :> 0 @@ j2 :> 0 @@ j3 :> 0)>>
+/\ up = (j1 :> TRUE @@ j2 :> TRUE @@ j3 :> TRUE)
+/\ srvPend = (j1 :> {} @@ j2 :> {} @@ j3 :> {})
+/\ jn = ( j1 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j2 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j3 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] )
+/\ wSeg = <<0>>
+
+State 5: <MCJNGetJournalState(1,j1) line 87, col 33 to line 87, col 86 of module MC>
+/\ chQ = << ( j1 :> <<>> @@
+     j2 :> <<[op |-> "gjs", a1 |-> 0, a2 |-> 0, a3 |-> 0, cid |-> 1]>> @@
+     j3 :> <<[op |-> "gjs", a1 |-> 0, a2 |-> 0, a3 |-> 0, cid |-> 1]>> ) >>
+/\ wCid = <<1>>
+/\ targetFired = FALSE
+/\ wOp = <<[op |-> "gjs", a1 |-> 0, a2 |-> 0, a3 |-> 0, cid |-> 0]>>
+/\ wPhase = <<"wait">>
+/\ wEpoch = <<-1>>
+/\ wCommitted = <<-12345>>
+/\ wRec = <<[seg |-> 0, end |-> 0]>>
+/\ faults = [lost |-> 0, crash |-> 0, wcrash |-> 0, late |-> 0, disk |-> 0]
+/\ outOfSync = <<(j1 :> FALSE @@ j2 :> FALSE @@ j3 :> FALSE)>>
+/\ wRes = << ( j1 :>
+         [ committed |-> -12345,
+           st |-> "ok",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j2 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j3 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] ) >>
+/\ inflight = << ( j1 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j2 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j3 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] ) >>
+/\ nextSerial = <<(j1 :> 0 @@ j2 :> 0 @@ j3 :> 0)>>
+/\ up = (j1 :> TRUE @@ j2 :> TRUE @@ j3 :> TRUE)
+/\ srvPend = (j1 :> {} @@ j2 :> {} @@ j3 :> {})
+/\ jn = ( j1 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j2 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j3 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] )
+/\ wSeg = <<0>>
+
+State 6: <MCChannelDispatch(1,j2) line 84, col 33 to line 84, col 86 of module MC>
+/\ chQ = << ( j1 :> <<>> @@
+     j2 :> <<>> @@
+     j3 :> <<[op |-> "gjs", a1 |-> 0, a2 |-> 0, a3 |-> 0, cid |-> 1]>> ) >>
+/\ wCid = <<1>>
+/\ targetFired = FALSE
+/\ wOp = <<[op |-> "gjs", a1 |-> 0, a2 |-> 0, a3 |-> 0, cid |-> 0]>>
+/\ wPhase = <<"wait">>
+/\ wEpoch = <<-1>>
+/\ wCommitted = <<-12345>>
+/\ wRec = <<[seg |-> 0, end |-> 0]>>
+/\ faults = [lost |-> 0, crash |-> 0, wcrash |-> 0, late |-> 0, disk |-> 0]
+/\ outOfSync = <<(j1 :> FALSE @@ j2 :> FALSE @@ j3 :> FALSE)>>
+/\ wRes = << ( j1 :>
+         [ committed |-> -12345,
+           st |-> "ok",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j2 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j3 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] ) >>
+/\ inflight = << ( j1 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j2 :>
+         [ w |-> 1,
+           op |-> "gjs",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 1,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "sent" ] @@
+     j3 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] ) >>
+/\ nextSerial = <<(j1 :> 0 @@ j2 :> 0 @@ j3 :> 0)>>
+/\ up = (j1 :> TRUE @@ j2 :> TRUE @@ j3 :> TRUE)
+/\ srvPend = (j1 :> {} @@ j2 :> {} @@ j3 :> {})
+/\ jn = ( j1 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j2 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j3 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] )
+/\ wSeg = <<0>>
+
+State 7: <MCJNGetJournalState(1,j2) line 87, col 33 to line 87, col 86 of module MC>
+/\ chQ = << ( j1 :> <<>> @@
+     j2 :> <<>> @@
+     j3 :> <<[op |-> "gjs", a1 |-> 0, a2 |-> 0, a3 |-> 0, cid |-> 1]>> ) >>
+/\ wCid = <<1>>
+/\ targetFired = FALSE
+/\ wOp = <<[op |-> "gjs", a1 |-> 0, a2 |-> 0, a3 |-> 0, cid |-> 0]>>
+/\ wPhase = <<"wait">>
+/\ wEpoch = <<-1>>
+/\ wCommitted = <<-12345>>
+/\ wRec = <<[seg |-> 0, end |-> 0]>>
+/\ faults = [lost |-> 0, crash |-> 0, wcrash |-> 0, late |-> 0, disk |-> 0]
+/\ outOfSync = <<(j1 :> FALSE @@ j2 :> FALSE @@ j3 :> FALSE)>>
+/\ wRes = << ( j1 :>
+         [ committed |-> -12345,
+           st |-> "ok",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j2 :>
+         [ committed |-> -12345,
+           st |-> "ok",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j3 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] ) >>
+/\ inflight = << ( j1 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j2 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j3 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] ) >>
+/\ nextSerial = <<(j1 :> 0 @@ j2 :> 0 @@ j3 :> 0)>>
+/\ up = (j1 :> TRUE @@ j2 :> TRUE @@ j3 :> TRUE)
+/\ srvPend = (j1 :> {} @@ j2 :> {} @@ j3 :> {})
+/\ jn = ( j1 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j2 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j3 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] )
+/\ wSeg = <<0>>
+
+State 8: <MCGotJournalState(1) line 75, col 30 to line 75, col 96 of module MC>
+/\ chQ = << ( j1 :> <<>> @@
+     j2 :> <<>> @@
+     j3 :> <<[op |-> "gjs", a1 |-> 0, a2 |-> 0, a3 |-> 0, cid |-> 1]>> ) >>
+/\ wCid = <<1>>
+/\ targetFired = FALSE
+/\ wOp = <<[op |-> "ne", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 0]>>
+/\ wPhase = <<"fanout">>
+/\ wEpoch = <<-1>>
+/\ wCommitted = <<-12345>>
+/\ wRec = <<[seg |-> 0, end |-> 0]>>
+/\ faults = [lost |-> 0, crash |-> 0, wcrash |-> 0, late |-> 0, disk |-> 0]
+/\ outOfSync = <<(j1 :> FALSE @@ j2 :> FALSE @@ j3 :> FALSE)>>
+/\ wRes = << ( j1 :>
+         [ committed |-> -12345,
+           st |-> "ok",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j2 :>
+         [ committed |-> -12345,
+           st |-> "ok",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j3 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] ) >>
+/\ inflight = << ( j1 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j2 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j3 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] ) >>
+/\ nextSerial = <<(j1 :> 0 @@ j2 :> 0 @@ j3 :> 0)>>
+/\ up = (j1 :> TRUE @@ j2 :> TRUE @@ j3 :> TRUE)
+/\ srvPend = (j1 :> {} @@ j2 :> {} @@ j3 :> {})
+/\ jn = ( j1 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j2 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j3 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] )
+/\ wSeg = <<0>>
+
+State 9: <MCWriterFanOut(1) line 74, col 30 to line 74, col 80 of module MC>
+/\ chQ = << ( j1 :> <<[op |-> "ne", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 2]>> @@
+     j2 :> <<[op |-> "ne", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 2]>> @@
+     j3 :>
+         << [op |-> "gjs", a1 |-> 0, a2 |-> 0, a3 |-> 0, cid |-> 1],
+            [op |-> "ne", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 2] >> ) >>
+/\ wCid = <<2>>
+/\ targetFired = FALSE
+/\ wOp = <<[op |-> "ne", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 0]>>
+/\ wPhase = <<"wait">>
+/\ wEpoch = <<-1>>
+/\ wCommitted = <<-12345>>
+/\ wRec = <<[seg |-> 0, end |-> 0]>>
+/\ faults = [lost |-> 0, crash |-> 0, wcrash |-> 0, late |-> 0, disk |-> 0]
+/\ outOfSync = <<(j1 :> FALSE @@ j2 :> FALSE @@ j3 :> FALSE)>>
+/\ wRes = << ( j1 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j2 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j3 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] ) >>
+/\ inflight = << ( j1 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j2 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j3 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] ) >>
+/\ nextSerial = <<(j1 :> 0 @@ j2 :> 0 @@ j3 :> 0)>>
+/\ up = (j1 :> TRUE @@ j2 :> TRUE @@ j3 :> TRUE)
+/\ srvPend = (j1 :> {} @@ j2 :> {} @@ j3 :> {})
+/\ jn = ( j1 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j2 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j3 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] )
+/\ wSeg = <<0>>
+
+State 10: <MCChannelDispatch(1,j1) line 84, col 33 to line 84, col 86 of module MC>
+/\ chQ = << ( j1 :> <<>> @@
+     j2 :> <<[op |-> "ne", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 2]>> @@
+     j3 :>
+         << [op |-> "gjs", a1 |-> 0, a2 |-> 0, a3 |-> 0, cid |-> 1],
+            [op |-> "ne", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 2] >> ) >>
+/\ wCid = <<2>>
+/\ targetFired = FALSE
+/\ wOp = <<[op |-> "ne", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 0]>>
+/\ wPhase = <<"wait">>
+/\ wEpoch = <<-1>>
+/\ wCommitted = <<-12345>>
+/\ wRec = <<[seg |-> 0, end |-> 0]>>
+/\ faults = [lost |-> 0, crash |-> 0, wcrash |-> 0, late |-> 0, disk |-> 0]
+/\ outOfSync = <<(j1 :> FALSE @@ j2 :> FALSE @@ j3 :> FALSE)>>
+/\ wRes = << ( j1 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j2 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j3 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] ) >>
+/\ inflight = << ( j1 :>
+         [ w |-> 1,
+           op |-> "ne",
+           a1 |-> 1,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 2,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "sent" ] @@
+     j2 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j3 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] ) >>
+/\ nextSerial = <<(j1 :> 0 @@ j2 :> 0 @@ j3 :> 0)>>
+/\ up = (j1 :> TRUE @@ j2 :> TRUE @@ j3 :> TRUE)
+/\ srvPend = (j1 :> {} @@ j2 :> {} @@ j3 :> {})
+/\ jn = ( j1 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j2 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j3 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] )
+/\ wSeg = <<0>>
+
+State 11: <MCJNNewEpoch(1,j1) line 88, col 33 to line 88, col 86 of module MC>
+/\ chQ = << ( j1 :> <<>> @@
+     j2 :> <<[op |-> "ne", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 2]>> @@
+     j3 :>
+         << [op |-> "gjs", a1 |-> 0, a2 |-> 0, a3 |-> 0, cid |-> 1],
+            [op |-> "ne", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 2] >> ) >>
+/\ wCid = <<2>>
+/\ targetFired = FALSE
+/\ wOp = <<[op |-> "ne", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 0]>>
+/\ wPhase = <<"wait">>
+/\ wEpoch = <<-1>>
+/\ wCommitted = <<-12345>>
+/\ wRec = <<[seg |-> 0, end |-> 0]>>
+/\ faults = [lost |-> 0, crash |-> 0, wcrash |-> 0, late |-> 0, disk |-> 0]
+/\ outOfSync = <<(j1 :> FALSE @@ j2 :> FALSE @@ j3 :> FALSE)>>
+/\ wRes = << ( j1 :>
+         [ committed |-> -12345,
+           st |-> "ok",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j2 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j3 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] ) >>
+/\ inflight = << ( j1 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j2 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j3 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] ) >>
+/\ nextSerial = <<(j1 :> 0 @@ j2 :> 0 @@ j3 :> 0)>>
+/\ up = (j1 :> TRUE @@ j2 :> TRUE @@ j3 :> TRUE)
+/\ srvPend = (j1 :> {} @@ j2 :> {} @@ j3 :> {})
+/\ jn = ( j1 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j2 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j3 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] )
+/\ wSeg = <<0>>
+
+State 12: <MCChannelDispatch(1,j2) line 84, col 33 to line 84, col 86 of module MC>
+/\ chQ = << ( j1 :> <<>> @@
+     j2 :> <<>> @@
+     j3 :>
+         << [op |-> "gjs", a1 |-> 0, a2 |-> 0, a3 |-> 0, cid |-> 1],
+            [op |-> "ne", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 2] >> ) >>
+/\ wCid = <<2>>
+/\ targetFired = FALSE
+/\ wOp = <<[op |-> "ne", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 0]>>
+/\ wPhase = <<"wait">>
+/\ wEpoch = <<-1>>
+/\ wCommitted = <<-12345>>
+/\ wRec = <<[seg |-> 0, end |-> 0]>>
+/\ faults = [lost |-> 0, crash |-> 0, wcrash |-> 0, late |-> 0, disk |-> 0]
+/\ outOfSync = <<(j1 :> FALSE @@ j2 :> FALSE @@ j3 :> FALSE)>>
+/\ wRes = << ( j1 :>
+         [ committed |-> -12345,
+           st |-> "ok",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j2 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j3 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] ) >>
+/\ inflight = << ( j1 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j2 :>
+         [ w |-> 1,
+           op |-> "ne",
+           a1 |-> 1,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 2,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "sent" ] @@
+     j3 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] ) >>
+/\ nextSerial = <<(j1 :> 0 @@ j2 :> 0 @@ j3 :> 0)>>
+/\ up = (j1 :> TRUE @@ j2 :> TRUE @@ j3 :> TRUE)
+/\ srvPend = (j1 :> {} @@ j2 :> {} @@ j3 :> {})
+/\ jn = ( j1 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j2 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j3 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] )
+/\ wSeg = <<0>>
+
+State 13: <MCJNNewEpoch(1,j2) line 88, col 33 to line 88, col 86 of module MC>
+/\ chQ = << ( j1 :> <<>> @@
+     j2 :> <<>> @@
+     j3 :>
+         << [op |-> "gjs", a1 |-> 0, a2 |-> 0, a3 |-> 0, cid |-> 1],
+            [op |-> "ne", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 2] >> ) >>
+/\ wCid = <<2>>
+/\ targetFired = FALSE
+/\ wOp = <<[op |-> "ne", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 0]>>
+/\ wPhase = <<"wait">>
+/\ wEpoch = <<-1>>
+/\ wCommitted = <<-12345>>
+/\ wRec = <<[seg |-> 0, end |-> 0]>>
+/\ faults = [lost |-> 0, crash |-> 0, wcrash |-> 0, late |-> 0, disk |-> 0]
+/\ outOfSync = <<(j1 :> FALSE @@ j2 :> FALSE @@ j3 :> FALSE)>>
+/\ wRes = << ( j1 :>
+         [ committed |-> -12345,
+           st |-> "ok",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j2 :>
+         [ committed |-> -12345,
+           st |-> "ok",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j3 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] ) >>
+/\ inflight = << ( j1 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j2 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j3 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] ) >>
+/\ nextSerial = <<(j1 :> 0 @@ j2 :> 0 @@ j3 :> 0)>>
+/\ up = (j1 :> TRUE @@ j2 :> TRUE @@ j3 :> TRUE)
+/\ srvPend = (j1 :> {} @@ j2 :> {} @@ j3 :> {})
+/\ jn = ( j1 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j2 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j3 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] )
+/\ wSeg = <<0>>
+
+State 14: <MCGotNewEpoch(1) line 76, col 30 to line 76, col 96 of module MC>
+/\ chQ = << ( j1 :> <<>> @@
+     j2 :> <<>> @@
+     j3 :>
+         << [op |-> "gjs", a1 |-> 0, a2 |-> 0, a3 |-> 0, cid |-> 1],
+            [op |-> "ne", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 2] >> ) >>
+/\ wCid = <<2>>
+/\ targetFired = FALSE
+/\ wOp = <<[op |-> "start", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 0]>>
+/\ wPhase = <<"fanout">>
+/\ wEpoch = <<1>>
+/\ wCommitted = <<-12345>>
+/\ wRec = <<[seg |-> 0, end |-> 0]>>
+/\ faults = [lost |-> 0, crash |-> 0, wcrash |-> 0, late |-> 0, disk |-> 0]
+/\ outOfSync = <<(j1 :> FALSE @@ j2 :> FALSE @@ j3 :> FALSE)>>
+/\ wRes = << ( j1 :>
+         [ committed |-> -12345,
+           st |-> "ok",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j2 :>
+         [ committed |-> -12345,
+           st |-> "ok",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j3 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] ) >>
+/\ inflight = << ( j1 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j2 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j3 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] ) >>
+/\ nextSerial = <<(j1 :> 0 @@ j2 :> 0 @@ j3 :> 0)>>
+/\ up = (j1 :> TRUE @@ j2 :> TRUE @@ j3 :> TRUE)
+/\ srvPend = (j1 :> {} @@ j2 :> {} @@ j3 :> {})
+/\ jn = ( j1 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j2 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j3 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] )
+/\ wSeg = <<1>>
+
+State 15: <MCWriterFanOut(1) line 74, col 30 to line 74, col 80 of module MC>
+/\ chQ = << ( j1 :> <<[op |-> "start", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 3]>> @@
+     j2 :> <<[op |-> "start", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 3]>> @@
+     j3 :>
+         << [op |-> "gjs", a1 |-> 0, a2 |-> 0, a3 |-> 0, cid |-> 1],
+            [op |-> "ne", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 2],
+            [op |-> "start", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 3] >> ) >>
+/\ wCid = <<3>>
+/\ targetFired = FALSE
+/\ wOp = <<[op |-> "start", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 0]>>
+/\ wPhase = <<"wait">>
+/\ wEpoch = <<1>>
+/\ wCommitted = <<-12345>>
+/\ wRec = <<[seg |-> 0, end |-> 0]>>
+/\ faults = [lost |-> 0, crash |-> 0, wcrash |-> 0, late |-> 0, disk |-> 0]
+/\ outOfSync = <<(j1 :> FALSE @@ j2 :> FALSE @@ j3 :> FALSE)>>
+/\ wRes = << ( j1 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j2 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j3 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] ) >>
+/\ inflight = << ( j1 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j2 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j3 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] ) >>
+/\ nextSerial = <<(j1 :> 0 @@ j2 :> 0 @@ j3 :> 0)>>
+/\ up = (j1 :> TRUE @@ j2 :> TRUE @@ j3 :> TRUE)
+/\ srvPend = (j1 :> {} @@ j2 :> {} @@ j3 :> {})
+/\ jn = ( j1 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j2 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j3 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] )
+/\ wSeg = <<1>>
+
+State 16: <MCChannelDispatch(1,j1) line 84, col 33 to line 84, col 86 of module MC>
+/\ chQ = << ( j1 :> <<>> @@
+     j2 :> <<[op |-> "start", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 3]>> @@
+     j3 :>
+         << [op |-> "gjs", a1 |-> 0, a2 |-> 0, a3 |-> 0, cid |-> 1],
+            [op |-> "ne", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 2],
+            [op |-> "start", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 3] >> ) >>
+/\ wCid = <<3>>
+/\ targetFired = FALSE
+/\ wOp = <<[op |-> "start", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 0]>>
+/\ wPhase = <<"wait">>
+/\ wEpoch = <<1>>
+/\ wCommitted = <<-12345>>
+/\ wRec = <<[seg |-> 0, end |-> 0]>>
+/\ faults = [lost |-> 0, crash |-> 0, wcrash |-> 0, late |-> 0, disk |-> 0]
+/\ outOfSync = <<(j1 :> FALSE @@ j2 :> FALSE @@ j3 :> FALSE)>>
+/\ wRes = << ( j1 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j2 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j3 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] ) >>
+/\ inflight = << ( j1 :>
+         [ w |-> 1,
+           op |-> "start",
+           a1 |-> 1,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 3,
+           epoch |-> 1,
+           serial |-> 0,
+           committed |-> -12345,
+           st |-> "sent" ] @@
+     j2 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j3 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] ) >>
+/\ nextSerial = <<(j1 :> 1 @@ j2 :> 0 @@ j3 :> 0)>>
+/\ up = (j1 :> TRUE @@ j2 :> TRUE @@ j3 :> TRUE)
+/\ srvPend = (j1 :> {} @@ j2 :> {} @@ j3 :> {})
+/\ jn = ( j1 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j2 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j3 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] )
+/\ wSeg = <<1>>
+
+State 17: <MCJNStartLogSegment(1,j1) line 89, col 33 to line 89, col 86 of module MC>
+/\ chQ = << ( j1 :> <<>> @@
+     j2 :> <<[op |-> "start", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 3]>> @@
+     j3 :>
+         << [op |-> "gjs", a1 |-> 0, a2 |-> 0, a3 |-> 0, cid |-> 1],
+            [op |-> "ne", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 2],
+            [op |-> "start", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 3] >> ) >>
+/\ wCid = <<3>>
+/\ targetFired = FALSE
+/\ wOp = <<[op |-> "start", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 0]>>
+/\ wPhase = <<"wait">>
+/\ wEpoch = <<1>>
+/\ wCommitted = <<-12345>>
+/\ wRec = <<[seg |-> 0, end |-> 0]>>
+/\ faults = [lost |-> 0, crash |-> 0, wcrash |-> 0, late |-> 0, disk |-> 0]
+/\ outOfSync = <<(j1 :> FALSE @@ j2 :> FALSE @@ j3 :> FALSE)>>
+/\ wRes = << ( j1 :>
+         [ committed |-> -12345,
+           st |-> "ok",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j2 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j3 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] ) >>
+/\ inflight = << ( j1 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j2 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j3 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] ) >>
+/\ nextSerial = <<(j1 :> 1 @@ j2 :> 0 @@ j3 :> 0)>>
+/\ up = (j1 :> TRUE @@ j2 :> TRUE @@ j3 :> TRUE)
+/\ srvPend = (j1 :> {} @@ j2 :> {} @@ j3 :> {})
+/\ jn = ( j1 :>
+      [ serial |-> 0,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 1,
+        lwDisk |-> 1,
+        lwPrev |-> 0,
+        curSeg |-> 1,
+        nextTx |-> 1,
+        files |->
+            << [st |-> "inprog", last |-> -12345],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j2 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j3 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] )
+/\ wSeg = <<1>>
+
+State 18: <MCChannelDispatch(1,j2) line 84, col 33 to line 84, col 86 of module MC>
+/\ chQ = << ( j1 :> <<>> @@
+     j2 :> <<>> @@
+     j3 :>
+         << [op |-> "gjs", a1 |-> 0, a2 |-> 0, a3 |-> 0, cid |-> 1],
+            [op |-> "ne", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 2],
+            [op |-> "start", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 3] >> ) >>
+/\ wCid = <<3>>
+/\ targetFired = FALSE
+/\ wOp = <<[op |-> "start", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 0]>>
+/\ wPhase = <<"wait">>
+/\ wEpoch = <<1>>
+/\ wCommitted = <<-12345>>
+/\ wRec = <<[seg |-> 0, end |-> 0]>>
+/\ faults = [lost |-> 0, crash |-> 0, wcrash |-> 0, late |-> 0, disk |-> 0]
+/\ outOfSync = <<(j1 :> FALSE @@ j2 :> FALSE @@ j3 :> FALSE)>>
+/\ wRes = << ( j1 :>
+         [ committed |-> -12345,
+           st |-> "ok",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j2 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j3 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] ) >>
+/\ inflight = << ( j1 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j2 :>
+         [ w |-> 1,
+           op |-> "start",
+           a1 |-> 1,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 3,
+           epoch |-> 1,
+           serial |-> 0,
+           committed |-> -12345,
+           st |-> "sent" ] @@
+     j3 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] ) >>
+/\ nextSerial = <<(j1 :> 1 @@ j2 :> 1 @@ j3 :> 0)>>
+/\ up = (j1 :> TRUE @@ j2 :> TRUE @@ j3 :> TRUE)
+/\ srvPend = (j1 :> {} @@ j2 :> {} @@ j3 :> {})
+/\ jn = ( j1 :>
+      [ serial |-> 0,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 1,
+        lwDisk |-> 1,
+        lwPrev |-> 0,
+        curSeg |-> 1,
+        nextTx |-> 1,
+        files |->
+            << [st |-> "inprog", last |-> -12345],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j2 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j3 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] )
+/\ wSeg = <<1>>
+
+State 19: <MCJNStartLogSegment(1,j2) line 89, col 33 to line 89, col 86 of module MC>
+/\ chQ = << ( j1 :> <<>> @@
+     j2 :> <<>> @@
+     j3 :>
+         << [op |-> "gjs", a1 |-> 0, a2 |-> 0, a3 |-> 0, cid |-> 1],
+            [op |-> "ne", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 2],
+            [op |-> "start", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 3] >> ) >>
+/\ wCid = <<3>>
+/\ targetFired = FALSE
+/\ wOp = <<[op |-> "start", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 0]>>
+/\ wPhase = <<"wait">>
+/\ wEpoch = <<1>>
+/\ wCommitted = <<-12345>>
+/\ wRec = <<[seg |-> 0, end |-> 0]>>
+/\ faults = [lost |-> 0, crash |-> 0, wcrash |-> 0, late |-> 0, disk |-> 0]
+/\ outOfSync = <<(j1 :> FALSE @@ j2 :> FALSE @@ j3 :> FALSE)>>
+/\ wRes = << ( j1 :>
+         [ committed |-> -12345,
+           st |-> "ok",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j2 :>
+         [ committed |-> -12345,
+           st |-> "ok",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j3 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] ) >>
+/\ inflight = << ( j1 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j2 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j3 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] ) >>
+/\ nextSerial = <<(j1 :> 1 @@ j2 :> 1 @@ j3 :> 0)>>
+/\ up = (j1 :> TRUE @@ j2 :> TRUE @@ j3 :> TRUE)
+/\ srvPend = (j1 :> {} @@ j2 :> {} @@ j3 :> {})
+/\ jn = ( j1 :>
+      [ serial |-> 0,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 1,
+        lwDisk |-> 1,
+        lwPrev |-> 0,
+        curSeg |-> 1,
+        nextTx |-> 1,
+        files |->
+            << [st |-> "inprog", last |-> -12345],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j2 :>
+      [ serial |-> 0,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 1,
+        lwDisk |-> 1,
+        lwPrev |-> 0,
+        curSeg |-> 1,
+        nextTx |-> 1,
+        files |->
+            << [st |-> "inprog", last |-> -12345],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j3 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] )
+/\ wSeg = <<1>>
+
+State 20: <MCGotStart(1) line 79, col 30 to line 79, col 96 of module MC>
+/\ chQ = << ( j1 :> <<>> @@
+     j2 :> <<>> @@
+     j3 :>
+         << [op |-> "gjs", a1 |-> 0, a2 |-> 0, a3 |-> 0, cid |-> 1],
+            [op |-> "ne", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 2],
+            [op |-> "start", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 3] >> ) >>
+/\ wCid = <<3>>
+/\ targetFired = FALSE
+/\ wOp = <<[op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 0]>>
+/\ wPhase = <<"fanout">>
+/\ wEpoch = <<1>>
+/\ wCommitted = <<-12345>>
+/\ wRec = <<[seg |-> 0, end |-> 0]>>
+/\ faults = [lost |-> 0, crash |-> 0, wcrash |-> 0, late |-> 0, disk |-> 0]
+/\ outOfSync = <<(j1 :> FALSE @@ j2 :> FALSE @@ j3 :> FALSE)>>
+/\ wRes = << ( j1 :>
+         [ committed |-> -12345,
+           st |-> "ok",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j2 :>
+         [ committed |-> -12345,
+           st |-> "ok",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j3 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] ) >>
+/\ inflight = << ( j1 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j2 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j3 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] ) >>
+/\ nextSerial = <<(j1 :> 1 @@ j2 :> 1 @@ j3 :> 0)>>
+/\ up = (j1 :> TRUE @@ j2 :> TRUE @@ j3 :> TRUE)
+/\ srvPend = (j1 :> {} @@ j2 :> {} @@ j3 :> {})
+/\ jn = ( j1 :>
+      [ serial |-> 0,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 1,
+        lwDisk |-> 1,
+        lwPrev |-> 0,
+        curSeg |-> 1,
+        nextTx |-> 1,
+        files |->
+            << [st |-> "inprog", last |-> -12345],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j2 :>
+      [ serial |-> 0,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 1,
+        lwDisk |-> 1,
+        lwPrev |-> 0,
+        curSeg |-> 1,
+        nextTx |-> 1,
+        files |->
+            << [st |-> "inprog", last |-> -12345],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j3 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] )
+/\ wSeg = <<1>>
+
+State 21: <MCWriterFanOut(1) line 74, col 30 to line 74, col 80 of module MC>
+/\ chQ = << ( j1 :> <<[op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 4]>> @@
+     j2 :> <<[op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 4]>> @@
+     j3 :>
+         << [op |-> "gjs", a1 |-> 0, a2 |-> 0, a3 |-> 0, cid |-> 1],
+            [op |-> "ne", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 2],
+            [op |-> "start", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 3],
+            [op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 4] >> ) >>
+/\ wCid = <<4>>
+/\ targetFired = FALSE
+/\ wOp = <<[op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 0]>>
+/\ wPhase = <<"wait">>
+/\ wEpoch = <<1>>
+/\ wCommitted = <<-12345>>
+/\ wRec = <<[seg |-> 0, end |-> 0]>>
+/\ faults = [lost |-> 0, crash |-> 0, wcrash |-> 0, late |-> 0, disk |-> 0]
+/\ outOfSync = <<(j1 :> FALSE @@ j2 :> FALSE @@ j3 :> FALSE)>>
+/\ wRes = << ( j1 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j2 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j3 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] ) >>
+/\ inflight = << ( j1 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j2 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j3 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] ) >>
+/\ nextSerial = <<(j1 :> 1 @@ j2 :> 1 @@ j3 :> 0)>>
+/\ up = (j1 :> TRUE @@ j2 :> TRUE @@ j3 :> TRUE)
+/\ srvPend = (j1 :> {} @@ j2 :> {} @@ j3 :> {})
+/\ jn = ( j1 :>
+      [ serial |-> 0,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 1,
+        lwDisk |-> 1,
+        lwPrev |-> 0,
+        curSeg |-> 1,
+        nextTx |-> 1,
+        files |->
+            << [st |-> "inprog", last |-> -12345],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j2 :>
+      [ serial |-> 0,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 1,
+        lwDisk |-> 1,
+        lwPrev |-> 0,
+        curSeg |-> 1,
+        nextTx |-> 1,
+        files |->
+            << [st |-> "inprog", last |-> -12345],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j3 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] )
+/\ wSeg = <<1>>
+
+State 22: <MCChannelDispatch(1,j3) line 84, col 33 to line 84, col 86 of module MC>
+/\ chQ = << ( j1 :> <<[op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 4]>> @@
+     j2 :> <<[op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 4]>> @@
+     j3 :>
+         << [op |-> "ne", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 2],
+            [op |-> "start", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 3],
+            [op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 4] >> ) >>
+/\ wCid = <<4>>
+/\ targetFired = FALSE
+/\ wOp = <<[op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 0]>>
+/\ wPhase = <<"wait">>
+/\ wEpoch = <<1>>
+/\ wCommitted = <<-12345>>
+/\ wRec = <<[seg |-> 0, end |-> 0]>>
+/\ faults = [lost |-> 0, crash |-> 0, wcrash |-> 0, late |-> 0, disk |-> 0]
+/\ outOfSync = <<(j1 :> FALSE @@ j2 :> FALSE @@ j3 :> FALSE)>>
+/\ wRes = << ( j1 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j2 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j3 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] ) >>
+/\ inflight = << ( j1 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j2 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j3 :>
+         [ w |-> 1,
+           op |-> "gjs",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 1,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "sent" ] ) >>
+/\ nextSerial = <<(j1 :> 1 @@ j2 :> 1 @@ j3 :> 0)>>
+/\ up = (j1 :> TRUE @@ j2 :> TRUE @@ j3 :> TRUE)
+/\ srvPend = (j1 :> {} @@ j2 :> {} @@ j3 :> {})
+/\ jn = ( j1 :>
+      [ serial |-> 0,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 1,
+        lwDisk |-> 1,
+        lwPrev |-> 0,
+        curSeg |-> 1,
+        nextTx |-> 1,
+        files |->
+            << [st |-> "inprog", last |-> -12345],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j2 :>
+      [ serial |-> 0,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 1,
+        lwDisk |-> 1,
+        lwPrev |-> 0,
+        curSeg |-> 1,
+        nextTx |-> 1,
+        files |->
+            << [st |-> "inprog", last |-> -12345],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j3 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] )
+/\ wSeg = <<1>>
+
+State 23: <MCJNGetJournalState(1,j3) line 87, col 33 to line 87, col 86 of module MC>
+/\ chQ = << ( j1 :> <<[op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 4]>> @@
+     j2 :> <<[op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 4]>> @@
+     j3 :>
+         << [op |-> "ne", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 2],
+            [op |-> "start", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 3],
+            [op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 4] >> ) >>
+/\ wCid = <<4>>
+/\ targetFired = FALSE
+/\ wOp = <<[op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 0]>>
+/\ wPhase = <<"wait">>
+/\ wEpoch = <<1>>
+/\ wCommitted = <<-12345>>
+/\ wRec = <<[seg |-> 0, end |-> 0]>>
+/\ faults = [lost |-> 0, crash |-> 0, wcrash |-> 0, late |-> 0, disk |-> 0]
+/\ outOfSync = <<(j1 :> FALSE @@ j2 :> FALSE @@ j3 :> FALSE)>>
+/\ wRes = << ( j1 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j2 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j3 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] ) >>
+/\ inflight = << ( j1 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j2 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j3 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] ) >>
+/\ nextSerial = <<(j1 :> 1 @@ j2 :> 1 @@ j3 :> 0)>>
+/\ up = (j1 :> TRUE @@ j2 :> TRUE @@ j3 :> TRUE)
+/\ srvPend = (j1 :> {} @@ j2 :> {} @@ j3 :> {})
+/\ jn = ( j1 :>
+      [ serial |-> 0,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 1,
+        lwDisk |-> 1,
+        lwPrev |-> 0,
+        curSeg |-> 1,
+        nextTx |-> 1,
+        files |->
+            << [st |-> "inprog", last |-> -12345],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j2 :>
+      [ serial |-> 0,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 1,
+        lwDisk |-> 1,
+        lwPrev |-> 0,
+        curSeg |-> 1,
+        nextTx |-> 1,
+        files |->
+            << [st |-> "inprog", last |-> -12345],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j3 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] )
+/\ wSeg = <<1>>
+
+State 24: <MCChannelDispatch(1,j3) line 84, col 33 to line 84, col 86 of module MC>
+/\ chQ = << ( j1 :> <<[op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 4]>> @@
+     j2 :> <<[op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 4]>> @@
+     j3 :>
+         << [op |-> "start", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 3],
+            [op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 4] >> ) >>
+/\ wCid = <<4>>
+/\ targetFired = FALSE
+/\ wOp = <<[op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 0]>>
+/\ wPhase = <<"wait">>
+/\ wEpoch = <<1>>
+/\ wCommitted = <<-12345>>
+/\ wRec = <<[seg |-> 0, end |-> 0]>>
+/\ faults = [lost |-> 0, crash |-> 0, wcrash |-> 0, late |-> 0, disk |-> 0]
+/\ outOfSync = <<(j1 :> FALSE @@ j2 :> FALSE @@ j3 :> FALSE)>>
+/\ wRes = << ( j1 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j2 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j3 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] ) >>
+/\ inflight = << ( j1 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j2 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j3 :>
+         [ w |-> 1,
+           op |-> "ne",
+           a1 |-> 1,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 2,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "sent" ] ) >>
+/\ nextSerial = <<(j1 :> 1 @@ j2 :> 1 @@ j3 :> 0)>>
+/\ up = (j1 :> TRUE @@ j2 :> TRUE @@ j3 :> TRUE)
+/\ srvPend = (j1 :> {} @@ j2 :> {} @@ j3 :> {})
+/\ jn = ( j1 :>
+      [ serial |-> 0,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 1,
+        lwDisk |-> 1,
+        lwPrev |-> 0,
+        curSeg |-> 1,
+        nextTx |-> 1,
+        files |->
+            << [st |-> "inprog", last |-> -12345],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j2 :>
+      [ serial |-> 0,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 1,
+        lwDisk |-> 1,
+        lwPrev |-> 0,
+        curSeg |-> 1,
+        nextTx |-> 1,
+        files |->
+            << [st |-> "inprog", last |-> -12345],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j3 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 0,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] )
+/\ wSeg = <<1>>
+
+State 25: <MCJNNewEpoch(1,j3) line 88, col 33 to line 88, col 86 of module MC>
+/\ chQ = << ( j1 :> <<[op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 4]>> @@
+     j2 :> <<[op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 4]>> @@
+     j3 :>
+         << [op |-> "start", a1 |-> 1, a2 |-> 0, a3 |-> 0, cid |-> 3],
+            [op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 4] >> ) >>
+/\ wCid = <<4>>
+/\ targetFired = FALSE
+/\ wOp = <<[op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 0]>>
+/\ wPhase = <<"wait">>
+/\ wEpoch = <<1>>
+/\ wCommitted = <<-12345>>
+/\ wRec = <<[seg |-> 0, end |-> 0]>>
+/\ faults = [lost |-> 0, crash |-> 0, wcrash |-> 0, late |-> 0, disk |-> 0]
+/\ outOfSync = <<(j1 :> FALSE @@ j2 :> FALSE @@ j3 :> FALSE)>>
+/\ wRes = << ( j1 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j2 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j3 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] ) >>
+/\ inflight = << ( j1 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j2 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j3 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] ) >>
+/\ nextSerial = <<(j1 :> 1 @@ j2 :> 1 @@ j3 :> 0)>>
+/\ up = (j1 :> TRUE @@ j2 :> TRUE @@ j3 :> TRUE)
+/\ srvPend = (j1 :> {} @@ j2 :> {} @@ j3 :> {})
+/\ jn = ( j1 :>
+      [ serial |-> 0,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 1,
+        lwDisk |-> 1,
+        lwPrev |-> 0,
+        curSeg |-> 1,
+        nextTx |-> 1,
+        files |->
+            << [st |-> "inprog", last |-> -12345],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j2 :>
+      [ serial |-> 0,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 1,
+        lwDisk |-> 1,
+        lwPrev |-> 0,
+        curSeg |-> 1,
+        nextTx |-> 1,
+        files |->
+            << [st |-> "inprog", last |-> -12345],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j3 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] )
+/\ wSeg = <<1>>
+
+State 26: <MCChannelDispatch(1,j3) line 84, col 33 to line 84, col 86 of module MC>
+/\ chQ = << ( j1 :> <<[op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 4]>> @@
+     j2 :> <<[op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 4]>> @@
+     j3 :> <<[op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 4]>> ) >>
+/\ wCid = <<4>>
+/\ targetFired = FALSE
+/\ wOp = <<[op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 0]>>
+/\ wPhase = <<"wait">>
+/\ wEpoch = <<1>>
+/\ wCommitted = <<-12345>>
+/\ wRec = <<[seg |-> 0, end |-> 0]>>
+/\ faults = [lost |-> 0, crash |-> 0, wcrash |-> 0, late |-> 0, disk |-> 0]
+/\ outOfSync = <<(j1 :> FALSE @@ j2 :> FALSE @@ j3 :> FALSE)>>
+/\ wRes = << ( j1 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j2 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j3 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] ) >>
+/\ inflight = << ( j1 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j2 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j3 :>
+         [ w |-> 1,
+           op |-> "start",
+           a1 |-> 1,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 3,
+           epoch |-> 1,
+           serial |-> 0,
+           committed |-> -12345,
+           st |-> "sent" ] ) >>
+/\ nextSerial = <<(j1 :> 1 @@ j2 :> 1 @@ j3 :> 1)>>
+/\ up = (j1 :> TRUE @@ j2 :> TRUE @@ j3 :> TRUE)
+/\ srvPend = (j1 :> {} @@ j2 :> {} @@ j3 :> {})
+/\ jn = ( j1 :>
+      [ serial |-> 0,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 1,
+        lwDisk |-> 1,
+        lwPrev |-> 0,
+        curSeg |-> 1,
+        nextTx |-> 1,
+        files |->
+            << [st |-> "inprog", last |-> -12345],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j2 :>
+      [ serial |-> 0,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 1,
+        lwDisk |-> 1,
+        lwPrev |-> 0,
+        curSeg |-> 1,
+        nextTx |-> 1,
+        files |->
+            << [st |-> "inprog", last |-> -12345],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j3 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] )
+/\ wSeg = <<1>>
+
+State 27: <MCLoseRequest(1,j3) line 40, col 5 to line 42, col 47 of module MC>
+/\ chQ = << ( j1 :> <<[op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 4]>> @@
+     j2 :> <<[op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 4]>> @@
+     j3 :> <<[op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 4]>> ) >>
+/\ wCid = <<4>>
+/\ targetFired = FALSE
+/\ wOp = <<[op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 0]>>
+/\ wPhase = <<"wait">>
+/\ wEpoch = <<1>>
+/\ wCommitted = <<-12345>>
+/\ wRec = <<[seg |-> 0, end |-> 0]>>
+/\ faults = [lost |-> 1, crash |-> 0, wcrash |-> 0, late |-> 0, disk |-> 0]
+/\ outOfSync = <<(j1 :> FALSE @@ j2 :> FALSE @@ j3 :> FALSE)>>
+/\ wRes = << ( j1 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j2 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j3 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] ) >>
+/\ inflight = << ( j1 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j2 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j3 :>
+         [ w |-> 1,
+           op |-> "start",
+           a1 |-> 1,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 3,
+           epoch |-> 1,
+           serial |-> 0,
+           committed |-> -12345,
+           st |-> "failed" ] ) >>
+/\ nextSerial = <<(j1 :> 1 @@ j2 :> 1 @@ j3 :> 1)>>
+/\ up = (j1 :> TRUE @@ j2 :> TRUE @@ j3 :> TRUE)
+/\ srvPend = (j1 :> {} @@ j2 :> {} @@ j3 :> {})
+/\ jn = ( j1 :>
+      [ serial |-> 0,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 1,
+        lwDisk |-> 1,
+        lwPrev |-> 0,
+        curSeg |-> 1,
+        nextTx |-> 1,
+        files |->
+            << [st |-> "inprog", last |-> -12345],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j2 :>
+      [ serial |-> 0,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 1,
+        lwDisk |-> 1,
+        lwPrev |-> 0,
+        curSeg |-> 1,
+        nextTx |-> 1,
+        files |->
+            << [st |-> "inprog", last |-> -12345],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j3 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] )
+/\ wSeg = <<1>>
+
+State 28: <MCCallFailed(1,j3) line 86, col 33 to line 86, col 86 of module MC>
+/\ chQ = << ( j1 :> <<[op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 4]>> @@
+     j2 :> <<[op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 4]>> @@
+     j3 :> <<[op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 4]>> ) >>
+/\ wCid = <<4>>
+/\ targetFired = FALSE
+/\ wOp = <<[op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 0]>>
+/\ wPhase = <<"wait">>
+/\ wEpoch = <<1>>
+/\ wCommitted = <<-12345>>
+/\ wRec = <<[seg |-> 0, end |-> 0]>>
+/\ faults = [lost |-> 1, crash |-> 0, wcrash |-> 0, late |-> 0, disk |-> 0]
+/\ outOfSync = <<(j1 :> FALSE @@ j2 :> FALSE @@ j3 :> FALSE)>>
+/\ wRes = << ( j1 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j2 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j3 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] ) >>
+/\ inflight = << ( j1 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j2 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j3 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] ) >>
+/\ nextSerial = <<(j1 :> 1 @@ j2 :> 1 @@ j3 :> 1)>>
+/\ up = (j1 :> TRUE @@ j2 :> TRUE @@ j3 :> TRUE)
+/\ srvPend = (j1 :> {} @@ j2 :> {} @@ j3 :> {})
+/\ jn = ( j1 :>
+      [ serial |-> 0,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 1,
+        lwDisk |-> 1,
+        lwPrev |-> 0,
+        curSeg |-> 1,
+        nextTx |-> 1,
+        files |->
+            << [st |-> "inprog", last |-> -12345],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j2 :>
+      [ serial |-> 0,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 1,
+        lwDisk |-> 1,
+        lwPrev |-> 0,
+        curSeg |-> 1,
+        nextTx |-> 1,
+        files |->
+            << [st |-> "inprog", last |-> -12345],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j3 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] )
+/\ wSeg = <<1>>
+
+State 29: <MCChannelDispatch(1,j3) line 84, col 33 to line 84, col 86 of module MC>
+/\ chQ = << ( j1 :> <<[op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 4]>> @@
+     j2 :> <<[op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 4]>> @@
+     j3 :> <<>> ) >>
+/\ wCid = <<4>>
+/\ targetFired = FALSE
+/\ wOp = <<[op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 0]>>
+/\ wPhase = <<"wait">>
+/\ wEpoch = <<1>>
+/\ wCommitted = <<-12345>>
+/\ wRec = <<[seg |-> 0, end |-> 0]>>
+/\ faults = [lost |-> 1, crash |-> 0, wcrash |-> 0, late |-> 0, disk |-> 0]
+/\ outOfSync = <<(j1 :> FALSE @@ j2 :> FALSE @@ j3 :> FALSE)>>
+/\ wRes = << ( j1 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j2 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j3 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] ) >>
+/\ inflight = << ( j1 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j2 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j3 :>
+         [ w |-> 1,
+           op |-> "journal",
+           a1 |-> 1,
+           a2 |-> 1,
+           a3 |-> 3,
+           cid |-> 4,
+           epoch |-> 1,
+           serial |-> 1,
+           committed |-> -12345,
+           st |-> "sent" ] ) >>
+/\ nextSerial = <<(j1 :> 1 @@ j2 :> 1 @@ j3 :> 2)>>
+/\ up = (j1 :> TRUE @@ j2 :> TRUE @@ j3 :> TRUE)
+/\ srvPend = (j1 :> {} @@ j2 :> {} @@ j3 :> {})
+/\ jn = ( j1 :>
+      [ serial |-> 0,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 1,
+        lwDisk |-> 1,
+        lwPrev |-> 0,
+        curSeg |-> 1,
+        nextTx |-> 1,
+        files |->
+            << [st |-> "inprog", last |-> -12345],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j2 :>
+      [ serial |-> 0,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 1,
+        lwDisk |-> 1,
+        lwPrev |-> 0,
+        curSeg |-> 1,
+        nextTx |-> 1,
+        files |->
+            << [st |-> "inprog", last |-> -12345],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j3 :>
+      [ serial |-> -1,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] )
+/\ wSeg = <<1>>
+
+State 30: <MCTargetCheck(1,j3) line 90, col 33 to line 90, col 86 of module MC>
+/\ chQ = << ( j1 :> <<[op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 4]>> @@
+     j2 :> <<[op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 4]>> @@
+     j3 :> <<>> ) >>
+/\ wCid = <<4>>
+/\ targetFired = TRUE
+/\ wOp = <<[op |-> "journal", a1 |-> 1, a2 |-> 1, a3 |-> 3, cid |-> 0]>>
+/\ wPhase = <<"wait">>
+/\ wEpoch = <<1>>
+/\ wCommitted = <<-12345>>
+/\ wRec = <<[seg |-> 0, end |-> 0]>>
+/\ faults = [lost |-> 1, crash |-> 0, wcrash |-> 0, late |-> 0, disk |-> 0]
+/\ outOfSync = <<(j1 :> FALSE @@ j2 :> FALSE @@ j3 :> TRUE)>>
+/\ wRes = << ( j1 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j2 :>
+         [ committed |-> -12345,
+           st |-> "pending",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] @@
+     j3 :>
+         [ committed |-> -12345,
+           st |-> "err",
+           promised |-> 0,
+           lastSeg |-> 0,
+           hasSeg |-> FALSE,
+           segLast |-> 0,
+           segInProg |-> FALSE,
+           lwe |-> 0 ] ) >>
+/\ inflight = << ( j1 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j2 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] @@
+     j3 :>
+         [ w |-> 0,
+           op |-> "none",
+           a1 |-> 0,
+           a2 |-> 0,
+           a3 |-> 0,
+           cid |-> 0,
+           epoch |-> 0,
+           serial |-> -1,
+           committed |-> -12345,
+           st |-> "none" ] ) >>
+/\ nextSerial = <<(j1 :> 1 @@ j2 :> 1 @@ j3 :> 2)>>
+/\ up = (j1 :> TRUE @@ j2 :> TRUE @@ j3 :> TRUE)
+/\ srvPend = (j1 :> {} @@ j2 :> {} @@ j3 :> {})
+/\ jn = ( j1 :>
+      [ serial |-> 0,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 1,
+        lwDisk |-> 1,
+        lwPrev |-> 0,
+        curSeg |-> 1,
+        nextTx |-> 1,
+        files |->
+            << [st |-> "inprog", last |-> -12345],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j2 :>
+      [ serial |-> 0,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 1,
+        lwDisk |-> 1,
+        lwPrev |-> 0,
+        curSeg |-> 1,
+        nextTx |-> 1,
+        files |->
+            << [st |-> "inprog", last |-> -12345],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] @@
+  j3 :>
+      [ serial |-> 1,
+        committed |-> -12345,
+        promised |-> 1,
+        lwMem |-> 0,
+        lwDisk |-> 0,
+        lwPrev |-> 0,
+        curSeg |-> -12345,
+        nextTx |-> -12345,
+        files |->
+            << [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0],
+               [st |-> "none", last |-> 0] >> ] )
+/\ wSeg = <<1>>
+
+1007 states generated, 414 distinct states found, 31 states left on queue.
+The depth of the complete state graph search is 30.
+Checkpointing of run /tmp/tlc-states-qorzlM/26-10-28-21-51-43.950
+Checkpointing completed at (2026-10-28 21:51:49)
+Finished in 05s at (2026-10-28 21:51:49)
+Trace exploration spec path: ./MC_TTrace_1793224303.tla
