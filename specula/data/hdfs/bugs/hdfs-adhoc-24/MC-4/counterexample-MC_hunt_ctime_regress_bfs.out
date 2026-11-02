@@ -1,0 +1,677 @@
+TLC2 Version 2026.10.24.013619 (rev: 2ef2af8)
+Running breadth-first search Model-Checking with fp 97 and seed -6697850402957176426 with 12 workers on 64 cores with 1963MB heap and 4096MB offheap memory [pid: 1556492] (Linux 5.15.0-198-generic amd64, Eclipse Adoptium 21.0.13 64bit, OffHeapDiskFPSet, DiskStateQueue).
+Parsing file /bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/spec/MC.tla
+Parsing file /bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/spec/base.tla
+Parsing file /tmp/tlc-401026747537646471/TLC.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLC.tla)
+Parsing file /tmp/tlc-401026747537646471/_TLCTrace.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/_TLCTrace.tla)
+Parsing file /tmp/tlc-401026747537646471/Naturals.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Naturals.tla)
+Parsing file /tmp/tlc-401026747537646471/Integers.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Integers.tla)
+Parsing file /tmp/tlc-401026747537646471/FiniteSets.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/FiniteSets.tla)
+Parsing file /tmp/tlc-401026747537646471/Sequences.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Sequences.tla)
+Parsing file /tmp/tlc-401026747537646471/TLCExt.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLCExt.tla)
+Semantic processing of module Naturals
+Semantic processing of module Integers
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module TLC
+Semantic processing of module base
+Semantic processing of module TLCExt
+Semantic processing of module _TLCTrace
+Semantic processing of module MC
+Linting of module base
+Linting of module TLCExt
+Linting of module _TLCTrace
+Linting of module MC
+Starting... (2026-10-29 13:06:37)
+Warning: The set Vol has been defined to be a symmetry set but contains less than two elements.
+(Use the -nowarning option to disable this warning.)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-10-29 13:06:38.
+Error: Invariant TargetSafe is violated.
+Error: The behavior up to this point is:
+State 1: <Initial predicate>
+/\ online = (v1 :> TRUE)
+/\ marker = (v1 :> FALSE)
+/\ startOpt = "REGULAR"
+/\ issued = {1}
+/\ mustRollback = FALSE
+/\ nnPrevC = -1
+/\ ruAfterImage = FALSE
+/\ trash = (v1 :> FALSE)
+/\ memLV = 0
+/\ dnOk = (v1 :> TRUE)
+/\ fc = [ dnStart |-> 0,
+  dnCrash |-> 0,
+  nnUpgrade |-> 0,
+  clock |-> 0,
+  nnRollback |-> 0,
+  nnFinalize |-> 0,
+  regress |-> 0,
+  offline |-> 0,
+  attach |-> 0,
+  hotswap |-> 0,
+  ruStart |-> 0,
+  ruFinalize |-> 0,
+  checkpoint |-> 0,
+  nnRestart |-> 0 ]
+/\ prev = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ dnRegC = -1
+/\ trashEnabled = FALSE
+/\ remTmp = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ targetFired = FALSE
+/\ nnC = 1
+/\ prevTmp = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ visited = {}
+/\ ld = (v1 :> [pc |-> "idle", mode |-> "none", c405 |-> -1, err |-> "none"])
+/\ dnUp = FALSE
+/\ nsC = -1
+/\ memC = -1
+/\ dnLoaded = {}
+/\ finTmp = (v1 :> FALSE)
+/\ nnRU = "none"
+/\ dnPrev = (v1 :> FALSE)
+/\ cur = (v1 :> [c |-> 1, ok |-> TRUE, lv |-> -57])
+/\ bpInit = "none"
+/\ bpLoaded = {}
+
+State 2: <MCNNDoUpgradeClockFault line 54, col 5 to line 57, col 61 of module MC>
+/\ online = (v1 :> TRUE)
+/\ marker = (v1 :> FALSE)
+/\ startOpt = "REGULAR"
+/\ issued = {0, 1}
+/\ mustRollback = FALSE
+/\ nnPrevC = 1
+/\ ruAfterImage = FALSE
+/\ trash = (v1 :> FALSE)
+/\ memLV = 0
+/\ dnOk = (v1 :> TRUE)
+/\ fc = [ dnStart |-> 0,
+  dnCrash |-> 0,
+  nnUpgrade |-> 1,
+  clock |-> 1,
+  nnRollback |-> 0,
+  nnFinalize |-> 0,
+  regress |-> 0,
+  offline |-> 0,
+  attach |-> 0,
+  hotswap |-> 0,
+  ruStart |-> 0,
+  ruFinalize |-> 0,
+  checkpoint |-> 0,
+  nnRestart |-> 0 ]
+/\ prev = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ dnRegC = -1
+/\ trashEnabled = FALSE
+/\ remTmp = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ targetFired = FALSE
+/\ nnC = 0
+/\ prevTmp = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ visited = {}
+/\ ld = (v1 :> [pc |-> "idle", mode |-> "none", c405 |-> -1, err |-> "none"])
+/\ dnUp = FALSE
+/\ nsC = -1
+/\ memC = -1
+/\ dnLoaded = {}
+/\ finTmp = (v1 :> FALSE)
+/\ nnRU = "none"
+/\ dnPrev = (v1 :> FALSE)
+/\ cur = (v1 :> [c |-> 1, ok |-> TRUE, lv |-> -57])
+/\ bpInit = "none"
+/\ bpLoaded = {}
+
+State 3: <MCDataNodeStart line 96, col 5 to line 98, col 21 of module MC>
+/\ online = (v1 :> TRUE)
+/\ marker = (v1 :> FALSE)
+/\ startOpt = "REGULAR"
+/\ issued = {0, 1}
+/\ mustRollback = FALSE
+/\ nnPrevC = 1
+/\ ruAfterImage = FALSE
+/\ trash = (v1 :> FALSE)
+/\ memLV = 0
+/\ dnOk = (v1 :> TRUE)
+/\ fc = [ dnStart |-> 1,
+  dnCrash |-> 0,
+  nnUpgrade |-> 1,
+  clock |-> 1,
+  nnRollback |-> 0,
+  nnFinalize |-> 0,
+  regress |-> 0,
+  offline |-> 0,
+  attach |-> 0,
+  hotswap |-> 0,
+  ruStart |-> 0,
+  ruFinalize |-> 0,
+  checkpoint |-> 0,
+  nnRestart |-> 0 ]
+/\ prev = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ dnRegC = -1
+/\ trashEnabled = FALSE
+/\ remTmp = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ targetFired = FALSE
+/\ nnC = 0
+/\ prevTmp = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ visited = {}
+/\ ld = (v1 :> [pc |-> "idle", mode |-> "none", c405 |-> -1, err |-> "none"])
+/\ dnUp = TRUE
+/\ nsC = 0
+/\ memC = 0
+/\ dnLoaded = {v1}
+/\ finTmp = (v1 :> FALSE)
+/\ nnRU = "none"
+/\ dnPrev = (v1 :> FALSE)
+/\ cur = (v1 :> [c |-> 1, ok |-> TRUE, lv |-> -57])
+/\ bpInit = "loading"
+/\ bpLoaded = {}
+
+State 4: <MCLoadBlockPoolSliceStorageNext(v1) line 126, col 39 to line 126, col 86 of module MC>
+/\ online = (v1 :> TRUE)
+/\ marker = (v1 :> FALSE)
+/\ startOpt = "REGULAR"
+/\ issued = {0, 1}
+/\ mustRollback = FALSE
+/\ nnPrevC = 1
+/\ ruAfterImage = FALSE
+/\ trash = (v1 :> FALSE)
+/\ memLV = 0
+/\ dnOk = (v1 :> TRUE)
+/\ fc = [ dnStart |-> 1,
+  dnCrash |-> 0,
+  nnUpgrade |-> 1,
+  clock |-> 1,
+  nnRollback |-> 0,
+  nnFinalize |-> 0,
+  regress |-> 0,
+  offline |-> 0,
+  attach |-> 0,
+  hotswap |-> 0,
+  ruStart |-> 0,
+  ruFinalize |-> 0,
+  checkpoint |-> 0,
+  nnRestart |-> 0 ]
+/\ prev = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ dnRegC = -1
+/\ trashEnabled = FALSE
+/\ remTmp = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ targetFired = FALSE
+/\ nnC = 0
+/\ prevTmp = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ visited = {v1}
+/\ ld = (v1 :> [pc |-> "Analyze", mode |-> "startup", c405 |-> -1, err |-> "none"])
+/\ dnUp = TRUE
+/\ nsC = 0
+/\ memC = 0
+/\ dnLoaded = {v1}
+/\ finTmp = (v1 :> FALSE)
+/\ nnRU = "none"
+/\ dnPrev = (v1 :> FALSE)
+/\ cur = (v1 :> [c |-> 1, ok |-> TRUE, lv |-> -57])
+/\ bpInit = "loading"
+/\ bpLoaded = {}
+
+State 5: <MCAnalyzeStorage(v1) line 127, col 32 to line 127, col 64 of module MC>
+/\ online = (v1 :> TRUE)
+/\ marker = (v1 :> FALSE)
+/\ startOpt = "REGULAR"
+/\ issued = {0, 1}
+/\ mustRollback = FALSE
+/\ nnPrevC = 1
+/\ ruAfterImage = FALSE
+/\ trash = (v1 :> FALSE)
+/\ memLV = 0
+/\ dnOk = (v1 :> TRUE)
+/\ fc = [ dnStart |-> 1,
+  dnCrash |-> 0,
+  nnUpgrade |-> 1,
+  clock |-> 1,
+  nnRollback |-> 0,
+  nnFinalize |-> 0,
+  regress |-> 0,
+  offline |-> 0,
+  attach |-> 0,
+  hotswap |-> 0,
+  ruStart |-> 0,
+  ruFinalize |-> 0,
+  checkpoint |-> 0,
+  nnRestart |-> 0 ]
+/\ prev = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ dnRegC = -1
+/\ trashEnabled = FALSE
+/\ remTmp = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ targetFired = FALSE
+/\ nnC = 0
+/\ prevTmp = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ visited = {v1}
+/\ ld = (v1 :> [pc |-> "Dispatch", mode |-> "startup", c405 |-> -1, err |-> "none"])
+/\ dnUp = TRUE
+/\ nsC = 0
+/\ memC = 0
+/\ dnLoaded = {v1}
+/\ finTmp = (v1 :> FALSE)
+/\ nnRU = "none"
+/\ dnPrev = (v1 :> FALSE)
+/\ cur = (v1 :> [c |-> 1, ok |-> TRUE, lv |-> -57])
+/\ bpInit = "loading"
+/\ bpLoaded = {}
+
+State 6: <MCDoTransitionDispatch(v1) line 131, col 32 to line 131, col 70 of module MC>
+/\ online = (v1 :> TRUE)
+/\ marker = (v1 :> FALSE)
+/\ startOpt = "REGULAR"
+/\ issued = {0, 1}
+/\ mustRollback = FALSE
+/\ nnPrevC = 1
+/\ ruAfterImage = FALSE
+/\ trash = (v1 :> FALSE)
+/\ memLV = 0
+/\ dnOk = (v1 :> TRUE)
+/\ fc = [ dnStart |-> 1,
+  dnCrash |-> 0,
+  nnUpgrade |-> 1,
+  clock |-> 1,
+  nnRollback |-> 0,
+  nnFinalize |-> 0,
+  regress |-> 0,
+  offline |-> 0,
+  attach |-> 0,
+  hotswap |-> 0,
+  ruStart |-> 0,
+  ruFinalize |-> 0,
+  checkpoint |-> 0,
+  nnRestart |-> 0 ]
+/\ prev = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ dnRegC = -1
+/\ trashEnabled = FALSE
+/\ remTmp = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ targetFired = FALSE
+/\ nnC = 0
+/\ prevTmp = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ visited = {v1}
+/\ ld = (v1 :> [pc |-> "ReadPropsLV", mode |-> "startup", c405 |-> -1, err |-> "none"])
+/\ dnUp = TRUE
+/\ nsC = 0
+/\ memC = 0
+/\ dnLoaded = {v1}
+/\ finTmp = (v1 :> FALSE)
+/\ nnRU = "none"
+/\ dnPrev = (v1 :> FALSE)
+/\ cur = (v1 :> [c |-> 1, ok |-> TRUE, lv |-> -57])
+/\ bpInit = "loading"
+/\ bpLoaded = {}
+
+State 7: <MCReadPropertiesLV(v1) line 136, col 32 to line 136, col 66 of module MC>
+/\ online = (v1 :> TRUE)
+/\ marker = (v1 :> FALSE)
+/\ startOpt = "REGULAR"
+/\ issued = {0, 1}
+/\ mustRollback = FALSE
+/\ nnPrevC = 1
+/\ ruAfterImage = FALSE
+/\ trash = (v1 :> FALSE)
+/\ memLV = -57
+/\ dnOk = (v1 :> TRUE)
+/\ fc = [ dnStart |-> 1,
+  dnCrash |-> 0,
+  nnUpgrade |-> 1,
+  clock |-> 1,
+  nnRollback |-> 0,
+  nnFinalize |-> 0,
+  regress |-> 0,
+  offline |-> 0,
+  attach |-> 0,
+  hotswap |-> 0,
+  ruStart |-> 0,
+  ruFinalize |-> 0,
+  checkpoint |-> 0,
+  nnRestart |-> 0 ]
+/\ prev = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ dnRegC = -1
+/\ trashEnabled = FALSE
+/\ remTmp = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ targetFired = FALSE
+/\ nnC = 0
+/\ prevTmp = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ visited = {v1}
+/\ ld = (v1 :> [pc |-> "ReadPropsC", mode |-> "startup", c405 |-> -1, err |-> "none"])
+/\ dnUp = TRUE
+/\ nsC = 0
+/\ memC = 0
+/\ dnLoaded = {v1}
+/\ finTmp = (v1 :> FALSE)
+/\ nnRU = "none"
+/\ dnPrev = (v1 :> FALSE)
+/\ cur = (v1 :> [c |-> 1, ok |-> TRUE, lv |-> -57])
+/\ bpInit = "loading"
+/\ bpLoaded = {}
+
+State 8: <MCReadPropertiesCTime(v1) line 137, col 32 to line 137, col 69 of module MC>
+/\ online = (v1 :> TRUE)
+/\ marker = (v1 :> FALSE)
+/\ startOpt = "REGULAR"
+/\ issued = {0, 1}
+/\ mustRollback = FALSE
+/\ nnPrevC = 1
+/\ ruAfterImage = FALSE
+/\ trash = (v1 :> FALSE)
+/\ memLV = -57
+/\ dnOk = (v1 :> TRUE)
+/\ fc = [ dnStart |-> 1,
+  dnCrash |-> 0,
+  nnUpgrade |-> 1,
+  clock |-> 1,
+  nnRollback |-> 0,
+  nnFinalize |-> 0,
+  regress |-> 0,
+  offline |-> 0,
+  attach |-> 0,
+  hotswap |-> 0,
+  ruStart |-> 0,
+  ruFinalize |-> 0,
+  checkpoint |-> 0,
+  nnRestart |-> 0 ]
+/\ prev = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ dnRegC = -1
+/\ trashEnabled = FALSE
+/\ remTmp = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ targetFired = FALSE
+/\ nnC = 0
+/\ prevTmp = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ visited = {v1}
+/\ ld = (v1 :> [pc |-> "L404", mode |-> "startup", c405 |-> -1, err |-> "none"])
+/\ dnUp = TRUE
+/\ nsC = 0
+/\ memC = 1
+/\ dnLoaded = {v1}
+/\ finTmp = (v1 :> FALSE)
+/\ nnRU = "none"
+/\ dnPrev = (v1 :> FALSE)
+/\ cur = (v1 :> [c |-> 1, ok |-> TRUE, lv |-> -57])
+/\ bpInit = "loading"
+/\ bpLoaded = {}
+
+State 9: <MCCheckRegularLV(v1) line 138, col 32 to line 138, col 64 of module MC>
+/\ online = (v1 :> TRUE)
+/\ marker = (v1 :> FALSE)
+/\ startOpt = "REGULAR"
+/\ issued = {0, 1}
+/\ mustRollback = FALSE
+/\ nnPrevC = 1
+/\ ruAfterImage = FALSE
+/\ trash = (v1 :> FALSE)
+/\ memLV = -57
+/\ dnOk = (v1 :> TRUE)
+/\ fc = [ dnStart |-> 1,
+  dnCrash |-> 0,
+  nnUpgrade |-> 1,
+  clock |-> 1,
+  nnRollback |-> 0,
+  nnFinalize |-> 0,
+  regress |-> 0,
+  offline |-> 0,
+  attach |-> 0,
+  hotswap |-> 0,
+  ruStart |-> 0,
+  ruFinalize |-> 0,
+  checkpoint |-> 0,
+  nnRestart |-> 0 ]
+/\ prev = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ dnRegC = -1
+/\ trashEnabled = FALSE
+/\ remTmp = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ targetFired = FALSE
+/\ nnC = 0
+/\ prevTmp = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ visited = {v1}
+/\ ld = (v1 :> [pc |-> "L405", mode |-> "startup", c405 |-> -1, err |-> "none"])
+/\ dnUp = TRUE
+/\ nsC = 0
+/\ memC = 1
+/\ dnLoaded = {v1}
+/\ finTmp = (v1 :> FALSE)
+/\ nnRU = "none"
+/\ dnPrev = (v1 :> FALSE)
+/\ cur = (v1 :> [c |-> 1, ok |-> TRUE, lv |-> -57])
+/\ bpInit = "loading"
+/\ bpLoaded = {}
+
+State 10: <MCCheckRegularCTime(v1) line 139, col 32 to line 139, col 67 of module MC>
+/\ online = (v1 :> TRUE)
+/\ marker = (v1 :> FALSE)
+/\ startOpt = "REGULAR"
+/\ issued = {0, 1}
+/\ mustRollback = FALSE
+/\ nnPrevC = 1
+/\ ruAfterImage = FALSE
+/\ trash = (v1 :> FALSE)
+/\ memLV = -57
+/\ dnOk = (v1 :> TRUE)
+/\ fc = [ dnStart |-> 1,
+  dnCrash |-> 0,
+  nnUpgrade |-> 1,
+  clock |-> 1,
+  nnRollback |-> 0,
+  nnFinalize |-> 0,
+  regress |-> 0,
+  offline |-> 0,
+  attach |-> 0,
+  hotswap |-> 0,
+  ruStart |-> 0,
+  ruFinalize |-> 0,
+  checkpoint |-> 0,
+  nnRestart |-> 0 ]
+/\ prev = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ dnRegC = -1
+/\ trashEnabled = FALSE
+/\ remTmp = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ targetFired = FALSE
+/\ nnC = 0
+/\ prevTmp = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ visited = {v1}
+/\ ld = (v1 :> [pc |-> "L408", mode |-> "startup", c405 |-> 1, err |-> "none"])
+/\ dnUp = TRUE
+/\ nsC = 0
+/\ memC = 1
+/\ dnLoaded = {v1}
+/\ finTmp = (v1 :> FALSE)
+/\ nnRU = "none"
+/\ dnPrev = (v1 :> FALSE)
+/\ cur = (v1 :> [c |-> 1, ok |-> TRUE, lv |-> -57])
+/\ bpInit = "loading"
+/\ bpLoaded = {}
+
+State 11: <MCCheckLayoutForTrash(v1) line 140, col 32 to line 140, col 69 of module MC>
+/\ online = (v1 :> TRUE)
+/\ marker = (v1 :> FALSE)
+/\ startOpt = "REGULAR"
+/\ issued = {0, 1}
+/\ mustRollback = FALSE
+/\ nnPrevC = 1
+/\ ruAfterImage = FALSE
+/\ trash = (v1 :> FALSE)
+/\ memLV = -57
+/\ dnOk = (v1 :> TRUE)
+/\ fc = [ dnStart |-> 1,
+  dnCrash |-> 0,
+  nnUpgrade |-> 1,
+  clock |-> 1,
+  nnRollback |-> 0,
+  nnFinalize |-> 0,
+  regress |-> 0,
+  offline |-> 0,
+  attach |-> 0,
+  hotswap |-> 0,
+  ruStart |-> 0,
+  ruFinalize |-> 0,
+  checkpoint |-> 0,
+  nnRestart |-> 0 ]
+/\ prev = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ dnRegC = -1
+/\ trashEnabled = FALSE
+/\ remTmp = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ targetFired = FALSE
+/\ nnC = 0
+/\ prevTmp = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ visited = {v1}
+/\ ld = (v1 :> [pc |-> "L414", mode |-> "startup", c405 |-> 1, err |-> "none"])
+/\ dnUp = TRUE
+/\ nsC = 0
+/\ memC = 1
+/\ dnLoaded = {v1}
+/\ finTmp = (v1 :> FALSE)
+/\ nnRU = "none"
+/\ dnPrev = (v1 :> FALSE)
+/\ cur = (v1 :> [c |-> 1, ok |-> TRUE, lv |-> -57])
+/\ bpInit = "loading"
+/\ bpLoaded = {}
+
+State 12: <MCCheckUpgradeLV(v1) line 142, col 32 to line 142, col 64 of module MC>
+/\ online = (v1 :> TRUE)
+/\ marker = (v1 :> FALSE)
+/\ startOpt = "REGULAR"
+/\ issued = {0, 1}
+/\ mustRollback = FALSE
+/\ nnPrevC = 1
+/\ ruAfterImage = FALSE
+/\ trash = (v1 :> FALSE)
+/\ memLV = -57
+/\ dnOk = (v1 :> TRUE)
+/\ fc = [ dnStart |-> 1,
+  dnCrash |-> 0,
+  nnUpgrade |-> 1,
+  clock |-> 1,
+  nnRollback |-> 0,
+  nnFinalize |-> 0,
+  regress |-> 0,
+  offline |-> 0,
+  attach |-> 0,
+  hotswap |-> 0,
+  ruStart |-> 0,
+  ruFinalize |-> 0,
+  checkpoint |-> 0,
+  nnRestart |-> 0 ]
+/\ prev = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ dnRegC = -1
+/\ trashEnabled = FALSE
+/\ remTmp = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ targetFired = FALSE
+/\ nnC = 0
+/\ prevTmp = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ visited = {v1}
+/\ ld = (v1 :> [pc |-> "TargetCheck", mode |-> "startup", c405 |-> 1, err |-> "none"])
+/\ dnUp = TRUE
+/\ nsC = 0
+/\ memC = 1
+/\ dnLoaded = {v1}
+/\ finTmp = (v1 :> FALSE)
+/\ nnRU = "none"
+/\ dnPrev = (v1 :> FALSE)
+/\ cur = (v1 :> [c |-> 1, ok |-> TRUE, lv |-> -57])
+/\ bpInit = "loading"
+/\ bpLoaded = {}
+
+State 13: <MCTargetCheck(v1) line 143, col 32 to line 143, col 61 of module MC>
+/\ online = (v1 :> TRUE)
+/\ marker = (v1 :> FALSE)
+/\ startOpt = "REGULAR"
+/\ issued = {0, 1}
+/\ mustRollback = FALSE
+/\ nnPrevC = 1
+/\ ruAfterImage = FALSE
+/\ trash = (v1 :> FALSE)
+/\ memLV = -57
+/\ dnOk = (v1 :> TRUE)
+/\ fc = [ dnStart |-> 1,
+  dnCrash |-> 0,
+  nnUpgrade |-> 1,
+  clock |-> 1,
+  nnRollback |-> 0,
+  nnFinalize |-> 0,
+  regress |-> 0,
+  offline |-> 0,
+  attach |-> 0,
+  hotswap |-> 0,
+  ruStart |-> 0,
+  ruFinalize |-> 0,
+  checkpoint |-> 0,
+  nnRestart |-> 0 ]
+/\ prev = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ dnRegC = -1
+/\ trashEnabled = FALSE
+/\ remTmp = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ targetFired = TRUE
+/\ nnC = 0
+/\ prevTmp = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ visited = {v1}
+/\ ld = (v1 :> [pc |-> "Fail", mode |-> "startup", c405 |-> 1, err |-> "B421"])
+/\ dnUp = TRUE
+/\ nsC = 0
+/\ memC = 1
+/\ dnLoaded = {v1}
+/\ finTmp = (v1 :> FALSE)
+/\ nnRU = "none"
+/\ dnPrev = (v1 :> FALSE)
+/\ cur = (v1 :> [c |-> 1, ok |-> TRUE, lv |-> -57])
+/\ bpInit = "loading"
+/\ bpLoaded = {}
+
+860 states generated, 626 distinct states found, 49 states left on queue.
+The depth of the complete state graph search is 23.
+Checkpointing of run /tmp/tlc-states-MyPn44/26-10-29-13-06-36.923
+Checkpointing completed at (2026-10-29 13:06:38)
+Finished in 01s at (2026-10-29 13:06:38)
+Trace exploration spec path: ./MC_TTrace_1793279196.tla
+:> TRUE)
+/\ marker = (v1 :> FALSE)
+/\ startOpt = "REGULAR"
+/\ issued = {0, 1}
+/\ mustRollback = FALSE
+/\ nnPrevC = 1
+/\ ruAfterImage = FALSE
+/\ trash = (v1 :> FALSE)
+/\ memLV = -57
+/\ dnOk = (v1 :> TRUE)
+/\ fc = [ dnStart |-> 1,
+  dnCrash |-> 0,
+  nnUpgrade |-> 1,
+  clock |-> 1,
+  nnRollback |-> 0,
+  nnFinalize |-> 0,
+  regress |-> 0,
+  offline |-> 0,
+  attach |-> 0,
+  hotswap |-> 0,
+  ruStart |-> 0,
+  ruFinalize |-> 0,
+  checkpoint |-> 0,
+  nnRestart |-> 0 ]
+/\ prev = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ dnRegC = -1
+/\ trashEnabled = FALSE
+/\ remTmp = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ targetFired = TRUE
+/\ nnC = 0
+/\ prevTmp = (v1 :> [c |-> -1, ok |-> FALSE, lv |-> 0])
+/\ visited = {v1}
+/\ ld = (v1 :> [pc |-> "Fail", mode |-> "startup", c405 |-> 1, err |-> "B421"])
+/\ dnUp = TRUE
+/\ nsC = 0
+/\ memC = 1
+/\ dnLoaded = {v1}
+/\ finTmp = (v1 :> FALSE)
+/\ nnRU = "none"
+/\ dnPrev = (v1 :> FALSE)
+/\ cur = (v1 :> [c |-> 1, ok |-> TRUE, lv |-> -57])
+/\ bpInit = "loading"
+/\ bpLoaded = {}
+
+860 states generated, 626 distinct states found, 49 states left on queue.
+The depth of the complete state graph search is 23.
+Checkpointing of run /tmp/tlc-states-MyPn44/26-10-29-13-06-36.923
+Checkpointing completed at (2026-10-29 13:06:38)
+Finished in 01s at (2026-10-29 13:06:38)
+Trace exploration spec path: ./MC_TTrace_1793279196.tla
+
+[0;32m================================[0m
+[1;33m⚠ Invariant violation found![0m
+[1;33mPlease check log: output/MC_hunt_ctime_regress_bfs.out[0m
+[0;32m================================[0m

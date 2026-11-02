@@ -1,0 +1,25 @@
+id: zk-adhoc-b5
+system: Apache ZooKeeper
+source_tree: /set/by/run-case.sh
+base_commit: eab16599
+check:
+  file: zookeeper-server/src/main/java/org/apache/zookeeper/server/ZKDatabase.java
+  line: 341
+  method: ZKDatabase.addCommittedProposal(Request)
+  thrown: java.lang.IllegalStateException
+  guard: "!committedLog.isEmpty() && request.zxid > maxCommittedLog && !allowDiscontinuousProposals && request.zxid != maxCommittedLog + 1 && ZxidUtils.getEpochFromZxid(request.zxid) <= ZxidUtils.getEpochFromZxid(maxCommittedLog)"
+workload:
+  module: zookeeper-server
+  test: org.apache.zookeeper.server.quorum.TestAdhocWorkloadB5#run
+  note: the test reaches the check's method and passes; the check does not fail in it
+scope_hint:
+  - org.apache.zookeeper.server.ZKDatabase
+  - org.apache.zookeeper.server.quorum.Learner
+  - org.apache.zookeeper.server.quorum.QuorumPeer
+  - org.apache.zookeeper.server.quorum.LearnerHandler
+  - org.apache.zookeeper.server.persistence.FileTxnSnapLog
+  - org.apache.zookeeper.server.persistence.FileTxnLog
+build:
+  env: /set/by/run-case.sh
+  prepare: "mvn -B install -DskipTests -Dmaven.javadoc.skip=true -Pfull-build   (already done once)"
+  test_command: "mvn -B -o test -pl zookeeper-server -Dtest='<Class>#<method>' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false"

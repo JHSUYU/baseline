@@ -1,0 +1,23 @@
+id: zk-adhoc-01
+system: Apache ZooKeeper
+source_tree: /set/by/run-case.sh
+base_commit: eab16599
+check:
+  file: zookeeper-server/src/main/java/org/apache/zookeeper/server/SessionTrackerImpl.java
+  line: 317
+  method: SessionTrackerImpl.checkSession(long, Object)
+  thrown: org.apache.zookeeper.KeeperException.SessionExpiredException
+  guard: "session.isClosing()   (session = sessionsById.get(sessionId), non-null)"
+workload:
+  module: zookeeper-server
+  test: org.apache.zookeeper.server.quorum.QuorumPeerMainTest#testQuorum
+  note: the test reaches the check's method and passes; the check does not fail in it
+scope_hint:
+  - org.apache.zookeeper.server.SessionTrackerImpl
+  - org.apache.zookeeper.server.ExpiryQueue
+  - org.apache.zookeeper.server.PrepRequestProcessor
+  - org.apache.zookeeper.server.quorum.LeaderSessionTracker
+build:
+  env: /set/by/run-case.sh
+  prepare: "mvn -B install -DskipTests -Dmaven.javadoc.skip=true -Pfull-build   (already done once)"
+  test_command: "mvn -B -o test -pl zookeeper-server -Dtest='<Class>#<method>' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false"

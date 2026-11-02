@@ -1,0 +1,1152 @@
+TLC2 Version 2026.10.24.013619 (rev: 2ef2af8)
+Running breadth-first search Model-Checking with fp 93 and seed -3312112579687117011 with 1 worker on 64 cores with 3641MB heap and 64MB offheap memory [pid: 3711061] (Linux 5.15.0-198-generic amd64, Eclipse Adoptium 21.0.13 64bit, MSBDiskFPSet, DiskStateQueue).
+Parsing file /tmp/specula-hdfs29-diag/MCDiag.tla
+Parsing file /tmp/specula-hdfs29-diag/MC.tla
+Parsing file /tmp/tlc-12152036963341006998/_TLCTrace.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/_TLCTrace.tla)
+Parsing file /tmp/specula-hdfs29-diag/base.tla
+Parsing file /tmp/tlc-12152036963341006998/TLC.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLC.tla)
+Parsing file /tmp/tlc-12152036963341006998/Naturals.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Naturals.tla)
+Parsing file /tmp/tlc-12152036963341006998/Sequences.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Sequences.tla)
+Parsing file /tmp/tlc-12152036963341006998/FiniteSets.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/FiniteSets.tla)
+Parsing file /tmp/tlc-12152036963341006998/TLCExt.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLCExt.tla)
+Parsing file /tmp/tlc-12152036963341006998/Integers.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Integers.tla)
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module TLC
+Semantic processing of module base
+Semantic processing of module MC
+Semantic processing of module Integers
+Semantic processing of module TLCExt
+Semantic processing of module _TLCTrace
+Semantic processing of module MCDiag
+Linting of module base
+Linting of module MC
+Linting of module TLCExt
+Linting of module _TLCTrace
+Linting of module MCDiag
+Starting... (2026-10-29 23:45:42)
+Computing initial states...
+Finished computing initial states: 2 states generated, with 1 of them distinct at 2026-10-29 23:45:42.
+Error: Invariant TargetSafe is violated.
+Error: The behavior up to this point is:
+State 1: <Initial predicate>
+/\ dnsBad = (d1 :> FALSE @@ d2 :> FALSE)
+/\ stLoaded = (d1 :> (p1 :> FALSE) @@ d2 :> (p1 :> FALSE))
+/\ cmdAlive = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ actorPc = (d1 :> (ns1 :> "conn") @@ d2 :> (ns1 :> "conn"))
+/\ dsPool = (d1 :> (p1 :> FALSE) @@ d2 :> (p1 :> FALSE))
+/\ blockLocs = <<d1, d2>>
+/\ targetFired = FALSE
+/\ rurMax = (d1 :> 0 @@ d2 :> 0)
+/\ actorRun = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ bposActive = (d1 :> (ns1 :> FALSE) @@ d2 :> (ns1 :> FALSE))
+/\ bposPool = (d1 :> (ns1 :> Nil) @@ d2 :> (ns1 :> Nil))
+/\ cmdQ = (d1 :> (ns1 :> <<>>) @@ d2 :> (ns1 :> <<>>))
+/\ nnAttempt = 0
+/\ offerSvc = (d1 :> {ns1} @@ d2 :> {ns1})
+/\ nnReject = (d1 :> FALSE @@ d2 :> FALSE)
+/\ fc = [ dnStop |-> 0,
+  reject |-> 0,
+  cmdCrash |-> 0,
+  nnRestart |-> 0,
+  dnsFail |-> 0,
+  refresh |-> 0,
+  lost |-> 0 ]
+/\ nnDone = FALSE
+/\ shutStop = (d1 :> {} @@ d2 :> {})
+/\ bpMap = (d1 :> (p1 :> Nil) @@ d2 :> (p1 :> Nil))
+/\ nsCfg = (d1 :> {ns1} @@ d2 :> {ns1})
+/\ nTasks = 0
+/\ task = << [ dn |-> Nil,
+     st |-> "none",
+     idx |-> 0,
+     rid |-> 0,
+     pool |-> Nil,
+     via |-> Nil,
+     errs |-> 0,
+     cands |-> 0,
+     sync |-> 0,
+     okReads |-> 0,
+     readNs |-> Nil,
+     intr |-> FALSE,
+     mapped |-> FALSE ],
+   [ dn |-> Nil,
+     st |-> "none",
+     idx |-> 0,
+     rid |-> 0,
+     pool |-> Nil,
+     via |-> Nil,
+     errs |-> 0,
+     cands |-> 0,
+     sync |-> 0,
+     okReads |-> 0,
+     readNs |-> Nil,
+     intr |-> FALSE,
+     mapped |-> FALSE ] >>
+/\ nnKnows = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnPending = (d1 :> FALSE @@ d2 :> FALSE)
+/\ dnRun = (d1 :> TRUE @@ d2 :> TRUE)
+/\ bposReg = (d1 :> (ns1 :> FALSE) @@ d2 :> (ns1 :> FALSE))
+/\ refreshStop = (d1 :> {} @@ d2 :> {})
+/\ nnTried = {}
+/\ dnShut = (d1 :> "no" @@ d2 :> "no")
+
+State 2: <MCActorConnect(d1,ns1) line 97, col 31 to line 97, col 70 of module MC>
+/\ dnsBad = (d1 :> FALSE @@ d2 :> FALSE)
+/\ stLoaded = (d1 :> (p1 :> FALSE) @@ d2 :> (p1 :> FALSE))
+/\ cmdAlive = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ actorPc = (d1 :> (ns1 :> "initSt") @@ d2 :> (ns1 :> "conn"))
+/\ dsPool = (d1 :> (p1 :> FALSE) @@ d2 :> (p1 :> FALSE))
+/\ blockLocs = <<d1, d2>>
+/\ targetFired = FALSE
+/\ rurMax = (d1 :> 0 @@ d2 :> 0)
+/\ actorRun = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ bposActive = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> FALSE))
+/\ bposPool = (d1 :> (ns1 :> p1) @@ d2 :> (ns1 :> Nil))
+/\ cmdQ = (d1 :> (ns1 :> <<>>) @@ d2 :> (ns1 :> <<>>))
+/\ nnAttempt = 0
+/\ offerSvc = (d1 :> {ns1} @@ d2 :> {ns1})
+/\ nnReject = (d1 :> FALSE @@ d2 :> FALSE)
+/\ fc = [ dnStop |-> 0,
+  reject |-> 0,
+  cmdCrash |-> 0,
+  nnRestart |-> 0,
+  dnsFail |-> 0,
+  refresh |-> 0,
+  lost |-> 0 ]
+/\ nnDone = FALSE
+/\ shutStop = (d1 :> {} @@ d2 :> {})
+/\ bpMap = (d1 :> (p1 :> ns1) @@ d2 :> (p1 :> Nil))
+/\ nsCfg = (d1 :> {ns1} @@ d2 :> {ns1})
+/\ nTasks = 0
+/\ task = << [ dn |-> Nil,
+     st |-> "none",
+     idx |-> 0,
+     rid |-> 0,
+     pool |-> Nil,
+     via |-> Nil,
+     errs |-> 0,
+     cands |-> 0,
+     sync |-> 0,
+     okReads |-> 0,
+     readNs |-> Nil,
+     intr |-> FALSE,
+     mapped |-> FALSE ],
+   [ dn |-> Nil,
+     st |-> "none",
+     idx |-> 0,
+     rid |-> 0,
+     pool |-> Nil,
+     via |-> Nil,
+     errs |-> 0,
+     cands |-> 0,
+     sync |-> 0,
+     okReads |-> 0,
+     readNs |-> Nil,
+     intr |-> FALSE,
+     mapped |-> FALSE ] >>
+/\ nnKnows = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnPending = (d1 :> FALSE @@ d2 :> FALSE)
+/\ dnRun = (d1 :> TRUE @@ d2 :> TRUE)
+/\ bposReg = (d1 :> (ns1 :> FALSE) @@ d2 :> (ns1 :> FALSE))
+/\ refreshStop = (d1 :> {} @@ d2 :> {})
+/\ nnTried = {}
+/\ dnShut = (d1 :> "no" @@ d2 :> "no")
+
+State 3: <MCActorInitStorage(d1,ns1) line 98, col 31 to line 98, col 70 of module MC>
+/\ dnsBad = (d1 :> FALSE @@ d2 :> FALSE)
+/\ stLoaded = (d1 :> (p1 :> TRUE) @@ d2 :> (p1 :> FALSE))
+/\ cmdAlive = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ actorPc = (d1 :> (ns1 :> "reg") @@ d2 :> (ns1 :> "conn"))
+/\ dsPool = (d1 :> (p1 :> TRUE) @@ d2 :> (p1 :> FALSE))
+/\ blockLocs = <<d1, d2>>
+/\ targetFired = FALSE
+/\ rurMax = (d1 :> 0 @@ d2 :> 0)
+/\ actorRun = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ bposActive = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> FALSE))
+/\ bposPool = (d1 :> (ns1 :> p1) @@ d2 :> (ns1 :> Nil))
+/\ cmdQ = (d1 :> (ns1 :> <<>>) @@ d2 :> (ns1 :> <<>>))
+/\ nnAttempt = 0
+/\ offerSvc = (d1 :> {ns1} @@ d2 :> {ns1})
+/\ nnReject = (d1 :> FALSE @@ d2 :> FALSE)
+/\ fc = [ dnStop |-> 0,
+  reject |-> 0,
+  cmdCrash |-> 0,
+  nnRestart |-> 0,
+  dnsFail |-> 0,
+  refresh |-> 0,
+  lost |-> 0 ]
+/\ nnDone = FALSE
+/\ shutStop = (d1 :> {} @@ d2 :> {})
+/\ bpMap = (d1 :> (p1 :> ns1) @@ d2 :> (p1 :> Nil))
+/\ nsCfg = (d1 :> {ns1} @@ d2 :> {ns1})
+/\ nTasks = 0
+/\ task = << [ dn |-> Nil,
+     st |-> "none",
+     idx |-> 0,
+     rid |-> 0,
+     pool |-> Nil,
+     via |-> Nil,
+     errs |-> 0,
+     cands |-> 0,
+     sync |-> 0,
+     okReads |-> 0,
+     readNs |-> Nil,
+     intr |-> FALSE,
+     mapped |-> FALSE ],
+   [ dn |-> Nil,
+     st |-> "none",
+     idx |-> 0,
+     rid |-> 0,
+     pool |-> Nil,
+     via |-> Nil,
+     errs |-> 0,
+     cands |-> 0,
+     sync |-> 0,
+     okReads |-> 0,
+     readNs |-> Nil,
+     intr |-> FALSE,
+     mapped |-> FALSE ] >>
+/\ nnKnows = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnPending = (d1 :> FALSE @@ d2 :> FALSE)
+/\ dnRun = (d1 :> TRUE @@ d2 :> TRUE)
+/\ bposReg = (d1 :> (ns1 :> FALSE) @@ d2 :> (ns1 :> FALSE))
+/\ refreshStop = (d1 :> {} @@ d2 :> {})
+/\ nnTried = {}
+/\ dnShut = (d1 :> "no" @@ d2 :> "no")
+
+State 4: <MCActorRegister(d1,ns1) line 99, col 31 to line 99, col 70 of module MC>
+/\ dnsBad = (d1 :> FALSE @@ d2 :> FALSE)
+/\ stLoaded = (d1 :> (p1 :> TRUE) @@ d2 :> (p1 :> FALSE))
+/\ cmdAlive = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ actorPc = (d1 :> (ns1 :> "run") @@ d2 :> (ns1 :> "conn"))
+/\ dsPool = (d1 :> (p1 :> TRUE) @@ d2 :> (p1 :> FALSE))
+/\ blockLocs = <<d1, d2>>
+/\ targetFired = FALSE
+/\ rurMax = (d1 :> 0 @@ d2 :> 0)
+/\ actorRun = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ bposActive = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> FALSE))
+/\ bposPool = (d1 :> (ns1 :> p1) @@ d2 :> (ns1 :> Nil))
+/\ cmdQ = (d1 :> (ns1 :> <<>>) @@ d2 :> (ns1 :> <<>>))
+/\ nnAttempt = 0
+/\ offerSvc = (d1 :> {ns1} @@ d2 :> {ns1})
+/\ nnReject = (d1 :> FALSE @@ d2 :> FALSE)
+/\ fc = [ dnStop |-> 0,
+  reject |-> 0,
+  cmdCrash |-> 0,
+  nnRestart |-> 0,
+  dnsFail |-> 0,
+  refresh |-> 0,
+  lost |-> 0 ]
+/\ nnDone = FALSE
+/\ shutStop = (d1 :> {} @@ d2 :> {})
+/\ bpMap = (d1 :> (p1 :> ns1) @@ d2 :> (p1 :> Nil))
+/\ nsCfg = (d1 :> {ns1} @@ d2 :> {ns1})
+/\ nTasks = 0
+/\ task = << [ dn |-> Nil,
+     st |-> "none",
+     idx |-> 0,
+     rid |-> 0,
+     pool |-> Nil,
+     via |-> Nil,
+     errs |-> 0,
+     cands |-> 0,
+     sync |-> 0,
+     okReads |-> 0,
+     readNs |-> Nil,
+     intr |-> FALSE,
+     mapped |-> FALSE ],
+   [ dn |-> Nil,
+     st |-> "none",
+     idx |-> 0,
+     rid |-> 0,
+     pool |-> Nil,
+     via |-> Nil,
+     errs |-> 0,
+     cands |-> 0,
+     sync |-> 0,
+     okReads |-> 0,
+     readNs |-> Nil,
+     intr |-> FALSE,
+     mapped |-> FALSE ] >>
+/\ nnKnows = (d1 :> TRUE @@ d2 :> FALSE)
+/\ nnPending = (d1 :> FALSE @@ d2 :> FALSE)
+/\ dnRun = (d1 :> TRUE @@ d2 :> TRUE)
+/\ bposReg = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> FALSE))
+/\ refreshStop = (d1 :> {} @@ d2 :> {})
+/\ nnTried = {}
+/\ dnShut = (d1 :> "no" @@ d2 :> "no")
+
+State 5: <MCActorConnect(d2,ns1) line 97, col 31 to line 97, col 70 of module MC>
+/\ dnsBad = (d1 :> FALSE @@ d2 :> FALSE)
+/\ stLoaded = (d1 :> (p1 :> TRUE) @@ d2 :> (p1 :> FALSE))
+/\ cmdAlive = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ actorPc = (d1 :> (ns1 :> "run") @@ d2 :> (ns1 :> "initSt"))
+/\ dsPool = (d1 :> (p1 :> TRUE) @@ d2 :> (p1 :> FALSE))
+/\ blockLocs = <<d1, d2>>
+/\ targetFired = FALSE
+/\ rurMax = (d1 :> 0 @@ d2 :> 0)
+/\ actorRun = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ bposActive = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ bposPool = (d1 :> (ns1 :> p1) @@ d2 :> (ns1 :> p1))
+/\ cmdQ = (d1 :> (ns1 :> <<>>) @@ d2 :> (ns1 :> <<>>))
+/\ nnAttempt = 0
+/\ offerSvc = (d1 :> {ns1} @@ d2 :> {ns1})
+/\ nnReject = (d1 :> FALSE @@ d2 :> FALSE)
+/\ fc = [ dnStop |-> 0,
+  reject |-> 0,
+  cmdCrash |-> 0,
+  nnRestart |-> 0,
+  dnsFail |-> 0,
+  refresh |-> 0,
+  lost |-> 0 ]
+/\ nnDone = FALSE
+/\ shutStop = (d1 :> {} @@ d2 :> {})
+/\ bpMap = (d1 :> (p1 :> ns1) @@ d2 :> (p1 :> ns1))
+/\ nsCfg = (d1 :> {ns1} @@ d2 :> {ns1})
+/\ nTasks = 0
+/\ task = << [ dn |-> Nil,
+     st |-> "none",
+     idx |-> 0,
+     rid |-> 0,
+     pool |-> Nil,
+     via |-> Nil,
+     errs |-> 0,
+     cands |-> 0,
+     sync |-> 0,
+     okReads |-> 0,
+     readNs |-> Nil,
+     intr |-> FALSE,
+     mapped |-> FALSE ],
+   [ dn |-> Nil,
+     st |-> "none",
+     idx |-> 0,
+     rid |-> 0,
+     pool |-> Nil,
+     via |-> Nil,
+     errs |-> 0,
+     cands |-> 0,
+     sync |-> 0,
+     okReads |-> 0,
+     readNs |-> Nil,
+     intr |-> FALSE,
+     mapped |-> FALSE ] >>
+/\ nnKnows = (d1 :> TRUE @@ d2 :> FALSE)
+/\ nnPending = (d1 :> FALSE @@ d2 :> FALSE)
+/\ dnRun = (d1 :> TRUE @@ d2 :> TRUE)
+/\ bposReg = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> FALSE))
+/\ refreshStop = (d1 :> {} @@ d2 :> {})
+/\ nnTried = {}
+/\ dnShut = (d1 :> "no" @@ d2 :> "no")
+
+State 6: <MCActorInitStorage(d2,ns1) line 98, col 31 to line 98, col 70 of module MC>
+/\ dnsBad = (d1 :> FALSE @@ d2 :> FALSE)
+/\ stLoaded = (d1 :> (p1 :> TRUE) @@ d2 :> (p1 :> TRUE))
+/\ cmdAlive = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ actorPc = (d1 :> (ns1 :> "run") @@ d2 :> (ns1 :> "reg"))
+/\ dsPool = (d1 :> (p1 :> TRUE) @@ d2 :> (p1 :> TRUE))
+/\ blockLocs = <<d1, d2>>
+/\ targetFired = FALSE
+/\ rurMax = (d1 :> 0 @@ d2 :> 0)
+/\ actorRun = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ bposActive = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ bposPool = (d1 :> (ns1 :> p1) @@ d2 :> (ns1 :> p1))
+/\ cmdQ = (d1 :> (ns1 :> <<>>) @@ d2 :> (ns1 :> <<>>))
+/\ nnAttempt = 0
+/\ offerSvc = (d1 :> {ns1} @@ d2 :> {ns1})
+/\ nnReject = (d1 :> FALSE @@ d2 :> FALSE)
+/\ fc = [ dnStop |-> 0,
+  reject |-> 0,
+  cmdCrash |-> 0,
+  nnRestart |-> 0,
+  dnsFail |-> 0,
+  refresh |-> 0,
+  lost |-> 0 ]
+/\ nnDone = FALSE
+/\ shutStop = (d1 :> {} @@ d2 :> {})
+/\ bpMap = (d1 :> (p1 :> ns1) @@ d2 :> (p1 :> ns1))
+/\ nsCfg = (d1 :> {ns1} @@ d2 :> {ns1})
+/\ nTasks = 0
+/\ task = << [ dn |-> Nil,
+     st |-> "none",
+     idx |-> 0,
+     rid |-> 0,
+     pool |-> Nil,
+     via |-> Nil,
+     errs |-> 0,
+     cands |-> 0,
+     sync |-> 0,
+     okReads |-> 0,
+     readNs |-> Nil,
+     intr |-> FALSE,
+     mapped |-> FALSE ],
+   [ dn |-> Nil,
+     st |-> "none",
+     idx |-> 0,
+     rid |-> 0,
+     pool |-> Nil,
+     via |-> Nil,
+     errs |-> 0,
+     cands |-> 0,
+     sync |-> 0,
+     okReads |-> 0,
+     readNs |-> Nil,
+     intr |-> FALSE,
+     mapped |-> FALSE ] >>
+/\ nnKnows = (d1 :> TRUE @@ d2 :> FALSE)
+/\ nnPending = (d1 :> FALSE @@ d2 :> FALSE)
+/\ dnRun = (d1 :> TRUE @@ d2 :> TRUE)
+/\ bposReg = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> FALSE))
+/\ refreshStop = (d1 :> {} @@ d2 :> {})
+/\ nnTried = {}
+/\ dnShut = (d1 :> "no" @@ d2 :> "no")
+
+State 7: <MCActorRegister(d2,ns1) line 99, col 31 to line 99, col 70 of module MC>
+/\ dnsBad = (d1 :> FALSE @@ d2 :> FALSE)
+/\ stLoaded = (d1 :> (p1 :> TRUE) @@ d2 :> (p1 :> TRUE))
+/\ cmdAlive = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ actorPc = (d1 :> (ns1 :> "run") @@ d2 :> (ns1 :> "run"))
+/\ dsPool = (d1 :> (p1 :> TRUE) @@ d2 :> (p1 :> TRUE))
+/\ blockLocs = <<d1, d2>>
+/\ targetFired = FALSE
+/\ rurMax = (d1 :> 0 @@ d2 :> 0)
+/\ actorRun = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ bposActive = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ bposPool = (d1 :> (ns1 :> p1) @@ d2 :> (ns1 :> p1))
+/\ cmdQ = (d1 :> (ns1 :> <<>>) @@ d2 :> (ns1 :> <<>>))
+/\ nnAttempt = 0
+/\ offerSvc = (d1 :> {ns1} @@ d2 :> {ns1})
+/\ nnReject = (d1 :> FALSE @@ d2 :> FALSE)
+/\ fc = [ dnStop |-> 0,
+  reject |-> 0,
+  cmdCrash |-> 0,
+  nnRestart |-> 0,
+  dnsFail |-> 0,
+  refresh |-> 0,
+  lost |-> 0 ]
+/\ nnDone = FALSE
+/\ shutStop = (d1 :> {} @@ d2 :> {})
+/\ bpMap = (d1 :> (p1 :> ns1) @@ d2 :> (p1 :> ns1))
+/\ nsCfg = (d1 :> {ns1} @@ d2 :> {ns1})
+/\ nTasks = 0
+/\ task = << [ dn |-> Nil,
+     st |-> "none",
+     idx |-> 0,
+     rid |-> 0,
+     pool |-> Nil,
+     via |-> Nil,
+     errs |-> 0,
+     cands |-> 0,
+     sync |-> 0,
+     okReads |-> 0,
+     readNs |-> Nil,
+     intr |-> FALSE,
+     mapped |-> FALSE ],
+   [ dn |-> Nil,
+     st |-> "none",
+     idx |-> 0,
+     rid |-> 0,
+     pool |-> Nil,
+     via |-> Nil,
+     errs |-> 0,
+     cands |-> 0,
+     sync |-> 0,
+     okReads |-> 0,
+     readNs |-> Nil,
+     intr |-> FALSE,
+     mapped |-> FALSE ] >>
+/\ nnKnows = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnPending = (d1 :> FALSE @@ d2 :> FALSE)
+/\ dnRun = (d1 :> TRUE @@ d2 :> TRUE)
+/\ bposReg = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ refreshStop = (d1 :> {} @@ d2 :> {})
+/\ nnTried = {}
+/\ dnShut = (d1 :> "no" @@ d2 :> "no")
+
+State 8: <MCNnIssueRecovery(d2) line 107, col 31 to line 107, col 70 of module MC>
+/\ dnsBad = (d1 :> FALSE @@ d2 :> FALSE)
+/\ stLoaded = (d1 :> (p1 :> TRUE) @@ d2 :> (p1 :> TRUE))
+/\ cmdAlive = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ actorPc = (d1 :> (ns1 :> "run") @@ d2 :> (ns1 :> "run"))
+/\ dsPool = (d1 :> (p1 :> TRUE) @@ d2 :> (p1 :> TRUE))
+/\ blockLocs = <<d1, d2>>
+/\ targetFired = FALSE
+/\ rurMax = (d1 :> 0 @@ d2 :> 0)
+/\ actorRun = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ bposActive = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ bposPool = (d1 :> (ns1 :> p1) @@ d2 :> (ns1 :> p1))
+/\ cmdQ = (d1 :> (ns1 :> <<>>) @@ d2 :> (ns1 :> <<>>))
+/\ nnAttempt = 1
+/\ offerSvc = (d1 :> {ns1} @@ d2 :> {ns1})
+/\ nnReject = (d1 :> FALSE @@ d2 :> FALSE)
+/\ fc = [ dnStop |-> 0,
+  reject |-> 0,
+  cmdCrash |-> 0,
+  nnRestart |-> 0,
+  dnsFail |-> 0,
+  refresh |-> 0,
+  lost |-> 0 ]
+/\ nnDone = FALSE
+/\ shutStop = (d1 :> {} @@ d2 :> {})
+/\ bpMap = (d1 :> (p1 :> ns1) @@ d2 :> (p1 :> ns1))
+/\ nsCfg = (d1 :> {ns1} @@ d2 :> {ns1})
+/\ nTasks = 0
+/\ task = << [ dn |-> Nil,
+     st |-> "none",
+     idx |-> 0,
+     rid |-> 0,
+     pool |-> Nil,
+     via |-> Nil,
+     errs |-> 0,
+     cands |-> 0,
+     sync |-> 0,
+     okReads |-> 0,
+     readNs |-> Nil,
+     intr |-> FALSE,
+     mapped |-> FALSE ],
+   [ dn |-> Nil,
+     st |-> "none",
+     idx |-> 0,
+     rid |-> 0,
+     pool |-> Nil,
+     via |-> Nil,
+     errs |-> 0,
+     cands |-> 0,
+     sync |-> 0,
+     okReads |-> 0,
+     readNs |-> Nil,
+     intr |-> FALSE,
+     mapped |-> FALSE ] >>
+/\ nnKnows = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnPending = (d1 :> FALSE @@ d2 :> TRUE)
+/\ dnRun = (d1 :> TRUE @@ d2 :> TRUE)
+/\ bposReg = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ refreshStop = (d1 :> {} @@ d2 :> {})
+/\ nnTried = {d2}
+/\ dnShut = (d1 :> "no" @@ d2 :> "no")
+
+State 9: <MCActorHeartbeat(d2,ns1) line 100, col 31 to line 100, col 70 of module MC>
+/\ dnsBad = (d1 :> FALSE @@ d2 :> FALSE)
+/\ stLoaded = (d1 :> (p1 :> TRUE) @@ d2 :> (p1 :> TRUE))
+/\ cmdAlive = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ actorPc = (d1 :> (ns1 :> "run") @@ d2 :> (ns1 :> "run"))
+/\ dsPool = (d1 :> (p1 :> TRUE) @@ d2 :> (p1 :> TRUE))
+/\ blockLocs = <<d1, d2>>
+/\ targetFired = FALSE
+/\ rurMax = (d1 :> 0 @@ d2 :> 0)
+/\ actorRun = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ bposActive = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ bposPool = (d1 :> (ns1 :> p1) @@ d2 :> (ns1 :> p1))
+/\ cmdQ = (d1 :> (ns1 :> <<>>) @@ d2 :> (ns1 :> <<[type |-> "recover", rid |-> 1]>>))
+/\ nnAttempt = 1
+/\ offerSvc = (d1 :> {ns1} @@ d2 :> {ns1})
+/\ nnReject = (d1 :> FALSE @@ d2 :> FALSE)
+/\ fc = [ dnStop |-> 0,
+  reject |-> 0,
+  cmdCrash |-> 0,
+  nnRestart |-> 0,
+  dnsFail |-> 0,
+  refresh |-> 0,
+  lost |-> 0 ]
+/\ nnDone = FALSE
+/\ shutStop = (d1 :> {} @@ d2 :> {})
+/\ bpMap = (d1 :> (p1 :> ns1) @@ d2 :> (p1 :> ns1))
+/\ nsCfg = (d1 :> {ns1} @@ d2 :> {ns1})
+/\ nTasks = 0
+/\ task = << [ dn |-> Nil,
+     st |-> "none",
+     idx |-> 0,
+     rid |-> 0,
+     pool |-> Nil,
+     via |-> Nil,
+     errs |-> 0,
+     cands |-> 0,
+     sync |-> 0,
+     okReads |-> 0,
+     readNs |-> Nil,
+     intr |-> FALSE,
+     mapped |-> FALSE ],
+   [ dn |-> Nil,
+     st |-> "none",
+     idx |-> 0,
+     rid |-> 0,
+     pool |-> Nil,
+     via |-> Nil,
+     errs |-> 0,
+     cands |-> 0,
+     sync |-> 0,
+     okReads |-> 0,
+     readNs |-> Nil,
+     intr |-> FALSE,
+     mapped |-> FALSE ] >>
+/\ nnKnows = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnPending = (d1 :> FALSE @@ d2 :> FALSE)
+/\ dnRun = (d1 :> TRUE @@ d2 :> TRUE)
+/\ bposReg = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ refreshStop = (d1 :> {} @@ d2 :> {})
+/\ nnTried = {d2}
+/\ dnShut = (d1 :> "no" @@ d2 :> "no")
+
+State 10: <MCCmdRecover(d2,ns1) line 102, col 31 to line 102, col 70 of module MC>
+/\ dnsBad = (d1 :> FALSE @@ d2 :> FALSE)
+/\ stLoaded = (d1 :> (p1 :> TRUE) @@ d2 :> (p1 :> TRUE))
+/\ cmdAlive = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ actorPc = (d1 :> (ns1 :> "run") @@ d2 :> (ns1 :> "run"))
+/\ dsPool = (d1 :> (p1 :> TRUE) @@ d2 :> (p1 :> TRUE))
+/\ blockLocs = <<d1, d2>>
+/\ targetFired = FALSE
+/\ rurMax = (d1 :> 0 @@ d2 :> 0)
+/\ actorRun = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ bposActive = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ bposPool = (d1 :> (ns1 :> p1) @@ d2 :> (ns1 :> p1))
+/\ cmdQ = (d1 :> (ns1 :> <<>>) @@ d2 :> (ns1 :> <<>>))
+/\ nnAttempt = 1
+/\ offerSvc = (d1 :> {ns1} @@ d2 :> {ns1})
+/\ nnReject = (d1 :> FALSE @@ d2 :> FALSE)
+/\ fc = [ dnStop |-> 0,
+  reject |-> 0,
+  cmdCrash |-> 0,
+  nnRestart |-> 0,
+  dnsFail |-> 0,
+  refresh |-> 0,
+  lost |-> 0 ]
+/\ nnDone = FALSE
+/\ shutStop = (d1 :> {} @@ d2 :> {})
+/\ bpMap = (d1 :> (p1 :> ns1) @@ d2 :> (p1 :> ns1))
+/\ nsCfg = (d1 :> {ns1} @@ d2 :> {ns1})
+/\ nTasks = 1
+/\ task = << [ dn |-> d2,
+     st |-> "getId",
+     idx |-> 1,
+     rid |-> 1,
+     pool |-> p1,
+     via |-> ns1,
+     errs |-> 0,
+     cands |-> 0,
+     sync |-> 0,
+     okReads |-> 0,
+     readNs |-> Nil,
+     intr |-> FALSE,
+     mapped |-> TRUE ],
+   [ dn |-> Nil,
+     st |-> "none",
+     idx |-> 0,
+     rid |-> 0,
+     pool |-> Nil,
+     via |-> Nil,
+     errs |-> 0,
+     cands |-> 0,
+     sync |-> 0,
+     okReads |-> 0,
+     readNs |-> Nil,
+     intr |-> FALSE,
+     mapped |-> FALSE ] >>
+/\ nnKnows = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnPending = (d1 :> FALSE @@ d2 :> FALSE)
+/\ dnRun = (d1 :> TRUE @@ d2 :> TRUE)
+/\ bposReg = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ refreshStop = (d1 :> {} @@ d2 :> {})
+/\ nnTried = {d2}
+/\ dnShut = (d1 :> "no" @@ d2 :> "no")
+
+State 11: <MCDnStop(d2,"volFail") line 56, col 5 to line 58, col 41 of module MC>
+/\ dnsBad = (d1 :> FALSE @@ d2 :> FALSE)
+/\ stLoaded = (d1 :> (p1 :> TRUE) @@ d2 :> (p1 :> TRUE))
+/\ cmdAlive = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ actorPc = (d1 :> (ns1 :> "run") @@ d2 :> (ns1 :> "run"))
+/\ dsPool = (d1 :> (p1 :> TRUE) @@ d2 :> (p1 :> TRUE))
+/\ blockLocs = <<d1, d2>>
+/\ targetFired = FALSE
+/\ rurMax = (d1 :> 0 @@ d2 :> 0)
+/\ actorRun = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ bposActive = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ bposPool = (d1 :> (ns1 :> p1) @@ d2 :> (ns1 :> p1))
+/\ cmdQ = (d1 :> (ns1 :> <<>>) @@ d2 :> (ns1 :> <<>>))
+/\ nnAttempt = 1
+/\ offerSvc = (d1 :> {ns1} @@ d2 :> {ns1})
+/\ nnReject = (d1 :> FALSE @@ d2 :> FALSE)
+/\ fc = [ dnStop |-> 1,
+  reject |-> 0,
+  cmdCrash |-> 0,
+  nnRestart |-> 0,
+  dnsFail |-> 0,
+  refresh |-> 0,
+  lost |-> 0 ]
+/\ nnDone = FALSE
+/\ shutStop = (d1 :> {} @@ d2 :> {})
+/\ bpMap = (d1 :> (p1 :> ns1) @@ d2 :> (p1 :> ns1))
+/\ nsCfg = (d1 :> {ns1} @@ d2 :> {ns1})
+/\ nTasks = 1
+/\ task = << [ dn |-> d2,
+     st |-> "getId",
+     idx |-> 1,
+     rid |-> 1,
+     pool |-> p1,
+     via |-> ns1,
+     errs |-> 0,
+     cands |-> 0,
+     sync |-> 0,
+     okReads |-> 0,
+     readNs |-> Nil,
+     intr |-> FALSE,
+     mapped |-> TRUE ],
+   [ dn |-> Nil,
+     st |-> "none",
+     idx |-> 0,
+     rid |-> 0,
+     pool |-> Nil,
+     via |-> Nil,
+     errs |-> 0,
+     cands |-> 0,
+     sync |-> 0,
+     okReads |-> 0,
+     readNs |-> Nil,
+     intr |-> FALSE,
+     mapped |-> FALSE ] >>
+/\ nnKnows = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnPending = (d1 :> FALSE @@ d2 :> FALSE)
+/\ dnRun = (d1 :> TRUE @@ d2 :> FALSE)
+/\ bposReg = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ refreshStop = (d1 :> {} @@ d2 :> {})
+/\ nnTried = {d2}
+/\ dnShut = (d1 :> "no" @@ d2 :> "no")
+
+State 12: <MCActorLoopExit(d2,ns1) line 104, col 31 to line 104, col 70 of module MC>
+/\ dnsBad = (d1 :> FALSE @@ d2 :> FALSE)
+/\ stLoaded = (d1 :> (p1 :> TRUE) @@ d2 :> (p1 :> TRUE))
+/\ cmdAlive = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ actorPc = (d1 :> (ns1 :> "run") @@ d2 :> (ns1 :> "exit"))
+/\ dsPool = (d1 :> (p1 :> TRUE) @@ d2 :> (p1 :> TRUE))
+/\ blockLocs = <<d1, d2>>
+/\ targetFired = FALSE
+/\ rurMax = (d1 :> 0 @@ d2 :> 0)
+/\ actorRun = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ bposActive = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ bposPool = (d1 :> (ns1 :> p1) @@ d2 :> (ns1 :> p1))
+/\ cmdQ = (d1 :> (ns1 :> <<>>) @@ d2 :> (ns1 :> <<>>))
+/\ nnAttempt = 1
+/\ offerSvc = (d1 :> {ns1} @@ d2 :> {ns1})
+/\ nnReject = (d1 :> FALSE @@ d2 :> FALSE)
+/\ fc = [ dnStop |-> 1,
+  reject |-> 0,
+  cmdCrash |-> 0,
+  nnRestart |-> 0,
+  dnsFail |-> 0,
+  refresh |-> 0,
+  lost |-> 0 ]
+/\ nnDone = FALSE
+/\ shutStop = (d1 :> {} @@ d2 :> {})
+/\ bpMap = (d1 :> (p1 :> ns1) @@ d2 :> (p1 :> ns1))
+/\ nsCfg = (d1 :> {ns1} @@ d2 :> {ns1})
+/\ nTasks = 1
+/\ task = << [ dn |-> d2,
+     st |-> "getId",
+     idx |-> 1,
+     rid |-> 1,
+     pool |-> p1,
+     via |-> ns1,
+     errs |-> 0,
+     cands |-> 0,
+     sync |-> 0,
+     okReads |-> 0,
+     readNs |-> Nil,
+     intr |-> FALSE,
+     mapped |-> TRUE ],
+   [ dn |-> Nil,
+     st |-> "none",
+     idx |-> 0,
+     rid |-> 0,
+     pool |-> Nil,
+     via |-> Nil,
+     errs |-> 0,
+     cands |-> 0,
+     sync |-> 0,
+     okReads |-> 0,
+     readNs |-> Nil,
+     intr |-> FALSE,
+     mapped |-> FALSE ] >>
+/\ nnKnows = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnPending = (d1 :> FALSE @@ d2 :> FALSE)
+/\ dnRun = (d1 :> TRUE @@ d2 :> FALSE)
+/\ bposReg = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ refreshStop = (d1 :> {} @@ d2 :> {})
+/\ nnTried = {d2}
+/\ dnShut = (d1 :> "no" @@ d2 :> "no")
+
+State 13: <MCTaskGetId(1) line 108, col 31 to line 108, col 70 of module MC>
+/\ dnsBad = (d1 :> FALSE @@ d2 :> FALSE)
+/\ stLoaded = (d1 :> (p1 :> TRUE) @@ d2 :> (p1 :> TRUE))
+/\ cmdAlive = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ actorPc = (d1 :> (ns1 :> "run") @@ d2 :> (ns1 :> "exit"))
+/\ dsPool = (d1 :> (p1 :> TRUE) @@ d2 :> (p1 :> TRUE))
+/\ blockLocs = <<d1, d2>>
+/\ targetFired = FALSE
+/\ rurMax = (d1 :> 0 @@ d2 :> 0)
+/\ actorRun = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ bposActive = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ bposPool = (d1 :> (ns1 :> p1) @@ d2 :> (ns1 :> p1))
+/\ cmdQ = (d1 :> (ns1 :> <<>>) @@ d2 :> (ns1 :> <<>>))
+/\ nnAttempt = 1
+/\ offerSvc = (d1 :> {ns1} @@ d2 :> {ns1})
+/\ nnReject = (d1 :> FALSE @@ d2 :> FALSE)
+/\ fc = [ dnStop |-> 1,
+  reject |-> 0,
+  cmdCrash |-> 0,
+  nnRestart |-> 0,
+  dnsFail |-> 0,
+  refresh |-> 0,
+  lost |-> 0 ]
+/\ nnDone = FALSE
+/\ shutStop = (d1 :> {} @@ d2 :> {})
+/\ bpMap = (d1 :> (p1 :> ns1) @@ d2 :> (p1 :> ns1))
+/\ nsCfg = (d1 :> {ns1} @@ d2 :> {ns1})
+/\ nTasks = 1
+/\ task = << [ dn |-> d2,
+     st |-> "initRR",
+     idx |-> 1,
+     rid |-> 1,
+     pool |-> p1,
+     via |-> ns1,
+     errs |-> 0,
+     cands |-> 0,
+     sync |-> 0,
+     okReads |-> 0,
+     readNs |-> Nil,
+     intr |-> FALSE,
+     mapped |-> TRUE ],
+   [ dn |-> Nil,
+     st |-> "none",
+     idx |-> 0,
+     rid |-> 0,
+     pool |-> Nil,
+     via |-> Nil,
+     errs |-> 0,
+     cands |-> 0,
+     sync |-> 0,
+     okReads |-> 0,
+     readNs |-> Nil,
+     intr |-> FALSE,
+     mapped |-> FALSE ] >>
+/\ nnKnows = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnPending = (d1 :> FALSE @@ d2 :> FALSE)
+/\ dnRun = (d1 :> TRUE @@ d2 :> FALSE)
+/\ bposReg = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ refreshStop = (d1 :> {} @@ d2 :> {})
+/\ nnTried = {d2}
+/\ dnShut = (d1 :> "no" @@ d2 :> "no")
+
+State 14: <MCActorCleanUp(d2,ns1) line 105, col 31 to line 105, col 70 of module MC>
+/\ dnsBad = (d1 :> FALSE @@ d2 :> FALSE)
+/\ stLoaded = (d1 :> (p1 :> TRUE) @@ d2 :> (p1 :> FALSE))
+/\ cmdAlive = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ actorPc = (d1 :> (ns1 :> "run") @@ d2 :> (ns1 :> "dead"))
+/\ dsPool = (d1 :> (p1 :> TRUE) @@ d2 :> (p1 :> FALSE))
+/\ blockLocs = <<d1, d2>>
+/\ targetFired = FALSE
+/\ rurMax = (d1 :> 0 @@ d2 :> 0)
+/\ actorRun = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> FALSE))
+/\ bposActive = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> FALSE))
+/\ bposPool = (d1 :> (ns1 :> p1) @@ d2 :> (ns1 :> p1))
+/\ cmdQ = (d1 :> (ns1 :> <<>>) @@ d2 :> (ns1 :> <<>>))
+/\ nnAttempt = 1
+/\ offerSvc = (d1 :> {ns1} @@ d2 :> {})
+/\ nnReject = (d1 :> FALSE @@ d2 :> FALSE)
+/\ fc = [ dnStop |-> 1,
+  reject |-> 0,
+  cmdCrash |-> 0,
+  nnRestart |-> 0,
+  dnsFail |-> 0,
+  refresh |-> 0,
+  lost |-> 0 ]
+/\ nnDone = FALSE
+/\ shutStop = (d1 :> {} @@ d2 :> {})
+/\ bpMap = (d1 :> (p1 :> ns1) @@ d2 :> (p1 :> Nil))
+/\ nsCfg = (d1 :> {ns1} @@ d2 :> {ns1})
+/\ nTasks = 1
+/\ task = << [ dn |-> d2,
+     st |-> "initRR",
+     idx |-> 1,
+     rid |-> 1,
+     pool |-> p1,
+     via |-> ns1,
+     errs |-> 0,
+     cands |-> 0,
+     sync |-> 0,
+     okReads |-> 0,
+     readNs |-> Nil,
+     intr |-> FALSE,
+     mapped |-> TRUE ],
+   [ dn |-> Nil,
+     st |-> "none",
+     idx |-> 0,
+     rid |-> 0,
+     pool |-> Nil,
+     via |-> Nil,
+     errs |-> 0,
+     cands |-> 0,
+     sync |-> 0,
+     okReads |-> 0,
+     readNs |-> Nil,
+     intr |-> FALSE,
+     mapped |-> FALSE ] >>
+/\ nnKnows = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnPending = (d1 :> FALSE @@ d2 :> FALSE)
+/\ dnRun = (d1 :> TRUE @@ d2 :> FALSE)
+/\ bposReg = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ refreshStop = (d1 :> {} @@ d2 :> {})
+/\ nnTried = {d2}
+/\ dnShut = (d1 :> "no" @@ d2 :> "no")
+
+State 15: <MCTaskInitRR(1,"replica") line 109, col 31 to line 109, col 70 of module MC>
+/\ dnsBad = (d1 :> FALSE @@ d2 :> FALSE)
+/\ stLoaded = (d1 :> (p1 :> TRUE) @@ d2 :> (p1 :> FALSE))
+/\ cmdAlive = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ actorPc = (d1 :> (ns1 :> "run") @@ d2 :> (ns1 :> "dead"))
+/\ dsPool = (d1 :> (p1 :> TRUE) @@ d2 :> (p1 :> FALSE))
+/\ blockLocs = <<d1, d2>>
+/\ targetFired = FALSE
+/\ rurMax = (d1 :> 1 @@ d2 :> 0)
+/\ actorRun = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> FALSE))
+/\ bposActive = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> FALSE))
+/\ bposPool = (d1 :> (ns1 :> p1) @@ d2 :> (ns1 :> p1))
+/\ cmdQ = (d1 :> (ns1 :> <<>>) @@ d2 :> (ns1 :> <<>>))
+/\ nnAttempt = 1
+/\ offerSvc = (d1 :> {ns1} @@ d2 :> {})
+/\ nnReject = (d1 :> FALSE @@ d2 :> FALSE)
+/\ fc = [ dnStop |-> 1,
+  reject |-> 0,
+  cmdCrash |-> 0,
+  nnRestart |-> 0,
+  dnsFail |-> 0,
+  refresh |-> 0,
+  lost |-> 0 ]
+/\ nnDone = FALSE
+/\ shutStop = (d1 :> {} @@ d2 :> {})
+/\ bpMap = (d1 :> (p1 :> ns1) @@ d2 :> (p1 :> Nil))
+/\ nsCfg = (d1 :> {ns1} @@ d2 :> {ns1})
+/\ nTasks = 1
+/\ task = << [ dn |-> d2,
+     st |-> "getId",
+     idx |-> 2,
+     rid |-> 1,
+     pool |-> p1,
+     via |-> ns1,
+     errs |-> 0,
+     cands |-> 1,
+     sync |-> 1,
+     okReads |-> 1,
+     readNs |-> Nil,
+     intr |-> FALSE,
+     mapped |-> TRUE ],
+   [ dn |-> Nil,
+     st |-> "none",
+     idx |-> 0,
+     rid |-> 0,
+     pool |-> Nil,
+     via |-> Nil,
+     errs |-> 0,
+     cands |-> 0,
+     sync |-> 0,
+     okReads |-> 0,
+     readNs |-> Nil,
+     intr |-> FALSE,
+     mapped |-> FALSE ] >>
+/\ nnKnows = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnPending = (d1 :> FALSE @@ d2 :> FALSE)
+/\ dnRun = (d1 :> TRUE @@ d2 :> FALSE)
+/\ bposReg = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ refreshStop = (d1 :> {} @@ d2 :> {})
+/\ nnTried = {d2}
+/\ dnShut = (d1 :> "no" @@ d2 :> "no")
+
+State 16: <MCTaskGetId(1) line 108, col 31 to line 108, col 70 of module MC>
+/\ dnsBad = (d1 :> FALSE @@ d2 :> FALSE)
+/\ stLoaded = (d1 :> (p1 :> TRUE) @@ d2 :> (p1 :> FALSE))
+/\ cmdAlive = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ actorPc = (d1 :> (ns1 :> "run") @@ d2 :> (ns1 :> "dead"))
+/\ dsPool = (d1 :> (p1 :> TRUE) @@ d2 :> (p1 :> FALSE))
+/\ blockLocs = <<d1, d2>>
+/\ targetFired = FALSE
+/\ rurMax = (d1 :> 1 @@ d2 :> 0)
+/\ actorRun = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> FALSE))
+/\ bposActive = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> FALSE))
+/\ bposPool = (d1 :> (ns1 :> p1) @@ d2 :> (ns1 :> p1))
+/\ cmdQ = (d1 :> (ns1 :> <<>>) @@ d2 :> (ns1 :> <<>>))
+/\ nnAttempt = 1
+/\ offerSvc = (d1 :> {ns1} @@ d2 :> {})
+/\ nnReject = (d1 :> FALSE @@ d2 :> FALSE)
+/\ fc = [ dnStop |-> 1,
+  reject |-> 0,
+  cmdCrash |-> 0,
+  nnRestart |-> 0,
+  dnsFail |-> 0,
+  refresh |-> 0,
+  lost |-> 0 ]
+/\ nnDone = FALSE
+/\ shutStop = (d1 :> {} @@ d2 :> {})
+/\ bpMap = (d1 :> (p1 :> ns1) @@ d2 :> (p1 :> Nil))
+/\ nsCfg = (d1 :> {ns1} @@ d2 :> {ns1})
+/\ nTasks = 1
+/\ task = << [ dn |-> d2,
+     st |-> "loopEnd",
+     idx |-> 2,
+     rid |-> 1,
+     pool |-> p1,
+     via |-> ns1,
+     errs |-> 1,
+     cands |-> 1,
+     sync |-> 1,
+     okReads |-> 1,
+     readNs |-> Nil,
+     intr |-> FALSE,
+     mapped |-> TRUE ],
+   [ dn |-> Nil,
+     st |-> "none",
+     idx |-> 0,
+     rid |-> 0,
+     pool |-> Nil,
+     via |-> Nil,
+     errs |-> 0,
+     cands |-> 0,
+     sync |-> 0,
+     okReads |-> 0,
+     readNs |-> Nil,
+     intr |-> FALSE,
+     mapped |-> FALSE ] >>
+/\ nnKnows = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnPending = (d1 :> FALSE @@ d2 :> FALSE)
+/\ dnRun = (d1 :> TRUE @@ d2 :> FALSE)
+/\ bposReg = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ refreshStop = (d1 :> {} @@ d2 :> {})
+/\ nnTried = {d2}
+/\ dnShut = (d1 :> "no" @@ d2 :> "no")
+
+State 17: <MCTaskLoopEnd(1) line 110, col 31 to line 110, col 70 of module MC>
+/\ dnsBad = (d1 :> FALSE @@ d2 :> FALSE)
+/\ stLoaded = (d1 :> (p1 :> TRUE) @@ d2 :> (p1 :> FALSE))
+/\ cmdAlive = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ actorPc = (d1 :> (ns1 :> "run") @@ d2 :> (ns1 :> "dead"))
+/\ dsPool = (d1 :> (p1 :> TRUE) @@ d2 :> (p1 :> FALSE))
+/\ blockLocs = <<d1, d2>>
+/\ targetFired = FALSE
+/\ rurMax = (d1 :> 1 @@ d2 :> 0)
+/\ actorRun = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> FALSE))
+/\ bposActive = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> FALSE))
+/\ bposPool = (d1 :> (ns1 :> p1) @@ d2 :> (ns1 :> p1))
+/\ cmdQ = (d1 :> (ns1 :> <<>>) @@ d2 :> (ns1 :> <<>>))
+/\ nnAttempt = 1
+/\ offerSvc = (d1 :> {ns1} @@ d2 :> {})
+/\ nnReject = (d1 :> FALSE @@ d2 :> FALSE)
+/\ fc = [ dnStop |-> 1,
+  reject |-> 0,
+  cmdCrash |-> 0,
+  nnRestart |-> 0,
+  dnsFail |-> 0,
+  refresh |-> 0,
+  lost |-> 0 ]
+/\ nnDone = FALSE
+/\ shutStop = (d1 :> {} @@ d2 :> {})
+/\ bpMap = (d1 :> (p1 :> ns1) @@ d2 :> (p1 :> Nil))
+/\ nsCfg = (d1 :> {ns1} @@ d2 :> {ns1})
+/\ nTasks = 1
+/\ task = << [ dn |-> d2,
+     st |-> "target",
+     idx |-> 2,
+     rid |-> 1,
+     pool |-> p1,
+     via |-> ns1,
+     errs |-> 1,
+     cands |-> 1,
+     sync |-> 1,
+     okReads |-> 1,
+     readNs |-> Nil,
+     intr |-> FALSE,
+     mapped |-> TRUE ],
+   [ dn |-> Nil,
+     st |-> "none",
+     idx |-> 0,
+     rid |-> 0,
+     pool |-> Nil,
+     via |-> Nil,
+     errs |-> 0,
+     cands |-> 0,
+     sync |-> 0,
+     okReads |-> 0,
+     readNs |-> Nil,
+     intr |-> FALSE,
+     mapped |-> FALSE ] >>
+/\ nnKnows = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnPending = (d1 :> FALSE @@ d2 :> FALSE)
+/\ dnRun = (d1 :> TRUE @@ d2 :> FALSE)
+/\ bposReg = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ refreshStop = (d1 :> {} @@ d2 :> {})
+/\ nnTried = {d2}
+/\ dnShut = (d1 :> "no" @@ d2 :> "no")
+
+State 18: <MCTargetCheck(1) line 111, col 31 to line 111, col 70 of module MC>
+/\ dnsBad = (d1 :> FALSE @@ d2 :> FALSE)
+/\ stLoaded = (d1 :> (p1 :> TRUE) @@ d2 :> (p1 :> FALSE))
+/\ cmdAlive = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ actorPc = (d1 :> (ns1 :> "run") @@ d2 :> (ns1 :> "dead"))
+/\ dsPool = (d1 :> (p1 :> TRUE) @@ d2 :> (p1 :> FALSE))
+/\ blockLocs = <<d1, d2>>
+/\ targetFired = TRUE
+/\ rurMax = (d1 :> 1 @@ d2 :> 0)
+/\ actorRun = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> FALSE))
+/\ bposActive = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> FALSE))
+/\ bposPool = (d1 :> (ns1 :> p1) @@ d2 :> (ns1 :> p1))
+/\ cmdQ = (d1 :> (ns1 :> <<>>) @@ d2 :> (ns1 :> <<>>))
+/\ nnAttempt = 1
+/\ offerSvc = (d1 :> {ns1} @@ d2 :> {})
+/\ nnReject = (d1 :> FALSE @@ d2 :> FALSE)
+/\ fc = [ dnStop |-> 1,
+  reject |-> 0,
+  cmdCrash |-> 0,
+  nnRestart |-> 0,
+  dnsFail |-> 0,
+  refresh |-> 0,
+  lost |-> 0 ]
+/\ nnDone = FALSE
+/\ shutStop = (d1 :> {} @@ d2 :> {})
+/\ bpMap = (d1 :> (p1 :> ns1) @@ d2 :> (p1 :> Nil))
+/\ nsCfg = (d1 :> {ns1} @@ d2 :> {ns1})
+/\ nTasks = 1
+/\ task = << [ dn |-> d2,
+     st |-> "fired",
+     idx |-> 2,
+     rid |-> 1,
+     pool |-> p1,
+     via |-> ns1,
+     errs |-> 1,
+     cands |-> 1,
+     sync |-> 1,
+     okReads |-> 1,
+     readNs |-> Nil,
+     intr |-> FALSE,
+     mapped |-> TRUE ],
+   [ dn |-> Nil,
+     st |-> "none",
+     idx |-> 0,
+     rid |-> 0,
+     pool |-> Nil,
+     via |-> Nil,
+     errs |-> 0,
+     cands |-> 0,
+     sync |-> 0,
+     okReads |-> 0,
+     readNs |-> Nil,
+     intr |-> FALSE,
+     mapped |-> FALSE ] >>
+/\ nnKnows = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnPending = (d1 :> FALSE @@ d2 :> FALSE)
+/\ dnRun = (d1 :> TRUE @@ d2 :> FALSE)
+/\ bposReg = (d1 :> (ns1 :> TRUE) @@ d2 :> (ns1 :> TRUE))
+/\ refreshStop = (d1 :> {} @@ d2 :> {})
+/\ nnTried = {d2}
+/\ dnShut = (d1 :> "no" @@ d2 :> "no")
+
+3659 states generated, 1501 distinct states found, 433 states left on queue.
+The depth of the complete state graph search is 18.
+Finished in 01s at (2026-10-29 23:45:43)
+Trace exploration spec path: ./MCDiag_TTrace_1793317542.tla

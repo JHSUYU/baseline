@@ -1,0 +1,21 @@
+id: solr-adhoc-39
+system: Apache Solr
+source_tree: /set/by/run-case.sh
+base_commit: faca81bff1
+check:
+  file: solr/core/src/java/org/apache/solr/update/processor/RoutedAliasUpdateProcessor.java
+  line: 247
+  method: RoutedAliasUpdateProcessor.lookupShardLeadersOfCollections()
+  thrown: org.apache.solr.common.SolrException
+  guard: "collections == null   (collections = zkController.getZkStateReader().getAliases().getCollectionAliasListMap().get(getAliasName())); the statement is `throw RoutedAlias.newAliasMustExistException(...)`, whose body throws this SolrException (SERVICE_UNAVAILABLE) at RoutedAlias.java:72"
+workload:
+  module: solr/core
+  test: org.apache.solr.update.processor.TimeRoutedAliasUpdateProcessorTest#test
+  note: the test reaches the check's method and passes; the check does not fail in it
+scope_hint:
+  - org.apache.solr.update.processor.RoutedAliasUpdateProcessor
+  - org.apache.solr.cloud.api.collections.RoutedAlias
+build:
+  env: /set/by/run-case.sh
+  prepare: "ant ivy-bootstrap -Divy_install_path=$IVY_USER_DIR/lib && cd solr && ant -lib $IVY_USER_DIR/lib compile compile-test -Divy_install_path=$IVY_USER_DIR/lib   (already done once)"
+  test_command: "cd solr/core && ant -lib $IVY_USER_DIR/lib test -Dtestcase=<Class> -Dtests.method=<method> -Dtests.jvms=1 -Dtests.awaitsfix=true -Dargs='-XX:TieredStopAtLevel=1 -Dsolr.disableConfigSetsCreateAuthChecks=true' -Dtests.useSecurityManager=false -Divy_install_path=$IVY_USER_DIR/lib"

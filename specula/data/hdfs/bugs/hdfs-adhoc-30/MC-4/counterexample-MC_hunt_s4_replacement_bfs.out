@@ -1,0 +1,482 @@
+TLC2 Version 2026.10.24.013619 (rev: 2ef2af8)
+Running breadth-first search Model-Checking with fp 101 and seed -3125032384177393826 with 1 worker on 64 cores with 1963MB heap and 1024MB offheap memory [pid: 3048725] (Linux 5.15.0-198-generic amd64, Eclipse Adoptium 21.0.13 64bit, OffHeapDiskFPSet, DiskStateQueue).
+Parsing file /bulk/specula-adhoc/specula-runs/20261029-150547-7238/hdfs-adhoc-30/.specula-output/spec/MC.tla
+Parsing file /bulk/specula-adhoc/specula-runs/20261029-150547-7238/hdfs-adhoc-30/.specula-output/spec/base.tla
+Parsing file /tmp/tlc-9422406310255828369/_JsonTrace.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/_JsonTrace.tla)
+Parsing file /tmp/tlc-9422406310255828369/_TLCTrace.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/_TLCTrace.tla)
+Parsing file /tmp/tlc-9422406310255828369/Naturals.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Naturals.tla)
+Parsing file /tmp/tlc-9422406310255828369/Integers.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Integers.tla)
+Parsing file /tmp/tlc-9422406310255828369/Sequences.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Sequences.tla)
+Parsing file /tmp/tlc-9422406310255828369/FiniteSets.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/FiniteSets.tla)
+Parsing file /tmp/tlc-9422406310255828369/TLC.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLC.tla)
+Parsing file /tmp/tlc-9422406310255828369/TLCExt.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLCExt.tla)
+Parsing file /tmp/tlc-9422406310255828369/Json.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Json.tla)
+Semantic processing of module Naturals
+Semantic processing of module Integers
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module TLC
+Semantic processing of module base
+Semantic processing of module TLCExt
+Semantic processing of module Json
+Semantic processing of module _JsonTrace
+Semantic processing of module _TLCTrace
+Semantic processing of module MC
+Linting of module base
+Linting of module TLCExt
+Linting of module Json
+Linting of module _JsonTrace
+Linting of module _TLCTrace
+Linting of module MC
+Starting... (2026-10-29 21:00:08)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-10-29 21:00:08.
+Error: Invariant TargetSafe is violated.
+Error: The behavior up to this point is:
+State 1: <Initial predicate>
+/\ bpNSInfo = <<FALSE, FALSE>>
+/\ hbResp = << ( n1 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] @@
+     n2 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] ),
+   ( n1 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] @@
+     n2 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] ) >>
+/\ curInc = 1
+/\ targetFired = FALSE
+/\ bpServiceToActive = <<None, None>>
+/\ nnTxid = (n1 :> 0 @@ n2 :> 0)
+/\ cmdQ = <<(n1 :> <<>> @@ n2 :> <<>>), (n1 :> <<>> @@ n2 :> <<>>)>>
+/\ actorSt = <<(n1 :> "connecting" @@ n2 :> "connecting"), (n1 :> "idle" @@ n2 :> "idle")>>
+/\ faults = [ demote |-> 0,
+  promote |-> 0,
+  crash |-> 0,
+  edit |-> 0,
+  exit |-> 0,
+  replicaFail |-> 0 ]
+/\ nnState = (n1 :> "ACTIVE" @@ n2 :> "STANDBY")
+/\ logEnd = 0
+/\ rec = <<[pc |-> "none", bp |-> 0, nxt |-> 0, by |-> None]>>
+/\ nnRecQ = (n1 :> <<>> @@ n2 :> <<>>)
+/\ bpRegd = <<FALSE, FALSE>>
+/\ lastActiveClaimTxId = <<-1, -1>>
+/\ bpStopped = <<FALSE, FALSE>>
+/\ hsResp = <<(n1 :> "none" @@ n2 :> "none"), (n1 :> "none" @@ n2 :> "none")>>
+/\ bposReg = 0
+
+State 2: <MCVersionRequest(1,n1) line 105, col 36 to line 105, col 94 of module MC>
+/\ bpNSInfo = <<FALSE, FALSE>>
+/\ hbResp = << ( n1 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] @@
+     n2 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] ),
+   ( n1 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] @@
+     n2 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] ) >>
+/\ curInc = 1
+/\ targetFired = FALSE
+/\ bpServiceToActive = <<None, None>>
+/\ nnTxid = (n1 :> 0 @@ n2 :> 0)
+/\ cmdQ = <<(n1 :> <<>> @@ n2 :> <<>>), (n1 :> <<>> @@ n2 :> <<>>)>>
+/\ actorSt = <<(n1 :> "connecting" @@ n2 :> "connecting"), (n1 :> "idle" @@ n2 :> "idle")>>
+/\ faults = [ demote |-> 0,
+  promote |-> 0,
+  crash |-> 0,
+  edit |-> 0,
+  exit |-> 0,
+  replicaFail |-> 0 ]
+/\ nnState = (n1 :> "ACTIVE" @@ n2 :> "STANDBY")
+/\ logEnd = 0
+/\ rec = <<[pc |-> "none", bp |-> 0, nxt |-> 0, by |-> None]>>
+/\ nnRecQ = (n1 :> <<>> @@ n2 :> <<>>)
+/\ bpRegd = <<FALSE, FALSE>>
+/\ lastActiveClaimTxId = <<-1, -1>>
+/\ bpStopped = <<FALSE, FALSE>>
+/\ hsResp = <<(n1 :> "ACTIVE" @@ n2 :> "none"), (n1 :> "none" @@ n2 :> "none")>>
+/\ bposReg = 0
+
+State 3: <MCVerifyAndSetNamespaceInfo(1,n1) line 106, col 38 to line 106, col 107 of module MC>
+/\ bpNSInfo = <<TRUE, FALSE>>
+/\ hbResp = << ( n1 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] @@
+     n2 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] ),
+   ( n1 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] @@
+     n2 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] ) >>
+/\ curInc = 1
+/\ targetFired = FALSE
+/\ bpServiceToActive = <<n1, None>>
+/\ nnTxid = (n1 :> 0 @@ n2 :> 0)
+/\ cmdQ = <<(n1 :> <<>> @@ n2 :> <<>>), (n1 :> <<>> @@ n2 :> <<>>)>>
+/\ actorSt = <<(n1 :> "registering" @@ n2 :> "connecting"), (n1 :> "idle" @@ n2 :> "idle")>>
+/\ faults = [ demote |-> 0,
+  promote |-> 0,
+  crash |-> 0,
+  edit |-> 0,
+  exit |-> 0,
+  replicaFail |-> 0 ]
+/\ nnState = (n1 :> "ACTIVE" @@ n2 :> "STANDBY")
+/\ logEnd = 0
+/\ rec = <<[pc |-> "none", bp |-> 0, nxt |-> 0, by |-> None]>>
+/\ nnRecQ = (n1 :> <<>> @@ n2 :> <<>>)
+/\ bpRegd = <<FALSE, FALSE>>
+/\ lastActiveClaimTxId = <<-1, -1>>
+/\ bpStopped = <<FALSE, FALSE>>
+/\ hsResp = <<(n1 :> "none" @@ n2 :> "none"), (n1 :> "none" @@ n2 :> "none")>>
+/\ bposReg = 1
+
+State 4: <MCRegister(1,n1) line 107, col 36 to line 107, col 88 of module MC>
+/\ bpNSInfo = <<TRUE, FALSE>>
+/\ hbResp = << ( n1 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] @@
+     n2 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] ),
+   ( n1 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] @@
+     n2 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] ) >>
+/\ curInc = 1
+/\ targetFired = FALSE
+/\ bpServiceToActive = <<n1, None>>
+/\ nnTxid = (n1 :> 0 @@ n2 :> 0)
+/\ cmdQ = <<(n1 :> <<>> @@ n2 :> <<>>), (n1 :> <<>> @@ n2 :> <<>>)>>
+/\ actorSt = <<(n1 :> "running" @@ n2 :> "connecting"), (n1 :> "idle" @@ n2 :> "idle")>>
+/\ faults = [ demote |-> 0,
+  promote |-> 0,
+  crash |-> 0,
+  edit |-> 0,
+  exit |-> 0,
+  replicaFail |-> 0 ]
+/\ nnState = (n1 :> "ACTIVE" @@ n2 :> "STANDBY")
+/\ logEnd = 0
+/\ rec = <<[pc |-> "none", bp |-> 0, nxt |-> 0, by |-> None]>>
+/\ nnRecQ = (n1 :> <<>> @@ n2 :> <<>>)
+/\ bpRegd = <<TRUE, FALSE>>
+/\ lastActiveClaimTxId = <<-1, -1>>
+/\ bpStopped = <<FALSE, FALSE>>
+/\ hsResp = <<(n1 :> "none" @@ n2 :> "none"), (n1 :> "none" @@ n2 :> "none")>>
+/\ bposReg = 1
+
+State 5: <MCNNIssueRecovery(n1) line 47, col 5 to line 52, col 26 of module MC>
+/\ bpNSInfo = <<TRUE, FALSE>>
+/\ hbResp = << ( n1 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] @@
+     n2 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] ),
+   ( n1 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] @@
+     n2 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] ) >>
+/\ curInc = 1
+/\ targetFired = FALSE
+/\ bpServiceToActive = <<n1, None>>
+/\ nnTxid = (n1 :> 0 @@ n2 :> 0)
+/\ cmdQ = <<(n1 :> <<>> @@ n2 :> <<>>), (n1 :> <<>> @@ n2 :> <<>>)>>
+/\ actorSt = <<(n1 :> "running" @@ n2 :> "connecting"), (n1 :> "idle" @@ n2 :> "idle")>>
+/\ faults = [ demote |-> 0,
+  promote |-> 0,
+  crash |-> 0,
+  edit |-> 0,
+  exit |-> 0,
+  replicaFail |-> 0 ]
+/\ nnState = (n1 :> "ACTIVE" @@ n2 :> "STANDBY")
+/\ logEnd = 0
+/\ rec = <<[pc |-> "issued", bp |-> 0, nxt |-> 0, by |-> n1]>>
+/\ nnRecQ = (n1 :> <<1>> @@ n2 :> <<>>)
+/\ bpRegd = <<TRUE, FALSE>>
+/\ lastActiveClaimTxId = <<-1, -1>>
+/\ bpStopped = <<FALSE, FALSE>>
+/\ hsResp = <<(n1 :> "none" @@ n2 :> "none"), (n1 :> "none" @@ n2 :> "none")>>
+/\ bposReg = 1
+
+State 6: <MCHBSend(1,n1) line 108, col 36 to line 108, col 86 of module MC>
+/\ bpNSInfo = <<TRUE, FALSE>>
+/\ hbResp = << ( n1 :> [st |-> "ACTIVE", txid |-> 0, cmd |-> <<1>>] @@
+     n2 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] ),
+   ( n1 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] @@
+     n2 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] ) >>
+/\ curInc = 1
+/\ targetFired = FALSE
+/\ bpServiceToActive = <<n1, None>>
+/\ nnTxid = (n1 :> 0 @@ n2 :> 0)
+/\ cmdQ = <<(n1 :> <<>> @@ n2 :> <<>>), (n1 :> <<>> @@ n2 :> <<>>)>>
+/\ actorSt = <<(n1 :> "running" @@ n2 :> "connecting"), (n1 :> "idle" @@ n2 :> "idle")>>
+/\ faults = [ demote |-> 0,
+  promote |-> 0,
+  crash |-> 0,
+  edit |-> 0,
+  exit |-> 0,
+  replicaFail |-> 0 ]
+/\ nnState = (n1 :> "ACTIVE" @@ n2 :> "STANDBY")
+/\ logEnd = 0
+/\ rec = <<[pc |-> "issued", bp |-> 0, nxt |-> 0, by |-> n1]>>
+/\ nnRecQ = (n1 :> <<>> @@ n2 :> <<>>)
+/\ bpRegd = <<TRUE, FALSE>>
+/\ lastActiveClaimTxId = <<-1, -1>>
+/\ bpStopped = <<FALSE, FALSE>>
+/\ hsResp = <<(n1 :> "none" @@ n2 :> "none"), (n1 :> "none" @@ n2 :> "none")>>
+/\ bposReg = 1
+
+State 7: <MCHBRecv(1,n1) line 109, col 36 to line 109, col 86 of module MC>
+/\ bpNSInfo = <<TRUE, FALSE>>
+/\ hbResp = << ( n1 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] @@
+     n2 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] ),
+   ( n1 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] @@
+     n2 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] ) >>
+/\ curInc = 1
+/\ targetFired = FALSE
+/\ bpServiceToActive = <<n1, None>>
+/\ nnTxid = (n1 :> 0 @@ n2 :> 0)
+/\ cmdQ = <<(n1 :> <<<<1>>>> @@ n2 :> <<>>), (n1 :> <<>> @@ n2 :> <<>>)>>
+/\ actorSt = <<(n1 :> "running" @@ n2 :> "connecting"), (n1 :> "idle" @@ n2 :> "idle")>>
+/\ faults = [ demote |-> 0,
+  promote |-> 0,
+  crash |-> 0,
+  edit |-> 0,
+  exit |-> 0,
+  replicaFail |-> 0 ]
+/\ nnState = (n1 :> "ACTIVE" @@ n2 :> "STANDBY")
+/\ logEnd = 0
+/\ rec = <<[pc |-> "issued", bp |-> 0, nxt |-> 0, by |-> n1]>>
+/\ nnRecQ = (n1 :> <<>> @@ n2 :> <<>>)
+/\ bpRegd = <<TRUE, FALSE>>
+/\ lastActiveClaimTxId = <<0, -1>>
+/\ bpStopped = <<FALSE, FALSE>>
+/\ hsResp = <<(n1 :> "none" @@ n2 :> "none"), (n1 :> "none" @@ n2 :> "none")>>
+/\ bposReg = 1
+
+State 8: <MCProcessCmd(1,n1) line 110, col 36 to line 110, col 90 of module MC>
+/\ bpNSInfo = <<TRUE, FALSE>>
+/\ hbResp = << ( n1 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] @@
+     n2 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] ),
+   ( n1 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] @@
+     n2 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] ) >>
+/\ curInc = 1
+/\ targetFired = FALSE
+/\ bpServiceToActive = <<n1, None>>
+/\ nnTxid = (n1 :> 0 @@ n2 :> 0)
+/\ cmdQ = <<(n1 :> <<>> @@ n2 :> <<>>), (n1 :> <<>> @@ n2 :> <<>>)>>
+/\ actorSt = <<(n1 :> "running" @@ n2 :> "connecting"), (n1 :> "idle" @@ n2 :> "idle")>>
+/\ faults = [ demote |-> 0,
+  promote |-> 0,
+  crash |-> 0,
+  edit |-> 0,
+  exit |-> 0,
+  replicaFail |-> 0 ]
+/\ nnState = (n1 :> "ACTIVE" @@ n2 :> "STANDBY")
+/\ logEnd = 0
+/\ rec = <<[pc |-> "pre", bp |-> 0, nxt |-> 0, by |-> n1]>>
+/\ nnRecQ = (n1 :> <<>> @@ n2 :> <<>>)
+/\ bpRegd = <<TRUE, FALSE>>
+/\ lastActiveClaimTxId = <<0, -1>>
+/\ bpStopped = <<FALSE, FALSE>>
+/\ hsResp = <<(n1 :> "none" @@ n2 :> "none"), (n1 :> "none" @@ n2 :> "none")>>
+/\ bposReg = 1
+
+State 9: <MCRecoverPre(1) line 112, col 36 to line 112, col 87 of module MC>
+/\ bpNSInfo = <<TRUE, FALSE>>
+/\ hbResp = << ( n1 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] @@
+     n2 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] ),
+   ( n1 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] @@
+     n2 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] ) >>
+/\ curInc = 1
+/\ targetFired = FALSE
+/\ bpServiceToActive = <<n1, None>>
+/\ nnTxid = (n1 :> 0 @@ n2 :> 0)
+/\ cmdQ = <<(n1 :> <<>> @@ n2 :> <<>>), (n1 :> <<>> @@ n2 :> <<>>)>>
+/\ actorSt = <<(n1 :> "running" @@ n2 :> "connecting"), (n1 :> "idle" @@ n2 :> "idle")>>
+/\ faults = [ demote |-> 0,
+  promote |-> 0,
+  crash |-> 0,
+  edit |-> 0,
+  exit |-> 0,
+  replicaFail |-> 0 ]
+/\ nnState = (n1 :> "ACTIVE" @@ n2 :> "STANDBY")
+/\ logEnd = 0
+/\ rec = <<[pc |-> "lookup", bp |-> 0, nxt |-> 0, by |-> n1]>>
+/\ nnRecQ = (n1 :> <<>> @@ n2 :> <<>>)
+/\ bpRegd = <<TRUE, FALSE>>
+/\ lastActiveClaimTxId = <<0, -1>>
+/\ bpStopped = <<FALSE, FALSE>>
+/\ hsResp = <<(n1 :> "none" @@ n2 :> "none"), (n1 :> "none" @@ n2 :> "none")>>
+/\ bposReg = 1
+
+State 10: <MCRefreshAdd line 92, col 5 to line 94, col 26 of module MC>
+/\ bpNSInfo = <<TRUE, FALSE>>
+/\ hbResp = << ( n1 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] @@
+     n2 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] ),
+   ( n1 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] @@
+     n2 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] ) >>
+/\ curInc = 2
+/\ targetFired = FALSE
+/\ bpServiceToActive = <<n1, None>>
+/\ nnTxid = (n1 :> 0 @@ n2 :> 0)
+/\ cmdQ = <<(n1 :> <<>> @@ n2 :> <<>>), (n1 :> <<>> @@ n2 :> <<>>)>>
+/\ actorSt = << (n1 :> "running" @@ n2 :> "connecting"),
+   (n1 :> "connecting" @@ n2 :> "connecting") >>
+/\ faults = [ demote |-> 0,
+  promote |-> 0,
+  crash |-> 0,
+  edit |-> 0,
+  exit |-> 0,
+  replicaFail |-> 0 ]
+/\ nnState = (n1 :> "ACTIVE" @@ n2 :> "STANDBY")
+/\ logEnd = 0
+/\ rec = <<[pc |-> "lookup", bp |-> 0, nxt |-> 0, by |-> n1]>>
+/\ nnRecQ = (n1 :> <<>> @@ n2 :> <<>>)
+/\ bpRegd = <<TRUE, FALSE>>
+/\ lastActiveClaimTxId = <<0, -1>>
+/\ bpStopped = <<FALSE, FALSE>>
+/\ hsResp = <<(n1 :> "none" @@ n2 :> "none"), (n1 :> "none" @@ n2 :> "none")>>
+/\ bposReg = 1
+
+State 11: <MCVersionRequest(2,n2) line 105, col 36 to line 105, col 94 of module MC>
+/\ bpNSInfo = <<TRUE, FALSE>>
+/\ hbResp = << ( n1 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] @@
+     n2 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] ),
+   ( n1 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] @@
+     n2 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] ) >>
+/\ curInc = 2
+/\ targetFired = FALSE
+/\ bpServiceToActive = <<n1, None>>
+/\ nnTxid = (n1 :> 0 @@ n2 :> 0)
+/\ cmdQ = <<(n1 :> <<>> @@ n2 :> <<>>), (n1 :> <<>> @@ n2 :> <<>>)>>
+/\ actorSt = << (n1 :> "running" @@ n2 :> "connecting"),
+   (n1 :> "connecting" @@ n2 :> "connecting") >>
+/\ faults = [ demote |-> 0,
+  promote |-> 0,
+  crash |-> 0,
+  edit |-> 0,
+  exit |-> 0,
+  replicaFail |-> 0 ]
+/\ nnState = (n1 :> "ACTIVE" @@ n2 :> "STANDBY")
+/\ logEnd = 0
+/\ rec = <<[pc |-> "lookup", bp |-> 0, nxt |-> 0, by |-> n1]>>
+/\ nnRecQ = (n1 :> <<>> @@ n2 :> <<>>)
+/\ bpRegd = <<TRUE, FALSE>>
+/\ lastActiveClaimTxId = <<0, -1>>
+/\ bpStopped = <<FALSE, FALSE>>
+/\ hsResp = <<(n1 :> "none" @@ n2 :> "none"), (n1 :> "none" @@ n2 :> "STANDBY")>>
+/\ bposReg = 1
+
+State 12: <MCVerifyAndSetNamespaceInfo(2,n2) line 106, col 38 to line 106, col 107 of module MC>
+/\ bpNSInfo = <<TRUE, TRUE>>
+/\ hbResp = << ( n1 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] @@
+     n2 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] ),
+   ( n1 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] @@
+     n2 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] ) >>
+/\ curInc = 2
+/\ targetFired = FALSE
+/\ bpServiceToActive = <<n1, None>>
+/\ nnTxid = (n1 :> 0 @@ n2 :> 0)
+/\ cmdQ = <<(n1 :> <<>> @@ n2 :> <<>>), (n1 :> <<>> @@ n2 :> <<>>)>>
+/\ actorSt = << (n1 :> "running" @@ n2 :> "connecting"),
+   (n1 :> "connecting" @@ n2 :> "registering") >>
+/\ faults = [ demote |-> 0,
+  promote |-> 0,
+  crash |-> 0,
+  edit |-> 0,
+  exit |-> 0,
+  replicaFail |-> 0 ]
+/\ nnState = (n1 :> "ACTIVE" @@ n2 :> "STANDBY")
+/\ logEnd = 0
+/\ rec = <<[pc |-> "lookup", bp |-> 0, nxt |-> 0, by |-> n1]>>
+/\ nnRecQ = (n1 :> <<>> @@ n2 :> <<>>)
+/\ bpRegd = <<TRUE, FALSE>>
+/\ lastActiveClaimTxId = <<0, -1>>
+/\ bpStopped = <<FALSE, FALSE>>
+/\ hsResp = <<(n1 :> "none" @@ n2 :> "none"), (n1 :> "none" @@ n2 :> "none")>>
+/\ bposReg = 2
+
+State 13: <MCRecoverLookup(1) line 113, col 36 to line 113, col 90 of module MC>
+/\ bpNSInfo = <<TRUE, TRUE>>
+/\ hbResp = << ( n1 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] @@
+     n2 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] ),
+   ( n1 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] @@
+     n2 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] ) >>
+/\ curInc = 2
+/\ targetFired = FALSE
+/\ bpServiceToActive = <<n1, None>>
+/\ nnTxid = (n1 :> 0 @@ n2 :> 0)
+/\ cmdQ = <<(n1 :> <<>> @@ n2 :> <<>>), (n1 :> <<>> @@ n2 :> <<>>)>>
+/\ actorSt = << (n1 :> "running" @@ n2 :> "connecting"),
+   (n1 :> "connecting" @@ n2 :> "registering") >>
+/\ faults = [ demote |-> 0,
+  promote |-> 0,
+  crash |-> 0,
+  edit |-> 0,
+  exit |-> 0,
+  replicaFail |-> 0 ]
+/\ nnState = (n1 :> "ACTIVE" @@ n2 :> "STANDBY")
+/\ logEnd = 0
+/\ rec = <<[pc |-> "getActive", bp |-> 2, nxt |-> 0, by |-> n1]>>
+/\ nnRecQ = (n1 :> <<>> @@ n2 :> <<>>)
+/\ bpRegd = <<TRUE, FALSE>>
+/\ lastActiveClaimTxId = <<0, -1>>
+/\ bpStopped = <<FALSE, FALSE>>
+/\ hsResp = <<(n1 :> "none" @@ n2 :> "none"), (n1 :> "none" @@ n2 :> "none")>>
+/\ bposReg = 2
+
+State 14: <MCTargetCheck(1) line 114, col 36 to line 114, col 88 of module MC>
+/\ bpNSInfo = <<TRUE, TRUE>>
+/\ hbResp = << ( n1 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] @@
+     n2 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] ),
+   ( n1 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] @@
+     n2 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] ) >>
+/\ curInc = 2
+/\ targetFired = TRUE
+/\ bpServiceToActive = <<n1, None>>
+/\ nnTxid = (n1 :> 0 @@ n2 :> 0)
+/\ cmdQ = <<(n1 :> <<>> @@ n2 :> <<>>), (n1 :> <<>> @@ n2 :> <<>>)>>
+/\ actorSt = << (n1 :> "running" @@ n2 :> "connecting"),
+   (n1 :> "connecting" @@ n2 :> "registering") >>
+/\ faults = [ demote |-> 0,
+  promote |-> 0,
+  crash |-> 0,
+  edit |-> 0,
+  exit |-> 0,
+  replicaFail |-> 0 ]
+/\ nnState = (n1 :> "ACTIVE" @@ n2 :> "STANDBY")
+/\ logEnd = 0
+/\ rec = <<[pc |-> "fired", bp |-> 2, nxt |-> 0, by |-> n1]>>
+/\ nnRecQ = (n1 :> <<>> @@ n2 :> <<>>)
+/\ bpRegd = <<TRUE, FALSE>>
+/\ lastActiveClaimTxId = <<0, -1>>
+/\ bpStopped = <<FALSE, FALSE>>
+/\ hsResp = <<(n1 :> "none" @@ n2 :> "none"), (n1 :> "none" @@ n2 :> "none")>>
+/\ bposReg = 2
+
+"CounterExample written: /users/ZhenyuLi/Specula/runs/20261029-150547-7238/hdfs-adhoc-30/.specula-output/spec/output/hunt/MC_hunt_s4_replacement_bfs_cex.json"
+29146 states generated, 6881 distinct states found, 2013 states left on queue.
+The depth of the complete state graph search is 14.
+Finished in 02s at (2026-10-29 21:00:10)
+Trace exploration spec path: ./MC_TTrace_1793307607.tla
+pRegd = <<TRUE, FALSE>>
+/\ lastActiveClaimTxId = <<0, -1>>
+/\ bpStopped = <<FALSE, FALSE>>
+/\ hsResp = <<(n1 :> "none" @@ n2 :> "none"), (n1 :> "none" @@ n2 :> "none")>>
+/\ bposReg = 2
+
+State 14: <MCTargetCheck(1) line 114, col 36 to line 114, col 88 of module MC>
+/\ bpNSInfo = <<TRUE, TRUE>>
+/\ hbResp = << ( n1 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] @@
+     n2 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] ),
+   ( n1 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] @@
+     n2 :> [st |-> "none", txid |-> -1, cmd |-> <<>>] ) >>
+/\ curInc = 2
+/\ targetFired = TRUE
+/\ bpServiceToActive = <<n1, None>>
+/\ nnTxid = (n1 :> 0 @@ n2 :> 0)
+/\ cmdQ = <<(n1 :> <<>> @@ n2 :> <<>>), (n1 :> <<>> @@ n2 :> <<>>)>>
+/\ actorSt = << (n1 :> "running" @@ n2 :> "connecting"),
+   (n1 :> "connecting" @@ n2 :> "registering") >>
+/\ faults = [ demote |-> 0,
+  promote |-> 0,
+  crash |-> 0,
+  edit |-> 0,
+  exit |-> 0,
+  replicaFail |-> 0 ]
+/\ nnState = (n1 :> "ACTIVE" @@ n2 :> "STANDBY")
+/\ logEnd = 0
+/\ rec = <<[pc |-> "fired", bp |-> 2, nxt |-> 0, by |-> n1]>>
+/\ nnRecQ = (n1 :> <<>> @@ n2 :> <<>>)
+/\ bpRegd = <<TRUE, FALSE>>
+/\ lastActiveClaimTxId = <<0, -1>>
+/\ bpStopped = <<FALSE, FALSE>>
+/\ hsResp = <<(n1 :> "none" @@ n2 :> "none"), (n1 :> "none" @@ n2 :> "none")>>
+/\ bposReg = 2
+
+"CounterExample written: /users/ZhenyuLi/Specula/runs/20261029-150547-7238/hdfs-adhoc-30/.specula-output/spec/output/hunt/MC_hunt_s4_replacement_bfs_cex.json"
+29146 states generated, 6881 distinct states found, 2013 states left on queue.
+The depth of the complete state graph search is 14.
+Finished in 02s at (2026-10-29 21:00:10)
+Trace exploration spec path: ./MC_TTrace_1793307607.tla
+
+[0;32m================================[0m
+[1;33m⚠ Invariant violation found![0m
+[1;33mPlease check log: /users/ZhenyuLi/Specula/runs/20261029-150547-7238/hdfs-adhoc-30/.specula-output/spec/output/hunt/MC_hunt_s4_replacement_bfs.out[0m
+[0;32m================================[0m

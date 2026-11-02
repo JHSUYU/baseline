@@ -1,0 +1,25 @@
+id: zk-adhoc-b4
+system: Apache ZooKeeper
+source_tree: /set/by/run-case.sh
+base_commit: eab16599
+check:
+  file: zookeeper-server/src/main/java/org/apache/zookeeper/server/ZooKeeperServer.java
+  line: 2201
+  method: ZooKeeperServer.checkQuota(String, long, long, String)
+  thrown: org.apache.zookeeper.KeeperException.QuotaExceededException
+  guard: "checkCountQuota && newCount > countLimit && isCountHardLimit   (newCount = currentStats.getCount() + countDiff)"
+workload:
+  module: zookeeper-contrib/zookeeper-contrib-zooinspector
+  test: org.apache.zookeeper.retry.TestAdhocWorkloadB4#run
+  note: the test reaches the check's method and passes; the check does not fail in it
+  jvm_properties: -Dzookeeper.enforceQuota=true
+  maven_profile: full-build
+scope_hint:
+  - org.apache.zookeeper.retry.ZooKeeperRetry
+  - org.apache.zookeeper.server.PrepRequestProcessor
+  - org.apache.zookeeper.server.ZooKeeperServer
+  - org.apache.zookeeper.server.DataTree
+build:
+  env: /set/by/run-case.sh
+  prepare: "mvn -B install -DskipTests -Dmaven.javadoc.skip=true -Pfull-build   (already done once)"
+  test_command: "mvn -B -o test -Pfull-build -pl zookeeper-contrib/zookeeper-contrib-zooinspector -Dtest='<Class>#<method>' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false"

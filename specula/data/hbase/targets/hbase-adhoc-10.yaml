@@ -1,0 +1,22 @@
+id: hbase-adhoc-10
+system: Apache HBase
+source_tree: /set/by/run-case.sh
+base_commit: 1790942bb2
+check:
+  file: hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/AssignmentManager.java
+  line: 765
+  method: AssignmentManager.preTransitCheck(RegionStateNode, RegionState.State[])
+  thrown: org.apache.hadoop.hbase.HBaseIOException
+  guard: "regionNode.getProcedure() != null"
+workload:
+  module: hbase-server
+  test: org.apache.hadoop.hbase.regionserver.TestRegionMove#testDisableAndMove
+  note: the test reaches the check's method and passes; the check does not fail in it
+scope_hint:
+  - org.apache.hadoop.hbase.master.assignment.AssignmentManager
+  - org.apache.hadoop.hbase.master.assignment.RegionStateNode
+  - org.apache.hadoop.hbase.master.assignment.TransitRegionStateProcedure
+build:
+  env: /set/by/run-case.sh
+  prepare: "mvn -B install -DskipTests -Dmaven.javadoc.skip=true -Denforcer.skip=true   (already done once)"
+  test_command: "mvn -B -o surefire:test -pl hbase-server -Dtest='<Class>#<method>' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false"

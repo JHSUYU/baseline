@@ -1,0 +1,21 @@
+id: zk-adhoc-10
+system: Apache ZooKeeper
+source_tree: /set/by/run-case.sh
+base_commit: eab16599
+check:
+  file: zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/ObserverMaster.java
+  line: 371
+  method: ObserverMaster.removeProposedPacket(long)
+  thrown: java.lang.RuntimeException
+  guard: "pkt != null && !(pkt.getZxid() > zxid) && pkt.getZxid() != zxid   (pkt = proposedPkts.peek())"
+workload:
+  module: zookeeper-server
+  test: org.apache.zookeeper.test.ObserverMasterTest#testInOrderCommits[1]
+  note: the test reaches the check's method and passes; the check does not fail in it
+scope_hint:
+  - org.apache.zookeeper.server.quorum.ObserverMaster
+  - org.apache.zookeeper.server.quorum.Follower
+build:
+  env: /set/by/run-case.sh
+  prepare: "mvn -B install -DskipTests -Dmaven.javadoc.skip=true -Pfull-build   (already done once)"
+  test_command: "mvn -B -o test -pl zookeeper-server -Dtest='<Class>#<method>' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false"

@@ -1,0 +1,23 @@
+id: zk-adhoc-b2
+system: Apache ZooKeeper
+source_tree: /set/by/run-case.sh
+base_commit: 1312ae0187
+check:
+  file: zookeeper-server/src/main/java/org/apache/zookeeper/server/FinalRequestProcessor.java
+  line: 674
+  method: FinalRequestProcessor.handleGetDataRequest(Record, ServerCnxn, List<Id>)
+  thrown: org.apache.zookeeper.KeeperException.NoNodeException
+  guard: "n == null   (n = zks.getZKDatabase().getNode(path))"
+workload:
+  module: zookeeper-recipes/zookeeper-recipes-election
+  test: org.apache.zookeeper.recipes.leader.LeaderElectionSupportTest#testNodes3
+  note: the test reaches the check's method and passes; the check does not fail in it
+scope_hint:
+  - org.apache.zookeeper.server.FinalRequestProcessor
+  - org.apache.zookeeper.recipes.leader.LeaderElectionSupport
+  - org.apache.zookeeper.server.DataTree
+  - org.apache.zookeeper.server.NodeHashMapImpl
+build:
+  env: /set/by/run-case.sh
+  prepare: "mvn -B install -DskipTests -Dmaven.javadoc.skip=true -Pfull-build   (already done once)"
+  test_command: "mvn -B -o test -pl zookeeper-recipes/zookeeper-recipes-election -Dtest='<Class>#<method>' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false"

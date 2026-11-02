@@ -1,0 +1,280 @@
+TLC2 Version 2026.10.24.013619 (rev: 2ef2af8)
+Running breadth-first search Model-Checking with fp 1 and seed -1435443113221013180 with 1 worker on 64 cores with 1963MB heap and 1024MB offheap memory [pid: 3732985] (Linux 5.15.0-198-generic amd64, Eclipse Adoptium 21.0.13 64bit, OffHeapDiskFPSet, DiskStateQueue).
+Parsing file /bulk/specula-adhoc/specula-runs/20261029-203205-d4bf/hdfs-adhoc-33/.specula-output/spec/MC.tla
+Parsing file /bulk/specula-adhoc/specula-runs/20261029-203205-d4bf/hdfs-adhoc-33/.specula-output/spec/base.tla
+Parsing file /tmp/tlc-16908866869339352762/_JsonTrace.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/_JsonTrace.tla)
+Parsing file /tmp/tlc-16908866869339352762/_TLCTrace.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/_TLCTrace.tla)
+Parsing file /tmp/tlc-16908866869339352762/Naturals.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Naturals.tla)
+Parsing file /tmp/tlc-16908866869339352762/Sequences.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Sequences.tla)
+Parsing file /tmp/tlc-16908866869339352762/FiniteSets.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/FiniteSets.tla)
+Parsing file /tmp/tlc-16908866869339352762/TLC.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLC.tla)
+Parsing file /tmp/tlc-16908866869339352762/TLCExt.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLCExt.tla)
+Parsing file /tmp/tlc-16908866869339352762/Json.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Json.tla)
+Parsing file /tmp/tlc-16908866869339352762/Integers.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Integers.tla)
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module TLC
+Semantic processing of module base
+Semantic processing of module Integers
+Semantic processing of module TLCExt
+Semantic processing of module Json
+Semantic processing of module _JsonTrace
+Semantic processing of module _TLCTrace
+Semantic processing of module MC
+Linting of module base
+Linting of module TLCExt
+Linting of module Json
+Linting of module _JsonTrace
+Linting of module _TLCTrace
+Linting of module MC
+Starting... (2026-11-02 19:11:50)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-11-02 19:11:50.
+Error: Invariant TargetSafe is violated.
+Error: The behavior up to this point is:
+State 1: <Initial predicate>
+/\ bpos = ( b1 :> [alive |-> TRUE, svcRun |-> TRUE, listed |-> TRUE, hasId |-> TRUE] @@
+  b2 :> [alive |-> TRUE, svcRun |-> TRUE, listed |-> TRUE, hasId |-> TRUE] )
+/\ snapList = <<>>
+/\ targetFired = FALSE
+/\ configured = {b1, b2}
+/\ rpc = "idle"
+/\ faults = [nnReject |-> 0, nsRemove |-> 0, stop |-> 0]
+/\ dnStop = "none"
+/\ bpMap = {b1, b2}
+/\ wKeys = (v1 :> {})
+/\ nsInfos = <<>>
+/\ dnRun = TRUE
+/\ wi = (v1 :> 0)
+/\ wpc = (v1 :> "none")
+
+State 2: <MCRefreshVolumesSnapshot line 72, col 33 to line 72, col 94 of module MC>
+/\ bpos = ( b1 :> [alive |-> TRUE, svcRun |-> TRUE, listed |-> TRUE, hasId |-> TRUE] @@
+  b2 :> [alive |-> TRUE, svcRun |-> TRUE, listed |-> TRUE, hasId |-> TRUE] )
+/\ snapList = <<b1, b2>>
+/\ targetFired = FALSE
+/\ configured = {b1, b2}
+/\ rpc = "reading"
+/\ faults = [nnReject |-> 0, nsRemove |-> 0, stop |-> 0]
+/\ dnStop = "none"
+/\ bpMap = {b1, b2}
+/\ wKeys = (v1 :> {})
+/\ nsInfos = <<>>
+/\ dnRun = TRUE
+/\ wi = (v1 :> 0)
+/\ wpc = (v1 :> "none")
+
+State 3: <MCRefreshVolumesReadNsInfo line 73, col 33 to line 73, col 94 of module MC>
+/\ bpos = ( b1 :> [alive |-> TRUE, svcRun |-> TRUE, listed |-> TRUE, hasId |-> TRUE] @@
+  b2 :> [alive |-> TRUE, svcRun |-> TRUE, listed |-> TRUE, hasId |-> TRUE] )
+/\ snapList = <<b1, b2>>
+/\ targetFired = FALSE
+/\ configured = {b1, b2}
+/\ rpc = "reading"
+/\ faults = [nnReject |-> 0, nsRemove |-> 0, stop |-> 0]
+/\ dnStop = "none"
+/\ bpMap = {b1, b2}
+/\ wKeys = (v1 :> {})
+/\ nsInfos = <<b1>>
+/\ dnRun = TRUE
+/\ wi = (v1 :> 0)
+/\ wpc = (v1 :> "none")
+
+State 4: <MCRefreshVolumesReadNsInfo line 73, col 33 to line 73, col 94 of module MC>
+/\ bpos = ( b1 :> [alive |-> TRUE, svcRun |-> TRUE, listed |-> TRUE, hasId |-> TRUE] @@
+  b2 :> [alive |-> TRUE, svcRun |-> TRUE, listed |-> TRUE, hasId |-> TRUE] )
+/\ snapList = <<b1, b2>>
+/\ targetFired = FALSE
+/\ configured = {b1, b2}
+/\ rpc = "reading"
+/\ faults = [nnReject |-> 0, nsRemove |-> 0, stop |-> 0]
+/\ dnStop = "none"
+/\ bpMap = {b1, b2}
+/\ wKeys = (v1 :> {})
+/\ nsInfos = <<b1, b2>>
+/\ dnRun = TRUE
+/\ wi = (v1 :> 0)
+/\ wpc = (v1 :> "none")
+
+State 5: <MCRefreshVolumesSubmit line 74, col 33 to line 74, col 94 of module MC>
+/\ bpos = ( b1 :> [alive |-> TRUE, svcRun |-> TRUE, listed |-> TRUE, hasId |-> TRUE] @@
+  b2 :> [alive |-> TRUE, svcRun |-> TRUE, listed |-> TRUE, hasId |-> TRUE] )
+/\ snapList = <<b1, b2>>
+/\ targetFired = FALSE
+/\ configured = {b1, b2}
+/\ rpc = "locked"
+/\ faults = [nnReject |-> 0, nsRemove |-> 0, stop |-> 0]
+/\ dnStop = "none"
+/\ bpMap = {b1, b2}
+/\ wKeys = (v1 :> {})
+/\ nsInfos = <<b1, b2>>
+/\ dnRun = TRUE
+/\ wi = (v1 :> 0)
+/\ wpc = (v1 :> "start")
+
+State 6: <MCLoadStorageDirectory(v1) line 76, col 33 to line 76, col 94 of module MC>
+/\ bpos = ( b1 :> [alive |-> TRUE, svcRun |-> TRUE, listed |-> TRUE, hasId |-> TRUE] @@
+  b2 :> [alive |-> TRUE, svcRun |-> TRUE, listed |-> TRUE, hasId |-> TRUE] )
+/\ snapList = <<b1, b2>>
+/\ targetFired = FALSE
+/\ configured = {b1, b2}
+/\ rpc = "locked"
+/\ faults = [nnReject |-> 0, nsRemove |-> 0, stop |-> 0]
+/\ dnStop = "none"
+/\ bpMap = {b1, b2}
+/\ wKeys = (v1 :> {})
+/\ nsInfos = <<b1, b2>>
+/\ dnRun = TRUE
+/\ wi = (v1 :> 1)
+/\ wpc = (v1 :> "get")
+
+State 7: <MCGetBlockPoolSliceStorage(v1) line 77, col 34 to line 77, col 96 of module MC>
+/\ bpos = ( b1 :> [alive |-> TRUE, svcRun |-> TRUE, listed |-> TRUE, hasId |-> TRUE] @@
+  b2 :> [alive |-> TRUE, svcRun |-> TRUE, listed |-> TRUE, hasId |-> TRUE] )
+/\ snapList = <<b1, b2>>
+/\ targetFired = FALSE
+/\ configured = {b1, b2}
+/\ rpc = "locked"
+/\ faults = [nnReject |-> 0, nsRemove |-> 0, stop |-> 0]
+/\ dnStop = "none"
+/\ bpMap = {b1, b2}
+/\ wKeys = (v1 :> {})
+/\ nsInfos = <<b1, b2>>
+/\ dnRun = TRUE
+/\ wi = (v1 :> 1)
+/\ wpc = (v1 :> "dirs")
+
+State 8: <MCAddBpStorageDirectories(v1) line 78, col 33 to line 78, col 94 of module MC>
+/\ bpos = ( b1 :> [alive |-> TRUE, svcRun |-> TRUE, listed |-> TRUE, hasId |-> TRUE] @@
+  b2 :> [alive |-> TRUE, svcRun |-> TRUE, listed |-> TRUE, hasId |-> TRUE] )
+/\ snapList = <<b1, b2>>
+/\ targetFired = FALSE
+/\ configured = {b1, b2}
+/\ rpc = "locked"
+/\ faults = [nnReject |-> 0, nsRemove |-> 0, stop |-> 0]
+/\ dnStop = "none"
+/\ bpMap = {b1, b2}
+/\ wKeys = (v1 :> {b1})
+/\ nsInfos = <<b1, b2>>
+/\ dnRun = TRUE
+/\ wi = (v1 :> 2)
+/\ wpc = (v1 :> "get")
+
+State 9: <MCGetBlockPoolSliceStorage(v1) line 77, col 34 to line 77, col 96 of module MC>
+/\ bpos = ( b1 :> [alive |-> TRUE, svcRun |-> TRUE, listed |-> TRUE, hasId |-> TRUE] @@
+  b2 :> [alive |-> TRUE, svcRun |-> TRUE, listed |-> TRUE, hasId |-> TRUE] )
+/\ snapList = <<b1, b2>>
+/\ targetFired = FALSE
+/\ configured = {b1, b2}
+/\ rpc = "locked"
+/\ faults = [nnReject |-> 0, nsRemove |-> 0, stop |-> 0]
+/\ dnStop = "none"
+/\ bpMap = {b1, b2}
+/\ wKeys = (v1 :> {b1})
+/\ nsInfos = <<b1, b2>>
+/\ dnRun = TRUE
+/\ wi = (v1 :> 2)
+/\ wpc = (v1 :> "dirs")
+
+State 10: <MCAddBpStorageDirectories(v1) line 78, col 33 to line 78, col 94 of module MC>
+/\ bpos = ( b1 :> [alive |-> TRUE, svcRun |-> TRUE, listed |-> TRUE, hasId |-> TRUE] @@
+  b2 :> [alive |-> TRUE, svcRun |-> TRUE, listed |-> TRUE, hasId |-> TRUE] )
+/\ snapList = <<b1, b2>>
+/\ targetFired = FALSE
+/\ configured = {b1, b2}
+/\ rpc = "locked"
+/\ faults = [nnReject |-> 0, nsRemove |-> 0, stop |-> 0]
+/\ dnStop = "none"
+/\ bpMap = {b1, b2}
+/\ wKeys = (v1 :> {b1, b2})
+/\ nsInfos = <<b1, b2>>
+/\ dnRun = TRUE
+/\ wi = (v1 :> 1)
+/\ wpc = (v1 :> "scan")
+
+State 11: <MCAddBlockPoolAndScan(v1) line 79, col 33 to line 79, col 94 of module MC>
+/\ bpos = ( b1 :> [alive |-> TRUE, svcRun |-> TRUE, listed |-> TRUE, hasId |-> TRUE] @@
+  b2 :> [alive |-> TRUE, svcRun |-> TRUE, listed |-> TRUE, hasId |-> TRUE] )
+/\ snapList = <<b1, b2>>
+/\ targetFired = FALSE
+/\ configured = {b1, b2}
+/\ rpc = "locked"
+/\ faults = [nnReject |-> 0, nsRemove |-> 0, stop |-> 0]
+/\ dnStop = "none"
+/\ bpMap = {b1, b2}
+/\ wKeys = (v1 :> {b1, b2})
+/\ nsInfos = <<b1, b2>>
+/\ dnRun = TRUE
+/\ wi = (v1 :> 2)
+/\ wpc = (v1 :> "scan")
+
+State 12: <MCAddBlockPoolAndScan(v1) line 79, col 33 to line 79, col 94 of module MC>
+/\ bpos = ( b1 :> [alive |-> TRUE, svcRun |-> TRUE, listed |-> TRUE, hasId |-> TRUE] @@
+  b2 :> [alive |-> TRUE, svcRun |-> TRUE, listed |-> TRUE, hasId |-> TRUE] )
+/\ snapList = <<b1, b2>>
+/\ targetFired = FALSE
+/\ configured = {b1, b2}
+/\ rpc = "locked"
+/\ faults = [nnReject |-> 0, nsRemove |-> 0, stop |-> 0]
+/\ dnStop = "none"
+/\ bpMap = {b1, b2}
+/\ wKeys = (v1 :> {b1, b2})
+/\ nsInfos = <<b1, b2>>
+/\ dnRun = TRUE
+/\ wi = (v1 :> 0)
+/\ wpc = (v1 :> "build")
+
+State 13: <MCRefreshNamenodesRemove(b1) line 54, col 5 to line 57, col 51 of module MC>
+/\ bpos = ( b1 :> [alive |-> TRUE, svcRun |-> FALSE, listed |-> TRUE, hasId |-> TRUE] @@
+  b2 :> [alive |-> TRUE, svcRun |-> TRUE, listed |-> TRUE, hasId |-> TRUE] )
+/\ snapList = <<b1, b2>>
+/\ targetFired = FALSE
+/\ configured = {b2}
+/\ rpc = "locked"
+/\ faults = [nnReject |-> 0, nsRemove |-> 1, stop |-> 0]
+/\ dnStop = "none"
+/\ bpMap = {b1, b2}
+/\ wKeys = (v1 :> {b1, b2})
+/\ nsInfos = <<b1, b2>>
+/\ dnRun = TRUE
+/\ wi = (v1 :> 0)
+/\ wpc = (v1 :> "build")
+
+State 14: <MCActorExit(b1) line 82, col 33 to line 82, col 94 of module MC>
+/\ bpos = ( b1 :> [alive |-> FALSE, svcRun |-> FALSE, listed |-> FALSE, hasId |-> TRUE] @@
+  b2 :> [alive |-> TRUE, svcRun |-> TRUE, listed |-> TRUE, hasId |-> TRUE] )
+/\ snapList = <<b1, b2>>
+/\ targetFired = FALSE
+/\ configured = {b2}
+/\ rpc = "locked"
+/\ faults = [nnReject |-> 0, nsRemove |-> 1, stop |-> 0]
+/\ dnStop = "none"
+/\ bpMap = {b2}
+/\ wKeys = (v1 :> {b1, b2})
+/\ nsInfos = <<b1, b2>>
+/\ dnRun = TRUE
+/\ wi = (v1 :> 0)
+/\ wpc = (v1 :> "build")
+
+State 15: <MCTargetCheck(v1) line 80, col 33 to line 80, col 94 of module MC>
+/\ bpos = ( b1 :> [alive |-> FALSE, svcRun |-> FALSE, listed |-> FALSE, hasId |-> TRUE] @@
+  b2 :> [alive |-> TRUE, svcRun |-> TRUE, listed |-> TRUE, hasId |-> TRUE] )
+/\ snapList = <<b1, b2>>
+/\ targetFired = TRUE
+/\ configured = {b2}
+/\ rpc = "locked"
+/\ faults = [nnReject |-> 0, nsRemove |-> 1, stop |-> 0]
+/\ dnStop = "none"
+/\ bpMap = {b2}
+/\ wKeys = (v1 :> {b1, b2})
+/\ nsInfos = <<b1, b2>>
+/\ dnRun = TRUE
+/\ wi = (v1 :> 0)
+/\ wpc = (v1 :> "failed")
+
+"CounterExample written: /bulk/specula-adhoc/specula-runs/20261029-203205-d4bf/hdfs-adhoc-33/.specula-output/spec/output/MC_hunt_nsremove_bfs.json"
+257 states generated, 169 distinct states found, 15 states left on queue.
+The depth of the complete state graph search is 15.
+Finished in 01s at (2026-11-02 19:11:50)
+Trace exploration spec path: ./MC_TTrace_1793646709.tla

@@ -44,40 +44,36 @@ Fixes made while running it on HDFS:
 
 Unit tests: `cd specula && uv sync && .venv/bin/pytest tests/unit -q`. They need Java 21 on `PATH` for one TLC test.
 
-## Results so far (HDFS; 2026-10-30)
+## Results so far (2026-11-02)
 
-The 84 checks are HDFS 36, ZooKeeper 16, HBase 19, Solr 13. **HDFS is in progress:**
-- 24 of 36 runs finished;
-- the first 15 are processed in `data/hdfs/RESULTS.md` (per-phase numbers) and `data/hdfs/CLASSIFICATION.md`;
-- the other systems are not set up yet (`OPERATIONS.md` §7).
+The 84 checks are HDFS 36, ZooKeeper 16, HBase 19, Solr 13.
 
-Each run used the pinned model `claude-opus-5-5[1m]` and Specula's default effort (`max`), on Claude Code CLI 2.1.312.
+**Status:**
+- HDFS: 28 of 36 runs finished.
+- ZooKeeper (15) and HBase (15) are running.
+- Solr is prepared but not started (`OPERATIONS.md` §2, §7).
 
-| case | verdict | wall | runtime | tokens (cached) | cost |
-| --- | --- | --- | --- | --- | ---: |
-| hdfs-adhoc-05 | NOT_REACHED_BOUNDED | 6h01m | 3h18m + Phase 3 unrecorded | 174.7M (168.8M) | $96.71 |
-| hdfs-adhoc-06 | NOT_REACHED_BOUNDED | 9h05m | 4h31m + Phase 3 unrecorded | 328.3M (318.1M) | $178.14 |
-| hdfs-adhoc-07 | REACHED_CONFIRMED | 9h29m | 5h00m + Phase 2.5 unrecorded | 303.2M (294.2M) | $159.65 |
-| hdfs-adhoc-08 | REACHED_CONFIRMED | 9h07m | 1h53m + Phases 1, 4a unrecorded | 253.0M (244.1M) | $148.60 |
-| hdfs-adhoc-09 | REACHED_CONFIRMED | 11h08m | 4h38m + unrecorded | 378.8M (368.1M) | $190.40 |
-| hdfs-adhoc-10 | REACHED_CONFIRMED | 4h43m | 3h52m | 199.4M (192.5M) | $115.54 |
-| hdfs-adhoc-11 | REACHED_CONFIRMED | 11h21m | 5h36m + unrecorded | 470.5M (454.8M) | $259.50 |
-| hdfs-adhoc-14 | REACHED_CONFIRMED | 14h35m | 3h37m + unrecorded | 314.4M (305.6M) | $152.01 |
-| hdfs-adhoc-15 | NOT_REACHED_BOUNDED | 20h01m | 5h56m + unrecorded | 396.9M (385.2M) | $204.79 |
-| hdfs-adhoc-16 | NOT_REACHED_BOUNDED | 11h24m | 7h49m | 355.3M (347.8M) | $152.67 |
-| hdfs-adhoc-19 | NOT_REACHED_BOUNDED | 7h25m | 5h24m | 217.0M (211.2M) | $107.65 |
-| hdfs-adhoc-20 | REACHED_CONFIRMED | 11h04m | 6h23m | 453.8M (437.8M) | $269.16 |
-| hdfs-adhoc-21 | NOT_REACHED_BOUNDED | 6h08m | 4h03m | 164.6M (159.4M) | $90.98 |
-| hdfs-adhoc-22 | NOT_REACHED_BOUNDED | 7h43m | 5h39m | 242.5M (236.2M) | $118.50 |
-| hdfs-adhoc-23 | NOT_REACHED_BOUNDED | 10h20m | 5h33m | 280.4M (272.6M) | $142.13 |
-| **15 runs** | 7 reached, 8 not | | | 4,533M (4,396M) | **$2,386.43** |
+**Setup:** every run used the model `claude-opus-5-5[1m]` and effort `max`, on Claude Code CLI 2.1.312.
 
-How to read the time and cost columns:
-- **Wall time** runs from the case log's first start to its last finish. It includes the account's 5-hour usage-limit waits, 1-8 h per run.
-- **Runtime and cost** are the `Total` row of the run's `summary.md` (every agent session and retry included).
-- **"Unrecorded"** marks a phase whose runtime was not recorded because its session was interrupted (a pause on 2026-10-29). Its tokens and cost are still counted.
+**HDFS results:**
+- Per case, with time, tokens, cost and per-phase numbers: [`data/hdfs/RESULTS.md`](data/hdfs/RESULTS.md).
+- 28 runs: $4,864, 9,098M tokens.
+- 19 REACHED_CONFIRMED, 9 NOT_REACHED_BOUNDED.
 
-**Bugs.** The runs reproduced 17 candidate new bugs, plus known ones: HDFS-17563, HDFS-13441, HDFS-16136, HDFS-15651/13473. The 25 findings with a TLC counterexample have their TLC files, an index and a class each in [`data/hdfs/bugs/`](data/hdfs/bugs/README.md). **Their novelty is not yet independently confirmed and nothing is filed.**
+**Source-verified HDFS bugs that make the ad hoc check fail** ([`data/hdfs/VERIFIED-BUGS.md`](data/hdfs/VERIFIED-BUGS.md)). Each was reviewed by an independent verifier against the code, and the decisive code was read again by the operator. None is reported upstream or fixed on trunk.
+
+| tier | case/finding | bug | impact |
+| --- | --- | --- | --- |
+| A | 07/MC-1 | JournalNode purge marks a restarted JN's live segment `.stale` | an acknowledged edit is lost after failover |
+| A | 11/MC-4 | `FileChecksumHelper` retry does not restore `remaining` | `getFileChecksum` silently returns a wrong checksum |
+| A | 38/MC-1 | LAZY_PERSIST inherited by existing files | append refused; the scrubber deletes DISK files |
+| A | 24/MC-2 | a disk formatted during an unfinalized upgrade gets the new cTime and no `previous/` | the documented rollback cannot complete |
+| A | 08/MC-1 | epoch selection reads only a quorum's promises | a JN fences the new writer for its whole term |
+| B | 08/MC-2, 24/CR-6, 24/MC-3, 11/MC-1, 14/MC-1, 26/MC-1 | rollback, volume-failure, rolling-upgrade, safe-mode, derived-QOP and DN-upgrade defects | narrower triggers or lower severity |
+
+**Caveat:** most HDFS runs were not fully independent. Claude Code's auto-memory let agents read notes from earlier runs on the same node until 2026-11-02, when it was turned off. The ZooKeeper, HBase and Solr runs are clean.
+
+**Preparation of the other systems:** each `data/<system>/` holds the inventory, the targets, the ported workloads (with porting records) and `baseline/REACH.tsv` (every workload passes on upstream and reaches its check method; Solr's case 22 is blocked).
 
 ## Reproducing a bug's counterexample
 

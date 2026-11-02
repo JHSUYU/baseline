@@ -1,0 +1,2772 @@
+TLC2 Version 2026.10.24.013619 (rev: 2ef2af8)
+Running breadth-first search Model-Checking with fp 69 and seed -2118758830438163146 with 1 worker on 64 cores with 2731MB heap and 64MB offheap memory [pid: 411918] (Linux 5.15.0-198-generic amd64, Eclipse Adoptium 17.0.21 64bit, MSBDiskFPSet, DiskStateQueue).
+Parsing file /tmp/hdfs-adhoc-35/p3/round2/MC.tla
+Parsing file /tmp/hdfs-adhoc-35/p3/round2/base.tla
+Parsing file /tmp/tlc-296350306624244702/_TLCTrace.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/_TLCTrace.tla)
+Parsing file /tmp/tlc-296350306624244702/Integers.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Integers.tla)
+Parsing file /tmp/tlc-296350306624244702/FiniteSets.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/FiniteSets.tla)
+Parsing file /tmp/tlc-296350306624244702/TLC.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLC.tla)
+Parsing file /tmp/tlc-296350306624244702/Naturals.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Naturals.tla)
+Parsing file /tmp/tlc-296350306624244702/Sequences.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Sequences.tla)
+Parsing file /tmp/tlc-296350306624244702/TLCExt.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLCExt.tla)
+Semantic processing of module Naturals
+Semantic processing of module Integers
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module TLC
+Semantic processing of module base
+Semantic processing of module TLCExt
+Semantic processing of module _TLCTrace
+Semantic processing of module MC
+Linting of module base
+Linting of module TLCExt
+Linting of module _TLCTrace
+Linting of module MC
+Starting... (2026-10-30 05:30:38)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-10-30 05:30:38.
+Error: Invariant NotFiredByMain is violated.
+Error: The behavior up to this point is:
+State 1: <Initial predicate>
+/\ startOpt = "REGULAR"
+/\ dn = "down"
+/\ fc = [diskFail |-> 0, hotSwap |-> 0, restart |-> 0, interrupt |-> 0, bpssFail |-> 0]
+/\ mainPending = {}
+/\ prev = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  a1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ sLV = "L0"
+/\ mainOk = {}
+/\ targetFired = FALSE
+/\ disk = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "C", lv |-> "CUR", nsid |-> "NONE", uuid |-> 1],
+  a1 |-> [cid |-> "NONE", lv |-> "PRE", nsid |-> "N", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ ld = ( <<"main", "-">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] )
+/\ sNSID = "0"
+/\ sCID = ""
+/\ fireInfo = [ fileLv |-> "-",
+  kind |-> "-",
+  fileCid |-> "-",
+  loc |-> "-",
+  dsCid |-> "-",
+  nnCid |-> "-" ]
+/\ loaded = {}
+/\ confDirs = {"p1", "d1"}
+/\ dnUuid = 0
+/\ mainJoin = {}
+
+State 2: <MCDataNodeStart line 77, col 33 to line 77, col 61 of module MC>
+/\ startOpt = "REGULAR"
+/\ dn = "init"
+/\ fc = [diskFail |-> 0, hotSwap |-> 0, restart |-> 0, interrupt |-> 0, bpssFail |-> 0]
+/\ mainPending = {"p1", "d1"}
+/\ prev = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  a1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ sLV = "L0"
+/\ mainOk = {}
+/\ targetFired = FALSE
+/\ disk = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "C", lv |-> "CUR", nsid |-> "NONE", uuid |-> 1],
+  a1 |-> [cid |-> "NONE", lv |-> "PRE", nsid |-> "N", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ ld = ( <<"main", "-">> :>
+      [ ns |-> "C",
+        pc |-> "loop",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] )
+/\ sNSID = "0"
+/\ sCID = ""
+/\ fireInfo = [ fileLv |-> "-",
+  kind |-> "-",
+  fileCid |-> "-",
+  loc |-> "-",
+  dsCid |-> "-",
+  nnCid |-> "-" ]
+/\ loaded = {}
+/\ confDirs = {"p1", "d1"}
+/\ dnUuid = 0
+/\ mainJoin = {}
+
+State 3: <MCLoadDataStorageNext("p1") line 78, col 33 to line 78, col 70 of module MC>
+/\ startOpt = "REGULAR"
+/\ dn = "init"
+/\ fc = [diskFail |-> 0, hotSwap |-> 0, restart |-> 0, interrupt |-> 0, bpssFail |-> 0]
+/\ mainPending = {"d1"}
+/\ prev = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  a1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ sLV = "L0"
+/\ mainOk = {}
+/\ targetFired = FALSE
+/\ disk = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "C", lv |-> "CUR", nsid |-> "NONE", uuid |-> 1],
+  a1 |-> [cid |-> "NONE", lv |-> "PRE", nsid |-> "N", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ ld = ( <<"main", "-">> :>
+      [ ns |-> "C",
+        pc |-> "analyze",
+        loc |-> "p1",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] )
+/\ sNSID = "0"
+/\ sCID = ""
+/\ fireInfo = [ fileLv |-> "-",
+  kind |-> "-",
+  fileCid |-> "-",
+  loc |-> "-",
+  dsCid |-> "-",
+  nnCid |-> "-" ]
+/\ loaded = {}
+/\ confDirs = {"p1", "d1"}
+/\ dnUuid = 0
+/\ mainJoin = {}
+
+State 4: <MCAnalyzeStorage(<<"main", "-">>) line 85, col 27 to line 85, col 59 of module MC>
+/\ startOpt = "REGULAR"
+/\ dn = "init"
+/\ fc = [diskFail |-> 0, hotSwap |-> 0, restart |-> 0, interrupt |-> 0, bpssFail |-> 0]
+/\ mainPending = {"d1"}
+/\ prev = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  a1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ sLV = "L0"
+/\ mainOk = {}
+/\ targetFired = FALSE
+/\ disk = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "C", lv |-> "CUR", nsid |-> "NONE", uuid |-> 1],
+  a1 |-> [cid |-> "NONE", lv |-> "PRE", nsid |-> "N", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ ld = ( <<"main", "-">> :>
+      [ ns |-> "C",
+        pc |-> "regLV",
+        loc |-> "p1",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] )
+/\ sNSID = "0"
+/\ sCID = ""
+/\ fireInfo = [ fileLv |-> "-",
+  kind |-> "-",
+  fileCid |-> "-",
+  loc |-> "-",
+  dsCid |-> "-",
+  nnCid |-> "-" ]
+/\ loaded = {}
+/\ confDirs = {"p1", "d1"}
+/\ dnUuid = 0
+/\ mainJoin = {}
+
+State 5: <MCServiceLV(<<"main", "-">>) line 102, col 27 to line 102, col 54 of module MC>
+/\ startOpt = "REGULAR"
+/\ dn = "init"
+/\ fc = [diskFail |-> 0, hotSwap |-> 0, restart |-> 0, interrupt |-> 0, bpssFail |-> 0]
+/\ mainPending = {"d1"}
+/\ prev = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  a1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ sLV = "CUR"
+/\ mainOk = {}
+/\ targetFired = FALSE
+/\ disk = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "C", lv |-> "CUR", nsid |-> "NONE", uuid |-> 1],
+  a1 |-> [cid |-> "NONE", lv |-> "PRE", nsid |-> "N", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ ld = ( <<"main", "-">> :>
+      [ ns |-> "C",
+        pc |-> "regWrite",
+        loc |-> "p1",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] )
+/\ sNSID = "0"
+/\ sCID = ""
+/\ fireInfo = [ fileLv |-> "-",
+  kind |-> "-",
+  fileCid |-> "-",
+  loc |-> "-",
+  dsCid |-> "-",
+  nnCid |-> "-" ]
+/\ loaded = {}
+/\ confDirs = {"p1", "d1"}
+/\ dnUuid = 0
+/\ mainJoin = {}
+
+State 6: <MCWriteLoaded(<<"main", "-">>) line 103, col 27 to line 103, col 56 of module MC>
+/\ startOpt = "REGULAR"
+/\ dn = "init"
+/\ fc = [diskFail |-> 0, hotSwap |-> 0, restart |-> 0, interrupt |-> 0, bpssFail |-> 0]
+/\ mainPending = {"d1"}
+/\ prev = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  a1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ sLV = "CUR"
+/\ mainOk = {"p1"}
+/\ targetFired = FALSE
+/\ disk = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "C", lv |-> "CUR", nsid |-> "NONE", uuid |-> 1],
+  a1 |-> [cid |-> "NONE", lv |-> "PRE", nsid |-> "N", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ ld = ( <<"main", "-">> :>
+      [ ns |-> "C",
+        pc |-> "loop",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] )
+/\ sNSID = "0"
+/\ sCID = ""
+/\ fireInfo = [ fileLv |-> "-",
+  kind |-> "-",
+  fileCid |-> "-",
+  loc |-> "-",
+  dsCid |-> "-",
+  nnCid |-> "-" ]
+/\ loaded = {"p1"}
+/\ confDirs = {"p1", "d1"}
+/\ dnUuid = 0
+/\ mainJoin = {}
+
+State 7: <MCLoadDataStorageNext("d1") line 78, col 33 to line 78, col 70 of module MC>
+/\ startOpt = "REGULAR"
+/\ dn = "init"
+/\ fc = [diskFail |-> 0, hotSwap |-> 0, restart |-> 0, interrupt |-> 0, bpssFail |-> 0]
+/\ mainPending = {}
+/\ prev = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  a1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ sLV = "CUR"
+/\ mainOk = {"p1"}
+/\ targetFired = FALSE
+/\ disk = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "C", lv |-> "CUR", nsid |-> "NONE", uuid |-> 1],
+  a1 |-> [cid |-> "NONE", lv |-> "PRE", nsid |-> "N", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ ld = ( <<"main", "-">> :>
+      [ ns |-> "C",
+        pc |-> "analyze",
+        loc |-> "d1",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] )
+/\ sNSID = "0"
+/\ sCID = ""
+/\ fireInfo = [ fileLv |-> "-",
+  kind |-> "-",
+  fileCid |-> "-",
+  loc |-> "-",
+  dsCid |-> "-",
+  nnCid |-> "-" ]
+/\ loaded = {"p1"}
+/\ confDirs = {"p1", "d1"}
+/\ dnUuid = 0
+/\ mainJoin = {}
+
+State 8: <MCVolumeIOFailure(<<"main", "-">>) line 40, col 5 to line 42, col 43 of module MC>
+/\ startOpt = "REGULAR"
+/\ dn = "init"
+/\ fc = [diskFail |-> 1, hotSwap |-> 0, restart |-> 0, interrupt |-> 0, bpssFail |-> 0]
+/\ mainPending = {}
+/\ prev = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  a1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ sLV = "CUR"
+/\ mainOk = {"p1"}
+/\ targetFired = FALSE
+/\ disk = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "C", lv |-> "CUR", nsid |-> "NONE", uuid |-> 1],
+  a1 |-> [cid |-> "NONE", lv |-> "PRE", nsid |-> "N", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ ld = ( <<"main", "-">> :>
+      [ ns |-> "C",
+        pc |-> "loop",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] )
+/\ sNSID = "0"
+/\ sCID = ""
+/\ fireInfo = [ fileLv |-> "-",
+  kind |-> "-",
+  fileCid |-> "-",
+  loc |-> "-",
+  dsCid |-> "-",
+  nnCid |-> "-" ]
+/\ loaded = {"p1"}
+/\ confDirs = {"p1", "d1"}
+/\ dnUuid = 0
+/\ mainJoin = {}
+
+State 9: <MCLoadDataStorageEndLoop line 79, col 33 to line 79, col 70 of module MC>
+/\ startOpt = "REGULAR"
+/\ dn = "init"
+/\ fc = [diskFail |-> 1, hotSwap |-> 0, restart |-> 0, interrupt |-> 0, bpssFail |-> 0]
+/\ mainPending = {}
+/\ prev = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  a1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ sLV = "CUR"
+/\ mainOk = {"p1"}
+/\ targetFired = FALSE
+/\ disk = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "C", lv |-> "CUR", nsid |-> "NONE", uuid |-> 1],
+  a1 |-> [cid |-> "NONE", lv |-> "PRE", nsid |-> "N", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ ld = ( <<"main", "-">> :>
+      [ ns |-> "C",
+        pc |-> "join",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] )
+/\ sNSID = "0"
+/\ sCID = ""
+/\ fireInfo = [ fileLv |-> "-",
+  kind |-> "-",
+  fileCid |-> "-",
+  loc |-> "-",
+  dsCid |-> "-",
+  nnCid |-> "-" ]
+/\ loaded = {"p1"}
+/\ confDirs = {"p1", "d1"}
+/\ dnUuid = 0
+/\ mainJoin = {}
+
+State 10: <MCLoadBlockPoolSliceStorage({}) line 65, col 5 to line 67, col 56 of module MC>
+/\ startOpt = "REGULAR"
+/\ dn = "init"
+/\ fc = [diskFail |-> 1, hotSwap |-> 0, restart |-> 0, interrupt |-> 0, bpssFail |-> 0]
+/\ mainPending = {}
+/\ prev = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  a1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ sLV = "CUR"
+/\ mainOk = {"p1"}
+/\ targetFired = FALSE
+/\ disk = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "C", lv |-> "CUR", nsid |-> "NONE", uuid |-> 1],
+  a1 |-> [cid |-> "NONE", lv |-> "PRE", nsid |-> "N", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ ld = ( <<"main", "-">> :>
+      [ ns |-> "C",
+        pc |-> "uuid",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] )
+/\ sNSID = "0"
+/\ sCID = ""
+/\ fireInfo = [ fileLv |-> "-",
+  kind |-> "-",
+  fileCid |-> "-",
+  loc |-> "-",
+  dsCid |-> "-",
+  nnCid |-> "-" ]
+/\ loaded = {"p1"}
+/\ confDirs = {"p1", "d1"}
+/\ dnUuid = 0
+/\ mainJoin = {}
+
+State 11: <MCCheckDatanodeUuid line 81, col 33 to line 81, col 65 of module MC>
+/\ startOpt = "REGULAR"
+/\ dn = "init"
+/\ fc = [diskFail |-> 1, hotSwap |-> 0, restart |-> 0, interrupt |-> 0, bpssFail |-> 0]
+/\ mainPending = {}
+/\ prev = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  a1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ sLV = "CUR"
+/\ mainOk = {"p1"}
+/\ targetFired = FALSE
+/\ disk = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "C", lv |-> "CUR", nsid |-> "NONE", uuid |-> 1],
+  a1 |-> [cid |-> "NONE", lv |-> "PRE", nsid |-> "N", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ ld = ( <<"main", "-">> :>
+      [ ns |-> "C",
+        pc |-> "fsd",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] )
+/\ sNSID = "0"
+/\ sCID = ""
+/\ fireInfo = [ fileLv |-> "-",
+  kind |-> "-",
+  fileCid |-> "-",
+  loc |-> "-",
+  dsCid |-> "-",
+  nnCid |-> "-" ]
+/\ loaded = {"p1"}
+/\ confDirs = {"p1", "d1"}
+/\ dnUuid = 2
+/\ mainJoin = {}
+
+State 12: <MCInitFsDataset line 82, col 33 to line 82, col 61 of module MC>
+/\ startOpt = "REGULAR"
+/\ dn = "up"
+/\ fc = [diskFail |-> 1, hotSwap |-> 0, restart |-> 0, interrupt |-> 0, bpssFail |-> 0]
+/\ mainPending = {}
+/\ prev = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  a1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ sLV = "CUR"
+/\ mainOk = {}
+/\ targetFired = FALSE
+/\ disk = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "C", lv |-> "CUR", nsid |-> "NONE", uuid |-> 1],
+  a1 |-> [cid |-> "NONE", lv |-> "PRE", nsid |-> "N", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ ld = ( <<"main", "-">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] )
+/\ sNSID = "0"
+/\ sCID = ""
+/\ fireInfo = [ fileLv |-> "-",
+  kind |-> "-",
+  fileCid |-> "-",
+  loc |-> "-",
+  dsCid |-> "-",
+  nnCid |-> "-" ]
+/\ loaded = {"p1"}
+/\ confDirs = {"p1", "d1"}
+/\ dnUuid = 2
+/\ mainJoin = {}
+
+State 13: <MCRefreshVolumes({"d1", "a1"},"C") line 50, col 5 to line 52, col 42 of module MC>
+/\ startOpt = "REGULAR"
+/\ dn = "up"
+/\ fc = [diskFail |-> 1, hotSwap |-> 1, restart |-> 0, interrupt |-> 0, bpssFail |-> 0]
+/\ mainPending = {}
+/\ prev = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  a1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ sLV = "CUR"
+/\ mainOk = {}
+/\ targetFired = FALSE
+/\ disk = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "C", lv |-> "CUR", nsid |-> "NONE", uuid |-> 1],
+  a1 |-> [cid |-> "NONE", lv |-> "PRE", nsid |-> "N", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ ld = ( <<"main", "-">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "d1">> :>
+      [ ns |-> "C",
+        pc |-> "analyze",
+        loc |-> "d1",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "a1">> :>
+      [ ns |-> "C",
+        pc |-> "analyze",
+        loc |-> "a1",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] )
+/\ sNSID = "0"
+/\ sCID = ""
+/\ fireInfo = [ fileLv |-> "-",
+  kind |-> "-",
+  fileCid |-> "-",
+  loc |-> "-",
+  dsCid |-> "-",
+  nnCid |-> "-" ]
+/\ loaded = {"p1"}
+/\ confDirs = {"p1", "d1", "a1"}
+/\ dnUuid = 2
+/\ mainJoin = {}
+
+State 14: <MCAnalyzeStorage(<<"hs", "d1">>) line 85, col 27 to line 85, col 59 of module MC>
+/\ startOpt = "REGULAR"
+/\ dn = "up"
+/\ fc = [diskFail |-> 1, hotSwap |-> 1, restart |-> 0, interrupt |-> 0, bpssFail |-> 0]
+/\ mainPending = {}
+/\ prev = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  a1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ sLV = "CUR"
+/\ mainOk = {}
+/\ targetFired = FALSE
+/\ disk = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "C", lv |-> "CUR", nsid |-> "NONE", uuid |-> 1],
+  a1 |-> [cid |-> "NONE", lv |-> "PRE", nsid |-> "N", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ ld = ( <<"main", "-">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "d1">> :>
+      [ ns |-> "C",
+        pc |-> "readLV",
+        loc |-> "d1",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "a1">> :>
+      [ ns |-> "C",
+        pc |-> "analyze",
+        loc |-> "a1",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] )
+/\ sNSID = "0"
+/\ sCID = ""
+/\ fireInfo = [ fileLv |-> "-",
+  kind |-> "-",
+  fileCid |-> "-",
+  loc |-> "-",
+  dsCid |-> "-",
+  nnCid |-> "-" ]
+/\ loaded = {"p1"}
+/\ confDirs = {"p1", "d1", "a1"}
+/\ dnUuid = 2
+/\ mainJoin = {}
+
+State 15: <MCAnalyzeStorage(<<"hs", "a1">>) line 85, col 27 to line 85, col 59 of module MC>
+/\ startOpt = "REGULAR"
+/\ dn = "up"
+/\ fc = [diskFail |-> 1, hotSwap |-> 1, restart |-> 0, interrupt |-> 0, bpssFail |-> 0]
+/\ mainPending = {}
+/\ prev = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  a1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ sLV = "CUR"
+/\ mainOk = {}
+/\ targetFired = FALSE
+/\ disk = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "C", lv |-> "CUR", nsid |-> "NONE", uuid |-> 1],
+  a1 |-> [cid |-> "NONE", lv |-> "PRE", nsid |-> "N", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ ld = ( <<"main", "-">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "d1">> :>
+      [ ns |-> "C",
+        pc |-> "readLV",
+        loc |-> "d1",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "a1">> :>
+      [ ns |-> "C",
+        pc |-> "readLV",
+        loc |-> "a1",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] )
+/\ sNSID = "0"
+/\ sCID = ""
+/\ fireInfo = [ fileLv |-> "-",
+  kind |-> "-",
+  fileCid |-> "-",
+  loc |-> "-",
+  dsCid |-> "-",
+  nnCid |-> "-" ]
+/\ loaded = {"p1"}
+/\ confDirs = {"p1", "d1", "a1"}
+/\ dnUuid = 2
+/\ mainJoin = {}
+
+State 16: <MCReadLV(<<"hs", "a1">>) line 94, col 27 to line 94, col 51 of module MC>
+/\ startOpt = "REGULAR"
+/\ dn = "up"
+/\ fc = [diskFail |-> 1, hotSwap |-> 1, restart |-> 0, interrupt |-> 0, bpssFail |-> 0]
+/\ mainPending = {}
+/\ prev = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  a1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ sLV = "PRE"
+/\ mainOk = {}
+/\ targetFired = FALSE
+/\ disk = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "C", lv |-> "CUR", nsid |-> "NONE", uuid |-> 1],
+  a1 |-> [cid |-> "NONE", lv |-> "PRE", nsid |-> "N", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ ld = ( <<"main", "-">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "d1">> :>
+      [ ns |-> "C",
+        pc |-> "readLV",
+        loc |-> "d1",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "a1">> :>
+      [ ns |-> "C",
+        pc |-> "readCID",
+        loc |-> "a1",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] )
+/\ sNSID = "0"
+/\ sCID = ""
+/\ fireInfo = [ fileLv |-> "-",
+  kind |-> "-",
+  fileCid |-> "-",
+  loc |-> "-",
+  dsCid |-> "-",
+  nnCid |-> "-" ]
+/\ loaded = {"p1"}
+/\ confDirs = {"p1", "d1", "a1"}
+/\ dnUuid = 2
+/\ mainJoin = {}
+
+State 17: <MCReadCID(<<"hs", "a1">>) line 95, col 27 to line 95, col 52 of module MC>
+/\ startOpt = "REGULAR"
+/\ dn = "up"
+/\ fc = [diskFail |-> 1, hotSwap |-> 1, restart |-> 0, interrupt |-> 0, bpssFail |-> 0]
+/\ mainPending = {}
+/\ prev = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  a1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ sLV = "PRE"
+/\ mainOk = {}
+/\ targetFired = FALSE
+/\ disk = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "C", lv |-> "CUR", nsid |-> "NONE", uuid |-> 1],
+  a1 |-> [cid |-> "NONE", lv |-> "PRE", nsid |-> "N", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ ld = ( <<"main", "-">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "d1">> :>
+      [ ns |-> "C",
+        pc |-> "readLV",
+        loc |-> "d1",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "a1">> :>
+      [ ns |-> "C",
+        pc |-> "readNSID",
+        loc |-> "a1",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] )
+/\ sNSID = "0"
+/\ sCID = ""
+/\ fireInfo = [ fileLv |-> "-",
+  kind |-> "-",
+  fileCid |-> "-",
+  loc |-> "-",
+  dsCid |-> "-",
+  nnCid |-> "-" ]
+/\ loaded = {"p1"}
+/\ confDirs = {"p1", "d1", "a1"}
+/\ dnUuid = 2
+/\ mainJoin = {}
+
+State 18: <MCReadNSID(<<"hs", "a1">>) line 96, col 27 to line 96, col 53 of module MC>
+/\ startOpt = "REGULAR"
+/\ dn = "up"
+/\ fc = [diskFail |-> 1, hotSwap |-> 1, restart |-> 0, interrupt |-> 0, bpssFail |-> 0]
+/\ mainPending = {}
+/\ prev = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  a1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ sLV = "PRE"
+/\ mainOk = {}
+/\ targetFired = FALSE
+/\ disk = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "C", lv |-> "CUR", nsid |-> "NONE", uuid |-> 1],
+  a1 |-> [cid |-> "NONE", lv |-> "PRE", nsid |-> "N", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ ld = ( <<"main", "-">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "d1">> :>
+      [ ns |-> "C",
+        pc |-> "readLV",
+        loc |-> "d1",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "a1">> :>
+      [ ns |-> "C",
+        pc |-> "fed",
+        loc |-> "a1",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] )
+/\ sNSID = "N"
+/\ sCID = ""
+/\ fireInfo = [ fileLv |-> "-",
+  kind |-> "-",
+  fileCid |-> "-",
+  loc |-> "-",
+  dsCid |-> "-",
+  nnCid |-> "-" ]
+/\ loaded = {"p1"}
+/\ confDirs = {"p1", "d1", "a1"}
+/\ dnUuid = 2
+/\ mainJoin = {}
+
+State 19: <MCTransitionFed(<<"hs", "a1">>) line 97, col 27 to line 97, col 58 of module MC>
+/\ startOpt = "REGULAR"
+/\ dn = "up"
+/\ fc = [diskFail |-> 1, hotSwap |-> 1, restart |-> 0, interrupt |-> 0, bpssFail |-> 0]
+/\ mainPending = {}
+/\ prev = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  a1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ sLV = "PRE"
+/\ mainOk = {}
+/\ targetFired = FALSE
+/\ disk = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "C", lv |-> "CUR", nsid |-> "NONE", uuid |-> 1],
+  a1 |-> [cid |-> "NONE", lv |-> "PRE", nsid |-> "N", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ ld = ( <<"main", "-">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "d1">> :>
+      [ ns |-> "C",
+        pc |-> "readLV",
+        loc |-> "d1",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "a1">> :>
+      [ ns |-> "C",
+        pc |-> "check",
+        loc |-> "a1",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] )
+/\ sNSID = "N"
+/\ sCID = ""
+/\ fireInfo = [ fileLv |-> "-",
+  kind |-> "-",
+  fileCid |-> "-",
+  loc |-> "-",
+  dsCid |-> "-",
+  nnCid |-> "-" ]
+/\ loaded = {"p1"}
+/\ confDirs = {"p1", "d1", "a1"}
+/\ dnUuid = 2
+/\ mainJoin = {}
+
+State 20: <MCReadLV(<<"hs", "d1">>) line 94, col 27 to line 94, col 51 of module MC>
+/\ startOpt = "REGULAR"
+/\ dn = "up"
+/\ fc = [diskFail |-> 1, hotSwap |-> 1, restart |-> 0, interrupt |-> 0, bpssFail |-> 0]
+/\ mainPending = {}
+/\ prev = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  a1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ sLV = "CUR"
+/\ mainOk = {}
+/\ targetFired = FALSE
+/\ disk = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "C", lv |-> "CUR", nsid |-> "NONE", uuid |-> 1],
+  a1 |-> [cid |-> "NONE", lv |-> "PRE", nsid |-> "N", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ ld = ( <<"main", "-">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "d1">> :>
+      [ ns |-> "C",
+        pc |-> "readCID",
+        loc |-> "d1",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "a1">> :>
+      [ ns |-> "C",
+        pc |-> "check",
+        loc |-> "a1",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] )
+/\ sNSID = "N"
+/\ sCID = ""
+/\ fireInfo = [ fileLv |-> "-",
+  kind |-> "-",
+  fileCid |-> "-",
+  loc |-> "-",
+  dsCid |-> "-",
+  nnCid |-> "-" ]
+/\ loaded = {"p1"}
+/\ confDirs = {"p1", "d1", "a1"}
+/\ dnUuid = 2
+/\ mainJoin = {}
+
+State 21: <MCNamespaceCheck(<<"hs", "a1">>) line 98, col 27 to line 98, col 59 of module MC>
+/\ startOpt = "REGULAR"
+/\ dn = "up"
+/\ fc = [diskFail |-> 1, hotSwap |-> 1, restart |-> 0, interrupt |-> 0, bpssFail |-> 0]
+/\ mainPending = {}
+/\ prev = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  a1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ sLV = "CUR"
+/\ mainOk = {}
+/\ targetFired = FALSE
+/\ disk = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "C", lv |-> "CUR", nsid |-> "NONE", uuid |-> 1],
+  a1 |-> [cid |-> "NONE", lv |-> "PRE", nsid |-> "N", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ ld = ( <<"main", "-">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "d1">> :>
+      [ ns |-> "C",
+        pc |-> "readCID",
+        loc |-> "d1",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "a1">> :>
+      [ ns |-> "C",
+        pc |-> "branch",
+        loc |-> "a1",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] )
+/\ sNSID = "N"
+/\ sCID = ""
+/\ fireInfo = [ fileLv |-> "-",
+  kind |-> "-",
+  fileCid |-> "-",
+  loc |-> "-",
+  dsCid |-> "-",
+  nnCid |-> "-" ]
+/\ loaded = {"p1"}
+/\ confDirs = {"p1", "d1", "a1"}
+/\ dnUuid = 2
+/\ mainJoin = {}
+
+State 22: <MCRegularBranch(<<"hs", "a1">>) line 100, col 27 to line 100, col 58 of module MC>
+/\ startOpt = "REGULAR"
+/\ dn = "up"
+/\ fc = [diskFail |-> 1, hotSwap |-> 1, restart |-> 0, interrupt |-> 0, bpssFail |-> 0]
+/\ mainPending = {}
+/\ prev = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  a1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ sLV = "CUR"
+/\ mainOk = {}
+/\ targetFired = FALSE
+/\ disk = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "C", lv |-> "CUR", nsid |-> "NONE", uuid |-> 1],
+  a1 |-> [cid |-> "NONE", lv |-> "PRE", nsid |-> "N", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ ld = ( <<"main", "-">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "d1">> :>
+      [ ns |-> "C",
+        pc |-> "readCID",
+        loc |-> "d1",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "a1">> :>
+      [ ns |-> "C",
+        pc |-> "regLV",
+        loc |-> "a1",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] )
+/\ sNSID = "N"
+/\ sCID = ""
+/\ fireInfo = [ fileLv |-> "-",
+  kind |-> "-",
+  fileCid |-> "-",
+  loc |-> "-",
+  dsCid |-> "-",
+  nnCid |-> "-" ]
+/\ loaded = {"p1"}
+/\ confDirs = {"p1", "d1", "a1"}
+/\ dnUuid = 2
+/\ mainJoin = {}
+
+State 23: <MCServiceLV(<<"hs", "a1">>) line 102, col 27 to line 102, col 54 of module MC>
+/\ startOpt = "REGULAR"
+/\ dn = "up"
+/\ fc = [diskFail |-> 1, hotSwap |-> 1, restart |-> 0, interrupt |-> 0, bpssFail |-> 0]
+/\ mainPending = {}
+/\ prev = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  a1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ sLV = "CUR"
+/\ mainOk = {}
+/\ targetFired = FALSE
+/\ disk = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "C", lv |-> "CUR", nsid |-> "NONE", uuid |-> 1],
+  a1 |-> [cid |-> "NONE", lv |-> "PRE", nsid |-> "N", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ ld = ( <<"main", "-">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "d1">> :>
+      [ ns |-> "C",
+        pc |-> "readCID",
+        loc |-> "d1",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "a1">> :>
+      [ ns |-> "C",
+        pc |-> "regWrite",
+        loc |-> "a1",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] )
+/\ sNSID = "N"
+/\ sCID = ""
+/\ fireInfo = [ fileLv |-> "-",
+  kind |-> "-",
+  fileCid |-> "-",
+  loc |-> "-",
+  dsCid |-> "-",
+  nnCid |-> "-" ]
+/\ loaded = {"p1"}
+/\ confDirs = {"p1", "d1", "a1"}
+/\ dnUuid = 2
+/\ mainJoin = {}
+
+State 24: <MCWriteLoaded(<<"hs", "a1">>) line 103, col 27 to line 103, col 56 of module MC>
+/\ startOpt = "REGULAR"
+/\ dn = "up"
+/\ fc = [diskFail |-> 1, hotSwap |-> 1, restart |-> 0, interrupt |-> 0, bpssFail |-> 0]
+/\ mainPending = {}
+/\ prev = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  a1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ sLV = "CUR"
+/\ mainOk = {}
+/\ targetFired = FALSE
+/\ disk = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "C", lv |-> "CUR", nsid |-> "NONE", uuid |-> 1],
+  a1 |-> [cid |-> "", lv |-> "CUR", nsid |-> "NONE", uuid |-> 2],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ ld = ( <<"main", "-">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "d1">> :>
+      [ ns |-> "C",
+        pc |-> "readCID",
+        loc |-> "d1",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "a1">> :>
+      [ ns |-> "C",
+        pc |-> "built",
+        loc |-> "a1",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] )
+/\ sNSID = "N"
+/\ sCID = ""
+/\ fireInfo = [ fileLv |-> "-",
+  kind |-> "-",
+  fileCid |-> "-",
+  loc |-> "-",
+  dsCid |-> "-",
+  nnCid |-> "-" ]
+/\ loaded = {"p1"}
+/\ confDirs = {"p1", "d1", "a1"}
+/\ dnUuid = 2
+/\ mainJoin = {}
+
+State 25: <MCDataNodeShutdown line 55, col 5 to line 57, col 42 of module MC>
+/\ startOpt = "REGULAR"
+/\ dn = "down"
+/\ fc = [diskFail |-> 1, hotSwap |-> 1, restart |-> 1, interrupt |-> 0, bpssFail |-> 0]
+/\ mainPending = {}
+/\ prev = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  a1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ sLV = "L0"
+/\ mainOk = {}
+/\ targetFired = FALSE
+/\ disk = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "C", lv |-> "CUR", nsid |-> "NONE", uuid |-> 1],
+  a1 |-> [cid |-> "", lv |-> "CUR", nsid |-> "NONE", uuid |-> 2],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ ld = ( <<"main", "-">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] )
+/\ sNSID = "0"
+/\ sCID = ""
+/\ fireInfo = [ fileLv |-> "-",
+  kind |-> "-",
+  fileCid |-> "-",
+  loc |-> "-",
+  dsCid |-> "-",
+  nnCid |-> "-" ]
+/\ loaded = {}
+/\ confDirs = {"p1", "d1", "a1"}
+/\ dnUuid = 0
+/\ mainJoin = {}
+
+State 26: <MCDataNodeStart line 77, col 33 to line 77, col 61 of module MC>
+/\ startOpt = "REGULAR"
+/\ dn = "init"
+/\ fc = [diskFail |-> 1, hotSwap |-> 1, restart |-> 1, interrupt |-> 0, bpssFail |-> 0]
+/\ mainPending = {"p1", "d1", "a1"}
+/\ prev = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  a1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ sLV = "L0"
+/\ mainOk = {}
+/\ targetFired = FALSE
+/\ disk = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "C", lv |-> "CUR", nsid |-> "NONE", uuid |-> 1],
+  a1 |-> [cid |-> "", lv |-> "CUR", nsid |-> "NONE", uuid |-> 2],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ ld = ( <<"main", "-">> :>
+      [ ns |-> "C",
+        pc |-> "loop",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] )
+/\ sNSID = "0"
+/\ sCID = ""
+/\ fireInfo = [ fileLv |-> "-",
+  kind |-> "-",
+  fileCid |-> "-",
+  loc |-> "-",
+  dsCid |-> "-",
+  nnCid |-> "-" ]
+/\ loaded = {}
+/\ confDirs = {"p1", "d1", "a1"}
+/\ dnUuid = 0
+/\ mainJoin = {}
+
+State 27: <MCLoadDataStorageNext("a1") line 78, col 33 to line 78, col 70 of module MC>
+/\ startOpt = "REGULAR"
+/\ dn = "init"
+/\ fc = [diskFail |-> 1, hotSwap |-> 1, restart |-> 1, interrupt |-> 0, bpssFail |-> 0]
+/\ mainPending = {"p1", "d1"}
+/\ prev = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  a1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ sLV = "L0"
+/\ mainOk = {}
+/\ targetFired = FALSE
+/\ disk = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "C", lv |-> "CUR", nsid |-> "NONE", uuid |-> 1],
+  a1 |-> [cid |-> "", lv |-> "CUR", nsid |-> "NONE", uuid |-> 2],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ ld = ( <<"main", "-">> :>
+      [ ns |-> "C",
+        pc |-> "analyze",
+        loc |-> "a1",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] )
+/\ sNSID = "0"
+/\ sCID = ""
+/\ fireInfo = [ fileLv |-> "-",
+  kind |-> "-",
+  fileCid |-> "-",
+  loc |-> "-",
+  dsCid |-> "-",
+  nnCid |-> "-" ]
+/\ loaded = {}
+/\ confDirs = {"p1", "d1", "a1"}
+/\ dnUuid = 0
+/\ mainJoin = {}
+
+State 28: <MCAnalyzeStorage(<<"main", "-">>) line 85, col 27 to line 85, col 59 of module MC>
+/\ startOpt = "REGULAR"
+/\ dn = "init"
+/\ fc = [diskFail |-> 1, hotSwap |-> 1, restart |-> 1, interrupt |-> 0, bpssFail |-> 0]
+/\ mainPending = {"p1", "d1"}
+/\ prev = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  a1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ sLV = "L0"
+/\ mainOk = {}
+/\ targetFired = FALSE
+/\ disk = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "C", lv |-> "CUR", nsid |-> "NONE", uuid |-> 1],
+  a1 |-> [cid |-> "", lv |-> "CUR", nsid |-> "NONE", uuid |-> 2],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ ld = ( <<"main", "-">> :>
+      [ ns |-> "C",
+        pc |-> "readLV",
+        loc |-> "a1",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] )
+/\ sNSID = "0"
+/\ sCID = ""
+/\ fireInfo = [ fileLv |-> "-",
+  kind |-> "-",
+  fileCid |-> "-",
+  loc |-> "-",
+  dsCid |-> "-",
+  nnCid |-> "-" ]
+/\ loaded = {}
+/\ confDirs = {"p1", "d1", "a1"}
+/\ dnUuid = 0
+/\ mainJoin = {}
+
+State 29: <MCReadLV(<<"main", "-">>) line 94, col 27 to line 94, col 51 of module MC>
+/\ startOpt = "REGULAR"
+/\ dn = "init"
+/\ fc = [diskFail |-> 1, hotSwap |-> 1, restart |-> 1, interrupt |-> 0, bpssFail |-> 0]
+/\ mainPending = {"p1", "d1"}
+/\ prev = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  a1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ sLV = "CUR"
+/\ mainOk = {}
+/\ targetFired = FALSE
+/\ disk = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "C", lv |-> "CUR", nsid |-> "NONE", uuid |-> 1],
+  a1 |-> [cid |-> "", lv |-> "CUR", nsid |-> "NONE", uuid |-> 2],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ ld = ( <<"main", "-">> :>
+      [ ns |-> "C",
+        pc |-> "readCID",
+        loc |-> "a1",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] )
+/\ sNSID = "0"
+/\ sCID = ""
+/\ fireInfo = [ fileLv |-> "-",
+  kind |-> "-",
+  fileCid |-> "-",
+  loc |-> "-",
+  dsCid |-> "-",
+  nnCid |-> "-" ]
+/\ loaded = {}
+/\ confDirs = {"p1", "d1", "a1"}
+/\ dnUuid = 0
+/\ mainJoin = {}
+
+State 30: <MCReadCID(<<"main", "-">>) line 95, col 27 to line 95, col 52 of module MC>
+/\ startOpt = "REGULAR"
+/\ dn = "init"
+/\ fc = [diskFail |-> 1, hotSwap |-> 1, restart |-> 1, interrupt |-> 0, bpssFail |-> 0]
+/\ mainPending = {"p1", "d1"}
+/\ prev = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  a1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ sLV = "CUR"
+/\ mainOk = {}
+/\ targetFired = FALSE
+/\ disk = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "C", lv |-> "CUR", nsid |-> "NONE", uuid |-> 1],
+  a1 |-> [cid |-> "", lv |-> "CUR", nsid |-> "NONE", uuid |-> 2],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ ld = ( <<"main", "-">> :>
+      [ ns |-> "C",
+        pc |-> "readNSID",
+        loc |-> "a1",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] )
+/\ sNSID = "0"
+/\ sCID = ""
+/\ fireInfo = [ fileLv |-> "-",
+  kind |-> "-",
+  fileCid |-> "-",
+  loc |-> "-",
+  dsCid |-> "-",
+  nnCid |-> "-" ]
+/\ loaded = {}
+/\ confDirs = {"p1", "d1", "a1"}
+/\ dnUuid = 0
+/\ mainJoin = {}
+
+State 31: <MCReadNSID(<<"main", "-">>) line 96, col 27 to line 96, col 53 of module MC>
+/\ startOpt = "REGULAR"
+/\ dn = "init"
+/\ fc = [diskFail |-> 1, hotSwap |-> 1, restart |-> 1, interrupt |-> 0, bpssFail |-> 0]
+/\ mainPending = {"p1", "d1"}
+/\ prev = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  a1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ sLV = "CUR"
+/\ mainOk = {}
+/\ targetFired = FALSE
+/\ disk = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "C", lv |-> "CUR", nsid |-> "NONE", uuid |-> 1],
+  a1 |-> [cid |-> "", lv |-> "CUR", nsid |-> "NONE", uuid |-> 2],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ ld = ( <<"main", "-">> :>
+      [ ns |-> "C",
+        pc |-> "fed",
+        loc |-> "a1",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] )
+/\ sNSID = "0"
+/\ sCID = ""
+/\ fireInfo = [ fileLv |-> "-",
+  kind |-> "-",
+  fileCid |-> "-",
+  loc |-> "-",
+  dsCid |-> "-",
+  nnCid |-> "-" ]
+/\ loaded = {}
+/\ confDirs = {"p1", "d1", "a1"}
+/\ dnUuid = 2
+/\ mainJoin = {}
+
+State 32: <MCTransitionFed(<<"main", "-">>) line 97, col 27 to line 97, col 58 of module MC>
+/\ startOpt = "REGULAR"
+/\ dn = "init"
+/\ fc = [diskFail |-> 1, hotSwap |-> 1, restart |-> 1, interrupt |-> 0, bpssFail |-> 0]
+/\ mainPending = {"p1", "d1"}
+/\ prev = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  a1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ sLV = "CUR"
+/\ mainOk = {}
+/\ targetFired = FALSE
+/\ disk = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "C", lv |-> "CUR", nsid |-> "NONE", uuid |-> 1],
+  a1 |-> [cid |-> "", lv |-> "CUR", nsid |-> "NONE", uuid |-> 2],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ ld = ( <<"main", "-">> :>
+      [ ns |-> "C",
+        pc |-> "check",
+        loc |-> "a1",
+        fed |-> TRUE,
+        zombie |-> FALSE ] @@
+  <<"hs", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] )
+/\ sNSID = "0"
+/\ sCID = ""
+/\ fireInfo = [ fileLv |-> "-",
+  kind |-> "-",
+  fileCid |-> "-",
+  loc |-> "-",
+  dsCid |-> "-",
+  nnCid |-> "-" ]
+/\ loaded = {}
+/\ confDirs = {"p1", "d1", "a1"}
+/\ dnUuid = 2
+/\ mainJoin = {}
+
+State 33: <MCTargetCheck(<<"main", "-">>) line 99, col 27 to line 99, col 56 of module MC>
+/\ startOpt = "REGULAR"
+/\ dn = "init"
+/\ fc = [diskFail |-> 1, hotSwap |-> 1, restart |-> 1, interrupt |-> 0, bpssFail |-> 0]
+/\ mainPending = {"p1", "d1"}
+/\ prev = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  a1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ sLV = "CUR"
+/\ mainOk = {}
+/\ targetFired = TRUE
+/\ disk = [ p1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0],
+  d1 |-> [cid |-> "C", lv |-> "CUR", nsid |-> "NONE", uuid |-> 1],
+  a1 |-> [cid |-> "", lv |-> "CUR", nsid |-> "NONE", uuid |-> 2],
+  b1 |-> [cid |-> "NONE", lv |-> "NOF", nsid |-> "NONE", uuid |-> 0] ]
+/\ ld = ( <<"main", "-">> :>
+      [ ns |-> "C",
+        pc |-> "loop",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"hs", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "p1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "d1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "a1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] @@
+  <<"task", "b1">> :>
+      [ ns |-> "-",
+        pc |-> "idle",
+        loc |-> "-",
+        fed |-> FALSE,
+        zombie |-> FALSE ] )
+/\ sNSID = "0"
+/\ sCID = ""
+/\ fireInfo = [ fileLv |-> "CUR",
+  kind |-> "main",
+  fileCid |-> "",
+  loc |-> "a1",
+  dsCid |-> "",
+  nnCid |-> "C" ]
+/\ loaded = {}
+/\ confDirs = {"p1", "d1", "a1"}
+/\ dnUuid = 2
+/\ mainJoin = {}
+
+6133 states generated, 3646 distinct states found, 450 states left on queue.
+The depth of the complete state graph search is 33.
+Finished in 01s at (2026-10-30 05:30:39)
+Trace exploration spec path: ./MC_TTrace_1793338237.tla

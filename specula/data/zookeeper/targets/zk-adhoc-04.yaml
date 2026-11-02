@@ -1,0 +1,23 @@
+id: zk-adhoc-04
+system: Apache ZooKeeper
+source_tree: /set/by/run-case.sh
+base_commit: eab16599
+check:
+  file: zookeeper-server/src/main/java/org/apache/zookeeper/server/ZooKeeperServer.java
+  line: 1516
+  method: ZooKeeperServer.processConnectRequest(ServerCnxn, ConnectRequest)
+  thrown: org.apache.zookeeper.server.ServerCnxn.CloseRequestException
+  guard: "request.getLastZxidSeen() > zkDb.dataTree.lastProcessedZxid   (DisconnectReason.CLIENT_ZXID_AHEAD)"
+workload:
+  module: zookeeper-server
+  test: org.apache.zookeeper.test.ReadOnlyModeTest#testSeekForRwServer
+  note: the test reaches the check's method and passes; the check does not fail in it
+scope_hint:
+  - org.apache.zookeeper.server.ZooKeeperServer
+  - org.apache.zookeeper.server.DataTree
+  - org.apache.zookeeper.server.quorum.FollowerZooKeeperServer
+  - org.apache.zookeeper.server.quorum.CommitProcessor
+build:
+  env: /set/by/run-case.sh
+  prepare: "mvn -B install -DskipTests -Dmaven.javadoc.skip=true -Pfull-build   (already done once)"
+  test_command: "mvn -B -o test -pl zookeeper-server -Dtest='<Class>#<method>' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false"

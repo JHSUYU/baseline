@@ -25,9 +25,30 @@ case ${case_id} in
     envsh=${root}/env.sh
     repo=apache/hadoop
     ;;
-  zk-*)    echo "zookeeper is not set up yet (B1)" >&2; exit 2 ;;
-  hbase-*) echo "hbase is not set up yet (B1)" >&2; exit 2 ;;
-  solr-*)  echo "solr is not set up yet (B1)" >&2; exit 2 ;;
+  zk-*)
+    system=zookeeper
+    src=${root}/src/zookeeper   # apache/zookeeper eab16599, only that history (no remote, no newer refs)
+    tree=zookeeper
+    deps=${root}/m2-zookeeper
+    envsh=${root}/zookeeper-env.sh
+    repo=apache/zookeeper
+    ;;
+  hbase-*)
+    system=hbase
+    src=${root}/src/hbase       # apache/hbase 1790942bb2, only that history (no remote, no newer refs)
+    tree=hbase
+    deps=${root}/m2-hbase
+    envsh=${root}/hbase-env.sh
+    repo=apache/hbase
+    ;;
+  solr-*)
+    system=solr
+    src=${root}/src/lucene-solr   # apache/lucene-solr faca81bff1 (branch_8_11), only that history
+    tree=lucene-solr
+    deps=${root}/ivy-solr         # Ivy cache (and the Ivy jar under lib/)
+    envsh=${root}/solr-env.sh
+    repo=apache/lucene-solr
+    ;;
   *) echo "unknown case prefix: ${case_id}" >&2; exit 2 ;;
 esac
 
@@ -49,6 +70,10 @@ if [[ ! -d ${dir} ]]; then
         "${envsh}" > "${dir}/env.sh"
       echo "export SPECULA_CASE_M2=${dir}/deps   # pass -Dmaven.repo.local=\$SPECULA_CASE_M2 if MAVEN_OPTS is overridden" >> "${dir}/env.sh"
       ;;
+    solr)
+      sed -e "s#^export IVY_USER_DIR=.*#export IVY_USER_DIR=${dir}/deps   # this case's Ivy cache; ant ... -Divy_install_path=\$IVY_USER_DIR/lib#" \
+        "${envsh}" > "${dir}/env.sh"
+      ;;
   esac
   # A ported workload (B3) is an untracked file of the case tree only.
   if [[ -d ${sysdir}/workloads/${case_id}/tree ]]; then
@@ -63,6 +88,7 @@ cd "${specula}"
 export PATH=${root}/jdk/jdk-21.0.13+9/bin:${root}/pybin:${HOME}/.local/bin:${PATH}
 export JAVA_HOME=${root}/jdk/jdk-21.0.13+9
 export DISABLE_AUTOUPDATER=1   # keep the pinned CLI version on every node
+export CLAUDE_CODE_DISABLE_AUTO_MEMORY=1   # each run starts from its inputs only: no notes carried over from other runs
 echo "Claude Code CLI: $(claude --version 2>&1 | head -1); model: ${model}"
 # A resume (--run-id) reuses the run's stored artifact and target paths: Specula compares the
 # target path as stored, and runs started before 2026-10-29 stored them under the old v2/ link.

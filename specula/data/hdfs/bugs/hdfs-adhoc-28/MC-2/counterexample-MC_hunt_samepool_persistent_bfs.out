@@ -1,0 +1,2670 @@
+TLC2 Version 2026.10.24.013619 (rev: 2ef2af8)
+Running breadth-first search Model-Checking with fp 24 and seed 3793167174524929229 with 16 workers on 64 cores with 7851MB heap and 14336MB offheap memory [pid: 3615356] (Linux 5.15.0-198-generic amd64, Eclipse Adoptium 21.0.13 64bit, OffHeapDiskFPSet, DiskStateQueue).
+Parsing file /tmp/hdfs28-p3/MC.tla
+Parsing file /tmp/hdfs28-p3/base.tla
+Parsing file /tmp/tlc-17502539674670156370/_TLCTrace.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/_TLCTrace.tla)
+Parsing file /tmp/tlc-17502539674670156370/Naturals.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Naturals.tla)
+Parsing file /tmp/tlc-17502539674670156370/Sequences.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Sequences.tla)
+Parsing file /tmp/tlc-17502539674670156370/FiniteSets.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/FiniteSets.tla)
+Parsing file /tmp/tlc-17502539674670156370/TLC.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLC.tla)
+Parsing file /tmp/tlc-17502539674670156370/TLCExt.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLCExt.tla)
+Parsing file /tmp/tlc-17502539674670156370/Integers.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Integers.tla)
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module TLC
+Semantic processing of module base
+Semantic processing of module Integers
+Semantic processing of module TLCExt
+Semantic processing of module _TLCTrace
+Semantic processing of module MC
+Linting of module base
+Linting of module TLCExt
+Linting of module _TLCTrace
+Linting of module MC
+Starting... (2026-10-29 22:58:03)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-10-29 22:58:04.
+Error: Invariant TargetSafe is violated.
+Error: The behavior up to this point is:
+State 1: <Initial predicate>
+/\ dnPc = (d1 :> "run" @@ d2 :> "run")
+/\ targetFired = FALSE
+/\ cptQ = ( <<d1, 1>> :> <<>> @@
+  <<d1, 2>> :> <<>> @@
+  <<d2, 1>> :> <<>> @@
+  <<d2, 2>> :> <<>> )
+/\ nnDeliv = 0
+/\ stopped = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptSnap = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ actRun = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> TRUE )
+/\ nnBanned = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpActive = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ nnRec = [att |-> 0, done |-> FALSE]
+/\ nnReg = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnChosen = {}
+/\ bpmByPool = (d1 :> 0 @@ d2 :> 0)
+/\ bpNs = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "none" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ nnDead = (d1 :> FALSE @@ d2 :> FALSE)
+/\ rec = << [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ],
+   [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ] >>
+/\ fc = [dnStop |-> 0, nnReject |-> 0, nsMove |-> 0]
+/\ bpmSvcs = (d1 :> {1} @@ d2 :> {1})
+/\ nnRecQ = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpReg = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ refreshPc = (d1 :> "idle" @@ d2 :> "idle")
+/\ actPc = ( <<d1, 1>> :> "conn" @@
+  <<d1, 2>> :> "none" @@
+  <<d2, 1>> :> "conn" @@
+  <<d2, 2>> :> "none" )
+/\ cptCur = ( <<d1, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d1, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] )
+/\ poolLoaded = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpServed = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+
+State 2: <MCActorVersionRequest(<<d1, 1>>) line 73, col 29 to line 73, col 66 of module MC>
+/\ dnPc = (d1 :> "run" @@ d2 :> "run")
+/\ targetFired = FALSE
+/\ cptQ = ( <<d1, 1>> :> <<>> @@
+  <<d1, 2>> :> <<>> @@
+  <<d2, 1>> :> <<>> @@
+  <<d2, 2>> :> <<>> )
+/\ nnDeliv = 0
+/\ stopped = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptSnap = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ actRun = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> TRUE )
+/\ nnBanned = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpActive = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ nnRec = [att |-> 0, done |-> FALSE]
+/\ nnReg = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnChosen = {}
+/\ bpmByPool = (d1 :> 0 @@ d2 :> 0)
+/\ bpNs = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "none" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ nnDead = (d1 :> FALSE @@ d2 :> FALSE)
+/\ rec = << [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ],
+   [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ] >>
+/\ fc = [dnStop |-> 0, nnReject |-> 0, nsMove |-> 0]
+/\ bpmSvcs = (d1 :> {1} @@ d2 :> {1})
+/\ nnRecQ = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpReg = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ refreshPc = (d1 :> "idle" @@ d2 :> "idle")
+/\ actPc = ( <<d1, 1>> :> "hsNs" @@
+  <<d1, 2>> :> "none" @@
+  <<d2, 1>> :> "conn" @@
+  <<d2, 2>> :> "none" )
+/\ cptCur = ( <<d1, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d1, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] )
+/\ poolLoaded = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpServed = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+
+State 3: <MCActorVersionRequest(<<d2, 1>>) line 73, col 29 to line 73, col 66 of module MC>
+/\ dnPc = (d1 :> "run" @@ d2 :> "run")
+/\ targetFired = FALSE
+/\ cptQ = ( <<d1, 1>> :> <<>> @@
+  <<d1, 2>> :> <<>> @@
+  <<d2, 1>> :> <<>> @@
+  <<d2, 2>> :> <<>> )
+/\ nnDeliv = 0
+/\ stopped = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptSnap = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ actRun = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> TRUE )
+/\ nnBanned = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpActive = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ nnRec = [att |-> 0, done |-> FALSE]
+/\ nnReg = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnChosen = {}
+/\ bpmByPool = (d1 :> 0 @@ d2 :> 0)
+/\ bpNs = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "none" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ nnDead = (d1 :> FALSE @@ d2 :> FALSE)
+/\ rec = << [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ],
+   [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ] >>
+/\ fc = [dnStop |-> 0, nnReject |-> 0, nsMove |-> 0]
+/\ bpmSvcs = (d1 :> {1} @@ d2 :> {1})
+/\ nnRecQ = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpReg = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ refreshPc = (d1 :> "idle" @@ d2 :> "idle")
+/\ actPc = ( <<d1, 1>> :> "hsNs" @@
+  <<d1, 2>> :> "none" @@
+  <<d2, 1>> :> "hsNs" @@
+  <<d2, 2>> :> "none" )
+/\ cptCur = ( <<d1, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d1, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] )
+/\ poolLoaded = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpServed = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+
+State 4: <MCActorVerifyNsInfo(<<d1, 1>>) line 74, col 29 to line 74, col 66 of module MC>
+/\ dnPc = (d1 :> "run" @@ d2 :> "run")
+/\ targetFired = FALSE
+/\ cptQ = ( <<d1, 1>> :> <<>> @@
+  <<d1, 2>> :> <<>> @@
+  <<d2, 1>> :> <<>> @@
+  <<d2, 2>> :> <<>> )
+/\ nnDeliv = 0
+/\ stopped = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptSnap = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ actRun = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> TRUE )
+/\ nnBanned = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpActive = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ nnRec = [att |-> 0, done |-> FALSE]
+/\ nnReg = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnChosen = {}
+/\ bpmByPool = (d1 :> 0 @@ d2 :> 0)
+/\ bpNs = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "none" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ nnDead = (d1 :> FALSE @@ d2 :> FALSE)
+/\ rec = << [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ],
+   [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ] >>
+/\ fc = [dnStop |-> 0, nnReject |-> 0, nsMove |-> 0]
+/\ bpmSvcs = (d1 :> {1} @@ d2 :> {1})
+/\ nnRecQ = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpReg = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ refreshPc = (d1 :> "idle" @@ d2 :> "idle")
+/\ actPc = ( <<d1, 1>> :> "hsAdd" @@
+  <<d1, 2>> :> "none" @@
+  <<d2, 1>> :> "hsNs" @@
+  <<d2, 2>> :> "none" )
+/\ cptCur = ( <<d1, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d1, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] )
+/\ poolLoaded = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpServed = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+
+State 5: <MCActorVerifyNsInfo(<<d2, 1>>) line 74, col 29 to line 74, col 66 of module MC>
+/\ dnPc = (d1 :> "run" @@ d2 :> "run")
+/\ targetFired = FALSE
+/\ cptQ = ( <<d1, 1>> :> <<>> @@
+  <<d1, 2>> :> <<>> @@
+  <<d2, 1>> :> <<>> @@
+  <<d2, 2>> :> <<>> )
+/\ nnDeliv = 0
+/\ stopped = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptSnap = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ actRun = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> TRUE )
+/\ nnBanned = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpActive = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ nnRec = [att |-> 0, done |-> FALSE]
+/\ nnReg = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnChosen = {}
+/\ bpmByPool = (d1 :> 0 @@ d2 :> 0)
+/\ bpNs = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ cptPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "none" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ nnDead = (d1 :> FALSE @@ d2 :> FALSE)
+/\ rec = << [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ],
+   [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ] >>
+/\ fc = [dnStop |-> 0, nnReject |-> 0, nsMove |-> 0]
+/\ bpmSvcs = (d1 :> {1} @@ d2 :> {1})
+/\ nnRecQ = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpReg = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ refreshPc = (d1 :> "idle" @@ d2 :> "idle")
+/\ actPc = ( <<d1, 1>> :> "hsAdd" @@
+  <<d1, 2>> :> "none" @@
+  <<d2, 1>> :> "hsAdd" @@
+  <<d2, 2>> :> "none" )
+/\ cptCur = ( <<d1, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d1, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] )
+/\ poolLoaded = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpServed = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+
+State 6: <MCHsAddBlockPool(<<d1, 1>>) line 75, col 29 to line 75, col 66 of module MC>
+/\ dnPc = (d1 :> "run" @@ d2 :> "run")
+/\ targetFired = FALSE
+/\ cptQ = ( <<d1, 1>> :> <<>> @@
+  <<d1, 2>> :> <<>> @@
+  <<d2, 1>> :> <<>> @@
+  <<d2, 2>> :> <<>> )
+/\ nnDeliv = 0
+/\ stopped = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptSnap = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ actRun = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> TRUE )
+/\ nnBanned = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpActive = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ nnRec = [att |-> 0, done |-> FALSE]
+/\ nnReg = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnChosen = {}
+/\ bpmByPool = (d1 :> 1 @@ d2 :> 0)
+/\ bpNs = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ cptPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "none" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ nnDead = (d1 :> FALSE @@ d2 :> FALSE)
+/\ rec = << [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ],
+   [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ] >>
+/\ fc = [dnStop |-> 0, nnReject |-> 0, nsMove |-> 0]
+/\ bpmSvcs = (d1 :> {1} @@ d2 :> {1})
+/\ nnRecQ = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpReg = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ refreshPc = (d1 :> "idle" @@ d2 :> "idle")
+/\ actPc = ( <<d1, 1>> :> "hsStorage" @@
+  <<d1, 2>> :> "none" @@
+  <<d2, 1>> :> "hsAdd" @@
+  <<d2, 2>> :> "none" )
+/\ cptCur = ( <<d1, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d1, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] )
+/\ poolLoaded = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpServed = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+
+State 7: <MCHsAddBlockPool(<<d2, 1>>) line 75, col 29 to line 75, col 66 of module MC>
+/\ dnPc = (d1 :> "run" @@ d2 :> "run")
+/\ targetFired = FALSE
+/\ cptQ = ( <<d1, 1>> :> <<>> @@
+  <<d1, 2>> :> <<>> @@
+  <<d2, 1>> :> <<>> @@
+  <<d2, 2>> :> <<>> )
+/\ nnDeliv = 0
+/\ stopped = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptSnap = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ actRun = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> TRUE )
+/\ nnBanned = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpActive = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ nnRec = [att |-> 0, done |-> FALSE]
+/\ nnReg = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnChosen = {}
+/\ bpmByPool = (d1 :> 1 @@ d2 :> 1)
+/\ bpNs = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ cptPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "none" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ nnDead = (d1 :> FALSE @@ d2 :> FALSE)
+/\ rec = << [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ],
+   [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ] >>
+/\ fc = [dnStop |-> 0, nnReject |-> 0, nsMove |-> 0]
+/\ bpmSvcs = (d1 :> {1} @@ d2 :> {1})
+/\ nnRecQ = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpReg = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ refreshPc = (d1 :> "idle" @@ d2 :> "idle")
+/\ actPc = ( <<d1, 1>> :> "hsStorage" @@
+  <<d1, 2>> :> "none" @@
+  <<d2, 1>> :> "hsStorage" @@
+  <<d2, 2>> :> "none" )
+/\ cptCur = ( <<d1, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d1, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] )
+/\ poolLoaded = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpServed = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+
+State 8: <MCHsInitStorage(<<d1, 1>>) line 76, col 29 to line 76, col 66 of module MC>
+/\ dnPc = (d1 :> "run" @@ d2 :> "run")
+/\ targetFired = FALSE
+/\ cptQ = ( <<d1, 1>> :> <<>> @@
+  <<d1, 2>> :> <<>> @@
+  <<d2, 1>> :> <<>> @@
+  <<d2, 2>> :> <<>> )
+/\ nnDeliv = 0
+/\ stopped = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptSnap = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ actRun = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> TRUE )
+/\ nnBanned = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpActive = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ nnRec = [att |-> 0, done |-> FALSE]
+/\ nnReg = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnChosen = {}
+/\ bpmByPool = (d1 :> 1 @@ d2 :> 1)
+/\ bpNs = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ cptPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "none" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ nnDead = (d1 :> FALSE @@ d2 :> FALSE)
+/\ rec = << [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ],
+   [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ] >>
+/\ fc = [dnStop |-> 0, nnReject |-> 0, nsMove |-> 0]
+/\ bpmSvcs = (d1 :> {1} @@ d2 :> {1})
+/\ nnRecQ = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpReg = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ refreshPc = (d1 :> "idle" @@ d2 :> "idle")
+/\ actPc = ( <<d1, 1>> :> "reg" @@
+  <<d1, 2>> :> "none" @@
+  <<d2, 1>> :> "hsStorage" @@
+  <<d2, 2>> :> "none" )
+/\ cptCur = ( <<d1, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d1, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] )
+/\ poolLoaded = (d1 :> TRUE @@ d2 :> FALSE)
+/\ bpServed = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+
+State 9: <MCHsInitStorage(<<d2, 1>>) line 76, col 29 to line 76, col 66 of module MC>
+/\ dnPc = (d1 :> "run" @@ d2 :> "run")
+/\ targetFired = FALSE
+/\ cptQ = ( <<d1, 1>> :> <<>> @@
+  <<d1, 2>> :> <<>> @@
+  <<d2, 1>> :> <<>> @@
+  <<d2, 2>> :> <<>> )
+/\ nnDeliv = 0
+/\ stopped = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptSnap = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ actRun = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> TRUE )
+/\ nnBanned = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpActive = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ nnRec = [att |-> 0, done |-> FALSE]
+/\ nnReg = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnChosen = {}
+/\ bpmByPool = (d1 :> 1 @@ d2 :> 1)
+/\ bpNs = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ cptPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "none" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ nnDead = (d1 :> FALSE @@ d2 :> FALSE)
+/\ rec = << [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ],
+   [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ] >>
+/\ fc = [dnStop |-> 0, nnReject |-> 0, nsMove |-> 0]
+/\ bpmSvcs = (d1 :> {1} @@ d2 :> {1})
+/\ nnRecQ = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpReg = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ refreshPc = (d1 :> "idle" @@ d2 :> "idle")
+/\ actPc = ( <<d1, 1>> :> "reg" @@
+  <<d1, 2>> :> "none" @@
+  <<d2, 1>> :> "reg" @@
+  <<d2, 2>> :> "none" )
+/\ cptCur = ( <<d1, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d1, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] )
+/\ poolLoaded = (d1 :> TRUE @@ d2 :> TRUE)
+/\ bpServed = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+
+State 10: <MCActorRegister(<<d1, 1>>) line 77, col 29 to line 77, col 66 of module MC>
+/\ dnPc = (d1 :> "run" @@ d2 :> "run")
+/\ targetFired = FALSE
+/\ cptQ = ( <<d1, 1>> :> <<>> @@
+  <<d1, 2>> :> <<>> @@
+  <<d2, 1>> :> <<>> @@
+  <<d2, 2>> :> <<>> )
+/\ nnDeliv = 0
+/\ stopped = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptSnap = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ actRun = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> TRUE )
+/\ nnBanned = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpActive = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ nnRec = [att |-> 0, done |-> FALSE]
+/\ nnReg = (d1 :> TRUE @@ d2 :> FALSE)
+/\ nnChosen = {}
+/\ bpmByPool = (d1 :> 1 @@ d2 :> 1)
+/\ bpNs = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ cptPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "none" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ nnDead = (d1 :> FALSE @@ d2 :> FALSE)
+/\ rec = << [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ],
+   [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ] >>
+/\ fc = [dnStop |-> 0, nnReject |-> 0, nsMove |-> 0]
+/\ bpmSvcs = (d1 :> {1} @@ d2 :> {1})
+/\ nnRecQ = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpReg = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ refreshPc = (d1 :> "idle" @@ d2 :> "idle")
+/\ actPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "none" @@
+  <<d2, 1>> :> "reg" @@
+  <<d2, 2>> :> "none" )
+/\ cptCur = ( <<d1, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d1, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] )
+/\ poolLoaded = (d1 :> TRUE @@ d2 :> TRUE)
+/\ bpServed = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+
+State 11: <MCRefreshStartNew(d1) line 60, col 5 to line 65, col 41 of module MC>
+/\ dnPc = (d1 :> "run" @@ d2 :> "run")
+/\ targetFired = FALSE
+/\ cptQ = ( <<d1, 1>> :> <<>> @@
+  <<d1, 2>> :> <<>> @@
+  <<d2, 1>> :> <<>> @@
+  <<d2, 2>> :> <<>> )
+/\ nnDeliv = 0
+/\ stopped = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptSnap = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ actRun = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> TRUE )
+/\ nnBanned = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpActive = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ nnRec = [att |-> 0, done |-> FALSE]
+/\ nnReg = (d1 :> TRUE @@ d2 :> FALSE)
+/\ nnChosen = {}
+/\ bpmByPool = (d1 :> 1 @@ d2 :> 1)
+/\ bpNs = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ cptPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "loop" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ nnDead = (d1 :> FALSE @@ d2 :> FALSE)
+/\ rec = << [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ],
+   [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ] >>
+/\ fc = [dnStop |-> 0, nnReject |-> 0, nsMove |-> 1]
+/\ bpmSvcs = (d1 :> {1, 2} @@ d2 :> {1})
+/\ nnRecQ = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpReg = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ refreshPc = (d1 :> "step4" @@ d2 :> "idle")
+/\ actPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "conn" @@
+  <<d2, 1>> :> "reg" @@
+  <<d2, 2>> :> "none" )
+/\ cptCur = ( <<d1, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d1, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] )
+/\ poolLoaded = (d1 :> TRUE @@ d2 :> TRUE)
+/\ bpServed = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+
+State 12: <MCRefreshStopOld(d1) line 71, col 29 to line 71, col 66 of module MC>
+/\ dnPc = (d1 :> "run" @@ d2 :> "run")
+/\ targetFired = FALSE
+/\ cptQ = ( <<d1, 1>> :> <<>> @@
+  <<d1, 2>> :> <<>> @@
+  <<d2, 1>> :> <<>> @@
+  <<d2, 2>> :> <<>> )
+/\ nnDeliv = 0
+/\ stopped = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptSnap = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ actRun = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> TRUE )
+/\ nnBanned = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpActive = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ nnRec = [att |-> 0, done |-> FALSE]
+/\ nnReg = (d1 :> TRUE @@ d2 :> FALSE)
+/\ nnChosen = {}
+/\ bpmByPool = (d1 :> 1 @@ d2 :> 1)
+/\ bpNs = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ cptPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "loop" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ nnDead = (d1 :> FALSE @@ d2 :> FALSE)
+/\ rec = << [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ],
+   [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ] >>
+/\ fc = [dnStop |-> 0, nnReject |-> 0, nsMove |-> 1]
+/\ bpmSvcs = (d1 :> {1, 2} @@ d2 :> {1})
+/\ nnRecQ = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpReg = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ refreshPc = (d1 :> "join" @@ d2 :> "idle")
+/\ actPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "conn" @@
+  <<d2, 1>> :> "reg" @@
+  <<d2, 2>> :> "none" )
+/\ cptCur = ( <<d1, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d1, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] )
+/\ poolLoaded = (d1 :> TRUE @@ d2 :> TRUE)
+/\ bpServed = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+
+State 13: <MCActorRegister(<<d2, 1>>) line 77, col 29 to line 77, col 66 of module MC>
+/\ dnPc = (d1 :> "run" @@ d2 :> "run")
+/\ targetFired = FALSE
+/\ cptQ = ( <<d1, 1>> :> <<>> @@
+  <<d1, 2>> :> <<>> @@
+  <<d2, 1>> :> <<>> @@
+  <<d2, 2>> :> <<>> )
+/\ nnDeliv = 0
+/\ stopped = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptSnap = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ actRun = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> TRUE )
+/\ nnBanned = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpActive = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ nnRec = [att |-> 0, done |-> FALSE]
+/\ nnReg = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnChosen = {}
+/\ bpmByPool = (d1 :> 1 @@ d2 :> 1)
+/\ bpNs = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ cptPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "loop" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ nnDead = (d1 :> FALSE @@ d2 :> FALSE)
+/\ rec = << [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ],
+   [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ] >>
+/\ fc = [dnStop |-> 0, nnReject |-> 0, nsMove |-> 1]
+/\ bpmSvcs = (d1 :> {1, 2} @@ d2 :> {1})
+/\ nnRecQ = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpReg = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ refreshPc = (d1 :> "join" @@ d2 :> "idle")
+/\ actPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "conn" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ cptCur = ( <<d1, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d1, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] )
+/\ poolLoaded = (d1 :> TRUE @@ d2 :> TRUE)
+/\ bpServed = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+
+State 14: <MCActorLoop(<<d1, 1>>) line 78, col 29 to line 78, col 66 of module MC>
+/\ dnPc = (d1 :> "run" @@ d2 :> "run")
+/\ targetFired = FALSE
+/\ cptQ = ( <<d1, 1>> :> <<>> @@
+  <<d1, 2>> :> <<>> @@
+  <<d2, 1>> :> <<>> @@
+  <<d2, 2>> :> <<>> )
+/\ nnDeliv = 0
+/\ stopped = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptSnap = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ actRun = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> TRUE )
+/\ nnBanned = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpActive = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ nnRec = [att |-> 0, done |-> FALSE]
+/\ nnReg = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnChosen = {}
+/\ bpmByPool = (d1 :> 1 @@ d2 :> 1)
+/\ bpNs = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ cptPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "loop" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ nnDead = (d1 :> FALSE @@ d2 :> FALSE)
+/\ rec = << [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ],
+   [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ] >>
+/\ fc = [dnStop |-> 0, nnReject |-> 0, nsMove |-> 1]
+/\ bpmSvcs = (d1 :> {1, 2} @@ d2 :> {1})
+/\ nnRecQ = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpReg = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ refreshPc = (d1 :> "join" @@ d2 :> "idle")
+/\ actPc = ( <<d1, 1>> :> "cleanUp" @@
+  <<d1, 2>> :> "conn" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ cptCur = ( <<d1, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d1, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] )
+/\ poolLoaded = (d1 :> TRUE @@ d2 :> TRUE)
+/\ bpServed = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+
+State 15: <MCActorVersionRequest(<<d1, 2>>) line 73, col 29 to line 73, col 66 of module MC>
+/\ dnPc = (d1 :> "run" @@ d2 :> "run")
+/\ targetFired = FALSE
+/\ cptQ = ( <<d1, 1>> :> <<>> @@
+  <<d1, 2>> :> <<>> @@
+  <<d2, 1>> :> <<>> @@
+  <<d2, 2>> :> <<>> )
+/\ nnDeliv = 0
+/\ stopped = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptSnap = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ actRun = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> TRUE )
+/\ nnBanned = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpActive = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ nnRec = [att |-> 0, done |-> FALSE]
+/\ nnReg = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnChosen = {}
+/\ bpmByPool = (d1 :> 1 @@ d2 :> 1)
+/\ bpNs = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ cptPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "loop" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ nnDead = (d1 :> FALSE @@ d2 :> FALSE)
+/\ rec = << [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ],
+   [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ] >>
+/\ fc = [dnStop |-> 0, nnReject |-> 0, nsMove |-> 1]
+/\ bpmSvcs = (d1 :> {1, 2} @@ d2 :> {1})
+/\ nnRecQ = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpReg = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ refreshPc = (d1 :> "join" @@ d2 :> "idle")
+/\ actPc = ( <<d1, 1>> :> "cleanUp" @@
+  <<d1, 2>> :> "hsNs" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ cptCur = ( <<d1, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d1, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] )
+/\ poolLoaded = (d1 :> TRUE @@ d2 :> TRUE)
+/\ bpServed = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+
+State 16: <MCActorVerifyNsInfo(<<d1, 2>>) line 74, col 29 to line 74, col 66 of module MC>
+/\ dnPc = (d1 :> "run" @@ d2 :> "run")
+/\ targetFired = FALSE
+/\ cptQ = ( <<d1, 1>> :> <<>> @@
+  <<d1, 2>> :> <<>> @@
+  <<d2, 1>> :> <<>> @@
+  <<d2, 2>> :> <<>> )
+/\ nnDeliv = 0
+/\ stopped = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptSnap = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ actRun = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> TRUE )
+/\ nnBanned = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpActive = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ nnRec = [att |-> 0, done |-> FALSE]
+/\ nnReg = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnChosen = {}
+/\ bpmByPool = (d1 :> 1 @@ d2 :> 1)
+/\ bpNs = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ cptPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "loop" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ nnDead = (d1 :> FALSE @@ d2 :> FALSE)
+/\ rec = << [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ],
+   [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ] >>
+/\ fc = [dnStop |-> 0, nnReject |-> 0, nsMove |-> 1]
+/\ bpmSvcs = (d1 :> {1, 2} @@ d2 :> {1})
+/\ nnRecQ = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpReg = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ refreshPc = (d1 :> "join" @@ d2 :> "idle")
+/\ actPc = ( <<d1, 1>> :> "cleanUp" @@
+  <<d1, 2>> :> "hsAdd" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ cptCur = ( <<d1, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d1, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] )
+/\ poolLoaded = (d1 :> TRUE @@ d2 :> TRUE)
+/\ bpServed = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+
+State 17: <MCHsAddBlockPool(<<d1, 2>>) line 75, col 29 to line 75, col 66 of module MC>
+/\ dnPc = (d1 :> "run" @@ d2 :> "run")
+/\ targetFired = FALSE
+/\ cptQ = ( <<d1, 1>> :> <<>> @@
+  <<d1, 2>> :> <<>> @@
+  <<d2, 1>> :> <<>> @@
+  <<d2, 2>> :> <<>> )
+/\ nnDeliv = 0
+/\ stopped = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptSnap = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ actRun = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> TRUE )
+/\ nnBanned = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpActive = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ nnRec = [att |-> 0, done |-> FALSE]
+/\ nnReg = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnChosen = {}
+/\ bpmByPool = (d1 :> 2 @@ d2 :> 1)
+/\ bpNs = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ cptPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "loop" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ nnDead = (d1 :> FALSE @@ d2 :> FALSE)
+/\ rec = << [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ],
+   [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ] >>
+/\ fc = [dnStop |-> 0, nnReject |-> 0, nsMove |-> 1]
+/\ bpmSvcs = (d1 :> {1, 2} @@ d2 :> {1})
+/\ nnRecQ = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpReg = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ refreshPc = (d1 :> "join" @@ d2 :> "idle")
+/\ actPc = ( <<d1, 1>> :> "cleanUp" @@
+  <<d1, 2>> :> "hsStorage" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ cptCur = ( <<d1, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d1, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] )
+/\ poolLoaded = (d1 :> TRUE @@ d2 :> TRUE)
+/\ bpServed = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+
+State 18: <MCActorCleanUp(<<d1, 1>>) line 80, col 29 to line 80, col 66 of module MC>
+/\ dnPc = (d1 :> "run" @@ d2 :> "run")
+/\ targetFired = FALSE
+/\ cptQ = ( <<d1, 1>> :> <<>> @@
+  <<d1, 2>> :> <<>> @@
+  <<d2, 1>> :> <<>> @@
+  <<d2, 2>> :> <<>> )
+/\ nnDeliv = 0
+/\ stopped = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptSnap = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ actRun = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> TRUE )
+/\ nnBanned = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpActive = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ nnRec = [att |-> 0, done |-> FALSE]
+/\ nnReg = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnChosen = {}
+/\ bpmByPool = (d1 :> 2 @@ d2 :> 1)
+/\ bpNs = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ cptPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "loop" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ nnDead = (d1 :> FALSE @@ d2 :> FALSE)
+/\ rec = << [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ],
+   [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ] >>
+/\ fc = [dnStop |-> 0, nnReject |-> 0, nsMove |-> 1]
+/\ bpmSvcs = (d1 :> {1, 2} @@ d2 :> {1})
+/\ nnRecQ = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpReg = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ refreshPc = (d1 :> "join" @@ d2 :> "idle")
+/\ actPc = ( <<d1, 1>> :> "shutdownActor" @@
+  <<d1, 2>> :> "hsStorage" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ cptCur = ( <<d1, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d1, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] )
+/\ poolLoaded = (d1 :> TRUE @@ d2 :> TRUE)
+/\ bpServed = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+
+State 19: <MCActorShutdownActor(<<d1, 1>>) line 81, col 29 to line 81, col 66 of module MC>
+/\ dnPc = (d1 :> "run" @@ d2 :> "run")
+/\ targetFired = FALSE
+/\ cptQ = ( <<d1, 1>> :> <<>> @@
+  <<d1, 2>> :> <<>> @@
+  <<d2, 1>> :> <<>> @@
+  <<d2, 2>> :> <<>> )
+/\ nnDeliv = 0
+/\ stopped = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptSnap = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ actRun = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> TRUE )
+/\ nnBanned = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpActive = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ nnRec = [att |-> 0, done |-> FALSE]
+/\ nnReg = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnChosen = {}
+/\ bpmByPool = (d1 :> 2 @@ d2 :> 1)
+/\ bpNs = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ cptPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "loop" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ nnDead = (d1 :> FALSE @@ d2 :> FALSE)
+/\ rec = << [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ],
+   [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ] >>
+/\ fc = [dnStop |-> 0, nnReject |-> 0, nsMove |-> 1]
+/\ bpmSvcs = (d1 :> {1, 2} @@ d2 :> {1})
+/\ nnRecQ = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpReg = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ refreshPc = (d1 :> "join" @@ d2 :> "idle")
+/\ actPc = ( <<d1, 1>> :> "exitRemove" @@
+  <<d1, 2>> :> "hsStorage" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ cptCur = ( <<d1, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d1, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] )
+/\ poolLoaded = (d1 :> TRUE @@ d2 :> TRUE)
+/\ bpServed = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+
+State 20: <MCActorExitRemove(<<d1, 1>>) line 82, col 29 to line 82, col 66 of module MC>
+/\ dnPc = (d1 :> "run" @@ d2 :> "run")
+/\ targetFired = FALSE
+/\ cptQ = ( <<d1, 1>> :> <<>> @@
+  <<d1, 2>> :> <<>> @@
+  <<d2, 1>> :> <<>> @@
+  <<d2, 2>> :> <<>> )
+/\ nnDeliv = 0
+/\ stopped = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptSnap = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ actRun = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> TRUE )
+/\ nnBanned = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpActive = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ nnRec = [att |-> 0, done |-> FALSE]
+/\ nnReg = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnChosen = {}
+/\ bpmByPool = (d1 :> 0 @@ d2 :> 1)
+/\ bpNs = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ cptPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "loop" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ nnDead = (d1 :> FALSE @@ d2 :> FALSE)
+/\ rec = << [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ],
+   [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ] >>
+/\ fc = [dnStop |-> 0, nnReject |-> 0, nsMove |-> 1]
+/\ bpmSvcs = (d1 :> {2} @@ d2 :> {1})
+/\ nnRecQ = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpReg = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ refreshPc = (d1 :> "join" @@ d2 :> "idle")
+/\ actPc = ( <<d1, 1>> :> "exitRelease" @@
+  <<d1, 2>> :> "hsStorage" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ cptCur = ( <<d1, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d1, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] )
+/\ poolLoaded = (d1 :> TRUE @@ d2 :> TRUE)
+/\ bpServed = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+
+State 21: <MCActorExitRelease(<<d1, 1>>) line 83, col 29 to line 83, col 66 of module MC>
+/\ dnPc = (d1 :> "run" @@ d2 :> "run")
+/\ targetFired = FALSE
+/\ cptQ = ( <<d1, 1>> :> <<>> @@
+  <<d1, 2>> :> <<>> @@
+  <<d2, 1>> :> <<>> @@
+  <<d2, 2>> :> <<>> )
+/\ nnDeliv = 0
+/\ stopped = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptSnap = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ actRun = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> TRUE )
+/\ nnBanned = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpActive = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ nnRec = [att |-> 0, done |-> FALSE]
+/\ nnReg = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnChosen = {}
+/\ bpmByPool = (d1 :> 0 @@ d2 :> 1)
+/\ bpNs = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ cptPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "loop" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ nnDead = (d1 :> FALSE @@ d2 :> FALSE)
+/\ rec = << [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ],
+   [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ] >>
+/\ fc = [dnStop |-> 0, nnReject |-> 0, nsMove |-> 1]
+/\ bpmSvcs = (d1 :> {2} @@ d2 :> {1})
+/\ nnRecQ = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpReg = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ refreshPc = (d1 :> "join" @@ d2 :> "idle")
+/\ actPc = ( <<d1, 1>> :> "dead" @@
+  <<d1, 2>> :> "hsStorage" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ cptCur = ( <<d1, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d1, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] )
+/\ poolLoaded = (d1 :> FALSE @@ d2 :> TRUE)
+/\ bpServed = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+
+State 22: <MCRefreshJoinOld(d1) line 72, col 29 to line 72, col 66 of module MC>
+/\ dnPc = (d1 :> "run" @@ d2 :> "run")
+/\ targetFired = FALSE
+/\ cptQ = ( <<d1, 1>> :> <<>> @@
+  <<d1, 2>> :> <<>> @@
+  <<d2, 1>> :> <<>> @@
+  <<d2, 2>> :> <<>> )
+/\ nnDeliv = 0
+/\ stopped = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptSnap = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ actRun = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> TRUE )
+/\ nnBanned = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpActive = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ nnRec = [att |-> 0, done |-> FALSE]
+/\ nnReg = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnChosen = {}
+/\ bpmByPool = (d1 :> 0 @@ d2 :> 1)
+/\ bpNs = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ cptPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "loop" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ nnDead = (d1 :> FALSE @@ d2 :> FALSE)
+/\ rec = << [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ],
+   [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ] >>
+/\ fc = [dnStop |-> 0, nnReject |-> 0, nsMove |-> 1]
+/\ bpmSvcs = (d1 :> {2} @@ d2 :> {1})
+/\ nnRecQ = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpReg = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ refreshPc = (d1 :> "done" @@ d2 :> "idle")
+/\ actPc = ( <<d1, 1>> :> "dead" @@
+  <<d1, 2>> :> "hsStorage" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ cptCur = ( <<d1, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d1, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] )
+/\ poolLoaded = (d1 :> FALSE @@ d2 :> TRUE)
+/\ bpServed = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+
+State 23: <MCHsInitStorage(<<d1, 2>>) line 76, col 29 to line 76, col 66 of module MC>
+/\ dnPc = (d1 :> "run" @@ d2 :> "run")
+/\ targetFired = FALSE
+/\ cptQ = ( <<d1, 1>> :> <<>> @@
+  <<d1, 2>> :> <<>> @@
+  <<d2, 1>> :> <<>> @@
+  <<d2, 2>> :> <<>> )
+/\ nnDeliv = 0
+/\ stopped = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptSnap = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ actRun = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> TRUE )
+/\ nnBanned = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpActive = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ nnRec = [att |-> 0, done |-> FALSE]
+/\ nnReg = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnChosen = {}
+/\ bpmByPool = (d1 :> 0 @@ d2 :> 1)
+/\ bpNs = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ cptPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "loop" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ nnDead = (d1 :> FALSE @@ d2 :> FALSE)
+/\ rec = << [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ],
+   [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ] >>
+/\ fc = [dnStop |-> 0, nnReject |-> 0, nsMove |-> 1]
+/\ bpmSvcs = (d1 :> {2} @@ d2 :> {1})
+/\ nnRecQ = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpReg = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ refreshPc = (d1 :> "done" @@ d2 :> "idle")
+/\ actPc = ( <<d1, 1>> :> "dead" @@
+  <<d1, 2>> :> "reg" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ cptCur = ( <<d1, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d1, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] )
+/\ poolLoaded = (d1 :> TRUE @@ d2 :> TRUE)
+/\ bpServed = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+
+State 24: <MCActorRegister(<<d1, 2>>) line 77, col 29 to line 77, col 66 of module MC>
+/\ dnPc = (d1 :> "run" @@ d2 :> "run")
+/\ targetFired = FALSE
+/\ cptQ = ( <<d1, 1>> :> <<>> @@
+  <<d1, 2>> :> <<>> @@
+  <<d2, 1>> :> <<>> @@
+  <<d2, 2>> :> <<>> )
+/\ nnDeliv = 0
+/\ stopped = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptSnap = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ actRun = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> TRUE )
+/\ nnBanned = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpActive = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ nnRec = [att |-> 0, done |-> FALSE]
+/\ nnReg = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnChosen = {}
+/\ bpmByPool = (d1 :> 0 @@ d2 :> 1)
+/\ bpNs = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ cptPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "loop" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ nnDead = (d1 :> FALSE @@ d2 :> FALSE)
+/\ rec = << [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ],
+   [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ] >>
+/\ fc = [dnStop |-> 0, nnReject |-> 0, nsMove |-> 1]
+/\ bpmSvcs = (d1 :> {2} @@ d2 :> {1})
+/\ nnRecQ = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpReg = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ refreshPc = (d1 :> "done" @@ d2 :> "idle")
+/\ actPc = ( <<d1, 1>> :> "dead" @@
+  <<d1, 2>> :> "loop" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ cptCur = ( <<d1, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d1, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] )
+/\ poolLoaded = (d1 :> TRUE @@ d2 :> TRUE)
+/\ bpServed = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+
+State 25: <MCActorLoop(<<d1, 2>>) line 78, col 29 to line 78, col 66 of module MC>
+/\ dnPc = (d1 :> "run" @@ d2 :> "run")
+/\ targetFired = FALSE
+/\ cptQ = ( <<d1, 1>> :> <<>> @@
+  <<d1, 2>> :> <<>> @@
+  <<d2, 1>> :> <<>> @@
+  <<d2, 2>> :> <<>> )
+/\ nnDeliv = 0
+/\ stopped = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptSnap = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ actRun = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> TRUE )
+/\ nnBanned = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpActive = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ nnRec = [att |-> 0, done |-> FALSE]
+/\ nnReg = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnChosen = {}
+/\ bpmByPool = (d1 :> 0 @@ d2 :> 1)
+/\ bpNs = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ cptPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "loop" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ nnDead = (d1 :> FALSE @@ d2 :> FALSE)
+/\ rec = << [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ],
+   [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ] >>
+/\ fc = [dnStop |-> 0, nnReject |-> 0, nsMove |-> 1]
+/\ bpmSvcs = (d1 :> {2} @@ d2 :> {1})
+/\ nnRecQ = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpReg = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ refreshPc = (d1 :> "done" @@ d2 :> "idle")
+/\ actPc = ( <<d1, 1>> :> "dead" @@
+  <<d1, 2>> :> "hb" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ cptCur = ( <<d1, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d1, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] )
+/\ poolLoaded = (d1 :> TRUE @@ d2 :> TRUE)
+/\ bpServed = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+
+State 26: <MCCptLoop(<<d1, 2>>) line 84, col 29 to line 84, col 66 of module MC>
+/\ dnPc = (d1 :> "run" @@ d2 :> "run")
+/\ targetFired = FALSE
+/\ cptQ = ( <<d1, 1>> :> <<>> @@
+  <<d1, 2>> :> <<>> @@
+  <<d2, 1>> :> <<>> @@
+  <<d2, 2>> :> <<>> )
+/\ nnDeliv = 0
+/\ stopped = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptSnap = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ actRun = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> TRUE )
+/\ nnBanned = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpActive = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ nnRec = [att |-> 0, done |-> FALSE]
+/\ nnReg = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnChosen = {}
+/\ bpmByPool = (d1 :> 0 @@ d2 :> 1)
+/\ bpNs = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ cptPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "take" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ nnDead = (d1 :> FALSE @@ d2 :> FALSE)
+/\ rec = << [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ],
+   [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ] >>
+/\ fc = [dnStop |-> 0, nnReject |-> 0, nsMove |-> 1]
+/\ bpmSvcs = (d1 :> {2} @@ d2 :> {1})
+/\ nnRecQ = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpReg = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ refreshPc = (d1 :> "done" @@ d2 :> "idle")
+/\ actPc = ( <<d1, 1>> :> "dead" @@
+  <<d1, 2>> :> "hb" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ cptCur = ( <<d1, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d1, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] )
+/\ poolLoaded = (d1 :> TRUE @@ d2 :> TRUE)
+/\ bpServed = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+
+State 27: <MCNNStartRecovery line 104, col 5 to line 108, col 19 of module MC>
+/\ dnPc = (d1 :> "run" @@ d2 :> "run")
+/\ targetFired = FALSE
+/\ cptQ = ( <<d1, 1>> :> <<>> @@
+  <<d1, 2>> :> <<>> @@
+  <<d2, 1>> :> <<>> @@
+  <<d2, 2>> :> <<>> )
+/\ nnDeliv = 0
+/\ stopped = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptSnap = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ actRun = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> TRUE )
+/\ nnBanned = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpActive = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ nnRec = [att |-> 1, done |-> FALSE]
+/\ nnReg = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnChosen = {d1}
+/\ bpmByPool = (d1 :> 0 @@ d2 :> 1)
+/\ bpNs = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ cptPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "take" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ nnDead = (d1 :> FALSE @@ d2 :> FALSE)
+/\ rec = << [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ],
+   [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ] >>
+/\ fc = [dnStop |-> 0, nnReject |-> 0, nsMove |-> 1]
+/\ bpmSvcs = (d1 :> {2} @@ d2 :> {1})
+/\ nnRecQ = (d1 :> TRUE @@ d2 :> FALSE)
+/\ bpReg = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ refreshPc = (d1 :> "done" @@ d2 :> "idle")
+/\ actPc = ( <<d1, 1>> :> "dead" @@
+  <<d1, 2>> :> "hb" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ cptCur = ( <<d1, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d1, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] )
+/\ poolLoaded = (d1 :> TRUE @@ d2 :> TRUE)
+/\ bpServed = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+
+State 28: <MCActorHeartbeat(<<d1, 2>>) line 79, col 29 to line 79, col 66 of module MC>
+/\ dnPc = (d1 :> "run" @@ d2 :> "run")
+/\ targetFired = FALSE
+/\ cptQ = ( <<d1, 1>> :> <<>> @@
+  <<d1, 2>> :> <<[rid |-> 1, att |-> 1, nlocs |-> 2]>> @@
+  <<d2, 1>> :> <<>> @@
+  <<d2, 2>> :> <<>> )
+/\ nnDeliv = 1
+/\ stopped = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptSnap = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ actRun = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> TRUE )
+/\ nnBanned = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpActive = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ nnRec = [att |-> 1, done |-> FALSE]
+/\ nnReg = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnChosen = {d1}
+/\ bpmByPool = (d1 :> 0 @@ d2 :> 1)
+/\ bpNs = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ cptPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "take" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ nnDead = (d1 :> FALSE @@ d2 :> FALSE)
+/\ rec = << [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ],
+   [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ] >>
+/\ fc = [dnStop |-> 0, nnReject |-> 0, nsMove |-> 1]
+/\ bpmSvcs = (d1 :> {2} @@ d2 :> {1})
+/\ nnRecQ = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpReg = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ refreshPc = (d1 :> "done" @@ d2 :> "idle")
+/\ actPc = ( <<d1, 1>> :> "dead" @@
+  <<d1, 2>> :> "loop" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ cptCur = ( <<d1, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d1, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] )
+/\ poolLoaded = (d1 :> TRUE @@ d2 :> TRUE)
+/\ bpServed = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+
+State 29: <MCCptTake(<<d1, 2>>) line 85, col 29 to line 85, col 66 of module MC>
+/\ dnPc = (d1 :> "run" @@ d2 :> "run")
+/\ targetFired = FALSE
+/\ cptQ = ( <<d1, 1>> :> <<>> @@
+  <<d1, 2>> :> <<>> @@
+  <<d2, 1>> :> <<>> @@
+  <<d2, 2>> :> <<>> )
+/\ nnDeliv = 1
+/\ stopped = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptSnap = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ actRun = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> TRUE )
+/\ nnBanned = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpActive = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ nnRec = [att |-> 1, done |-> FALSE]
+/\ nnReg = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnChosen = {d1}
+/\ bpmByPool = (d1 :> 0 @@ d2 :> 1)
+/\ bpNs = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ cptPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "assert" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ nnDead = (d1 :> FALSE @@ d2 :> FALSE)
+/\ rec = << [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ],
+   [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ] >>
+/\ fc = [dnStop |-> 0, nnReject |-> 0, nsMove |-> 1]
+/\ bpmSvcs = (d1 :> {2} @@ d2 :> {1})
+/\ nnRecQ = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpReg = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ refreshPc = (d1 :> "done" @@ d2 :> "idle")
+/\ actPc = ( <<d1, 1>> :> "dead" @@
+  <<d1, 2>> :> "loop" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ cptCur = ( <<d1, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d1, 2>> :> [rid |-> 1, att |-> 1, nlocs |-> 2] @@
+  <<d2, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] )
+/\ poolLoaded = (d1 :> TRUE @@ d2 :> TRUE)
+/\ bpServed = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+
+State 30: <MCCptAssert(<<d1, 2>>) line 88, col 29 to line 88, col 66 of module MC>
+/\ dnPc = (d1 :> "run" @@ d2 :> "run")
+/\ targetFired = FALSE
+/\ cptQ = ( <<d1, 1>> :> <<>> @@
+  <<d1, 2>> :> <<>> @@
+  <<d2, 1>> :> <<>> @@
+  <<d2, 2>> :> <<>> )
+/\ nnDeliv = 1
+/\ stopped = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptSnap = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ actRun = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> TRUE )
+/\ nnBanned = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpActive = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ nnRec = [att |-> 1, done |-> FALSE]
+/\ nnReg = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnChosen = {d1}
+/\ bpmByPool = (d1 :> 0 @@ d2 :> 1)
+/\ bpNs = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ cptPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "read" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ nnDead = (d1 :> FALSE @@ d2 :> FALSE)
+/\ rec = << [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ],
+   [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ] >>
+/\ fc = [dnStop |-> 0, nnReject |-> 0, nsMove |-> 1]
+/\ bpmSvcs = (d1 :> {2} @@ d2 :> {1})
+/\ nnRecQ = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpReg = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ refreshPc = (d1 :> "done" @@ d2 :> "idle")
+/\ actPc = ( <<d1, 1>> :> "dead" @@
+  <<d1, 2>> :> "loop" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ cptCur = ( <<d1, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d1, 2>> :> [rid |-> 1, att |-> 1, nlocs |-> 2] @@
+  <<d2, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] )
+/\ poolLoaded = (d1 :> TRUE @@ d2 :> TRUE)
+/\ bpServed = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+
+State 31: <MCCptRead(<<d1, 2>>) line 89, col 29 to line 89, col 66 of module MC>
+/\ dnPc = (d1 :> "run" @@ d2 :> "run")
+/\ targetFired = FALSE
+/\ cptQ = ( <<d1, 1>> :> <<>> @@
+  <<d1, 2>> :> <<>> @@
+  <<d2, 1>> :> <<>> @@
+  <<d2, 2>> :> <<>> )
+/\ nnDeliv = 1
+/\ stopped = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptSnap = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ actRun = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> TRUE )
+/\ nnBanned = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpActive = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ nnRec = [att |-> 1, done |-> FALSE]
+/\ nnReg = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnChosen = {d1}
+/\ bpmByPool = (d1 :> 0 @@ d2 :> 1)
+/\ bpNs = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ cptPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "dispatch" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ nnDead = (d1 :> FALSE @@ d2 :> FALSE)
+/\ rec = << [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ],
+   [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ] >>
+/\ fc = [dnStop |-> 0, nnReject |-> 0, nsMove |-> 1]
+/\ bpmSvcs = (d1 :> {2} @@ d2 :> {1})
+/\ nnRecQ = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpReg = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ refreshPc = (d1 :> "done" @@ d2 :> "idle")
+/\ actPc = ( <<d1, 1>> :> "dead" @@
+  <<d1, 2>> :> "loop" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ cptCur = ( <<d1, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d1, 2>> :> [rid |-> 1, att |-> 1, nlocs |-> 2] @@
+  <<d2, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] )
+/\ poolLoaded = (d1 :> TRUE @@ d2 :> TRUE)
+/\ bpServed = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+
+State 32: <MCCptDispatch(<<d1, 2>>) line 90, col 29 to line 90, col 66 of module MC>
+/\ dnPc = (d1 :> "run" @@ d2 :> "run")
+/\ targetFired = FALSE
+/\ cptQ = ( <<d1, 1>> :> <<>> @@
+  <<d1, 2>> :> <<>> @@
+  <<d2, 1>> :> <<>> @@
+  <<d2, 2>> :> <<>> )
+/\ nnDeliv = 1
+/\ stopped = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptSnap = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ actRun = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> TRUE )
+/\ nnBanned = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpActive = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ nnRec = [att |-> 1, done |-> FALSE]
+/\ nnReg = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnChosen = {d1}
+/\ bpmByPool = (d1 :> 0 @@ d2 :> 1)
+/\ bpNs = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ cptPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "loop" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ nnDead = (d1 :> FALSE @@ d2 :> FALSE)
+/\ rec = << [ st |-> "start",
+     att |-> 1,
+     nlocs |-> 2,
+     dn |-> d1,
+     slot |-> 2,
+     idx |-> 1,
+     err |-> 0,
+     pb |-> 0 ],
+   [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ] >>
+/\ fc = [dnStop |-> 0, nnReject |-> 0, nsMove |-> 1]
+/\ bpmSvcs = (d1 :> {2} @@ d2 :> {1})
+/\ nnRecQ = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpReg = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ refreshPc = (d1 :> "done" @@ d2 :> "idle")
+/\ actPc = ( <<d1, 1>> :> "dead" @@
+  <<d1, 2>> :> "loop" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ cptCur = ( <<d1, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d1, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] )
+/\ poolLoaded = (d1 :> TRUE @@ d2 :> TRUE)
+/\ bpServed = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+
+State 33: <MCRecStart(1) line 91, col 29 to line 91, col 66 of module MC>
+/\ dnPc = (d1 :> "run" @@ d2 :> "run")
+/\ targetFired = FALSE
+/\ cptQ = ( <<d1, 1>> :> <<>> @@
+  <<d1, 2>> :> <<>> @@
+  <<d2, 1>> :> <<>> @@
+  <<d2, 2>> :> <<>> )
+/\ nnDeliv = 1
+/\ stopped = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptSnap = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ actRun = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> TRUE )
+/\ nnBanned = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpActive = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ nnRec = [att |-> 1, done |-> FALSE]
+/\ nnReg = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnChosen = {d1}
+/\ bpmByPool = (d1 :> 0 @@ d2 :> 1)
+/\ bpNs = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ cptPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "loop" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ nnDead = (d1 :> FALSE @@ d2 :> FALSE)
+/\ rec = << [ st |-> "check",
+     att |-> 1,
+     nlocs |-> 2,
+     dn |-> d1,
+     slot |-> 2,
+     idx |-> 1,
+     err |-> 0,
+     pb |-> 0 ],
+   [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ] >>
+/\ fc = [dnStop |-> 0, nnReject |-> 0, nsMove |-> 1]
+/\ bpmSvcs = (d1 :> {2} @@ d2 :> {1})
+/\ nnRecQ = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpReg = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ refreshPc = (d1 :> "done" @@ d2 :> "idle")
+/\ actPc = ( <<d1, 1>> :> "dead" @@
+  <<d1, 2>> :> "loop" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ cptCur = ( <<d1, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d1, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] )
+/\ poolLoaded = (d1 :> TRUE @@ d2 :> TRUE)
+/\ bpServed = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+
+State 34: <MCTargetCheck(1) line 92, col 29 to line 92, col 66 of module MC>
+/\ dnPc = (d1 :> "run" @@ d2 :> "run")
+/\ targetFired = TRUE
+/\ cptQ = ( <<d1, 1>> :> <<>> @@
+  <<d1, 2>> :> <<>> @@
+  <<d2, 1>> :> <<>> @@
+  <<d2, 2>> :> <<>> )
+/\ nnDeliv = 1
+/\ stopped = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> FALSE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ cptSnap = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> FALSE @@
+  <<d2, 2>> :> FALSE )
+/\ actRun = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> TRUE )
+/\ nnBanned = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpActive = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ nnRec = [att |-> 1, done |-> FALSE]
+/\ nnReg = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnChosen = {d1}
+/\ bpmByPool = (d1 :> 0 @@ d2 :> 1)
+/\ bpNs = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ cptPc = ( <<d1, 1>> :> "loop" @@
+  <<d1, 2>> :> "loop" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ nnDead = (d1 :> FALSE @@ d2 :> FALSE)
+/\ rec = << [ st |-> "check",
+     att |-> 1,
+     nlocs |-> 2,
+     dn |-> d1,
+     slot |-> 2,
+     idx |-> 2,
+     err |-> 1,
+     pb |-> 0 ],
+   [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ] >>
+/\ fc = [dnStop |-> 0, nnReject |-> 0, nsMove |-> 1]
+/\ bpmSvcs = (d1 :> {2} @@ d2 :> {1})
+/\ nnRecQ = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpReg = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ refreshPc = (d1 :> "done" @@ d2 :> "idle")
+/\ actPc = ( <<d1, 1>> :> "dead" @@
+  <<d1, 2>> :> "loop" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ cptCur = ( <<d1, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d1, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] )
+/\ poolLoaded = (d1 :> TRUE @@ d2 :> TRUE)
+/\ bpServed = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+
+115566 states generated, 22167 distinct states found, 2065 states left on queue.
+The depth of the complete state graph search is 35.
+Checkpointing of run /tmp/tlc-states-Pc2Bww/26-10-29-22-58-02.990
+Checkpointing completed at (2026-10-29 22:58:07)
+Finished in 04s at (2026-10-29 22:58:07)
+Trace exploration spec path: ./MC_TTrace_1793314682.tla
+2, 2>> :> "none" )
+/\ nnDead = (d1 :> FALSE @@ d2 :> FALSE)
+/\ rec = << [ st |-> "check",
+     att |-> 1,
+     nlocs |-> 2,
+     dn |-> d1,
+     slot |-> 2,
+     idx |-> 2,
+     err |-> 1,
+     pb |-> 0 ],
+   [ st |-> "none",
+     att |-> 0,
+     nlocs |-> 0,
+     dn |-> NoDn,
+     slot |-> 0,
+     idx |-> 0,
+     err |-> 0,
+     pb |-> 0 ] >>
+/\ fc = [dnStop |-> 0, nnReject |-> 0, nsMove |-> 1]
+/\ bpmSvcs = (d1 :> {2} @@ d2 :> {1})
+/\ nnRecQ = (d1 :> FALSE @@ d2 :> FALSE)
+/\ bpReg = ( <<d1, 1>> :> TRUE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+/\ refreshPc = (d1 :> "done" @@ d2 :> "idle")
+/\ actPc = ( <<d1, 1>> :> "dead" @@
+  <<d1, 2>> :> "loop" @@
+  <<d2, 1>> :> "loop" @@
+  <<d2, 2>> :> "none" )
+/\ cptCur = ( <<d1, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d1, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 1>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] @@
+  <<d2, 2>> :> [rid |-> 0, att |-> 0, nlocs |-> 0] )
+/\ poolLoaded = (d1 :> TRUE @@ d2 :> TRUE)
+/\ bpServed = ( <<d1, 1>> :> FALSE @@
+  <<d1, 2>> :> TRUE @@
+  <<d2, 1>> :> TRUE @@
+  <<d2, 2>> :> FALSE )
+
+115566 states generated, 22167 distinct states found, 2065 states left on queue.
+The depth of the complete state graph search is 35.
+Checkpointing of run /tmp/tlc-states-Pc2Bww/26-10-29-22-58-02.990
+Checkpointing completed at (2026-10-29 22:58:07)
+Finished in 04s at (2026-10-29 22:58:07)
+Trace exploration spec path: ./MC_TTrace_1793314682.tla
+
+[0;32m================================[0m
+[1;33m⚠ Invariant violation found![0m
+[1;33mPlease check log: /users/ZhenyuLi/Specula/runs/20261029-135708-05f7/hdfs-adhoc-28/.specula-output/spec/output/MC_hunt_samepool_persistent_bfs.out[0m
+[0;32m================================[0m

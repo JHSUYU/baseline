@@ -1,0 +1,1237 @@
+TLC2 Version 2026.10.24.013619 (rev: 2ef2af8)
+Running breadth-first search Model-Checking with fp 64 and seed 4369685580898873212 with 1 worker on 64 cores with 981MB heap and 1024MB offheap memory [pid: 3996146] (Linux 5.15.0-198-generic amd64, Eclipse Adoptium 21.0.13 64bit, OffHeapDiskFPSet, DiskStateQueue).
+Parsing file /bulk/specula-adhoc/specula-runs/20261029-002846-51f8/hdfs-adhoc-12/.specula-output/spec/MC.tla
+Parsing file /bulk/specula-adhoc/specula-runs/20261029-002846-51f8/hdfs-adhoc-12/.specula-output/spec/base.tla
+Parsing file /tmp/tlc-4414451399287961444/_JsonTrace.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/_JsonTrace.tla)
+Parsing file /tmp/tlc-4414451399287961444/_TLCTrace.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/_TLCTrace.tla)
+Parsing file /tmp/tlc-4414451399287961444/Integers.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Integers.tla)
+Parsing file /tmp/tlc-4414451399287961444/Sequences.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Sequences.tla)
+Parsing file /tmp/tlc-4414451399287961444/FiniteSets.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/FiniteSets.tla)
+Parsing file /tmp/tlc-4414451399287961444/TLC.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLC.tla)
+Parsing file /tmp/tlc-4414451399287961444/Naturals.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Naturals.tla)
+Parsing file /tmp/tlc-4414451399287961444/TLCExt.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLCExt.tla)
+Parsing file /tmp/tlc-4414451399287961444/Json.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Json.tla)
+Semantic processing of module Naturals
+Semantic processing of module Integers
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module TLC
+Semantic processing of module base
+Semantic processing of module TLCExt
+Semantic processing of module Json
+Semantic processing of module _JsonTrace
+Semantic processing of module _TLCTrace
+Semantic processing of module MC
+Linting of module base
+Linting of module TLCExt
+Linting of module Json
+Linting of module _JsonTrace
+Linting of module _TLCTrace
+Linting of module MC
+Starting... (2026-10-29 10:05:53)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-10-29 10:05:55.
+Progress(19) at 2026-10-29 10:05:58: 77,233 states generated (77,233 s/min), 26,824 distinct states found (26,824 ds/min), 4,565 states left on queue.
+Error: Invariant TargetSafe is violated.
+Error: The behavior up to this point is:
+State 1: <Initial predicate>
+/\ nnCur = 1
+/\ nnEpoch = 0
+/\ hbResp = (s :> <<>> @@ t :> <<>>)
+/\ stalled = (s :> FALSE @@ t :> FALSE)
+/\ targetFired = FALSE
+/\ nnNext = 2
+/\ dnCur = (s :> 1 @@ t :> 1)
+/\ inHM = (s :> TRUE @@ t :> TRUE)
+/\ now = 0
+/\ nnSerial = 2
+/\ cmdQ = (s :> <<>> @@ t :> <<>>)
+/\ hbStage = (s :> "idle" @@ t :> "idle")
+/\ rotPending = FALSE
+/\ dnBpReg = (s :> TRUE @@ t :> TRUE)
+/\ fc = [ sm |-> 0,
+  smrot |-> 0,
+  lost |-> 0,
+  stall |-> 0,
+  dead |-> 0,
+  nnr |-> 0,
+  dnr |-> 0 ]
+/\ dnKeys = (s :> <<5, 7>> @@ t :> <<5, 7>>)
+/\ regExport = (s :> [cur |-> -1, keys |-> <<>>] @@ t :> [cur |-> -1, keys |-> <<>>])
+/\ dnBTSM = (s :> TRUE @@ t :> TRUE)
+/\ th = [st |-> "idle", dn |-> "none", cmds |-> <<>>]
+/\ choosable = (s :> TRUE @@ t :> TRUE)
+/\ needKeyUpdate = (s :> FALSE @@ t :> FALSE)
+/\ regStage = (s :> "idle" @@ t :> "idle")
+/\ lastRot = 0
+/\ dnTokEn = (s :> TRUE @@ t :> TRUE)
+/\ nnKeys = <<5, 7>>
+/\ safeMode = "off"
+/\ xf = << [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0],
+   [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0] >>
+
+State 2: <MCTick line 51, col 11 to line 51, col 38 of module MC>
+/\ nnCur = 1
+/\ nnEpoch = 0
+/\ hbResp = (s :> <<>> @@ t :> <<>>)
+/\ stalled = (s :> FALSE @@ t :> FALSE)
+/\ targetFired = FALSE
+/\ nnNext = 2
+/\ dnCur = (s :> 1 @@ t :> 1)
+/\ inHM = (s :> TRUE @@ t :> TRUE)
+/\ now = 1
+/\ nnSerial = 2
+/\ cmdQ = (s :> <<>> @@ t :> <<>>)
+/\ hbStage = (s :> "idle" @@ t :> "idle")
+/\ rotPending = FALSE
+/\ dnBpReg = (s :> TRUE @@ t :> TRUE)
+/\ fc = [ sm |-> 0,
+  smrot |-> 0,
+  lost |-> 0,
+  stall |-> 0,
+  dead |-> 0,
+  nnr |-> 0,
+  dnr |-> 0 ]
+/\ dnKeys = (s :> <<5, 7>> @@ t :> <<5, 7>>)
+/\ regExport = (s :> [cur |-> -1, keys |-> <<>>] @@ t :> [cur |-> -1, keys |-> <<>>])
+/\ dnBTSM = (s :> TRUE @@ t :> TRUE)
+/\ th = [st |-> "idle", dn |-> "none", cmds |-> <<>>]
+/\ choosable = (s :> TRUE @@ t :> TRUE)
+/\ needKeyUpdate = (s :> FALSE @@ t :> FALSE)
+/\ regStage = (s :> "idle" @@ t :> "idle")
+/\ lastRot = 0
+/\ dnTokEn = (s :> TRUE @@ t :> TRUE)
+/\ nnKeys = <<5, 7>>
+/\ safeMode = "off"
+/\ xf = << [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0],
+   [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0] >>
+
+State 3: <MCTick line 51, col 11 to line 51, col 38 of module MC>
+/\ nnCur = 1
+/\ nnEpoch = 0
+/\ hbResp = (s :> <<>> @@ t :> <<>>)
+/\ stalled = (s :> FALSE @@ t :> FALSE)
+/\ targetFired = FALSE
+/\ nnNext = 2
+/\ dnCur = (s :> 1 @@ t :> 1)
+/\ inHM = (s :> TRUE @@ t :> TRUE)
+/\ now = 2
+/\ nnSerial = 2
+/\ cmdQ = (s :> <<>> @@ t :> <<>>)
+/\ hbStage = (s :> "idle" @@ t :> "idle")
+/\ rotPending = FALSE
+/\ dnBpReg = (s :> TRUE @@ t :> TRUE)
+/\ fc = [ sm |-> 0,
+  smrot |-> 0,
+  lost |-> 0,
+  stall |-> 0,
+  dead |-> 0,
+  nnr |-> 0,
+  dnr |-> 0 ]
+/\ dnKeys = (s :> <<5, 7>> @@ t :> <<5, 7>>)
+/\ regExport = (s :> [cur |-> -1, keys |-> <<>>] @@ t :> [cur |-> -1, keys |-> <<>>])
+/\ dnBTSM = (s :> TRUE @@ t :> TRUE)
+/\ th = [st |-> "idle", dn |-> "none", cmds |-> <<>>]
+/\ choosable = (s :> TRUE @@ t :> TRUE)
+/\ needKeyUpdate = (s :> FALSE @@ t :> FALSE)
+/\ regStage = (s :> "idle" @@ t :> "idle")
+/\ lastRot = 0
+/\ dnTokEn = (s :> TRUE @@ t :> TRUE)
+/\ nnKeys = <<5, 7>>
+/\ safeMode = "off"
+/\ xf = << [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0],
+   [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0] >>
+
+State 4: <MCDeclareDead(t) line 124, col 5 to line 127, col 39 of module MC>
+/\ nnCur = 1
+/\ nnEpoch = 0
+/\ hbResp = (s :> <<>> @@ t :> <<>>)
+/\ stalled = (s :> FALSE @@ t :> FALSE)
+/\ targetFired = FALSE
+/\ nnNext = 2
+/\ dnCur = (s :> 1 @@ t :> 1)
+/\ inHM = (s :> TRUE @@ t :> FALSE)
+/\ now = 2
+/\ nnSerial = 2
+/\ cmdQ = (s :> <<>> @@ t :> <<>>)
+/\ hbStage = (s :> "idle" @@ t :> "idle")
+/\ rotPending = FALSE
+/\ dnBpReg = (s :> TRUE @@ t :> TRUE)
+/\ fc = [ sm |-> 0,
+  smrot |-> 0,
+  lost |-> 0,
+  stall |-> 0,
+  dead |-> 1,
+  nnr |-> 0,
+  dnr |-> 0 ]
+/\ dnKeys = (s :> <<5, 7>> @@ t :> <<5, 7>>)
+/\ regExport = (s :> [cur |-> -1, keys |-> <<>>] @@ t :> [cur |-> -1, keys |-> <<>>])
+/\ dnBTSM = (s :> TRUE @@ t :> TRUE)
+/\ th = [st |-> "idle", dn |-> "none", cmds |-> <<>>]
+/\ choosable = (s :> TRUE @@ t :> TRUE)
+/\ needKeyUpdate = (s :> FALSE @@ t :> FALSE)
+/\ regStage = (s :> "idle" @@ t :> "idle")
+/\ lastRot = 0
+/\ dnTokEn = (s :> TRUE @@ t :> TRUE)
+/\ nnKeys = <<5, 7>>
+/\ safeMode = "off"
+/\ xf = << [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0],
+   [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0] >>
+
+State 5: <MCHandleHeartbeat(t,"actor") line 82, col 5 to line 82, col 85 of module MC>
+/\ nnCur = 1
+/\ nnEpoch = 0
+/\ hbResp = ( s :> <<>> @@
+  t :> <<[ex |-> [cur |-> -1, keys |-> <<>>], type |-> "REG", ids |-> {}]>> )
+/\ stalled = (s :> FALSE @@ t :> FALSE)
+/\ targetFired = FALSE
+/\ nnNext = 2
+/\ dnCur = (s :> 1 @@ t :> 1)
+/\ inHM = (s :> TRUE @@ t :> FALSE)
+/\ now = 2
+/\ nnSerial = 2
+/\ cmdQ = (s :> <<>> @@ t :> <<>>)
+/\ hbStage = (s :> "idle" @@ t :> "inflight")
+/\ rotPending = FALSE
+/\ dnBpReg = (s :> TRUE @@ t :> TRUE)
+/\ fc = [ sm |-> 0,
+  smrot |-> 0,
+  lost |-> 0,
+  stall |-> 0,
+  dead |-> 1,
+  nnr |-> 0,
+  dnr |-> 0 ]
+/\ dnKeys = (s :> <<5, 7>> @@ t :> <<5, 7>>)
+/\ regExport = (s :> [cur |-> -1, keys |-> <<>>] @@ t :> [cur |-> -1, keys |-> <<>>])
+/\ dnBTSM = (s :> TRUE @@ t :> TRUE)
+/\ th = [st |-> "idle", dn |-> "none", cmds |-> <<>>]
+/\ choosable = (s :> TRUE @@ t :> TRUE)
+/\ needKeyUpdate = (s :> FALSE @@ t :> FALSE)
+/\ regStage = (s :> "idle" @@ t :> "idle")
+/\ lastRot = 0
+/\ dnTokEn = (s :> TRUE @@ t :> TRUE)
+/\ nnKeys = <<5, 7>>
+/\ safeMode = "off"
+/\ xf = << [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0],
+   [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0] >>
+
+State 6: <MCDeliverResp(t) line 84, col 28 to line 84, col 65 of module MC>
+/\ nnCur = 1
+/\ nnEpoch = 0
+/\ hbResp = (s :> <<>> @@ t :> <<>>)
+/\ stalled = (s :> FALSE @@ t :> FALSE)
+/\ targetFired = FALSE
+/\ nnNext = 2
+/\ dnCur = (s :> 1 @@ t :> 1)
+/\ inHM = (s :> TRUE @@ t :> FALSE)
+/\ now = 2
+/\ nnSerial = 2
+/\ cmdQ = ( s :> <<>> @@
+  t :> <<[ex |-> [cur |-> -1, keys |-> <<>>], type |-> "REG", ids |-> {}]>> )
+/\ hbStage = (s :> "idle" @@ t :> "idle")
+/\ rotPending = FALSE
+/\ dnBpReg = (s :> TRUE @@ t :> TRUE)
+/\ fc = [ sm |-> 0,
+  smrot |-> 0,
+  lost |-> 0,
+  stall |-> 0,
+  dead |-> 1,
+  nnr |-> 0,
+  dnr |-> 0 ]
+/\ dnKeys = (s :> <<5, 7>> @@ t :> <<5, 7>>)
+/\ regExport = (s :> [cur |-> -1, keys |-> <<>>] @@ t :> [cur |-> -1, keys |-> <<>>])
+/\ dnBTSM = (s :> TRUE @@ t :> TRUE)
+/\ th = [st |-> "idle", dn |-> "none", cmds |-> <<>>]
+/\ choosable = (s :> TRUE @@ t :> TRUE)
+/\ needKeyUpdate = (s :> FALSE @@ t :> FALSE)
+/\ regStage = (s :> "idle" @@ t :> "idle")
+/\ lastRot = 0
+/\ dnTokEn = (s :> TRUE @@ t :> TRUE)
+/\ nnKeys = <<5, 7>>
+/\ safeMode = "off"
+/\ xf = << [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0],
+   [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0] >>
+
+State 7: <MCProcessCommand(t) line 85, col 28 to line 85, col 68 of module MC>
+/\ nnCur = 1
+/\ nnEpoch = 0
+/\ hbResp = (s :> <<>> @@ t :> <<>>)
+/\ stalled = (s :> FALSE @@ t :> FALSE)
+/\ targetFired = FALSE
+/\ nnNext = 2
+/\ dnCur = (s :> 1 @@ t :> 1)
+/\ inHM = (s :> TRUE @@ t :> FALSE)
+/\ now = 2
+/\ nnSerial = 2
+/\ cmdQ = (s :> <<>> @@ t :> <<>>)
+/\ hbStage = (s :> "idle" @@ t :> "idle")
+/\ rotPending = FALSE
+/\ dnBpReg = (s :> TRUE @@ t :> TRUE)
+/\ fc = [ sm |-> 0,
+  smrot |-> 0,
+  lost |-> 0,
+  stall |-> 0,
+  dead |-> 1,
+  nnr |-> 0,
+  dnr |-> 0 ]
+/\ dnKeys = (s :> <<5, 7>> @@ t :> <<5, 7>>)
+/\ regExport = (s :> [cur |-> -1, keys |-> <<>>] @@ t :> [cur |-> -1, keys |-> <<>>])
+/\ dnBTSM = (s :> TRUE @@ t :> TRUE)
+/\ th = [st |-> "idle", dn |-> "none", cmds |-> <<>>]
+/\ choosable = (s :> TRUE @@ t :> TRUE)
+/\ needKeyUpdate = (s :> FALSE @@ t :> FALSE)
+/\ regStage = (s :> "idle" @@ t :> "rpc")
+/\ lastRot = 0
+/\ dnTokEn = (s :> TRUE @@ t :> TRUE)
+/\ nnKeys = <<5, 7>>
+/\ safeMode = "off"
+/\ xf = << [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0],
+   [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0] >>
+
+State 8: <MCRegExport(t) line 87, col 22 to line 87, col 57 of module MC>
+/\ nnCur = 1
+/\ nnEpoch = 0
+/\ hbResp = (s :> <<>> @@ t :> <<>>)
+/\ stalled = (s :> FALSE @@ t :> FALSE)
+/\ targetFired = FALSE
+/\ nnNext = 2
+/\ dnCur = (s :> 1 @@ t :> 1)
+/\ inHM = (s :> TRUE @@ t :> FALSE)
+/\ now = 2
+/\ nnSerial = 2
+/\ cmdQ = (s :> <<>> @@ t :> <<>>)
+/\ hbStage = (s :> "idle" @@ t :> "idle")
+/\ rotPending = FALSE
+/\ dnBpReg = (s :> TRUE @@ t :> TRUE)
+/\ fc = [ sm |-> 0,
+  smrot |-> 0,
+  lost |-> 0,
+  stall |-> 0,
+  dead |-> 1,
+  nnr |-> 0,
+  dnr |-> 0 ]
+/\ dnKeys = (s :> <<5, 7>> @@ t :> <<5, 7>>)
+/\ regExport = (s :> [cur |-> -1, keys |-> <<>>] @@ t :> [cur |-> 1, keys |-> <<5, 7>>])
+/\ dnBTSM = (s :> TRUE @@ t :> TRUE)
+/\ th = [st |-> "idle", dn |-> "none", cmds |-> <<>>]
+/\ choosable = (s :> TRUE @@ t :> TRUE)
+/\ needKeyUpdate = (s :> FALSE @@ t :> FALSE)
+/\ regStage = (s :> "idle" @@ t :> "exported")
+/\ lastRot = 0
+/\ dnTokEn = (s :> TRUE @@ t :> TRUE)
+/\ nnKeys = <<5, 7>>
+/\ safeMode = "off"
+/\ xf = << [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0],
+   [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0] >>
+
+State 9: <MCRotate line 65, col 5 to line 70, col 66 of module MC>
+/\ nnCur = 2
+/\ nnEpoch = 0
+/\ hbResp = (s :> <<>> @@ t :> <<>>)
+/\ stalled = (s :> FALSE @@ t :> FALSE)
+/\ targetFired = FALSE
+/\ nnNext = 3
+/\ dnCur = (s :> 1 @@ t :> 1)
+/\ inHM = (s :> TRUE @@ t :> FALSE)
+/\ now = 2
+/\ nnSerial = 3
+/\ cmdQ = (s :> <<>> @@ t :> <<>>)
+/\ hbStage = (s :> "idle" @@ t :> "idle")
+/\ rotPending = TRUE
+/\ dnBpReg = (s :> TRUE @@ t :> TRUE)
+/\ fc = [ sm |-> 0,
+  smrot |-> 0,
+  lost |-> 0,
+  stall |-> 0,
+  dead |-> 1,
+  nnr |-> 0,
+  dnr |-> 0 ]
+/\ dnKeys = (s :> <<5, 7>> @@ t :> <<5, 7>>)
+/\ regExport = (s :> [cur |-> -1, keys |-> <<>>] @@ t :> [cur |-> 1, keys |-> <<5, 7>>])
+/\ dnBTSM = (s :> TRUE @@ t :> TRUE)
+/\ th = [st |-> "idle", dn |-> "none", cmds |-> <<>>]
+/\ choosable = (s :> TRUE @@ t :> TRUE)
+/\ needKeyUpdate = (s :> FALSE @@ t :> FALSE)
+/\ regStage = (s :> "idle" @@ t :> "exported")
+/\ lastRot = 0
+/\ dnTokEn = (s :> TRUE @@ t :> TRUE)
+/\ nnKeys = <<5, 7, 9>>
+/\ safeMode = "off"
+/\ xf = << [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0],
+   [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0] >>
+
+State 10: <MCMark line 72, col 11 to line 72, col 38 of module MC>
+/\ nnCur = 2
+/\ nnEpoch = 0
+/\ hbResp = (s :> <<>> @@ t :> <<>>)
+/\ stalled = (s :> FALSE @@ t :> FALSE)
+/\ targetFired = FALSE
+/\ nnNext = 3
+/\ dnCur = (s :> 1 @@ t :> 1)
+/\ inHM = (s :> TRUE @@ t :> FALSE)
+/\ now = 2
+/\ nnSerial = 3
+/\ cmdQ = (s :> <<>> @@ t :> <<>>)
+/\ hbStage = (s :> "idle" @@ t :> "idle")
+/\ rotPending = FALSE
+/\ dnBpReg = (s :> TRUE @@ t :> TRUE)
+/\ fc = [ sm |-> 0,
+  smrot |-> 0,
+  lost |-> 0,
+  stall |-> 0,
+  dead |-> 1,
+  nnr |-> 0,
+  dnr |-> 0 ]
+/\ dnKeys = (s :> <<5, 7>> @@ t :> <<5, 7>>)
+/\ regExport = (s :> [cur |-> -1, keys |-> <<>>] @@ t :> [cur |-> 1, keys |-> <<5, 7>>])
+/\ dnBTSM = (s :> TRUE @@ t :> TRUE)
+/\ th = [st |-> "idle", dn |-> "none", cmds |-> <<>>]
+/\ choosable = (s :> TRUE @@ t :> TRUE)
+/\ needKeyUpdate = (s :> TRUE @@ t :> FALSE)
+/\ regStage = (s :> "idle" @@ t :> "exported")
+/\ lastRot = 2
+/\ dnTokEn = (s :> TRUE @@ t :> TRUE)
+/\ nnKeys = <<5, 7, 9>>
+/\ safeMode = "off"
+/\ xf = << [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0],
+   [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0] >>
+
+State 11: <MCHandleHeartbeat(s,"actor") line 82, col 5 to line 82, col 85 of module MC>
+/\ nnCur = 2
+/\ nnEpoch = 0
+/\ hbResp = ( s :>
+      << [ ex |-> [cur |-> 2, keys |-> <<5, 7, 9>>],
+           type |-> "KUC",
+           ids |-> {} ] >> @@
+  t :> <<>> )
+/\ stalled = (s :> FALSE @@ t :> FALSE)
+/\ targetFired = FALSE
+/\ nnNext = 3
+/\ dnCur = (s :> 1 @@ t :> 1)
+/\ inHM = (s :> TRUE @@ t :> FALSE)
+/\ now = 2
+/\ nnSerial = 3
+/\ cmdQ = (s :> <<>> @@ t :> <<>>)
+/\ hbStage = (s :> "exported" @@ t :> "idle")
+/\ rotPending = FALSE
+/\ dnBpReg = (s :> TRUE @@ t :> TRUE)
+/\ fc = [ sm |-> 0,
+  smrot |-> 0,
+  lost |-> 0,
+  stall |-> 0,
+  dead |-> 1,
+  nnr |-> 0,
+  dnr |-> 0 ]
+/\ dnKeys = (s :> <<5, 7>> @@ t :> <<5, 7>>)
+/\ regExport = (s :> [cur |-> -1, keys |-> <<>>] @@ t :> [cur |-> 1, keys |-> <<5, 7>>])
+/\ dnBTSM = (s :> TRUE @@ t :> TRUE)
+/\ th = [st |-> "idle", dn |-> "none", cmds |-> <<>>]
+/\ choosable = (s :> TRUE @@ t :> TRUE)
+/\ needKeyUpdate = (s :> TRUE @@ t :> FALSE)
+/\ regStage = (s :> "idle" @@ t :> "exported")
+/\ lastRot = 2
+/\ dnTokEn = (s :> TRUE @@ t :> TRUE)
+/\ nnKeys = <<5, 7, 9>>
+/\ safeMode = "off"
+/\ xf = << [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0],
+   [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0] >>
+
+State 12: <MCHbClear(s,"actor") line 83, col 28 to line 83, col 64 of module MC>
+/\ nnCur = 2
+/\ nnEpoch = 0
+/\ hbResp = ( s :>
+      << [ ex |-> [cur |-> 2, keys |-> <<5, 7, 9>>],
+           type |-> "KUC",
+           ids |-> {} ] >> @@
+  t :> <<>> )
+/\ stalled = (s :> FALSE @@ t :> FALSE)
+/\ targetFired = FALSE
+/\ nnNext = 3
+/\ dnCur = (s :> 1 @@ t :> 1)
+/\ inHM = (s :> TRUE @@ t :> FALSE)
+/\ now = 2
+/\ nnSerial = 3
+/\ cmdQ = (s :> <<>> @@ t :> <<>>)
+/\ hbStage = (s :> "inflight" @@ t :> "idle")
+/\ rotPending = FALSE
+/\ dnBpReg = (s :> TRUE @@ t :> TRUE)
+/\ fc = [ sm |-> 0,
+  smrot |-> 0,
+  lost |-> 0,
+  stall |-> 0,
+  dead |-> 1,
+  nnr |-> 0,
+  dnr |-> 0 ]
+/\ dnKeys = (s :> <<5, 7>> @@ t :> <<5, 7>>)
+/\ regExport = (s :> [cur |-> -1, keys |-> <<>>] @@ t :> [cur |-> 1, keys |-> <<5, 7>>])
+/\ dnBTSM = (s :> TRUE @@ t :> TRUE)
+/\ th = [st |-> "idle", dn |-> "none", cmds |-> <<>>]
+/\ choosable = (s :> TRUE @@ t :> TRUE)
+/\ needKeyUpdate = (s :> FALSE @@ t :> FALSE)
+/\ regStage = (s :> "idle" @@ t :> "exported")
+/\ lastRot = 2
+/\ dnTokEn = (s :> TRUE @@ t :> TRUE)
+/\ nnKeys = <<5, 7, 9>>
+/\ safeMode = "off"
+/\ xf = << [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0],
+   [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0] >>
+
+State 13: <MCDeliverResp(s) line 84, col 28 to line 84, col 65 of module MC>
+/\ nnCur = 2
+/\ nnEpoch = 0
+/\ hbResp = (s :> <<>> @@ t :> <<>>)
+/\ stalled = (s :> FALSE @@ t :> FALSE)
+/\ targetFired = FALSE
+/\ nnNext = 3
+/\ dnCur = (s :> 1 @@ t :> 1)
+/\ inHM = (s :> TRUE @@ t :> FALSE)
+/\ now = 2
+/\ nnSerial = 3
+/\ cmdQ = ( s :>
+      << [ ex |-> [cur |-> 2, keys |-> <<5, 7, 9>>],
+           type |-> "KUC",
+           ids |-> {} ] >> @@
+  t :> <<>> )
+/\ hbStage = (s :> "idle" @@ t :> "idle")
+/\ rotPending = FALSE
+/\ dnBpReg = (s :> TRUE @@ t :> TRUE)
+/\ fc = [ sm |-> 0,
+  smrot |-> 0,
+  lost |-> 0,
+  stall |-> 0,
+  dead |-> 1,
+  nnr |-> 0,
+  dnr |-> 0 ]
+/\ dnKeys = (s :> <<5, 7>> @@ t :> <<5, 7>>)
+/\ regExport = (s :> [cur |-> -1, keys |-> <<>>] @@ t :> [cur |-> 1, keys |-> <<5, 7>>])
+/\ dnBTSM = (s :> TRUE @@ t :> TRUE)
+/\ th = [st |-> "idle", dn |-> "none", cmds |-> <<>>]
+/\ choosable = (s :> TRUE @@ t :> TRUE)
+/\ needKeyUpdate = (s :> FALSE @@ t :> FALSE)
+/\ regStage = (s :> "idle" @@ t :> "exported")
+/\ lastRot = 2
+/\ dnTokEn = (s :> TRUE @@ t :> TRUE)
+/\ nnKeys = <<5, 7, 9>>
+/\ safeMode = "off"
+/\ xf = << [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0],
+   [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0] >>
+
+State 14: <MCProcessCommand(s) line 85, col 28 to line 85, col 68 of module MC>
+/\ nnCur = 2
+/\ nnEpoch = 0
+/\ hbResp = (s :> <<>> @@ t :> <<>>)
+/\ stalled = (s :> FALSE @@ t :> FALSE)
+/\ targetFired = FALSE
+/\ nnNext = 3
+/\ dnCur = (s :> 2 @@ t :> 1)
+/\ inHM = (s :> TRUE @@ t :> FALSE)
+/\ now = 2
+/\ nnSerial = 3
+/\ cmdQ = (s :> <<>> @@ t :> <<>>)
+/\ hbStage = (s :> "idle" @@ t :> "idle")
+/\ rotPending = FALSE
+/\ dnBpReg = (s :> TRUE @@ t :> TRUE)
+/\ fc = [ sm |-> 0,
+  smrot |-> 0,
+  lost |-> 0,
+  stall |-> 0,
+  dead |-> 1,
+  nnr |-> 0,
+  dnr |-> 0 ]
+/\ dnKeys = (s :> <<5, 7, 9>> @@ t :> <<5, 7>>)
+/\ regExport = (s :> [cur |-> -1, keys |-> <<>>] @@ t :> [cur |-> 1, keys |-> <<5, 7>>])
+/\ dnBTSM = (s :> TRUE @@ t :> TRUE)
+/\ th = [st |-> "idle", dn |-> "none", cmds |-> <<>>]
+/\ choosable = (s :> TRUE @@ t :> TRUE)
+/\ needKeyUpdate = (s :> FALSE @@ t :> FALSE)
+/\ regStage = (s :> "idle" @@ t :> "exported")
+/\ lastRot = 2
+/\ dnTokEn = (s :> TRUE @@ t :> TRUE)
+/\ nnKeys = <<5, 7, 9>>
+/\ safeMode = "off"
+/\ xf = << [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0],
+   [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0] >>
+
+State 15: <MCRegInsert(t) line 88, col 22 to line 88, col 57 of module MC>
+/\ nnCur = 2
+/\ nnEpoch = 0
+/\ hbResp = (s :> <<>> @@ t :> <<>>)
+/\ stalled = (s :> FALSE @@ t :> FALSE)
+/\ targetFired = FALSE
+/\ nnNext = 3
+/\ dnCur = (s :> 2 @@ t :> 1)
+/\ inHM = (s :> TRUE @@ t :> TRUE)
+/\ now = 2
+/\ nnSerial = 3
+/\ cmdQ = (s :> <<>> @@ t :> <<>>)
+/\ hbStage = (s :> "idle" @@ t :> "idle")
+/\ rotPending = FALSE
+/\ dnBpReg = (s :> TRUE @@ t :> TRUE)
+/\ fc = [ sm |-> 0,
+  smrot |-> 0,
+  lost |-> 0,
+  stall |-> 0,
+  dead |-> 1,
+  nnr |-> 0,
+  dnr |-> 0 ]
+/\ dnKeys = (s :> <<5, 7, 9>> @@ t :> <<5, 7>>)
+/\ regExport = (s :> [cur |-> -1, keys |-> <<>>] @@ t :> [cur |-> 1, keys |-> <<5, 7>>])
+/\ dnBTSM = (s :> TRUE @@ t :> TRUE)
+/\ th = [st |-> "idle", dn |-> "none", cmds |-> <<>>]
+/\ choosable = (s :> TRUE @@ t :> FALSE)
+/\ needKeyUpdate = (s :> FALSE @@ t :> FALSE)
+/\ regStage = (s :> "idle" @@ t :> "replied")
+/\ lastRot = 2
+/\ dnTokEn = (s :> TRUE @@ t :> TRUE)
+/\ nnKeys = <<5, 7, 9>>
+/\ safeMode = "off"
+/\ xf = << [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0],
+   [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0] >>
+
+State 16: <MCDnPublishReg(t) line 89, col 22 to line 89, col 60 of module MC>
+/\ nnCur = 2
+/\ nnEpoch = 0
+/\ hbResp = (s :> <<>> @@ t :> <<>>)
+/\ stalled = (s :> FALSE @@ t :> FALSE)
+/\ targetFired = FALSE
+/\ nnNext = 3
+/\ dnCur = (s :> 2 @@ t :> 1)
+/\ inHM = (s :> TRUE @@ t :> TRUE)
+/\ now = 2
+/\ nnSerial = 3
+/\ cmdQ = (s :> <<>> @@ t :> <<>>)
+/\ hbStage = (s :> "idle" @@ t :> "idle")
+/\ rotPending = FALSE
+/\ dnBpReg = (s :> TRUE @@ t :> TRUE)
+/\ fc = [ sm |-> 0,
+  smrot |-> 0,
+  lost |-> 0,
+  stall |-> 0,
+  dead |-> 1,
+  nnr |-> 0,
+  dnr |-> 0 ]
+/\ dnKeys = (s :> <<5, 7, 9>> @@ t :> <<5, 7>>)
+/\ regExport = (s :> [cur |-> -1, keys |-> <<>>] @@ t :> [cur |-> 1, keys |-> <<5, 7>>])
+/\ dnBTSM = (s :> TRUE @@ t :> TRUE)
+/\ th = [st |-> "idle", dn |-> "none", cmds |-> <<>>]
+/\ choosable = (s :> TRUE @@ t :> FALSE)
+/\ needKeyUpdate = (s :> FALSE @@ t :> FALSE)
+/\ regStage = (s :> "idle" @@ t :> "btsm")
+/\ lastRot = 2
+/\ dnTokEn = (s :> TRUE @@ t :> TRUE)
+/\ nnKeys = <<5, 7, 9>>
+/\ safeMode = "off"
+/\ xf = << [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0],
+   [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0] >>
+
+State 17: <MCDnAddRegKeys(t) line 91, col 22 to line 91, col 60 of module MC>
+/\ nnCur = 2
+/\ nnEpoch = 0
+/\ hbResp = (s :> <<>> @@ t :> <<>>)
+/\ stalled = (s :> FALSE @@ t :> FALSE)
+/\ targetFired = FALSE
+/\ nnNext = 3
+/\ dnCur = (s :> 2 @@ t :> 1)
+/\ inHM = (s :> TRUE @@ t :> TRUE)
+/\ now = 2
+/\ nnSerial = 3
+/\ cmdQ = (s :> <<>> @@ t :> <<>>)
+/\ hbStage = (s :> "idle" @@ t :> "idle")
+/\ rotPending = FALSE
+/\ dnBpReg = (s :> TRUE @@ t :> TRUE)
+/\ fc = [ sm |-> 0,
+  smrot |-> 0,
+  lost |-> 0,
+  stall |-> 0,
+  dead |-> 1,
+  nnr |-> 0,
+  dnr |-> 0 ]
+/\ dnKeys = (s :> <<5, 7, 9>> @@ t :> <<5, 7>>)
+/\ regExport = (s :> [cur |-> -1, keys |-> <<>>] @@ t :> [cur |-> -1, keys |-> <<>>])
+/\ dnBTSM = (s :> TRUE @@ t :> TRUE)
+/\ th = [st |-> "idle", dn |-> "none", cmds |-> <<>>]
+/\ choosable = (s :> TRUE @@ t :> FALSE)
+/\ needKeyUpdate = (s :> FALSE @@ t :> FALSE)
+/\ regStage = (s :> "idle" @@ t :> "idle")
+/\ lastRot = 2
+/\ dnTokEn = (s :> TRUE @@ t :> TRUE)
+/\ nnKeys = <<5, 7, 9>>
+/\ safeMode = "off"
+/\ xf = << [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0],
+   [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0] >>
+
+State 18: <MCHandleHeartbeat(t,"actor") line 82, col 5 to line 82, col 85 of module MC>
+/\ nnCur = 2
+/\ nnEpoch = 0
+/\ hbResp = (s :> <<>> @@ t :> <<>>)
+/\ stalled = (s :> FALSE @@ t :> FALSE)
+/\ targetFired = FALSE
+/\ nnNext = 3
+/\ dnCur = (s :> 2 @@ t :> 1)
+/\ inHM = (s :> TRUE @@ t :> TRUE)
+/\ now = 2
+/\ nnSerial = 3
+/\ cmdQ = (s :> <<>> @@ t :> <<>>)
+/\ hbStage = (s :> "idle" @@ t :> "inflight")
+/\ rotPending = FALSE
+/\ dnBpReg = (s :> TRUE @@ t :> TRUE)
+/\ fc = [ sm |-> 0,
+  smrot |-> 0,
+  lost |-> 0,
+  stall |-> 0,
+  dead |-> 1,
+  nnr |-> 0,
+  dnr |-> 0 ]
+/\ dnKeys = (s :> <<5, 7, 9>> @@ t :> <<5, 7>>)
+/\ regExport = (s :> [cur |-> -1, keys |-> <<>>] @@ t :> [cur |-> -1, keys |-> <<>>])
+/\ dnBTSM = (s :> TRUE @@ t :> TRUE)
+/\ th = [st |-> "idle", dn |-> "none", cmds |-> <<>>]
+/\ choosable = (s :> TRUE @@ t :> TRUE)
+/\ needKeyUpdate = (s :> FALSE @@ t :> FALSE)
+/\ regStage = (s :> "idle" @@ t :> "idle")
+/\ lastRot = 2
+/\ dnTokEn = (s :> TRUE @@ t :> TRUE)
+/\ nnKeys = <<5, 7, 9>>
+/\ safeMode = "off"
+/\ xf = << [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0],
+   [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0] >>
+
+State 19: <MCDeliverResp(t) line 84, col 28 to line 84, col 65 of module MC>
+/\ nnCur = 2
+/\ nnEpoch = 0
+/\ hbResp = (s :> <<>> @@ t :> <<>>)
+/\ stalled = (s :> FALSE @@ t :> FALSE)
+/\ targetFired = FALSE
+/\ nnNext = 3
+/\ dnCur = (s :> 2 @@ t :> 1)
+/\ inHM = (s :> TRUE @@ t :> TRUE)
+/\ now = 2
+/\ nnSerial = 3
+/\ cmdQ = (s :> <<>> @@ t :> <<>>)
+/\ hbStage = (s :> "idle" @@ t :> "idle")
+/\ rotPending = FALSE
+/\ dnBpReg = (s :> TRUE @@ t :> TRUE)
+/\ fc = [ sm |-> 0,
+  smrot |-> 0,
+  lost |-> 0,
+  stall |-> 0,
+  dead |-> 1,
+  nnr |-> 0,
+  dnr |-> 0 ]
+/\ dnKeys = (s :> <<5, 7, 9>> @@ t :> <<5, 7>>)
+/\ regExport = (s :> [cur |-> -1, keys |-> <<>>] @@ t :> [cur |-> -1, keys |-> <<>>])
+/\ dnBTSM = (s :> TRUE @@ t :> TRUE)
+/\ th = [st |-> "idle", dn |-> "none", cmds |-> <<>>]
+/\ choosable = (s :> TRUE @@ t :> TRUE)
+/\ needKeyUpdate = (s :> FALSE @@ t :> FALSE)
+/\ regStage = (s :> "idle" @@ t :> "idle")
+/\ lastRot = 2
+/\ dnTokEn = (s :> TRUE @@ t :> TRUE)
+/\ nnKeys = <<5, 7, 9>>
+/\ safeMode = "off"
+/\ xf = << [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0],
+   [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0] >>
+
+State 20: <MCTick line 51, col 11 to line 51, col 38 of module MC>
+/\ nnCur = 2
+/\ nnEpoch = 0
+/\ hbResp = (s :> <<>> @@ t :> <<>>)
+/\ stalled = (s :> FALSE @@ t :> FALSE)
+/\ targetFired = FALSE
+/\ nnNext = 3
+/\ dnCur = (s :> 2 @@ t :> 1)
+/\ inHM = (s :> TRUE @@ t :> TRUE)
+/\ now = 3
+/\ nnSerial = 3
+/\ cmdQ = (s :> <<>> @@ t :> <<>>)
+/\ hbStage = (s :> "idle" @@ t :> "idle")
+/\ rotPending = FALSE
+/\ dnBpReg = (s :> TRUE @@ t :> TRUE)
+/\ fc = [ sm |-> 0,
+  smrot |-> 0,
+  lost |-> 0,
+  stall |-> 0,
+  dead |-> 1,
+  nnr |-> 0,
+  dnr |-> 0 ]
+/\ dnKeys = (s :> <<5, 7, 9>> @@ t :> <<5, 7>>)
+/\ regExport = (s :> [cur |-> -1, keys |-> <<>>] @@ t :> [cur |-> -1, keys |-> <<>>])
+/\ dnBTSM = (s :> TRUE @@ t :> TRUE)
+/\ th = [st |-> "idle", dn |-> "none", cmds |-> <<>>]
+/\ choosable = (s :> TRUE @@ t :> TRUE)
+/\ needKeyUpdate = (s :> FALSE @@ t :> FALSE)
+/\ regStage = (s :> "idle" @@ t :> "idle")
+/\ lastRot = 2
+/\ dnTokEn = (s :> TRUE @@ t :> TRUE)
+/\ nnKeys = <<5, 7, 9>>
+/\ safeMode = "off"
+/\ xf = << [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0],
+   [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0] >>
+
+State 21: <MCTick line 51, col 11 to line 51, col 38 of module MC>
+/\ nnCur = 2
+/\ nnEpoch = 0
+/\ hbResp = (s :> <<>> @@ t :> <<>>)
+/\ stalled = (s :> FALSE @@ t :> FALSE)
+/\ targetFired = FALSE
+/\ nnNext = 3
+/\ dnCur = (s :> 2 @@ t :> 1)
+/\ inHM = (s :> TRUE @@ t :> TRUE)
+/\ now = 4
+/\ nnSerial = 3
+/\ cmdQ = (s :> <<>> @@ t :> <<>>)
+/\ hbStage = (s :> "idle" @@ t :> "idle")
+/\ rotPending = FALSE
+/\ dnBpReg = (s :> TRUE @@ t :> TRUE)
+/\ fc = [ sm |-> 0,
+  smrot |-> 0,
+  lost |-> 0,
+  stall |-> 0,
+  dead |-> 1,
+  nnr |-> 0,
+  dnr |-> 0 ]
+/\ dnKeys = (s :> <<5, 7, 9>> @@ t :> <<5, 7>>)
+/\ regExport = (s :> [cur |-> -1, keys |-> <<>>] @@ t :> [cur |-> -1, keys |-> <<>>])
+/\ dnBTSM = (s :> TRUE @@ t :> TRUE)
+/\ th = [st |-> "idle", dn |-> "none", cmds |-> <<>>]
+/\ choosable = (s :> TRUE @@ t :> TRUE)
+/\ needKeyUpdate = (s :> FALSE @@ t :> FALSE)
+/\ regStage = (s :> "idle" @@ t :> "idle")
+/\ lastRot = 2
+/\ dnTokEn = (s :> TRUE @@ t :> TRUE)
+/\ nnKeys = <<5, 7, 9>>
+/\ safeMode = "off"
+/\ xf = << [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0],
+   [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0] >>
+
+State 22: <MCRotate line 65, col 5 to line 70, col 66 of module MC>
+/\ nnCur = 3
+/\ nnEpoch = 0
+/\ hbResp = (s :> <<>> @@ t :> <<>>)
+/\ stalled = (s :> FALSE @@ t :> FALSE)
+/\ targetFired = FALSE
+/\ nnNext = 4
+/\ dnCur = (s :> 2 @@ t :> 1)
+/\ inHM = (s :> TRUE @@ t :> TRUE)
+/\ now = 4
+/\ nnSerial = 4
+/\ cmdQ = (s :> <<>> @@ t :> <<>>)
+/\ hbStage = (s :> "idle" @@ t :> "idle")
+/\ rotPending = TRUE
+/\ dnBpReg = (s :> TRUE @@ t :> TRUE)
+/\ fc = [ sm |-> 0,
+  smrot |-> 0,
+  lost |-> 0,
+  stall |-> 0,
+  dead |-> 1,
+  nnr |-> 0,
+  dnr |-> 0 ]
+/\ dnKeys = (s :> <<5, 7, 9>> @@ t :> <<5, 7>>)
+/\ regExport = (s :> [cur |-> -1, keys |-> <<>>] @@ t :> [cur |-> -1, keys |-> <<>>])
+/\ dnBTSM = (s :> TRUE @@ t :> TRUE)
+/\ th = [st |-> "idle", dn |-> "none", cmds |-> <<>>]
+/\ choosable = (s :> TRUE @@ t :> TRUE)
+/\ needKeyUpdate = (s :> FALSE @@ t :> FALSE)
+/\ regStage = (s :> "idle" @@ t :> "idle")
+/\ lastRot = 2
+/\ dnTokEn = (s :> TRUE @@ t :> TRUE)
+/\ nnKeys = <<5, 7, 9, 11>>
+/\ safeMode = "off"
+/\ xf = << [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0],
+   [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0] >>
+
+State 23: <MCMark line 72, col 11 to line 72, col 38 of module MC>
+/\ nnCur = 3
+/\ nnEpoch = 0
+/\ hbResp = (s :> <<>> @@ t :> <<>>)
+/\ stalled = (s :> FALSE @@ t :> FALSE)
+/\ targetFired = FALSE
+/\ nnNext = 4
+/\ dnCur = (s :> 2 @@ t :> 1)
+/\ inHM = (s :> TRUE @@ t :> TRUE)
+/\ now = 4
+/\ nnSerial = 4
+/\ cmdQ = (s :> <<>> @@ t :> <<>>)
+/\ hbStage = (s :> "idle" @@ t :> "idle")
+/\ rotPending = FALSE
+/\ dnBpReg = (s :> TRUE @@ t :> TRUE)
+/\ fc = [ sm |-> 0,
+  smrot |-> 0,
+  lost |-> 0,
+  stall |-> 0,
+  dead |-> 1,
+  nnr |-> 0,
+  dnr |-> 0 ]
+/\ dnKeys = (s :> <<5, 7, 9>> @@ t :> <<5, 7>>)
+/\ regExport = (s :> [cur |-> -1, keys |-> <<>>] @@ t :> [cur |-> -1, keys |-> <<>>])
+/\ dnBTSM = (s :> TRUE @@ t :> TRUE)
+/\ th = [st |-> "idle", dn |-> "none", cmds |-> <<>>]
+/\ choosable = (s :> TRUE @@ t :> TRUE)
+/\ needKeyUpdate = (s :> TRUE @@ t :> TRUE)
+/\ regStage = (s :> "idle" @@ t :> "idle")
+/\ lastRot = 4
+/\ dnTokEn = (s :> TRUE @@ t :> TRUE)
+/\ nnKeys = <<5, 7, 9, 11>>
+/\ safeMode = "off"
+/\ xf = << [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0],
+   [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0] >>
+
+State 24: <MCScheduleTransfer(s,t) line 93, col 33 to line 93, col 82 of module MC>
+/\ nnCur = 3
+/\ nnEpoch = 0
+/\ hbResp = (s :> <<>> @@ t :> <<>>)
+/\ stalled = (s :> FALSE @@ t :> FALSE)
+/\ targetFired = FALSE
+/\ nnNext = 4
+/\ dnCur = (s :> 2 @@ t :> 1)
+/\ inHM = (s :> TRUE @@ t :> TRUE)
+/\ now = 4
+/\ nnSerial = 4
+/\ cmdQ = (s :> <<>> @@ t :> <<>>)
+/\ hbStage = (s :> "idle" @@ t :> "idle")
+/\ rotPending = FALSE
+/\ dnBpReg = (s :> TRUE @@ t :> TRUE)
+/\ fc = [ sm |-> 0,
+  smrot |-> 0,
+  lost |-> 0,
+  stall |-> 0,
+  dead |-> 1,
+  nnr |-> 0,
+  dnr |-> 0 ]
+/\ dnKeys = (s :> <<5, 7, 9>> @@ t :> <<5, 7>>)
+/\ regExport = (s :> [cur |-> -1, keys |-> <<>>] @@ t :> [cur |-> -1, keys |-> <<>>])
+/\ dnBTSM = (s :> TRUE @@ t :> TRUE)
+/\ th = [st |-> "idle", dn |-> "none", cmds |-> <<>>]
+/\ choosable = (s :> TRUE @@ t :> TRUE)
+/\ needKeyUpdate = (s :> TRUE @@ t :> TRUE)
+/\ regStage = (s :> "idle" @@ t :> "idle")
+/\ lastRot = 4
+/\ dnTokEn = (s :> TRUE @@ t :> TRUE)
+/\ nnKeys = <<5, 7, 9, 11>>
+/\ safeMode = "off"
+/\ xf = << [src |-> s, dst |-> t, st |-> "nn", key |-> -1, exp |-> 0],
+   [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0] >>
+
+State 25: <MCHandleHeartbeat(s,"actor") line 82, col 5 to line 82, col 85 of module MC>
+/\ nnCur = 3
+/\ nnEpoch = 0
+/\ hbResp = ( s :>
+      << [ex |-> [cur |-> -1, keys |-> <<>>], type |-> "XFER", ids |-> {1}],
+         [ ex |-> [cur |-> 3, keys |-> <<5, 7, 9, 11>>],
+           type |-> "KUC",
+           ids |-> {} ] >> @@
+  t :> <<>> )
+/\ stalled = (s :> FALSE @@ t :> FALSE)
+/\ targetFired = FALSE
+/\ nnNext = 4
+/\ dnCur = (s :> 2 @@ t :> 1)
+/\ inHM = (s :> TRUE @@ t :> TRUE)
+/\ now = 4
+/\ nnSerial = 4
+/\ cmdQ = (s :> <<>> @@ t :> <<>>)
+/\ hbStage = (s :> "exported" @@ t :> "idle")
+/\ rotPending = FALSE
+/\ dnBpReg = (s :> TRUE @@ t :> TRUE)
+/\ fc = [ sm |-> 0,
+  smrot |-> 0,
+  lost |-> 0,
+  stall |-> 0,
+  dead |-> 1,
+  nnr |-> 0,
+  dnr |-> 0 ]
+/\ dnKeys = (s :> <<5, 7, 9>> @@ t :> <<5, 7>>)
+/\ regExport = (s :> [cur |-> -1, keys |-> <<>>] @@ t :> [cur |-> -1, keys |-> <<>>])
+/\ dnBTSM = (s :> TRUE @@ t :> TRUE)
+/\ th = [st |-> "idle", dn |-> "none", cmds |-> <<>>]
+/\ choosable = (s :> TRUE @@ t :> TRUE)
+/\ needKeyUpdate = (s :> TRUE @@ t :> TRUE)
+/\ regStage = (s :> "idle" @@ t :> "idle")
+/\ lastRot = 4
+/\ dnTokEn = (s :> TRUE @@ t :> TRUE)
+/\ nnKeys = <<5, 7, 9, 11>>
+/\ safeMode = "off"
+/\ xf = << [src |-> s, dst |-> t, st |-> "resp", key |-> -1, exp |-> 0],
+   [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0] >>
+
+State 26: <MCHbClear(s,"actor") line 83, col 28 to line 83, col 64 of module MC>
+/\ nnCur = 3
+/\ nnEpoch = 0
+/\ hbResp = ( s :>
+      << [ex |-> [cur |-> -1, keys |-> <<>>], type |-> "XFER", ids |-> {1}],
+         [ ex |-> [cur |-> 3, keys |-> <<5, 7, 9, 11>>],
+           type |-> "KUC",
+           ids |-> {} ] >> @@
+  t :> <<>> )
+/\ stalled = (s :> FALSE @@ t :> FALSE)
+/\ targetFired = FALSE
+/\ nnNext = 4
+/\ dnCur = (s :> 2 @@ t :> 1)
+/\ inHM = (s :> TRUE @@ t :> TRUE)
+/\ now = 4
+/\ nnSerial = 4
+/\ cmdQ = (s :> <<>> @@ t :> <<>>)
+/\ hbStage = (s :> "inflight" @@ t :> "idle")
+/\ rotPending = FALSE
+/\ dnBpReg = (s :> TRUE @@ t :> TRUE)
+/\ fc = [ sm |-> 0,
+  smrot |-> 0,
+  lost |-> 0,
+  stall |-> 0,
+  dead |-> 1,
+  nnr |-> 0,
+  dnr |-> 0 ]
+/\ dnKeys = (s :> <<5, 7, 9>> @@ t :> <<5, 7>>)
+/\ regExport = (s :> [cur |-> -1, keys |-> <<>>] @@ t :> [cur |-> -1, keys |-> <<>>])
+/\ dnBTSM = (s :> TRUE @@ t :> TRUE)
+/\ th = [st |-> "idle", dn |-> "none", cmds |-> <<>>]
+/\ choosable = (s :> TRUE @@ t :> TRUE)
+/\ needKeyUpdate = (s :> FALSE @@ t :> TRUE)
+/\ regStage = (s :> "idle" @@ t :> "idle")
+/\ lastRot = 4
+/\ dnTokEn = (s :> TRUE @@ t :> TRUE)
+/\ nnKeys = <<5, 7, 9, 11>>
+/\ safeMode = "off"
+/\ xf = << [src |-> s, dst |-> t, st |-> "resp", key |-> -1, exp |-> 0],
+   [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0] >>
+
+State 27: <MCDeliverResp(s) line 84, col 28 to line 84, col 65 of module MC>
+/\ nnCur = 3
+/\ nnEpoch = 0
+/\ hbResp = (s :> <<>> @@ t :> <<>>)
+/\ stalled = (s :> FALSE @@ t :> FALSE)
+/\ targetFired = FALSE
+/\ nnNext = 4
+/\ dnCur = (s :> 2 @@ t :> 1)
+/\ inHM = (s :> TRUE @@ t :> TRUE)
+/\ now = 4
+/\ nnSerial = 4
+/\ cmdQ = ( s :>
+      << [ ex |-> [cur |-> 3, keys |-> <<5, 7, 9, 11>>],
+           type |-> "KUC",
+           ids |-> {} ],
+         [ ex |-> [cur |-> -1, keys |-> <<>>],
+           type |-> "XFER",
+           ids |-> {1} ] >> @@
+  t :> <<>> )
+/\ hbStage = (s :> "idle" @@ t :> "idle")
+/\ rotPending = FALSE
+/\ dnBpReg = (s :> TRUE @@ t :> TRUE)
+/\ fc = [ sm |-> 0,
+  smrot |-> 0,
+  lost |-> 0,
+  stall |-> 0,
+  dead |-> 1,
+  nnr |-> 0,
+  dnr |-> 0 ]
+/\ dnKeys = (s :> <<5, 7, 9>> @@ t :> <<5, 7>>)
+/\ regExport = (s :> [cur |-> -1, keys |-> <<>>] @@ t :> [cur |-> -1, keys |-> <<>>])
+/\ dnBTSM = (s :> TRUE @@ t :> TRUE)
+/\ th = [st |-> "idle", dn |-> "none", cmds |-> <<>>]
+/\ choosable = (s :> TRUE @@ t :> TRUE)
+/\ needKeyUpdate = (s :> FALSE @@ t :> TRUE)
+/\ regStage = (s :> "idle" @@ t :> "idle")
+/\ lastRot = 4
+/\ dnTokEn = (s :> TRUE @@ t :> TRUE)
+/\ nnKeys = <<5, 7, 9, 11>>
+/\ safeMode = "off"
+/\ xf = << [src |-> s, dst |-> t, st |-> "q", key |-> -1, exp |-> 0],
+   [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0] >>
+
+State 28: <MCProcessCommand(s) line 85, col 28 to line 85, col 68 of module MC>
+/\ nnCur = 3
+/\ nnEpoch = 0
+/\ hbResp = (s :> <<>> @@ t :> <<>>)
+/\ stalled = (s :> FALSE @@ t :> FALSE)
+/\ targetFired = FALSE
+/\ nnNext = 4
+/\ dnCur = (s :> 3 @@ t :> 1)
+/\ inHM = (s :> TRUE @@ t :> TRUE)
+/\ now = 4
+/\ nnSerial = 4
+/\ cmdQ = ( s :> <<[ex |-> [cur |-> -1, keys |-> <<>>], type |-> "XFER", ids |-> {1}]>> @@
+  t :> <<>> )
+/\ hbStage = (s :> "idle" @@ t :> "idle")
+/\ rotPending = FALSE
+/\ dnBpReg = (s :> TRUE @@ t :> TRUE)
+/\ fc = [ sm |-> 0,
+  smrot |-> 0,
+  lost |-> 0,
+  stall |-> 0,
+  dead |-> 1,
+  nnr |-> 0,
+  dnr |-> 0 ]
+/\ dnKeys = (s :> <<5, 7, 9, 11>> @@ t :> <<5, 7>>)
+/\ regExport = (s :> [cur |-> -1, keys |-> <<>>] @@ t :> [cur |-> -1, keys |-> <<>>])
+/\ dnBTSM = (s :> TRUE @@ t :> TRUE)
+/\ th = [st |-> "idle", dn |-> "none", cmds |-> <<>>]
+/\ choosable = (s :> TRUE @@ t :> TRUE)
+/\ needKeyUpdate = (s :> FALSE @@ t :> TRUE)
+/\ regStage = (s :> "idle" @@ t :> "idle")
+/\ lastRot = 4
+/\ dnTokEn = (s :> TRUE @@ t :> TRUE)
+/\ nnKeys = <<5, 7, 9, 11>>
+/\ safeMode = "off"
+/\ xf = << [src |-> s, dst |-> t, st |-> "q", key |-> -1, exp |-> 0],
+   [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0] >>
+
+State 29: <MCProcessCommand(s) line 85, col 28 to line 85, col 68 of module MC>
+/\ nnCur = 3
+/\ nnEpoch = 0
+/\ hbResp = (s :> <<>> @@ t :> <<>>)
+/\ stalled = (s :> FALSE @@ t :> FALSE)
+/\ targetFired = FALSE
+/\ nnNext = 4
+/\ dnCur = (s :> 3 @@ t :> 1)
+/\ inHM = (s :> TRUE @@ t :> TRUE)
+/\ now = 4
+/\ nnSerial = 4
+/\ cmdQ = (s :> <<>> @@ t :> <<>>)
+/\ hbStage = (s :> "idle" @@ t :> "idle")
+/\ rotPending = FALSE
+/\ dnBpReg = (s :> TRUE @@ t :> TRUE)
+/\ fc = [ sm |-> 0,
+  smrot |-> 0,
+  lost |-> 0,
+  stall |-> 0,
+  dead |-> 1,
+  nnr |-> 0,
+  dnr |-> 0 ]
+/\ dnKeys = (s :> <<5, 7, 9, 11>> @@ t :> <<5, 7>>)
+/\ regExport = (s :> [cur |-> -1, keys |-> <<>>] @@ t :> [cur |-> -1, keys |-> <<>>])
+/\ dnBTSM = (s :> TRUE @@ t :> TRUE)
+/\ th = [st |-> "idle", dn |-> "none", cmds |-> <<>>]
+/\ choosable = (s :> TRUE @@ t :> TRUE)
+/\ needKeyUpdate = (s :> FALSE @@ t :> TRUE)
+/\ regStage = (s :> "idle" @@ t :> "idle")
+/\ lastRot = 4
+/\ dnTokEn = (s :> TRUE @@ t :> TRUE)
+/\ nnKeys = <<5, 7, 9, 11>>
+/\ safeMode = "off"
+/\ xf = << [src |-> s, dst |-> t, st |-> "task", key |-> -1, exp |-> 0],
+   [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0] >>
+
+State 30: <MCMint(1) line 95, col 33 to line 95, col 63 of module MC>
+/\ nnCur = 3
+/\ nnEpoch = 0
+/\ hbResp = (s :> <<>> @@ t :> <<>>)
+/\ stalled = (s :> FALSE @@ t :> FALSE)
+/\ targetFired = FALSE
+/\ nnNext = 4
+/\ dnCur = (s :> 3 @@ t :> 1)
+/\ inHM = (s :> TRUE @@ t :> TRUE)
+/\ now = 4
+/\ nnSerial = 4
+/\ cmdQ = (s :> <<>> @@ t :> <<>>)
+/\ hbStage = (s :> "idle" @@ t :> "idle")
+/\ rotPending = FALSE
+/\ dnBpReg = (s :> TRUE @@ t :> TRUE)
+/\ fc = [ sm |-> 0,
+  smrot |-> 0,
+  lost |-> 0,
+  stall |-> 0,
+  dead |-> 1,
+  nnr |-> 0,
+  dnr |-> 0 ]
+/\ dnKeys = (s :> <<5, 7, 9, 11>> @@ t :> <<5, 7>>)
+/\ regExport = (s :> [cur |-> -1, keys |-> <<>>] @@ t :> [cur |-> -1, keys |-> <<>>])
+/\ dnBTSM = (s :> TRUE @@ t :> TRUE)
+/\ th = [st |-> "idle", dn |-> "none", cmds |-> <<>>]
+/\ choosable = (s :> TRUE @@ t :> TRUE)
+/\ needKeyUpdate = (s :> FALSE @@ t :> TRUE)
+/\ regStage = (s :> "idle" @@ t :> "idle")
+/\ lastRot = 4
+/\ dnTokEn = (s :> TRUE @@ t :> TRUE)
+/\ nnKeys = <<5, 7, 9, 11>>
+/\ safeMode = "off"
+/\ xf = << [src |-> s, dst |-> t, st |-> "minted", key |-> 3, exp |-> 5],
+   [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0] >>
+
+State 31: <MCTargetCheck(t,1) line 96, col 33 to line 96, col 73 of module MC>
+/\ nnCur = 3
+/\ nnEpoch = 0
+/\ hbResp = (s :> <<>> @@ t :> <<>>)
+/\ stalled = (s :> FALSE @@ t :> FALSE)
+/\ targetFired = TRUE
+/\ nnNext = 4
+/\ dnCur = (s :> 3 @@ t :> 1)
+/\ inHM = (s :> TRUE @@ t :> TRUE)
+/\ now = 4
+/\ nnSerial = 4
+/\ cmdQ = (s :> <<>> @@ t :> <<>>)
+/\ hbStage = (s :> "idle" @@ t :> "idle")
+/\ rotPending = FALSE
+/\ dnBpReg = (s :> TRUE @@ t :> TRUE)
+/\ fc = [ sm |-> 0,
+  smrot |-> 0,
+  lost |-> 0,
+  stall |-> 0,
+  dead |-> 1,
+  nnr |-> 0,
+  dnr |-> 0 ]
+/\ dnKeys = (s :> <<5, 7, 9, 11>> @@ t :> <<5, 7>>)
+/\ regExport = (s :> [cur |-> -1, keys |-> <<>>] @@ t :> [cur |-> -1, keys |-> <<>>])
+/\ dnBTSM = (s :> TRUE @@ t :> TRUE)
+/\ th = [st |-> "idle", dn |-> "none", cmds |-> <<>>]
+/\ choosable = (s :> TRUE @@ t :> TRUE)
+/\ needKeyUpdate = (s :> FALSE @@ t :> TRUE)
+/\ regStage = (s :> "idle" @@ t :> "idle")
+/\ lastRot = 4
+/\ dnTokEn = (s :> TRUE @@ t :> TRUE)
+/\ nnKeys = <<5, 7, 9, 11>>
+/\ safeMode = "off"
+/\ xf = << [src |-> s, dst |-> t, st |-> "minted", key |-> 3, exp |-> 5],
+   [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0] >>
+
+"CounterExample written: /users/ZhenyuLi/Specula/runs/20261029-002846-51f8/hdfs-adhoc-12/.specula-output/spec/output/hunt/regrace_bfs_cex.json"
+373616 states generated, 118139 distinct states found, 10807 states left on queue.
+The depth of the complete state graph search is 31.
+Finished in 14s at (2026-10-29 10:06:06)
+Trace exploration spec path: ./MC_TTrace_1793268351.tla
+[src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0] >>
+
+State 31: <MCTargetCheck(t,1) line 96, col 33 to line 96, col 73 of module MC>
+/\ nnCur = 3
+/\ nnEpoch = 0
+/\ hbResp = (s :> <<>> @@ t :> <<>>)
+/\ stalled = (s :> FALSE @@ t :> FALSE)
+/\ targetFired = TRUE
+/\ nnNext = 4
+/\ dnCur = (s :> 3 @@ t :> 1)
+/\ inHM = (s :> TRUE @@ t :> TRUE)
+/\ now = 4
+/\ nnSerial = 4
+/\ cmdQ = (s :> <<>> @@ t :> <<>>)
+/\ hbStage = (s :> "idle" @@ t :> "idle")
+/\ rotPending = FALSE
+/\ dnBpReg = (s :> TRUE @@ t :> TRUE)
+/\ fc = [ sm |-> 0,
+  smrot |-> 0,
+  lost |-> 0,
+  stall |-> 0,
+  dead |-> 1,
+  nnr |-> 0,
+  dnr |-> 0 ]
+/\ dnKeys = (s :> <<5, 7, 9, 11>> @@ t :> <<5, 7>>)
+/\ regExport = (s :> [cur |-> -1, keys |-> <<>>] @@ t :> [cur |-> -1, keys |-> <<>>])
+/\ dnBTSM = (s :> TRUE @@ t :> TRUE)
+/\ th = [st |-> "idle", dn |-> "none", cmds |-> <<>>]
+/\ choosable = (s :> TRUE @@ t :> TRUE)
+/\ needKeyUpdate = (s :> FALSE @@ t :> TRUE)
+/\ regStage = (s :> "idle" @@ t :> "idle")
+/\ lastRot = 4
+/\ dnTokEn = (s :> TRUE @@ t :> TRUE)
+/\ nnKeys = <<5, 7, 9, 11>>
+/\ safeMode = "off"
+/\ xf = << [src |-> s, dst |-> t, st |-> "minted", key |-> 3, exp |-> 5],
+   [src |-> "none", dst |-> "none", st |-> "none", key |-> -1, exp |-> 0] >>
+
+"CounterExample written: /users/ZhenyuLi/Specula/runs/20261029-002846-51f8/hdfs-adhoc-12/.specula-output/spec/output/hunt/regrace_bfs_cex.json"
+373616 states generated, 118139 distinct states found, 10807 states left on queue.
+The depth of the complete state graph search is 31.
+Finished in 14s at (2026-10-29 10:06:06)
+Trace exploration spec path: ./MC_TTrace_1793268351.tla
+
+[0;32m================================[0m
+[1;33m⚠ Invariant violation found![0m
+[1;33mPlease check log: /users/ZhenyuLi/Specula/runs/20261029-002846-51f8/hdfs-adhoc-12/.specula-output/spec/output/hunt/regrace_bfs.out[0m
+[0;32m================================[0m

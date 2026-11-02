@@ -1,0 +1,1094 @@
+TLC2 Version 2026.10.24.013619 (rev: 2ef2af8)
+Warning: Please run the Java VM, which executes TLC with a throughput optimized garbage collector, by passing the "-XX:+UseParallelGC" property.
+(Use the -nowarning option to disable this warning.)
+Running breadth-first search Model-Checking with fp 11 and seed -7445499582888449457 with 1 worker on 64 cores with 2048MB heap and 64MB offheap memory [pid: 3801380] (Linux 5.15.0-198-generic amd64, Eclipse Adoptium 21.0.13 64bit, MSBDiskFPSet, DiskStateQueue).
+Parsing file /tmp/hdfs-adhoc-31-p3/work-diag4.Y1Dj/MCDiag.tla
+Parsing file /tmp/hdfs-adhoc-31-p3/work-diag4.Y1Dj/MC.tla
+Parsing file /tmp/tlc-7150979437098629250/_TLCTrace.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/_TLCTrace.tla)
+Parsing file /tmp/hdfs-adhoc-31-p3/work-diag4.Y1Dj/base.tla
+Parsing file /tmp/tlc-7150979437098629250/Integers.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Integers.tla)
+Parsing file /tmp/tlc-7150979437098629250/Sequences.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Sequences.tla)
+Parsing file /tmp/tlc-7150979437098629250/FiniteSets.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/FiniteSets.tla)
+Parsing file /tmp/tlc-7150979437098629250/TLC.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLC.tla)
+Parsing file /tmp/tlc-7150979437098629250/Naturals.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Naturals.tla)
+Parsing file /tmp/tlc-7150979437098629250/TLCExt.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLCExt.tla)
+Semantic processing of module Naturals
+Semantic processing of module Integers
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module TLC
+Semantic processing of module base
+Semantic processing of module MC
+Semantic processing of module TLCExt
+Semantic processing of module _TLCTrace
+Semantic processing of module MCDiag
+Linting of module base
+Linting of module MC
+Linting of module TLCExt
+Linting of module _TLCTrace
+Linting of module MCDiag
+Starting... (2026-10-30 00:05:06)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-10-30 00:05:06.
+Error: Invariant NoFireE2 is violated.
+Error: The behavior up to this point is:
+State 1: <Initial predicate>
+/\ metaCorrupt = TRUE
+/\ xferOpen = TRUE
+/\ vsSuspect = FALSE
+/\ svcRun = [O |-> TRUE]
+/\ dnShouldRun = TRUE
+/\ cpBlk = [O |-> 0, test |-> 0]
+/\ fc = [ shutdown |-> 0,
+  diskFail |-> 0,
+  nnReject |-> 0,
+  refresh |-> 0,
+  xferCmd |-> 0,
+  ecCmd |-> 0,
+  clientRead |-> 0,
+  vscan |-> 0,
+  dirScan |-> 0,
+  recv |-> 0,
+  corruptPkt |-> 0,
+  otherCmd |-> 0 ]
+/\ offerSvcs = {"O"}
+/\ active = [O |-> FALSE]
+/\ targetFired = FALSE
+/\ vsPoolEnabled = FALSE
+/\ dirScanUp = FALSE
+/\ shPc = "none"
+/\ xcAccept = TRUE
+/\ bpMap = "none"
+/\ targetEntry = "none"
+/\ dsHasPool = FALSE
+/\ scanPhase = "run"
+/\ actorPc = [O |-> "hs"]
+/\ refreshPc = "idle"
+/\ xcIntr = FALSE
+/\ inSvc = [O |-> TRUE]
+/\ hasBp = [O |-> FALSE]
+/\ stopped = [O |-> FALSE]
+/\ cpc = [O |-> "check", test |-> "idle"]
+/\ ecOpen = TRUE
+/\ lrep = <<[pc |-> "none", k |-> "none"]>>
+/\ bpReg = [O |-> FALSE]
+/\ rrep = <<>>
+/\ storHasPool = FALSE
+/\ cmdQ = [O |-> <<>>]
+
+State 2: <MCActorHandshakePut("O") line 85, col 31 to line 85, col 66 of module MC>
+/\ metaCorrupt = TRUE
+/\ xferOpen = TRUE
+/\ vsSuspect = FALSE
+/\ svcRun = [O |-> TRUE]
+/\ dnShouldRun = TRUE
+/\ cpBlk = [O |-> 0, test |-> 0]
+/\ fc = [ shutdown |-> 0,
+  diskFail |-> 0,
+  nnReject |-> 0,
+  refresh |-> 0,
+  xferCmd |-> 0,
+  ecCmd |-> 0,
+  clientRead |-> 0,
+  vscan |-> 0,
+  dirScan |-> 0,
+  recv |-> 0,
+  corruptPkt |-> 0,
+  otherCmd |-> 0 ]
+/\ offerSvcs = {"O"}
+/\ active = [O |-> TRUE]
+/\ targetFired = FALSE
+/\ vsPoolEnabled = FALSE
+/\ dirScanUp = FALSE
+/\ shPc = "none"
+/\ xcAccept = TRUE
+/\ bpMap = "O"
+/\ targetEntry = "none"
+/\ dsHasPool = FALSE
+/\ scanPhase = "run"
+/\ actorPc = [O |-> "hsStorage"]
+/\ refreshPc = "idle"
+/\ xcIntr = FALSE
+/\ inSvc = [O |-> TRUE]
+/\ hasBp = [O |-> TRUE]
+/\ stopped = [O |-> FALSE]
+/\ cpc = [O |-> "check", test |-> "idle"]
+/\ ecOpen = TRUE
+/\ lrep = <<[pc |-> "none", k |-> "none"]>>
+/\ bpReg = [O |-> FALSE]
+/\ rrep = <<>>
+/\ storHasPool = FALSE
+/\ cmdQ = [O |-> <<>>]
+
+State 3: <MCActorInitStorage("O") line 86, col 31 to line 86, col 65 of module MC>
+/\ metaCorrupt = TRUE
+/\ xferOpen = TRUE
+/\ vsSuspect = FALSE
+/\ svcRun = [O |-> TRUE]
+/\ dnShouldRun = TRUE
+/\ cpBlk = [O |-> 0, test |-> 0]
+/\ fc = [ shutdown |-> 0,
+  diskFail |-> 0,
+  nnReject |-> 0,
+  refresh |-> 0,
+  xferCmd |-> 0,
+  ecCmd |-> 0,
+  clientRead |-> 0,
+  vscan |-> 0,
+  dirScan |-> 0,
+  recv |-> 0,
+  corruptPkt |-> 0,
+  otherCmd |-> 0 ]
+/\ offerSvcs = {"O"}
+/\ active = [O |-> TRUE]
+/\ targetFired = FALSE
+/\ vsPoolEnabled = FALSE
+/\ dirScanUp = FALSE
+/\ shPc = "none"
+/\ xcAccept = TRUE
+/\ bpMap = "O"
+/\ targetEntry = "none"
+/\ dsHasPool = FALSE
+/\ scanPhase = "run"
+/\ actorPc = [O |-> "hsDataset"]
+/\ refreshPc = "idle"
+/\ xcIntr = FALSE
+/\ inSvc = [O |-> TRUE]
+/\ hasBp = [O |-> TRUE]
+/\ stopped = [O |-> FALSE]
+/\ cpc = [O |-> "check", test |-> "idle"]
+/\ ecOpen = TRUE
+/\ lrep = <<[pc |-> "none", k |-> "none"]>>
+/\ bpReg = [O |-> FALSE]
+/\ rrep = <<>>
+/\ storHasPool = TRUE
+/\ cmdQ = [O |-> <<>>]
+
+State 4: <MCActorAddDataset("O") line 87, col 31 to line 87, col 64 of module MC>
+/\ metaCorrupt = TRUE
+/\ xferOpen = TRUE
+/\ vsSuspect = FALSE
+/\ svcRun = [O |-> TRUE]
+/\ dnShouldRun = TRUE
+/\ cpBlk = [O |-> 0, test |-> 0]
+/\ fc = [ shutdown |-> 0,
+  diskFail |-> 0,
+  nnReject |-> 0,
+  refresh |-> 0,
+  xferCmd |-> 0,
+  ecCmd |-> 0,
+  clientRead |-> 0,
+  vscan |-> 0,
+  dirScan |-> 0,
+  recv |-> 0,
+  corruptPkt |-> 0,
+  otherCmd |-> 0 ]
+/\ offerSvcs = {"O"}
+/\ active = [O |-> TRUE]
+/\ targetFired = FALSE
+/\ vsPoolEnabled = FALSE
+/\ dirScanUp = TRUE
+/\ shPc = "none"
+/\ xcAccept = TRUE
+/\ bpMap = "O"
+/\ targetEntry = "none"
+/\ dsHasPool = TRUE
+/\ scanPhase = "run"
+/\ actorPc = [O |-> "reg"]
+/\ refreshPc = "idle"
+/\ xcIntr = FALSE
+/\ inSvc = [O |-> TRUE]
+/\ hasBp = [O |-> TRUE]
+/\ stopped = [O |-> FALSE]
+/\ cpc = [O |-> "check", test |-> "idle"]
+/\ ecOpen = TRUE
+/\ lrep = <<[pc |-> "none", k |-> "none"]>>
+/\ bpReg = [O |-> FALSE]
+/\ rrep = <<>>
+/\ storHasPool = TRUE
+/\ cmdQ = [O |-> <<>>]
+
+State 5: <MCActorRegister("O") line 88, col 31 to line 88, col 62 of module MC>
+/\ metaCorrupt = TRUE
+/\ xferOpen = TRUE
+/\ vsSuspect = FALSE
+/\ svcRun = [O |-> TRUE]
+/\ dnShouldRun = TRUE
+/\ cpBlk = [O |-> 0, test |-> 0]
+/\ fc = [ shutdown |-> 0,
+  diskFail |-> 0,
+  nnReject |-> 0,
+  refresh |-> 0,
+  xferCmd |-> 0,
+  ecCmd |-> 0,
+  clientRead |-> 0,
+  vscan |-> 0,
+  dirScan |-> 0,
+  recv |-> 0,
+  corruptPkt |-> 0,
+  otherCmd |-> 0 ]
+/\ offerSvcs = {"O"}
+/\ active = [O |-> TRUE]
+/\ targetFired = FALSE
+/\ vsPoolEnabled = FALSE
+/\ dirScanUp = TRUE
+/\ shPc = "none"
+/\ xcAccept = TRUE
+/\ bpMap = "O"
+/\ targetEntry = "none"
+/\ dsHasPool = TRUE
+/\ scanPhase = "run"
+/\ actorPc = [O |-> "run"]
+/\ refreshPc = "idle"
+/\ xcIntr = FALSE
+/\ inSvc = [O |-> TRUE]
+/\ hasBp = [O |-> TRUE]
+/\ stopped = [O |-> FALSE]
+/\ cpc = [O |-> "check", test |-> "idle"]
+/\ ecOpen = TRUE
+/\ lrep = <<[pc |-> "none", k |-> "none"]>>
+/\ bpReg = [O |-> TRUE]
+/\ rrep = <<>>
+/\ storHasPool = TRUE
+/\ cmdQ = [O |-> <<>>]
+
+State 6: <MCActorIterStart("O") line 89, col 31 to line 89, col 63 of module MC>
+/\ metaCorrupt = TRUE
+/\ xferOpen = TRUE
+/\ vsSuspect = FALSE
+/\ svcRun = [O |-> TRUE]
+/\ dnShouldRun = TRUE
+/\ cpBlk = [O |-> 0, test |-> 0]
+/\ fc = [ shutdown |-> 0,
+  diskFail |-> 0,
+  nnReject |-> 0,
+  refresh |-> 0,
+  xferCmd |-> 0,
+  ecCmd |-> 0,
+  clientRead |-> 0,
+  vscan |-> 0,
+  dirScan |-> 0,
+  recv |-> 0,
+  corruptPkt |-> 0,
+  otherCmd |-> 0 ]
+/\ offerSvcs = {"O"}
+/\ active = [O |-> TRUE]
+/\ targetFired = FALSE
+/\ vsPoolEnabled = FALSE
+/\ dirScanUp = TRUE
+/\ shPc = "none"
+/\ xcAccept = TRUE
+/\ bpMap = "O"
+/\ targetEntry = "none"
+/\ dsHasPool = TRUE
+/\ scanPhase = "run"
+/\ actorPc = [O |-> "iter"]
+/\ refreshPc = "idle"
+/\ xcIntr = FALSE
+/\ inSvc = [O |-> TRUE]
+/\ hasBp = [O |-> TRUE]
+/\ stopped = [O |-> FALSE]
+/\ cpc = [O |-> "check", test |-> "idle"]
+/\ ecOpen = TRUE
+/\ lrep = <<[pc |-> "none", k |-> "none"]>>
+/\ bpReg = [O |-> TRUE]
+/\ rrep = <<>>
+/\ storHasPool = TRUE
+/\ cmdQ = [O |-> <<>>]
+
+State 7: <MCActorHeartbeatTransfer("O",1) line 64, col 5 to line 64, col 84 of module MC>
+/\ metaCorrupt = TRUE
+/\ xferOpen = TRUE
+/\ vsSuspect = FALSE
+/\ svcRun = [O |-> TRUE]
+/\ dnShouldRun = TRUE
+/\ cpBlk = [O |-> 0, test |-> 0]
+/\ fc = [ shutdown |-> 0,
+  diskFail |-> 0,
+  nnReject |-> 0,
+  refresh |-> 0,
+  xferCmd |-> 1,
+  ecCmd |-> 0,
+  clientRead |-> 0,
+  vscan |-> 0,
+  dirScan |-> 0,
+  recv |-> 0,
+  corruptPkt |-> 0,
+  otherCmd |-> 0 ]
+/\ offerSvcs = {"O"}
+/\ active = [O |-> TRUE]
+/\ targetFired = FALSE
+/\ vsPoolEnabled = FALSE
+/\ dirScanUp = TRUE
+/\ shPc = "none"
+/\ xcAccept = TRUE
+/\ bpMap = "O"
+/\ targetEntry = "none"
+/\ dsHasPool = TRUE
+/\ scanPhase = "run"
+/\ actorPc = [O |-> "iter"]
+/\ refreshPc = "idle"
+/\ xcIntr = FALSE
+/\ inSvc = [O |-> TRUE]
+/\ hasBp = [O |-> TRUE]
+/\ stopped = [O |-> FALSE]
+/\ cpc = [O |-> "check", test |-> "idle"]
+/\ ecOpen = TRUE
+/\ lrep = <<[pc |-> "none", k |-> "none"]>>
+/\ bpReg = [O |-> TRUE]
+/\ rrep = <<>>
+/\ storHasPool = TRUE
+/\ cmdQ = [O |-> <<1>>]
+
+State 8: <MCCPCheck("O") line 98, col 31 to line 98, col 56 of module MC>
+/\ metaCorrupt = TRUE
+/\ xferOpen = TRUE
+/\ vsSuspect = FALSE
+/\ svcRun = [O |-> TRUE]
+/\ dnShouldRun = TRUE
+/\ cpBlk = [O |-> 0, test |-> 0]
+/\ fc = [ shutdown |-> 0,
+  diskFail |-> 0,
+  nnReject |-> 0,
+  refresh |-> 0,
+  xferCmd |-> 1,
+  ecCmd |-> 0,
+  clientRead |-> 0,
+  vscan |-> 0,
+  dirScan |-> 0,
+  recv |-> 0,
+  corruptPkt |-> 0,
+  otherCmd |-> 0 ]
+/\ offerSvcs = {"O"}
+/\ active = [O |-> TRUE]
+/\ targetFired = FALSE
+/\ vsPoolEnabled = FALSE
+/\ dirScanUp = TRUE
+/\ shPc = "none"
+/\ xcAccept = TRUE
+/\ bpMap = "O"
+/\ targetEntry = "none"
+/\ dsHasPool = TRUE
+/\ scanPhase = "run"
+/\ actorPc = [O |-> "iter"]
+/\ refreshPc = "idle"
+/\ xcIntr = FALSE
+/\ inSvc = [O |-> TRUE]
+/\ hasBp = [O |-> TRUE]
+/\ stopped = [O |-> FALSE]
+/\ cpc = [O |-> "take", test |-> "idle"]
+/\ ecOpen = TRUE
+/\ lrep = <<[pc |-> "none", k |-> "none"]>>
+/\ bpReg = [O |-> TRUE]
+/\ rrep = <<>>
+/\ storHasPool = TRUE
+/\ cmdQ = [O |-> <<1>>]
+
+State 9: <MCActorHeartbeatRejected("O") line 57, col 5 to line 57, col 84 of module MC>
+/\ metaCorrupt = TRUE
+/\ xferOpen = TRUE
+/\ vsSuspect = FALSE
+/\ svcRun = [O |-> FALSE]
+/\ dnShouldRun = TRUE
+/\ cpBlk = [O |-> 0, test |-> 0]
+/\ fc = [ shutdown |-> 0,
+  diskFail |-> 0,
+  nnReject |-> 1,
+  refresh |-> 0,
+  xferCmd |-> 1,
+  ecCmd |-> 0,
+  clientRead |-> 0,
+  vscan |-> 0,
+  dirScan |-> 0,
+  recv |-> 0,
+  corruptPkt |-> 0,
+  otherCmd |-> 0 ]
+/\ offerSvcs = {"O"}
+/\ active = [O |-> TRUE]
+/\ targetFired = FALSE
+/\ vsPoolEnabled = FALSE
+/\ dirScanUp = TRUE
+/\ shPc = "none"
+/\ xcAccept = TRUE
+/\ bpMap = "O"
+/\ targetEntry = "none"
+/\ dsHasPool = TRUE
+/\ scanPhase = "run"
+/\ actorPc = [O |-> "cleanup"]
+/\ refreshPc = "idle"
+/\ xcIntr = FALSE
+/\ inSvc = [O |-> TRUE]
+/\ hasBp = [O |-> TRUE]
+/\ stopped = [O |-> FALSE]
+/\ cpc = [O |-> "take", test |-> "idle"]
+/\ ecOpen = TRUE
+/\ lrep = <<[pc |-> "none", k |-> "none"]>>
+/\ bpReg = [O |-> TRUE]
+/\ rrep = <<>>
+/\ storHasPool = TRUE
+/\ cmdQ = [O |-> <<1>>]
+
+State 10: <MCActorCleanUp("O") line 92, col 31 to line 92, col 61 of module MC>
+/\ metaCorrupt = TRUE
+/\ xferOpen = TRUE
+/\ vsSuspect = FALSE
+/\ svcRun = [O |-> FALSE]
+/\ dnShouldRun = TRUE
+/\ cpBlk = [O |-> 0, test |-> 0]
+/\ fc = [ shutdown |-> 0,
+  diskFail |-> 0,
+  nnReject |-> 1,
+  refresh |-> 0,
+  xferCmd |-> 1,
+  ecCmd |-> 0,
+  clientRead |-> 0,
+  vscan |-> 0,
+  dirScan |-> 0,
+  recv |-> 0,
+  corruptPkt |-> 0,
+  otherCmd |-> 0 ]
+/\ offerSvcs = {"O"}
+/\ active = [O |-> TRUE]
+/\ targetFired = FALSE
+/\ vsPoolEnabled = FALSE
+/\ dirScanUp = TRUE
+/\ shPc = "none"
+/\ xcAccept = TRUE
+/\ bpMap = "O"
+/\ targetEntry = "none"
+/\ dsHasPool = TRUE
+/\ scanPhase = "run"
+/\ actorPc = [O |-> "shutActor"]
+/\ refreshPc = "idle"
+/\ xcIntr = FALSE
+/\ inSvc = [O |-> TRUE]
+/\ hasBp = [O |-> TRUE]
+/\ stopped = [O |-> FALSE]
+/\ cpc = [O |-> "take", test |-> "idle"]
+/\ ecOpen = TRUE
+/\ lrep = <<[pc |-> "none", k |-> "none"]>>
+/\ bpReg = [O |-> TRUE]
+/\ rrep = <<>>
+/\ storHasPool = TRUE
+/\ cmdQ = [O |-> <<1>>]
+
+State 11: <MCCPTake("O") line 99, col 31 to line 99, col 55 of module MC>
+/\ metaCorrupt = TRUE
+/\ xferOpen = TRUE
+/\ vsSuspect = FALSE
+/\ svcRun = [O |-> FALSE]
+/\ dnShouldRun = TRUE
+/\ cpBlk = [O |-> 1, test |-> 0]
+/\ fc = [ shutdown |-> 0,
+  diskFail |-> 0,
+  nnReject |-> 1,
+  refresh |-> 0,
+  xferCmd |-> 1,
+  ecCmd |-> 0,
+  clientRead |-> 0,
+  vscan |-> 0,
+  dirScan |-> 0,
+  recv |-> 0,
+  corruptPkt |-> 0,
+  otherCmd |-> 0 ]
+/\ offerSvcs = {"O"}
+/\ active = [O |-> TRUE]
+/\ targetFired = FALSE
+/\ vsPoolEnabled = FALSE
+/\ dirScanUp = TRUE
+/\ shPc = "none"
+/\ xcAccept = TRUE
+/\ bpMap = "O"
+/\ targetEntry = "none"
+/\ dsHasPool = TRUE
+/\ scanPhase = "run"
+/\ actorPc = [O |-> "shutActor"]
+/\ refreshPc = "idle"
+/\ xcIntr = FALSE
+/\ inSvc = [O |-> TRUE]
+/\ hasBp = [O |-> TRUE]
+/\ stopped = [O |-> FALSE]
+/\ cpc = [O |-> "assert", test |-> "idle"]
+/\ ecOpen = TRUE
+/\ lrep = <<[pc |-> "none", k |-> "none"]>>
+/\ bpReg = [O |-> TRUE]
+/\ rrep = <<>>
+/\ storHasPool = TRUE
+/\ cmdQ = [O |-> <<>>]
+
+State 12: <MCCPAssert("O") line 101, col 31 to line 101, col 57 of module MC>
+/\ metaCorrupt = TRUE
+/\ xferOpen = TRUE
+/\ vsSuspect = FALSE
+/\ svcRun = [O |-> FALSE]
+/\ dnShouldRun = TRUE
+/\ cpBlk = [O |-> 1, test |-> 0]
+/\ fc = [ shutdown |-> 0,
+  diskFail |-> 0,
+  nnReject |-> 1,
+  refresh |-> 0,
+  xferCmd |-> 1,
+  ecCmd |-> 0,
+  clientRead |-> 0,
+  vscan |-> 0,
+  dirScan |-> 0,
+  recv |-> 0,
+  corruptPkt |-> 0,
+  otherCmd |-> 0 ]
+/\ offerSvcs = {"O"}
+/\ active = [O |-> TRUE]
+/\ targetFired = FALSE
+/\ vsPoolEnabled = FALSE
+/\ dirScanUp = TRUE
+/\ shPc = "none"
+/\ xcAccept = TRUE
+/\ bpMap = "O"
+/\ targetEntry = "none"
+/\ dsHasPool = TRUE
+/\ scanPhase = "run"
+/\ actorPc = [O |-> "shutActor"]
+/\ refreshPc = "idle"
+/\ xcIntr = FALSE
+/\ inSvc = [O |-> TRUE]
+/\ hasBp = [O |-> TRUE]
+/\ stopped = [O |-> FALSE]
+/\ cpc = [O |-> "readActive", test |-> "idle"]
+/\ ecOpen = TRUE
+/\ lrep = <<[pc |-> "none", k |-> "none"]>>
+/\ bpReg = [O |-> TRUE]
+/\ rrep = <<>>
+/\ storHasPool = TRUE
+/\ cmdQ = [O |-> <<>>]
+
+State 13: <MCCPReadActive("O") line 102, col 31 to line 102, col 61 of module MC>
+/\ metaCorrupt = TRUE
+/\ xferOpen = TRUE
+/\ vsSuspect = FALSE
+/\ svcRun = [O |-> FALSE]
+/\ dnShouldRun = TRUE
+/\ cpBlk = [O |-> 1, test |-> 0]
+/\ fc = [ shutdown |-> 0,
+  diskFail |-> 0,
+  nnReject |-> 1,
+  refresh |-> 0,
+  xferCmd |-> 1,
+  ecCmd |-> 0,
+  clientRead |-> 0,
+  vscan |-> 0,
+  dirScan |-> 0,
+  recv |-> 0,
+  corruptPkt |-> 0,
+  otherCmd |-> 0 ]
+/\ offerSvcs = {"O"}
+/\ active = [O |-> TRUE]
+/\ targetFired = FALSE
+/\ vsPoolEnabled = FALSE
+/\ dirScanUp = TRUE
+/\ shPc = "none"
+/\ xcAccept = TRUE
+/\ bpMap = "O"
+/\ targetEntry = "none"
+/\ dsHasPool = TRUE
+/\ scanPhase = "run"
+/\ actorPc = [O |-> "shutActor"]
+/\ refreshPc = "idle"
+/\ xcIntr = FALSE
+/\ inSvc = [O |-> TRUE]
+/\ hasBp = [O |-> TRUE]
+/\ stopped = [O |-> FALSE]
+/\ cpc = [O |-> "e1", test |-> "idle"]
+/\ ecOpen = TRUE
+/\ lrep = <<[pc |-> "none", k |-> "none"]>>
+/\ bpReg = [O |-> TRUE]
+/\ rrep = <<>>
+/\ storHasPool = TRUE
+/\ cmdQ = [O |-> <<>>]
+
+State 14: <MCShutdownActor("O") line 93, col 31 to line 93, col 62 of module MC>
+/\ metaCorrupt = TRUE
+/\ xferOpen = TRUE
+/\ vsSuspect = FALSE
+/\ svcRun = [O |-> FALSE]
+/\ dnShouldRun = TRUE
+/\ cpBlk = [O |-> 1, test |-> 0]
+/\ fc = [ shutdown |-> 0,
+  diskFail |-> 0,
+  nnReject |-> 1,
+  refresh |-> 0,
+  xferCmd |-> 1,
+  ecCmd |-> 0,
+  clientRead |-> 0,
+  vscan |-> 0,
+  dirScan |-> 0,
+  recv |-> 0,
+  corruptPkt |-> 0,
+  otherCmd |-> 0 ]
+/\ offerSvcs = {"O"}
+/\ active = [O |-> FALSE]
+/\ targetFired = FALSE
+/\ vsPoolEnabled = FALSE
+/\ dirScanUp = TRUE
+/\ shPc = "none"
+/\ xcAccept = TRUE
+/\ bpMap = "O"
+/\ targetEntry = "none"
+/\ dsHasPool = TRUE
+/\ scanPhase = "run"
+/\ actorPc = [O |-> "unpubRemove"]
+/\ refreshPc = "idle"
+/\ xcIntr = FALSE
+/\ inSvc = [O |-> FALSE]
+/\ hasBp = [O |-> TRUE]
+/\ stopped = [O |-> FALSE]
+/\ cpc = [O |-> "e1", test |-> "idle"]
+/\ ecOpen = TRUE
+/\ lrep = <<[pc |-> "none", k |-> "none"]>>
+/\ bpReg = [O |-> TRUE]
+/\ rrep = <<>>
+/\ storHasPool = TRUE
+/\ cmdQ = [O |-> <<>>]
+
+State 15: <MCTargetCheckE1("O") line 105, col 31 to line 105, col 62 of module MC>
+/\ metaCorrupt = TRUE
+/\ xferOpen = TRUE
+/\ vsSuspect = FALSE
+/\ svcRun = [O |-> FALSE]
+/\ dnShouldRun = TRUE
+/\ cpBlk = [O |-> 1, test |-> 0]
+/\ fc = [ shutdown |-> 0,
+  diskFail |-> 0,
+  nnReject |-> 1,
+  refresh |-> 0,
+  xferCmd |-> 1,
+  ecCmd |-> 0,
+  clientRead |-> 0,
+  vscan |-> 0,
+  dirScan |-> 0,
+  recv |-> 0,
+  corruptPkt |-> 0,
+  otherCmd |-> 0 ]
+/\ offerSvcs = {"O"}
+/\ active = [O |-> FALSE]
+/\ targetFired = FALSE
+/\ vsPoolEnabled = FALSE
+/\ dirScanUp = TRUE
+/\ shPc = "none"
+/\ xcAccept = TRUE
+/\ bpMap = "O"
+/\ targetEntry = "none"
+/\ dsHasPool = TRUE
+/\ scanPhase = "run"
+/\ actorPc = [O |-> "unpubRemove"]
+/\ refreshPc = "idle"
+/\ xcIntr = FALSE
+/\ inSvc = [O |-> FALSE]
+/\ hasBp = [O |-> TRUE]
+/\ stopped = [O |-> FALSE]
+/\ cpc = [O |-> "reg", test |-> "idle"]
+/\ ecOpen = TRUE
+/\ lrep = <<[pc |-> "none", k |-> "none"]>>
+/\ bpReg = [O |-> TRUE]
+/\ rrep = <<>>
+/\ storHasPool = TRUE
+/\ cmdQ = [O |-> <<>>]
+
+State 16: <MCTBRegCheck("O") line 106, col 31 to line 106, col 59 of module MC>
+/\ metaCorrupt = TRUE
+/\ xferOpen = TRUE
+/\ vsSuspect = FALSE
+/\ svcRun = [O |-> FALSE]
+/\ dnShouldRun = TRUE
+/\ cpBlk = [O |-> 1, test |-> 0]
+/\ fc = [ shutdown |-> 0,
+  diskFail |-> 0,
+  nnReject |-> 1,
+  refresh |-> 0,
+  xferCmd |-> 1,
+  ecCmd |-> 0,
+  clientRead |-> 0,
+  vscan |-> 0,
+  dirScan |-> 0,
+  recv |-> 0,
+  corruptPkt |-> 0,
+  otherCmd |-> 0 ]
+/\ offerSvcs = {"O"}
+/\ active = [O |-> FALSE]
+/\ targetFired = FALSE
+/\ vsPoolEnabled = FALSE
+/\ dirScanUp = TRUE
+/\ shPc = "none"
+/\ xcAccept = TRUE
+/\ bpMap = "O"
+/\ targetEntry = "none"
+/\ dsHasPool = TRUE
+/\ scanPhase = "run"
+/\ actorPc = [O |-> "unpubRemove"]
+/\ refreshPc = "idle"
+/\ xcIntr = FALSE
+/\ inSvc = [O |-> FALSE]
+/\ hasBp = [O |-> TRUE]
+/\ stopped = [O |-> FALSE]
+/\ cpc = [O |-> "ckblk", test |-> "idle"]
+/\ ecOpen = TRUE
+/\ lrep = <<[pc |-> "none", k |-> "none"]>>
+/\ bpReg = [O |-> TRUE]
+/\ rrep = <<>>
+/\ storHasPool = TRUE
+/\ cmdQ = [O |-> <<>>]
+
+State 17: <MCTBCheckBlock("O") line 107, col 31 to line 107, col 61 of module MC>
+/\ metaCorrupt = TRUE
+/\ xferOpen = TRUE
+/\ vsSuspect = FALSE
+/\ svcRun = [O |-> FALSE]
+/\ dnShouldRun = TRUE
+/\ cpBlk = [O |-> 1, test |-> 0]
+/\ fc = [ shutdown |-> 0,
+  diskFail |-> 0,
+  nnReject |-> 1,
+  refresh |-> 0,
+  xferCmd |-> 1,
+  ecCmd |-> 0,
+  clientRead |-> 0,
+  vscan |-> 0,
+  dirScan |-> 0,
+  recv |-> 0,
+  corruptPkt |-> 0,
+  otherCmd |-> 0 ]
+/\ offerSvcs = {"O"}
+/\ active = [O |-> FALSE]
+/\ targetFired = FALSE
+/\ vsPoolEnabled = FALSE
+/\ dirScanUp = TRUE
+/\ shPc = "none"
+/\ xcAccept = TRUE
+/\ bpMap = "O"
+/\ targetEntry = "none"
+/\ dsHasPool = TRUE
+/\ scanPhase = "run"
+/\ actorPc = [O |-> "unpubRemove"]
+/\ refreshPc = "idle"
+/\ xcIntr = FALSE
+/\ inSvc = [O |-> FALSE]
+/\ hasBp = [O |-> TRUE]
+/\ stopped = [O |-> FALSE]
+/\ cpc = [O |-> "ctor", test |-> "idle"]
+/\ ecOpen = TRUE
+/\ lrep = <<[pc |-> "none", k |-> "none"]>>
+/\ bpReg = [O |-> TRUE]
+/\ rrep = <<>>
+/\ storHasPool = TRUE
+/\ cmdQ = [O |-> <<>>]
+
+State 18: <MCTBCtor("O") line 108, col 31 to line 108, col 55 of module MC>
+/\ metaCorrupt = TRUE
+/\ xferOpen = TRUE
+/\ vsSuspect = FALSE
+/\ svcRun = [O |-> FALSE]
+/\ dnShouldRun = TRUE
+/\ cpBlk = [O |-> 1, test |-> 0]
+/\ fc = [ shutdown |-> 0,
+  diskFail |-> 0,
+  nnReject |-> 1,
+  refresh |-> 0,
+  xferCmd |-> 1,
+  ecCmd |-> 0,
+  clientRead |-> 0,
+  vscan |-> 0,
+  dirScan |-> 0,
+  recv |-> 0,
+  corruptPkt |-> 0,
+  otherCmd |-> 0 ]
+/\ offerSvcs = {"O"}
+/\ active = [O |-> FALSE]
+/\ targetFired = FALSE
+/\ vsPoolEnabled = FALSE
+/\ dirScanUp = TRUE
+/\ shPc = "none"
+/\ xcAccept = TRUE
+/\ bpMap = "O"
+/\ targetEntry = "none"
+/\ dsHasPool = TRUE
+/\ scanPhase = "run"
+/\ actorPc = [O |-> "unpubRemove"]
+/\ refreshPc = "idle"
+/\ xcIntr = FALSE
+/\ inSvc = [O |-> FALSE]
+/\ hasBp = [O |-> TRUE]
+/\ stopped = [O |-> FALSE]
+/\ cpc = [O |-> "exec", test |-> "idle"]
+/\ ecOpen = TRUE
+/\ lrep = <<[pc |-> "none", k |-> "none"]>>
+/\ bpReg = [O |-> TRUE]
+/\ rrep = <<>>
+/\ storHasPool = TRUE
+/\ cmdQ = [O |-> <<>>]
+
+State 19: <MCUnpubMapRemove("O") line 94, col 31 to line 94, col 63 of module MC>
+/\ metaCorrupt = TRUE
+/\ xferOpen = TRUE
+/\ vsSuspect = FALSE
+/\ svcRun = [O |-> FALSE]
+/\ dnShouldRun = TRUE
+/\ cpBlk = [O |-> 1, test |-> 0]
+/\ fc = [ shutdown |-> 0,
+  diskFail |-> 0,
+  nnReject |-> 1,
+  refresh |-> 0,
+  xferCmd |-> 1,
+  ecCmd |-> 0,
+  clientRead |-> 0,
+  vscan |-> 0,
+  dirScan |-> 0,
+  recv |-> 0,
+  corruptPkt |-> 0,
+  otherCmd |-> 0 ]
+/\ offerSvcs = {}
+/\ active = [O |-> FALSE]
+/\ targetFired = FALSE
+/\ vsPoolEnabled = FALSE
+/\ dirScanUp = TRUE
+/\ shPc = "none"
+/\ xcAccept = TRUE
+/\ bpMap = "none"
+/\ targetEntry = "none"
+/\ dsHasPool = TRUE
+/\ scanPhase = "run"
+/\ actorPc = [O |-> "unpubGate"]
+/\ refreshPc = "idle"
+/\ xcIntr = FALSE
+/\ inSvc = [O |-> FALSE]
+/\ hasBp = [O |-> TRUE]
+/\ stopped = [O |-> FALSE]
+/\ cpc = [O |-> "exec", test |-> "idle"]
+/\ ecOpen = TRUE
+/\ lrep = <<[pc |-> "none", k |-> "none"]>>
+/\ bpReg = [O |-> TRUE]
+/\ rrep = <<>>
+/\ storHasPool = TRUE
+/\ cmdQ = [O |-> <<>>]
+
+State 20: <MCTBExecute("O") line 109, col 31 to line 109, col 58 of module MC>
+/\ metaCorrupt = TRUE
+/\ xferOpen = TRUE
+/\ vsSuspect = FALSE
+/\ svcRun = [O |-> FALSE]
+/\ dnShouldRun = TRUE
+/\ cpBlk = [O |-> 0, test |-> 0]
+/\ fc = [ shutdown |-> 0,
+  diskFail |-> 0,
+  nnReject |-> 1,
+  refresh |-> 0,
+  xferCmd |-> 1,
+  ecCmd |-> 0,
+  clientRead |-> 0,
+  vscan |-> 0,
+  dirScan |-> 0,
+  recv |-> 0,
+  corruptPkt |-> 0,
+  otherCmd |-> 0 ]
+/\ offerSvcs = {}
+/\ active = [O |-> FALSE]
+/\ targetFired = FALSE
+/\ vsPoolEnabled = FALSE
+/\ dirScanUp = TRUE
+/\ shPc = "none"
+/\ xcAccept = TRUE
+/\ bpMap = "none"
+/\ targetEntry = "none"
+/\ dsHasPool = TRUE
+/\ scanPhase = "run"
+/\ actorPc = [O |-> "unpubGate"]
+/\ refreshPc = "idle"
+/\ xcIntr = FALSE
+/\ inSvc = [O |-> FALSE]
+/\ hasBp = [O |-> TRUE]
+/\ stopped = [O |-> FALSE]
+/\ cpc = [O |-> "check", test |-> "idle"]
+/\ ecOpen = TRUE
+/\ lrep = <<[pc |-> "xf_send", k |-> "xf"]>>
+/\ bpReg = [O |-> TRUE]
+/\ rrep = <<>>
+/\ storHasPool = TRUE
+/\ cmdQ = [O |-> <<>>]
+
+State 21: <MCXferSend(1) line 110, col 31 to line 110, col 57 of module MC>
+/\ metaCorrupt = TRUE
+/\ xferOpen = TRUE
+/\ vsSuspect = FALSE
+/\ svcRun = [O |-> FALSE]
+/\ dnShouldRun = TRUE
+/\ cpBlk = [O |-> 0, test |-> 0]
+/\ fc = [ shutdown |-> 0,
+  diskFail |-> 0,
+  nnReject |-> 1,
+  refresh |-> 0,
+  xferCmd |-> 1,
+  ecCmd |-> 0,
+  clientRead |-> 0,
+  vscan |-> 0,
+  dirScan |-> 0,
+  recv |-> 0,
+  corruptPkt |-> 0,
+  otherCmd |-> 0 ]
+/\ offerSvcs = {}
+/\ active = [O |-> FALSE]
+/\ targetFired = FALSE
+/\ vsPoolEnabled = FALSE
+/\ dirScanUp = TRUE
+/\ shPc = "none"
+/\ xcAccept = TRUE
+/\ bpMap = "none"
+/\ targetEntry = "none"
+/\ dsHasPool = TRUE
+/\ scanPhase = "run"
+/\ actorPc = [O |-> "unpubGate"]
+/\ refreshPc = "idle"
+/\ xcIntr = FALSE
+/\ inSvc = [O |-> FALSE]
+/\ hasBp = [O |-> TRUE]
+/\ stopped = [O |-> FALSE]
+/\ cpc = [O |-> "check", test |-> "idle"]
+/\ ecOpen = TRUE
+/\ lrep = <<[pc |-> "hbb", k |-> "xf"]>>
+/\ bpReg = [O |-> TRUE]
+/\ rrep = <<>>
+/\ storHasPool = TRUE
+/\ cmdQ = [O |-> <<>>]
+
+State 22: <MCHandleBadBlock(1) line 113, col 31 to line 113, col 63 of module MC>
+/\ metaCorrupt = TRUE
+/\ xferOpen = TRUE
+/\ vsSuspect = FALSE
+/\ svcRun = [O |-> FALSE]
+/\ dnShouldRun = TRUE
+/\ cpBlk = [O |-> 0, test |-> 0]
+/\ fc = [ shutdown |-> 0,
+  diskFail |-> 0,
+  nnReject |-> 1,
+  refresh |-> 0,
+  xferCmd |-> 1,
+  ecCmd |-> 0,
+  clientRead |-> 0,
+  vscan |-> 0,
+  dirScan |-> 0,
+  recv |-> 0,
+  corruptPkt |-> 0,
+  otherCmd |-> 0 ]
+/\ offerSvcs = {}
+/\ active = [O |-> FALSE]
+/\ targetFired = FALSE
+/\ vsPoolEnabled = FALSE
+/\ dirScanUp = TRUE
+/\ shPc = "none"
+/\ xcAccept = TRUE
+/\ bpMap = "none"
+/\ targetEntry = "none"
+/\ dsHasPool = TRUE
+/\ scanPhase = "run"
+/\ actorPc = [O |-> "unpubGate"]
+/\ refreshPc = "idle"
+/\ xcIntr = FALSE
+/\ inSvc = [O |-> FALSE]
+/\ hasBp = [O |-> TRUE]
+/\ stopped = [O |-> FALSE]
+/\ cpc = [O |-> "check", test |-> "idle"]
+/\ ecOpen = TRUE
+/\ lrep = <<[pc |-> "getvol", k |-> "xf"]>>
+/\ bpReg = [O |-> TRUE]
+/\ rrep = <<>>
+/\ storHasPool = TRUE
+/\ cmdQ = [O |-> <<>>]
+
+State 23: <MCGetVolume(1) line 118, col 31 to line 118, col 58 of module MC>
+/\ metaCorrupt = TRUE
+/\ xferOpen = TRUE
+/\ vsSuspect = FALSE
+/\ svcRun = [O |-> FALSE]
+/\ dnShouldRun = TRUE
+/\ cpBlk = [O |-> 0, test |-> 0]
+/\ fc = [ shutdown |-> 0,
+  diskFail |-> 0,
+  nnReject |-> 1,
+  refresh |-> 0,
+  xferCmd |-> 1,
+  ecCmd |-> 0,
+  clientRead |-> 0,
+  vscan |-> 0,
+  dirScan |-> 0,
+  recv |-> 0,
+  corruptPkt |-> 0,
+  otherCmd |-> 0 ]
+/\ offerSvcs = {}
+/\ active = [O |-> FALSE]
+/\ targetFired = FALSE
+/\ vsPoolEnabled = FALSE
+/\ dirScanUp = TRUE
+/\ shPc = "none"
+/\ xcAccept = TRUE
+/\ bpMap = "none"
+/\ targetEntry = "none"
+/\ dsHasPool = TRUE
+/\ scanPhase = "run"
+/\ actorPc = [O |-> "unpubGate"]
+/\ refreshPc = "idle"
+/\ xcIntr = FALSE
+/\ inSvc = [O |-> FALSE]
+/\ hasBp = [O |-> TRUE]
+/\ stopped = [O |-> FALSE]
+/\ cpc = [O |-> "check", test |-> "idle"]
+/\ ecOpen = TRUE
+/\ lrep = <<[pc |-> "e2", k |-> "xf"]>>
+/\ bpReg = [O |-> TRUE]
+/\ rrep = <<>>
+/\ storHasPool = TRUE
+/\ cmdQ = [O |-> <<>>]
+
+State 24: <MCTargetCheckE2(1) line 119, col 31 to line 119, col 62 of module MC>
+/\ metaCorrupt = TRUE
+/\ xferOpen = TRUE
+/\ vsSuspect = FALSE
+/\ svcRun = [O |-> FALSE]
+/\ dnShouldRun = TRUE
+/\ cpBlk = [O |-> 0, test |-> 0]
+/\ fc = [ shutdown |-> 0,
+  diskFail |-> 0,
+  nnReject |-> 1,
+  refresh |-> 0,
+  xferCmd |-> 1,
+  ecCmd |-> 0,
+  clientRead |-> 0,
+  vscan |-> 0,
+  dirScan |-> 0,
+  recv |-> 0,
+  corruptPkt |-> 0,
+  otherCmd |-> 0 ]
+/\ offerSvcs = {}
+/\ active = [O |-> FALSE]
+/\ targetFired = TRUE
+/\ vsPoolEnabled = FALSE
+/\ dirScanUp = TRUE
+/\ shPc = "none"
+/\ xcAccept = TRUE
+/\ bpMap = "none"
+/\ targetEntry = "E2"
+/\ dsHasPool = TRUE
+/\ scanPhase = "run"
+/\ actorPc = [O |-> "unpubGate"]
+/\ refreshPc = "idle"
+/\ xcIntr = FALSE
+/\ inSvc = [O |-> FALSE]
+/\ hasBp = [O |-> TRUE]
+/\ stopped = [O |-> FALSE]
+/\ cpc = [O |-> "check", test |-> "idle"]
+/\ ecOpen = TRUE
+/\ lrep = <<[pc |-> "none", k |-> "none"]>>
+/\ bpReg = [O |-> TRUE]
+/\ rrep = <<>>
+/\ storHasPool = TRUE
+/\ cmdQ = [O |-> <<>>]
+
+13103 states generated, 5466 distinct states found, 468 states left on queue.
+The depth of the complete state graph search is 24.
+Finished in 01s at (2026-10-30 00:05:07)
+Trace exploration spec path: ./MCDiag_TTrace_1793318706.tla

@@ -1,0 +1,612 @@
+TLC2 Version 2026.10.24.013619 (rev: 2ef2af8)
+Running breadth-first search Model-Checking with fp 6 and seed 927911172127067134 with 1 worker on 64 cores with 1963MB heap and 1024MB offheap memory [pid: 2992577] (Linux 5.15.0-198-generic amd64, Eclipse Adoptium 21.0.13 64bit, OffHeapDiskFPSet, DiskStateQueue).
+Parsing file /bulk/specula-adhoc/specula-runs/20261029-113905-f621/hdfs-adhoc-26/.specula-output/spec/MC.tla
+Parsing file /bulk/specula-adhoc/specula-runs/20261029-113905-f621/hdfs-adhoc-26/.specula-output/spec/base.tla
+Parsing file /tmp/tlc-2221216690762904116/TLC.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLC.tla)
+Parsing file /tmp/tlc-2221216690762904116/_JsonTrace.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/_JsonTrace.tla)
+Parsing file /tmp/tlc-2221216690762904116/_TLCTrace.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/_TLCTrace.tla)
+Parsing file /tmp/tlc-2221216690762904116/Naturals.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Naturals.tla)
+Parsing file /tmp/tlc-2221216690762904116/Integers.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Integers.tla)
+Parsing file /tmp/tlc-2221216690762904116/Sequences.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Sequences.tla)
+Parsing file /tmp/tlc-2221216690762904116/FiniteSets.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/FiniteSets.tla)
+Parsing file /tmp/tlc-2221216690762904116/TLCExt.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLCExt.tla)
+Parsing file /tmp/tlc-2221216690762904116/Json.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Json.tla)
+Semantic processing of module Naturals
+Semantic processing of module Integers
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module base
+Semantic processing of module TLC
+Semantic processing of module TLCExt
+Semantic processing of module Json
+Semantic processing of module _JsonTrace
+Semantic processing of module _TLCTrace
+Semantic processing of module MC
+Linting of module base
+Linting of module TLCExt
+Linting of module Json
+Linting of module _JsonTrace
+Linting of module _TLCTrace
+Linting of module MC
+Starting... (2026-10-29 20:31:47)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-10-29 20:31:47.
+Error: Invariant TargetSafe is violated.
+Error: The behavior up to this point is:
+State 1: <Initial predicate>
+/\ nnCur = 2
+/\ dnPc = [dn0 |-> "down"]
+/\ dnPending = [dn0 |-> <<>>]
+/\ nnHist = {2}
+/\ targetFired = FALSE
+/\ dnRegCT = [dn0 |-> 0]
+/\ dnSwLV = [dn0 |-> -57]
+/\ clock = 4
+/\ nnUp = FALSE
+/\ dnOut = [dn0 |-> FALSE]
+/\ volCur = [dn0 |-> <<[ct |-> 2, lv |-> -57], [ct |-> 2, lv |-> -57]>>]
+/\ volTmp = [dn0 |-> <<[ct |-> 0, lv |-> 0], [ct |-> 0, lv |-> 0]>>]
+/\ faults = [ upgrades |-> 0,
+  dnOutages |-> 0,
+  volOutages |-> 0,
+  volReplacements |-> 0,
+  swUpgrades |-> 0,
+  clockSkews |-> 0 ]
+/\ dnCont = [dn0 |-> {}]
+/\ volOnline = [dn0 |-> <<TRUE, TRUE>>]
+/\ volBpFault = [dn0 |-> <<FALSE, FALSE>>]
+/\ opPhase = "NORMAL"
+/\ volLoad = [dn0 |-> <<"none", "none">>]
+/\ volPrev = [dn0 |-> <<[ct |-> 0, lv |-> 0], [ct |-> 0, lv |-> 0]>>]
+/\ nnPrev = 0
+/\ dnNs = [dn0 |-> 0]
+/\ dnOpt = [dn0 |-> "REGULAR"]
+/\ dnRolledBack = [dn0 |-> FALSE]
+
+State 2: <MCNNUpgradeSkewed line 114, col 5 to line 124, col 40 of module MC>
+/\ nnCur = 1
+/\ dnPc = [dn0 |-> "down"]
+/\ dnPending = [dn0 |-> <<>>]
+/\ nnHist = {1, 2}
+/\ targetFired = FALSE
+/\ dnRegCT = [dn0 |-> 0]
+/\ dnSwLV = [dn0 |-> -57]
+/\ clock = 3
+/\ nnUp = TRUE
+/\ dnOut = [dn0 |-> FALSE]
+/\ volCur = [dn0 |-> <<[ct |-> 2, lv |-> -57], [ct |-> 2, lv |-> -57]>>]
+/\ volTmp = [dn0 |-> <<[ct |-> 0, lv |-> 0], [ct |-> 0, lv |-> 0]>>]
+/\ faults = [ upgrades |-> 1,
+  dnOutages |-> 0,
+  volOutages |-> 0,
+  volReplacements |-> 0,
+  swUpgrades |-> 0,
+  clockSkews |-> 1 ]
+/\ dnCont = [dn0 |-> {}]
+/\ volOnline = [dn0 |-> <<TRUE, TRUE>>]
+/\ volBpFault = [dn0 |-> <<FALSE, FALSE>>]
+/\ opPhase = "UPGRADED"
+/\ volLoad = [dn0 |-> <<"none", "none">>]
+/\ volPrev = [dn0 |-> <<[ct |-> 0, lv |-> 0], [ct |-> 0, lv |-> 0]>>]
+/\ nnPrev = 2
+/\ dnNs = [dn0 |-> 0]
+/\ dnOpt = [dn0 |-> "REGULAR"]
+/\ dnRolledBack = [dn0 |-> FALSE]
+
+State 3: <MCNNFinalize line 136, col 5 to line 140, col 55 of module MC>
+/\ nnCur = 1
+/\ dnPc = [dn0 |-> "down"]
+/\ dnPending = [dn0 |-> <<>>]
+/\ nnHist = {1, 2}
+/\ targetFired = FALSE
+/\ dnRegCT = [dn0 |-> 0]
+/\ dnSwLV = [dn0 |-> -57]
+/\ clock = 3
+/\ nnUp = TRUE
+/\ dnOut = [dn0 |-> FALSE]
+/\ volCur = [dn0 |-> <<[ct |-> 2, lv |-> -57], [ct |-> 2, lv |-> -57]>>]
+/\ volTmp = [dn0 |-> <<[ct |-> 0, lv |-> 0], [ct |-> 0, lv |-> 0]>>]
+/\ faults = [ upgrades |-> 1,
+  dnOutages |-> 0,
+  volOutages |-> 0,
+  volReplacements |-> 0,
+  swUpgrades |-> 0,
+  clockSkews |-> 1 ]
+/\ dnCont = [dn0 |-> {}]
+/\ volOnline = [dn0 |-> <<TRUE, TRUE>>]
+/\ volBpFault = [dn0 |-> <<FALSE, FALSE>>]
+/\ opPhase = "NORMAL"
+/\ volLoad = [dn0 |-> <<"none", "none">>]
+/\ volPrev = [dn0 |-> <<[ct |-> 0, lv |-> 0], [ct |-> 0, lv |-> 0]>>]
+/\ nnPrev = 0
+/\ dnNs = [dn0 |-> 0]
+/\ dnOpt = [dn0 |-> "REGULAR"]
+/\ dnRolledBack = [dn0 |-> FALSE]
+
+State 4: <MCNNStop line 95, col 5 to line 98, col 23 of module MC>
+/\ nnCur = 1
+/\ dnPc = [dn0 |-> "down"]
+/\ dnPending = [dn0 |-> <<>>]
+/\ nnHist = {1, 2}
+/\ targetFired = FALSE
+/\ dnRegCT = [dn0 |-> 0]
+/\ dnSwLV = [dn0 |-> -57]
+/\ clock = 3
+/\ nnUp = FALSE
+/\ dnOut = [dn0 |-> FALSE]
+/\ volCur = [dn0 |-> <<[ct |-> 2, lv |-> -57], [ct |-> 2, lv |-> -57]>>]
+/\ volTmp = [dn0 |-> <<[ct |-> 0, lv |-> 0], [ct |-> 0, lv |-> 0]>>]
+/\ faults = [ upgrades |-> 1,
+  dnOutages |-> 0,
+  volOutages |-> 0,
+  volReplacements |-> 0,
+  swUpgrades |-> 0,
+  clockSkews |-> 1 ]
+/\ dnCont = [dn0 |-> {}]
+/\ volOnline = [dn0 |-> <<TRUE, TRUE>>]
+/\ volBpFault = [dn0 |-> <<FALSE, FALSE>>]
+/\ opPhase = "NORMAL"
+/\ volLoad = [dn0 |-> <<"none", "none">>]
+/\ volPrev = [dn0 |-> <<[ct |-> 0, lv |-> 0], [ct |-> 0, lv |-> 0]>>]
+/\ nnPrev = 0
+/\ dnNs = [dn0 |-> 0]
+/\ dnOpt = [dn0 |-> "REGULAR"]
+/\ dnRolledBack = [dn0 |-> FALSE]
+
+State 5: <MCNNUpgrade line 101, col 5 to line 109, col 40 of module MC>
+/\ nnCur = 3
+/\ dnPc = [dn0 |-> "down"]
+/\ dnPending = [dn0 |-> <<>>]
+/\ nnHist = {1, 2, 3}
+/\ targetFired = FALSE
+/\ dnRegCT = [dn0 |-> 0]
+/\ dnSwLV = [dn0 |-> -57]
+/\ clock = 5
+/\ nnUp = TRUE
+/\ dnOut = [dn0 |-> FALSE]
+/\ volCur = [dn0 |-> <<[ct |-> 2, lv |-> -57], [ct |-> 2, lv |-> -57]>>]
+/\ volTmp = [dn0 |-> <<[ct |-> 0, lv |-> 0], [ct |-> 0, lv |-> 0]>>]
+/\ faults = [ upgrades |-> 2,
+  dnOutages |-> 0,
+  volOutages |-> 0,
+  volReplacements |-> 0,
+  swUpgrades |-> 0,
+  clockSkews |-> 1 ]
+/\ dnCont = [dn0 |-> {}]
+/\ volOnline = [dn0 |-> <<TRUE, TRUE>>]
+/\ volBpFault = [dn0 |-> <<FALSE, FALSE>>]
+/\ opPhase = "UPGRADED"
+/\ volLoad = [dn0 |-> <<"none", "none">>]
+/\ volPrev = [dn0 |-> <<[ct |-> 0, lv |-> 0], [ct |-> 0, lv |-> 0]>>]
+/\ nnPrev = 1
+/\ dnNs = [dn0 |-> 0]
+/\ dnOpt = [dn0 |-> "REGULAR"]
+/\ dnRolledBack = [dn0 |-> FALSE]
+
+State 6: <MCDNStart("dn0") line 154, col 5 to line 157, col 23 of module MC>
+/\ nnCur = 3
+/\ dnPc = [dn0 |-> "handshake"]
+/\ dnPending = [dn0 |-> <<1, 2>>]
+/\ nnHist = {1, 2, 3}
+/\ targetFired = FALSE
+/\ dnRegCT = [dn0 |-> 0]
+/\ dnSwLV = [dn0 |-> -57]
+/\ clock = 5
+/\ nnUp = TRUE
+/\ dnOut = [dn0 |-> FALSE]
+/\ volCur = [dn0 |-> <<[ct |-> 2, lv |-> -57], [ct |-> 2, lv |-> -57]>>]
+/\ volTmp = [dn0 |-> <<[ct |-> 0, lv |-> 0], [ct |-> 0, lv |-> 0]>>]
+/\ faults = [ upgrades |-> 2,
+  dnOutages |-> 0,
+  volOutages |-> 0,
+  volReplacements |-> 0,
+  swUpgrades |-> 0,
+  clockSkews |-> 1 ]
+/\ dnCont = [dn0 |-> {}]
+/\ volOnline = [dn0 |-> <<TRUE, TRUE>>]
+/\ volBpFault = [dn0 |-> <<FALSE, FALSE>>]
+/\ opPhase = "UPGRADED"
+/\ volLoad = [dn0 |-> <<"none", "none">>]
+/\ volPrev = [dn0 |-> <<[ct |-> 0, lv |-> 0], [ct |-> 0, lv |-> 0]>>]
+/\ nnPrev = 1
+/\ dnNs = [dn0 |-> 0]
+/\ dnOpt = [dn0 |-> "REGULAR"]
+/\ dnRolledBack = [dn0 |-> FALSE]
+
+State 7: <MCDNHandshake("dn0") line 161, col 21 to line 161, col 85 of module MC>
+/\ nnCur = 3
+/\ dnPc = [dn0 |-> "loading"]
+/\ dnPending = [dn0 |-> <<1, 2>>]
+/\ nnHist = {1, 2, 3}
+/\ targetFired = FALSE
+/\ dnRegCT = [dn0 |-> 3]
+/\ dnSwLV = [dn0 |-> -57]
+/\ clock = 5
+/\ nnUp = TRUE
+/\ dnOut = [dn0 |-> FALSE]
+/\ volCur = [dn0 |-> <<[ct |-> 2, lv |-> -57], [ct |-> 2, lv |-> -57]>>]
+/\ volTmp = [dn0 |-> <<[ct |-> 0, lv |-> 0], [ct |-> 0, lv |-> 0]>>]
+/\ faults = [ upgrades |-> 2,
+  dnOutages |-> 0,
+  volOutages |-> 0,
+  volReplacements |-> 0,
+  swUpgrades |-> 0,
+  clockSkews |-> 1 ]
+/\ dnCont = [dn0 |-> {}]
+/\ volOnline = [dn0 |-> <<TRUE, TRUE>>]
+/\ volBpFault = [dn0 |-> <<FALSE, FALSE>>]
+/\ opPhase = "UPGRADED"
+/\ volLoad = [dn0 |-> <<"dn", "dn">>]
+/\ volPrev = [dn0 |-> <<[ct |-> 0, lv |-> 0], [ct |-> 0, lv |-> 0]>>]
+/\ nnPrev = 1
+/\ dnNs = [dn0 |-> 3]
+/\ dnOpt = [dn0 |-> "REGULAR"]
+/\ dnRolledBack = [dn0 |-> FALSE]
+
+State 8: <MCDNLoadVolume("dn0",1) line 163, col 25 to line 163, col 78 of module MC>
+/\ nnCur = 3
+/\ dnPc = [dn0 |-> "loading"]
+/\ dnPending = [dn0 |-> <<2>>]
+/\ nnHist = {1, 2, 3}
+/\ targetFired = FALSE
+/\ dnRegCT = [dn0 |-> 2]
+/\ dnSwLV = [dn0 |-> -57]
+/\ clock = 5
+/\ nnUp = TRUE
+/\ dnOut = [dn0 |-> FALSE]
+/\ volCur = [dn0 |-> <<[ct |-> 0, lv |-> 0], [ct |-> 2, lv |-> -57]>>]
+/\ volTmp = [dn0 |-> <<[ct |-> 2, lv |-> -57], [ct |-> 0, lv |-> 0]>>]
+/\ faults = [ upgrades |-> 2,
+  dnOutages |-> 0,
+  volOutages |-> 0,
+  volReplacements |-> 0,
+  swUpgrades |-> 0,
+  clockSkews |-> 1 ]
+/\ dnCont = [dn0 |-> {1}]
+/\ volOnline = [dn0 |-> <<TRUE, TRUE>>]
+/\ volBpFault = [dn0 |-> <<FALSE, FALSE>>]
+/\ opPhase = "UPGRADED"
+/\ volLoad = [dn0 |-> <<"dn", "dn">>]
+/\ volPrev = [dn0 |-> <<[ct |-> 0, lv |-> 0], [ct |-> 0, lv |-> 0]>>]
+/\ nnPrev = 1
+/\ dnNs = [dn0 |-> 3]
+/\ dnOpt = [dn0 |-> "REGULAR"]
+/\ dnRolledBack = [dn0 |-> FALSE]
+
+State 9: <MCDNLoadVolume("dn0",2) line 163, col 25 to line 163, col 78 of module MC>
+/\ nnCur = 3
+/\ dnPc = [dn0 |-> "loading"]
+/\ dnPending = [dn0 |-> <<>>]
+/\ nnHist = {1, 2, 3}
+/\ targetFired = FALSE
+/\ dnRegCT = [dn0 |-> 2]
+/\ dnSwLV = [dn0 |-> -57]
+/\ clock = 5
+/\ nnUp = TRUE
+/\ dnOut = [dn0 |-> FALSE]
+/\ volCur = [dn0 |-> <<[ct |-> 0, lv |-> 0], [ct |-> 0, lv |-> 0]>>]
+/\ volTmp = [dn0 |-> <<[ct |-> 2, lv |-> -57], [ct |-> 2, lv |-> -57]>>]
+/\ faults = [ upgrades |-> 2,
+  dnOutages |-> 0,
+  volOutages |-> 0,
+  volReplacements |-> 0,
+  swUpgrades |-> 0,
+  clockSkews |-> 1 ]
+/\ dnCont = [dn0 |-> {1, 2}]
+/\ volOnline = [dn0 |-> <<TRUE, TRUE>>]
+/\ volBpFault = [dn0 |-> <<FALSE, FALSE>>]
+/\ opPhase = "UPGRADED"
+/\ volLoad = [dn0 |-> <<"dn", "dn">>]
+/\ volPrev = [dn0 |-> <<[ct |-> 0, lv |-> 0], [ct |-> 0, lv |-> 0]>>]
+/\ nnPrev = 1
+/\ dnNs = [dn0 |-> 3]
+/\ dnOpt = [dn0 |-> "REGULAR"]
+/\ dnRolledBack = [dn0 |-> FALSE]
+
+State 10: <MCDNUpgradeContinuation("dn0",1) line 164, col 34 to line 164, col 96 of module MC>
+/\ nnCur = 3
+/\ dnPc = [dn0 |-> "loading"]
+/\ dnPending = [dn0 |-> <<>>]
+/\ nnHist = {1, 2, 3}
+/\ targetFired = FALSE
+/\ dnRegCT = [dn0 |-> 3]
+/\ dnSwLV = [dn0 |-> -57]
+/\ clock = 5
+/\ nnUp = TRUE
+/\ dnOut = [dn0 |-> FALSE]
+/\ volCur = [dn0 |-> <<[ct |-> 3, lv |-> -57], [ct |-> 0, lv |-> 0]>>]
+/\ volTmp = [dn0 |-> <<[ct |-> 0, lv |-> 0], [ct |-> 2, lv |-> -57]>>]
+/\ faults = [ upgrades |-> 2,
+  dnOutages |-> 0,
+  volOutages |-> 0,
+  volReplacements |-> 0,
+  swUpgrades |-> 0,
+  clockSkews |-> 1 ]
+/\ dnCont = [dn0 |-> {2}]
+/\ volOnline = [dn0 |-> <<TRUE, TRUE>>]
+/\ volBpFault = [dn0 |-> <<FALSE, FALSE>>]
+/\ opPhase = "UPGRADED"
+/\ volLoad = [dn0 |-> <<"bp", "dn">>]
+/\ volPrev = [dn0 |-> <<[ct |-> 2, lv |-> -57], [ct |-> 0, lv |-> 0]>>]
+/\ nnPrev = 1
+/\ dnNs = [dn0 |-> 3]
+/\ dnOpt = [dn0 |-> "REGULAR"]
+/\ dnRolledBack = [dn0 |-> FALSE]
+
+State 11: <MCDNUpgradeContinuation("dn0",2) line 164, col 34 to line 164, col 96 of module MC>
+/\ nnCur = 3
+/\ dnPc = [dn0 |-> "loading"]
+/\ dnPending = [dn0 |-> <<>>]
+/\ nnHist = {1, 2, 3}
+/\ targetFired = FALSE
+/\ dnRegCT = [dn0 |-> 3]
+/\ dnSwLV = [dn0 |-> -57]
+/\ clock = 5
+/\ nnUp = TRUE
+/\ dnOut = [dn0 |-> FALSE]
+/\ volCur = [dn0 |-> <<[ct |-> 3, lv |-> -57], [ct |-> 3, lv |-> -57]>>]
+/\ volTmp = [dn0 |-> <<[ct |-> 0, lv |-> 0], [ct |-> 0, lv |-> 0]>>]
+/\ faults = [ upgrades |-> 2,
+  dnOutages |-> 0,
+  volOutages |-> 0,
+  volReplacements |-> 0,
+  swUpgrades |-> 0,
+  clockSkews |-> 1 ]
+/\ dnCont = [dn0 |-> {}]
+/\ volOnline = [dn0 |-> <<TRUE, TRUE>>]
+/\ volBpFault = [dn0 |-> <<FALSE, FALSE>>]
+/\ opPhase = "UPGRADED"
+/\ volLoad = [dn0 |-> <<"bp", "bp">>]
+/\ volPrev = [dn0 |-> <<[ct |-> 2, lv |-> -57], [ct |-> 2, lv |-> -57]>>]
+/\ nnPrev = 1
+/\ dnNs = [dn0 |-> 3]
+/\ dnOpt = [dn0 |-> "REGULAR"]
+/\ dnRolledBack = [dn0 |-> FALSE]
+
+State 12: <MCDNInitDone("dn0") line 165, col 20 to line 165, col 68 of module MC>
+/\ nnCur = 3
+/\ dnPc = [dn0 |-> "registering"]
+/\ dnPending = [dn0 |-> <<>>]
+/\ nnHist = {1, 2, 3}
+/\ targetFired = FALSE
+/\ dnRegCT = [dn0 |-> 3]
+/\ dnSwLV = [dn0 |-> -57]
+/\ clock = 5
+/\ nnUp = TRUE
+/\ dnOut = [dn0 |-> FALSE]
+/\ volCur = [dn0 |-> <<[ct |-> 3, lv |-> -57], [ct |-> 3, lv |-> -57]>>]
+/\ volTmp = [dn0 |-> <<[ct |-> 0, lv |-> 0], [ct |-> 0, lv |-> 0]>>]
+/\ faults = [ upgrades |-> 2,
+  dnOutages |-> 0,
+  volOutages |-> 0,
+  volReplacements |-> 0,
+  swUpgrades |-> 0,
+  clockSkews |-> 1 ]
+/\ dnCont = [dn0 |-> {}]
+/\ volOnline = [dn0 |-> <<TRUE, TRUE>>]
+/\ volBpFault = [dn0 |-> <<FALSE, FALSE>>]
+/\ opPhase = "UPGRADED"
+/\ volLoad = [dn0 |-> <<"bp", "bp">>]
+/\ volPrev = [dn0 |-> <<[ct |-> 2, lv |-> -57], [ct |-> 2, lv |-> -57]>>]
+/\ nnPrev = 1
+/\ dnNs = [dn0 |-> 3]
+/\ dnOpt = [dn0 |-> "REGULAR"]
+/\ dnRolledBack = [dn0 |-> FALSE]
+
+State 13: <MCDNStop("dn0") line 159, col 16 to line 159, col 60 of module MC>
+/\ nnCur = 3
+/\ dnPc = [dn0 |-> "down"]
+/\ dnPending = [dn0 |-> <<>>]
+/\ nnHist = {1, 2, 3}
+/\ targetFired = FALSE
+/\ dnRegCT = [dn0 |-> 0]
+/\ dnSwLV = [dn0 |-> -57]
+/\ clock = 5
+/\ nnUp = TRUE
+/\ dnOut = [dn0 |-> FALSE]
+/\ volCur = [dn0 |-> <<[ct |-> 3, lv |-> -57], [ct |-> 3, lv |-> -57]>>]
+/\ volTmp = [dn0 |-> <<[ct |-> 0, lv |-> 0], [ct |-> 0, lv |-> 0]>>]
+/\ faults = [ upgrades |-> 2,
+  dnOutages |-> 0,
+  volOutages |-> 0,
+  volReplacements |-> 0,
+  swUpgrades |-> 0,
+  clockSkews |-> 1 ]
+/\ dnCont = [dn0 |-> {}]
+/\ volOnline = [dn0 |-> <<TRUE, TRUE>>]
+/\ volBpFault = [dn0 |-> <<FALSE, FALSE>>]
+/\ opPhase = "UPGRADED"
+/\ volLoad = [dn0 |-> <<"none", "none">>]
+/\ volPrev = [dn0 |-> <<[ct |-> 2, lv |-> -57], [ct |-> 2, lv |-> -57]>>]
+/\ nnPrev = 1
+/\ dnNs = [dn0 |-> 0]
+/\ dnOpt = [dn0 |-> "REGULAR"]
+/\ dnRolledBack = [dn0 |-> FALSE]
+
+State 14: <MCNNStop line 95, col 5 to line 98, col 23 of module MC>
+/\ nnCur = 3
+/\ dnPc = [dn0 |-> "down"]
+/\ dnPending = [dn0 |-> <<>>]
+/\ nnHist = {1, 2, 3}
+/\ targetFired = FALSE
+/\ dnRegCT = [dn0 |-> 0]
+/\ dnSwLV = [dn0 |-> -57]
+/\ clock = 5
+/\ nnUp = FALSE
+/\ dnOut = [dn0 |-> FALSE]
+/\ volCur = [dn0 |-> <<[ct |-> 3, lv |-> -57], [ct |-> 3, lv |-> -57]>>]
+/\ volTmp = [dn0 |-> <<[ct |-> 0, lv |-> 0], [ct |-> 0, lv |-> 0]>>]
+/\ faults = [ upgrades |-> 2,
+  dnOutages |-> 0,
+  volOutages |-> 0,
+  volReplacements |-> 0,
+  swUpgrades |-> 0,
+  clockSkews |-> 1 ]
+/\ dnCont = [dn0 |-> {}]
+/\ volOnline = [dn0 |-> <<TRUE, TRUE>>]
+/\ volBpFault = [dn0 |-> <<FALSE, FALSE>>]
+/\ opPhase = "UPGRADED"
+/\ volLoad = [dn0 |-> <<"none", "none">>]
+/\ volPrev = [dn0 |-> <<[ct |-> 2, lv |-> -57], [ct |-> 2, lv |-> -57]>>]
+/\ nnPrev = 1
+/\ dnNs = [dn0 |-> 0]
+/\ dnOpt = [dn0 |-> "REGULAR"]
+/\ dnRolledBack = [dn0 |-> FALSE]
+
+State 15: <MCNNRollback line 127, col 5 to line 133, col 41 of module MC>
+/\ nnCur = 1
+/\ dnPc = [dn0 |-> "down"]
+/\ dnPending = [dn0 |-> <<>>]
+/\ nnHist = {1, 2, 3}
+/\ targetFired = FALSE
+/\ dnRegCT = [dn0 |-> 0]
+/\ dnSwLV = [dn0 |-> -57]
+/\ clock = 5
+/\ nnUp = FALSE
+/\ dnOut = [dn0 |-> FALSE]
+/\ volCur = [dn0 |-> <<[ct |-> 3, lv |-> -57], [ct |-> 3, lv |-> -57]>>]
+/\ volTmp = [dn0 |-> <<[ct |-> 0, lv |-> 0], [ct |-> 0, lv |-> 0]>>]
+/\ faults = [ upgrades |-> 2,
+  dnOutages |-> 0,
+  volOutages |-> 0,
+  volReplacements |-> 0,
+  swUpgrades |-> 0,
+  clockSkews |-> 1 ]
+/\ dnCont = [dn0 |-> {}]
+/\ volOnline = [dn0 |-> <<TRUE, TRUE>>]
+/\ volBpFault = [dn0 |-> <<FALSE, FALSE>>]
+/\ opPhase = "ROLLEDBACK"
+/\ volLoad = [dn0 |-> <<"none", "none">>]
+/\ volPrev = [dn0 |-> <<[ct |-> 2, lv |-> -57], [ct |-> 2, lv |-> -57]>>]
+/\ nnPrev = 0
+/\ dnNs = [dn0 |-> 0]
+/\ dnOpt = [dn0 |-> "REGULAR"]
+/\ dnRolledBack = [dn0 |-> FALSE]
+
+State 16: <MCNNStart line 88, col 5 to line 90, col 23 of module MC>
+/\ nnCur = 1
+/\ dnPc = [dn0 |-> "down"]
+/\ dnPending = [dn0 |-> <<>>]
+/\ nnHist = {1, 2, 3}
+/\ targetFired = FALSE
+/\ dnRegCT = [dn0 |-> 0]
+/\ dnSwLV = [dn0 |-> -57]
+/\ clock = 5
+/\ nnUp = TRUE
+/\ dnOut = [dn0 |-> FALSE]
+/\ volCur = [dn0 |-> <<[ct |-> 3, lv |-> -57], [ct |-> 3, lv |-> -57]>>]
+/\ volTmp = [dn0 |-> <<[ct |-> 0, lv |-> 0], [ct |-> 0, lv |-> 0]>>]
+/\ faults = [ upgrades |-> 2,
+  dnOutages |-> 0,
+  volOutages |-> 0,
+  volReplacements |-> 0,
+  swUpgrades |-> 0,
+  clockSkews |-> 1 ]
+/\ dnCont = [dn0 |-> {}]
+/\ volOnline = [dn0 |-> <<TRUE, TRUE>>]
+/\ volBpFault = [dn0 |-> <<FALSE, FALSE>>]
+/\ opPhase = "ROLLEDBACK"
+/\ volLoad = [dn0 |-> <<"none", "none">>]
+/\ volPrev = [dn0 |-> <<[ct |-> 2, lv |-> -57], [ct |-> 2, lv |-> -57]>>]
+/\ nnPrev = 0
+/\ dnNs = [dn0 |-> 0]
+/\ dnOpt = [dn0 |-> "REGULAR"]
+/\ dnRolledBack = [dn0 |-> FALSE]
+
+State 17: <MCDNStart("dn0") line 154, col 5 to line 157, col 23 of module MC>
+/\ nnCur = 1
+/\ dnPc = [dn0 |-> "handshake"]
+/\ dnPending = [dn0 |-> <<1, 2>>]
+/\ nnHist = {1, 2, 3}
+/\ targetFired = FALSE
+/\ dnRegCT = [dn0 |-> 0]
+/\ dnSwLV = [dn0 |-> -57]
+/\ clock = 5
+/\ nnUp = TRUE
+/\ dnOut = [dn0 |-> FALSE]
+/\ volCur = [dn0 |-> <<[ct |-> 3, lv |-> -57], [ct |-> 3, lv |-> -57]>>]
+/\ volTmp = [dn0 |-> <<[ct |-> 0, lv |-> 0], [ct |-> 0, lv |-> 0]>>]
+/\ faults = [ upgrades |-> 2,
+  dnOutages |-> 0,
+  volOutages |-> 0,
+  volReplacements |-> 0,
+  swUpgrades |-> 0,
+  clockSkews |-> 1 ]
+/\ dnCont = [dn0 |-> {}]
+/\ volOnline = [dn0 |-> <<TRUE, TRUE>>]
+/\ volBpFault = [dn0 |-> <<FALSE, FALSE>>]
+/\ opPhase = "ROLLEDBACK"
+/\ volLoad = [dn0 |-> <<"none", "none">>]
+/\ volPrev = [dn0 |-> <<[ct |-> 2, lv |-> -57], [ct |-> 2, lv |-> -57]>>]
+/\ nnPrev = 0
+/\ dnNs = [dn0 |-> 0]
+/\ dnOpt = [dn0 |-> "ROLLBACK"]
+/\ dnRolledBack = [dn0 |-> FALSE]
+
+State 18: <MCDNHandshake("dn0") line 161, col 21 to line 161, col 85 of module MC>
+/\ nnCur = 1
+/\ dnPc = [dn0 |-> "loading"]
+/\ dnPending = [dn0 |-> <<1, 2>>]
+/\ nnHist = {1, 2, 3}
+/\ targetFired = FALSE
+/\ dnRegCT = [dn0 |-> 1]
+/\ dnSwLV = [dn0 |-> -57]
+/\ clock = 5
+/\ nnUp = TRUE
+/\ dnOut = [dn0 |-> FALSE]
+/\ volCur = [dn0 |-> <<[ct |-> 3, lv |-> -57], [ct |-> 3, lv |-> -57]>>]
+/\ volTmp = [dn0 |-> <<[ct |-> 0, lv |-> 0], [ct |-> 0, lv |-> 0]>>]
+/\ faults = [ upgrades |-> 2,
+  dnOutages |-> 0,
+  volOutages |-> 0,
+  volReplacements |-> 0,
+  swUpgrades |-> 0,
+  clockSkews |-> 1 ]
+/\ dnCont = [dn0 |-> {}]
+/\ volOnline = [dn0 |-> <<TRUE, TRUE>>]
+/\ volBpFault = [dn0 |-> <<FALSE, FALSE>>]
+/\ opPhase = "ROLLEDBACK"
+/\ volLoad = [dn0 |-> <<"dn", "dn">>]
+/\ volPrev = [dn0 |-> <<[ct |-> 2, lv |-> -57], [ct |-> 2, lv |-> -57]>>]
+/\ nnPrev = 0
+/\ dnNs = [dn0 |-> 1]
+/\ dnOpt = [dn0 |-> "ROLLBACK"]
+/\ dnRolledBack = [dn0 |-> FALSE]
+
+State 19: <MCTargetCheck("dn0",1) line 162, col 24 to line 162, col 76 of module MC>
+/\ nnCur = 1
+/\ dnPc = [dn0 |-> "loading"]
+/\ dnPending = [dn0 |-> <<2>>]
+/\ nnHist = {1, 2, 3}
+/\ targetFired = TRUE
+/\ dnRegCT = [dn0 |-> 1]
+/\ dnSwLV = [dn0 |-> -57]
+/\ clock = 5
+/\ nnUp = TRUE
+/\ dnOut = [dn0 |-> FALSE]
+/\ volCur = [dn0 |-> <<[ct |-> 3, lv |-> -57], [ct |-> 3, lv |-> -57]>>]
+/\ volTmp = [dn0 |-> <<[ct |-> 0, lv |-> 0], [ct |-> 0, lv |-> 0]>>]
+/\ faults = [ upgrades |-> 2,
+  dnOutages |-> 0,
+  volOutages |-> 0,
+  volReplacements |-> 0,
+  swUpgrades |-> 0,
+  clockSkews |-> 1 ]
+/\ dnCont = [dn0 |-> {}]
+/\ volOnline = [dn0 |-> <<TRUE, TRUE>>]
+/\ volBpFault = [dn0 |-> <<FALSE, FALSE>>]
+/\ opPhase = "ROLLEDBACK"
+/\ volLoad = [dn0 |-> <<"dn", "dn">>]
+/\ volPrev = [dn0 |-> <<[ct |-> 2, lv |-> -57], [ct |-> 2, lv |-> -57]>>]
+/\ nnPrev = 0
+/\ dnNs = [dn0 |-> 1]
+/\ dnOpt = [dn0 |-> "ROLLBACK"]
+/\ dnRolledBack = [dn0 |-> FALSE]
+
+"CounterExample written: /users/ZhenyuLi/Specula/runs/20261029-113905-f621/hdfs-adhoc-26/.specula-output/spec/output/MC_hunt_S5_bfs_cex.json"
+1927 states generated, 1131 distinct states found, 210 states left on queue.
+The depth of the complete state graph search is 19.
+Checkpointing of run /tmp/tlc-states-NILaCb/26-10-29-20-31-46.530
+Checkpointing completed at (2026-10-29 20:31:48)
+Finished in 01s at (2026-10-29 20:31:48)
+Trace exploration spec path: ./MC_TTrace_1793305906.tla

@@ -1,0 +1,22 @@
+id: solr-adhoc-38
+system: Apache Solr
+source_tree: /set/by/run-case.sh
+base_commit: faca81bff1
+check:
+  file: solr/core/src/java/org/apache/solr/update/processor/DistributedZkUpdateProcessor.java
+  line: 1023
+  method: DistributedZkUpdateProcessor.doDefensiveChecks(DistribPhase)
+  thrown: org.apache.solr.common.SolrException
+  guard: "(isLeader && !localIsLeader) || (isSubShardLeader && !localIsLeader)   (localIsLeader = cloudDesc.isLeader(), re-read up to 5 times, 500 ms apart, while the same condition holds)"
+workload:
+  module: solr/core
+  test: org.apache.solr.cloud.TestPullReplica#testAddDocs
+  note: the test reaches the check's method and passes; the check does not fail in it
+scope_hint:
+  - org.apache.solr.update.processor.DistributedZkUpdateProcessor
+  - org.apache.solr.cloud.CloudDescriptor
+  - org.apache.solr.cloud.ShardLeaderElectionContext
+build:
+  env: /set/by/run-case.sh
+  prepare: "ant ivy-bootstrap -Divy_install_path=$IVY_USER_DIR/lib && cd solr && ant -lib $IVY_USER_DIR/lib compile compile-test -Divy_install_path=$IVY_USER_DIR/lib   (already done once)"
+  test_command: "cd solr/core && ant -lib $IVY_USER_DIR/lib test -Dtestcase=<Class> -Dtests.method=<method> -Dtests.jvms=1 -Dtests.useSecurityManager=false -Divy_install_path=$IVY_USER_DIR/lib"

@@ -1,0 +1,20 @@
+id: zk-adhoc-11
+system: Apache ZooKeeper
+source_tree: /set/by/run-case.sh
+base_commit: eab16599
+check:
+  file: zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/QuorumPeer.java
+  line: 1236
+  method: QuorumPeer.loadDataBase()
+  thrown: java.io.IOException
+  guard: "epochOfZxid > currentEpoch && !currentTmp.exists()"
+workload:
+  module: zookeeper-server
+  test: org.apache.zookeeper.server.quorum.CurrentEpochWriteFailureTest#testReadCurrentEpochFromAcceptedEpochTmpFile
+  note: the test reaches the check's method and passes; the check does not fail in it
+scope_hint:
+  - org.apache.zookeeper.server.quorum.QuorumPeer
+build:
+  env: /set/by/run-case.sh
+  prepare: "mvn -B install -DskipTests -Dmaven.javadoc.skip=true -Pfull-build   (already done once)"
+  test_command: "mvn -B -o test -pl zookeeper-server -Dtest='<Class>#<method>' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false"
