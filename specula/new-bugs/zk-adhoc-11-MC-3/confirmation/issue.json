@@ -1,0 +1,63 @@
+{
+  "id": "MC-3",
+  "title": "A stop that ends the follower sync loop before NEWLEADER logs new-epoch txns with no epoch write, so every restart throws at QuorumPeer:1236",
+  "status": "REPRODUCED",
+  "source": "model-checking",
+  "cause": "Learner.syncWithLeader treats running=false at its loop check like a finished sync: the post-loop code ACKs, starts zk and logs packetsNotLogged, while setCurrentEpoch only runs under NEWLEADER or UPTODATE.",
+  "trigger": "QuorumPeer.shutdown sets running=false while a follower with an older currentEpoch is reading proposals queued ahead of NEWLEADER, and the post-loop ACK reaches the socket before shutdown closes it.",
+  "consequence": "The log holds epoch-E txns with currentEpoch below E and no currentEpoch.tmp, so QuorumPeer.loadDataBase throws IOException on every later start and the server stays down until an operator repairs its data directory.",
+  "sites": [
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Learner.java:syncWithLeader",
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/QuorumPeer.java:shutdown",
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/QuorumPeer.java:loadDataBase"
+  ],
+  "actions": [
+    "LoopExit",
+    "PostLoopLog",
+    "TargetCheck"
+  ],
+  "invariants": [
+    "TargetSafe"
+  ],
+  "premises": [
+    "The stop comes through in-process QuorumPeer.shutdown (QuorumPeerMain.close, ZooKeeperServerEmbedded.close, tests); no production caller exists for a plain QuorumPeerMain process signal.",
+    "The follower's currentEpoch is below the leader's epoch and at least one proposal is queued ahead of NEWLEADER, which needs client writes during the sync.",
+    "No check of running or of sync completion exists between the loop and the post-loop logging."
+  ],
+  "dependencies": [
+    {
+      "root": "source",
+      "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Learner.java",
+      "start": "    protected void syncWithLeader(long newLeaderZxid) throws Exception {",
+      "end": "    protected void revalidate(QuorumPacket qp) throws IOException {"
+    },
+    {
+      "root": "source",
+      "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/QuorumPeer.java",
+      "start": "    public synchronized void start() {",
+      "end": "    ResponderThread responder;"
+    },
+    {
+      "root": "source",
+      "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/SyncRequestProcessor.java"
+    },
+    {
+      "root": "work",
+      "path": "spec/base.tla"
+    },
+    {
+      "root": "work",
+      "path": "spec/MC_hunt_shutdown_race.cfg"
+    }
+  ],
+  "evidence": [
+    "confirmation/MC-3/investigation.md",
+    "spec/output/MC_hunt_shutdown_race_bfs.out",
+    "repro/test_bugMC-3_SpeculaAdhocMC3Test.java",
+    "repro/test_bugMC-3_sync_loop_stop.sh",
+    "repro/MC-3.L0.pristine.log",
+    "repro/MC-3.L1.pristine.log",
+    "repro/MC-3.control.pristine.log",
+    "repro/MC-3.L0.worktree.trace.p2-lifecycle.ndjson"
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "target": "hdfs-adhoc-k3",
+  "check": {
+    "file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+    "line": 490,
+    "thrown": "org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException"
+  },
+  "verdict": "REACHED_CONFIRMED",
+  "mechanism": "COMBINED",
+  "scenario": "Scenario 1: Safe mode suppresses key pushes while rotation and DEK issuing continue",
+  "finding": "MC-1",
+  "counterexample": "spec/output/MC_hunt_s1_safemode_bfs.out",
+  "reproduction": "repro/test_bugMC-1_safemode_keypush.sh",
+  "stackFrame": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrieveDataEncryptionKey(BlockTokenSecretManager.java:492)",
+  "bounds": [
+    {
+      "config": "MC_hunt_s1_safemode.cfg",
+      "result": "VIOLATION",
+      "states": 2429,
+      "diameter": 21,
+      "seconds": 1
+    },
+    {
+      "config": "MC_hunt_s2_loss.cfg",
+      "result": "VIOLATION",
+      "states": 2236,
+      "diameter": 22,
+      "seconds": 2
+    },
+    {
+      "config": "MC_hunt_s2_race.cfg",
+      "result": "VIOLATION",
+      "states": 3288,
+      "diameter": 19,
+      "seconds": 2
+    },
+    {
+      "config": "MC_hunt_s3_ha.cfg",
+      "result": "VIOLATION",
+      "states": 88781,
+      "diameter": 14,
+      "seconds": 4
+    }
+  ],
+  "traceValidation": {
+    "traces": 3,
+    "passed": 3
+  },
+  "notes": "Mechanism kinds: BRANCH + CLOCK. The NameNode is put in safe mode with the public setSafeMode admin call. DatanodeManager.handleHeartbeat's safe-mode early return then skips addKeyUpdateCommand, but HeartbeatManager.Monitor keeps rotating block keys and getDataEncryptionKey keeps issuing DEKs on the newest currentKey. After two rotations in safe mode, the NN's currentKey is a key no DataNode holds, so every DataNode hits allKeys.get(keyId) == null and throws InvalidEncryptionKeyException from retrieveDataEncryptionKey. The client's encrypted read fails with BlockMissingException until safe mode ends. The reproduction is a variant of TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite[0] on the unmodified pinned tree. It uses only the public admin API, a legal key-update interval and real rotations and heartbeats, and no guard operand is written. The stack frame reads :492 because the multi-line throw statement starts at line 490 and spans 490-492, with the constructor call and athrow attributed to 492 (checked with javap). It is the method's only throw. Other TargetSafe findings, each also confirmed with the target exception from the same throw: MC-2 (Scenario 2, one lost heartbeat reply; FAULT), MC-3 (Scenario 2, fault-free registration-vs-rotation race; INTERLEAVING), MC-4 (Scenario 3, HA standby crash plus DataNode restart; COMBINED FAULT+RESTART). Code-review finding CR-5 (stale client DEK on getFileChecksum after an NN+DN restart) also throws the target exception. Every hunt config stopped at its first TargetSafe violation, so the bounds are reachability results, not exhaustive searches. The fault-free, workload-shaped MC.cfg explored its full space (2,844 distinct states, depth 19) with no violation, which matches the passing workload."
+}

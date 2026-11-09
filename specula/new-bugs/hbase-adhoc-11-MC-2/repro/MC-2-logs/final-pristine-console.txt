@@ -1,0 +1,55 @@
+build exit=0
+=== testLevel0 (tree=/users/ZhenyuLi/Specula/runs/20261102-200222-2fb8/hbase-adhoc-11/.specula-output/confirmation/MC-2/pristine, HEAD=archive)
+mvn exit=0
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 13.15 s -- in org.apache.hadoop.hbase.regionserver.TestMC2SplitRollbackClosedParent
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+MC2: table=mc2:testLevel0 regions=30 namespaceMaxRegions=30
+MC2: LEVEL0 HIT in round 2 offsetUs=-7237 splitOutcome=split-accepted-then-vetoed
+MC2: LEVEL0 rounds=2 outcomes={reassign-ok=1, split-accepted-then-vetoed=1, split-rejected=1} hit=true
+MC2: after split rollback: region=f421f2122b6aae7a246b5693f13c8cee rsn.state=OPEN rsn.location=null rsn.procedure=none meta.state=CLOSED hostedBy=[]
+MC2: TARGET FIRED: client received org.apache.hadoop.hbase.client.DoNotRetryRegionException
+MC2:   server-side: org.apache.hadoop.hbase.client.DoNotRetryRegionException: Unexpected state for state=OPEN, location=null, table=mc2:testLevel0, region=f421f2122b6aae7a246b5693f13c8cee
+MC2:   server-side: at org.apache.hadoop.hbase.master.assignment.AssignmentManager.preTransitCheck(AssignmentManager.java:769)
+MC2:   server-side: at org.apache.hadoop.hbase.master.assignment.AssignmentManager.createAssignProcedure(AssignmentManager.java:797)
+MC2:   server-side: at org.apache.hadoop.hbase.master.assignment.AssignmentManager.assign(AssignmentManager.java:828)
+MC2:   server-side: at org.apache.hadoop.hbase.master.assignment.AssignmentManager.assign(AssignmentManager.java:834)
+MC2:   server-side: at org.apache.hadoop.hbase.master.MasterRpcServices.assignRegion(MasterRpcServices.java:752)
+MC2: target frame present in server stack: preTransitCheck(AssignmentManager.java:769)
+MC2: consumer read: read FAILED: org.apache.hadoop.hbase.client.RetriesExhaustedException: Failed after attempts=3, exceptions:
+=== testLevel1 (tree=/users/ZhenyuLi/Specula/runs/20261102-200222-2fb8/hbase-adhoc-11/.specula-output/confirmation/MC-2/pristine, HEAD=archive)
+mvn exit=0
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 42.33 s -- in org.apache.hadoop.hbase.regionserver.TestMC2SplitRollbackClosedParent
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+MC2: table=mc2:testLevel1 regions=10 namespaceMaxRegions=10
+MC2: control A after unassign: region=f5cfd3c6afaa17e4d4754c536f1f56bc rsn.state=CLOSED rsn.location=null rsn.procedure=none meta.state=CLOSED hostedBy=[]
+MC2: control A after assign (no split involved): region=f5cfd3c6afaa17e4d4754c536f1f56bc rsn.state=OPEN rsn.location=clnode250.clemson.cloudlab.us,39483,1793879373824 rsn.procedure=none meta.state=OPEN hostedBy=[clnode250.clemson.cloudlab.us,39483,1793879373824]
+MC2: control B split vetoed: org.apache.hadoop.hbase.quotas.QuotaExceededException: Region split not possible for :b6de72892008d64693155621b3e9e191 as quota limits are exceeded 
+MC2: control B after rollback: region=b6de72892008d64693155621b3e9e191 rsn.state=OPEN rsn.location=clnode250.clemson.cloudlab.us,38031,1793879373967 rsn.procedure=none meta.state=OPEN hostedBy=[clnode250.clemson.cloudlab.us,38031,1793879373967]; consumer read OK, empty=false
+MC2: read before: read OK, empty=false
+MC2: CE state 2 (unassign accepted): region=d6bc961e3c73324f7c5d0c27dd4d6664 rsn.state=OPEN rsn.location=clnode250.clemson.cloudlab.us,38031,1793879373967 rsn.procedure=pid=36 meta.state=OPEN hostedBy=[clnode250.clemson.cloudlab.us,38031,1793879373967]
+MC2: CE state 3 (split accepted while state node OPEN): pid=37, state=RUNNABLE:SPLIT_TABLE_REGION_PREPARE, hasLock=false; SplitTableRegionProcedure table=mc2:testLevel1, parent=d6bc961e3c73324f7c5d0c27dd4d6664, daughterA=ebd8cfd9ae1b9909259fb8094ed76aad, daughterB=fe9c0f42f5c3c643894a4f33a2d6bcb2; region=d6bc961e3c73324f7c5d0c27dd4d6664 rsn.state=OPEN rsn.location=clnode250.clemson.cloudlab.us,38031,1793879373967 rsn.procedure=pid=36 meta.state=OPEN hostedBy=[clnode250.clemson.cloudlab.us,38031,1793879373967]
+MC2: unassign RPC returned, CE state 9 passed (split may already have run its rollback): region=d6bc961e3c73324f7c5d0c27dd4d6664 rsn.state=OPEN rsn.location=null rsn.procedure=none meta.state=CLOSED hostedBy=[]
+MC2: CE states 12-13 (PRE_OPERATION fails, rollback): split future failed with org.apache.hadoop.hbase.quotas.QuotaExceededException: Region split not possible for :d6bc961e3c73324f7c5d0c27dd4d6664 as quota limits are exceeded 
+MC2: split procedure finished: pid=37, state=ROLLEDBACK, hasLock=false, exception=org.apache.hadoop.hbase.quotas.QuotaExceededException via master-split-regions:org.apache.hadoop.hbase.quotas.QuotaExceededException: Region split not possible for :d6bc961e3c73324f7c5d0c27dd4d6664 as quota limits are exceeded ; SplitTableRegionProcedure table=mc2:testLevel1, parent=d6bc961e3c73324f7c5d0c27dd4d6664, daughterA=ebd8cfd9ae1b9909259fb8094ed76aad, daughterB=fe9c0f42f5c3c643894a4f33a2d6bcb2
+MC2: after split rollback: region=d6bc961e3c73324f7c5d0c27dd4d6664 rsn.state=OPEN rsn.location=null rsn.procedure=none meta.state=CLOSED hostedBy=[]
+MC2: TARGET FIRED: client received org.apache.hadoop.hbase.client.DoNotRetryRegionException
+MC2:   server-side: org.apache.hadoop.hbase.client.DoNotRetryRegionException: Unexpected state for state=OPEN, location=null, table=mc2:testLevel1, region=d6bc961e3c73324f7c5d0c27dd4d6664
+MC2:   server-side: at org.apache.hadoop.hbase.master.assignment.AssignmentManager.preTransitCheck(AssignmentManager.java:769)
+MC2:   server-side: at org.apache.hadoop.hbase.master.assignment.AssignmentManager.createAssignProcedure(AssignmentManager.java:797)
+MC2:   server-side: at org.apache.hadoop.hbase.master.assignment.AssignmentManager.assign(AssignmentManager.java:828)
+MC2:   server-side: at org.apache.hadoop.hbase.master.assignment.AssignmentManager.assign(AssignmentManager.java:834)
+MC2:   server-side: at org.apache.hadoop.hbase.master.MasterRpcServices.assignRegion(MasterRpcServices.java:752)
+MC2: target frame present in server stack: preTransitCheck(AssignmentManager.java:769)
+MC2: consumer read: read FAILED: org.apache.hadoop.hbase.client.RetriesExhaustedException: Failed after attempts=3, exceptions:
+MC2: after 30s (RIT chore every 1s): region=d6bc961e3c73324f7c5d0c27dd4d6664 rsn.state=OPEN rsn.location=null rsn.procedure=none meta.state=CLOSED hostedBy=[]
+MC2: TARGET FIRED: client received org.apache.hadoop.hbase.client.DoNotRetryRegionException
+MC2:   server-side: org.apache.hadoop.hbase.client.DoNotRetryRegionException: Unexpected state for state=OPEN, location=null, table=mc2:testLevel1, region=d6bc961e3c73324f7c5d0c27dd4d6664
+MC2:   server-side: at org.apache.hadoop.hbase.master.assignment.AssignmentManager.preTransitCheck(AssignmentManager.java:769)
+MC2:   server-side: at org.apache.hadoop.hbase.master.assignment.AssignmentManager.createAssignProcedure(AssignmentManager.java:797)
+MC2:   server-side: at org.apache.hadoop.hbase.master.assignment.AssignmentManager.assign(AssignmentManager.java:828)
+MC2:   server-side: at org.apache.hadoop.hbase.master.assignment.AssignmentManager.assign(AssignmentManager.java:834)
+MC2:   server-side: at org.apache.hadoop.hbase.master.MasterRpcServices.assignRegion(MasterRpcServices.java:752)
+MC2: target frame present in server stack: preTransitCheck(AssignmentManager.java:769)
+MC2: consumer read after 30s: read FAILED: org.apache.hadoop.hbase.client.RetriesExhaustedException: Failed after attempts=3, exceptions:

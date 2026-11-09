@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "target": "hdfs-adhoc-k7",
+  "check": {"file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java", "line": 422, "thrown": "java.io.IOException"},
+  "verdict": "REACHED_CONFIRMED",
+  "mechanism": "INTERLEAVING",
+  "scenario": "Scenario 1: startup parallel upgrade callable mutates shared fields under a later volume's guard",
+  "finding": "MC-1",
+  "counterexample": "spec/output/MC_hunt_s1a_workload_shape_bfs.out",
+  "reproduction": "repro/test_bugMC-1_startup_upgrade_race.java",
+  "stackFrame": "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:425)",
+  "bounds": [
+    {"config": "MC_hunt_s1_startup_parallel_upgrade.cfg", "result": "VIOLATION", "states": 5465, "diameter": 19, "seconds": 2},
+    {"config": "MC_hunt_s1a_workload_shape.cfg", "result": "VIOLATION", "states": 265, "diameter": 32, "seconds": 1},
+    {"config": "MC_hunt_s1b_layout_upgrade.cfg", "result": "VIOLATION", "states": 264, "diameter": 28, "seconds": 1},
+    {"config": "MC_hunt_s2_hotswap_shared_bpss.cfg", "result": "VIOLATION", "states": 2254, "diameter": 31, "seconds": 2}
+  ],
+  "traceValidation": {"traces": 3, "passed": 3},
+  "notes": "Chain (MC-1, workload shape, no fault): the NameNode starts with -upgrade (cTime C0 -> C1) and a DataNode with 2 data dirs at (DNLV, C0) restarts. Volume 1 takes the upgrade path and its callable is submitted to the executor inside the per-volume loop (DS:463-464). On the startup thread, volume 2's readProperties loads C0 into the shared per-block-pool BlockPoolSliceStorage fields and passes BPSS:405-406. Volume 1's callable then writes layoutVersion/cTime on that same object (BPSS:510, 513). Volume 2 now evaluates BPSS:415-416 as DNLV > DNLV || C1 < C1, which is false, and throws at BPSS:422. DS:467-469 drops volume 2's block-pool slice, leaving it un-upgraded with no previous/. Reproduction (confirmed-bugs.md Entry 1) ran on the clean pinned tree from a variant of TestAdhocWorkload7. Ten plain runs did not fire. Holding and releasing threads with JDWP breakpoints at BPSS:409/510/518, with no field, file or source writes, fired the target in 3 of 3 runs. Phase 4a records one caveat: the scheduler was the JDK debugger, not one of the codebase's own test utilities. The stack frame reports line 425 because the single throw new IOException(...) statement spans 422-425; javap maps the 'new' to line 422 and the constructor call to 425, and there is no other throw in that range. Other confirmed routes to the same throw: MC-2 (Scenario 2, parallel hot-swap addVolume threads on the shared BlockPoolSliceStorage; counterexample spec/output/MC_hunt_s2_hotswap_shared_bpss_bfs.out; reproduced with no timing control in 12-13 of 40 trials through the public reconfiguration API, after an on-disk fixture set one volume to the previous DataNode layout). CR-2 (code-review only, not model-checked: rollback of a dir added during the upgrade window; reproduced with plain operator actions on unmodified code). CR-1 (same race as MC-1, realized only with source-level sleeps; Phase 4a did not claim it as a TargetSafe reproduction). CR-3 (HA NameNode with stale cTime) was ruled a FALSE POSITIVE: the operator error is outside the fault model. Novelty, set after the verdicts: MC-1 and CR-1 match HDFS-14311, fixed upstream after the pinned base b0c5a8f9ae2; MC-2 and CR-2 are reported as new. Model limits: sequentially consistent interleaving of plain field accesses; crash/recovery, rollback, PROVIDED storage and HA NameNodes with different cTimes are not modelled. Every hunt config was BFS and stopped at its first violation; MC.cfg (convergence, no interference) found no violation in 1136 distinct states."
+}

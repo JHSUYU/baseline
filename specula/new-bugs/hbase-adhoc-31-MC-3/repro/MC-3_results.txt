@@ -1,0 +1,116 @@
+MC-3 results. One line per run: tree/mode, last result lines. Command: test_bugMC-3_late_register.sh <method> <suffix>
+
+## level0_limit2
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 71.33 s -- in org.apache.hadoop.hbase.master.TestSpeculaMC3LateRegist
+2026-11-05T16:22:22,306 t+18569ms P_EXPIRED by old master 7ms after the crash; P.online=false P.znode=false
+2026-11-05T16:23:10,824 t+67087ms RESULT_L0 fired=false fires=0
+
+## wt_level0_default
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 68.73 s -- in org.apache.hadoop.hbase.master.TestSpeculaMC3LateRegist
+2026-11-05T16:51:51,243 t+16554ms P_EXPIRED by old master, SCP stored, 11ms after the crash; P.online=false P.znode=false
+2026-11-05T16:52:39,569 t+64881ms RESULT_L0 fired=false fires=0
+
+## level1late_limit2
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 32.22 s <<< FAILURE! -- in org.apache.hadoop.hbase.master.TestSpecul
+2026-11-05T16:26:11,577 t+17494ms P_EXPIRED by old master, SCP stored, 116ms after the crash; P.online=false P.znode=true
+2026-11-05T16:26:22,078 TARGET_FIRED #1 on=clnode227.clemson.cloudlab.us,39985,1793895974408 close=1 open=0 msg=This RPC was intended for a different server with startCode: 1793895960090, this server is: clnode227.clemson.cloudlab.us,39985,1793895974408
+
+## level1early_limit2
+2026-11-05T16:27:59,073 t+18149ms P_EXPIRED by old master, SCP stored, 116ms after the crash; P.online=false P.znode=true
+2026-11-05T16:28:05,110 t+24186ms STATE[REGISTERED] successor=clnode227.clemson.cloudlab.us,46103,1793896081893 initialized=false P.online=true P.dead=true P.znode=true
+2026-11-05T16:28:09,312 TARGET_FIRED #1 on=clnode227.clemson.cloudlab.us,46103,1793896081893 close=1 open=0 msg=This RPC was intended for a different server with startCode: 1793896066502, this server is: clnode227.clemson.cloudlab.us,46103,1793896081893
+2026-11-05T16:28:39,645 t+58721ms ADMIN_getRegionServers [clnode227.clemson.cloudlab.us,38383,1793896066347, clnode227.clemson.cloudlab.us,44019,1793896066551, clnode227.clemson.cloudlab.us,46103,1793896066502, clnode227.clemson.cloudlab.us,46103,1793896081893] containsPredecessor=true
+2026-11-05T16:28:40,214 t+59290ms RESULT_EARLY fires=1 firesFromMoveToP=0 P_retired=false
+
+## level1early_default
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 271.3 s -- in org.apache.hadoop.hbase.master.TestSpeculaMC3LateRegist
+2026-11-05T16:40:10,423 t+47487ms P_EXPIRED by old master, SCP stored, 28549ms after the crash; P.online=false P.znode=true
+2026-11-05T16:40:16,488 t+53552ms STATE[REGISTERED] successor=clnode227.clemson.cloudlab.us,39081,1793896813265 initialized=false P.online=true P.dead=true P.znode=true
+2026-11-05T16:40:16,488 t+53552ms SESSION_EXPIRY 34616ms after the crash (zookeeper.session.timeout default: 90000ms)
+2026-11-05T16:40:20,832 TARGET_FIRED #1 on=clnode227.clemson.cloudlab.us,39081,1793896813265 close=1 open=0 msg=This RPC was intended for a different server with startCode: 1793896769038, this server is: clnode227.clemson.cloudlab.us,39081,1793896813265
+2026-11-05T16:40:51,174 t+88238ms ADMIN_getRegionServers [clnode227.clemson.cloudlab.us,36533,1793896769244, clnode227.clemson.cloudlab.us,39081,1793896769038, clnode227.clemson.cloudlab.us,39081,1793896813265, clnode227.clemson.cloudlab.us,39343,1793896769318] containsPredecessor=true
+2026-11-05T16:40:51,794 t+88858ms RESULT_EARLY fires=1 firesFromMoveToP=0 P_retired=false
+2026-11-05T16:43:51,835 t+268899ms ADMIN_SHUTDOWN after 180030ms: master.isStopped=false onlineServers=[clnode227.clemson.cloudlab.us,39081,1793896769038] liveRSThreads=0
+2026-11-05T16:43:51,835 t+268899ms RESULT_EARLY_SHUTDOWN completes=false onlineServersLeft=[clnode227.clemson.cloudlab.us,39081,1793896769038] predecessorIsTheOnlyOneLeft=true
+
+## level1late_default
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 72.65 s -- in org.apache.hadoop.hbase.master.TestSpeculaMC3LateRegist
+2026-11-05T16:45:14,901 t+47320ms P_EXPIRED by old master, SCP stored, 28542ms after the crash; P.online=false P.znode=true
+2026-11-05T16:45:20,932 t+53351ms STATE[REGISTERED] successor=clnode227.clemson.cloudlab.us,35155,1793897117740 initialized=false P.online=true P.dead=true P.znode=true
+2026-11-05T16:45:25,318 TARGET_FIRED #1 on=clnode227.clemson.cloudlab.us,35155,1793897117740 close=1 open=0 msg=This RPC was intended for a different server with startCode: 1793897073625, this server is: clnode227.clemson.cloudlab.us,35155,1793897117740
+2026-11-05T16:45:35,520 t+67939ms STATE[BEFORE_SESSION_EXPIRY] initialized=true P.online=true P.dead=false P.znode=true S=clnode227.clemson.cloudlab.us,35155,1793897117740 S.online=true online=[clnode227.clemson.cloudlab.us,35155,1793897073625, clnode227.clemson.cloudlab.us,35155,1793897117740, clno
+2026-11-05T16:45:35,521 t+67940ms SESSION_EXPIRY 49163ms after the crash (zookeeper.session.timeout default: 90000ms)
+2026-11-05T16:45:35,622 t+68040ms STATE[AFTER_SESSION_EXPIRY] initialized=true P.online=false P.dead=false P.znode=false S=clnode227.clemson.cloudlab.us,35155,1793897117740 S.online=true online=[clnode227.clemson.cloudlab.us,35155,1793897117740, clnode227.clemson.cloudlab.us,42277,1793897073574, cln
+2026-11-05T16:45:35,622 t+68041ms RESULT_LATE fires=1 P_retired=true r1_on=clnode227.clemson.cloudlab.us,46587,1793897073381
+2026-11-05T16:45:37,835 t+70254ms ADMIN_SHUTDOWN after 2202ms: master.isStopped=true onlineServers=[] liveRSThreads=1
+2026-11-05T16:45:37,835 t+70254ms RESULT_LATE_SHUTDOWN completes=true
+
+## wt_late_default_2
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 70.44 s -- in org.apache.hadoop.hbase.master.TestSpeculaMC3LateRegist
+2026-11-05T16:50:34,558 t+45708ms P_EXPIRED by old master, SCP stored, 28536ms after the crash; P.online=false P.znode=true
+2026-11-05T16:50:40,657 t+51807ms STATE[REGISTERED] successor=clnode227.clemson.cloudlab.us,42813,1793897437473 initialized=false P.online=true P.dead=true P.znode=true
+2026-11-05T16:50:44,828 TARGET_FIRED #1 on=clnode227.clemson.cloudlab.us,42813,1793897437473 close=1 open=0 msg=This RPC was intended for a different server with startCode: 1793897393985, this server is: clnode227.clemson.cloudlab.us,42813,1793897437473
+2026-11-05T16:50:55,131 t+66281ms STATE[BEFORE_SESSION_EXPIRY] initialized=true P.online=true P.dead=false P.znode=true S=clnode227.clemson.cloudlab.us,42813,1793897437473 S.online=true online=[clnode227.clemson.cloudlab.us,37845,1793897393922, clnode227.clemson.cloudlab.us,41841,1793897393776, clno
+2026-11-05T16:50:55,131 t+66281ms SESSION_EXPIRY 49109ms after the crash (zookeeper.session.timeout default: 90000ms)
+2026-11-05T16:50:55,232 t+66382ms STATE[AFTER_SESSION_EXPIRY] initialized=true P.online=false P.dead=false P.znode=false S=clnode227.clemson.cloudlab.us,42813,1793897437473 S.online=true online=[clnode227.clemson.cloudlab.us,37845,1793897393922, clnode227.clemson.cloudlab.us,41841,1793897393776, cln
+2026-11-05T16:50:55,232 t+66382ms RESULT_LATE fires=1 P_retired=true r1_on=clnode227.clemson.cloudlab.us,41841,1793897393776
+2026-11-05T16:50:57,140 t+68290ms ADMIN_SHUTDOWN after 1901ms: master.isStopped=true onlineServers=[] liveRSThreads=1
+2026-11-05T16:50:57,140 t+68290ms RESULT_LATE_SHUTDOWN completes=true
+
+## wt_early_default_2
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 52.34 s <<< FAILURE! -- in org.apache.hadoop.hbase.master.TestSpecul
+2026-11-05T16:57:19,604 t+45873ms P_EXPIRED by old master, SCP stored, 28542ms after the crash; P.online=false P.znode=true
+2026-11-05T16:57:23,580 t+49849ms STATE[REGISTERED] successor=clnode227.clemson.cloudlab.us,44411,1793897840396 initialized=false P.online=true P.dead=false P.znode=true
+
+## pristine_early_default_1
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 271.3 s -- in org.apache.hadoop.hbase.master.TestSpeculaMC3LateRegist
+2026-11-05T16:45:40,025 t+47934ms P_EXPIRED by old master, SCP stored, 28541ms after the crash; P.online=false P.znode=true
+2026-11-05T16:45:46,139 t+54049ms STATE[REGISTERED] successor=clnode227.clemson.cloudlab.us,40309,1793897142946 initialized=false P.online=true P.dead=true P.znode=true
+2026-11-05T16:45:46,140 t+54049ms SESSION_EXPIRY 34657ms after the crash (zookeeper.session.timeout default: 90000ms)
+2026-11-05T16:45:50,311 TARGET_FIRED #1 on=clnode227.clemson.cloudlab.us,40309,1793897142946 close=1 open=0 msg=This RPC was intended for a different server with startCode: 1793897098114, this server is: clnode227.clemson.cloudlab.us,40309,1793897142946
+2026-11-05T16:46:20,539 t+88449ms ADMIN_getRegionServers [clnode227.clemson.cloudlab.us,40309,1793897098114, clnode227.clemson.cloudlab.us,40309,1793897142946, clnode227.clemson.cloudlab.us,40541,1793897098168, clnode227.clemson.cloudlab.us,42417,1793897097908] containsPredecessor=true
+2026-11-05T16:46:21,100 t+89010ms RESULT_EARLY fires=1 firesFromMoveToP=0 P_retired=false
+2026-11-05T16:49:21,132 t+269042ms ADMIN_SHUTDOWN after 180025ms: master.isStopped=false onlineServers=[clnode227.clemson.cloudlab.us,40309,1793897098114] liveRSThreads=0
+2026-11-05T16:49:21,132 t+269042ms RESULT_EARLY_SHUTDOWN completes=false onlineServersLeft=[clnode227.clemson.cloudlab.us,40309,1793897098114] predecessorIsTheOnlyOneLeft=true
+
+## pristine_early_default_2
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 269.1 s -- in org.apache.hadoop.hbase.master.TestSpeculaMC3LateRegist
+2026-11-05T16:57:19,439 t+45709ms P_EXPIRED by old master, SCP stored, 28543ms after the crash; P.online=false P.znode=true
+2026-11-05T16:57:25,535 t+51804ms STATE[REGISTERED] successor=clnode227.clemson.cloudlab.us,41041,1793897842352 initialized=false P.online=true P.dead=true P.znode=true
+2026-11-05T16:57:25,535 t+51805ms SESSION_EXPIRY 34640ms after the crash (zookeeper.session.timeout default: 90000ms)
+2026-11-05T16:57:29,705 TARGET_FIRED #1 on=clnode227.clemson.cloudlab.us,41041,1793897842352 close=1 open=0 msg=This RPC was intended for a different server with startCode: 1793897798606, this server is: clnode227.clemson.cloudlab.us,41041,1793897842352
+2026-11-05T16:58:00,039 t+86309ms ADMIN_getRegionServers [clnode227.clemson.cloudlab.us,40923,1793897798754, clnode227.clemson.cloudlab.us,41041,1793897798606, clnode227.clemson.cloudlab.us,41041,1793897842352, clnode227.clemson.cloudlab.us,43105,1793897798807] containsPredecessor=true
+2026-11-05T16:58:00,606 t+86876ms RESULT_EARLY fires=1 firesFromMoveToP=0 P_retired=false
+2026-11-05T17:01:00,642 t+266912ms ADMIN_SHUTDOWN after 180027ms: master.isStopped=false onlineServers=[clnode227.clemson.cloudlab.us,41041,1793897798606] liveRSThreads=0
+2026-11-05T17:01:00,642 t+266912ms RESULT_EARLY_SHUTDOWN completes=false onlineServersLeft=[clnode227.clemson.cloudlab.us,41041,1793897798606] predecessorIsTheOnlyOneLeft=true
+
+## pristine_late_default_splitproc
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 67.54 s -- in org.apache.hadoop.hbase.master.TestSpeculaMC3LateRegist
+2026-11-05T16:50:34,035 t+45133ms P_EXPIRED by old master, SCP stored, 28536ms after the crash; P.online=false P.znode=true
+2026-11-05T16:50:37,892 t+48990ms STATE[REGISTERED] successor=clnode227.clemson.cloudlab.us,34715,1793897434709 initialized=false P.online=true P.dead=true P.znode=true
+2026-11-05T16:50:42,026 TARGET_FIRED #1 on=clnode227.clemson.cloudlab.us,34715,1793897434709 close=1 open=0 msg=This RPC was intended for a different server with startCode: 1793897393783, this server is: clnode227.clemson.cloudlab.us,34715,1793897434709
+2026-11-05T16:50:52,229 t+63326ms STATE[BEFORE_SESSION_EXPIRY] initialized=true P.online=true P.dead=false P.znode=true S=clnode227.clemson.cloudlab.us,34715,1793897434709 S.online=true online=[clnode227.clemson.cloudlab.us,34715,1793897393783, clnode227.clemson.cloudlab.us,34715,1793897434709, clno
+2026-11-05T16:50:52,229 t+63327ms SESSION_EXPIRY 46731ms after the crash (zookeeper.session.timeout default: 90000ms)
+2026-11-05T16:50:52,329 t+63427ms STATE[AFTER_SESSION_EXPIRY] initialized=true P.online=false P.dead=false P.znode=false S=clnode227.clemson.cloudlab.us,34715,1793897434709 S.online=true online=[clnode227.clemson.cloudlab.us,34715,1793897434709, clnode227.clemson.cloudlab.us,41341,1793897393991, cln
+2026-11-05T16:50:52,330 t+63428ms RESULT_LATE fires=1 P_retired=true r1_on=clnode227.clemson.cloudlab.us,44575,1793897393928
+2026-11-05T16:50:54,238 t+65336ms ADMIN_SHUTDOWN after 1902ms: master.isStopped=true onlineServers=[] liveRSThreads=1
+2026-11-05T16:50:54,238 t+65336ms RESULT_LATE_SHUTDOWN completes=true
+
+## pristine_early_default_splitproc
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 266.3 s -- in org.apache.hadoop.hbase.master.TestSpeculaMC3LateRegist
+2026-11-05T16:51:48,963 t+45269ms P_EXPIRED by old master, SCP stored, 28531ms after the crash; P.online=false P.znode=true
+2026-11-05T16:51:52,811 t+49117ms STATE[REGISTERED] successor=clnode227.clemson.cloudlab.us,37235,1793897509633 initialized=false P.online=true P.dead=true P.znode=true
+2026-11-05T16:51:52,811 t+49117ms SESSION_EXPIRY 32380ms after the crash (zookeeper.session.timeout default: 90000ms)
+2026-11-05T16:51:56,927 TARGET_FIRED #1 on=clnode227.clemson.cloudlab.us,37235,1793897509633 close=1 open=0 msg=This RPC was intended for a different server with startCode: 1793897468397, this server is: clnode227.clemson.cloudlab.us,37235,1793897509633
+2026-11-05T16:52:27,150 t+83456ms ADMIN_getRegionServers [clnode227.clemson.cloudlab.us,34041,1793897468533, clnode227.clemson.cloudlab.us,36157,1793897468595, clnode227.clemson.cloudlab.us,37235,1793897468397, clnode227.clemson.cloudlab.us,37235,1793897509633] containsPredecessor=true
+2026-11-05T16:52:27,711 t+84017ms RESULT_EARLY fires=1 firesFromMoveToP=0 P_retired=false
+2026-11-05T16:55:27,738 t+264044ms ADMIN_SHUTDOWN after 180021ms: master.isStopped=false onlineServers=[clnode227.clemson.cloudlab.us,37235,1793897468397] liveRSThreads=0
+2026-11-05T16:55:27,739 t+264044ms RESULT_EARLY_SHUTDOWN completes=false onlineServersLeft=[clnode227.clemson.cloudlab.us,37235,1793897468397] predecessorIsTheOnlyOneLeft=true
+
+## other_path_stale_retry_no_dead_entry
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 25.00 s <<< FAILURE! -- in org.apache.hadoop.hbase.master.TestSpecul
+2026-11-05T16:23:43,786 t+16853ms P_EXPIRED by old master 105ms after the crash; P.online=false P.znode=true
+2026-11-05T16:23:47,785 TARGET_FIRED #1 on=clnode227.clemson.cloudlab.us,39431,1793895824456 close=1 open=0 msg=This RPC was intended for a different server with startCode: 1793895812529, this server is: clnode227.clemson.cloudlab.us,39431,1793895824456
+
+## wt_late_default_3
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 21.30 s <<< FAILURE! -- in org.apache.hadoop.hbase.master.TestSpecul

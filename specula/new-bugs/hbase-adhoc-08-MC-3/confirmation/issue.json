@@ -1,0 +1,88 @@
+{
+  "id": "MC-3",
+  "title": "Meta's assignment throws NamespaceNotFoundException from CSSI:111 while the schema cache loads, and the master aborts after a RegionServer crash",
+  "status": "REPRODUCED",
+  "source": "model-checking",
+  "cause": "HMaster publishes clusterSchemaService (HM:1610) before its cache loads (HM:1611), and RSGroupUtil guards only a null service (RGU:107-116), so RGU:117 reads an empty cache.",
+  "trigger": "With hbase.balancer.rsgroup.enabled=true, the RegionServer holding meta crashes after the master passes waitForMetaOnline and before the namespace scan completes.",
+  "consequence": "The assign thread throws from CSSI:111 and re-queues meta until the scan's retries run out, about 60 s at default retries; ClusterSchemaServiceImpl fails and the master aborts. A cluster with one master stays down until a new master is started, which then assigns meta through the null-service path.",
+  "sites": [
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/master/ClusterSchemaServiceImpl.java:getNamespace",
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/master/HMaster.java:initClusterSchemaService",
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/rsgroup/RSGroupUtil.java:getRSGroupInfo",
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/AssignmentManager.java:processAssignmentPlans"
+  ],
+  "actions": [
+    "MCRSCrash",
+    "MCTrspQueueAssign",
+    "MCInitClusterSchemaService",
+    "MCTargetCheck_Assign"
+  ],
+  "invariants": [
+    "TargetSafe"
+  ],
+  "premises": [
+    "hbase.balancer.rsgroup.enabled=true; with it off the same schedule initializes the master and the target does not fire.",
+    "A RegionServer crash is in the fault model; no master crash is needed.",
+    "Measured on a mini cluster with default client retries. The user-region path and a standby taking over after the abort were not exercised."
+  ],
+  "dependencies": [
+    {
+      "root": "source",
+      "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/ClusterSchemaServiceImpl.java",
+      "start": "  public NamespaceDescriptor getNamespace(String name) throws IOException {",
+      "end": "    if (nsd == null) throw new NamespaceNotFoundException(name);"
+    },
+    {
+      "root": "source",
+      "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/HMaster.java",
+      "start": "  protected void initClusterSchemaService() throws IOException, InterruptedException {",
+      "end": "      throw new IOException(\"Timedout starting ClusterSchemaService\", toe);"
+    },
+    {
+      "root": "source",
+      "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/HMaster.java",
+      "start": "      LOG.error(HBaseMarkers.FATAL, \"Failed to become active master\", t);",
+      "end": "        abort(\"Unhandled exception. Starting shutdown.\", t);"
+    },
+    {
+      "root": "source",
+      "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/rsgroup/RSGroupUtil.java",
+      "start": "    ClusterSchema clusterSchema = master.getClusterSchema();",
+      "end": "    String groupNameOfNs = nd.getConfigurationValue(RSGroupInfo.NAMESPACE_DESC_PROP_GROUP);"
+    },
+    {
+      "root": "source",
+      "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/rsgroup/RSGroupBasedLoadBalancer.java",
+      "start": "  private List<Pair<List<RegionInfo>, List<ServerName>>> generateGroupAssignments(",
+      "end": "      throw new HBaseIOException(\"Failed to generate group assignments\", e);"
+    },
+    {
+      "root": "source",
+      "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/AssignmentManager.java",
+      "start": "  private void processAssignmentPlans(final HashMap<RegionInfo, RegionStateNode> regions,",
+      "end": "        LOG.warn(\"unable to round-robin assignment\", e);"
+    },
+    {
+      "root": "source",
+      "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/TableNamespaceManager.java",
+      "start": "  private void loadFromMeta() throws IOException {",
+      "end": "  private void loadFromNamespace() throws IOException {"
+    },
+    {
+      "root": "work",
+      "path": "spec/base.tla"
+    },
+    {
+      "root": "work",
+      "path": "spec/MC_hunt_S2_meta.cfg"
+    }
+  ],
+  "evidence": [
+    "repro/test_bugMC-3_metaSelfDependency.sh",
+    "repro/test_bugMC-3_metaSelfDependency.java",
+    "repro/MC-3.log",
+    "spec/output/MC_hunt_S2_meta_bfs.out",
+    "confirmation/MC-3/investigation.md"
+  ]
+}

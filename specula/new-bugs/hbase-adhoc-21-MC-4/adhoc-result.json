@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "target": "hbase-adhoc-21",
+  "check": {
+    "file": "hbase-server/src/main/java/org/apache/hadoop/hbase/namespace/NamespaceStateManager.java",
+    "line": 130,
+    "thrown": "org.apache.hadoop.hbase.quotas.QuotaExceededException"
+  },
+  "verdict": "REACHED_CONFIRMED",
+  "mechanism": "BRANCH",
+  "scenario": "Scenario 1: Snapshot manifest count exceeds the regions a restore produces",
+  "finding": "MC-1",
+  "counterexample": "spec/output/hunt_s1a_split_parents.out",
+  "reproduction": "repro/test_bugMC-1_restore_manifest_count.java",
+  "stackFrame": "org.apache.hadoop.hbase.namespace.NamespaceStateManager.checkAndUpdateNamespaceRegionCount(NamespaceStateManager.java:133)",
+  "bounds": [
+    {
+      "config": "MC_hunt_s1a_split_parents.cfg",
+      "result": "VIOLATION",
+      "states": 935,
+      "diameter": 10,
+      "seconds": 1
+    },
+    {
+      "config": "MC_hunt_s1a_split_parents_q10.cfg",
+      "result": "VIOLATION",
+      "states": 332,
+      "diameter": 12,
+      "seconds": 1
+    },
+    {
+      "config": "MC_hunt_s1b_mob_region.cfg",
+      "result": "VIOLATION",
+      "states": 422,
+      "diameter": 9,
+      "seconds": 1
+    },
+    {
+      "config": "MC_hunt_s2a_truncate.cfg",
+      "result": "VIOLATION",
+      "states": 5070,
+      "diameter": 14,
+      "seconds": 2
+    },
+    {
+      "config": "MC_hunt_s2b_wide_merge.cfg",
+      "result": "VIOLATION",
+      "states": 6635,
+      "diameter": 15,
+      "seconds": 2
+    },
+    {
+      "config": "MC_hunt_s3a_rebuild_replicas.cfg",
+      "result": "VIOLATION",
+      "states": 11872,
+      "diameter": 13,
+      "seconds": 2
+    },
+    {
+      "config": "MC_hunt_s3b_resumed_merge.cfg",
+      "result": "VIOLATION",
+      "states": 18123,
+      "diameter": 16,
+      "seconds": 2
+    },
+    {
+      "config": "MC_hunt_s3c_resumed_restore.cfg",
+      "result": "VIOLATION",
+      "states": 37232,
+      "diameter": 19,
+      "seconds": 2
+    },
+    {
+      "config": "MC_hunt_s4_split_rollback.cfg",
+      "result": "VIOLATION",
+      "states": 4135,
+      "diameter": 13,
+      "seconds": 2
+    },
+    {
+      "config": "MC_hunt_s5a_clone_race.cfg",
+      "result": "VIOLATION",
+      "states": 2757,
+      "diameter": 12,
+      "seconds": 1
+    },
+    {
+      "config": "MC_hunt_s5b_crash_in_create.cfg",
+      "result": "VIOLATION",
+      "states": 1701,
+      "diameter": 11,
+      "seconds": 1
+    },
+    {
+      "config": "MC_hunt_scenario1_manifest_count.cfg",
+      "result": "VIOLATION",
+      "states": 576,
+      "diameter": 9,
+      "seconds": 1
+    },
+    {
+      "config": "MC_hunt_scenario2_lossy_paths.cfg",
+      "result": "VIOLATION",
+      "states": 8477,
+      "diameter": 14,
+      "seconds": 2
+    },
+    {
+      "config": "MC_hunt_scenario3_rebuild.cfg",
+      "result": "VIOLATION",
+      "states": 18951,
+      "diameter": 13,
+      "seconds": 2
+    },
+    {
+      "config": "MC_hunt_scenario4_split_rollback.cfg",
+      "result": "VIOLATION",
+      "states": 4732,
+      "diameter": 13,
+      "seconds": 2
+    },
+    {
+      "config": "MC_hunt_scenario5_sentinel.cfg",
+      "result": "VIOLATION",
+      "states": 5579,
+      "diameter": 11,
+      "seconds": 1
+    }
+  ],
+  "traceValidation": {
+    "traces": 3,
+    "passed": 3
+  },
+  "notes": "The real system threw QuotaExceededException from the target's throw statement for a restore that fits the quota, using public Admin calls and no fault. In the headline path (MC-1) the guard adds the unfiltered snapshot manifest size, which includes a split parent or the MOB pseudo-region, while the namespace cache counts neither: at quota 10, a 9-region table is split (cache 10), snapshotted (11 entries), disabled and restored, so the guard computes 10 - 10 + 11 = 11 > 10, although the restored table has 10 regions. The stack frame reports line 133 because the throw statement spans lines 130-133 and its constructor call maps to the last line; the compiled line table shows new at line 130 and invokespecial under line 133, and this is the only throw in that method (repro/MC-6.javap.txt). The mechanism and scenario fields describe MC-1 only, a no-fault branch of the count logic. All 16 hunt configs violated TargetSafe, and all 8 findings (MC-1 to MC-8) reproduced the same throw under the Phase 4 rules: MC-2 and MC-3 need no fault (BRANCH), MC-4 needs a master failover (RESTART), MC-5 and MC-8 need a master crash during a procedure (RESTART, with INTERLEAVING against the rebuild scan), MC-6 needs a split failure (FAULT), and MC-7 needs a clone racing a create (INTERLEAVING). The bounds are the first-violation BFS runs in spec/output, and seconds are TLC's rounded wall time; MC.cfg, which is not a hunt config, finished exhaustively with no violation at 50,970 distinct states and diameter 41 (MC_round3.out). All 3 traces pass validation (harness/logs/tlc-*.log), but none reaches fired=true, so the failing branch was never replayed through Trace.tla; it is backed by the reproductions."
+}

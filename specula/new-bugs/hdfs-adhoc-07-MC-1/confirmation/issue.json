@@ -1,0 +1,122 @@
+{
+  "id": "MC-1",
+  "title": "Purge after a JournalNode restart stale-marks its open edit segment; QJM recovery then discards a committed txn (Journal.acceptRecovery AssertionError)",
+  "status": "REPRODUCED",
+  "source": "model-checking",
+  "cause": "FileJournalManager.purgeLogsOlderThan marks stale every in-progress segment at or after minTxIdToKeep except the in-memory currentInProgress, which is null after a JournalNode restart until the next startLogSegment. A purge reaching a restarted JN therefore renames the writer's still-open segment, including acknowledged txns, to .stale. The purge's RequestInfo committedTxId is bound when the IPCLoggerChannel task starts, so it can carry a pre-commit value, and QJM's recovery sanity check only looks at prepare responders.",
+  "trigger": "3 JNs. j0 acks the last batch (txn 2) and crashes before the writer sees the quorum; a checkpoint purge issued meanwhile binds committedTxId=1 and is delivered to j0 after its restart through IPC connect retries (default 10 x 1 s); j1 acks txn 2 (committed) and learns committedTxId=2; j2 missed txn 2; the old writer stops; the new writer's prepare quorum is {j0: no segment, j2: [1,1]} while j1 answers late.",
+  "consequence": "acceptRecovery([1,1]) on j1 throws java.lang.AssertionError from Journal.acceptRecovery (throw statement at Journal.java:926, frame line 932), but accept and finalize succeed on the majority {j0,j2}: with assertions off, as Hadoop daemons run, the new writer finalizes segment 1 as [1,1] and readers get txids [1], so the acknowledged txn 2 is permanently lost. With -ea the test-only QuorumCall.checkAssertionErrors aborts the failover instead.",
+  "sites": [
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FileJournalManager.java:isStaleInProgressLog",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FileJournalManager.java:purgeLogsOlderThan",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java:acceptRecovery",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/client/IPCLoggerChannel.java:purgeLogsOlderThan",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/client/QuorumJournalManager.java:recoverUnclosedSegment"
+  ],
+  "actions": [],
+  "invariants": [
+    "TargetSafe"
+  ],
+  "premises": [
+    "A JournalNode restart leaves FileJournalManager.currentInProgress null until that JN receives the next startLogSegment.",
+    "Any NameNode purge has minTxIdToKeep <= the open segment's first txid (FSEditLog.purgeLogsOlderThan precondition), so only currentInProgress protects the open segment.",
+    "IPCLoggerChannel.purgeLogsOlderThan has no out-of-sync check and binds committedTxId when its task starts; the IPC client retries refused connections (ipc.client.connect.max.retries default 10).",
+    "The old writer sends no further batch to the restarted JN before failover, and the JN that holds the committed txn is outside the new writer's prepare quorum.",
+    "Production JVMs run without -ea, so QuorumCall.checkAssertionErrors does not stop the new writer after a minority AssertionError."
+  ],
+  "dependencies": [
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FileJournalManager.java",
+      "start": "  File currentInProgress = null;",
+      "end": "  public StorageDirectory getStorageDirectory() {"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FileJournalManager.java",
+      "start": "  public void purgeLogsOlderThan(long minTxIdToKeep)",
+      "end": "        EDITS_INPROGRESS_REGEX.matcher(log.getFile().getName()).matches();"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java",
+      "start": "  Journal(Configuration conf, File logDir, String journalId,",
+      "end": "  private JournaledEditsCache createCache() {"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java",
+      "start": "  private synchronized void checkRequest(RequestInfo reqInfo) throws IOException {",
+      "end": "  private synchronized void checkWriteRequest(RequestInfo reqInfo) throws IOException {"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java",
+      "start": "  public synchronized void purgeLogsOlderThan(RequestInfo reqInfo,",
+      "end": "  private void purgePaxosDecision(long segmentTxId) throws IOException {"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java",
+      "start": "  public synchronized PrepareRecoveryResponseProto prepareRecovery(",
+      "end": "  private Range<Long> txnRange(SegmentStateProto seg) {"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/JNStorage.java",
+      "start": "  void purgeDataOlderThan(long minTxIdToKeep) throws IOException {",
+      "end": "  private static void purgeMatching(File dir, List<Pattern> patterns,"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/client/IPCLoggerChannel.java",
+      "start": "  private synchronized RequestInfo createReqInfo() {",
+      "end": "  public synchronized int getQueuedEditsSize() {"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/client/IPCLoggerChannel.java",
+      "start": "  public ListenableFuture<Void> purgeLogsOlderThan(final long minTxIdToKeep) {",
+      "end": "  public ListenableFuture<GetJournaledEditsResponseProto> getJournaledEdits("
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/client/QuorumJournalManager.java",
+      "start": "  private void recoverUnclosedSegment(long segmentTxId) throws IOException {",
+      "end": "  static List<AsyncLogger> createLoggers(Configuration conf,"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/client/QuorumCall.java",
+      "start": "  private synchronized void checkAssertionErrors() {",
+      "end": "          throw new AssertionError(t);"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLog.java",
+      "start": "  public synchronized void purgeLogsOlderThan(final long minTxIdToKeep) {",
+      "end": "      journalSet.purgeLogsOlderThan(minTxIdToKeep);"
+    },
+    {
+      "root": "work",
+      "path": "spec/output/hunt/gated/purge_guided_b_bfs.out"
+    },
+    {
+      "root": "work",
+      "path": "spec/output/hunt/gated/purge_guided_b.cfg"
+    },
+    {
+      "root": "work",
+      "path": "spec/MC_hunt_purge_restart.cfg"
+    }
+  ],
+  "evidence": [
+    "repro/test_bugMC-1_purge_restart.java",
+    "repro/test_bugMC-1_purge_restart.sh",
+    "confirmation/MC-1/investigation.md",
+    "confirmation/MC-1/notes/run5.final.console.txt",
+    "confirmation/MC-1/logs/transcript-ea-run1.txt",
+    "confirmation/MC-1/logs/transcript-da-run1.txt",
+    "confirmation/MC-1/notes/cediff.txt"
+  ]
+}

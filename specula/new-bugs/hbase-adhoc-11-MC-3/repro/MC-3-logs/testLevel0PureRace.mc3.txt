@@ -1,0 +1,23 @@
+[MC3] 1793880405942 LEVEL0 HIT at attempt 2 jitterMs=2 : 25088d3795e9cb8834f454240b3f8f00 rsnState=CLOSING rsnProc=null metaState=CLOSING onAnyRS=true liveTRSPs=[pid=56, state=WAITING:REGION_STATE_TRANSITION_CONFIRM_CLOSED, hasLock=true; TransitRegionStateProcedure table=mc3, region=25088d3795e9cb8834f454240b3f8f00, REOPEN/MOVE]
+[MC3] 1793880405955   Admin.move threw org.apache.hadoop.hbase.client.DoNotRetryRegionException typeIsTarget=true frame769=true
+[MC3] 1793880405955   message: org.apache.hadoop.hbase.client.DoNotRetryRegionException: Unexpected state for state=CLOSING, location=clnode250.clemson.cloudlab.us,42515,1793880396210, table=mc3, region=25088d3795e9cb8834f454240b3f8f00
+	at org.apache.hadoop.hbase.master.assignment.AssignmentManager.preTransitCheck(AssignmentManager.java:769)
+	at org.apache.hadoop.hbase.master.assignment.AssignmentManager.createMoveRegionProcedure(AssignmentManager.java:883)
+	at org.apache.hadoop.hbase.master.HMaster.move(HMaster.java:2480)
+	at org.apache.hadoop.hbase.master.MasterRpcServices.moveRegion(MasterRpcServices.java:1614)
+[MC3] 1793880405964   Admin.assign threw org.apache.hadoop.hbase.client.DoNotRetryRegionException typeIsTarget=true frame769=true
+[MC3] 1793880405964   message: org.apache.hadoop.hbase.client.DoNotRetryRegionException: Unexpected state for state=CLOSING, location=clnode250.clemson.cloudlab.us,42515,1793880396210, table=mc3, region=25088d3795e9cb8834f454240b3f8f00
+	at org.apache.hadoop.hbase.master.assignment.AssignmentManager.preTransitCheck(AssignmentManager.java:769)
+	at org.apache.hadoop.hbase.master.assignment.AssignmentManager.createAssignProcedure(AssignmentManager.java:797)
+	at org.apache.hadoop.hbase.master.assignment.AssignmentManager.assign(AssignmentManager.java:828)
+	at org.apache.hadoop.hbase.master.assignment.AssignmentManager.assign(AssignmentManager.java:834)
+[MC3] 1793880405972   Admin.unassign threw org.apache.hadoop.hbase.client.DoNotRetryRegionException typeIsTarget=true frame769=true
+[MC3] 1793880405972   message: org.apache.hadoop.hbase.client.DoNotRetryRegionException: Unexpected state for state=CLOSING, location=clnode250.clemson.cloudlab.us,42515,1793880396210, table=mc3, region=25088d3795e9cb8834f454240b3f8f00
+	at org.apache.hadoop.hbase.master.assignment.AssignmentManager.preTransitCheck(AssignmentManager.java:769)
+	at org.apache.hadoop.hbase.master.assignment.AssignmentManager.unassign(AssignmentManager.java:863)
+	at org.apache.hadoop.hbase.master.MasterRpcServices.unassignRegion(MasterRpcServices.java:1871)
+	at org.apache.hadoop.hbase.shaded.protobuf.generated.MasterProtos$MasterService$2.callBlockingMethod(MasterProtos.java)
+[MC3] 1793880406646   client Put on 25088d3795e9cb8834f454240b3f8f00 FAILED: RetriesExhaustedException: Failed after attempts=4, exceptions: 2026-11-05T12:06:46.018Z, org.apache.hadoop.hbase.exceptions.RegionMovedException: Region moved to: hostname=clnode250.clemson.cloudlab.us port=43695 startCode=1793880396059. As of lo
+[MC3] 1793880407275   client Get on 25088d3795e9cb8834f454240b3f8f00 FAILED: RetriesExhaustedException
+[MC3] 1793880467288 after 60s: 25088d3795e9cb8834f454240b3f8f00 rsnState=CLOSING rsnProc=null metaState=CLOSING onAnyRS=false liveTRSPs=[pid=56, state=WAITING:REGION_STATE_TRANSITION_CONFIRM_CLOSED, hasLock=true; TransitRegionStateProcedure table=mc3, region=25088d3795e9cb8834f454240b3f8f00, REOPEN/MOVE]
+[MC3] 1793880467288 RESULT level0: target fired with no timing aid

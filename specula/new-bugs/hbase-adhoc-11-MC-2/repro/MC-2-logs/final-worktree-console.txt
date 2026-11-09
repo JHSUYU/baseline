@@ -1,0 +1,20 @@
+build exit=0
+=== testLevel0 (tree=/users/ZhenyuLi/Specula/runs/20261102-200222-2fb8/hbase-adhoc-11/.specula-output/confirmation/MC-2/worktree, HEAD=1790942bb2)
+mvn exit=0
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 12.76 s -- in org.apache.hadoop.hbase.regionserver.TestMC2SplitRollbackClosedParent
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+MC2: table=mc2:testLevel0 regions=30 namespaceMaxRegions=30
+MC2: LEVEL0 HIT in round 2 offsetUs=-7237 splitOutcome=split-accepted-then-vetoed
+MC2: LEVEL0 rounds=2 outcomes={reassign-ok=1, split-accepted-then-vetoed=1, split-rejected=1} hit=true
+MC2: after split rollback: region=8c88d366c0409da664636cc9e2f7a6a3 rsn.state=OPEN rsn.location=null rsn.procedure=none meta.state=CLOSED hostedBy=[]
+MC2: TARGET FIRED: client received org.apache.hadoop.hbase.client.DoNotRetryRegionException
+MC2:   server-side: org.apache.hadoop.hbase.client.DoNotRetryRegionException: Unexpected state for state=OPEN, location=null, table=mc2:testLevel0, region=8c88d366c0409da664636cc9e2f7a6a3
+MC2:   server-side: at org.apache.hadoop.hbase.master.assignment.AssignmentManager.preTransitCheck(AssignmentManager.java:769)
+MC2:   server-side: at org.apache.hadoop.hbase.master.assignment.AssignmentManager.speculaPreTransitCheck(AssignmentManager.java:780)
+MC2:   server-side: at org.apache.hadoop.hbase.master.assignment.AssignmentManager.createAssignProcedure(AssignmentManager.java:808)
+MC2:   server-side: at org.apache.hadoop.hbase.master.assignment.AssignmentManager.assign(AssignmentManager.java:842)
+MC2:   server-side: at org.apache.hadoop.hbase.master.assignment.AssignmentManager.assign(AssignmentManager.java:848)
+MC2:   server-side: at org.apache.hadoop.hbase.master.MasterRpcServices.assignRegion(MasterRpcServices.java:752)
+MC2: target frame present in server stack: preTransitCheck(AssignmentManager.java:769)
+MC2: consumer read: read FAILED: org.apache.hadoop.hbase.client.RetriesExhaustedException: Failed after attempts=3, exceptions:

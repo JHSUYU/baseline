@@ -1,0 +1,282 @@
+# MC-1 reproduction evidence. Tree: pristine 1790942bb2 (instrumentation reversed; git status clean except the test).
+# Script: repro/test_bugMC-1_nsm_init_abort.sh <mode> <rounds> <earlierTables>
+
+######## RATES
+SUMMARY mode=level0 tables=20 fired=1/4
+SUMMARY mode=level0 tables=5 fired=2/6
+SUMMARY mode=natural tables=5 fired=3/3
+SUMMARY mode=hold tables=0 fired=3/3
+SUMMARY mode=control tables=0 fired=0/3
+
+######## level0-20-104846.report.txt
+[level0 #1 tables=20] m2 up, quota initialized after 6143 ms; held=0
+OUTCOME mode=level0 round=1 tables=20 => M2_OK
+[level0 #2 tables=20] m2 ABORTED after 4301 ms
+  HMaster logged: Failed to become active master; exception = org.apache.hadoop.hbase.NamespaceNotFoundException: TestNamespaceAuditor_np2
+    at org.apache.hadoop.hbase.master.ClusterSchemaServiceImpl.getNamespace(ClusterSchemaServiceImpl.java:111)
+    at org.apache.hadoop.hbase.master.HMaster.getTableDescriptors(HMaster.java:3876)
+    at org.apache.hadoop.hbase.master.HMaster.listTableNames(HMaster.java:3853)
+    at org.apache.hadoop.hbase.master.HMaster.listTableNamesByNamespace(HMaster.java:3760)
+    at org.apache.hadoop.hbase.namespace.NamespaceStateManager.initialize(NamespaceStateManager.java:227)
+    at org.apache.hadoop.hbase.namespace.NamespaceStateManager.start(NamespaceStateManager.java:61)
+    at org.apache.hadoop.hbase.namespace.NamespaceAuditor.start(NamespaceAuditor.java:49)
+    at org.apache.hadoop.hbase.quotas.MasterQuotaManager.start(MasterQuotaManager.java:115)
+    at org.apache.hadoop.hbase.master.HMaster.initQuotaManager(HMaster.java:1623)
+    at org.apache.hadoop.hbase.master.HMaster.finishActiveMasterInitialization(HMaster.java:1335)
+    at org.apache.hadoop.hbase.master.HMaster.startActiveMasterManager(HMaster.java:2615)
+    at org.apache.hadoop.hbase.master.HMaster.lambda$run$0(HMaster.java:638)
+  thrown from ClusterSchemaServiceImpl.getNamespace:111 = true
+  active master visible to the cluster: null
+  client listNamespaceDescriptors FAILED after 1141 ms: RetriesExhaustedException
+  third master: aborted=false quotaInitialized=true
+  after third master: namespace TestNamespaceAuditor_np2 gone from its cache = true
+  DNP final state on third master: ROLLEDBACK exception=java.lang.NullPointerException: Cannot invoke "org.apache.hadoop.hbase.quotas.MasterQuotaManager.removeNamespaceQuota(String)" because the return value of "org.apache.hadoop.hbase.master.MasterServices.getMasterQuotaManager()" is null
+OUTCOME mode=level0 round=2 tables=20 => TARGET_FIRED
+[level0 #3 tables=20] m2 up, quota initialized after 5006 ms; held=0
+OUTCOME mode=level0 round=3 tables=20 => M2_OK
+[level0 #4 tables=20] m2 up, quota initialized after 5037 ms; held=0
+OUTCOME mode=level0 round=4 tables=20 => M2_OK
+SUMMARY mode=level0 tables=20 fired=1/4
+
+######## level0-5-110309.report.txt
+[level0 #1 tables=5] m2 up, quota initialized after 3689 ms; held=0
+OUTCOME mode=level0 round=1 tables=5 => M2_OK
+[level0 #2 tables=5] m2 ABORTED after 3180 ms
+  HMaster logged: Failed to become active master; exception = org.apache.hadoop.hbase.NamespaceNotFoundException: TestNamespaceAuditor_np2
+    at org.apache.hadoop.hbase.master.ClusterSchemaServiceImpl.getNamespace(ClusterSchemaServiceImpl.java:111)
+    at org.apache.hadoop.hbase.master.HMaster.getTableDescriptors(HMaster.java:3876)
+    at org.apache.hadoop.hbase.master.HMaster.listTableNames(HMaster.java:3853)
+    at org.apache.hadoop.hbase.master.HMaster.listTableNamesByNamespace(HMaster.java:3760)
+    at org.apache.hadoop.hbase.namespace.NamespaceStateManager.initialize(NamespaceStateManager.java:227)
+    at org.apache.hadoop.hbase.namespace.NamespaceStateManager.start(NamespaceStateManager.java:61)
+    at org.apache.hadoop.hbase.namespace.NamespaceAuditor.start(NamespaceAuditor.java:49)
+    at org.apache.hadoop.hbase.quotas.MasterQuotaManager.start(MasterQuotaManager.java:115)
+    at org.apache.hadoop.hbase.master.HMaster.initQuotaManager(HMaster.java:1623)
+    at org.apache.hadoop.hbase.master.HMaster.finishActiveMasterInitialization(HMaster.java:1335)
+    at org.apache.hadoop.hbase.master.HMaster.startActiveMasterManager(HMaster.java:2615)
+    at org.apache.hadoop.hbase.master.HMaster.lambda$run$0(HMaster.java:638)
+  thrown from ClusterSchemaServiceImpl.getNamespace:111 = true
+  active master visible to the cluster: null
+  client listNamespaceDescriptors FAILED after 1140 ms: RetriesExhaustedException
+  third master: aborted=false quotaInitialized=true
+  after third master: namespace TestNamespaceAuditor_np2 gone from its cache = true
+  DNP final state on third master: ROLLEDBACK exception=java.lang.NullPointerException: Cannot invoke "org.apache.hadoop.hbase.quotas.MasterQuotaManager.removeNamespaceQuota(String)" because the return value of "org.apache.hadoop.hbase.master.MasterServices.getMasterQuotaManager()" is null
+OUTCOME mode=level0 round=2 tables=5 => TARGET_FIRED
+[level0 #3 tables=5] m2 up, quota initialized after 7955 ms; held=0
+OUTCOME mode=level0 round=3 tables=5 => M2_OK
+[level0 #4 tables=5] m2 up, quota initialized after 3801 ms; held=0
+OUTCOME mode=level0 round=4 tables=5 => M2_OK
+[level0 #5 tables=5] m2 ABORTED after 8614 ms
+  HMaster logged: Failed to become active master; exception = org.apache.hadoop.hbase.NamespaceNotFoundException: TestNamespaceAuditor_np2
+    at org.apache.hadoop.hbase.master.ClusterSchemaServiceImpl.getNamespace(ClusterSchemaServiceImpl.java:111)
+    at org.apache.hadoop.hbase.master.HMaster.getTableDescriptors(HMaster.java:3876)
+    at org.apache.hadoop.hbase.master.HMaster.listTableNames(HMaster.java:3853)
+    at org.apache.hadoop.hbase.master.HMaster.listTableNamesByNamespace(HMaster.java:3760)
+    at org.apache.hadoop.hbase.namespace.NamespaceStateManager.initialize(NamespaceStateManager.java:227)
+    at org.apache.hadoop.hbase.namespace.NamespaceStateManager.start(NamespaceStateManager.java:61)
+    at org.apache.hadoop.hbase.namespace.NamespaceAuditor.start(NamespaceAuditor.java:49)
+    at org.apache.hadoop.hbase.quotas.MasterQuotaManager.start(MasterQuotaManager.java:115)
+    at org.apache.hadoop.hbase.master.HMaster.initQuotaManager(HMaster.java:1623)
+    at org.apache.hadoop.hbase.master.HMaster.finishActiveMasterInitialization(HMaster.java:1335)
+    at org.apache.hadoop.hbase.master.HMaster.startActiveMasterManager(HMaster.java:2615)
+    at org.apache.hadoop.hbase.master.HMaster.lambda$run$0(HMaster.java:638)
+  thrown from ClusterSchemaServiceImpl.getNamespace:111 = true
+  active master visible to the cluster: null
+  client listNamespaceDescriptors FAILED after 1138 ms: RetriesExhaustedException
+  third master: aborted=false quotaInitialized=true
+  after third master: namespace TestNamespaceAuditor_np2 gone from its cache = true
+  DNP final state on third master: ROLLEDBACK exception=java.lang.NullPointerException: Cannot invoke "org.apache.hadoop.hbase.quotas.MasterQuotaManager.removeNamespaceQuota(String)" because the return value of "org.apache.hadoop.hbase.master.MasterServices.getMasterQuotaManager()" is null
+OUTCOME mode=level0 round=5 tables=5 => TARGET_FIRED
+[level0 #6 tables=5] m2 up, quota initialized after 4401 ms; held=0
+OUTCOME mode=level0 round=6 tables=5 => M2_OK
+SUMMARY mode=level0 tables=5 fired=2/6
+
+######## natural-5-110029.report.txt
+[natural #1 tables=5] m2 ABORTED after 2696 ms
+  HMaster logged: Failed to become active master; exception = org.apache.hadoop.hbase.NamespaceNotFoundException: TestNamespaceAuditor_np2
+    at org.apache.hadoop.hbase.master.ClusterSchemaServiceImpl.getNamespace(ClusterSchemaServiceImpl.java:111)
+    at org.apache.hadoop.hbase.master.HMaster.getTableDescriptors(HMaster.java:3876)
+    at org.apache.hadoop.hbase.master.HMaster.listTableNames(HMaster.java:3853)
+    at org.apache.hadoop.hbase.master.HMaster.listTableNamesByNamespace(HMaster.java:3760)
+    at org.apache.hadoop.hbase.namespace.NamespaceStateManager.initialize(NamespaceStateManager.java:227)
+    at org.apache.hadoop.hbase.namespace.NamespaceStateManager.start(NamespaceStateManager.java:61)
+    at org.apache.hadoop.hbase.namespace.NamespaceAuditor.start(NamespaceAuditor.java:49)
+    at org.apache.hadoop.hbase.quotas.MasterQuotaManager.start(MasterQuotaManager.java:115)
+    at org.apache.hadoop.hbase.master.HMaster.initQuotaManager(HMaster.java:1623)
+    at org.apache.hadoop.hbase.master.HMaster.finishActiveMasterInitialization(HMaster.java:1335)
+    at org.apache.hadoop.hbase.master.HMaster.startActiveMasterManager(HMaster.java:2615)
+    at org.apache.hadoop.hbase.master.HMaster.lambda$run$0(HMaster.java:638)
+  thrown from ClusterSchemaServiceImpl.getNamespace:111 = true
+  active master visible to the cluster: null
+  client listNamespaceDescriptors FAILED after 1145 ms: RetriesExhaustedException
+  third master: aborted=false quotaInitialized=true
+  after third master: namespace TestNamespaceAuditor_np2 gone from its cache = true
+  DNP final state on third master: ROLLEDBACK exception=java.lang.NullPointerException: Cannot invoke "org.apache.hadoop.hbase.quotas.MasterQuotaManager.removeNamespaceQuota(String)" because the return value of "org.apache.hadoop.hbase.master.MasterServices.getMasterQuotaManager()" is null
+OUTCOME mode=natural round=1 tables=5 => TARGET_FIRED
+[natural #2 tables=5] m2 ABORTED after 2770 ms
+  HMaster logged: Failed to become active master; exception = org.apache.hadoop.hbase.NamespaceNotFoundException: TestNamespaceAuditor_np2
+    at org.apache.hadoop.hbase.master.ClusterSchemaServiceImpl.getNamespace(ClusterSchemaServiceImpl.java:111)
+    at org.apache.hadoop.hbase.master.HMaster.getTableDescriptors(HMaster.java:3876)
+    at org.apache.hadoop.hbase.master.HMaster.listTableNames(HMaster.java:3853)
+    at org.apache.hadoop.hbase.master.HMaster.listTableNamesByNamespace(HMaster.java:3760)
+    at org.apache.hadoop.hbase.namespace.NamespaceStateManager.initialize(NamespaceStateManager.java:227)
+    at org.apache.hadoop.hbase.namespace.NamespaceStateManager.start(NamespaceStateManager.java:61)
+    at org.apache.hadoop.hbase.namespace.NamespaceAuditor.start(NamespaceAuditor.java:49)
+    at org.apache.hadoop.hbase.quotas.MasterQuotaManager.start(MasterQuotaManager.java:115)
+    at org.apache.hadoop.hbase.master.HMaster.initQuotaManager(HMaster.java:1623)
+    at org.apache.hadoop.hbase.master.HMaster.finishActiveMasterInitialization(HMaster.java:1335)
+    at org.apache.hadoop.hbase.master.HMaster.startActiveMasterManager(HMaster.java:2615)
+    at org.apache.hadoop.hbase.master.HMaster.lambda$run$0(HMaster.java:638)
+  thrown from ClusterSchemaServiceImpl.getNamespace:111 = true
+  active master visible to the cluster: null
+  client listNamespaceDescriptors FAILED after 1140 ms: RetriesExhaustedException
+  third master: aborted=false quotaInitialized=true
+  after third master: namespace TestNamespaceAuditor_np2 gone from its cache = true
+  DNP final state on third master: ROLLEDBACK exception=java.lang.NullPointerException: Cannot invoke "org.apache.hadoop.hbase.quotas.MasterQuotaManager.removeNamespaceQuota(String)" because the return value of "org.apache.hadoop.hbase.master.MasterServices.getMasterQuotaManager()" is null
+OUTCOME mode=natural round=2 tables=5 => TARGET_FIRED
+[natural #3 tables=5] m2 ABORTED after 2353 ms
+  HMaster logged: Failed to become active master; exception = org.apache.hadoop.hbase.NamespaceNotFoundException: TestNamespaceAuditor_np2
+    at org.apache.hadoop.hbase.master.ClusterSchemaServiceImpl.getNamespace(ClusterSchemaServiceImpl.java:111)
+    at org.apache.hadoop.hbase.master.HMaster.getTableDescriptors(HMaster.java:3876)
+    at org.apache.hadoop.hbase.master.HMaster.listTableNames(HMaster.java:3853)
+    at org.apache.hadoop.hbase.master.HMaster.listTableNamesByNamespace(HMaster.java:3760)
+    at org.apache.hadoop.hbase.namespace.NamespaceStateManager.initialize(NamespaceStateManager.java:227)
+    at org.apache.hadoop.hbase.namespace.NamespaceStateManager.start(NamespaceStateManager.java:61)
+    at org.apache.hadoop.hbase.namespace.NamespaceAuditor.start(NamespaceAuditor.java:49)
+    at org.apache.hadoop.hbase.quotas.MasterQuotaManager.start(MasterQuotaManager.java:115)
+    at org.apache.hadoop.hbase.master.HMaster.initQuotaManager(HMaster.java:1623)
+    at org.apache.hadoop.hbase.master.HMaster.finishActiveMasterInitialization(HMaster.java:1335)
+    at org.apache.hadoop.hbase.master.HMaster.startActiveMasterManager(HMaster.java:2615)
+    at org.apache.hadoop.hbase.master.HMaster.lambda$run$0(HMaster.java:638)
+  thrown from ClusterSchemaServiceImpl.getNamespace:111 = true
+  active master visible to the cluster: null
+  client listNamespaceDescriptors FAILED after 1142 ms: RetriesExhaustedException
+  third master: aborted=false quotaInitialized=true
+  after third master: namespace TestNamespaceAuditor_np2 gone from its cache = true
+  DNP final state on third master: ROLLEDBACK exception=java.lang.NullPointerException: Cannot invoke "org.apache.hadoop.hbase.quotas.MasterQuotaManager.removeNamespaceQuota(String)" because the return value of "org.apache.hadoop.hbase.master.MasterServices.getMasterQuotaManager()" is null
+OUTCOME mode=natural round=3 tables=5 => TARGET_FIRED
+SUMMARY mode=natural tables=5 fired=3/3
+
+######## hold-0-105524.report.txt
+[hold #1 tables=0] m2 ABORTED after 5114 ms
+  HMaster logged: Failed to become active master; exception = org.apache.hadoop.hbase.NamespaceNotFoundException: TestNamespaceAuditor_np2
+    at org.apache.hadoop.hbase.master.ClusterSchemaServiceImpl.getNamespace(ClusterSchemaServiceImpl.java:111)
+    at org.apache.hadoop.hbase.master.HMaster.getTableDescriptors(HMaster.java:3876)
+    at org.apache.hadoop.hbase.master.HMaster.listTableNames(HMaster.java:3853)
+    at org.apache.hadoop.hbase.master.HMaster.listTableNamesByNamespace(HMaster.java:3760)
+    at org.apache.hadoop.hbase.namespace.NamespaceStateManager.initialize(NamespaceStateManager.java:227)
+    at org.apache.hadoop.hbase.namespace.NamespaceStateManager.start(NamespaceStateManager.java:61)
+    at org.apache.hadoop.hbase.namespace.NamespaceAuditor.start(NamespaceAuditor.java:49)
+    at org.apache.hadoop.hbase.quotas.MasterQuotaManager.start(MasterQuotaManager.java:115)
+    at org.apache.hadoop.hbase.master.HMaster.initQuotaManager(HMaster.java:1623)
+    at org.apache.hadoop.hbase.master.HMaster.finishActiveMasterInitialization(HMaster.java:1335)
+    at org.apache.hadoop.hbase.master.HMaster.startActiveMasterManager(HMaster.java:2615)
+    at org.apache.hadoop.hbase.master.HMaster.lambda$run$0(HMaster.java:638)
+  thrown from ClusterSchemaServiceImpl.getNamespace:111 = true
+  active master visible to the cluster: null
+  client listNamespaceDescriptors FAILED after 1145 ms: RetriesExhaustedException
+  third master: aborted=false quotaInitialized=true
+  after third master: namespace TestNamespaceAuditor_np2 gone from its cache = true
+  DNP final state on third master: ROLLEDBACK exception=java.lang.NullPointerException: Cannot invoke "org.apache.hadoop.hbase.quotas.MasterQuotaManager.removeNamespaceQuota(String)" because the return value of "org.apache.hadoop.hbase.master.MasterServices.getMasterQuotaManager()" is null
+OUTCOME mode=hold round=1 tables=0 => TARGET_FIRED
+[hold #2 tables=0] m2 ABORTED after 4389 ms
+  HMaster logged: Failed to become active master; exception = org.apache.hadoop.hbase.NamespaceNotFoundException: TestNamespaceAuditor_np2
+    at org.apache.hadoop.hbase.master.ClusterSchemaServiceImpl.getNamespace(ClusterSchemaServiceImpl.java:111)
+    at org.apache.hadoop.hbase.master.HMaster.getTableDescriptors(HMaster.java:3876)
+    at org.apache.hadoop.hbase.master.HMaster.listTableNames(HMaster.java:3853)
+    at org.apache.hadoop.hbase.master.HMaster.listTableNamesByNamespace(HMaster.java:3760)
+    at org.apache.hadoop.hbase.namespace.NamespaceStateManager.initialize(NamespaceStateManager.java:227)
+    at org.apache.hadoop.hbase.namespace.NamespaceStateManager.start(NamespaceStateManager.java:61)
+    at org.apache.hadoop.hbase.namespace.NamespaceAuditor.start(NamespaceAuditor.java:49)
+    at org.apache.hadoop.hbase.quotas.MasterQuotaManager.start(MasterQuotaManager.java:115)
+    at org.apache.hadoop.hbase.master.HMaster.initQuotaManager(HMaster.java:1623)
+    at org.apache.hadoop.hbase.master.HMaster.finishActiveMasterInitialization(HMaster.java:1335)
+    at org.apache.hadoop.hbase.master.HMaster.startActiveMasterManager(HMaster.java:2615)
+    at org.apache.hadoop.hbase.master.HMaster.lambda$run$0(HMaster.java:638)
+  thrown from ClusterSchemaServiceImpl.getNamespace:111 = true
+  active master visible to the cluster: null
+  client listNamespaceDescriptors FAILED after 1141 ms: RetriesExhaustedException
+  third master: aborted=false quotaInitialized=true
+  after third master: namespace TestNamespaceAuditor_np2 gone from its cache = true
+  DNP final state on third master: ROLLEDBACK exception=java.lang.NullPointerException: Cannot invoke "org.apache.hadoop.hbase.quotas.MasterQuotaManager.removeNamespaceQuota(String)" because the return value of "org.apache.hadoop.hbase.master.MasterServices.getMasterQuotaManager()" is null
+OUTCOME mode=hold round=2 tables=0 => TARGET_FIRED
+[hold #3 tables=0] m2 ABORTED after 5136 ms
+  HMaster logged: Failed to become active master; exception = org.apache.hadoop.hbase.NamespaceNotFoundException: TestNamespaceAuditor_np2
+    at org.apache.hadoop.hbase.master.ClusterSchemaServiceImpl.getNamespace(ClusterSchemaServiceImpl.java:111)
+    at org.apache.hadoop.hbase.master.HMaster.getTableDescriptors(HMaster.java:3876)
+    at org.apache.hadoop.hbase.master.HMaster.listTableNames(HMaster.java:3853)
+    at org.apache.hadoop.hbase.master.HMaster.listTableNamesByNamespace(HMaster.java:3760)
+    at org.apache.hadoop.hbase.namespace.NamespaceStateManager.initialize(NamespaceStateManager.java:227)
+    at org.apache.hadoop.hbase.namespace.NamespaceStateManager.start(NamespaceStateManager.java:61)
+    at org.apache.hadoop.hbase.namespace.NamespaceAuditor.start(NamespaceAuditor.java:49)
+    at org.apache.hadoop.hbase.quotas.MasterQuotaManager.start(MasterQuotaManager.java:115)
+    at org.apache.hadoop.hbase.master.HMaster.initQuotaManager(HMaster.java:1623)
+    at org.apache.hadoop.hbase.master.HMaster.finishActiveMasterInitialization(HMaster.java:1335)
+    at org.apache.hadoop.hbase.master.HMaster.startActiveMasterManager(HMaster.java:2615)
+    at org.apache.hadoop.hbase.master.HMaster.lambda$run$0(HMaster.java:638)
+  thrown from ClusterSchemaServiceImpl.getNamespace:111 = true
+  active master visible to the cluster: null
+  client listNamespaceDescriptors FAILED after 1144 ms: RetriesExhaustedException
+  third master: aborted=false quotaInitialized=true
+  after third master: namespace TestNamespaceAuditor_np2 gone from its cache = true
+  DNP final state on third master: ROLLEDBACK exception=java.lang.NullPointerException: Cannot invoke "org.apache.hadoop.hbase.quotas.MasterQuotaManager.removeNamespaceQuota(String)" because the return value of "org.apache.hadoop.hbase.master.MasterServices.getMasterQuotaManager()" is null
+OUTCOME mode=hold round=3 tables=0 => TARGET_FIRED
+SUMMARY mode=hold tables=0 fired=3/3
+
+######## control-0-105815.report.txt
+[control #1 tables=0] m2 up, quota initialized after 5118 ms; held=0
+OUTCOME mode=control round=1 tables=0 => M2_OK
+[control #2 tables=0] m2 up, quota initialized after 2313 ms; held=0
+OUTCOME mode=control round=2 tables=0 => M2_OK
+[control #3 tables=0] m2 up, quota initialized after 3741 ms; held=0
+OUTCOME mode=control round=3 tables=0 => M2_OK
+SUMMARY mode=control tables=0 fired=0/3
+
+######## hold-0-104636.report.txt (first run: harness error after the target fired; test client registry could not reach the third master; fixed afterwards)
+[hold #1 tables=0] m2 ABORTED after 6383 ms
+  HMaster logged: Failed to become active master; exception = org.apache.hadoop.hbase.NamespaceNotFoundException: TestNamespaceAuditor_np2
+    at org.apache.hadoop.hbase.master.ClusterSchemaServiceImpl.getNamespace(ClusterSchemaServiceImpl.java:111)
+    at org.apache.hadoop.hbase.master.HMaster.getTableDescriptors(HMaster.java:3876)
+    at org.apache.hadoop.hbase.master.HMaster.listTableNames(HMaster.java:3853)
+    at org.apache.hadoop.hbase.master.HMaster.listTableNamesByNamespace(HMaster.java:3760)
+    at org.apache.hadoop.hbase.namespace.NamespaceStateManager.initialize(NamespaceStateManager.java:227)
+    at org.apache.hadoop.hbase.namespace.NamespaceStateManager.start(NamespaceStateManager.java:61)
+    at org.apache.hadoop.hbase.namespace.NamespaceAuditor.start(NamespaceAuditor.java:49)
+    at org.apache.hadoop.hbase.quotas.MasterQuotaManager.start(MasterQuotaManager.java:115)
+    at org.apache.hadoop.hbase.master.HMaster.initQuotaManager(HMaster.java:1623)
+    at org.apache.hadoop.hbase.master.HMaster.finishActiveMasterInitialization(HMaster.java:1335)
+    at org.apache.hadoop.hbase.master.HMaster.startActiveMasterManager(HMaster.java:2615)
+    at org.apache.hadoop.hbase.master.HMaster.lambda$run$0(HMaster.java:638)
+  thrown from ClusterSchemaServiceImpl.getNamespace:111 = true
+  active master visible to the cluster: null
+  client listNamespaceDescriptors FAILED after 1145 ms: RetriesExhaustedException
+  third master: aborted=false quotaInitialized=true
+
+######## Level 0, round 2 (tables=20): server log lines, unfiltered selection, level0-20-104846.server-output.txt
+2026-11-05T10:52:04,358 INFO  [RpcServer.default.FPBQ.Fifo.handler=2,queue=0,port=45809] master.HMaster$20(3687): Client=ZhenyuLi//130.127.134.9 delete TestNamespaceAuditor_np2
+2026-11-05T10:52:04,359 ERROR [mc1-killer] master.HMaster(3309): ***** ABORTING master clnode245.clemson.cloudlab.us,45809,1793875866080: Aborting for tests *****
+2026-11-05T10:52:04,367 DEBUG [RpcServer.default.FPBQ.Fifo.handler=2,queue=0,port=45809] procedure2.ProcedureExecutor(1139): Stored pid=98, state=RUNNABLE:DELETE_NAMESPACE_PREPARE, hasLock=false; DeleteNamespac
+2026-11-05T10:52:06,621 DEBUG [master/clnode245:0:becomeActiveMaster] procedure2.ProcedureExecutor(420): Loading pid=98, state=RUNNABLE:DELETE_NAMESPACE_PREPARE, hasLock=false; DeleteNamespaceProcedure, namespa
+2026-11-05T10:52:08,549 INFO  [master/clnode245:0:becomeActiveMaster] master.HMaster(1283): Master has completed initialization 3.754sec
+2026-11-05T10:52:08,550 INFO  [master/clnode245:0:becomeActiveMaster] namespace.NamespaceStateManager(60): Namespace State Manager started.
+2026-11-05T10:52:08,552 INFO  [PEWorker-2] procedure.DeleteNamespaceProcedure(67): pid=98, state=RUNNABLE:DELETE_NAMESPACE_PREPARE, hasLock=true; DeleteNamespaceProcedure, namespace=TestNamespaceAuditor_np2
+2026-11-05T10:52:08,554 INFO  [PEWorker-2] procedure.DeleteNamespaceProcedure(67): pid=98, state=RUNNABLE:DELETE_NAMESPACE_DELETE_FROM_NS_TABLE, hasLock=true; DeleteNamespaceProcedure, namespace=TestNamespaceAu
+2026-11-05T10:52:08,558 INFO  [PEWorker-2] procedure.DeleteNamespaceProcedure(67): pid=98, state=RUNNABLE:DELETE_NAMESPACE_DELETE_DIRECTORIES, hasLock=true; DeleteNamespaceProcedure, namespace=TestNamespaceAudi
+2026-11-05T10:52:08,561 INFO  [PEWorker-2] procedure.DeleteNamespaceProcedure(67): pid=98, state=RUNNABLE:DELETE_NAMESPACE_REMOVE_NAMESPACE_QUOTA, hasLock=true; DeleteNamespaceProcedure, namespace=TestNamespace
+2026-11-05T10:52:08,612 ERROR [master/clnode245:0:becomeActiveMaster] master.HMaster(2619): Failed to become active master
+org.apache.hadoop.hbase.NamespaceNotFoundException: TestNamespaceAuditor_np2
+	at org.apache.hadoop.hbase.master.ClusterSchemaServiceImpl.getNamespace(ClusterSchemaServiceImpl.java:111)
+	at org.apache.hadoop.hbase.master.HMaster.getTableDescriptors(HMaster.java:3876)
+	at org.apache.hadoop.hbase.master.HMaster.listTableNames(HMaster.java:3853)
+	at org.apache.hadoop.hbase.master.HMaster.listTableNamesByNamespace(HMaster.java:3760)
+	at org.apache.hadoop.hbase.namespace.NamespaceStateManager.initialize(NamespaceStateManager.java:227)
+	at org.apache.hadoop.hbase.namespace.NamespaceStateManager.start(NamespaceStateManager.java:61)
+	at org.apache.hadoop.hbase.namespace.NamespaceAuditor.start(NamespaceAuditor.java:49)
+	at org.apache.hadoop.hbase.quotas.MasterQuotaManager.start(MasterQuotaManager.java:115)
+	at org.apache.hadoop.hbase.master.HMaster.initQuotaManager(HMaster.java:1623)
+	at org.apache.hadoop.hbase.master.HMaster.finishActiveMasterInitialization(HMaster.java:1335)
+	at org.apache.hadoop.hbase.master.HMaster.startActiveMasterManager(HMaster.java:2615)
+	at org.apache.hadoop.hbase.master.HMaster.lambda$run$0(HMaster.java:638)
+	at org.apache.hadoop.hbase.trace.TraceUtil.lambda$tracedRunnable$2(TraceUtil.java:155)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+2026-11-05T10:52:08,613 ERROR [master/clnode245:0:becomeActiveMaster] master.HMaster(3304): Master server abort: loaded coprocessors are: [org.apache.hadoop.hbase.quotas.MasterQuotasObserver, org.apache.hadoop.

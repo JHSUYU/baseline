@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "target": "hdfs-adhoc-08",
+  "check": {
+    "file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java",
+    "line": 487,
+    "thrown": "java.io.IOException"
+  },
+  "verdict": "REACHED_CONFIRMED",
+  "mechanism": "FAULT",
+  "scenario": "Scenario 1: Epoch inversion — orphan promises from failed epoch attempts",
+  "finding": "MC-1",
+  "counterexample": "spec/output/MC_hunt_orphan_promise_bfs_w1.out",
+  "reproduction": "repro/test_bugMC-1_orphan_promise.java",
+  "stackFrame": "org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)",
+  "bounds": [
+    {
+      "config": "MC_hunt_orphan_promise.cfg",
+      "result": "VIOLATION",
+      "states": 51769,
+      "diameter": 32,
+      "seconds": 22,
+      "output": "spec/output/MC_hunt_orphan_promise_bfs_w1.out"
+    },
+    {
+      "config": "MC_s1_lossonly.cfg",
+      "result": "VIOLATION",
+      "states": 12197,
+      "diameter": 43,
+      "seconds": 11,
+      "output": "spec/output/MC_s1_lossonly_bfs_w1.out"
+    },
+    {
+      "config": "MC_hunt_rollback_cache_run1.cfg",
+      "result": "VIOLATION",
+      "states": 139540,
+      "diameter": 36,
+      "seconds": 11,
+      "output": "spec/output/MC_hunt_rollback_cache_bfs_w8.out"
+    },
+    {
+      "config": "MC_hunt_rollback_cache.cfg",
+      "result": "VIOLATION",
+      "states": 471897,
+      "diameter": 61,
+      "seconds": 227,
+      "output": "spec/output/MC_hunt_rollback_cache_bfs_w1.out"
+    }
+  ],
+  "traceValidation": {
+    "traces": 3,
+    "passed": 3
+  },
+  "notes": "Chain for MC-1 (Scenario 1; spec/output/MC_hunt_orphan_promise_bfs_w1.out, 32 states): with three JournalNodes and writers that never overlap, two NameNode epoch attempts each get newEpoch accepted only by JN0, which persists the promise, and then crash-stop before JN1 and JN2 handle it, leaving promises JN0=2, JN1=0, JN2=0; a third writer whose getJournalState and newEpoch to JN0 are lost computes myEpoch = 1 + max(JN1, JN2) = 1, establishes it on JN1 and JN2, sets that epoch on all three loggers, and its startLogSegment to JN0 fails the guard reqInfo.getEpoch() < lastPromisedEpoch.get() (1 < 2), as does every later request of its term. The trigger uses crash and omission faults only, hence FAULT; TLC's other realizations replace the lost getJournalState with a late reply (stop-only, spec/output/MC_hunt_rollback_cache_bfs_w8.out, from the first version of the Scenario 2 cfg kept as spec/output/MC_hunt_rollback_cache_run1.cfg) or the crash-stops with lost newEpoch requests plus QuorumFail (loss-only, spec/output/MC_s1_lossonly_bfs_w1.out, a scratch variant of the Scenario 1 cfg). Phase 4a reproduced MC-1 on the pinned tree 734dd8a67cd with a variant of TestQuorumJournalManager#testSingleWriter (repro/test_bugMC-1_orphan_promise.java, driven by repro/test_bugMC-1_orphan_promise.sh), injecting faults only with the codebase's own test utilities, deterministically in 3 of 3 runs (repro/MC-1-logs/run2-final.console.log): JN0 threw java.io.IOException (IPC's epoch 2 is less than the last promised epoch 3; epochs are one higher than in the model because the workload's setup takes epoch 1 first), the fence survived a JN0 restart, one more JournalNode stop terminated the NameNode, and both controls stayed clean. The frame reads Journal.java:489 rather than 487 because the throw statement spans lines 487-489 and javap maps the IOException constructor call to line 489 (spec/bug-report.md, Stack frame for the Phase 4 same-bug test). A second, independent path is also confirmed: MC-2 (Scenario 2: Cached promise survives rollback; spec/output/MC_hunt_rollback_cache_bfs_w1.out, 61 states; repro/test_bugMC-2_rollback_cached_promise.java, output repro/MC-2.log), where Journal.doRollback leaves the cached lastPromisedEpoch stale on a JournalNode that stays up through a documented namenode -rollback, so that JournalNode rejects the next writer at the same throw; its trigger combines the upgrade and rollback admin operations, writer stops, a JournalNode restart and a late getJournalState reply (RESTART and INTERLEAVING on top of the admin path), and it fired in 56 of 60 natural-timing attempts and 4 of 4 order-controlled runs, with the JournalNode restart moved after the rollback because the counterexample's literal order cannot fence on the real code. The MC_hunt_rollback_cache.cfg row is its final 1-worker run (a 12-worker run, spec/output/MC_hunt_rollback_cache_isolated_bfs_w12.out, found the same trace shape), and the round-2 re-run of MC_hunt_orphan_promise.cfg (spec/output/MC_hunt_orphan_promise_round2_bfs_w1.out) gave the identical trace. Outside the hunts, base.cfg (2 writers, every fault unbounded) checked TargetSafe without violation (1,207,700 distinct states, depth 78, 38 s, spec/output/base_2writers_bfs.out), and the positive control MC_control_designed_fencing.cfg fired only through designed fencing of overlapping writers. The code-review entries are not TargetSafe violations in spec/findings.json: Phase 4a judged CR-2, CR-4, CR-5, CR-7 and CR-8 FALSE POSITIVE (where they reach the throw, it is designed fencing or needs a step outside the fault model) and CR-6 ENV_LIMITED (it can only lower the promise)."
+}

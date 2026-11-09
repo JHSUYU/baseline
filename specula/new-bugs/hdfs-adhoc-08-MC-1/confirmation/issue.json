@@ -1,0 +1,116 @@
+{
+  "id": "MC-1",
+  "title": "QJM: an orphan newEpoch promise left on a minority JN by failed writer attempts fences the next established writer at Journal.checkRequest for its whole term",
+  "status": "REPRODUCED",
+  "source": "model-checking",
+  "cause": "QuorumJournalManager.createNewUniqueEpoch picks myEpoch = 1 + max(lastPromisedEpoch) over the first majority of getJournalState replies and, after any majority of newEpoch successes, calls AsyncLoggerSet.setEpoch(myEpoch) on every logger (QJM:232-247, ALS:61-68). A JN persists a newEpoch promise before the proposer knows whether a quorum accepted (Journal.java:347-352), so failed attempts can leave a minority JN with a promise above the epoch the next writer establishes; that JN then rejects every RequestInfo RPC of the new writer at Journal.checkRequest (Journal.java:486-489).",
+  "trigger": "Two writer epoch attempts each get newEpoch accepted only by JN0 and then fail (newEpoch to JN1/JN2 lost or the NameNode stops first), leaving JN0 at promise P while JN1/JN2 stay lower; the next writer does not hear JN0's getJournalState (request lost, JN0 briefly down, or its reply arrives after the majority), establishes epoch E < P on JN1/JN2, and its first RPC to JN0 (startLogSegment, or prepareRecovery when a segment exists) fails with 'IPC's epoch E is less than the last promised epoch P'.",
+  "consequence": "The newest, legitimately established writer is fenced on JN0 for its whole term: every startLogSegment/journal/heartbeat/prepareRecovery/acceptRecovery/finalizeLogSegment to JN0 throws the target IOException, JN0 receives none of its edits, the promise survives a JN0 restart and the per-roll rejoin always fails. The writer runs on 2 of 3 JNs with no fault margin: one more JN failure makes the NameNode's JournalSet terminate the NameNode (reproduced; controls survive the same failure).",
+  "sites": [
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/client/QuorumJournalManager.java:createNewUniqueEpoch",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/client/AsyncLoggerSet.java:setEpoch",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java:newEpoch",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java:checkRequest",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/client/IPCLoggerChannel.java:createReqInfo",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/JournalSet.java:mapJournalsAndReportErrors"
+  ],
+  "actions": [
+    "MCWriterStart",
+    "MCHandleGetJournalState",
+    "MCRecvReply",
+    "MCChooseEpoch",
+    "MCHandleNewEpoch",
+    "MCWriterStop",
+    "MCLoseRequest",
+    "MCEstablish",
+    "MCStartLogSegment",
+    "MCTargetCheck"
+  ],
+  "invariants": [
+    "TargetSafe"
+  ],
+  "premises": [
+    "Journal.newEpoch persists the promise (updateLastPromisedEpoch) before the proposer learns whether a quorum accepted; nothing retracts it when the attempt fails.",
+    "createNewUniqueEpoch derives myEpoch only from the majority of getJournalState replies that QuorumCall.waitFor returns, and calls setEpoch on all loggers after any newEpoch majority without reacting to a minority's higher promise or rejection.",
+    "No writer-side mechanism raises the epoch during a writer's term (createNewUniqueEpoch runs once per writer); IPCLoggerChannel's rejoin at the next roll resends the same epoch; JournalNodeSyncer has no epoch logic and its backfill is gated on committedTxnId, which the fenced writer cannot advance on JN0.",
+    "The triggering faults are in the HDFS fault model: lost RPCs or a JN outage, a NameNode that stops/terminates after a failed newEpoch quorum, and a JN reply slower than the majority; two failed attempts are needed so the orphan promise strictly exceeds the new writer's epoch (with one, the epochs tie and checkRequest passes).",
+    "The shared QJM edits dir is a required journal (FSNamesystem.getRequiredNamespaceEditsDirs), so JournalSet terminates the NameNode on its failure (JournalSet.java:394-408)."
+  ],
+  "dependencies": [
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/client/QuorumJournalManager.java",
+      "start": "  Map<AsyncLogger, NewEpochResponseProto> createNewUniqueEpoch()",
+      "end": "    loggers.setEpoch(myEpoch);"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/client/QuorumJournalManager.java",
+      "start": "  public void recoverUnfinalizedSegments() throws IOException {",
+      "end": "    isActiveWriter = true;"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/client/AsyncLoggerSet.java",
+      "start": "  void setEpoch(long e) {",
+      "end": "  boolean isEpochEstablished() {"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/client/AsyncLoggerSet.java",
+      "start": "  <V> Map<AsyncLogger, V> waitForWriteQuorum(QuorumCall<AsyncLogger, V> q,",
+      "end": "  int getMajoritySize() {"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/client/QuorumCall.java",
+      "start": "  public synchronized void waitFor(",
+      "end": "      if (maxExceptions >= 0 && countExceptions() > maxExceptions) return;"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/client/IPCLoggerChannel.java",
+      "start": "  public synchronized void setEpoch(long epoch) {",
+      "end": "  public synchronized int getQueuedEditsSize() {"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java",
+      "start": "  synchronized NewEpochResponseProto newEpoch(",
+      "end": "    updateLastPromisedEpoch(epoch);"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java",
+      "start": "  private synchronized void checkRequest(RequestInfo reqInfo) throws IOException {",
+      "end": "  private synchronized void checkWriteRequest(RequestInfo reqInfo) throws IOException {"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/JournalSet.java",
+      "start": "  private void mapJournalsAndReportErrors(",
+      "end": "    disableAndReportErrorOnJournals(badJAS);"
+    },
+    {
+      "root": "work",
+      "path": "spec/base.tla"
+    },
+    {
+      "root": "work",
+      "path": "spec/MC.tla"
+    },
+    {
+      "root": "work",
+      "path": "spec/MC_hunt_orphan_promise.cfg"
+    }
+  ],
+  "evidence": [
+    "confirmation/MC-1/confirmation.md",
+    "confirmation/MC-1/investigation.md",
+    "repro/test_bugMC-1_orphan_promise.sh",
+    "repro/test_bugMC-1_orphan_promise.java",
+    "repro/MC-1-logs/run2-final.console.log",
+    "repro/MC-1-logs/run2-final/run1/org.apache.hadoop.hdfs.qjournal.client.TestSpeculaMC1OrphanPromise-output.txt",
+    "spec/output/MC_hunt_orphan_promise_bfs_w1.out"
+  ]
+}

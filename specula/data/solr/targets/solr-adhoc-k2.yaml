@@ -1,0 +1,39 @@
+id: solr-adhoc-k2
+system: Apache Solr
+source_tree: /set/by/run-case.sh
+base_commit: 6e6ca4a3a91fd2b2d8fde70b7ac110c8e8401b4f
+check:
+  file: solr/core/src/java/org/apache/solr/handler/admin/CoreAdminHandler.java
+  line: 560
+  method: CoreAdminHandler.handleCreateAction(SolrQueryRequest, SolrQueryResponse)
+  thrown: org.apache.solr.common.SolrException
+  guard: "coreContainer.getZkController() != null && !Overseer.isLegacy(coreContainer.getZkController().getZkStateReader().getClusterProps()) && dcore.getCloudDescriptor().getCoreNodeName() == null   (three nested ifs)"
+workload:
+  module: solr/core
+  test: org.apache.solr.cloud.ShardSplitTest#testDistribSearch
+  note: the test reaches the check's method and passes; the check does not fail in it
+scope_hint:
+  - org.apache.solr.handler.admin.CoreAdminHandler
+  - org.apache.solr.handler.admin.CollectionsHandler
+  - org.apache.solr.core.CoreContainer
+  - org.apache.solr.core.CoreDescriptor
+  - org.apache.solr.core.CorePropertiesLocator
+  - org.apache.solr.cloud.CloudDescriptor
+  - org.apache.solr.cloud.ZkController
+  - org.apache.solr.cloud.Overseer
+  - org.apache.solr.cloud.OverseerCollectionProcessor
+  - org.apache.solr.cloud.DistributedQueue
+  - org.apache.solr.cloud.Assign
+  - org.apache.solr.handler.component.HttpShardHandler
+  - org.apache.solr.update.SolrIndexSplitter
+  - org.apache.solr.common.cloud.ZkStateReader
+  - org.apache.solr.common.cloud.ClusterState
+  - org.apache.solr.common.cloud.DocCollection
+  - org.apache.solr.common.cloud.Slice
+  - org.apache.solr.common.cloud.Replica
+  - org.apache.solr.common.cloud.ZkNodeProps
+  - org.apache.solr.client.solrj.request.CoreAdminRequest
+build:
+  env: /set/by/run-case.sh
+  prepare: "cd solr/core && ant -lib $IVY_USER_DIR/lib compile-test -Divy_install_path=$IVY_USER_DIR/lib   (already done once)"
+  test_command: "cd solr/core && ant -lib $IVY_USER_DIR/lib test -Dtestcase=<Class> -Dtests.method=<method> -Dtests.jvms=1 -Dtests.useSecurityManager=false -Divy_install_path=$IVY_USER_DIR/lib"

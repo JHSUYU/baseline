@@ -1,0 +1,135 @@
+TLC2 Version 2026.10.24.013619 (rev: 2ef2af8)
+Running breadth-first search Model-Checking with fp 48 and seed 305980361433014484 with 1 worker on 64 cores with 2944MB heap and 3072MB offheap memory [pid: 571110] (Linux 5.15.0-198-generic amd64, Eclipse Adoptium 21.0.13 64bit, OffHeapDiskFPSet, DiskStateQueue).
+Parsing file /tmp/hdfs-adhoc-38-tlc.vPlV/MC.tla
+Parsing file /tmp/hdfs-adhoc-38-tlc.vPlV/base.tla
+Parsing file /tmp/tlc-5079844746826620394/_TLCTrace.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/_TLCTrace.tla)
+Parsing file /tmp/tlc-5079844746826620394/Integers.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Integers.tla)
+Parsing file /tmp/tlc-5079844746826620394/Sequences.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Sequences.tla)
+Parsing file /tmp/tlc-5079844746826620394/TLC.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLC.tla)
+Parsing file /tmp/tlc-5079844746826620394/Naturals.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Naturals.tla)
+Parsing file /tmp/tlc-5079844746826620394/FiniteSets.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/FiniteSets.tla)
+Parsing file /tmp/tlc-5079844746826620394/TLCExt.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLCExt.tla)
+Semantic processing of module Naturals
+Semantic processing of module Integers
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module TLC
+Semantic processing of module base
+Semantic processing of module TLCExt
+Semantic processing of module _TLCTrace
+Semantic processing of module MC
+Linting of module base
+Linting of module TLCExt
+Linting of module _TLCTrace
+Linting of module MC
+Starting... (2026-10-30 05:50:57)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-10-30 05:50:59.
+Error: Invariant TargetSafe is violated.
+Error: The behavior up to this point is:
+State 1: <Initial predicate>
+/\ targetFired = FALSE
+/\ outcome = [c1 |-> "none", c2 |-> "none"]
+/\ pc = "create"
+/\ parent = [F |-> "NoINode", Root |-> "NoINode", D |-> "NoINode", L |-> "NoINode"]
+/\ dirPolicy = [Root |-> 0, D |-> 0, L |-> 0]
+/\ fc = [dirPolicyOps |-> 0, filePolicyOps |-> 0, renames |-> 0, mkdirs |-> 0]
+/\ name = [F |-> "", Root |-> "", D |-> "", L |-> ""]
+/\ ucHolder = "NoClient"
+/\ createdLazy = FALSE
+/\ fileOwn = 0
+
+State 2: <MCStartFile("c1") line 58, col 28 to line 58, col 64 of module MC>
+/\ targetFired = FALSE
+/\ outcome = [c1 |-> "none", c2 |-> "none"]
+/\ pc = "close"
+/\ parent = [F |-> "D", Root |-> "NoINode", D |-> "Root", L |-> "NoINode"]
+/\ dirPolicy = [Root |-> 0, D |-> 0, L |-> 0]
+/\ fc = [dirPolicyOps |-> 0, filePolicyOps |-> 0, renames |-> 0, mkdirs |-> 0]
+/\ name = [F |-> "foo", Root |-> "", D |-> "testAppendTwice", L |-> ""]
+/\ ucHolder = "c1"
+/\ createdLazy = FALSE
+/\ fileOwn = 0
+
+State 3: <MCCompleteFile("c1") line 59, col 28 to line 59, col 64 of module MC>
+/\ targetFired = FALSE
+/\ outcome = [c1 |-> "none", c2 |-> "none"]
+/\ pc = "append1"
+/\ parent = [F |-> "D", Root |-> "NoINode", D |-> "Root", L |-> "NoINode"]
+/\ dirPolicy = [Root |-> 0, D |-> 0, L |-> 0]
+/\ fc = [dirPolicyOps |-> 0, filePolicyOps |-> 0, renames |-> 0, mkdirs |-> 0]
+/\ name = [F |-> "foo", Root |-> "", D |-> "testAppendTwice", L |-> ""]
+/\ ucHolder = "NoClient"
+/\ createdLazy = FALSE
+/\ fileOwn = 0
+
+State 4: <MCSetDirStoragePolicy("Root",15) line 68, col 5 to line 72, col 47 of module MC>
+/\ targetFired = FALSE
+/\ outcome = [c1 |-> "none", c2 |-> "none"]
+/\ pc = "append1"
+/\ parent = [F |-> "D", Root |-> "NoINode", D |-> "Root", L |-> "NoINode"]
+/\ dirPolicy = [Root |-> 15, D |-> 0, L |-> 0]
+/\ fc = [dirPolicyOps |-> 1, filePolicyOps |-> 0, renames |-> 0, mkdirs |-> 0]
+/\ name = [F |-> "foo", Root |-> "", D |-> "testAppendTwice", L |-> ""]
+/\ ucHolder = "NoClient"
+/\ createdLazy = FALSE
+/\ fileOwn = 0
+
+State 5: <MCTargetCheck("c1") line 60, col 28 to line 60, col 64 of module MC>
+/\ targetFired = TRUE
+/\ outcome = [c1 |-> "UOE", c2 |-> "none"]
+/\ pc = "done"
+/\ parent = [F |-> "D", Root |-> "NoINode", D |-> "Root", L |-> "NoINode"]
+/\ dirPolicy = [Root |-> 15, D |-> 0, L |-> 0]
+/\ fc = [dirPolicyOps |-> 1, filePolicyOps |-> 0, renames |-> 0, mkdirs |-> 0]
+/\ name = [F |-> "foo", Root |-> "", D |-> "testAppendTwice", L |-> ""]
+/\ ucHolder = "NoClient"
+/\ createdLazy = FALSE
+/\ fileOwn = 0
+
+65 states generated, 40 distinct states found, 26 states left on queue.
+The depth of the complete state graph search is 5.
+Checkpointing of run /tmp/tlc-states-Sf65cN/26-10-30-05-50-56.470
+Checkpointing completed at (2026-10-30 05:50:59)
+Finished in 03s at (2026-10-30 05:50:59)
+Trace exploration spec path: ./MC_TTrace_1793339456.tla
+ |-> ""]
+/\ ucHolder = "NoClient"
+/\ createdLazy = FALSE
+/\ fileOwn = 0
+
+State 4: <MCSetDirStoragePolicy("Root",15) line 68, col 5 to line 72, col 47 of module MC>
+/\ targetFired = FALSE
+/\ outcome = [c1 |-> "none", c2 |-> "none"]
+/\ pc = "append1"
+/\ parent = [F |-> "D", Root |-> "NoINode", D |-> "Root", L |-> "NoINode"]
+/\ dirPolicy = [Root |-> 15, D |-> 0, L |-> 0]
+/\ fc = [dirPolicyOps |-> 1, filePolicyOps |-> 0, renames |-> 0, mkdirs |-> 0]
+/\ name = [F |-> "foo", Root |-> "", D |-> "testAppendTwice", L |-> ""]
+/\ ucHolder = "NoClient"
+/\ createdLazy = FALSE
+/\ fileOwn = 0
+
+State 5: <MCTargetCheck("c1") line 60, col 28 to line 60, col 64 of module MC>
+/\ targetFired = TRUE
+/\ outcome = [c1 |-> "UOE", c2 |-> "none"]
+/\ pc = "done"
+/\ parent = [F |-> "D", Root |-> "NoINode", D |-> "Root", L |-> "NoINode"]
+/\ dirPolicy = [Root |-> 15, D |-> 0, L |-> 0]
+/\ fc = [dirPolicyOps |-> 1, filePolicyOps |-> 0, renames |-> 0, mkdirs |-> 0]
+/\ name = [F |-> "foo", Root |-> "", D |-> "testAppendTwice", L |-> ""]
+/\ ucHolder = "NoClient"
+/\ createdLazy = FALSE
+/\ fileOwn = 0
+
+65 states generated, 40 distinct states found, 26 states left on queue.
+The depth of the complete state graph search is 5.
+Checkpointing of run /tmp/tlc-states-Sf65cN/26-10-30-05-50-56.470
+Checkpointing completed at (2026-10-30 05:50:59)
+Finished in 03s at (2026-10-30 05:50:59)
+Trace exploration spec path: ./MC_TTrace_1793339456.tla
+
+[0;32m================================[0m
+[1;33m⚠ Invariant violation found![0m
+[1;33mPlease check log: /users/ZhenyuLi/Specula/runs/20261030-041020-0aa2/hdfs-adhoc-38/.specula-output/spec/output/MC_hunt_s1_bfs.out[0m
+[0;32m================================[0m

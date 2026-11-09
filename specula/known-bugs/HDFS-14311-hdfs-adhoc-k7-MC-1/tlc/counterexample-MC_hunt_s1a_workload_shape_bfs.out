@@ -1,0 +1,423 @@
+TLC2 Version 2026.10.24.013619 (rev: 2ef2af8)
+Running breadth-first search Model-Checking with fp 82 and seed 2326103809818372302 with 32 workers on 64 cores with 9813MB heap and 12288MB offheap memory [pid: 1041064] (Linux 5.15.0-198-generic amd64, Eclipse Adoptium 21.0.13 64bit, OffHeapDiskFPSet, DiskStateQueue).
+Parsing file /bulk/specula-adhoc/specula-runs/20261107-165604-90a4/hdfs-adhoc-k7/.specula-output/spec/MC.tla
+Parsing file /bulk/specula-adhoc/specula-runs/20261107-165604-90a4/hdfs-adhoc-k7/.specula-output/spec/base.tla
+Parsing file /tmp/tlc-17440859848473888375/_TLCTrace.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/_TLCTrace.tla)
+Parsing file /tmp/tlc-17440859848473888375/Integers.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Integers.tla)
+Parsing file /tmp/tlc-17440859848473888375/Sequences.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Sequences.tla)
+Parsing file /tmp/tlc-17440859848473888375/FiniteSets.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/FiniteSets.tla)
+Parsing file /tmp/tlc-17440859848473888375/TLC.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLC.tla)
+Parsing file /tmp/tlc-17440859848473888375/Naturals.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Naturals.tla)
+Parsing file /tmp/tlc-17440859848473888375/TLCExt.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLCExt.tla)
+Semantic processing of module Naturals
+Semantic processing of module Integers
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module TLC
+Semantic processing of module base
+Semantic processing of module TLCExt
+Semantic processing of module _TLCTrace
+Semantic processing of module MC
+Linting of module base
+Linting of module TLCExt
+Linting of module _TLCTrace
+Linting of module MC
+Starting... (2026-11-07 17:35:57)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-11-07 17:35:59.
+Error: Invariant TargetSafe is violated.
+Error: The behavior up to this point is:
+State 1: <Initial predicate>
+/\ bpLV = 3
+/\ targetFired = FALSE
+/\ loc = ( <<"main", 0>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] @@
+  <<"task", 1>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] @@
+  <<"task", 2>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] )
+/\ pc = ( <<"main", 0>> :> "analyze" @@
+  <<"task", 1>> :> "idle" @@
+  <<"task", 2>> :> "idle" )
+/\ disk = << [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ bpCT = 2
+/\ volRes = <<"pending", "pending">>
+/\ curVol = 1
+/\ diskInit = << [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ interference = 0
+
+State 2: <MCNext line 98, col 5 to line 99, col 41 of module MC>
+/\ bpLV = 3
+/\ targetFired = FALSE
+/\ loc = ( <<"main", 0>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] @@
+  <<"task", 1>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] @@
+  <<"task", 2>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] )
+/\ pc = (<<"main", 0>> :> "rpLV" @@ <<"task", 1>> :> "idle" @@ <<"task", 2>> :> "idle")
+/\ disk = << [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ bpCT = 2
+/\ volRes = <<"pending", "pending">>
+/\ curVol = 1
+/\ diskInit = << [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ interference = 0
+
+State 3: <MCNext line 98, col 5 to line 99, col 41 of module MC>
+/\ bpLV = 1
+/\ targetFired = FALSE
+/\ loc = ( <<"main", 0>> :> [plv |-> 1, pct |-> 1, wlv |-> 1] @@
+  <<"task", 1>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] @@
+  <<"task", 2>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] )
+/\ pc = (<<"main", 0>> :> "rpCT" @@ <<"task", 1>> :> "idle" @@ <<"task", 2>> :> "idle")
+/\ disk = << [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ bpCT = 2
+/\ volRes = <<"pending", "pending">>
+/\ curVol = 1
+/\ diskInit = << [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ interference = 0
+
+State 4: <MCNext line 98, col 5 to line 99, col 41 of module MC>
+/\ bpLV = 1
+/\ targetFired = FALSE
+/\ loc = ( <<"main", 0>> :> [plv |-> 1, pct |-> 1, wlv |-> 1] @@
+  <<"task", 1>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] @@
+  <<"task", 2>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] )
+/\ pc = (<<"main", 0>> :> "r405" @@ <<"task", 1>> :> "idle" @@ <<"task", 2>> :> "idle")
+/\ disk = << [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ bpCT = 1
+/\ volRes = <<"pending", "pending">>
+/\ curVol = 1
+/\ diskInit = << [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ interference = 0
+
+State 5: <MCNext line 98, col 5 to line 99, col 41 of module MC>
+/\ bpLV = 1
+/\ targetFired = FALSE
+/\ loc = ( <<"main", 0>> :> [plv |-> 1, pct |-> 1, wlv |-> 1] @@
+  <<"task", 1>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] @@
+  <<"task", 2>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] )
+/\ pc = (<<"main", 0>> :> "r406" @@ <<"task", 1>> :> "idle" @@ <<"task", 2>> :> "idle")
+/\ disk = << [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ bpCT = 1
+/\ volRes = <<"pending", "pending">>
+/\ curVol = 1
+/\ diskInit = << [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ interference = 0
+
+State 6: <MCNext line 98, col 5 to line 99, col 41 of module MC>
+/\ bpLV = 1
+/\ targetFired = FALSE
+/\ loc = ( <<"main", 0>> :> [plv |-> 1, pct |-> 1, wlv |-> 1] @@
+  <<"task", 1>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] @@
+  <<"task", 2>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] )
+/\ pc = (<<"main", 0>> :> "r409" @@ <<"task", 1>> :> "idle" @@ <<"task", 2>> :> "idle")
+/\ disk = << [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ bpCT = 1
+/\ volRes = <<"pending", "pending">>
+/\ curVol = 1
+/\ diskInit = << [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ interference = 0
+
+State 7: <MCNext line 98, col 5 to line 99, col 41 of module MC>
+/\ bpLV = 1
+/\ targetFired = FALSE
+/\ loc = ( <<"main", 0>> :> [plv |-> 1, pct |-> 1, wlv |-> 1] @@
+  <<"task", 1>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] @@
+  <<"task", 2>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] )
+/\ pc = (<<"main", 0>> :> "r415" @@ <<"task", 1>> :> "idle" @@ <<"task", 2>> :> "idle")
+/\ disk = << [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ bpCT = 1
+/\ volRes = <<"pending", "pending">>
+/\ curVol = 1
+/\ diskInit = << [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ interference = 0
+
+State 8: <MCNext line 98, col 5 to line 99, col 41 of module MC>
+/\ bpLV = 1
+/\ targetFired = FALSE
+/\ loc = ( <<"main", 0>> :> [plv |-> 1, pct |-> 1, wlv |-> 1] @@
+  <<"task", 1>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] @@
+  <<"task", 2>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] )
+/\ pc = (<<"main", 0>> :> "r416" @@ <<"task", 1>> :> "idle" @@ <<"task", 2>> :> "idle")
+/\ disk = << [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ bpCT = 1
+/\ volRes = <<"pending", "pending">>
+/\ curVol = 1
+/\ diskInit = << [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ interference = 0
+
+State 9: <MCNext line 98, col 5 to line 99, col 41 of module MC>
+/\ bpLV = 1
+/\ targetFired = FALSE
+/\ loc = ( <<"main", 0>> :> [plv |-> 1, pct |-> 1, wlv |-> 1] @@
+  <<"task", 1>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] @@
+  <<"task", 2>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] )
+/\ pc = ( <<"main", 0>> :> "upgrade" @@
+  <<"task", 1>> :> "idle" @@
+  <<"task", 2>> :> "idle" )
+/\ disk = << [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ bpCT = 1
+/\ volRes = <<"pending", "pending">>
+/\ curVol = 1
+/\ diskInit = << [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ interference = 0
+
+State 10: <MCNext line 98, col 5 to line 99, col 41 of module MC>
+/\ bpLV = 1
+/\ targetFired = FALSE
+/\ loc = ( <<"main", 0>> :> [plv |-> 1, pct |-> 1, wlv |-> 1] @@
+  <<"task", 1>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] @@
+  <<"task", 2>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] )
+/\ pc = ( <<"main", 0>> :> "analyze" @@
+  <<"task", 1>> :> "queued" @@
+  <<"task", 2>> :> "idle" )
+/\ disk = << [ver |-> FALSE, lv |-> 1, ct |-> 1, prevTmp |-> TRUE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ bpCT = 1
+/\ volRes = <<"upgrading", "pending">>
+/\ curVol = 2
+/\ diskInit = << [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ interference = 0
+
+State 11: <MCNext line 98, col 5 to line 99, col 41 of module MC>
+/\ bpLV = 1
+/\ targetFired = FALSE
+/\ loc = ( <<"main", 0>> :> [plv |-> 1, pct |-> 1, wlv |-> 1] @@
+  <<"task", 1>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] @@
+  <<"task", 2>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] )
+/\ pc = ( <<"main", 0>> :> "analyze" @@
+  <<"task", 1>> :> "uSetLV" @@
+  <<"task", 2>> :> "idle" )
+/\ disk = << [ver |-> FALSE, lv |-> 1, ct |-> 1, prevTmp |-> TRUE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ bpCT = 1
+/\ volRes = <<"upgrading", "pending">>
+/\ curVol = 2
+/\ diskInit = << [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ interference = 0
+
+State 12: <MCNext line 98, col 5 to line 99, col 41 of module MC>
+/\ bpLV = 1
+/\ targetFired = FALSE
+/\ loc = ( <<"main", 0>> :> [plv |-> 1, pct |-> 1, wlv |-> 1] @@
+  <<"task", 1>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] @@
+  <<"task", 2>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] )
+/\ pc = ( <<"main", 0>> :> "rpLV" @@
+  <<"task", 1>> :> "uSetLV" @@
+  <<"task", 2>> :> "idle" )
+/\ disk = << [ver |-> FALSE, lv |-> 1, ct |-> 1, prevTmp |-> TRUE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ bpCT = 1
+/\ volRes = <<"upgrading", "pending">>
+/\ curVol = 2
+/\ diskInit = << [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ interference = 0
+
+State 13: <MCNext line 98, col 5 to line 99, col 41 of module MC>
+/\ bpLV = 1
+/\ targetFired = FALSE
+/\ loc = ( <<"main", 0>> :> [plv |-> 1, pct |-> 1, wlv |-> 1] @@
+  <<"task", 1>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] @@
+  <<"task", 2>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] )
+/\ pc = ( <<"main", 0>> :> "rpCT" @@
+  <<"task", 1>> :> "uSetLV" @@
+  <<"task", 2>> :> "idle" )
+/\ disk = << [ver |-> FALSE, lv |-> 1, ct |-> 1, prevTmp |-> TRUE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ bpCT = 1
+/\ volRes = <<"upgrading", "pending">>
+/\ curVol = 2
+/\ diskInit = << [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ interference = 0
+
+State 14: <MCNext line 98, col 5 to line 99, col 41 of module MC>
+/\ bpLV = 1
+/\ targetFired = FALSE
+/\ loc = ( <<"main", 0>> :> [plv |-> 1, pct |-> 1, wlv |-> 1] @@
+  <<"task", 1>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] @@
+  <<"task", 2>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] )
+/\ pc = ( <<"main", 0>> :> "r405" @@
+  <<"task", 1>> :> "uSetLV" @@
+  <<"task", 2>> :> "idle" )
+/\ disk = << [ver |-> FALSE, lv |-> 1, ct |-> 1, prevTmp |-> TRUE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ bpCT = 1
+/\ volRes = <<"upgrading", "pending">>
+/\ curVol = 2
+/\ diskInit = << [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ interference = 0
+
+State 15: <MCNext line 98, col 5 to line 99, col 41 of module MC>
+/\ bpLV = 1
+/\ targetFired = FALSE
+/\ loc = ( <<"main", 0>> :> [plv |-> 1, pct |-> 1, wlv |-> 1] @@
+  <<"task", 1>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] @@
+  <<"task", 2>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] )
+/\ pc = ( <<"main", 0>> :> "r406" @@
+  <<"task", 1>> :> "uSetLV" @@
+  <<"task", 2>> :> "idle" )
+/\ disk = << [ver |-> FALSE, lv |-> 1, ct |-> 1, prevTmp |-> TRUE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ bpCT = 1
+/\ volRes = <<"upgrading", "pending">>
+/\ curVol = 2
+/\ diskInit = << [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ interference = 0
+
+State 16: <MCNext line 98, col 5 to line 99, col 41 of module MC>
+/\ bpLV = 1
+/\ targetFired = FALSE
+/\ loc = ( <<"main", 0>> :> [plv |-> 1, pct |-> 1, wlv |-> 1] @@
+  <<"task", 1>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] @@
+  <<"task", 2>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] )
+/\ pc = ( <<"main", 0>> :> "r409" @@
+  <<"task", 1>> :> "uSetLV" @@
+  <<"task", 2>> :> "idle" )
+/\ disk = << [ver |-> FALSE, lv |-> 1, ct |-> 1, prevTmp |-> TRUE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ bpCT = 1
+/\ volRes = <<"upgrading", "pending">>
+/\ curVol = 2
+/\ diskInit = << [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ interference = 0
+
+State 17: <MCNext line 98, col 5 to line 99, col 41 of module MC>
+/\ bpLV = 1
+/\ targetFired = FALSE
+/\ loc = ( <<"main", 0>> :> [plv |-> 1, pct |-> 1, wlv |-> 1] @@
+  <<"task", 1>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] @@
+  <<"task", 2>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] )
+/\ pc = ( <<"main", 0>> :> "r409" @@
+  <<"task", 1>> :> "uSetCT" @@
+  <<"task", 2>> :> "idle" )
+/\ disk = << [ver |-> FALSE, lv |-> 1, ct |-> 1, prevTmp |-> TRUE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ bpCT = 1
+/\ volRes = <<"upgrading", "pending">>
+/\ curVol = 2
+/\ diskInit = << [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ interference = 0
+
+State 18: <MCNext line 98, col 5 to line 99, col 41 of module MC>
+/\ bpLV = 1
+/\ targetFired = FALSE
+/\ loc = ( <<"main", 0>> :> [plv |-> 1, pct |-> 1, wlv |-> 1] @@
+  <<"task", 1>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] @@
+  <<"task", 2>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] )
+/\ pc = (<<"main", 0>> :> "r409" @@ <<"task", 1>> :> "uWpLV" @@ <<"task", 2>> :> "idle")
+/\ disk = << [ver |-> FALSE, lv |-> 1, ct |-> 1, prevTmp |-> TRUE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ bpCT = 2
+/\ volRes = <<"upgrading", "pending">>
+/\ curVol = 2
+/\ diskInit = << [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ interference = 1
+
+State 19: <MCNext line 98, col 5 to line 99, col 41 of module MC>
+/\ bpLV = 1
+/\ targetFired = FALSE
+/\ loc = ( <<"main", 0>> :> [plv |-> 1, pct |-> 1, wlv |-> 1] @@
+  <<"task", 1>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] @@
+  <<"task", 2>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] )
+/\ pc = (<<"main", 0>> :> "r415" @@ <<"task", 1>> :> "uWpLV" @@ <<"task", 2>> :> "idle")
+/\ disk = << [ver |-> FALSE, lv |-> 1, ct |-> 1, prevTmp |-> TRUE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ bpCT = 2
+/\ volRes = <<"upgrading", "pending">>
+/\ curVol = 2
+/\ diskInit = << [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ interference = 1
+
+State 20: <MCNext line 98, col 5 to line 99, col 41 of module MC>
+/\ bpLV = 1
+/\ targetFired = FALSE
+/\ loc = ( <<"main", 0>> :> [plv |-> 1, pct |-> 1, wlv |-> 1] @@
+  <<"task", 1>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] @@
+  <<"task", 2>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] )
+/\ pc = (<<"main", 0>> :> "r416" @@ <<"task", 1>> :> "uWpLV" @@ <<"task", 2>> :> "idle")
+/\ disk = << [ver |-> FALSE, lv |-> 1, ct |-> 1, prevTmp |-> TRUE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ bpCT = 2
+/\ volRes = <<"upgrading", "pending">>
+/\ curVol = 2
+/\ diskInit = << [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ interference = 1
+
+State 21: <MCNext line 98, col 5 to line 99, col 41 of module MC>
+/\ bpLV = 1
+/\ targetFired = TRUE
+/\ loc = ( <<"main", 0>> :> [plv |-> 1, pct |-> 1, wlv |-> 1] @@
+  <<"task", 1>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] @@
+  <<"task", 2>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] )
+/\ pc = (<<"main", 0>> :> "join" @@ <<"task", 1>> :> "uWpLV" @@ <<"task", 2>> :> "idle")
+/\ disk = << [ver |-> FALSE, lv |-> 1, ct |-> 1, prevTmp |-> TRUE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ bpCT = 2
+/\ volRes = <<"upgrading", "failed">>
+/\ curVol = 2
+/\ diskInit = << [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ interference = 1
+
+425 states generated, 265 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 32.
+Finished in 01s at (2026-11-07 17:35:59)
+Trace exploration spec path: ./MC_TTrace_1794072957.tla
+v |-> 1, ct |-> 1, prevTmp |-> TRUE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ bpCT = 2
+/\ volRes = <<"upgrading", "pending">>
+/\ curVol = 2
+/\ diskInit = << [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ interference = 1
+
+State 21: <MCNext line 98, col 5 to line 99, col 41 of module MC>
+/\ bpLV = 1
+/\ targetFired = TRUE
+/\ loc = ( <<"main", 0>> :> [plv |-> 1, pct |-> 1, wlv |-> 1] @@
+  <<"task", 1>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] @@
+  <<"task", 2>> :> [plv |-> 1, pct |-> 2, wlv |-> 1] )
+/\ pc = (<<"main", 0>> :> "join" @@ <<"task", 1>> :> "uWpLV" @@ <<"task", 2>> :> "idle")
+/\ disk = << [ver |-> FALSE, lv |-> 1, ct |-> 1, prevTmp |-> TRUE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ bpCT = 2
+/\ volRes = <<"upgrading", "failed">>
+/\ curVol = 2
+/\ diskInit = << [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE],
+   [ver |-> TRUE, lv |-> 1, ct |-> 1, prevTmp |-> FALSE, prev |-> FALSE] >>
+/\ interference = 1
+
+425 states generated, 265 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 32.
+Finished in 01s at (2026-11-07 17:35:59)
+Trace exploration spec path: ./MC_TTrace_1794072957.tla
+
+[0;32m================================[0m
+[1;33m⚠ Invariant violation found![0m
+[1;33mPlease check log: output/MC_hunt_s1a_workload_shape_bfs.out[0m
+[0;32m================================[0m

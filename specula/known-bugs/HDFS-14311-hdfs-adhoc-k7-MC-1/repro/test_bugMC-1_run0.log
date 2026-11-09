@@ -1,0 +1,50 @@
+== pinned tree: b0c5a8f9; modified tracked files:
+== Level 0 (black-box, 10 rounds)
+level0 mvn exit=0
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 27.186 s - in org.apache.hadoop.hdfs.TestBugMC1StartupUpgradeRace
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+== Level 1 (JDWP thread schedule, port 52029)
+level1 mvn exit=1
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 7.605 s <<< FAILURE! - in org.apache.hadoop.hdfs.TestBugMC1StartupUpgradeRace
+[ERROR] level1DebuggerSchedule(org.apache.hadoop.hdfs.TestBugMC1StartupUpgradeRace)  Time elapsed: 2.687 s  <<< FAILURE!
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0
+java.io.IOException: Datanode state: LV = -57 CTime = 1794073675440 is newer than the namespace state: LV = -65 CTime = 1794073675440
+	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:425)
+	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadStorageDirectory(BlockPoolSliceStorage.java:182)
+	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadBpStorageDirectories(BlockPoolSliceStorage.java:227)
+	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.recoverTransitionRead(BlockPoolSliceStorage.java:258)
+	at org.apache.hadoop.hdfs.server.datanode.DataStorage.loadBlockPoolSliceStorage(DataStorage.java:456)
+	at org.apache.hadoop.hdfs.server.datanode.DataStorage.addStorageLocations(DataStorage.java:391)
+	at org.apache.hadoop.hdfs.server.datanode.DataStorage.recoverTransitionRead(DataStorage.java:553)
+	at org.apache.hadoop.hdfs.server.datanode.DataNode.initStorage(DataNode.java:1760)
+	at org.apache.hadoop.hdfs.server.datanode.DataNode.initBlockPool(DataNode.java:1696)
+	at org.apache.hadoop.hdfs.server.datanode.BPOfferService.verifyAndSetNamespaceInfo(BPOfferService.java:392)
+	at org.apache.hadoop.hdfs.server.datanode.BPServiceActor.connectToNNAndHandshake(BPServiceActor.java:290)
+	at org.apache.hadoop.hdfs.server.datanode.BPServiceActor.run(BPServiceActor.java:849)
+java.io.IOException: Datanode state: LV = -57 CTime = 1794073675440 is newer than the namespace state: LV = -65 CTime = 1794073675440
+	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:425)
+	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadStorageDirectory(BlockPoolSliceStorage.java:182)
+	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadBpStorageDirectories(BlockPoolSliceStorage.java:227)
+	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.recoverTransitionRead(BlockPoolSliceStorage.java:258)
+	at org.apache.hadoop.hdfs.server.datanode.DataStorage.loadBlockPoolSliceStorage(DataStorage.java:456)
+	at org.apache.hadoop.hdfs.server.datanode.DataStorage.addStorageLocations(DataStorage.java:391)
+	at org.apache.hadoop.hdfs.server.datanode.DataStorage.recoverTransitionRead(DataStorage.java:553)
+	at org.apache.hadoop.hdfs.server.datanode.DataNode.initStorage(DataNode.java:1760)
+	at org.apache.hadoop.hdfs.server.datanode.DataNode.initBlockPool(DataNode.java:1696)
+	at org.apache.hadoop.hdfs.server.datanode.BPOfferService.verifyAndSetNamespaceInfo(BPOfferService.java:392)
+	at org.apache.hadoop.hdfs.server.datanode.BPServiceActor.connectToNNAndHandshake(BPServiceActor.java:290)
+	at org.apache.hadoop.hdfs.server.datanode.BPServiceActor.run(BPServiceActor.java:849)
+[MC-1][L1] isBPServiceAlive=true
+[MC-1][L1] /bulk/specula-adhoc/specula-runs/20261107-165604-90a4/hdfs-adhoc-k7/.specula-output/confirmation/MC-1/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/dfs/data1 bp previous/ exists=true
+[MC-1][L1] /bulk/specula-adhoc/specula-runs/20261107-165604-90a4/hdfs-adhoc-k7/.specula-output/confirmation/MC-1/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/dfs/data2 bp previous/ exists=false
+[MC-1][L1] schedule realized=true events= Thread-381@409 pool-32-thread-1@510 Thread-381@409 pool-32-thread-1@518
+[MC-1][L1][log] 2026-11-07 17:47:57,090 [pool-32-thread-1] INFO  common.Storage (BlockPoolSliceStorage.java:doUpgrade(519)) - Upgrade of block pool BP-98158749-130.127.133.230-1794073671236 at /bulk/specula-adhoc/specula-runs/20261107-165604-90a4/hdfs-adhoc-k7/.specula-output/confirmation/MC-1/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/dfs/data1/current/BP-98158749-130.127.133.230-1794073671236 is complete
+[MC-1][L1][log] java.io.IOException: Datanode state: LV = -57 CTime = 1794073675440 is newer than the namespace state: LV = -65 CTime = 1794073675440
+[MC-1][L1][log] 	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:425)
+[MC-1][L1][log] 	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.recoverTransitionRead(BlockPoolSliceStorage.java:258)
+[MC-1][L1][log] 	at org.apache.hadoop.hdfs.server.datanode.DataStorage.loadBlockPoolSliceStorage(DataStorage.java:456)
+[MC-1][L1][log] 2026-11-07 17:47:57,097 [Thread-381] WARN  common.Storage (DataStorage.java:loadBlockPoolSliceStorage(468)) - Failed to add storage directory [DISK]file:/bulk/specula-adhoc/specula-runs/20261107-165604-90a4/hdfs-adhoc-k7/.specula-output/confirmation/MC-1/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/dfs/data2 for block pool BP-98158749-130.127.133.230-1794073671236
+[MC-1][L1][log] java.io.IOException: Datanode state: LV = -57 CTime = 1794073675440 is newer than the namespace state: LV = -65 CTime = 1794073675440
+[MC-1][L1][log] 	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:425)
+[MC-1][L1][log] 	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.recoverTransitionRead(BlockPoolSliceStorage.java:258)
+[MC-1][L1][log] 	at org.apache.hadoop.hdfs.server.datanode.DataStorage.loadBlockPoolSliceStorage(DataStorage.java:456)

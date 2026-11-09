@@ -1,0 +1,66 @@
+{
+  "id": "MC-1",
+  "title": "Stale ContainerManager deleteContainer removes a PERSISTENT node re-created at the path; getData throws NoNode at FinalRequestProcessor:674",
+  "status": "REPRODUCED",
+  "source": "model-checking",
+  "cause": "ContainerManager posts a path-only deleteContainer chosen from an earlier scan, and PrepRequestProcessor re-checks only existence, childCount and that the type is not NORMAL, so neither the node's type nor its identity is validated against the scanned container.",
+  "trigger": "A client deletes an empty used container and re-creates the path empty, after the manager's scan and before the manager posts that path. Production pacing of 6 ms per candidate widens this window when many candidates exist; a Level 0 run used 1000.",
+  "consequence": "The client's PERSISTENT (or fresh CONTAINER) node is durably deleted with no client delete and no error to the client; a later getData throws NoNodeException at FinalRequestProcessor.java:674, and the node stays missing after restart.",
+  "sites": [
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/PrepRequestProcessor.java:pRequest2Txn",
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/ContainerManager.java:checkContainers",
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/FinalRequestProcessor.java:handleGetDataRequest"
+  ],
+  "actions": [
+    "MgrScan",
+    "MgrPostEarly",
+    "PrepdeleteContainer",
+    "TargetCheck"
+  ],
+  "invariants": [
+    "TargetSafe"
+  ],
+  "premises": [
+    "The manager's scan and post are separated in time; candidates are paced at 60000/maxPerMinute ms each.",
+    "Standalone and leader wiring both post directly into PrepRequestProcessor; both were executed at Level 0 with default settings.",
+    "No fault injection is needed.",
+    "The replacement must still be empty and non-ephemeral when the stale request reaches PrepRequestProcessor; controls show a child or an EPHEMERAL replacement survives.",
+    "A single candidate with no hook was not reproduced at Level 0; Level 0 used 1000 candidates and Level 1 uses the postDeleteRequest test hook."
+  ],
+  "dependencies": [
+    {
+      "root": "source",
+      "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/PrepRequestProcessor.java",
+      "start": "        case OpCode.deleteContainer: {",
+      "end": "        case OpCode.delete:"
+    },
+    {
+      "root": "source",
+      "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/ContainerManager.java"
+    },
+    {
+      "root": "source",
+      "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/EphemeralType.java"
+    },
+    {
+      "root": "source",
+      "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/FinalRequestProcessor.java",
+      "start": "    private Record handleGetDataRequest(Record request, ServerCnxn cnxn, List<Id> authInfo) throws KeeperException, IOException {",
+      "end": "        return new GetDataResponse(b, stat);"
+    },
+    {
+      "root": "work",
+      "path": "spec/MC_hunt_stale_container_delete.cfg"
+    }
+  ],
+  "evidence": [
+    "confirmation/MC-1/investigation.md",
+    "repro/test_bugMC-1_stale_container_delete.sh",
+    "repro/MC-1.pristine.log",
+    "repro/MC-1.pristine-earlier-setup.log",
+    "repro/MC-1.pristine-quorum-setup-crossed-scan.log",
+    "repro/MC-1.worktree-level0.log",
+    "repro/MC-1.worktree-level1.log",
+    "spec/output/MC_hunt_stale_container_delete_bfs_cex_summary.txt"
+  ]
+}

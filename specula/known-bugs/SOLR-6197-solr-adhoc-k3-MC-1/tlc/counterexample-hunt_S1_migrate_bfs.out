@@ -1,0 +1,3153 @@
+TLC2 Version 2026.10.24.013619 (rev: 2ef2af8)
+Warning: Please run the Java VM, which executes TLC with a throughput optimized garbage collector, by passing the "-XX:+UseParallelGC" property.
+(Use the -nowarning option to disable this warning.)
+Running breadth-first search Model-Checking with fp 9 and seed 5286296203356177591 with 8 workers on 64 cores with 8192MB heap and 64MB offheap memory [pid: 663164] (Linux 5.15.0-198-generic amd64, Eclipse Adoptium 21.0.13 64bit, MSBDiskFPSet, DiskStateQueue).
+Parsing file /bulk/specula-adhoc/specula-runs/20261107-215441-cb9e/solr-adhoc-k3/.specula-output/spec/MC.tla
+Parsing file /bulk/specula-adhoc/specula-runs/20261107-215441-cb9e/solr-adhoc-k3/.specula-output/spec/base.tla
+Parsing file /tmp/tlc-15413014020563919672/_JsonTrace.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/_JsonTrace.tla)
+Parsing file /tmp/tlc-15413014020563919672/_TLCTrace.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/_TLCTrace.tla)
+Parsing file /tmp/tlc-15413014020563919672/Naturals.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Naturals.tla)
+Parsing file /tmp/tlc-15413014020563919672/Sequences.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Sequences.tla)
+Parsing file /tmp/tlc-15413014020563919672/FiniteSets.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/FiniteSets.tla)
+Parsing file /tmp/tlc-15413014020563919672/TLC.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLC.tla)
+Parsing file /tmp/tlc-15413014020563919672/TLCExt.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLCExt.tla)
+Parsing file /tmp/tlc-15413014020563919672/Json.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Json.tla)
+Parsing file /tmp/tlc-15413014020563919672/Integers.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Integers.tla)
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module TLC
+Semantic processing of module base
+Semantic processing of module Integers
+Semantic processing of module TLCExt
+Semantic processing of module Json
+Semantic processing of module _JsonTrace
+Semantic processing of module _TLCTrace
+Semantic processing of module MC
+Linting of module base
+Linting of module TLCExt
+Linting of module Json
+Linting of module _JsonTrace
+Linting of module _TLCTrace
+Linting of module MC
+Starting... (2026-11-07 22:41:56)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-11-07 22:41:56.
+Error: Invariant TargetSafe is violated.
+Error: The behavior up to this point is:
+State 1: <Initial predicate>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ] },
+  slices |-> {<<"coll1", "shard1">>, <<"coll1", "shard2">>},
+  colls |-> {"coll1"},
+  rule |-> FALSE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ] },
+  slices |-> {<<"coll1", "shard1">>, <<"coll1", "shard2">>},
+  colls |-> {"coll1"},
+  rule |-> FALSE ]
+/\ ocp = [ coll |-> "none",
+  cnn |-> 0,
+  pc |-> "idle",
+  result |-> "none",
+  snap |-> TRUE,
+  ret |-> "end" ]
+/\ opIdx = 1
+/\ req = [ tgtR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 2: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ] },
+  slices |-> {<<"coll1", "shard1">>, <<"coll1", "shard2">>},
+  colls |-> {"coll1"},
+  rule |-> FALSE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ] },
+  slices |-> {<<"coll1", "shard1">>, <<"coll1", "shard2">>},
+  colls |-> {"coll1"},
+  rule |-> FALSE ]
+/\ ocp = [ coll |-> "target",
+  cnn |-> 0,
+  pc |-> "cc_read",
+  result |-> "none",
+  snap |-> TRUE,
+  ret |-> "end" ]
+/\ opIdx = 1
+/\ req = [ tgtR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 3: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ] },
+  slices |-> {<<"coll1", "shard1">>, <<"coll1", "shard2">>},
+  colls |-> {"coll1"},
+  rule |-> FALSE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ] },
+  slices |-> {<<"coll1", "shard1">>, <<"coll1", "shard2">>},
+  colls |-> {"coll1"},
+  rule |-> FALSE ]
+/\ ocp = [ coll |-> "target",
+  cnn |-> 0,
+  pc |-> "cc_offer",
+  result |-> "none",
+  snap |-> FALSE,
+  ret |-> "end" ]
+/\ opIdx = 1
+/\ req = [ tgtR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 4: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = << [ coll |-> "target",
+     op |-> "createcollection",
+     shard |-> "shard1",
+     core |-> "none",
+     cnn |-> 0,
+     val |-> "none" ] >>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ] },
+  slices |-> {<<"coll1", "shard1">>, <<"coll1", "shard2">>},
+  colls |-> {"coll1"},
+  rule |-> FALSE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ] },
+  slices |-> {<<"coll1", "shard1">>, <<"coll1", "shard2">>},
+  colls |-> {"coll1"},
+  rule |-> FALSE ]
+/\ ocp = [ coll |-> "target",
+  cnn |-> 0,
+  pc |-> "cc_waitCreated",
+  result |-> "none",
+  snap |-> FALSE,
+  ret |-> "end" ]
+/\ opIdx = 1
+/\ req = [ tgtR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 5: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> FALSE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ] },
+  slices |-> {<<"coll1", "shard1">>, <<"coll1", "shard2">>},
+  colls |-> {"coll1"},
+  rule |-> FALSE ]
+/\ ocp = [ coll |-> "target",
+  cnn |-> 0,
+  pc |-> "cc_waitCreated",
+  result |-> "none",
+  snap |-> FALSE,
+  ret |-> "end" ]
+/\ opIdx = 1
+/\ req = [ tgtR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 6: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> FALSE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> FALSE ]
+/\ ocp = [ coll |-> "target",
+  cnn |-> 0,
+  pc |-> "cc_waitCreated",
+  result |-> "none",
+  snap |-> FALSE,
+  ret |-> "end" ]
+/\ opIdx = 1
+/\ req = [ tgtR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 7: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> FALSE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> FALSE ]
+/\ ocp = [ coll |-> "target",
+  cnn |-> 0,
+  pc |-> "cc_prepare",
+  result |-> "none",
+  snap |-> FALSE,
+  ret |-> "end" ]
+/\ opIdx = 1
+/\ req = [ tgtR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 8: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = << [ coll |-> "target",
+     op |-> "addreplica",
+     shard |-> "shard1",
+     core |-> "tgtR1",
+     cnn |-> 0,
+     val |-> "none" ] >>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> FALSE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> FALSE ]
+/\ ocp = [ coll |-> "target",
+  cnn |-> 0,
+  pc |-> "cc_waitReplicas",
+  result |-> "none",
+  snap |-> FALSE,
+  ret |-> "end" ]
+/\ opIdx = 1
+/\ req = [ tgtR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 9: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> FALSE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> FALSE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> FALSE ]
+/\ ocp = [ coll |-> "target",
+  cnn |-> 0,
+  pc |-> "cc_waitReplicas",
+  result |-> "none",
+  snap |-> FALSE,
+  ret |-> "end" ]
+/\ opIdx = 1
+/\ req = [ tgtR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 10: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> FALSE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> FALSE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> FALSE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> FALSE ]
+/\ ocp = [ coll |-> "target",
+  cnn |-> 0,
+  pc |-> "cc_waitReplicas",
+  result |-> "none",
+  snap |-> FALSE,
+  ret |-> "end" ]
+/\ opIdx = 1
+/\ req = [ tgtR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 11: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> FALSE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> FALSE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> FALSE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> FALSE ]
+/\ ocp = [ coll |-> "target",
+  cnn |-> 0,
+  pc |-> "cc_responses",
+  result |-> "none",
+  snap |-> FALSE,
+  ret |-> "end" ]
+/\ opIdx = 1
+/\ req = [ tgtR1 |-> [cnn |-> 1, st |-> "sent", hasCNN |-> TRUE],
+  tmpR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 12: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> FALSE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> FALSE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> FALSE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> FALSE ]
+/\ ocp = [ coll |-> "target",
+  cnn |-> 0,
+  pc |-> "cc_responses",
+  result |-> "none",
+  snap |-> FALSE,
+  ret |-> "end" ]
+/\ opIdx = 1
+/\ req = [ tgtR1 |-> [cnn |-> 1, st |-> "prereg", hasCNN |-> TRUE],
+  tmpR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 13: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> FALSE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> FALSE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> FALSE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> FALSE ]
+/\ ocp = [ coll |-> "target",
+  cnn |-> 0,
+  pc |-> "cc_responses",
+  result |-> "none",
+  snap |-> FALSE,
+  ret |-> "end" ]
+/\ opIdx = 1
+/\ req = [ tgtR1 |-> [cnn |-> 1, st |-> "publish", hasCNN |-> TRUE],
+  tmpR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 14: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = << [ coll |-> "target",
+     op |-> "state",
+     shard |-> "shard1",
+     core |-> "tgtR1",
+     cnn |-> 1,
+     val |-> "down" ] >>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> FALSE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> FALSE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> FALSE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> FALSE ]
+/\ ocp = [ coll |-> "target",
+  cnn |-> 0,
+  pc |-> "cc_responses",
+  result |-> "none",
+  snap |-> FALSE,
+  ret |-> "end" ]
+/\ opIdx = 1
+/\ req = [ tgtR1 |-> [cnn |-> 1, st |-> "waitShard", hasCNN |-> TRUE],
+  tmpR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 15: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> FALSE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> FALSE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> FALSE ]
+/\ ocp = [ coll |-> "target",
+  cnn |-> 0,
+  pc |-> "cc_responses",
+  result |-> "none",
+  snap |-> FALSE,
+  ret |-> "end" ]
+/\ opIdx = 1
+/\ req = [ tgtR1 |-> [cnn |-> 1, st |-> "waitShard", hasCNN |-> TRUE],
+  tmpR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 16: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> FALSE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> FALSE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> FALSE ]
+/\ ocp = [ coll |-> "target",
+  cnn |-> 0,
+  pc |-> "cc_responses",
+  result |-> "none",
+  snap |-> FALSE,
+  ret |-> "end" ]
+/\ opIdx = 1
+/\ req = [ tgtR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {"tgtR1"}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 17: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> FALSE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> FALSE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> FALSE ]
+/\ ocp = [ coll |-> "target",
+  cnn |-> 0,
+  pc |-> "end",
+  result |-> "ok",
+  snap |-> FALSE,
+  ret |-> "end" ]
+/\ opIdx = 1
+/\ req = [ tgtR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {"tgtR1"}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 18: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> FALSE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> FALSE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> FALSE ]
+/\ ocp = [ coll |-> "target",
+  cnn |-> 0,
+  pc |-> "idle",
+  result |-> "ok",
+  snap |-> FALSE,
+  ret |-> "end" ]
+/\ opIdx = 2
+/\ req = [ tgtR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {"tgtR1"}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 19: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> FALSE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> FALSE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> FALSE ]
+/\ ocp = [ coll |-> "none",
+  cnn |-> 0,
+  pc |-> "mg_start",
+  result |-> "none",
+  snap |-> TRUE,
+  ret |-> "end" ]
+/\ opIdx = 2
+/\ req = [ tgtR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {"tgtR1"}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 20: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> FALSE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> FALSE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> FALSE ]
+/\ ocp = [ coll |-> "none",
+  cnn |-> 0,
+  pc |-> "mk_buffer",
+  result |-> "none",
+  snap |-> TRUE,
+  ret |-> "end" ]
+/\ opIdx = 2
+/\ req = [ tgtR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {"tgtR1"}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 21: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> FALSE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> FALSE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> FALSE ]
+/\ ocp = [ coll |-> "none",
+  cnn |-> 0,
+  pc |-> "mk_rule",
+  result |-> "none",
+  snap |-> TRUE,
+  ret |-> "end" ]
+/\ opIdx = 2
+/\ req = [ tgtR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {"tgtR1"}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 22: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = << [ coll |-> "coll1",
+     op |-> "routingrule",
+     shard |-> "shard2",
+     core |-> "none",
+     cnn |-> 0,
+     val |-> "none" ] >>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> FALSE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> FALSE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> FALSE ]
+/\ ocp = [ coll |-> "none",
+  cnn |-> 0,
+  pc |-> "mk_waitRule",
+  result |-> "none",
+  snap |-> TRUE,
+  ret |-> "end" ]
+/\ opIdx = 2
+/\ req = [ tgtR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {"tgtR1"}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 23: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> TRUE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> FALSE ]
+/\ ocp = [ coll |-> "none",
+  cnn |-> 0,
+  pc |-> "mk_waitRule",
+  result |-> "none",
+  snap |-> TRUE,
+  ret |-> "end" ]
+/\ opIdx = 2
+/\ req = [ tgtR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {"tgtR1"}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 24: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> TRUE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> TRUE ]
+/\ ocp = [ coll |-> "none",
+  cnn |-> 0,
+  pc |-> "mk_waitRule",
+  result |-> "none",
+  snap |-> TRUE,
+  ret |-> "end" ]
+/\ opIdx = 2
+/\ req = [ tgtR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {"tgtR1"}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 25: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> TRUE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> TRUE ]
+/\ ocp = [ coll |-> "none",
+  cnn |-> 0,
+  pc |-> "mk_temp",
+  result |-> "none",
+  snap |-> TRUE,
+  ret |-> "end" ]
+/\ opIdx = 2
+/\ req = [ tgtR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {"tgtR1"}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 26: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> TRUE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> TRUE ]
+/\ ocp = [ coll |-> "temp",
+  cnn |-> 0,
+  pc |-> "cc_read",
+  result |-> "none",
+  snap |-> TRUE,
+  ret |-> "mk_waitCNN1" ]
+/\ opIdx = 2
+/\ req = [ tgtR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {"tgtR1"}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 27: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> TRUE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> TRUE ]
+/\ ocp = [ coll |-> "temp",
+  cnn |-> 0,
+  pc |-> "cc_offer",
+  result |-> "none",
+  snap |-> FALSE,
+  ret |-> "mk_waitCNN1" ]
+/\ opIdx = 2
+/\ req = [ tgtR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {"tgtR1"}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 28: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = << [ coll |-> "temp",
+     op |-> "createcollection",
+     shard |-> "shard1",
+     core |-> "none",
+     cnn |-> 0,
+     val |-> "none" ] >>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> TRUE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> TRUE ]
+/\ ocp = [ coll |-> "temp",
+  cnn |-> 0,
+  pc |-> "cc_waitCreated",
+  result |-> "none",
+  snap |-> FALSE,
+  ret |-> "mk_waitCNN1" ]
+/\ opIdx = 2
+/\ req = [ tgtR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {"tgtR1"}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 29: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      { <<"coll1", "shard1">>,
+        <<"coll1", "shard2">>,
+        <<"target", "shard1">>,
+        <<"temp", "shard1">> },
+  colls |-> {"coll1", "target", "temp"},
+  rule |-> TRUE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      {<<"coll1", "shard1">>, <<"coll1", "shard2">>, <<"target", "shard1">>},
+  colls |-> {"coll1", "target"},
+  rule |-> TRUE ]
+/\ ocp = [ coll |-> "temp",
+  cnn |-> 0,
+  pc |-> "cc_waitCreated",
+  result |-> "none",
+  snap |-> FALSE,
+  ret |-> "mk_waitCNN1" ]
+/\ opIdx = 2
+/\ req = [ tgtR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {"tgtR1"}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 30: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      { <<"coll1", "shard1">>,
+        <<"coll1", "shard2">>,
+        <<"target", "shard1">>,
+        <<"temp", "shard1">> },
+  colls |-> {"coll1", "target", "temp"},
+  rule |-> TRUE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      { <<"coll1", "shard1">>,
+        <<"coll1", "shard2">>,
+        <<"target", "shard1">>,
+        <<"temp", "shard1">> },
+  colls |-> {"coll1", "target", "temp"},
+  rule |-> TRUE ]
+/\ ocp = [ coll |-> "temp",
+  cnn |-> 0,
+  pc |-> "cc_waitCreated",
+  result |-> "none",
+  snap |-> FALSE,
+  ret |-> "mk_waitCNN1" ]
+/\ opIdx = 2
+/\ req = [ tgtR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {"tgtR1"}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 31: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      { <<"coll1", "shard1">>,
+        <<"coll1", "shard2">>,
+        <<"target", "shard1">>,
+        <<"temp", "shard1">> },
+  colls |-> {"coll1", "target", "temp"},
+  rule |-> TRUE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      { <<"coll1", "shard1">>,
+        <<"coll1", "shard2">>,
+        <<"target", "shard1">>,
+        <<"temp", "shard1">> },
+  colls |-> {"coll1", "target", "temp"},
+  rule |-> TRUE ]
+/\ ocp = [ coll |-> "temp",
+  cnn |-> 0,
+  pc |-> "cc_prepare",
+  result |-> "none",
+  snap |-> FALSE,
+  ret |-> "mk_waitCNN1" ]
+/\ opIdx = 2
+/\ req = [ tgtR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {"tgtR1"}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 32: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = << [ coll |-> "temp",
+     op |-> "addreplica",
+     shard |-> "shard1",
+     core |-> "tmpR1",
+     cnn |-> 0,
+     val |-> "none" ] >>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      { <<"coll1", "shard1">>,
+        <<"coll1", "shard2">>,
+        <<"target", "shard1">>,
+        <<"temp", "shard1">> },
+  colls |-> {"coll1", "target", "temp"},
+  rule |-> TRUE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      { <<"coll1", "shard1">>,
+        <<"coll1", "shard2">>,
+        <<"target", "shard1">>,
+        <<"temp", "shard1">> },
+  colls |-> {"coll1", "target", "temp"},
+  rule |-> TRUE ]
+/\ ocp = [ coll |-> "temp",
+  cnn |-> 0,
+  pc |-> "cc_waitReplicas",
+  result |-> "none",
+  snap |-> FALSE,
+  ret |-> "mk_waitCNN1" ]
+/\ opIdx = 2
+/\ req = [ tgtR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {"tgtR1"}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 33: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "temp",
+          shard |-> "shard1",
+          core |-> "tmpR1",
+          cnn |-> 1,
+          nn |-> FALSE ] },
+  slices |->
+      { <<"coll1", "shard1">>,
+        <<"coll1", "shard2">>,
+        <<"target", "shard1">>,
+        <<"temp", "shard1">> },
+  colls |-> {"coll1", "target", "temp"},
+  rule |-> TRUE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      { <<"coll1", "shard1">>,
+        <<"coll1", "shard2">>,
+        <<"target", "shard1">>,
+        <<"temp", "shard1">> },
+  colls |-> {"coll1", "target", "temp"},
+  rule |-> TRUE ]
+/\ ocp = [ coll |-> "temp",
+  cnn |-> 0,
+  pc |-> "cc_waitReplicas",
+  result |-> "none",
+  snap |-> FALSE,
+  ret |-> "mk_waitCNN1" ]
+/\ opIdx = 2
+/\ req = [ tgtR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {"tgtR1"}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 34: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "temp",
+          shard |-> "shard1",
+          core |-> "tmpR1",
+          cnn |-> 1,
+          nn |-> FALSE ] },
+  slices |->
+      { <<"coll1", "shard1">>,
+        <<"coll1", "shard2">>,
+        <<"target", "shard1">>,
+        <<"temp", "shard1">> },
+  colls |-> {"coll1", "target", "temp"},
+  rule |-> TRUE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "temp",
+          shard |-> "shard1",
+          core |-> "tmpR1",
+          cnn |-> 1,
+          nn |-> FALSE ] },
+  slices |->
+      { <<"coll1", "shard1">>,
+        <<"coll1", "shard2">>,
+        <<"target", "shard1">>,
+        <<"temp", "shard1">> },
+  colls |-> {"coll1", "target", "temp"},
+  rule |-> TRUE ]
+/\ ocp = [ coll |-> "temp",
+  cnn |-> 0,
+  pc |-> "cc_waitReplicas",
+  result |-> "none",
+  snap |-> FALSE,
+  ret |-> "mk_waitCNN1" ]
+/\ opIdx = 2
+/\ req = [ tgtR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {"tgtR1"}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 35: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "temp",
+          shard |-> "shard1",
+          core |-> "tmpR1",
+          cnn |-> 1,
+          nn |-> FALSE ] },
+  slices |->
+      { <<"coll1", "shard1">>,
+        <<"coll1", "shard2">>,
+        <<"target", "shard1">>,
+        <<"temp", "shard1">> },
+  colls |-> {"coll1", "target", "temp"},
+  rule |-> TRUE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "temp",
+          shard |-> "shard1",
+          core |-> "tmpR1",
+          cnn |-> 1,
+          nn |-> FALSE ] },
+  slices |->
+      { <<"coll1", "shard1">>,
+        <<"coll1", "shard2">>,
+        <<"target", "shard1">>,
+        <<"temp", "shard1">> },
+  colls |-> {"coll1", "target", "temp"},
+  rule |-> TRUE ]
+/\ ocp = [ coll |-> "temp",
+  cnn |-> 0,
+  pc |-> "cc_responses",
+  result |-> "none",
+  snap |-> FALSE,
+  ret |-> "mk_waitCNN1" ]
+/\ opIdx = 2
+/\ req = [ tgtR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR1 |-> [cnn |-> 1, st |-> "sent", hasCNN |-> TRUE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {"tgtR1"}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 36: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "temp",
+          shard |-> "shard1",
+          core |-> "tmpR1",
+          cnn |-> 1,
+          nn |-> FALSE ] },
+  slices |->
+      { <<"coll1", "shard1">>,
+        <<"coll1", "shard2">>,
+        <<"target", "shard1">>,
+        <<"temp", "shard1">> },
+  colls |-> {"coll1", "target", "temp"},
+  rule |-> TRUE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "temp",
+          shard |-> "shard1",
+          core |-> "tmpR1",
+          cnn |-> 1,
+          nn |-> FALSE ] },
+  slices |->
+      { <<"coll1", "shard1">>,
+        <<"coll1", "shard2">>,
+        <<"target", "shard1">>,
+        <<"temp", "shard1">> },
+  colls |-> {"coll1", "target", "temp"},
+  rule |-> TRUE ]
+/\ ocp = [ coll |-> "temp",
+  cnn |-> 0,
+  pc |-> "cc_responses",
+  result |-> "none",
+  snap |-> FALSE,
+  ret |-> "mk_waitCNN1" ]
+/\ opIdx = 2
+/\ req = [ tgtR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR1 |-> [cnn |-> 1, st |-> "prereg", hasCNN |-> TRUE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {"tgtR1"}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 37: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "temp",
+          shard |-> "shard1",
+          core |-> "tmpR1",
+          cnn |-> 1,
+          nn |-> FALSE ] },
+  slices |->
+      { <<"coll1", "shard1">>,
+        <<"coll1", "shard2">>,
+        <<"target", "shard1">>,
+        <<"temp", "shard1">> },
+  colls |-> {"coll1", "target", "temp"},
+  rule |-> TRUE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "temp",
+          shard |-> "shard1",
+          core |-> "tmpR1",
+          cnn |-> 1,
+          nn |-> FALSE ] },
+  slices |->
+      { <<"coll1", "shard1">>,
+        <<"coll1", "shard2">>,
+        <<"target", "shard1">>,
+        <<"temp", "shard1">> },
+  colls |-> {"coll1", "target", "temp"},
+  rule |-> TRUE ]
+/\ ocp = [ coll |-> "temp",
+  cnn |-> 0,
+  pc |-> "cc_responses",
+  result |-> "none",
+  snap |-> FALSE,
+  ret |-> "mk_waitCNN1" ]
+/\ opIdx = 2
+/\ req = [ tgtR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR1 |-> [cnn |-> 1, st |-> "publish", hasCNN |-> TRUE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {"tgtR1"}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 38: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = << [ coll |-> "temp",
+     op |-> "state",
+     shard |-> "shard1",
+     core |-> "tmpR1",
+     cnn |-> 1,
+     val |-> "down" ] >>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "temp",
+          shard |-> "shard1",
+          core |-> "tmpR1",
+          cnn |-> 1,
+          nn |-> FALSE ] },
+  slices |->
+      { <<"coll1", "shard1">>,
+        <<"coll1", "shard2">>,
+        <<"target", "shard1">>,
+        <<"temp", "shard1">> },
+  colls |-> {"coll1", "target", "temp"},
+  rule |-> TRUE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "temp",
+          shard |-> "shard1",
+          core |-> "tmpR1",
+          cnn |-> 1,
+          nn |-> FALSE ] },
+  slices |->
+      { <<"coll1", "shard1">>,
+        <<"coll1", "shard2">>,
+        <<"target", "shard1">>,
+        <<"temp", "shard1">> },
+  colls |-> {"coll1", "target", "temp"},
+  rule |-> TRUE ]
+/\ ocp = [ coll |-> "temp",
+  cnn |-> 0,
+  pc |-> "cc_responses",
+  result |-> "none",
+  snap |-> FALSE,
+  ret |-> "mk_waitCNN1" ]
+/\ opIdx = 2
+/\ req = [ tgtR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR1 |-> [cnn |-> 1, st |-> "waitShard", hasCNN |-> TRUE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {"tgtR1"}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 39: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "temp",
+          shard |-> "shard1",
+          core |-> "tmpR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      { <<"coll1", "shard1">>,
+        <<"coll1", "shard2">>,
+        <<"target", "shard1">>,
+        <<"temp", "shard1">> },
+  colls |-> {"coll1", "target", "temp"},
+  rule |-> TRUE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "temp",
+          shard |-> "shard1",
+          core |-> "tmpR1",
+          cnn |-> 1,
+          nn |-> FALSE ] },
+  slices |->
+      { <<"coll1", "shard1">>,
+        <<"coll1", "shard2">>,
+        <<"target", "shard1">>,
+        <<"temp", "shard1">> },
+  colls |-> {"coll1", "target", "temp"},
+  rule |-> TRUE ]
+/\ ocp = [ coll |-> "temp",
+  cnn |-> 0,
+  pc |-> "cc_responses",
+  result |-> "none",
+  snap |-> FALSE,
+  ret |-> "mk_waitCNN1" ]
+/\ opIdx = 2
+/\ req = [ tgtR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR1 |-> [cnn |-> 1, st |-> "waitShard", hasCNN |-> TRUE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {"tgtR1"}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 40: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "temp",
+          shard |-> "shard1",
+          core |-> "tmpR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      { <<"coll1", "shard1">>,
+        <<"coll1", "shard2">>,
+        <<"target", "shard1">>,
+        <<"temp", "shard1">> },
+  colls |-> {"coll1", "target", "temp"},
+  rule |-> TRUE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "temp",
+          shard |-> "shard1",
+          core |-> "tmpR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      { <<"coll1", "shard1">>,
+        <<"coll1", "shard2">>,
+        <<"target", "shard1">>,
+        <<"temp", "shard1">> },
+  colls |-> {"coll1", "target", "temp"},
+  rule |-> TRUE ]
+/\ ocp = [ coll |-> "temp",
+  cnn |-> 0,
+  pc |-> "cc_responses",
+  result |-> "none",
+  snap |-> FALSE,
+  ret |-> "mk_waitCNN1" ]
+/\ opIdx = 2
+/\ req = [ tgtR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR1 |-> [cnn |-> 1, st |-> "waitShard", hasCNN |-> TRUE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {"tgtR1"}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 41: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "temp",
+          shard |-> "shard1",
+          core |-> "tmpR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      { <<"coll1", "shard1">>,
+        <<"coll1", "shard2">>,
+        <<"target", "shard1">>,
+        <<"temp", "shard1">> },
+  colls |-> {"coll1", "target", "temp"},
+  rule |-> TRUE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "temp",
+          shard |-> "shard1",
+          core |-> "tmpR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      { <<"coll1", "shard1">>,
+        <<"coll1", "shard2">>,
+        <<"target", "shard1">>,
+        <<"temp", "shard1">> },
+  colls |-> {"coll1", "target", "temp"},
+  rule |-> TRUE ]
+/\ ocp = [ coll |-> "temp",
+  cnn |-> 0,
+  pc |-> "cc_responses",
+  result |-> "none",
+  snap |-> FALSE,
+  ret |-> "mk_waitCNN1" ]
+/\ opIdx = 2
+/\ req = [ tgtR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {"tgtR1", "tmpR1"}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 42: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "temp",
+          shard |-> "shard1",
+          core |-> "tmpR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      { <<"coll1", "shard1">>,
+        <<"coll1", "shard2">>,
+        <<"target", "shard1">>,
+        <<"temp", "shard1">> },
+  colls |-> {"coll1", "target", "temp"},
+  rule |-> TRUE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "temp",
+          shard |-> "shard1",
+          core |-> "tmpR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      { <<"coll1", "shard1">>,
+        <<"coll1", "shard2">>,
+        <<"target", "shard1">>,
+        <<"temp", "shard1">> },
+  colls |-> {"coll1", "target", "temp"},
+  rule |-> TRUE ]
+/\ ocp = [ coll |-> "temp",
+  cnn |-> 0,
+  pc |-> "mk_waitCNN1",
+  result |-> "ok",
+  snap |-> FALSE,
+  ret |-> "mk_waitCNN1" ]
+/\ opIdx = 2
+/\ req = [ tgtR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {"tgtR1", "tmpR1"}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 43: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "temp",
+          shard |-> "shard1",
+          core |-> "tmpR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      { <<"coll1", "shard1">>,
+        <<"coll1", "shard2">>,
+        <<"target", "shard1">>,
+        <<"temp", "shard1">> },
+  colls |-> {"coll1", "target", "temp"},
+  rule |-> TRUE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "temp",
+          shard |-> "shard1",
+          core |-> "tmpR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      { <<"coll1", "shard1">>,
+        <<"coll1", "shard2">>,
+        <<"target", "shard1">>,
+        <<"temp", "shard1">> },
+  colls |-> {"coll1", "target", "temp"},
+  rule |-> TRUE ]
+/\ ocp = [ coll |-> "temp",
+  cnn |-> 0,
+  pc |-> "mk_waitState1",
+  result |-> "ok",
+  snap |-> FALSE,
+  ret |-> "mk_waitCNN1" ]
+/\ opIdx = 2
+/\ req = [ tgtR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {"tgtR1", "tmpR1"}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 44: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "temp",
+          shard |-> "shard1",
+          core |-> "tmpR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      { <<"coll1", "shard1">>,
+        <<"coll1", "shard2">>,
+        <<"target", "shard1">>,
+        <<"temp", "shard1">> },
+  colls |-> {"coll1", "target", "temp"},
+  rule |-> TRUE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "temp",
+          shard |-> "shard1",
+          core |-> "tmpR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      { <<"coll1", "shard1">>,
+        <<"coll1", "shard2">>,
+        <<"target", "shard1">>,
+        <<"temp", "shard1">> },
+  colls |-> {"coll1", "target", "temp"},
+  rule |-> TRUE ]
+/\ ocp = [ coll |-> "temp",
+  cnn |-> 0,
+  pc |-> "mk_split",
+  result |-> "ok",
+  snap |-> FALSE,
+  ret |-> "mk_waitCNN1" ]
+/\ opIdx = 2
+/\ req = [ tgtR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {"tgtR1", "tmpR1"}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 45: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "temp",
+          shard |-> "shard1",
+          core |-> "tmpR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      { <<"coll1", "shard1">>,
+        <<"coll1", "shard2">>,
+        <<"target", "shard1">>,
+        <<"temp", "shard1">> },
+  colls |-> {"coll1", "target", "temp"},
+  rule |-> TRUE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "temp",
+          shard |-> "shard1",
+          core |-> "tmpR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      { <<"coll1", "shard1">>,
+        <<"coll1", "shard2">>,
+        <<"target", "shard1">>,
+        <<"temp", "shard1">> },
+  colls |-> {"coll1", "target", "temp"},
+  rule |-> TRUE ]
+/\ ocp = [ coll |-> "temp",
+  cnn |-> 0,
+  pc |-> "mk_sendCreate2",
+  result |-> "ok",
+  snap |-> FALSE,
+  ret |-> "mk_waitCNN1" ]
+/\ opIdx = 2
+/\ req = [ tgtR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR2 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {"tgtR1", "tmpR1"}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 46: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "temp",
+          shard |-> "shard1",
+          core |-> "tmpR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      { <<"coll1", "shard1">>,
+        <<"coll1", "shard2">>,
+        <<"target", "shard1">>,
+        <<"temp", "shard1">> },
+  colls |-> {"coll1", "target", "temp"},
+  rule |-> TRUE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "temp",
+          shard |-> "shard1",
+          core |-> "tmpR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      { <<"coll1", "shard1">>,
+        <<"coll1", "shard2">>,
+        <<"target", "shard1">>,
+        <<"temp", "shard1">> },
+  colls |-> {"coll1", "target", "temp"},
+  rule |-> TRUE ]
+/\ ocp = [ coll |-> "temp",
+  cnn |-> 0,
+  pc |-> "mk_collect2",
+  result |-> "ok",
+  snap |-> FALSE,
+  ret |-> "mk_waitCNN1" ]
+/\ opIdx = 2
+/\ req = [ tgtR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR2 |-> [cnn |-> 0, st |-> "sent", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {"tgtR1", "tmpR1"}
+/\ targetFired = FALSE
+/\ firedCore = "none"
+/\ firedBy = "none"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+State 47: <MCNext line 46, col 5 to line 53, col 65 of module MC>
+/\ clusterProps = "false"
+/\ cupLegacy = FALSE
+/\ stateQ = <<>>
+/\ cs = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "temp",
+          shard |-> "shard1",
+          core |-> "tmpR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      { <<"coll1", "shard1">>,
+        <<"coll1", "shard2">>,
+        <<"target", "shard1">>,
+        <<"temp", "shard1">> },
+  colls |-> {"coll1", "target", "temp"},
+  rule |-> TRUE ]
+/\ ocpView = [ replicas |->
+      { [ coll |-> "coll1",
+          shard |-> "shard1",
+          core |-> "c1s1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "coll1",
+          shard |-> "shard2",
+          core |-> "c1s2",
+          cnn |-> 2,
+          nn |-> TRUE ],
+        [ coll |-> "target",
+          shard |-> "shard1",
+          core |-> "tgtR1",
+          cnn |-> 1,
+          nn |-> TRUE ],
+        [ coll |-> "temp",
+          shard |-> "shard1",
+          core |-> "tmpR1",
+          cnn |-> 1,
+          nn |-> TRUE ] },
+  slices |->
+      { <<"coll1", "shard1">>,
+        <<"coll1", "shard2">>,
+        <<"target", "shard1">>,
+        <<"temp", "shard1">> },
+  colls |-> {"coll1", "target", "temp"},
+  rule |-> TRUE ]
+/\ ocp = [ coll |-> "temp",
+  cnn |-> 0,
+  pc |-> "mk_collect2",
+  result |-> "ok",
+  snap |-> FALSE,
+  ret |-> "mk_waitCNN1" ]
+/\ opIdx = 2
+/\ req = [ tgtR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR1 |-> [cnn |-> 1, st |-> "ok", hasCNN |-> TRUE],
+  tmpR2 |-> [cnn |-> 0, st |-> "err", hasCNN |-> FALSE],
+  implR1 |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE],
+  addR |-> [cnn |-> 0, st |-> "none", hasCNN |-> FALSE] ]
+/\ nodeCores = {"tgtR1", "tmpR1"}
+/\ targetFired = TRUE
+/\ firedCore = "tmpR2"
+/\ firedBy = "migrateKey"
+/\ faults = [propFlips |-> 0, checkTimeouts |-> 0]
+
+"CounterExample written: output/hunt_S1_migrate_cex.json"
+72 states generated, 61 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 47.
+Finished in 01s at (2026-11-07 22:41:56)
+Trace exploration spec path: ./MC_TTrace_1794091315.tla

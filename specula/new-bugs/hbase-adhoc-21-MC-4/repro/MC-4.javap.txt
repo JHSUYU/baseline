@@ -1,0 +1,22 @@
+--- source
+1+125	      if (
+2+125	        (currentStatus.getRegionCount() - regionCountOfTable + incr)
+3+125	            > TableNamespaceManager.getMaxRegions(nspdesc)
+4+125	      ) {
+5+125	        throw new QuotaExceededException("The table " + name.getNameAsString()
+6+125	          + " region count cannot be updated as it would exceed maximum number "
+7+125	          + "of regions allowed in the namespace.  The total number of regions permitted is "
+8+125	          + TableNamespaceManager.getMaxRegions(nspdesc));
+9+125	      }
+--- QuotaExceededException sites in the (TableName,int) overload: 
+130:         throw new QuotaExceededException("The table " + name.getNameAsString()
+--- javap: checkAndUpdateNamespaceRegionCount(TableName,int)
+      60: new           #97                 // class org/apache/hadoop/hbase/quotas/QuotaExceededException
+      78: invokespecial #106                // Method org/apache/hadoop/hbase/quotas/QuotaExceededException."<init>":(Ljava/lang/String;)V
+      81: athrow
+      line 126: 40
+      line 127: 42
+      line 128: 53
+      line 130: 60
+      line 133: 70
+      line 135: 82

@@ -1,0 +1,18 @@
+=== testLevel1FirstBootSingleMaster
+exit=0 wall=264s [INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+target frames (CSSI:111): 20
+ [HBase-Test-SpeculaAdhocMC3Test-Main-Thread] namespace.SpeculaAdhocMC3Test(221): MC3-CONFIG masters=1 rsgroup=true clientRetries=15 dispatchWaitMs=3000
+ [master/clnode245:0:becomeActiveMaster] namespace.SpeculaAdhocMC3Test$HookedMaster(124): MC3-STEP WaitForMetaOnline passed on clnode245.clemson.cloudlab.us,43093,1793876958897, meta on clnode245.clem
+ [master/clnode245:0:becomeActiveMaster] namespace.SpeculaAdhocMC3Test$HookedMaster(128): MC3-STEP RSCrash clnode245.clemson.cloudlab.us,36961,1793876959812
+ [master/clnode245:0:becomeActiveMaster] namespace.SpeculaAdhocMC3Test$HookedMaster(146): MC3-STEP publishing the schema service; meta TRSP=pid=7, ppid=4, state=RUNNABLE:REGION_STATE_TRANSITION_OPEN, 
+ [HBase-Test-SpeculaAdhocMC3Test-Main-Thread] namespace.SpeculaAdhocMC3Test(347): MC3-RESULT startMiniCluster failed: java.io.IOException: Shutting down
+ [HBase-Test-SpeculaAdhocMC3Test-Main-Thread] namespace.SpeculaAdhocMC3Test(351): MC3-RESULT first boot: started=false initialized=false aborted=true
+=== testControlRsGroupOff
+exit=0 wall=68s [INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+target frames (CSSI:111): 0
+ [HBase-Test-SpeculaAdhocMC3Test-Main-Thread] namespace.SpeculaAdhocMC3Test(221): MC3-CONFIG masters=2 rsgroup=false clientRetries=15 dispatchWaitMs=3000
+ [HBase-Test-SpeculaAdhocMC3Test-Main-Thread] namespace.SpeculaAdhocMC3Test(272): MC3-STEP stopping the active master clnode245.clemson.cloudlab.us,43615,1793877224857 cleanly; backup is clnode245.cle
+ [master/clnode245:0:becomeActiveMaster] namespace.SpeculaAdhocMC3Test$HookedMaster(124): MC3-STEP WaitForMetaOnline passed on clnode245.clemson.cloudlab.us,32863,1793877223787, meta on clnode245.clem
+ [master/clnode245:0:becomeActiveMaster] namespace.SpeculaAdhocMC3Test$HookedMaster(128): MC3-STEP RSCrash clnode245.clemson.cloudlab.us,36199,1793877225200
+ [master/clnode245:0:becomeActiveMaster] namespace.SpeculaAdhocMC3Test$HookedMaster(146): MC3-STEP publishing the schema service; meta TRSP=pid=23, ppid=20, state=RUNNABLE:REGION_STATE_TRANSITION_OPEN
+ [HBase-Test-SpeculaAdhocMC3Test-Main-Thread] namespace.SpeculaAdhocMC3Test(281): MC3-RESULT master=clnode245.clemson.cloudlab.us,32863,1793877223787 initialized=true aborted=false stopped=false

@@ -1,0 +1,2327 @@
+TLC2 Version 2026.10.24.013619 (rev: 2ef2af8)
+Running breadth-first search Model-Checking with fp 10 and seed 1798845847224634077 with 8 workers on 64 cores with 2731MB heap and 64MB offheap memory [pid: 1033949] (Linux 5.15.0-198-generic amd64, Eclipse Adoptium 21.0.13 64bit, MSBDiskFPSet, DiskStateQueue).
+Parsing file /bulk/specula-adhoc/specula-runs/20261107-165520-7804/hdfs-adhoc-k1/.specula-output/spec/MC.tla
+Parsing file /bulk/specula-adhoc/specula-runs/20261107-165520-7804/hdfs-adhoc-k1/.specula-output/spec/base.tla
+Parsing file /tmp/tlc-3278540019493902336/_TLCTrace.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/_TLCTrace.tla)
+Parsing file /tmp/tlc-3278540019493902336/Integers.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Integers.tla)
+Parsing file /tmp/tlc-3278540019493902336/FiniteSets.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/FiniteSets.tla)
+Parsing file /tmp/tlc-3278540019493902336/Bags.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Bags.tla)
+Parsing file /tmp/tlc-3278540019493902336/TLC.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLC.tla)
+Parsing file /tmp/tlc-3278540019493902336/Naturals.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Naturals.tla)
+Parsing file /tmp/tlc-3278540019493902336/Sequences.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Sequences.tla)
+Parsing file /tmp/tlc-3278540019493902336/TLCExt.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLCExt.tla)
+Semantic processing of module Naturals
+Semantic processing of module Integers
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module Bags
+Semantic processing of module TLC
+Semantic processing of module base
+Semantic processing of module TLCExt
+Semantic processing of module _TLCTrace
+Semantic processing of module MC
+Linting of module base
+Linting of module TLCExt
+Linting of module _TLCTrace
+Linting of module MC
+line 110, col 42 to line 110, col 49 of module MC
+
+The field name "safeMode" in the record constructor is identical to the existing definition or declaration
+named safeMode, located at line 72, col 5 to line 72, col 12 of module base.
+The field in the record will not take the value of the safeMode definition or declaration.
+In TLA+, field names in records are strings, regardless of any similarly named declarations or definitions.
+Therefore, DOMAIN [safeMode |-> ...] = {"safeMode"} holds true.
+
+
+
+Starting... (2026-11-07 18:02:18)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-11-07 18:02:18.
+Error: Invariant TargetSafe is violated.
+Error: The behavior up to this point is:
+State 1: <Initial predicate>
+/\ nnNext = 12
+/\ hbDone = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = (d1 :> <<>> @@ d2 :> <<>>)
+/\ dnMgr = (d1 :> FALSE @@ d2 :> FALSE)
+/\ npeFired = FALSE
+/\ balDEK = None
+/\ dnPC = (d1 :> "unreg" @@ d2 :> "unreg")
+/\ dnCur = (d1 :> None @@ d2 :> None)
+/\ balKeys = <<>>
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {}
+/\ safeMode = FALSE
+/\ nnSerial = 12
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12}
+/\ now = 0
+/\ hbList = {}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)
+/\ conns = <<>>
+/\ balPollAge = 0
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 0
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 11
+/\ balCur = None
+/\ balOn = FALSE
+
+State 2: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 12
+/\ hbDone = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = (d1 :> <<>> @@ d2 :> <<>>)
+/\ dnMgr = (d1 :> FALSE @@ d2 :> FALSE)
+/\ npeFired = FALSE
+/\ balDEK = None
+/\ dnPC = (d1 :> "regSnap" @@ d2 :> "unreg")
+/\ dnCur = (d1 :> None @@ d2 :> None)
+/\ balKeys = <<>>
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {}
+/\ safeMode = FALSE
+/\ nnSerial = 12
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12}
+/\ now = 0
+/\ hbList = {}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)
+/\ conns = <<>>
+/\ balPollAge = 0
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 0
+/\ regSnap = ( d1 :> [cur |-> 11, keys |-> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)] @@
+  d2 :> None )
+/\ nnCur = 11
+/\ balCur = None
+/\ balOn = FALSE
+
+State 3: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 12
+/\ hbDone = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = (d1 :> <<>> @@ d2 :> <<>>)
+/\ dnMgr = (d1 :> FALSE @@ d2 :> FALSE)
+/\ npeFired = FALSE
+/\ balDEK = None
+/\ dnPC = (d1 :> "regResp" @@ d2 :> "unreg")
+/\ dnCur = (d1 :> None @@ d2 :> None)
+/\ balKeys = <<>>
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {}
+/\ safeMode = FALSE
+/\ nnSerial = 12
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12}
+/\ now = 0
+/\ hbList = {d1}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)
+/\ conns = <<>>
+/\ balPollAge = 0
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 0
+/\ regSnap = ( d1 :> [cur |-> 11, keys |-> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)] @@
+  d2 :> None )
+/\ nnCur = 11
+/\ balCur = None
+/\ balOn = FALSE
+
+State 4: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 12
+/\ hbDone = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = (d1 :> <<>> @@ d2 :> <<>>)
+/\ dnMgr = (d1 :> FALSE @@ d2 :> FALSE)
+/\ npeFired = FALSE
+/\ balDEK = None
+/\ dnPC = (d1 :> "regResp" @@ d2 :> "regSnap")
+/\ dnCur = (d1 :> None @@ d2 :> None)
+/\ balKeys = <<>>
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {}
+/\ safeMode = FALSE
+/\ nnSerial = 12
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12}
+/\ now = 0
+/\ hbList = {d1}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)
+/\ conns = <<>>
+/\ balPollAge = 0
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 0
+/\ regSnap = ( d1 :> [cur |-> 11, keys |-> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)] @@
+  d2 :> [cur |-> 11, keys |-> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)] )
+/\ nnCur = 11
+/\ balCur = None
+/\ balOn = FALSE
+
+State 5: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 12
+/\ hbDone = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = (d1 :> <<>> @@ d2 :> <<>>)
+/\ dnMgr = (d1 :> TRUE @@ d2 :> FALSE)
+/\ npeFired = FALSE
+/\ balDEK = None
+/\ dnPC = (d1 :> "regAddKeys" @@ d2 :> "regSnap")
+/\ dnCur = (d1 :> None @@ d2 :> None)
+/\ balKeys = <<>>
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {}
+/\ safeMode = FALSE
+/\ nnSerial = 12
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12}
+/\ now = 0
+/\ hbList = {d1}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)
+/\ conns = <<>>
+/\ balPollAge = 0
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 0
+/\ regSnap = ( d1 :> [cur |-> 11, keys |-> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)] @@
+  d2 :> [cur |-> 11, keys |-> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)] )
+/\ nnCur = 11
+/\ balCur = None
+/\ balOn = FALSE
+
+State 6: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 12
+/\ hbDone = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = (d1 :> <<>> @@ d2 :> <<>>)
+/\ dnMgr = (d1 :> TRUE @@ d2 :> FALSE)
+/\ npeFired = FALSE
+/\ balDEK = None
+/\ dnPC = (d1 :> "regAddKeys" @@ d2 :> "regResp")
+/\ dnCur = (d1 :> None @@ d2 :> None)
+/\ balKeys = <<>>
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {}
+/\ safeMode = FALSE
+/\ nnSerial = 12
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12}
+/\ now = 0
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)
+/\ conns = <<>>
+/\ balPollAge = 0
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 0
+/\ regSnap = ( d1 :> [cur |-> 11, keys |-> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)] @@
+  d2 :> [cur |-> 11, keys |-> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)] )
+/\ nnCur = 11
+/\ balCur = None
+/\ balOn = FALSE
+
+State 7: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 12
+/\ hbDone = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = (d1 :> <<>> @@ d2 :> <<>>)
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = None
+/\ dnPC = (d1 :> "regAddKeys" @@ d2 :> "regAddKeys")
+/\ dnCur = (d1 :> None @@ d2 :> None)
+/\ balKeys = <<>>
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {}
+/\ safeMode = FALSE
+/\ nnSerial = 12
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12}
+/\ now = 0
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)
+/\ conns = <<>>
+/\ balPollAge = 0
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 0
+/\ regSnap = ( d1 :> [cur |-> 11, keys |-> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)] @@
+  d2 :> [cur |-> 11, keys |-> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)] )
+/\ nnCur = 11
+/\ balCur = None
+/\ balOn = FALSE
+
+State 8: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 12
+/\ hbDone = (d1 :> TRUE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = (d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8) @@ d2 :> <<>>)
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = None
+/\ dnPC = (d1 :> "running" @@ d2 :> "regAddKeys")
+/\ dnCur = (d1 :> 11 @@ d2 :> None)
+/\ balKeys = <<>>
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {}
+/\ safeMode = FALSE
+/\ nnSerial = 12
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12}
+/\ now = 0
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)
+/\ conns = <<>>
+/\ balPollAge = 0
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 0
+/\ regSnap = ( d1 :> None @@
+  d2 :> [cur |-> 11, keys |-> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)] )
+/\ nnCur = 11
+/\ balCur = None
+/\ balOn = FALSE
+
+State 9: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 12
+/\ hbDone = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = None
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 11 @@ d2 :> 11)
+/\ balKeys = <<>>
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {}
+/\ safeMode = FALSE
+/\ nnSerial = 12
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12}
+/\ now = 0
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)
+/\ conns = <<>>
+/\ balPollAge = 0
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 0
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 11
+/\ balCur = None
+/\ balOn = FALSE
+
+State 10: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 12
+/\ hbDone = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = None
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 11 @@ d2 :> 11)
+/\ balKeys = <<>>
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {}
+/\ safeMode = FALSE
+/\ nnSerial = 12
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12}
+/\ now = 1
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)
+/\ conns = <<>>
+/\ balPollAge = 0
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 0
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 11
+/\ balCur = None
+/\ balOn = FALSE
+
+State 11: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 12
+/\ hbDone = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = None
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 11 @@ d2 :> 11)
+/\ balKeys = <<>>
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1}
+/\ safeMode = FALSE
+/\ nnSerial = 12
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12}
+/\ now = 1
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> [kind |-> "NONE", exp |-> None] @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)
+/\ conns = <<>>
+/\ balPollAge = 0
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 0
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 11
+/\ balCur = None
+/\ balOn = FALSE
+
+State 12: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 12
+/\ hbDone = (d1 :> TRUE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = None
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 11 @@ d2 :> 11)
+/\ balKeys = <<>>
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1}
+/\ safeMode = FALSE
+/\ nnSerial = 12
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12}
+/\ now = 1
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)
+/\ conns = <<>>
+/\ balPollAge = 0
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 0
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 11
+/\ balCur = None
+/\ balOn = FALSE
+
+State 13: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 12
+/\ hbDone = (d1 :> TRUE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = None
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 11 @@ d2 :> 11)
+/\ balKeys = <<>>
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 12
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12}
+/\ now = 1
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> [kind |-> "NONE", exp |-> None])
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)
+/\ conns = <<>>
+/\ balPollAge = 0
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 0
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 11
+/\ balCur = None
+/\ balOn = FALSE
+
+State 14: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 12
+/\ hbDone = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = None
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 11 @@ d2 :> 11)
+/\ balKeys = <<>>
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 12
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12}
+/\ now = 1
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)
+/\ conns = <<>>
+/\ balPollAge = 0
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 0
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 11
+/\ balCur = None
+/\ balOn = FALSE
+
+State 15: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 12
+/\ hbDone = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = None
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 11 @@ d2 :> 11)
+/\ balKeys = <<>>
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 12
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12}
+/\ now = 2
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)
+/\ conns = <<>>
+/\ balPollAge = 0
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 0
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 11
+/\ balCur = None
+/\ balOn = FALSE
+
+State 16: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 12
+/\ hbDone = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = None
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 11 @@ d2 :> 11)
+/\ balKeys = <<>>
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 12
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12}
+/\ now = 2
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> [kind |-> "NONE", exp |-> None] @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)
+/\ conns = <<>>
+/\ balPollAge = 0
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 0
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 11
+/\ balCur = None
+/\ balOn = FALSE
+
+State 17: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 12
+/\ hbDone = (d1 :> TRUE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = None
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 11 @@ d2 :> 11)
+/\ balKeys = <<>>
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 12
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12}
+/\ now = 2
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)
+/\ conns = <<>>
+/\ balPollAge = 0
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 0
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 11
+/\ balCur = None
+/\ balOn = FALSE
+
+State 18: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 12
+/\ hbDone = (d1 :> TRUE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = None
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 11 @@ d2 :> 11)
+/\ balKeys = <<>>
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 12
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12}
+/\ now = 2
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> [kind |-> "NONE", exp |-> None])
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)
+/\ conns = <<>>
+/\ balPollAge = 0
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 0
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 11
+/\ balCur = None
+/\ balOn = FALSE
+
+State 19: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 12
+/\ hbDone = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = None
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 11 @@ d2 :> 11)
+/\ balKeys = <<>>
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 12
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12}
+/\ now = 2
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)
+/\ conns = <<>>
+/\ balPollAge = 0
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 0
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 11
+/\ balCur = None
+/\ balOn = FALSE
+
+State 20: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 12
+/\ hbDone = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = None
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 11 @@ d2 :> 11)
+/\ balKeys = <<>>
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 12
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12}
+/\ now = 3
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)
+/\ conns = <<>>
+/\ balPollAge = 0
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 0
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 11
+/\ balCur = None
+/\ balOn = FALSE
+
+State 21: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 12
+/\ hbDone = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = None
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 11 @@ d2 :> 11)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 12
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12}
+/\ now = 3
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)
+/\ conns = <<>>
+/\ balPollAge = 0
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 0
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 11
+/\ balCur = 11
+/\ balOn = TRUE
+
+State 22: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 13
+/\ hbDone = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnMonPC = "marking"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = None
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 11 @@ d2 :> 11)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 13
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13}
+/\ now = 3
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11)
+/\ conns = <<>>
+/\ balPollAge = 0
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 3
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 12
+/\ balCur = 11
+/\ balOn = TRUE
+
+State 23: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 13
+/\ hbDone = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = None
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 11 @@ d2 :> 11)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)
+/\ needKeyUpdate = (d1 :> TRUE @@ d2 :> TRUE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 13
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13}
+/\ now = 3
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11)
+/\ conns = <<>>
+/\ balPollAge = 0
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 3
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 12
+/\ balCur = 11
+/\ balOn = TRUE
+
+State 24: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 13
+/\ hbDone = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = None
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 11 @@ d2 :> 11)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> TRUE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 13
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13}
+/\ now = 3
+/\ hbList = {d1, d2}
+/\ hbResp = ( d1 :>
+      [ kind |-> "KEYS",
+        exp |->
+            [ cur |-> 12,
+              keys |->
+                  (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) ] ] @@
+  d2 :> None )
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11)
+/\ conns = <<>>
+/\ balPollAge = 0
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 3
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 12
+/\ balCur = 11
+/\ balOn = TRUE
+
+State 25: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 13
+/\ hbDone = (d1 :> TRUE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = None
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 12 @@ d2 :> 11)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> TRUE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 13
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13}
+/\ now = 3
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11)
+/\ conns = <<>>
+/\ balPollAge = 0
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 3
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 12
+/\ balCur = 11
+/\ balOn = TRUE
+
+State 26: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 13
+/\ hbDone = (d1 :> TRUE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 12 @@ d2 :> 11)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> TRUE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 13
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13}
+/\ now = 3
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11)
+/\ conns = ([dst |-> d1, src |-> "bal", keyId |-> 11] :> 1)
+/\ balPollAge = 0
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 3
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 12
+/\ balCur = 11
+/\ balOn = TRUE
+
+State 27: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 13
+/\ hbDone = (d1 :> TRUE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 12 @@ d2 :> 11)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 13
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13}
+/\ now = 3
+/\ hbList = {d1, d2}
+/\ hbResp = ( d1 :> None @@
+  d2 :>
+      [ kind |-> "KEYS",
+        exp |->
+            [ cur |-> 12,
+              keys |->
+                  (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) ] ] )
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11)
+/\ conns = ([dst |-> d1, src |-> "bal", keyId |-> 11] :> 1)
+/\ balPollAge = 0
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 3
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 12
+/\ balCur = 11
+/\ balOn = TRUE
+
+State 28: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 13
+/\ hbDone = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 12 @@ d2 :> 12)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 13
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13}
+/\ now = 3
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11)
+/\ conns = ([dst |-> d1, src |-> "bal", keyId |-> 11] :> 1)
+/\ balPollAge = 0
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 3
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 12
+/\ balCur = 11
+/\ balOn = TRUE
+
+State 29: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 13
+/\ hbDone = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 12 @@ d2 :> 12)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 13
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13}
+/\ now = 3
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11)
+/\ conns = <<>>
+/\ balPollAge = 0
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 3
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 12
+/\ balCur = 11
+/\ balOn = TRUE
+
+State 30: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 13
+/\ hbDone = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 12 @@ d2 :> 12)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 13
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13}
+/\ now = 4
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11)
+/\ conns = <<>>
+/\ balPollAge = 1
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 3
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 12
+/\ balCur = 11
+/\ balOn = TRUE
+
+State 31: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 13
+/\ hbDone = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 12 @@ d2 :> 12)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 13
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13}
+/\ now = 4
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> [kind |-> "NONE", exp |-> None] @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11)
+/\ conns = <<>>
+/\ balPollAge = 1
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 3
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 12
+/\ balCur = 11
+/\ balOn = TRUE
+
+State 32: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 13
+/\ hbDone = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 12 @@ d2 :> 12)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 13
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13}
+/\ now = 4
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> [kind |-> "NONE", exp |-> None] @@ d2 :> [kind |-> "NONE", exp |-> None])
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11)
+/\ conns = <<>>
+/\ balPollAge = 1
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 3
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 12
+/\ balCur = 11
+/\ balOn = TRUE
+
+State 33: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 13
+/\ hbDone = (d1 :> TRUE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 12 @@ d2 :> 12)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 6 @@ 12 :> 8)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 13
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13}
+/\ now = 4
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> [kind |-> "NONE", exp |-> None])
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11)
+/\ conns = <<>>
+/\ balPollAge = 1
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 3
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 12
+/\ balCur = 11
+/\ balOn = TRUE
+
+State 34: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 13
+/\ hbDone = (d1 :> TRUE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 12 @@ d2 :> 12)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 13
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13}
+/\ now = 4
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> [kind |-> "NONE", exp |-> None])
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11)
+/\ conns = <<>>
+/\ balPollAge = 0
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 3
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 12
+/\ balCur = 12
+/\ balOn = TRUE
+
+State 35: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 13
+/\ hbDone = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 12 @@ d2 :> 12)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 13
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13}
+/\ now = 4
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11)
+/\ conns = <<>>
+/\ balPollAge = 0
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 3
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 12
+/\ balCur = 12
+/\ balOn = TRUE
+
+State 36: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 13
+/\ hbDone = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 12 @@ d2 :> 12)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 13
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13}
+/\ now = 5
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11)
+/\ conns = <<>>
+/\ balPollAge = 1
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 3
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 12
+/\ balCur = 12
+/\ balOn = TRUE
+
+State 37: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 13
+/\ hbDone = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 12 @@ d2 :> 12)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 13
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13}
+/\ now = 5
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> [kind |-> "NONE", exp |-> None] @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11)
+/\ conns = <<>>
+/\ balPollAge = 1
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 3
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 12
+/\ balCur = 12
+/\ balOn = TRUE
+
+State 38: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 13
+/\ hbDone = (d1 :> TRUE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 12 @@ d2 :> 12)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 13
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13}
+/\ now = 5
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11)
+/\ conns = <<>>
+/\ balPollAge = 1
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 3
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 12
+/\ balCur = 12
+/\ balOn = TRUE
+
+State 39: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 13
+/\ hbDone = (d1 :> TRUE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 12 @@ d2 :> 12)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 13
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13}
+/\ now = 5
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> [kind |-> "NONE", exp |-> None])
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11)
+/\ conns = <<>>
+/\ balPollAge = 1
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 3
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 12
+/\ balCur = 12
+/\ balOn = TRUE
+
+State 40: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 13
+/\ hbDone = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 12 @@ d2 :> 12)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 13
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13}
+/\ now = 5
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11)
+/\ conns = <<>>
+/\ balPollAge = 1
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 3
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 12
+/\ balCur = 12
+/\ balOn = TRUE
+
+State 41: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 13
+/\ hbDone = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 12 @@ d2 :> 12)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 13
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13}
+/\ now = 5
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11)
+/\ conns = <<>>
+/\ balPollAge = 0
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 3
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 12
+/\ balCur = 12
+/\ balOn = TRUE
+
+State 42: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 13
+/\ hbDone = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 12 @@ d2 :> 12)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 13
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13}
+/\ now = 6
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11)
+/\ conns = <<>>
+/\ balPollAge = 1
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 3
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 12
+/\ balCur = 12
+/\ balOn = TRUE
+
+State 43: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 14
+/\ hbDone = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnMonPC = "marking"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 12 @@ d2 :> 12)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 14
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13, 14}
+/\ now = 6
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ conns = <<>>
+/\ balPollAge = 1
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 6
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 13
+/\ balCur = 12
+/\ balOn = TRUE
+
+State 44: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 14
+/\ hbDone = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 12 @@ d2 :> 12)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11)
+/\ needKeyUpdate = (d1 :> TRUE @@ d2 :> TRUE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 14
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13, 14}
+/\ now = 6
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ conns = <<>>
+/\ balPollAge = 1
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 6
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 13
+/\ balCur = 12
+/\ balOn = TRUE
+
+State 45: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 14
+/\ hbDone = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 12 @@ d2 :> 12)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> TRUE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 14
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13, 14}
+/\ now = 6
+/\ hbList = {d1, d2}
+/\ hbResp = ( d1 :>
+      [ kind |-> "KEYS",
+        exp |->
+            [ cur |-> 13,
+              keys |->
+                  ( 1 :> 6 @@
+                    2 :> 8 @@
+                    11 :> 7 @@
+                    12 :> 10 @@
+                    13 :> 12 @@
+                    14 :> 14 ) ] ] @@
+  d2 :> None )
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ conns = <<>>
+/\ balPollAge = 1
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 6
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 13
+/\ balCur = 12
+/\ balOn = TRUE
+
+State 46: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 14
+/\ hbDone = (d1 :> TRUE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 13 @@ d2 :> 12)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> TRUE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 14
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13, 14}
+/\ now = 6
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ conns = <<>>
+/\ balPollAge = 1
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 6
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 13
+/\ balCur = 12
+/\ balOn = TRUE
+
+State 47: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 14
+/\ hbDone = (d1 :> TRUE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 13 @@ d2 :> 12)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 14
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13, 14}
+/\ now = 6
+/\ hbList = {d1, d2}
+/\ hbResp = ( d1 :> None @@
+  d2 :>
+      [ kind |-> "KEYS",
+        exp |->
+            [ cur |-> 13,
+              keys |->
+                  ( 1 :> 6 @@
+                    2 :> 8 @@
+                    11 :> 7 @@
+                    12 :> 10 @@
+                    13 :> 12 @@
+                    14 :> 14 ) ] ] )
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ conns = <<>>
+/\ balPollAge = 1
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 6
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 13
+/\ balCur = 12
+/\ balOn = TRUE
+
+State 48: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 14
+/\ hbDone = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 13 @@ d2 :> 13)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 9 @@ 13 :> 11)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 14
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13, 14}
+/\ now = 6
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ conns = <<>>
+/\ balPollAge = 1
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 6
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 13
+/\ balCur = 12
+/\ balOn = TRUE
+
+State 49: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 14
+/\ hbDone = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 13 @@ d2 :> 13)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 14
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13, 14}
+/\ now = 6
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ conns = <<>>
+/\ balPollAge = 0
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 6
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 13
+/\ balCur = 13
+/\ balOn = TRUE
+
+State 50: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 14
+/\ hbDone = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 13 @@ d2 :> 13)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 14
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13, 14}
+/\ now = 7
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ conns = <<>>
+/\ balPollAge = 1
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 6
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 13
+/\ balCur = 13
+/\ balOn = TRUE
+
+State 51: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 14
+/\ hbDone = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 13 @@ d2 :> 13)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 14
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13, 14}
+/\ now = 7
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> [kind |-> "NONE", exp |-> None] @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ conns = <<>>
+/\ balPollAge = 1
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 6
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 13
+/\ balCur = 13
+/\ balOn = TRUE
+
+State 52: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 14
+/\ hbDone = (d1 :> TRUE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 13 @@ d2 :> 13)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 14
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13, 14}
+/\ now = 7
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ conns = <<>>
+/\ balPollAge = 1
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 6
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 13
+/\ balCur = 13
+/\ balOn = TRUE
+
+State 53: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 14
+/\ hbDone = (d1 :> TRUE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 13 @@ d2 :> 13)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 14
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13, 14}
+/\ now = 7
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> [kind |-> "NONE", exp |-> None])
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ conns = <<>>
+/\ balPollAge = 1
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 6
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 13
+/\ balCur = 13
+/\ balOn = TRUE
+
+State 54: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 14
+/\ hbDone = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 13 @@ d2 :> 13)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 14
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13, 14}
+/\ now = 7
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ conns = <<>>
+/\ balPollAge = 1
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 6
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 13
+/\ balCur = 13
+/\ balOn = TRUE
+
+State 55: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 14
+/\ hbDone = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 13 @@ d2 :> 13)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 14
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13, 14}
+/\ now = 7
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ conns = <<>>
+/\ balPollAge = 0
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 6
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 13
+/\ balCur = 13
+/\ balOn = TRUE
+
+State 56: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 14
+/\ hbDone = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 13 @@ d2 :> 13)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 14
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13, 14}
+/\ now = 8
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ conns = <<>>
+/\ balPollAge = 1
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 6
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 13
+/\ balCur = 13
+/\ balOn = TRUE
+
+State 57: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 14
+/\ hbDone = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 13 @@ d2 :> 13)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 14
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13, 14}
+/\ now = 8
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> [kind |-> "NONE", exp |-> None] @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ conns = <<>>
+/\ balPollAge = 1
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 6
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 13
+/\ balCur = 13
+/\ balOn = TRUE
+
+State 58: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 14
+/\ hbDone = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 13 @@ d2 :> 13)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 14
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13, 14}
+/\ now = 8
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> [kind |-> "NONE", exp |-> None] @@ d2 :> [kind |-> "NONE", exp |-> None])
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ conns = <<>>
+/\ balPollAge = 1
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 6
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 13
+/\ balCur = 13
+/\ balOn = TRUE
+
+State 59: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 14
+/\ hbDone = (d1 :> TRUE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 13 @@ d2 :> 13)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 14
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13, 14}
+/\ now = 8
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> [kind |-> "NONE", exp |-> None])
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ conns = <<>>
+/\ balPollAge = 1
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 6
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 13
+/\ balCur = 13
+/\ balOn = TRUE
+
+State 60: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 14
+/\ hbDone = (d1 :> TRUE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 13 @@ d2 :> 13)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 14
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13, 14}
+/\ now = 8
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> [kind |-> "NONE", exp |-> None])
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ conns = <<>>
+/\ balPollAge = 0
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 6
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 13
+/\ balCur = 13
+/\ balOn = TRUE
+
+State 61: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 14
+/\ hbDone = (d1 :> TRUE @@ d2 :> TRUE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 13 @@ d2 :> 13)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 14
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13, 14}
+/\ now = 8
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ conns = <<>>
+/\ balPollAge = 0
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 6
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 13
+/\ balCur = 13
+/\ balOn = TRUE
+
+State 62: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 14
+/\ hbDone = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 13 @@ d2 :> 13)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 14
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13, 14}
+/\ now = 9
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ conns = <<>>
+/\ balPollAge = 1
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 6
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 13
+/\ balCur = 13
+/\ balOn = TRUE
+
+State 63: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 15
+/\ hbDone = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnMonPC = "marking"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 13 @@ d2 :> 13)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> FALSE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 15
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13, 14, 15}
+/\ now = 9
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (12 :> 10 @@ 13 :> 13 @@ 14 :> 15 @@ 15 :> 17)
+/\ conns = <<>>
+/\ balPollAge = 1
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 9
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 14
+/\ balCur = 13
+/\ balOn = TRUE
+
+State 64: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 15
+/\ hbDone = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 13 @@ d2 :> 13)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ needKeyUpdate = (d1 :> TRUE @@ d2 :> TRUE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 15
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13, 14, 15}
+/\ now = 9
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (12 :> 10 @@ 13 :> 13 @@ 14 :> 15 @@ 15 :> 17)
+/\ conns = <<>>
+/\ balPollAge = 1
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 9
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 14
+/\ balCur = 13
+/\ balOn = TRUE
+
+State 65: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 15
+/\ hbDone = (d1 :> FALSE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 13 @@ d2 :> 13)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> TRUE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 15
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13, 14, 15}
+/\ now = 9
+/\ hbList = {d1, d2}
+/\ hbResp = ( d1 :>
+      [ kind |-> "KEYS",
+        exp |->
+            [ cur |-> 14,
+              keys |-> (12 :> 10 @@ 13 :> 13 @@ 14 :> 15 @@ 15 :> 17) ] ] @@
+  d2 :> None )
+/\ nnKeys = (12 :> 10 @@ 13 :> 13 @@ 14 :> 15 @@ 15 :> 17)
+/\ conns = <<>>
+/\ balPollAge = 1
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 9
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 14
+/\ balCur = 13
+/\ balOn = TRUE
+
+State 66: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 15
+/\ hbDone = (d1 :> TRUE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (12 :> 10 @@ 13 :> 13 @@ 14 :> 15 @@ 15 :> 17) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 14 @@ d2 :> 13)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> TRUE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 15
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13, 14, 15}
+/\ now = 9
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (12 :> 10 @@ 13 :> 13 @@ 14 :> 15 @@ 15 :> 17)
+/\ conns = <<>>
+/\ balPollAge = 1
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 9
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 14
+/\ balCur = 13
+/\ balOn = TRUE
+
+State 67: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 15
+/\ hbDone = (d1 :> TRUE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (12 :> 10 @@ 13 :> 13 @@ 14 :> 15 @@ 15 :> 17) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 14 @@ d2 :> 13)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> TRUE)
+/\ targetFired = FALSE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 15
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13, 14, 15}
+/\ now = 9
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (12 :> 10 @@ 13 :> 13 @@ 14 :> 15 @@ 15 :> 17)
+/\ conns = ([dst |-> d1, src |-> "bal", keyId |-> 11] :> 1)
+/\ balPollAge = 1
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 9
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 14
+/\ balCur = 13
+/\ balOn = TRUE
+
+State 68: <MCNext line 128, col 5 to line 140, col 21 of module MC>
+/\ nnNext = 15
+/\ hbDone = (d1 :> TRUE @@ d2 :> FALSE)
+/\ nnMonPC = "idle"
+/\ nnInc = 1
+/\ dnKeys = ( d1 :> (12 :> 10 @@ 13 :> 13 @@ 14 :> 15 @@ 15 :> 17) @@
+  d2 :> (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14) )
+/\ dnMgr = (d1 :> TRUE @@ d2 :> TRUE)
+/\ npeFired = FALSE
+/\ balDEK = 11
+/\ dnPC = (d1 :> "running" @@ d2 :> "running")
+/\ dnCur = (d1 :> 14 @@ d2 :> 13)
+/\ balKeys = (1 :> 6 @@ 2 :> 8 @@ 11 :> 7 @@ 12 :> 10 @@ 13 :> 12 @@ 14 :> 14)
+/\ needKeyUpdate = (d1 :> FALSE @@ d2 :> TRUE)
+/\ targetFired = TRUE
+/\ nnStored = {d1, d2}
+/\ safeMode = FALSE
+/\ nnSerial = 15
+/\ faults = [loss |-> 0, dead |-> 0, safeMode |-> 0, nnRestart |-> 0, dnRestart |-> 0]
+/\ mintedKeys = {1, 2, 11, 12, 13, 14, 15}
+/\ now = 9
+/\ hbList = {d1, d2}
+/\ hbResp = (d1 :> None @@ d2 :> None)
+/\ nnKeys = (12 :> 10 @@ 13 :> 13 @@ 14 :> 15 @@ 15 :> 17)
+/\ conns = <<>>
+/\ balPollAge = 1
+/\ cliDEK = (c1 :> None)
+/\ lastRoll = 9
+/\ regSnap = (d1 :> None @@ d2 :> None)
+/\ nnCur = 14
+/\ balCur = 13
+/\ balOn = TRUE
+
+43018 states generated, 8981 distinct states found, 254 states left on queue.
+The depth of the complete state graph search is 70.
+Finished in 02s at (2026-11-07 18:02:20)
+Trace exploration spec path: ./MC_TTrace_1794074537.tla

@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "target": "hbase-adhoc-k1",
+  "check": {"file": "hbase-server/src/main/java/org/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager.java", "line": 147, "thrown": "org.apache.hadoop.security.token.SecretManager.InvalidToken"},
+  "verdict": "REACHED_CONFIRMED",
+  "mechanism": "INTERLEAVING",
+  "scenario": "Scenario 1: A token signed with a key outlives that key (stale signing)",
+  "finding": "MC-2",
+  "counterexample": "spec/output/MC_hunt_S1_bfs.out",
+  "reproduction": "repro/TestBugMC2StaleSigning.java",
+  "stackFrame": "org.apache.hadoop.hbase.security.token.AuthenticationTokenSecretManager.retrievePassword(AuthenticationTokenSecretManager.java:148)",
+  "bounds": [
+    {"config": "MC_hunt_S1.cfg", "result": "VIOLATION", "states": 207949, "diameter": 32, "seconds": 8},
+    {"config": "MC_hunt_S2.cfg", "result": "VIOLATION", "states": 533419, "diameter": 38, "seconds": 11},
+    {"config": "MC_hunt_S3.cfg", "result": "VIOLATION", "states": 2156, "diameter": 22, "seconds": 1},
+    {"config": "MC_hunt_S4.cfg", "result": "VIOLATION", "states": 21892, "diameter": 18, "seconds": 3},
+    {"config": "MC_hunt_S5.cfg", "result": "VIOLATION", "states": 2157, "diameter": 19, "seconds": 1},
+    {"config": "MC_hunt_S5_restart.cfg", "result": "VIOLATION", "states": 3887, "diameter": 18, "seconds": 1},
+    {"config": "MC_hunt_S6.cfg", "result": "VIOLATION", "states": 11072, "diameter": 23, "seconds": 2},
+    {"config": "MC_hunt_S6_control.cfg", "result": "VIOLATION", "states": 18932, "diameter": 24, "seconds": 2}
+  ],
+  "traceValidation": {"traces": 9, "passed": 9},
+  "notes": "Primary chain (MC-2, no fault): the key master's leader thread enters rollCurrentKey and reads its clock (ATSM:249); before it swaps currentKey (:255), a token request in createPassword reads a later clock and the still-current key K1 (:128-129), so the token gets exp later than the K1 expiry the roll then sets (:261). Once K1 expires, the leader loop removes it from allKeys and ZooKeeper (:229-234), and a client presenting the still-unexpired token is rejected over the real SASL path; retrievePassword passes the expiry check and throws InvalidToken('Unknown master key for token (id=1)'). The reproduction is a variant of TestTokenAuthentication in hbase-server that uses only timing control: it holds the keyGen lock that generateSecret takes and uses an injected EnvironmentEdge clock. Nothing is written into the secret manager and no system source is modified. The frame reports line 148 because the target throw statement spans lines 147-148 and javac attributes the InvalidToken constructor call to 148; javap confirms it is the only throw in the masterKey == null branch. Every one of the 8 hunt configs violated TargetSafe, and Phase 4 confirmed the target throw independently for five other findings: MC-1 (propagation lag, no fault; INTERLEAVING), MC-3 (clock skew within hbase.master.maxclockskew; CLOCK), MC-4 (ZooKeeper outage during a roll; FAULT), MC-5 (swallowed startup ZooKeeper connection loss; FAULT), and MC-6 (graceful key-master stop racing an in-flight roll; INTERLEAVING). CR-5 is a separate NPE at ATSM:130 and does not bear on TargetSafe. CR-3 and CR-4 were judged false positives. All 9 trace validations passed in round 2 (workload plus two variants, x3), and MC.cfg is clean (5,727 distinct states, depth 39)."
+}

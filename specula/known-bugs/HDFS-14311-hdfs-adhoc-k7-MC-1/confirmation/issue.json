@@ -1,0 +1,56 @@
+{
+  "id": "MC-1",
+  "title": "Startup parallel upgrade callable of one volume writes shared BlockPoolSliceStorage LV/cTime, tripping BPSS:422 IOException for a later volume",
+  "status": "REPRODUCED",
+  "source": "model-checking",
+  "cause": "DataStorage.loadBlockPoolSliceStorage submits volume i's upgrade callable (DS:463-464) before running volume i+1's doTransition on the startup thread; the callable writes this.layoutVersion (BPSS:510) and this.cTime (BPSS:513) of the single shared per-block-pool BlockPoolSliceStorage, which the later volume's doTransition re-reads at BPSS:405-416.",
+  "trigger": "NameNode started with -upgrade (namespace cTime C0 -> C1); a DataNode with two data dirs at (DNLV, C0) restarts; volume 1's callable writes cTime=C1 after volume 2 evaluated BPSS:405-406 with C0 and before BPSS:415-416.",
+  "consequence": "Volume 2 throws 'Datanode state ... is newer than the namespace state' at BPSS:422; DataStorage.loadBlockPoolSliceStorage (DS:467-469) drops it from the block pool storage, so the volume is not upgraded (no previous/ snapshot) while FsDatasetImpl still serves it; the upgrade is partial on that DataNode.",
+  "sites": [
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java:doTransition",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java:doUpgrade",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java:loadBlockPoolSliceStorage"
+  ],
+  "actions": [
+    "TargetCheck"
+  ],
+  "invariants": [
+    "TargetSafe"
+  ],
+  "premises": [
+    "Pinned base commit b0c5a8f9 predates the upstream HDFS-14311 fix (commit 4cb22cd8), so callables are still submitted inside the per-volume loop.",
+    "dfs.datanode.parallel.volumes.load.threads.num defaults to the number of data dirs, so the callable runs concurrently with the next volume's doTransition.",
+    "Reproduced at escalation Level 1: JDWP breakpoints only order threads (BPSS:409/510/518); no source change, no value or on-disk state injection."
+  ],
+  "dependencies": [
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+      "start": "  private boolean doTransition(StorageDirectory sd, NamespaceInfo nsInfo,",
+      "end": "    LOG.info(\"Upgrade of {} is complete\", name);"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+      "start": "  private List<StorageDirectory> loadBlockPoolSliceStorage(DataNode datanode,",
+      "end": "   * Remove storage dirs from DataStorage. All storage dirs are removed even when the"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/common/StorageInfo.java",
+      "start": "public class StorageInfo {",
+      "end": "  public long  cTime;           // creation time of the file system state"
+    },
+    {
+      "root": "work",
+      "path": "spec/MC_hunt_s1a_workload_shape.cfg"
+    }
+  ],
+  "evidence": [
+    "confirmation/MC-1/investigation.md",
+    "repro/test_bugMC-1_startup_upgrade_race.sh",
+    "repro/test_bugMC-1_startup_upgrade_race.java",
+    "repro/test_bugMC-1_run.log",
+    "repro/test_bugMC-1_level1.run1.output.txt"
+  ]
+}

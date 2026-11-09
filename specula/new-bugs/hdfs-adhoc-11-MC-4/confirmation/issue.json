@@ -1,0 +1,133 @@
+{
+  "id": "MC-4",
+  "title": "After an NN restart and a DN restart the DN rejects a long-lived client's cached DEK (BTSM:559); the checksum retry returns a wrong bounded-length checksum",
+  "status": "REPRODUCED",
+  "source": "model-checking",
+  "cause": "Block keys live only in memory. A restarted NN issues keys from a fresh random serial (BlockTokenSecretManager.java:140-157); a restarted DN builds a new worker that learns only the current NN incarnation's keys (DataNode.java:2115-2144); a DFSClient keeps its DEK until it expires (DFSClient.java:1855-1868). The restarted DN rejects the cached DEK at BlockTokenSecretManager.java:559-561. FileChecksumHelper.checksumBlock retries the block after this rejection (FileChecksumHelper.java:536-546) but has already subtracted the block from `remaining` (508-511), so with a bounded length the retry requests numBytes = remaining (0 for a one-block file).",
+  "trigger": "Encrypted data transfer on. A long-lived client caches a DEK, the NN restarts, the DN holding the replica restarts and re-registers, then the client calls getFileChecksum on a /.snapshot/ path or getFileChecksum(path, length).",
+  "consequence": "The DN throws InvalidEncryptionKeyException at BlockTokenSecretManager.retrieveDataEncryptionKey(BlockTokenSecretManager.java:561). Reads, preads, whole-file getFileChecksum and append recover by refetching the DEK, but the snapshot-path and explicit-length getFileChecksum calls silently return a wrong checksum (MD5 over zero CRCs), e.g. to DistCp's checksumsAreEqual (DistCpUtils.java:583).",
+  "sites": [
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java:retrieveDataEncryptionKey",
+    "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/FileChecksumHelper.java:ReplicatedFileChecksumComputer.checksumBlock",
+    "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSClient.java:newDataEncryptionKey",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java:registerBlockPoolWithSecretManager",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java:BlockTokenSecretManager(master constructor)"
+  ],
+  "actions": [
+    "MCClientGetDek",
+    "MCNNRestart",
+    "MCDNRestart",
+    "MCNNRegisterDatanode",
+    "MCDNRegistrationSucceeded",
+    "MCClientConnect"
+  ],
+  "invariants": [
+    "TargetSafe",
+    "TargetSafeBackward"
+  ],
+  "premises": [
+    "dfs.encrypt.data.transfer=true with block access tokens; the client is not on a trusted channel.",
+    "NN block keys are not persisted; a restarted NN issues keys from a new random serial (non-HA NN in the repro).",
+    "A long-lived DFSClient keeps an unexpired DEK across the NN restart (DEK lifetime = block token lifetime, default 600 min).",
+    "The DN holding the replica restarts after the NN restart and re-registers before the client contacts it; a DN that only re-registered keeps the old keys and does not fire the check.",
+    "The harm needs a bounded checksum length: a /.snapshot/ path or getFileChecksum(Path, long). Whole-file getFileChecksum(Path) passes Long.MAX_VALUE and is correct; reads, preads and append recover correctly.",
+    "Reproduced with the default MD5MD5CRC combine mode on a replicated one-block file; COMPOSITE_CRC and the striped checksumBlockGroup retry use the same bookkeeping but were not exercised.",
+    "Reproduction ran on the pinned tree 734dd8a67cd with the harness instrumentation reverted."
+  ],
+  "dependencies": [
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+      "start": "  public byte[] retrieveDataEncryptionKey(int keyId, byte[] nonce)",
+      "end": "    return createPassword(nonce, key.getKey());"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+      "start": "  private BlockTokenSecretManager(boolean isMaster, long keyUpdateInterval,",
+      "end": "    generateKeys();"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+      "start": "  public synchronized void addKeys(ExportedBlockKeys exportedKeys,",
+      "end": "        this.allKeys.put(receivedKeys[i].getKeyId(), receivedKeys[i]);"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java",
+      "start": "  private synchronized void registerBlockPoolWithSecretManager(",
+      "end": "      blockPoolTokenSecretManager.addBlockPool(blockPoolId, secretMgr);"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSClient.java",
+      "start": "  public DataEncryptionKey newDataEncryptionKey() throws IOException {",
+      "end": "          encryptionKey = namenode.getDataEncryptionKey();"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/protocol/datatransfer/sasl/SaslDataTransferServer.java",
+      "start": "          ioe.getCause() instanceof InvalidEncryptionKeyException) {",
+      "end": "        sendInvalidKeySaslErrorMessage(out, ioe.getCause().getMessage());"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/FileChecksumHelper.java",
+      "start": "      this.remaining = length;",
+      "end": "          this.remaining = Math.min(length, blockLocations.getFileLength());"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/FileChecksumHelper.java",
+      "start": "    private boolean checksumBlock(LocatedBlock locatedBlock) {",
+      "end": "    private void tryDatanode(LocatedBlock locatedBlock,"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSInputStream.java",
+      "start": "  private synchronized DatanodeInfo blockSeekTo(long target)",
+      "end": "  private void checkInterrupted(IOException e) throws IOException {"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockChecksumHelper.java",
+      "start": "    private MD5Hash checksumPartialBlock() throws IOException {",
+      "end": "    private void computeCompositeCrc(long stripeLength) throws IOException {"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-tools/hadoop-distcp/src/main/java/org/apache/hadoop/tools/util/DistCpUtils.java",
+      "start": "  public static CopyMapper.ChecksumComparison checksumsAreEqual(",
+      "end": "    return CopyMapper.ChecksumComparison.FALSE;"
+    },
+    {
+      "root": "work",
+      "path": "spec/MC_hunt_S4_restart.cfg"
+    },
+    {
+      "root": "work",
+      "path": "spec/output/hunt/gated/G_S4a_backward.cfg"
+    },
+    {
+      "root": "work",
+      "path": "spec/output/hunt/gated/MCGated.tla"
+    },
+    {
+      "root": "work",
+      "path": "spec/output/hunt/gated/MC.tla"
+    },
+    {
+      "root": "work",
+      "path": "spec/output/hunt/gated/base.tla"
+    }
+  ],
+  "evidence": [
+    "repro/test_bugMC-4_cached_dek_nn_dn_restart.sh",
+    "repro/MC-4.log",
+    "repro/MC-4.rerun.log",
+    "repro/MC-4.surefire-output.txt",
+    "confirmation/MC-4/investigation.md",
+    "spec/output/hunt/gated/G_S4a_backward.out"
+  ]
+}

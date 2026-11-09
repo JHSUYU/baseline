@@ -1,0 +1,49 @@
+{
+  "id": "MC-3",
+  "title": "ObserverMaster eviction drops a commit F has not applied; the observer misses it, hits the ZKDatabase:341 check and keeps a permanent hole",
+  "status": "REPRODUCED",
+  "source": "model-checking",
+  "cause": "ObserverMaster.cacheCommittedPacket can poll committedPkts empty, including the packet just added, although F forwards commits before applying them. syncFollower positions a syncing observer from F's applied state and startForwarding skips its gap check on an empty queue, so the evicted commit is never sent.",
+  "trigger": "A packet over 0.8 * the size limit (lowered zookeeper.observerMaster.sizeLimit or JMX setObserverMasterPacketSizeLimit, or jute.maxbuffer above about 26.8 MB with a large znode) empties the queue while that commit is unapplied at F, and an observer syncs through F in that window. Routes: TRUNC when the restarted observer is ahead of F, DIFF otherwise.",
+  "consequence": "The next INFORM throws IllegalStateException at ZKDatabase.java:341. The observer resyncs with an empty DIFF and permanently lacks the committed txn, then fires again per txn and its QuorumPeer thread dies. Restart either fails in loadDataBase or succeeds and serves NoNode for a committed znode after sync().",
+  "sites": [
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/ObserverMaster.java:cacheCommittedPacket",
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/ObserverMaster.java:startForwarding",
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/LearnerHandler.java:syncFollower",
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Learner.java:syncWithLeader",
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/ZKDatabase.java:addCommittedProposal"
+  ],
+  "actions": ["TargetCheck"],
+  "invariants": ["TargetSafe"],
+  "premises": [
+    "Requires a non-default setting: a lowered zookeeper.observerMaster.sizeLimit (or JMX equivalent), or jute.maxbuffer above about 26.8 MB with a znode that large. It cannot happen at defaults.",
+    "Requires an observer syncing through a follower's ObserverMaster while that follower has a forwarded, evicted, unapplied commit.",
+    "Level 0 fired in 4 of 5 runs, about 1 per 300 observer restarts under about 50 writes per second in one JVM, always by the DIFF route. The counterexample's TRUNC route needed Level 1 holds on F's apply.",
+    "Process exit after the QuorumPeer thread dies is read from QuorumPeerMain.java:118-119; the shared test JVM only shows the run thread ending.",
+    "Recovery by wiping the observer's data directory was not tested."
+  ],
+  "dependencies": [
+    {"root": "source", "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/ZKDatabase.java", "start": "    public void addCommittedProposal(Request request) {", "end": "    public boolean isTxnLogSyncEnabled() {"},
+    {"root": "source", "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/ZKDatabase.java", "start": "    public boolean truncateLog(long zxid) throws IOException {", "end": "    public void deserializeSnapshot(InputArchive ia) throws IOException {"},
+    {"root": "source", "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/ObserverMaster.java", "start": "    public synchronized long startForwarding(LearnerHandler learnerHandler, long lastSeenZxid) {", "end": "    public long getQuorumVerifierVersion() {"},
+    {"root": "source", "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/ObserverMaster.java", "start": "    void proposalReceived(QuorumPacket qp) {", "end": "    synchronized void informAndActivate(long zxid, long suggestedLeaderId) {"},
+    {"root": "source", "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/LearnerHandler.java", "start": "    boolean syncFollower(long peerLastZxid, LearnerMaster learnerMaster) {", "end": "    protected long queueCommittedProposals(Iterator<Proposal> itr, long peerLastZxid, Long maxZxid, Long lastCommittedZxid) {"},
+    {"root": "source", "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Learner.java", "start": "    long enforceContinuousProposal(long lastQueued, PacketInFlight pif) throws Exception {", "end": "    protected void revalidate(QuorumPacket qp) throws IOException {"},
+    {"root": "source", "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Follower.java", "start": "    protected void processPacket(QuorumPacket qp) throws Exception {", "end": "    public long getZxid() {"},
+    {"root": "source", "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Observer.java", "start": "    void observeLeader() throws Exception {", "end": "    private QuorumServer findLearnerMaster() {"},
+    {"root": "work", "path": "spec/base.tla"},
+    {"root": "work", "path": "spec/MC.tla"},
+    {"root": "work", "path": "spec/MC_hunt_S3.cfg"},
+    {"root": "work", "path": "spec/output/MC_hunt_S3_bfs_r1.out"}
+  ],
+  "evidence": [
+    "confirmation/MC-3/investigation.md",
+    "repro/test_bugMC-3_eviction_trunc.java",
+    "repro/test_bugMC-3_eviction_trunc.sh",
+    "repro/MC-3_ceOrder_pristine.server.log",
+    "repro/MC-3_afterUptodate_pristine.server.log",
+    "repro/MC-3_ceOrderJuteMaxBuffer_pristine.server.log",
+    "repro/MC-3_controlRetainedQueue_pristine.server.log",
+    "repro/MC-3_level0Stress_pristine_run1.server.log"
+  ]
+}

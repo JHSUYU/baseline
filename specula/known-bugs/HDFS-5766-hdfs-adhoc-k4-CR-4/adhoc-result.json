@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "target": "hdfs-adhoc-k4",
+  "check": {
+    "file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+    "line": 424,
+    "thrown": "org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException"
+  },
+  "verdict": "REACHED_CONFIRMED",
+  "mechanism": "RESTART",
+  "scenario": "Scenario 1: key-set divergence after crash/restart",
+  "finding": "MC-1",
+  "counterexample": "spec/output/rr1_hunt_restart_bfs.out",
+  "reproduction": "repro/test_bugMC-1_dek_after_nn_restart.sh",
+  "stackFrame": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrieveDataEncryptionKey(BlockTokenSecretManager.java:426)",
+  "bounds": [
+    {"config": "MC_hunt_restart.cfg", "result": "VIOLATION", "states": 1455, "diameter": 11, "seconds": 1},
+    {"config": "MC_hunt_keyupdate.cfg", "result": "VIOLATION", "states": 5709, "diameter": 19, "seconds": 2},
+    {"config": "MC_hunt_keyupdate_hbloss.cfg", "result": "VIOLATION", "states": 2992, "diameter": 20, "seconds": 2},
+    {"config": "MC_hunt_safemode.cfg", "result": "VIOLATION", "states": 3579, "diameter": 16, "seconds": 2},
+    {"config": "MC_hunt_ha.cfg", "result": "VIOLATION", "states": 28506, "diameter": 10, "seconds": 3},
+    {"config": "MC_hunt_ha_norestart.cfg", "result": "VIOLATION", "states": 290418, "diameter": 17, "seconds": 11},
+    {"config": "MC_hunt_ha_dn2dn.cfg", "result": "VIOLATION", "states": 133273, "diameter": 18, "seconds": 7},
+    {"config": "MC_hunt_balancer.cfg", "result": "VIOLATION", "states": 5540, "diameter": 40, "seconds": 2}
+  ],
+  "traceValidation": {"traces": 3, "passed": 3},
+  "notes": "Primary chain (MC-1, Scenario 1, rr1_hunt_restart_bfs.out, 10 states): the NameNode starts, rolls its keys, and DataNode d1 registers and installs the incarnation-1 block keys. A fresh client opens the file. cluster.restartNameNode(false) restarts only the NameNode, which regenerates all block keys with a fresh random serial (nothing is persisted) and serves getDataEncryptionKey immediately with no state check. The client's lazy DEK fetch returns a new-incarnation keyId, and it connects to d1 using its pre-restart block locations before d1's next heartbeat returns DNA_REGISTER. On d1, allKeys.get(keyId) == null, so the target InvalidEncryptionKeyException is thrown. On unmodified base-commit 8172fc2 code this fired in 6 of 6 runs using only public APIs and the counterexample's NameNode restart; the rejected keyID was the restarted NameNode's current key and the DataNode's current key was the pre-restart one. With re-registration held back by DataNodeTestUtils.setHeartbeatsDisabledForTests (timing only), the application read failed with BlockMissingException, while an unencrypted control read succeeded. The stack frame reads line 426 because the single throw statement spans lines 424-426 and javac maps its constructor call to 426; it is the only throw under the key == null guard. Every one of the 5 Scenarios produced a TargetSafe counterexample after repair round 1, and each of MC-1 to MC-5 was independently confirmed with the target exception at the target statement: MC-2 by a registration/roll interleaving or a lost heartbeat response (INTERLEAVING/FAULT), MC-3 by safemode suppressing key delivery (startup safemode after a NameNode restart, or operator-entered safemode), MC-4 by an HA interleaving where a DataNode's currentKey comes from the standby (INTERLEAVING), and MC-5 by the Balancer's never-refreshed DEK outliving its pruned block key (CLOCK). Code-review findings CR-1, CR-2 and CR-5 also reproduced the target throw without a TargetSafe counterexample. CR-3 reaches the key == null branch but throws a NullPointerException at line 426, not the target type, and is MASKED. CR-4 is MASKED. The RR-001 diagnostic probes (not hunt configs) held exhaustively for active-key firings in no-fault HA. MC.cfg (fault-free) holds exhaustively at 2,098 distinct states, depth 36."
+}

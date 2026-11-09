@@ -1,0 +1,28 @@
+{
+  "id": "CR-4",
+  "title": "DFSInputStream pread adds DN to deadNodes after InvalidEncryptionKeyException despite clearing the DEK (no continue)",
+  "status": "MASKED",
+  "source": "code-review",
+  "cause": "fetchBlockByteRange's InvalidEncryptionKeyException branch clears the DEK but has no continue, so control falls through to addToDeadNodes(chosenNode); blockSeekTo's equivalent branch retries the same DN.",
+  "trigger": "Client caches a DEK, NN and DN restart (DN only knows new keys), client performs a positional read; DN throws InvalidEncryptionKeyException at BlockTokenSecretManager.retrieveDataEncryptionKey.",
+  "consequence": "Default config: the only/first replica is marked dead, chooseDataNode all-dead recovery sleeps 0-3 s, refetches locations and retries (read succeeds); with dfs.client.max.block.acquire.failures=0 the pread throws BlockMissingException while a stateful read succeeds; with multiple replicas a healthy DN stays excluded for the stream lifetime.",
+  "sites": ["hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSInputStream.java:fetchBlockByteRange"],
+  "actions": [],
+  "invariants": [],
+  "premises": [
+    "Masked by DFSInputStream.chooseDataNode all-dead recovery (deadNodes.clear + openInfo + retry) while failures < dfs.client.max.block.acquire.failures (default 3).",
+    "Stale DEK reached via real NN+DN restart sequence (as in TestEncryptedTransfer#testLongLivedReadClientAfterRestart).",
+    "Known upstream as HDFS-5766 (fixed in 2.3.0); pinned base predates the fix."
+  ],
+  "dependencies": [
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSInputStream.java", "start": "  private DNAddrPair chooseDataNode(LocatedBlock block)", "end": "  private static boolean tokenRefetchNeeded(IOException ex,"},
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSInputStream.java", "start": "  private synchronized DatanodeInfo blockSeekTo(long target) throws IOException {", "end": "  public synchronized void close() throws IOException {"}
+  ],
+  "evidence": [
+    "repro/test_bugCR-4_pread_dek_deadnode.java",
+    "confirmation/CR-4/investigation.md",
+    "confirmation/CR-4/run/repro-run1-CR4-lines.txt",
+    "confirmation/CR-4/run/repro-run2-CR4-lines.txt",
+    "confirmation/CR-4/run/dn-side-iek-stack.txt"
+  ]
+}

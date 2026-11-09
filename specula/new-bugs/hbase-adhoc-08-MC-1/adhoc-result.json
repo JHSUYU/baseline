@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "target": "hbase-adhoc-08",
+  "check": {
+    "file": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/ClusterSchemaServiceImpl.java",
+    "line": 111,
+    "thrown": "org.apache.hadoop.hbase.NamespaceNotFoundException"
+  },
+  "verdict": "REACHED_CONFIRMED",
+  "mechanism": "COMBINED",
+  "scenario": "Scenario 1: Namespace deletion overlaps quota-subsystem initialization after master failover",
+  "finding": "MC-1",
+  "counterexample": "spec/output/MC_hunt_S1a_bfs.out",
+  "reproduction": "repro/test_bugMC-1_nsm_init_abort.sh",
+  "stackFrame": "org.apache.hadoop.hbase.master.ClusterSchemaServiceImpl.getNamespace(ClusterSchemaServiceImpl.java:111)",
+  "bounds": [
+    {"config": "MC_hunt_S1.cfg", "result": "VIOLATION", "states": 583, "diameter": 47, "seconds": 1.3},
+    {"config": "MC_hunt_S1a.cfg", "result": "VIOLATION", "states": 825, "diameter": 65, "seconds": 1.2},
+    {"config": "MC_hunt_S1b.cfg", "result": "VIOLATION", "states": 890, "diameter": 64, "seconds": 1.4},
+    {"config": "MC_hunt_S2.cfg", "result": "VIOLATION", "states": 161, "diameter": 18, "seconds": 1.0},
+    {"config": "MC_hunt_S2_meta.cfg", "result": "VIOLATION", "states": 156, "diameter": 29, "seconds": 1.1},
+    {"config": "MC_hunt_S2_user.cfg", "result": "VIOLATION", "states": 524, "diameter": 42, "seconds": 1.2},
+    {"config": "MC_hunt_S2_rpc.cfg", "result": "VIOLATION", "states": 88, "diameter": 24, "seconds": 1.1},
+    {"config": "MC_hunt_S3.cfg", "result": "VIOLATION", "states": 97, "diameter": 53, "seconds": 1.1},
+    {"config": "MC_hunt_S3_failover.cfg", "result": "VIOLATION", "states": 1016, "diameter": 66, "seconds": 1.6}
+  ],
+  "traceValidation": {"traces": 3, "passed": 3},
+  "notes": "The target's exception was thrown from ClusterSchemaServiceImpl.java:111 in the real system on pinned commit 1790942bb2. The representative finding, MC-1, combines FAULT (one master crash) and INTERLEAVING: a client deleteNamespace is persisted, the active master dies before the procedure's meta delete, the backup master recovers the procedure, opens the initialized gate, and takes the NamespaceStateManager namespace snapshot during quota initialization; the recovered procedure then removes the namespace from the cache, so the snapshot's lookup throws at the target, nothing catches it, and the new master aborts. On pristine code MC-1 fired in 3 of 10 rounds with public APIs and a master abort but no timing help, using a workload variant with added earlier-sorting tables; on the exact workload namespace it fired in 3 of 3 rounds with a preGetTableNames observer hold, 0 of 3 with natural timing, and 0 of 3 in the control. The crash was HMaster.abort in a mini cluster, not an OS-level kill. MC-1 is one of six TargetSafe findings; it was chosen for the result fields because it runs on the workload's own quota configuration and its first frame is the target line in the master's startup path. Also REPRODUCED at the target line: MC-2 (master crash; recovered delete hits a null quota manager, then the client read throws), MC-3 (RegionServer crash during schema cache load with rsgroup enabled; the master aborts), MC-4 (master crash; a client RPC during the cache load with rsgroup enabled), and MC-6 (master crash loses the delete post hook; the quota chore throws on every run). MC-5 is MASKED but not a modeling artifact: the target fired on unmodified code with no fault and a shortened chore period, and the chore's catch, periodic retry and the post hook's row removal repair it by the next run. Every hunt config stopped at its first violation, so the bounds are not exhaustive path counts; states are distinct states, diameter is depth at stop, and seconds is the wall time in spec/bug-report.md. The MC_hunt_S1, MC_hunt_S2 and MC_hunt_S2_user counterexamples have no separate finding, and MC-3's report states that the user-region path was not exercised. The three real traces passed trace validation, but none contains a failed target lookup."
+}

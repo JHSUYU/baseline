@@ -1,0 +1,134 @@
+{
+  "id": "CR-6",
+  "title": "Volume that misses the DataNode -rollback start (offline disk or crash after L637) keeps the upgraded cTime and throws at BlockPoolSliceStorage L421",
+  "status": "REPRODUCED",
+  "source": "code-review",
+  "cause": "doRollback is the only way back to the rolled-back NN cTime and runs only when the load's per-process startOpt is ROLLBACK and previous/ exists (BlockPoolSliceStorage.java:375-379). A slice that misses that start (disk offline and skipped, DataStorage.java:403-448; or DN crash after rename(current, removed.tmp) at L637, which RECOVER_ROLLBACK undoes, Storage.java:813-816) is loaded later by hot swap (HOTSWAP) or a start without -rollback; L388 reads the upgraded cTime and L421 throws. At startup the IOException is only logged (DataStorage.java:473-476): the volume stays a DataStorage dir and FsDataset volume, and its cTime stays in the shared BlockPoolSliceStorage used for registration.",
+  "trigger": "Non-rolling upgrade (NN -upgrade, DN start), then the documented rollback (NN -rollback, DN started with -rollback) while one data volume is offline (dfs.datanode.failed.volumes.tolerated >= 1) or while the DN crashes right after BlockPoolSliceStorage.java:637; the volume is later re-added by hot swap (dfsadmin -reconfig) or the DN is restarted with default options (e.g. by a supervisor).",
+  "consequence": "IOException from BlockPoolSliceStorage.doTransition (statement at L421, JVM frame :424). Hot swap: the repaired volume cannot be re-added and the rolled-back files whose replicas sit on it stay missing. Restart with the stale volume read last (always in the crash form): the DN registers with the stale cTime, the NN rejects it (registration ID mismatch) and the DN's whole block pool service ends, so all its replicas are unavailable until a -rollback restart. Restart with the stale volume read before a healthy one: the stale slice is served and the FinalizeCommand the rolled-back NN returns for the block report deletes its previous/, permanently destroying the only replicas of files restored by the rollback; a later -rollback restart hits L421 again and recovers nothing.",
+  "sites": [
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java:doTransition",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java:doRollback",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/common/Storage.java:StorageDirectory.doRecover",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java:loadBlockPoolSliceStorage",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java:prepareVolume",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java:finalizeUpgrade",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java:createBPRegistration"
+  ],
+  "actions": [],
+  "invariants": [],
+  "premises": [
+    "Ad hoc target hdfs-adhoc-24: the oracle is the target check (TargetSafe), an IOException thrown by the statement starting at BlockPoolSliceStorage.java:421; javac maps its constructor call to line 424, so the JVM frame reads :424.",
+    "The NN has been rolled back after a non-rolling upgrade: its cTime is the pre-upgrade value and isUpgradeFinalized() is true (FSImage.java:568), so every block report gets a FinalizeCommand (NameNodeRpcServer.java:1682-1686).",
+    "A volume with BP previous/ is not loaded by the DN -rollback start (disk offline with dfs.datanode.failed.volumes.tolerated >= 1, or DN crash after L637) and is later loaded by hot swap or by a start without -rollback; per modeling-brief section 1 these faults (DN crash/restart, volume offline and back, hot swap) are in the fault model, while a DN started without -rollback right after an NN rollback with no fault is not.",
+    "Startup loads volumes sequentially in dfs.datanode.data.dir order into one shared BlockPoolSliceStorage, so the consequence depends on whether the stale volume is read last (registration rejected, recoverable) or before a healthy volume (served, previous/ finalized, permanent loss).",
+    "No upstream issue or PR reported this mechanism as of 2026-10-29 (JIRA, GitHub and local-history queries recorded in confirmation/CR-6/investigation.md)."
+  ],
+  "dependencies": [
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+      "start": "  private StorageDirectory loadStorageDirectory(NamespaceInfo nsInfo,",
+      "end": "    return succeedDirs;"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+      "start": "  private boolean doTransition(StorageDirectory sd, NamespaceInfo nsInfo,",
+      "end": "        + nsInfo.getLayoutVersion() + \" CTime = \" + nsInfo.getCTime());"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+      "start": "  void doRollback(StorageDirectory bpSd, NamespaceInfo nsInfo)",
+      "end": "    LOG.info(\"Rollback of {} is complete\", bpSd.getRoot());"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+      "start": "  void doFinalize(File dnCurDir) throws IOException {",
+      "end": "    final File tmpDir = bpSd.getFinalizedTmp();"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/common/Storage.java",
+      "start": "      assert hasRemovedTmp : \"hasRemovedTmp must be true\";",
+      "end": "      return StorageState.RECOVER_ROLLBACK;"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/common/Storage.java",
+      "start": "      case RECOVER_ROLLBACK:  // mv removed.tmp -> current",
+      "end": "        rename(getRemovedTmp(), curDir);"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+      "start": "  public VolumeBuilder prepareVolume(DataNode datanode,",
+      "end": "    return builder;"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+      "start": "  private List<StorageLocation> loadDataStorage(DataNode datanode,",
+      "end": "  synchronized void removeVolumes("
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+      "start": "  void finalizeUpgrade(String bpID) throws IOException {",
+      "end": "        bpStorage.doFinalize(sd.getCurrentDir());"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java",
+      "start": "  DatanodeRegistration createBPRegistration(NamespaceInfo nsInfo) {",
+      "end": "    StorageInfo storageInfo = storage.getBPStorage(nsInfo.getBlockPoolID());"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java",
+      "start": "  static StartupOption getStartupOption(Configuration conf) {",
+      "end": "    return StartupOption.getEnum(value);"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java",
+      "start": "  private void initStorage(final NamespaceInfo nsInfo) throws IOException {",
+      "end": "        data = factory.newInstance(this, storage, getConf());"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetImpl.java",
+      "start": "    for (int idx = 0; idx < storage.getNumStorageDirs(); idx++) {",
+      "end": "      addVolume(storage.getStorageDir(idx));"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/NameNodeRpcServer.java",
+      "start": "    if (nn.getFSImage().isUpgradeFinalized() &&",
+      "end": "      return new FinalizeCommand(poolId);"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/NameNodeRpcServer.java",
+      "start": "  private void verifyRequest(NodeRegistration nodeReg) throws IOException {",
+      "end": "       throw new UnregisteredNodeException(nodeReg);"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/common/Storage.java",
+      "start": "  public static String getRegistrationID(StorageInfo storage) {",
+      "end": "      + \"-\" + Long.toString(storage.getCTime());"
+    }
+  ],
+  "evidence": [
+    "repro/test_bugCR-6_rollback_missed_volume.java",
+    "repro/test_bugCR-6_rollback_missed_volume.sh",
+    "repro/test_bugCR-6_rollback_missed_volume.run.log",
+    "repro/test_bugCR-6_rollback_missed_volume.surefire.txt",
+    "repro/test_bugCR-6_rollback_missed_volume.cr6.txt",
+    "confirmation/CR-6/investigation.md",
+    "confirmation/CR-6/logs/javap_L421_throw.txt"
+  ]
+}

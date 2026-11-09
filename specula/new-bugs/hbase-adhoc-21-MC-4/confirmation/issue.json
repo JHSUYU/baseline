@@ -1,0 +1,40 @@
+{
+  "id": "MC-4",
+  "title": "Master rebuild counts region replicas in the namespace cache while live paths count primaries, so restoreSnapshot is wrongly rejected after failover",
+  "status": "REPRODUCED",
+  "source": "model-checking",
+  "cause": "NamespaceStateManager.initialize uses MetaTableAccessor.getTableRegions, which returns one entry per located replica, while CreateTableProcedure.preCreate charges the quota with primaries only.",
+  "trigger": "Quota 10: create A with 3 regions and B with 4 regions at replication 2, snapshot A, merge A to 2 regions, fail over the master, disable A, restore the snapshot.",
+  "consequence": "The rebuilt cache holds B=8 against 4 primaries, the guard computes 10-2+3=11>10, and Admin.restoreSnapshot fails with QuotaExceededException although the restore would leave 7 primaries. The same operations are admitted without the failover.",
+  "sites": [
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/namespace/NamespaceStateManager.java:initialize",
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/namespace/NamespaceStateManager.java:checkAndUpdateNamespaceRegionCount",
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/master/procedure/CreateTableProcedure.java:preCreate",
+    "hbase-client/src/main/java/org/apache/hadoop/hbase/ClientMetaTableAccessor.java:CollectRegionLocationsVisitor"
+  ],
+  "actions": [],
+  "invariants": ["TargetSafe"],
+  "premises": [
+    "A table has region replication above 1 and its replicas have locations in meta when the new master scans it.",
+    "The restore changes the table's region count, so RestoreSnapshotProcedure.prepareRestore runs the check.",
+    "The inflation is enough to cross the namespace's hbase.namespace.quota.maxregions; the real primary total stays within it."
+  ],
+  "dependencies": [
+    {"root": "source", "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/namespace/NamespaceStateManager.java", "start": "  private void initialize() throws IOException {", "end": "  boolean isInitialized() {"},
+    {"root": "source", "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/namespace/NamespaceStateManager.java", "start": "  synchronized void checkAndUpdateNamespaceRegionCount(TableName name, int incr)", "end": "  private NamespaceDescriptor getNamespaceDescriptor(String namespaceAsString) {"},
+    {"root": "source", "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/procedure/CreateTableProcedure.java", "start": "  private void preCreate(final MasterProcedureEnv env) throws IOException, InterruptedException {", "end": "  private void postCreate(final MasterProcedureEnv env) throws IOException, InterruptedException {"},
+    {"root": "source", "path": "hbase-client/src/main/java/org/apache/hadoop/hbase/ClientMetaTableAccessor.java", "start": "  static class CollectRegionLocationsVisitor", "end": "  static class CollectAllVisitor extends CollectingVisitor<Result> {"},
+    {"root": "source", "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/procedure/RestoreSnapshotProcedure.java"},
+    {"root": "work", "path": "spec/base.tla"},
+    {"root": "work", "path": "spec/MC.tla"},
+    {"root": "work", "path": "spec/MC_hunt_s3a_rebuild_replicas.cfg"}
+  ],
+  "evidence": [
+    "confirmation/MC-4/investigation.md",
+    "repro/test_bugMC-4_rebuild_replicas.sh",
+    "repro/test_bugMC-4_rebuild_replicas.java",
+    "repro/MC-4.log",
+    "repro/MC-4.javap.txt",
+    "spec/output/hunt_s3a_rebuild_replicas.out"
+  ]
+}

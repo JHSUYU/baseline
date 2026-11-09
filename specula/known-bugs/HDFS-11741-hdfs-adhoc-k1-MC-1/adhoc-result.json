@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "target": "hdfs-adhoc-k1",
+  "check": {
+    "file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+    "line": 482,
+    "thrown": "org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException"
+  },
+  "verdict": "REACHED_CONFIRMED",
+  "mechanism": "CLOCK",
+  "scenario": "Scenario 1: Balancer/Mover DEK outlives its BlockKey on DNs",
+  "finding": "MC-1",
+  "counterexample": "spec/output/MC_hunt_stale_balancer_dek_final.out",
+  "reproduction": "repro/test_bugMC-1_stale_balancer_dek.java",
+  "stackFrame": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrieveDataEncryptionKey(BlockTokenSecretManager.java:484)",
+  "bounds": [
+    {
+      "config": "MC_hunt_stale_balancer_dek.cfg",
+      "result": "VIOLATION",
+      "states": 8981,
+      "diameter": 70,
+      "seconds": 2
+    },
+    {
+      "config": "MC_hunt_stale_balancer_dek_L1.cfg",
+      "result": "VIOLATION",
+      "states": 9021,
+      "diameter": 70,
+      "seconds": 2
+    },
+    {
+      "config": "MC_hunt_stale_balancer_dek_L4.cfg",
+      "result": "VIOLATION",
+      "states": 13957,
+      "diameter": 90,
+      "seconds": 3
+    },
+    {
+      "config": "MC_hunt_missed_key_update.cfg",
+      "result": "VIOLATION",
+      "states": 747620,
+      "diameter": 26,
+      "seconds": 13
+    },
+    {
+      "config": "MC_hunt_missed_key_update_loss.cfg",
+      "result": "VIOLATION",
+      "states": 50145,
+      "diameter": 41,
+      "seconds": 3
+    },
+    {
+      "config": "MC_hunt_missed_key_update_dead.cfg",
+      "result": "VIOLATION",
+      "states": 217732,
+      "diameter": 46,
+      "seconds": 7
+    },
+    {
+      "config": "MC_hunt_safemode.cfg",
+      "result": "VIOLATION",
+      "states": 12023,
+      "diameter": 43,
+      "seconds": 2
+    },
+    {
+      "config": "MC_hunt_nn_restart.cfg",
+      "result": "VIOLATION",
+      "states": 2193,
+      "diameter": 14,
+      "seconds": 1
+    },
+    {
+      "config": "MC_hunt_nn_restart_client.cfg",
+      "result": "VIOLATION",
+      "states": 2202,
+      "diameter": 18,
+      "seconds": 1
+    },
+    {
+      "config": "MC_hunt_nn_restart_client.cfg (DN transfers on)",
+      "result": "VIOLATION",
+      "states": 1521,
+      "diameter": 16,
+      "seconds": 1
+    }
+  ],
+  "traceValidation": {
+    "traces": 4,
+    "passed": 4
+  },
+  "notes": "Every one of the four hunted scenarios violated TargetSafe, and three were confirmed in the real system on the pinned tree 595e4680154 (confirmed-bugs.md: MC-1, MC-2, MC-3 REPRODUCED; MC-4 and CR-1 MASKED). The reported finding is MC-1, the Balancer/Mover's cached data-encryption key. Its trigger needs no fault: only the passage of time across NameNode key rolls and key expiry, which is why the mechanism is CLOCK; it involves no clock skew. The chain of events: the Balancer's KeyManager mints one DEK from block key K at its first move and never refreshes it. The NameNode rolls keys, and K retires with final expiry roll time + I + L. At the next addKeys after that time every DataNode removes K. Every later move presents key id K, allKeys.get(keyId) returns null, and the DataNode throws InvalidEncryptionKeyException from retrieveDataEncryptionKey. The Balancer exits NO_MOVE_PROGRESS with the cluster unbalanced (repro/MC-1.output.txt; same result in two runs). The reproduction is a variant of the workload TestBalancerWithEncryptedTransfer with key update interval = token lifetime = 1 min, and no fault or state injection. The stack frame reads line 484 because the target throw statement spans lines 482-484: javac maps the new instruction to 482 and the constructor call to 484. It is the method's only throw site, and the message is the target's. MC-1 is KNOWN upstream (HDFS-11741, fixed but not in the pinned tree). The other confirmed paths are new. MC-2 (INTERLEAVING) is a DataNode registration snapshot racing a key roll, reproduced with timing control only. MC-3 is safe mode held across two rolls; key updates are not delivered in safe mode, so encrypted reads fail; reproduced through public APIs. MC-4 (RESTART, NameNode keys not persisted) reaches the target, but the DFSClient's refetch-and-retry masks it. CR-1 is an NPE thrown in place of the target exception, so it is not a TargetSafe violation. Each hunt stopped at its first violation, so the state counts are explored prefixes. Model bounds: 2 DNs, 1 client, 1 Balancer, I=L=2 ticks unless stated otherwise, one block pool, no HA, no clock skew."
+}

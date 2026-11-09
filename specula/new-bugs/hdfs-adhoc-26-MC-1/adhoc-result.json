@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "target": "hdfs-adhoc-26",
+  "check": {
+    "file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+    "line": 621,
+    "thrown": "org.apache.hadoop.hdfs.server.common.InconsistentFSStateException"
+  },
+  "verdict": "REACHED_CONFIRMED",
+  "mechanism": "FAULT",
+  "scenario": "Scenario 1: A DataNode misses an NN rollback, then a re-upgrade snapshots its abandoned epoch",
+  "finding": "MC-1",
+  "counterexample": "spec/output/MC_hunt_S1_bfs.out",
+  "reproduction": "repro/test_bugMC-1_dn_missed_rollback_reupgrade.java",
+  "stackFrame": "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doRollback(BlockPoolSliceStorage.java:626)",
+  "bounds": [
+    {
+      "config": "MC_hunt_S1_dn_outage.cfg",
+      "result": "VIOLATION",
+      "states": 947,
+      "diameter": 30,
+      "seconds": 1,
+      "output": "spec/output/MC_hunt_S1_bfs.out"
+    },
+    {
+      "config": "MC_hunt_S2_vol_outage.cfg",
+      "result": "VIOLATION",
+      "states": 5630,
+      "diameter": 38,
+      "seconds": 1,
+      "output": "spec/output/MC_hunt_S2_bfs.out"
+    },
+    {
+      "config": "MC_hunt_S3_vol_replace.cfg",
+      "result": "VIOLATION",
+      "states": 1765,
+      "diameter": 37,
+      "seconds": 1,
+      "output": "spec/output/MC_hunt_S3_bfs.out"
+    },
+    {
+      "config": "MC_hunt_S4_layout_upgrade.cfg",
+      "result": "NO_VIOLATION",
+      "states": 339,
+      "diameter": 27,
+      "seconds": 1,
+      "output": "spec/output/MC_hunt_S4_bfs.out"
+    },
+    {
+      "config": "MC_hunt_S5_clock_skew.cfg",
+      "result": "VIOLATION",
+      "states": 1131,
+      "diameter": 19,
+      "seconds": 1,
+      "output": "spec/output/MC_hunt_S5_bfs.out"
+    },
+    {
+      "config": "output/hunt/variants/MC_hunt_S2_tol0.cfg",
+      "result": "VIOLATION",
+      "states": 2693,
+      "diameter": 38,
+      "seconds": 1,
+      "output": "spec/output/hunt/variants/MC_hunt_S2_tol0.out"
+    },
+    {
+      "config": "output/hunt/variants/MC_hunt_S4_wide.cfg",
+      "result": "NO_VIOLATION",
+      "states": 1299,
+      "diameter": 38,
+      "seconds": 1,
+      "output": "spec/output/hunt/variants/MC_hunt_S4_wide.out"
+    }
+  ],
+  "traceValidation": {
+    "traces": 24,
+    "passed": 24
+  },
+  "notes": "MC-1 (Scenario 1; FAULT: one DataNode out of service for the whole offline namenode -rollback window): the DataNode keeps current=c1, previous=c0; the next NameNode -upgrade (c2 > c1, allowed because only a NameNode previous blocks an upgrade) makes its regular start delete the c0 snapshot and save c1 as previous, so after that upgrade is rolled back to c0 its -rollback start reads previous cTime c1 > c0 and throws InconsistentFSStateException on each volume (30-state counterexample). Phase 4a reproduced it on pristine 734dd8a67cd as a variant of TestDFSRollback#testRollback using only real start options and NameNode.doRollback (runner repro/test_bugMC-1_dn_missed_rollback_reupgrade.sh, evidence repro/test_bugMC-1_dn_missed_rollback_reupgrade.run.txt and .excerpt.txt); its control, in which the DataNode joins the first rollback, rolls back cleanly. The observed frame is line 626 because the throw statement spans BlockPoolSliceStorage.java:621-626 and javac records the constructor call under 626 (evidence/bpss-doRollback-javap.txt: new at pc 56 on line 621, invokespecial at pc 86 in the range starting at line 626). Three more TargetSafe findings were reproduced at the same frame: MC-2 (Scenario 2, FAULT: one volume offline at the DataNode's -rollback start; the counted hunt and the reproduction set the valid non-default dfs.datanode.failed.volumes.tolerated=1, while the Tolerated=0 variant violates through a block-pool load fault, so the model does not need it; spec/output/MC_hunt_S2_bfs.out; repro/test_bugMC-2_vol_misses_dn_rollback.java with its .sh runner and repro/MC-2.run.log), MC-3 (Scenario 3, FAULT: a disk replaced by an empty one during the unfinalized upgrade; spec/output/MC_hunt_S3_bfs.out; repro/test_bugMC-3_vol_replace_rollback.java with its .sh runner and .run.txt) and MC-5 (Scenario 5, CLOCK: the NameNode clock stepped back during -upgrade, injected by mocking Time.now(); spec/output/MC_hunt_S5_bfs.out; repro/test_bugMC-5_clock_skew_rollback.java with its .sh runner and repro/MC-5.log). Code-review side findings stay out of the singular fields: CR-8 is REPRODUCED at the same frame (NameNode -importCheckpoint after the loss of every name directory regresses the cTime; repro/test_bugCR-8_import_checkpoint_rollback.sh, logs repro/CR-8-logs/ and repro/CR-8-logs-run2/), and CR-2 is ENV_LIMITED (a DataNode layout upgrade bypasses the newer-cTime refusal; an admissible trigger needs two releases with different DataNode layout versions, and only a diagnostic that writes the guard operand through DataNodeLayoutVersion.setCurrentLayoutVersionForTesting reached the throw; repro/test_bugCR-2_layout_bypass_rollback.java with its .sh runner, log confirmation/CR-2/run3.console.txt). Scenario 4's hunt found no violation after a Case B fix (its round-1 counterexample installed DataNode software during an unfinalized upgrade, against the documented procedure, so MCDNSoftwareUpgrade now requires opPhase NORMAL), and the two-upgrade-cycle variant MC_hunt_S4_wide is also clean. Bounds rows are the round-2 (final) BFS runs with 1 worker and DN={dn0}, NumVols=2, MaxCT=9, FormatCT=2, with numbers parsed from each .out; the two variant rows ran on byte-identical copies of base.tla and MC.tla (cmp-checked) in spec/output/hunt/variants/. Superseded round-1 hunts (spec/output/hunt-round1/, 4 workers, pre-fix MC.tla) all violated TargetSafe: S1 958 distinct states/depth 33, S2 5700/42 (volume returned by hot swap), S3 1777/40, S4 379/27 (the Case B counterexample, 25 states), S5 1455/21. Not in bounds: MC.cfg (no violation, 363 distinct states, depth 32, exhaustive; spec/output/MC_round1.out and MC_round2.out) and the six must-be-violated probes in spec/output/probes/ (TargetReached 15 states, ProbeS1-S5 14/19/20/8/2). traceValidation counts 24 traces (22 TestDFSRollback#testRollback segments and 2 variants); each round-2 log in harness/logs/validation/ reports no error with distinct states equal to the trace's events."
+}

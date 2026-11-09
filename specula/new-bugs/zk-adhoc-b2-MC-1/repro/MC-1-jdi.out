@@ -1,0 +1,28 @@
+MC1 S1-ii round 1: p2 events=[START, OFFER_START, OFFER_COMPLETE, DETERMINE_START, DETERMINE_COMPLETE, READY_START, READY_COMPLETE, DETERMINE_START, FAILED] elected=false live offers=[n_0000000004]
+MC1 S1-ii after 3000ms: live offers=[n_0000000004] getLeaderHostName()=p2 p2.toString={ state:FAILED leaderOffer:{ id:4 nodePath:/1793829281292_1/n_0000000004 hostName:p2 } zooKeeper:State:CONNECTED Timeout:30000 sessionid:0x100378d89ad0000 local:/127.0.0.1:54096 remoteserver:/127.0.0.1:11223 lastZxid:13 xid:45 sent:45 recv:48 queuedpkts:0 pendingresp:0 queuedevents:0 hostName:p2 listeners:[org.apache.zookeeper.recipes.leader.SpeculaAdhocMC1Test$Participant$$Lambda$454/0x00007fa734197800@1e461e41] }
+MC1 S1-ii events of p2 after FAILED: []
+MC1 S1-ii new joiner p4 events=[START, OFFER_START, OFFER_COMPLETE, DETERMINE_START, DETERMINE_COMPLETE, READY_START, READY_COMPLETE] elected within 3000ms=false
+MC1 S1-ii RESULT: no participant holds ELECTED while live offers exist; healthy p4 is blocked behind FAILED p2
+MC1 S1-ii only after an explicit p2.stop(): p4 elected=true
+MC1 S1-ii rounds=200 p2FAILED=15
+MC1 OBEYING round 0: p2 FAILED then stop() from its listener; p2 events=[START, OFFER_START, OFFER_COMPLETE, DETERMINE_START, DETERMINE_COMPLETE, READY_START, READY_COMPLETE, DETERMINE_START, FAILED, STOP_START, STOP_COMPLETE]
+MC1 OBEYING after 3000ms: live offers=[] getLeaderHostName()=null elected events on p2=false
+MC1 OBEYING RESULT: blocking offer gone, but the only live candidate left the election; no leader
+MC1 OBEYING application-level re-start() (not documented by the recipe): elected=true
+MC1 OBEYING hits=1
+MC1 GETLEADER rounds=200 NoNodeException to caller=124
+MC1 GETLEADER sample: org.apache.zookeeper.KeeperException$NoNodeException: KeeperErrorCode = NoNode for /1793829281292_1/n_0000000599
+MC1 GETLEADER   at org.apache.zookeeper.ZooKeeper.getData(ZooKeeper.java:2062)
+MC1 GETLEADER   at org.apache.zookeeper.ZooKeeper.getData(ZooKeeper.java:2090)
+MC1 GETLEADER   at org.apache.zookeeper.recipes.leader.LeaderElectionSupport.toLeaderOffers(LeaderElectionSupport.java:310)
+MC1 GETLEADER   at org.apache.zookeeper.recipes.leader.LeaderElectionSupport.getLeaderHostName(LeaderElectionSupport.java:291)
+MC1 S1-i round 19: p3 events=[START, OFFER_START, OFFER_COMPLETE, DETERMINE_START, FAILED] p3 offer live, p2 elected=true live offers=[n_0000000058, n_0000000059]
+MC1 S1-i (control would hand leadership to p3 on p2.stop()); stopping p2 now
+MC1 S1-i after 3000ms: live offers=[n_0000000059] getLeaderHostName()=p3 p3.toString={ state:FAILED leaderOffer:{ id:59 nodePath:/1793829281292_1/n_0000000059 hostName:p3 } zooKeeper:State:CONNECTED Timeout:30000 sessionid:0x100378dc64f0000 local:/127.0.0.1:37482 remoteserver:/127.0.0.1:11228 lastZxid:121 xid:415 sent:415 recv:454 queuedpkts:0 pendingresp:0 queuedevents:0 hostName:p3 listeners:[org.apache.zookeeper.recipes.leader.SpeculaAdhocMC1Test$Participant$$Lambda$454/0x00007fa734197800@162be91c] }
+MC1 S1-i events of p3 after FAILED: []
+MC1 S1-i new joiner p4 events=[START, OFFER_START, OFFER_COMPLETE, DETERMINE_START, DETERMINE_COMPLETE, READY_START, READY_COMPLETE] elected within 3000ms=false
+MC1 S1-i RESULT: no participant holds ELECTED while live offers exist; healthy p4 is blocked behind FAILED p3
+MC1 S1-i only after an explicit p3.stop(): p4 elected=true
+MC1 S1-i rounds=200 p3FAILED=8
+MC1 WORKLOAD-SHAPE rounds=200 roundsWithFAILED=39 FAILEDparticipants=39 workload failureCounter=0
+MC1 CONTROL p2 elected=true p3 elected=true anyFailed=false

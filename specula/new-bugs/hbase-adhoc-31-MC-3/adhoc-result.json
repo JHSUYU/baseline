@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "target": "hbase-adhoc-31",
+  "check": {
+    "file": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/RSRpcServices.java",
+    "line": 1878,
+    "thrown": "org.apache.hbase.thirdparty.com.google.protobuf.ServiceException"
+  },
+  "verdict": "REACHED_CONFIRMED",
+  "mechanism": "COMBINED",
+  "scenario": "Scenario 3: After master failover the predecessor is both online and dead, so it cannot be retired",
+  "finding": "MC-3",
+  "counterexample": "spec/output/MC_hunt_s3_late_register.out",
+  "reproduction": "repro/test_bugMC-3_TestSpeculaMC3LateRegister.java",
+  "stackFrame": "org.apache.hadoop.hbase.regionserver.RSRpcServices.throwOnWrongStartCode(RSRpcServices.java:1880)",
+  "bounds": [
+    {
+      "config": "MC_hunt_s1_stale_retry_chain.cfg",
+      "result": "VIOLATION",
+      "states": 12757,
+      "diameter": 16,
+      "seconds": 10
+    },
+    {
+      "config": "MC_hunt_s1_retry_bridge.cfg",
+      "result": "VIOLATION",
+      "states": 32535,
+      "diameter": 19,
+      "seconds": 11
+    },
+    {
+      "config": "MC_hunt_s1_graceful_stop.cfg",
+      "result": "VIOLATION",
+      "states": 20771,
+      "diameter": 20,
+      "seconds": 10
+    },
+    {
+      "config": "MC_hunt_s2_lower_startcode.cfg",
+      "result": "VIOLATION",
+      "states": 12143,
+      "diameter": 16,
+      "seconds": 11
+    },
+    {
+      "config": "MC_hunt_s3_failover_dead_online.cfg",
+      "result": "VIOLATION",
+      "states": 114379,
+      "diameter": 19,
+      "seconds": 12
+    },
+    {
+      "config": "MC_hunt_s3_late_register.cfg",
+      "result": "VIOLATION",
+      "states": 641816,
+      "diameter": 28,
+      "seconds": 23
+    },
+    {
+      "config": "MC_hunt_s4_hostname_spelling.cfg",
+      "result": "VIOLATION",
+      "states": 114471,
+      "diameter": 19,
+      "seconds": 13
+    }
+  ],
+  "traceValidation": {
+    "traces": 5,
+    "passed": 5
+  },
+  "notes": "MC-3 is reported as the primary confirmation; its mechanism kinds are FAULT (region server crash with a lingering znode, master abort), RESTART (same-port successor) and INTERLEAVING (the successor registers before the new master is initialized). Chain: a close is sent to predecessor P, which crashes with its znode lingering; dispatcher fail-fast expires P and stores an SCP; the master aborts with the SCP pending; RegionServerTracker.upgrade on the new master records P as both online and dead; successor S registers before initialization, so expireServer(P) returns early and P stays online; the restored close goes to P's address, reaches S, and the target throws. Evidence is repro/MC-3_pristine_early_default_1.log, a pristine base-commit run at the default fail-fast limit that logs the ServiceException itself. The frame reads line 1880, not 1878, because the single throw statement spans those lines and the line table maps the constructors and athrow to 1880 (recorded in confirmed-bugs.md); the method has no other throw. The test is a same-module variant of the workload. Its RS subclass calls the codebase's kill() when the first close arrives, parks the exit before znode deletion, and logs fires from a wrapper around super.executeProcedures; it writes no guard operand and does not edit the target method. The variant drops the workload's HMasterForTest and restores HBase's default wait.on.regionservers settings. Limits: the test chose the master abort and session expiry timing, and 1 of 8 default-limit runs lost the SCP race. All four Scenarios fired the target. MC-2 and MC-4 are also REPRODUCED, with caveats recorded in confirmed-bugs.md: MC-2 drives the successor's clock through EnvironmentEdgeManager, a judgment call under the no-operand-writes rule, and the MC-4 test ran outside the module tree through a JUnit launcher. MC-1 is MASKED: it fired on unmodified code at default configuration in 1 of 6 runs, but the failure is discarded and SCP recovers. Each hunt stopped at its first violation, so state counts are not coverage; states are distinct states, diameter is TLC's search depth, and seconds is wall time from spec/output/final-runs.txt. MC.cfg (workload, no faults) completed with no violation at 920 distinct states. Trace validation: all 5 retained traces matched, and move_to_stopping_fired reached TargetSafe's violation at its TargetCheck with the whole trace matched (spec/output/trace-validation-final.txt); spec/bug-report.md also reports 19 fresh traces matching in spec/output/stress-traces/."
+}

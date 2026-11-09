@@ -1,0 +1,157 @@
+[INFO] Scanning for projects...
+[INFO] ------------------------------------------------------------------------
+[INFO] Detecting the operating system and CPU architecture
+[INFO] ------------------------------------------------------------------------
+[INFO] os.detected.name: linux
+[INFO] os.detected.arch: x86_64
+[INFO] os.detected.bitness: 64
+[INFO] os.detected.version: 5.15
+[INFO] os.detected.version.major: 5
+[INFO] os.detected.version.minor: 15
+[INFO] os.detected.release: ubuntu
+[INFO] os.detected.release.version: 22.04
+[INFO] os.detected.release.like.ubuntu: true
+[INFO] os.detected.release.like.debian: true
+[INFO] os.detected.classifier: linux-x86_64
+[INFO] 
+[INFO] -------------------< org.apache.hbase:hbase-server >--------------------
+[INFO] Building Apache HBase - Server 4.0.0-alpha-1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-cli) @ hbase-server ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running org.apache.hadoop.hbase.namespace.SpeculaMC1ReproTest
+WARNING: A terminally deprecated method in java.lang.System has been called
+WARNING: System::setSecurityManager has been called by org.apache.hadoop.hbase.HBaseJupiterExtension (file:/bulk/specula-adhoc/hbase/cases/hbase-adhoc-08/deps/org/apache/hbase/hbase-common/4.0.0-alpha-1-SNAPSHOT/hbase-common-4.0.0-alpha-1-SNAPSHOT-tests.jar)
+WARNING: Please consider reporting this to the maintainers of org.apache.hadoop.hbase.HBaseJupiterExtension
+WARNING: System::setSecurityManager will be removed in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+[ERROR] Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 56.15 s <<< FAILURE! -- in org.apache.hadoop.hbase.namespace.SpeculaMC1ReproTest
+[ERROR] org.apache.hadoop.hbase.namespace.SpeculaMC1ReproTest.repro -- Time elapsed: 56.05 s <<< ERROR!
+java.lang.RuntimeException: 
+org.apache.hadoop.hbase.client.RetriesExhaustedException: Failed after attempts=5, exceptions:
+2026-11-05T10:47:57.840Z, org.apache.hadoop.hbase.exceptions.MasterRegistryFetchException: Exception making rpc to masters [clnode245.clemson.cloudlab.us,41077,-1,clnode245.clemson.cloudlab.us,35261,-1]
+2026-11-05T10:47:57.946Z, org.apache.hadoop.hbase.exceptions.MasterRegistryFetchException: Exception making rpc to masters [clnode245.clemson.cloudlab.us,41077,-1,clnode245.clemson.cloudlab.us,35261,-1]
+2026-11-05T10:47:58.156Z, org.apache.hadoop.hbase.exceptions.MasterRegistryFetchException: Exception making rpc to masters [clnode245.clemson.cloudlab.us,41077,-1,clnode245.clemson.cloudlab.us,35261,-1]
+2026-11-05T10:47:58.467Z, org.apache.hadoop.hbase.exceptions.MasterRegistryFetchException: Exception making rpc to masters [clnode245.clemson.cloudlab.us,41077,-1,clnode245.clemson.cloudlab.us,35261,-1]
+2026-11-05T10:47:58.976Z, org.apache.hadoop.hbase.exceptions.MasterRegistryFetchException: Exception making rpc to masters [clnode245.clemson.cloudlab.us,41077,-1,clnode245.clemson.cloudlab.us,35261,-1]
+
+	at org.apache.hadoop.hbase.Waiter.waitFor(Waiter.java:212)
+	at org.apache.hadoop.hbase.Waiter.waitFor(Waiter.java:153)
+	at org.apache.hadoop.hbase.HBaseCommonTestingUtil.waitFor(HBaseCommonTestingUtil.java:247)
+	at org.apache.hadoop.hbase.namespace.SpeculaMC1ReproTest.trial(SpeculaMC1ReproTest.java:325)
+	at org.apache.hadoop.hbase.namespace.SpeculaMC1ReproTest.repro(SpeculaMC1ReproTest.java:355)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.apache.hadoop.hbase.HBaseJupiterExtension.lambda$runWithTimeout$0(HBaseJupiterExtension.java:159)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+Caused by: org.apache.hadoop.hbase.client.RetriesExhaustedException: Failed after attempts=5, exceptions:
+2026-11-05T10:47:57.840Z, org.apache.hadoop.hbase.exceptions.MasterRegistryFetchException: Exception making rpc to masters [clnode245.clemson.cloudlab.us,41077,-1,clnode245.clemson.cloudlab.us,35261,-1]
+2026-11-05T10:47:57.946Z, org.apache.hadoop.hbase.exceptions.MasterRegistryFetchException: Exception making rpc to masters [clnode245.clemson.cloudlab.us,41077,-1,clnode245.clemson.cloudlab.us,35261,-1]
+2026-11-05T10:47:58.156Z, org.apache.hadoop.hbase.exceptions.MasterRegistryFetchException: Exception making rpc to masters [clnode245.clemson.cloudlab.us,41077,-1,clnode245.clemson.cloudlab.us,35261,-1]
+2026-11-05T10:47:58.467Z, org.apache.hadoop.hbase.exceptions.MasterRegistryFetchException: Exception making rpc to masters [clnode245.clemson.cloudlab.us,41077,-1,clnode245.clemson.cloudlab.us,35261,-1]
+2026-11-05T10:47:58.976Z, org.apache.hadoop.hbase.exceptions.MasterRegistryFetchException: Exception making rpc to masters [clnode245.clemson.cloudlab.us,41077,-1,clnode245.clemson.cloudlab.us,35261,-1]
+
+	at java.base/java.lang.Thread.getStackTrace(Thread.java:1619)
+	at org.apache.hadoop.hbase.util.FutureUtils.setStackTrace(FutureUtils.java:144)
+	at org.apache.hadoop.hbase.util.FutureUtils.rethrow(FutureUtils.java:163)
+	at org.apache.hadoop.hbase.util.FutureUtils.get(FutureUtils.java:186)
+	at org.apache.hadoop.hbase.client.AdminOverAsyncAdmin.listNamespaceDescriptors(AdminOverAsyncAdmin.java:600)
+	at org.apache.hadoop.hbase.namespace.SpeculaMC1ReproTest.lambda$trial$5(SpeculaMC1ReproTest.java:328)
+	at org.apache.hadoop.hbase.Waiter.waitFor(Waiter.java:184)
+	at org.apache.hadoop.hbase.Waiter.waitFor(Waiter.java:153)
+	at org.apache.hadoop.hbase.HBaseCommonTestingUtil.waitFor(HBaseCommonTestingUtil.java:247)
+	at org.apache.hadoop.hbase.namespace.SpeculaMC1ReproTest.trial(SpeculaMC1ReproTest.java:325)
+	at org.apache.hadoop.hbase.namespace.SpeculaMC1ReproTest.repro(SpeculaMC1ReproTest.java:355)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.apache.hadoop.hbase.HBaseJupiterExtension.lambda$runWithTimeout$0(HBaseJupiterExtension.java:159)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+	at --------Future.get--------(Unknown Source)
+	at org.apache.hadoop.hbase.client.AsyncRpcRetryingCaller.completeExceptionally(AsyncRpcRetryingCaller.java:108)
+	at org.apache.hadoop.hbase.client.AsyncRpcRetryingCaller.onError(AsyncRpcRetryingCaller.java:186)
+	at org.apache.hadoop.hbase.client.AsyncMasterRequestRpcRetryingCaller.lambda$doCall$5(AsyncMasterRequestRpcRetryingCaller.java:80)
+	at org.apache.hadoop.hbase.util.FutureUtils.lambda$addListener$0(FutureUtils.java:71)
+	at java.base/java.util.concurrent.CompletableFuture.uniWhenComplete(CompletableFuture.java:863)
+	at java.base/java.util.concurrent.CompletableFuture.uniWhenCompleteStage(CompletableFuture.java:887)
+	at java.base/java.util.concurrent.CompletableFuture.whenComplete(CompletableFuture.java:2325)
+	at org.apache.hadoop.hbase.util.FutureUtils.addListener(FutureUtils.java:64)
+	at org.apache.hadoop.hbase.client.AsyncMasterRequestRpcRetryingCaller.doCall(AsyncMasterRequestRpcRetryingCaller.java:78)
+	at org.apache.hadoop.hbase.client.AsyncRpcRetryingCaller.lambda$tryScheduleRetry$1(AsyncRpcRetryingCaller.java:138)
+	at org.apache.hbase.thirdparty.io.netty.util.HashedWheelTimer$HashedWheelTimeout.run(HashedWheelTimer.java:713)
+	at org.apache.hbase.thirdparty.io.netty.util.concurrent.ImmediateExecutor.execute(ImmediateExecutor.java:34)
+	at org.apache.hbase.thirdparty.io.netty.util.HashedWheelTimer$HashedWheelTimeout.expire(HashedWheelTimer.java:701)
+	at org.apache.hbase.thirdparty.io.netty.util.HashedWheelTimer$HashedWheelBucket.expireTimeouts(HashedWheelTimer.java:787)
+	at org.apache.hbase.thirdparty.io.netty.util.HashedWheelTimer$Worker.run(HashedWheelTimer.java:501)
+	... 1 more
+Caused by: org.apache.hadoop.hbase.exceptions.MasterRegistryFetchException: Exception making rpc to masters [clnode245.clemson.cloudlab.us,41077,-1,clnode245.clemson.cloudlab.us,35261,-1]
+	at org.apache.hadoop.hbase.client.AbstractRpcBasedConnectionRegistry.lambda$groupCall$2(AbstractRpcBasedConnectionRegistry.java:172)
+	at org.apache.hadoop.hbase.util.FutureUtils.lambda$addListener$0(FutureUtils.java:71)
+	at java.base/java.util.concurrent.CompletableFuture.uniWhenComplete(CompletableFuture.java:863)
+	at java.base/java.util.concurrent.CompletableFuture.uniWhenCompleteStage(CompletableFuture.java:887)
+	at java.base/java.util.concurrent.CompletableFuture.whenComplete(CompletableFuture.java:2325)
+	at org.apache.hadoop.hbase.util.FutureUtils.addListener(FutureUtils.java:64)
+	at org.apache.hadoop.hbase.client.AbstractRpcBasedConnectionRegistry.groupCall(AbstractRpcBasedConnectionRegistry.java:156)
+	at org.apache.hadoop.hbase.client.AbstractRpcBasedConnectionRegistry.lambda$call$3(AbstractRpcBasedConnectionRegistry.java:197)
+	at org.apache.hadoop.hbase.util.FutureUtils.lambda$addListener$0(FutureUtils.java:71)
+	at java.base/java.util.concurrent.CompletableFuture.uniWhenComplete(CompletableFuture.java:863)
+	at java.base/java.util.concurrent.CompletableFuture.uniWhenCompleteStage(CompletableFuture.java:887)
+	at java.base/java.util.concurrent.CompletableFuture.whenComplete(CompletableFuture.java:2325)
+	at org.apache.hadoop.hbase.util.FutureUtils.addListener(FutureUtils.java:64)
+	at org.apache.hadoop.hbase.client.AbstractRpcBasedConnectionRegistry.call(AbstractRpcBasedConnectionRegistry.java:189)
+	at org.apache.hadoop.hbase.client.AbstractRpcBasedConnectionRegistry.lambda$getActiveMaster$12(AbstractRpcBasedConnectionRegistry.java:246)
+	at org.apache.hadoop.hbase.trace.TraceUtil.tracedFuture(TraceUtil.java:99)
+	at org.apache.hadoop.hbase.client.AbstractRpcBasedConnectionRegistry.getActiveMaster(AbstractRpcBasedConnectionRegistry.java:244)
+	at org.apache.hadoop.hbase.client.RpcConnectionRegistry.getActiveMaster(RpcConnectionRegistry.java:50)
+	at org.apache.hadoop.hbase.client.AsyncConnectionImpl.lambda$getMasterStub$9(AsyncConnectionImpl.java:314)
+	at org.apache.hadoop.hbase.client.ConnectionUtils.getOrFetch(ConnectionUtils.java:534)
+	at org.apache.hadoop.hbase.client.AsyncConnectionImpl.getMasterStub(AsyncConnectionImpl.java:312)
+	... 8 more
+Caused by: org.apache.hadoop.hbase.client.RetriesExhaustedException: Failed contacting masters after 2 attempts.
+Exceptions:
+org.apache.hadoop.hbase.ipc.FailedServerException: Call to address=clnode245.clemson.cloudlab.us:41077 failed on local exception: org.apache.hadoop.hbase.ipc.FailedServerException: This server is in the failed servers list: clnode245.clemson.cloudlab.us:41077
+org.apache.hadoop.hbase.ipc.FailedServerException: Call to address=clnode245.clemson.cloudlab.us:35261 failed on local exception: org.apache.hadoop.hbase.ipc.FailedServerException: This server is in the failed servers list: clnode245.clemson.cloudlab.us:35261
+
+	at org.apache.hadoop.hbase.client.AbstractRpcBasedConnectionRegistry.lambda$groupCall$2(AbstractRpcBasedConnectionRegistry.java:171)
+	... 28 more
+
+[INFO] 
+[INFO] Results:
+[INFO] 
+[ERROR] Errors: 
+[ERROR]   SpeculaMC1ReproTest.repro:355->trial:325 » Runtime org.apache.hadoop.hbase.client.RetriesExhaustedException: Failed after attempts=5, exceptions:
+2026-11-05T10:47:57.840Z, org.apache.hadoop.hbase.exceptions.MasterRegistryFetchException: Exception making rpc to masters [clnode245.clemson.cloudlab.us,41077,-1,clnode245.clemson.cloudlab.us,35261,-1]
+2026-11-05T10:47:57.946Z, org.apache.hadoop.hbase.exceptions.MasterRegistryFetchException: Exception making rpc to masters [clnode245.clemson.cloudlab.us,41077,-1,clnode245.clemson.cloudlab.us,35261,-1]
+2026-11-05T10:47:58.156Z, org.apache.hadoop.hbase.exceptions.MasterRegistryFetchException: Exception making rpc to masters [clnode245.clemson.cloudlab.us,41077,-1,clnode245.clemson.cloudlab.us,35261,-1]
+2026-11-05T10:47:58.467Z, org.apache.hadoop.hbase.exceptions.MasterRegistryFetchException: Exception making rpc to masters [clnode245.clemson.cloudlab.us,41077,-1,clnode245.clemson.cloudlab.us,35261,-1]
+2026-11-05T10:47:58.976Z, org.apache.hadoop.hbase.exceptions.MasterRegistryFetchException: Exception making rpc to masters [clnode245.clemson.cloudlab.us,41077,-1,clnode245.clemson.cloudlab.us,35261,-1]
+
+[INFO] 
+[ERROR] Tests run: 1, Failures: 0, Errors: 1, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  01:02 min
+[INFO] Finished at: 2026-11-05T10:48:03Z
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.3:test (default-cli) on project hbase-server: 
+[ERROR] 
+[ERROR] See /bulk/specula-adhoc/specula-runs/20261102-195741-783a/hbase-adhoc-08/.specula-output/confirmation/MC-1/worktree/hbase-server/target/surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

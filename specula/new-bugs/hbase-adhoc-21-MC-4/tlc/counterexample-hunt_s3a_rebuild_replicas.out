@@ -1,0 +1,776 @@
+TLC2 Version 2026.10.24.013619 (rev: 2ef2af8)
+Running breadth-first search Model-Checking with fp 60 and seed 4880544249723950005 with 16 workers on 64 cores with 3925MB heap and 4096MB offheap memory [pid: 4045860] (Linux 5.15.0-198-generic amd64, Eclipse Adoptium 21.0.13 64bit, OffHeapDiskFPSet, DiskStateQueue).
+Parsing file /bulk/specula-adhoc/specula-runs/20261105-141256-af90/hbase-adhoc-21/.specula-output/spec/MC.tla
+Parsing file /bulk/specula-adhoc/specula-runs/20261105-141256-af90/hbase-adhoc-21/.specula-output/spec/base.tla
+Parsing file /tmp/tlc-13650492581388825630/_TLCTrace.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/_TLCTrace.tla)
+Parsing file /tmp/tlc-13650492581388825630/Integers.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Integers.tla)
+Parsing file /tmp/tlc-13650492581388825630/FiniteSets.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/FiniteSets.tla)
+Parsing file /tmp/tlc-13650492581388825630/TLC.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLC.tla)
+Parsing file /tmp/tlc-13650492581388825630/Naturals.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Naturals.tla)
+Parsing file /tmp/tlc-13650492581388825630/Sequences.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Sequences.tla)
+Parsing file /tmp/tlc-13650492581388825630/TLCExt.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLCExt.tla)
+Semantic processing of module Naturals
+Semantic processing of module Integers
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module TLC
+Semantic processing of module base
+Semantic processing of module TLCExt
+Semantic processing of module _TLCTrace
+Semantic processing of module MC
+Linting of module base
+Linting of module TLCExt
+Linting of module _TLCTrace
+Linting of module MC
+Starting... (2026-11-05 15:10:29)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-11-05 15:10:30.
+Error: Invariant TargetSafe is violated.
+Error: The behavior up to this point is:
+State 1: <Initial predicate>
+/\ tableState = (T1 :> "absent" @@ T2 :> "absent")
+/\ targetFired = FALSE
+/\ faults = [ parentSnapshots |-> 0,
+  mobSnapshots |-> 0,
+  lossyTruncates |-> 0,
+  wideMerges |-> 0,
+  replicatedCreates |-> 0,
+  masterCrashes |-> 0,
+  crashesInCreate |-> 0,
+  splitFailures |-> 0,
+  cloneRaces |-> 0 ]
+/\ inflightRestore = ( T1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] @@
+  T2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ parents = (T1 :> 0 @@ T2 :> 0)
+/\ inflightMerge = (T1 :> 0 @@ T2 :> 0)
+/\ masterReady = TRUE
+/\ online = (T1 :> 0 @@ T2 :> 0)
+/\ pendingClone = ( T1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] @@
+  T2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ inflightCreate = (T1 :> 0 @@ T2 :> 0)
+/\ snapManifest = ( S1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] @@
+  S2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ inflightSplit = (T1 :> 0 @@ T2 :> 0)
+/\ replication = (T1 :> 0 @@ T2 :> 0)
+/\ cache = <<>>
+
+State 2: <MCNext line 105, col 5 to line 121, col 29 of module MC>
+/\ tableState = (T1 :> "creating" @@ T2 :> "absent")
+/\ targetFired = FALSE
+/\ faults = [ parentSnapshots |-> 0,
+  mobSnapshots |-> 0,
+  lossyTruncates |-> 0,
+  wideMerges |-> 0,
+  replicatedCreates |-> 0,
+  masterCrashes |-> 0,
+  crashesInCreate |-> 0,
+  splitFailures |-> 0,
+  cloneRaces |-> 0 ]
+/\ inflightRestore = ( T1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] @@
+  T2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ parents = (T1 :> 0 @@ T2 :> 0)
+/\ inflightMerge = (T1 :> 0 @@ T2 :> 0)
+/\ masterReady = TRUE
+/\ online = (T1 :> 0 @@ T2 :> 0)
+/\ pendingClone = ( T1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] @@
+  T2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ inflightCreate = (T1 :> 3 @@ T2 :> 0)
+/\ snapManifest = ( S1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] @@
+  S2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ inflightSplit = (T1 :> 0 @@ T2 :> 0)
+/\ replication = (T1 :> 1 @@ T2 :> 0)
+/\ cache = (T1 :> 3)
+
+State 3: <MCNext line 105, col 5 to line 121, col 29 of module MC>
+/\ tableState = (T1 :> "enabled" @@ T2 :> "absent")
+/\ targetFired = FALSE
+/\ faults = [ parentSnapshots |-> 0,
+  mobSnapshots |-> 0,
+  lossyTruncates |-> 0,
+  wideMerges |-> 0,
+  replicatedCreates |-> 0,
+  masterCrashes |-> 0,
+  crashesInCreate |-> 0,
+  splitFailures |-> 0,
+  cloneRaces |-> 0 ]
+/\ inflightRestore = ( T1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] @@
+  T2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ parents = (T1 :> 0 @@ T2 :> 0)
+/\ inflightMerge = (T1 :> 0 @@ T2 :> 0)
+/\ masterReady = TRUE
+/\ online = (T1 :> 3 @@ T2 :> 0)
+/\ pendingClone = ( T1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] @@
+  T2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ inflightCreate = (T1 :> 0 @@ T2 :> 0)
+/\ snapManifest = ( S1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] @@
+  S2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ inflightSplit = (T1 :> 0 @@ T2 :> 0)
+/\ replication = (T1 :> 1 @@ T2 :> 0)
+/\ cache = (T1 :> 3)
+
+State 4: <MCNext line 105, col 5 to line 121, col 29 of module MC>
+/\ tableState = (T1 :> "enabled" @@ T2 :> "creating")
+/\ targetFired = FALSE
+/\ faults = [ parentSnapshots |-> 0,
+  mobSnapshots |-> 0,
+  lossyTruncates |-> 0,
+  wideMerges |-> 0,
+  replicatedCreates |-> 1,
+  masterCrashes |-> 0,
+  crashesInCreate |-> 0,
+  splitFailures |-> 0,
+  cloneRaces |-> 0 ]
+/\ inflightRestore = ( T1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] @@
+  T2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ parents = (T1 :> 0 @@ T2 :> 0)
+/\ inflightMerge = (T1 :> 0 @@ T2 :> 0)
+/\ masterReady = TRUE
+/\ online = (T1 :> 3 @@ T2 :> 0)
+/\ pendingClone = ( T1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] @@
+  T2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ inflightCreate = (T1 :> 0 @@ T2 :> 1)
+/\ snapManifest = ( S1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] @@
+  S2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ inflightSplit = (T1 :> 0 @@ T2 :> 0)
+/\ replication = (T1 :> 1 @@ T2 :> 2)
+/\ cache = (T1 :> 3 @@ T2 :> 1)
+
+State 5: <MCNext line 105, col 5 to line 121, col 29 of module MC>
+/\ tableState = (T1 :> "enabled" @@ T2 :> "creating")
+/\ targetFired = FALSE
+/\ faults = [ parentSnapshots |-> 0,
+  mobSnapshots |-> 0,
+  lossyTruncates |-> 0,
+  wideMerges |-> 0,
+  replicatedCreates |-> 1,
+  masterCrashes |-> 0,
+  crashesInCreate |-> 0,
+  splitFailures |-> 0,
+  cloneRaces |-> 0 ]
+/\ inflightRestore = ( T1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] @@
+  T2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ parents = (T1 :> 0 @@ T2 :> 0)
+/\ inflightMerge = (T1 :> 0 @@ T2 :> 0)
+/\ masterReady = TRUE
+/\ online = (T1 :> 3 @@ T2 :> 0)
+/\ pendingClone = ( T1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] @@
+  T2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ inflightCreate = (T1 :> 0 @@ T2 :> 1)
+/\ snapManifest = ( S1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 3,
+        table |-> T1,
+        replication |-> 1 ] @@
+  S2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ inflightSplit = (T1 :> 0 @@ T2 :> 0)
+/\ replication = (T1 :> 1 @@ T2 :> 2)
+/\ cache = (T1 :> 3 @@ T2 :> 1)
+
+State 6: <MCNext line 105, col 5 to line 121, col 29 of module MC>
+/\ tableState = (T1 :> "enabled" @@ T2 :> "enabled")
+/\ targetFired = FALSE
+/\ faults = [ parentSnapshots |-> 0,
+  mobSnapshots |-> 0,
+  lossyTruncates |-> 0,
+  wideMerges |-> 0,
+  replicatedCreates |-> 1,
+  masterCrashes |-> 0,
+  crashesInCreate |-> 0,
+  splitFailures |-> 0,
+  cloneRaces |-> 0 ]
+/\ inflightRestore = ( T1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] @@
+  T2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ parents = (T1 :> 0 @@ T2 :> 0)
+/\ inflightMerge = (T1 :> 0 @@ T2 :> 0)
+/\ masterReady = TRUE
+/\ online = (T1 :> 3 @@ T2 :> 1)
+/\ pendingClone = ( T1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] @@
+  T2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ inflightCreate = (T1 :> 0 @@ T2 :> 0)
+/\ snapManifest = ( S1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 3,
+        table |-> T1,
+        replication |-> 1 ] @@
+  S2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ inflightSplit = (T1 :> 0 @@ T2 :> 0)
+/\ replication = (T1 :> 1 @@ T2 :> 2)
+/\ cache = (T1 :> 3 @@ T2 :> 1)
+
+State 7: <MCNext line 105, col 5 to line 121, col 29 of module MC>
+/\ tableState = (T1 :> "enabled" @@ T2 :> "enabled")
+/\ targetFired = FALSE
+/\ faults = [ parentSnapshots |-> 0,
+  mobSnapshots |-> 0,
+  lossyTruncates |-> 0,
+  wideMerges |-> 0,
+  replicatedCreates |-> 1,
+  masterCrashes |-> 0,
+  crashesInCreate |-> 0,
+  splitFailures |-> 0,
+  cloneRaces |-> 0 ]
+/\ inflightRestore = ( T1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] @@
+  T2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ parents = (T1 :> 0 @@ T2 :> 0)
+/\ inflightMerge = (T1 :> 2 @@ T2 :> 0)
+/\ masterReady = TRUE
+/\ online = (T1 :> 3 @@ T2 :> 1)
+/\ pendingClone = ( T1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] @@
+  T2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ inflightCreate = (T1 :> 0 @@ T2 :> 0)
+/\ snapManifest = ( S1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 3,
+        table |-> T1,
+        replication |-> 1 ] @@
+  S2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ inflightSplit = (T1 :> 0 @@ T2 :> 0)
+/\ replication = (T1 :> 1 @@ T2 :> 2)
+/\ cache = (T1 :> 2 @@ T2 :> 1)
+
+State 8: <MCNext line 105, col 5 to line 121, col 29 of module MC>
+/\ tableState = (T1 :> "enabled" @@ T2 :> "enabled")
+/\ targetFired = FALSE
+/\ faults = [ parentSnapshots |-> 0,
+  mobSnapshots |-> 0,
+  lossyTruncates |-> 0,
+  wideMerges |-> 0,
+  replicatedCreates |-> 1,
+  masterCrashes |-> 0,
+  crashesInCreate |-> 0,
+  splitFailures |-> 0,
+  cloneRaces |-> 0 ]
+/\ inflightRestore = ( T1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] @@
+  T2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ parents = (T1 :> 0 @@ T2 :> 0)
+/\ inflightMerge = (T1 :> 0 @@ T2 :> 0)
+/\ masterReady = TRUE
+/\ online = (T1 :> 2 @@ T2 :> 1)
+/\ pendingClone = ( T1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] @@
+  T2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ inflightCreate = (T1 :> 0 @@ T2 :> 0)
+/\ snapManifest = ( S1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 3,
+        table |-> T1,
+        replication |-> 1 ] @@
+  S2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ inflightSplit = (T1 :> 0 @@ T2 :> 0)
+/\ replication = (T1 :> 1 @@ T2 :> 2)
+/\ cache = (T1 :> 2 @@ T2 :> 1)
+
+State 9: <MCNext line 105, col 5 to line 121, col 29 of module MC>
+/\ tableState = (T1 :> "enabled" @@ T2 :> "enabled")
+/\ targetFired = FALSE
+/\ faults = [ parentSnapshots |-> 0,
+  mobSnapshots |-> 0,
+  lossyTruncates |-> 0,
+  wideMerges |-> 0,
+  replicatedCreates |-> 1,
+  masterCrashes |-> 1,
+  crashesInCreate |-> 0,
+  splitFailures |-> 0,
+  cloneRaces |-> 0 ]
+/\ inflightRestore = ( T1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] @@
+  T2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ parents = (T1 :> 0 @@ T2 :> 0)
+/\ inflightMerge = (T1 :> 0 @@ T2 :> 0)
+/\ masterReady = FALSE
+/\ online = (T1 :> 2 @@ T2 :> 1)
+/\ pendingClone = ( T1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] @@
+  T2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ inflightCreate = (T1 :> 0 @@ T2 :> 0)
+/\ snapManifest = ( S1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 3,
+        table |-> T1,
+        replication |-> 1 ] @@
+  S2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ inflightSplit = (T1 :> 0 @@ T2 :> 0)
+/\ replication = (T1 :> 1 @@ T2 :> 2)
+/\ cache = <<>>
+
+State 10: <MCNext line 105, col 5 to line 121, col 29 of module MC>
+/\ tableState = (T1 :> "enabled" @@ T2 :> "enabled")
+/\ targetFired = FALSE
+/\ faults = [ parentSnapshots |-> 0,
+  mobSnapshots |-> 0,
+  lossyTruncates |-> 0,
+  wideMerges |-> 0,
+  replicatedCreates |-> 1,
+  masterCrashes |-> 1,
+  crashesInCreate |-> 0,
+  splitFailures |-> 0,
+  cloneRaces |-> 0 ]
+/\ inflightRestore = ( T1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] @@
+  T2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ parents = (T1 :> 0 @@ T2 :> 0)
+/\ inflightMerge = (T1 :> 0 @@ T2 :> 0)
+/\ masterReady = TRUE
+/\ online = (T1 :> 2 @@ T2 :> 1)
+/\ pendingClone = ( T1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] @@
+  T2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ inflightCreate = (T1 :> 0 @@ T2 :> 0)
+/\ snapManifest = ( S1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 3,
+        table |-> T1,
+        replication |-> 1 ] @@
+  S2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ inflightSplit = (T1 :> 0 @@ T2 :> 0)
+/\ replication = (T1 :> 1 @@ T2 :> 2)
+/\ cache = (T1 :> 2 @@ T2 :> 2)
+
+State 11: <MCNext line 105, col 5 to line 121, col 29 of module MC>
+/\ tableState = (T1 :> "disabled" @@ T2 :> "enabled")
+/\ targetFired = FALSE
+/\ faults = [ parentSnapshots |-> 0,
+  mobSnapshots |-> 0,
+  lossyTruncates |-> 0,
+  wideMerges |-> 0,
+  replicatedCreates |-> 1,
+  masterCrashes |-> 1,
+  crashesInCreate |-> 0,
+  splitFailures |-> 0,
+  cloneRaces |-> 0 ]
+/\ inflightRestore = ( T1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] @@
+  T2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ parents = (T1 :> 0 @@ T2 :> 0)
+/\ inflightMerge = (T1 :> 0 @@ T2 :> 0)
+/\ masterReady = TRUE
+/\ online = (T1 :> 2 @@ T2 :> 1)
+/\ pendingClone = ( T1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] @@
+  T2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ inflightCreate = (T1 :> 0 @@ T2 :> 0)
+/\ snapManifest = ( S1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 3,
+        table |-> T1,
+        replication |-> 1 ] @@
+  S2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ inflightSplit = (T1 :> 0 @@ T2 :> 0)
+/\ replication = (T1 :> 1 @@ T2 :> 2)
+/\ cache = (T1 :> 2 @@ T2 :> 2)
+
+State 12: <MCNext line 105, col 5 to line 121, col 29 of module MC>
+/\ tableState = (T1 :> "disabled" @@ T2 :> "enabled")
+/\ targetFired = TRUE
+/\ faults = [ parentSnapshots |-> 0,
+  mobSnapshots |-> 0,
+  lossyTruncates |-> 0,
+  wideMerges |-> 0,
+  replicatedCreates |-> 1,
+  masterCrashes |-> 1,
+  crashesInCreate |-> 0,
+  splitFailures |-> 0,
+  cloneRaces |-> 0 ]
+/\ inflightRestore = ( T1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] @@
+  T2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ parents = (T1 :> 0 @@ T2 :> 0)
+/\ inflightMerge = (T1 :> 0 @@ T2 :> 0)
+/\ masterReady = TRUE
+/\ online = (T1 :> 2 @@ T2 :> 1)
+/\ pendingClone = ( T1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] @@
+  T2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ inflightCreate = (T1 :> 0 @@ T2 :> 0)
+/\ snapManifest = ( S1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 3,
+        table |-> T1,
+        replication |-> 1 ] @@
+  S2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ inflightSplit = (T1 :> 0 @@ T2 :> 0)
+/\ replication = (T1 :> 1 @@ T2 :> 2)
+/\ cache = (T1 :> 2 @@ T2 :> 2)
+
+44265 states generated, 11872 distinct states found, 5057 states left on queue.
+The depth of the complete state graph search is 13.
+Checkpointing of run /tmp/tlc-states-Odoys3/26-11-05-15-10-28.861
+Checkpointing completed at (2026-11-05 15:10:31)
+Finished in 02s at (2026-11-05 15:10:31)
+Trace exploration spec path: ./MC_TTrace_1793891428.tla
+ 0 ]
+/\ inflightRestore = ( T1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] @@
+  T2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ parents = (T1 :> 0 @@ T2 :> 0)
+/\ inflightMerge = (T1 :> 0 @@ T2 :> 0)
+/\ masterReady = TRUE
+/\ online = (T1 :> 2 @@ T2 :> 1)
+/\ pendingClone = ( T1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] @@
+  T2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ inflightCreate = (T1 :> 0 @@ T2 :> 0)
+/\ snapManifest = ( S1 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 3,
+        table |-> T1,
+        replication |-> 1 ] @@
+  S2 :>
+      [ mob |-> 0,
+        parents |-> 0,
+        online |-> 0,
+        table |-> "none",
+        replication |-> 0 ] )
+/\ inflightSplit = (T1 :> 0 @@ T2 :> 0)
+/\ replication = (T1 :> 1 @@ T2 :> 2)
+/\ cache = (T1 :> 2 @@ T2 :> 2)
+
+44265 states generated, 11872 distinct states found, 5057 states left on queue.
+The depth of the complete state graph search is 13.
+Checkpointing of run /tmp/tlc-states-Odoys3/26-11-05-15-10-28.861
+Checkpointing completed at (2026-11-05 15:10:31)
+Finished in 02s at (2026-11-05 15:10:31)
+Trace exploration spec path: ./MC_TTrace_1793891428.tla
+
+[0;32m================================[0m
+[1;33m⚠ Invariant violation found![0m
+[1;33mPlease check log: /users/ZhenyuLi/Specula/runs/20261105-141256-af90/hbase-adhoc-21/.specula-output/spec/output/hunt_s3a_rebuild_replicas.out[0m
+[0;32m================================[0m

@@ -1,0 +1,946 @@
+TLC2 Version 2026.10.24.013619 (rev: 2ef2af8)
+Running breadth-first search Model-Checking with fp 117 and seed -1712681314113911928 with 15 workers on 64 cores with 2944MB heap and 3072MB offheap memory [pid: 1136340] (Linux 5.15.0-198-generic amd64, Eclipse Adoptium 21.0.13 64bit, OffHeapDiskFPSet, DiskStateQueue).
+Parsing file /bulk/specula-adhoc/specula-runs/20261107-165549-2572/hbase-adhoc-k1/.specula-output/spec/MC.tla
+Parsing file /bulk/specula-adhoc/specula-runs/20261107-165549-2572/hbase-adhoc-k1/.specula-output/spec/base.tla
+Parsing file /tmp/tlc-7637479625152686465/_TLCTrace.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/_TLCTrace.tla)
+Parsing file /tmp/tlc-7637479625152686465/Integers.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Integers.tla)
+Parsing file /tmp/tlc-7637479625152686465/Sequences.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Sequences.tla)
+Parsing file /tmp/tlc-7637479625152686465/FiniteSets.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/FiniteSets.tla)
+Parsing file /tmp/tlc-7637479625152686465/TLC.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLC.tla)
+Parsing file /tmp/tlc-7637479625152686465/Naturals.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Naturals.tla)
+Parsing file /tmp/tlc-7637479625152686465/TLCExt.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLCExt.tla)
+Semantic processing of module Naturals
+Semantic processing of module Integers
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module TLC
+Semantic processing of module base
+Semantic processing of module TLCExt
+Semantic processing of module _TLCTrace
+Semantic processing of module MC
+Linting of module base
+Linting of module TLCExt
+Linting of module _TLCTrace
+Linting of module MC
+line 138, col 18 to line 138, col 23 of module MC
+
+The field name "tokens" in the record constructor is identical to the existing definition or declaration
+named tokens, located at line 76, col 5 to line 76, col 10 of module base.
+The field in the record will not take the value of the tokens definition or declaration.
+In TLA+, field names in records are strings, regardless of any similarly named declarations or definitions.
+Therefore, DOMAIN [tokens |-> ...] = {"tokens"} holds true.
+
+
+
+Starting... (2026-11-07 19:58:39)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-11-07 19:58:39.
+Error: Invariant TargetSafe is violated.
+Error: The behavior up to this point is:
+State 1: <Initial predicate>
+/\ rollNow = (n1 :> 0 @@ n2 :> 0)
+/\ skew = (n1 :> 0 @@ n2 :> 0)
+/\ allKeys = (n1 :> <<>> @@ n2 :> <<>>)
+/\ isMaster = (n1 :> FALSE @@ n2 :> FALSE)
+/\ startPC = (n1 :> "createParents" @@ n2 :> "createParents")
+/\ wChild = (n1 :> FALSE @@ n2 :> FALSE)
+/\ targetFired = FALSE
+/\ minted = {}
+/\ lastKeyUpdate = (n1 :> -2 @@ n2 :> -2)
+/\ listening = (n1 :> FALSE @@ n2 :> FALSE)
+/\ cpPC = (n1 :> "idle" @@ n2 :> "idle")
+/\ alive = (n1 :> TRUE @@ n2 :> TRUE)
+/\ stopped = (n1 :> FALSE @@ n2 :> FALSE)
+/\ startFailed = (n1 :> FALSE @@ n2 :> FALSE)
+/\ everHeld = (n1 :> {} @@ n2 :> {})
+/\ evq = (n1 :> <<>> @@ n2 :> <<>>)
+/\ lpc = (n1 :> "none" @@ n2 :> "none")
+/\ faults = [ tokens |-> 0,
+  crash |-> 0,
+  expire |-> 0,
+  zkFail |-> 0,
+  stop |-> 0,
+  restart |-> 0 ]
+/\ gtime = 0
+/\ cpNow = (n1 :> 0 @@ n2 :> 0)
+/\ idSeq = (n1 :> 0 @@ n2 :> 0)
+/\ epc = (n1 :> "none" @@ n2 :> "none")
+/\ published = {}
+/\ session = (n1 :> TRUE @@ n2 :> TRUE)
+/\ leaderExists = (n1 :> FALSE @@ n2 :> FALSE)
+/\ startList = (n1 :> {} @@ n2 :> {})
+/\ tokens = {}
+/\ wData = (n1 :> {} @@ n2 :> {})
+/\ currentKey = ( n1 :> [sec |-> None, id |-> 0, exp |-> 0] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+/\ loopNow = (n1 :> 0 @@ n2 :> 0)
+/\ wLeader = (n1 :> FALSE @@ n2 :> FALSE)
+/\ zkLeader = None
+/\ zkKeys = <<>>
+/\ rollPrev = ( n1 :> [sec |-> None, id |-> 0, exp |-> 0] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+
+State 2: <MCNext line 142, col 5 to line 150, col 59 of module MC>
+/\ rollNow = (n1 :> 0 @@ n2 :> 0)
+/\ skew = (n1 :> 0 @@ n2 :> 0)
+/\ allKeys = (n1 :> <<>> @@ n2 :> <<>>)
+/\ isMaster = (n1 :> FALSE @@ n2 :> FALSE)
+/\ startPC = (n1 :> "createParents" @@ n2 :> "createParents")
+/\ wChild = (n1 :> FALSE @@ n2 :> FALSE)
+/\ targetFired = FALSE
+/\ minted = {}
+/\ lastKeyUpdate = (n1 :> -2 @@ n2 :> -2)
+/\ listening = (n1 :> FALSE @@ n2 :> FALSE)
+/\ cpPC = (n1 :> "idle" @@ n2 :> "idle")
+/\ alive = (n1 :> TRUE @@ n2 :> TRUE)
+/\ stopped = (n1 :> FALSE @@ n2 :> FALSE)
+/\ startFailed = (n1 :> FALSE @@ n2 :> FALSE)
+/\ everHeld = (n1 :> {} @@ n2 :> {})
+/\ evq = (n1 :> <<>> @@ n2 :> <<>>)
+/\ lpc = (n1 :> "none" @@ n2 :> "none")
+/\ faults = [ tokens |-> 0,
+  crash |-> 0,
+  expire |-> 0,
+  zkFail |-> 0,
+  stop |-> 0,
+  restart |-> 0 ]
+/\ gtime = 1
+/\ cpNow = (n1 :> 0 @@ n2 :> 0)
+/\ idSeq = (n1 :> 0 @@ n2 :> 0)
+/\ epc = (n1 :> "none" @@ n2 :> "none")
+/\ published = {}
+/\ session = (n1 :> TRUE @@ n2 :> TRUE)
+/\ leaderExists = (n1 :> FALSE @@ n2 :> FALSE)
+/\ startList = (n1 :> {} @@ n2 :> {})
+/\ tokens = {}
+/\ wData = (n1 :> {} @@ n2 :> {})
+/\ currentKey = ( n1 :> [sec |-> None, id |-> 0, exp |-> 0] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+/\ loopNow = (n1 :> 0 @@ n2 :> 0)
+/\ wLeader = (n1 :> FALSE @@ n2 :> FALSE)
+/\ zkLeader = None
+/\ zkKeys = <<>>
+/\ rollPrev = ( n1 :> [sec |-> None, id |-> 0, exp |-> 0] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+
+State 3: <MCNext line 142, col 5 to line 150, col 59 of module MC>
+/\ rollNow = (n1 :> 0 @@ n2 :> 0)
+/\ skew = (n1 :> 0 @@ n2 :> 0)
+/\ allKeys = (n1 :> <<>> @@ n2 :> <<>>)
+/\ isMaster = (n1 :> FALSE @@ n2 :> FALSE)
+/\ startPC = (n1 :> "createParents" @@ n2 :> "createParents")
+/\ wChild = (n1 :> FALSE @@ n2 :> FALSE)
+/\ targetFired = FALSE
+/\ minted = {}
+/\ lastKeyUpdate = (n1 :> -2 @@ n2 :> -2)
+/\ listening = (n1 :> FALSE @@ n2 :> FALSE)
+/\ cpPC = (n1 :> "idle" @@ n2 :> "idle")
+/\ alive = (n1 :> TRUE @@ n2 :> TRUE)
+/\ stopped = (n1 :> FALSE @@ n2 :> FALSE)
+/\ startFailed = (n1 :> FALSE @@ n2 :> FALSE)
+/\ everHeld = (n1 :> {} @@ n2 :> {})
+/\ evq = (n1 :> <<>> @@ n2 :> <<>>)
+/\ lpc = (n1 :> "none" @@ n2 :> "none")
+/\ faults = [ tokens |-> 0,
+  crash |-> 0,
+  expire |-> 0,
+  zkFail |-> 0,
+  stop |-> 0,
+  restart |-> 0 ]
+/\ gtime = 2
+/\ cpNow = (n1 :> 0 @@ n2 :> 0)
+/\ idSeq = (n1 :> 0 @@ n2 :> 0)
+/\ epc = (n1 :> "none" @@ n2 :> "none")
+/\ published = {}
+/\ session = (n1 :> TRUE @@ n2 :> TRUE)
+/\ leaderExists = (n1 :> FALSE @@ n2 :> FALSE)
+/\ startList = (n1 :> {} @@ n2 :> {})
+/\ tokens = {}
+/\ wData = (n1 :> {} @@ n2 :> {})
+/\ currentKey = ( n1 :> [sec |-> None, id |-> 0, exp |-> 0] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+/\ loopNow = (n1 :> 0 @@ n2 :> 0)
+/\ wLeader = (n1 :> FALSE @@ n2 :> FALSE)
+/\ zkLeader = None
+/\ zkKeys = <<>>
+/\ rollPrev = ( n1 :> [sec |-> None, id |-> 0, exp |-> 0] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+
+State 4: <MCNext line 142, col 5 to line 150, col 59 of module MC>
+/\ rollNow = (n1 :> 0 @@ n2 :> 0)
+/\ skew = (n1 :> 0 @@ n2 :> 0)
+/\ allKeys = (n1 :> <<>> @@ n2 :> <<>>)
+/\ isMaster = (n1 :> FALSE @@ n2 :> FALSE)
+/\ startPC = (n1 :> "watchExists" @@ n2 :> "createParents")
+/\ wChild = (n1 :> FALSE @@ n2 :> FALSE)
+/\ targetFired = FALSE
+/\ minted = {}
+/\ lastKeyUpdate = (n1 :> -2 @@ n2 :> -2)
+/\ listening = (n1 :> FALSE @@ n2 :> FALSE)
+/\ cpPC = (n1 :> "idle" @@ n2 :> "idle")
+/\ alive = (n1 :> TRUE @@ n2 :> TRUE)
+/\ stopped = (n1 :> FALSE @@ n2 :> FALSE)
+/\ startFailed = (n1 :> FALSE @@ n2 :> FALSE)
+/\ everHeld = (n1 :> {} @@ n2 :> {})
+/\ evq = (n1 :> <<>> @@ n2 :> <<>>)
+/\ lpc = (n1 :> "none" @@ n2 :> "none")
+/\ faults = [ tokens |-> 0,
+  crash |-> 0,
+  expire |-> 0,
+  zkFail |-> 0,
+  stop |-> 0,
+  restart |-> 0 ]
+/\ gtime = 2
+/\ cpNow = (n1 :> 0 @@ n2 :> 0)
+/\ idSeq = (n1 :> 0 @@ n2 :> 0)
+/\ epc = (n1 :> "none" @@ n2 :> "none")
+/\ published = {}
+/\ session = (n1 :> TRUE @@ n2 :> TRUE)
+/\ leaderExists = (n1 :> FALSE @@ n2 :> FALSE)
+/\ startList = (n1 :> {} @@ n2 :> {})
+/\ tokens = {}
+/\ wData = (n1 :> {} @@ n2 :> {})
+/\ currentKey = ( n1 :> [sec |-> None, id |-> 0, exp |-> 0] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+/\ loopNow = (n1 :> 0 @@ n2 :> 0)
+/\ wLeader = (n1 :> FALSE @@ n2 :> FALSE)
+/\ zkLeader = None
+/\ zkKeys = <<>>
+/\ rollPrev = ( n1 :> [sec |-> None, id |-> 0, exp |-> 0] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+
+State 5: <MCNext line 142, col 5 to line 150, col 59 of module MC>
+/\ rollNow = (n1 :> 0 @@ n2 :> 0)
+/\ skew = (n1 :> 0 @@ n2 :> 0)
+/\ allKeys = (n1 :> <<>> @@ n2 :> <<>>)
+/\ isMaster = (n1 :> FALSE @@ n2 :> FALSE)
+/\ startPC = (n1 :> "listChildren" @@ n2 :> "createParents")
+/\ wChild = (n1 :> FALSE @@ n2 :> FALSE)
+/\ targetFired = FALSE
+/\ minted = {}
+/\ lastKeyUpdate = (n1 :> -2 @@ n2 :> -2)
+/\ listening = (n1 :> FALSE @@ n2 :> FALSE)
+/\ cpPC = (n1 :> "idle" @@ n2 :> "idle")
+/\ alive = (n1 :> TRUE @@ n2 :> TRUE)
+/\ stopped = (n1 :> FALSE @@ n2 :> FALSE)
+/\ startFailed = (n1 :> FALSE @@ n2 :> FALSE)
+/\ everHeld = (n1 :> {} @@ n2 :> {})
+/\ evq = (n1 :> <<>> @@ n2 :> <<>>)
+/\ lpc = (n1 :> "none" @@ n2 :> "none")
+/\ faults = [ tokens |-> 0,
+  crash |-> 0,
+  expire |-> 0,
+  zkFail |-> 0,
+  stop |-> 0,
+  restart |-> 0 ]
+/\ gtime = 2
+/\ cpNow = (n1 :> 0 @@ n2 :> 0)
+/\ idSeq = (n1 :> 0 @@ n2 :> 0)
+/\ epc = (n1 :> "none" @@ n2 :> "none")
+/\ published = {}
+/\ session = (n1 :> TRUE @@ n2 :> TRUE)
+/\ leaderExists = (n1 :> FALSE @@ n2 :> FALSE)
+/\ startList = (n1 :> {} @@ n2 :> {})
+/\ tokens = {}
+/\ wData = (n1 :> {} @@ n2 :> {})
+/\ currentKey = ( n1 :> [sec |-> None, id |-> 0, exp |-> 0] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+/\ loopNow = (n1 :> 0 @@ n2 :> 0)
+/\ wLeader = (n1 :> FALSE @@ n2 :> FALSE)
+/\ zkLeader = None
+/\ zkKeys = <<>>
+/\ rollPrev = ( n1 :> [sec |-> None, id |-> 0, exp |-> 0] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+
+State 6: <MCNext line 142, col 5 to line 150, col 59 of module MC>
+/\ rollNow = (n1 :> 0 @@ n2 :> 0)
+/\ skew = (n1 :> 0 @@ n2 :> 0)
+/\ allKeys = (n1 :> <<>> @@ n2 :> <<>>)
+/\ isMaster = (n1 :> FALSE @@ n2 :> FALSE)
+/\ startPC = (n1 :> "readChildren" @@ n2 :> "createParents")
+/\ wChild = (n1 :> TRUE @@ n2 :> FALSE)
+/\ targetFired = FALSE
+/\ minted = {}
+/\ lastKeyUpdate = (n1 :> -2 @@ n2 :> -2)
+/\ listening = (n1 :> FALSE @@ n2 :> FALSE)
+/\ cpPC = (n1 :> "idle" @@ n2 :> "idle")
+/\ alive = (n1 :> TRUE @@ n2 :> TRUE)
+/\ stopped = (n1 :> FALSE @@ n2 :> FALSE)
+/\ startFailed = (n1 :> FALSE @@ n2 :> FALSE)
+/\ everHeld = (n1 :> {} @@ n2 :> {})
+/\ evq = (n1 :> <<>> @@ n2 :> <<>>)
+/\ lpc = (n1 :> "none" @@ n2 :> "none")
+/\ faults = [ tokens |-> 0,
+  crash |-> 0,
+  expire |-> 0,
+  zkFail |-> 0,
+  stop |-> 0,
+  restart |-> 0 ]
+/\ gtime = 2
+/\ cpNow = (n1 :> 0 @@ n2 :> 0)
+/\ idSeq = (n1 :> 0 @@ n2 :> 0)
+/\ epc = (n1 :> "none" @@ n2 :> "none")
+/\ published = {}
+/\ session = (n1 :> TRUE @@ n2 :> TRUE)
+/\ leaderExists = (n1 :> FALSE @@ n2 :> FALSE)
+/\ startList = (n1 :> {} @@ n2 :> {})
+/\ tokens = {}
+/\ wData = (n1 :> {} @@ n2 :> {})
+/\ currentKey = ( n1 :> [sec |-> None, id |-> 0, exp |-> 0] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+/\ loopNow = (n1 :> 0 @@ n2 :> 0)
+/\ wLeader = (n1 :> FALSE @@ n2 :> FALSE)
+/\ zkLeader = None
+/\ zkKeys = <<>>
+/\ rollPrev = ( n1 :> [sec |-> None, id |-> 0, exp |-> 0] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+
+State 7: <MCNext line 142, col 5 to line 150, col 59 of module MC>
+/\ rollNow = (n1 :> 0 @@ n2 :> 0)
+/\ skew = (n1 :> 0 @@ n2 :> 0)
+/\ allKeys = (n1 :> <<>> @@ n2 :> <<>>)
+/\ isMaster = (n1 :> FALSE @@ n2 :> FALSE)
+/\ startPC = (n1 :> "done" @@ n2 :> "createParents")
+/\ wChild = (n1 :> TRUE @@ n2 :> FALSE)
+/\ targetFired = FALSE
+/\ minted = {}
+/\ lastKeyUpdate = (n1 :> -2 @@ n2 :> -2)
+/\ listening = (n1 :> TRUE @@ n2 :> FALSE)
+/\ cpPC = (n1 :> "idle" @@ n2 :> "idle")
+/\ alive = (n1 :> TRUE @@ n2 :> TRUE)
+/\ stopped = (n1 :> FALSE @@ n2 :> FALSE)
+/\ startFailed = (n1 :> FALSE @@ n2 :> FALSE)
+/\ everHeld = (n1 :> {} @@ n2 :> {})
+/\ evq = (n1 :> <<>> @@ n2 :> <<>>)
+/\ lpc = (n1 :> "none" @@ n2 :> "none")
+/\ faults = [ tokens |-> 0,
+  crash |-> 0,
+  expire |-> 0,
+  zkFail |-> 0,
+  stop |-> 0,
+  restart |-> 0 ]
+/\ gtime = 2
+/\ cpNow = (n1 :> 0 @@ n2 :> 0)
+/\ idSeq = (n1 :> 0 @@ n2 :> 0)
+/\ epc = (n1 :> "started" @@ n2 :> "none")
+/\ published = {}
+/\ session = (n1 :> TRUE @@ n2 :> TRUE)
+/\ leaderExists = (n1 :> FALSE @@ n2 :> FALSE)
+/\ startList = (n1 :> {} @@ n2 :> {})
+/\ tokens = {}
+/\ wData = (n1 :> {} @@ n2 :> {})
+/\ currentKey = ( n1 :> [sec |-> None, id |-> 0, exp |-> 0] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+/\ loopNow = (n1 :> 0 @@ n2 :> 0)
+/\ wLeader = (n1 :> FALSE @@ n2 :> FALSE)
+/\ zkLeader = None
+/\ zkKeys = <<>>
+/\ rollPrev = ( n1 :> [sec |-> None, id |-> 0, exp |-> 0] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+
+State 8: <MCNext line 142, col 5 to line 150, col 59 of module MC>
+/\ rollNow = (n1 :> 0 @@ n2 :> 0)
+/\ skew = (n1 :> 0 @@ n2 :> 0)
+/\ allKeys = (n1 :> <<>> @@ n2 :> <<>>)
+/\ isMaster = (n1 :> FALSE @@ n2 :> FALSE)
+/\ startPC = (n1 :> "done" @@ n2 :> "createParents")
+/\ wChild = (n1 :> TRUE @@ n2 :> FALSE)
+/\ targetFired = FALSE
+/\ minted = {}
+/\ lastKeyUpdate = (n1 :> -2 @@ n2 :> -2)
+/\ listening = (n1 :> TRUE @@ n2 :> FALSE)
+/\ cpPC = (n1 :> "idle" @@ n2 :> "idle")
+/\ alive = (n1 :> TRUE @@ n2 :> TRUE)
+/\ stopped = (n1 :> FALSE @@ n2 :> FALSE)
+/\ startFailed = (n1 :> FALSE @@ n2 :> FALSE)
+/\ everHeld = (n1 :> {} @@ n2 :> {})
+/\ evq = (n1 :> <<>> @@ n2 :> <<>>)
+/\ lpc = (n1 :> "none" @@ n2 :> "none")
+/\ faults = [ tokens |-> 0,
+  crash |-> 0,
+  expire |-> 0,
+  zkFail |-> 0,
+  stop |-> 0,
+  restart |-> 0 ]
+/\ gtime = 2
+/\ cpNow = (n1 :> 0 @@ n2 :> 0)
+/\ idSeq = (n1 :> 0 @@ n2 :> 0)
+/\ epc = (n1 :> "claimed" @@ n2 :> "none")
+/\ published = {}
+/\ session = (n1 :> TRUE @@ n2 :> TRUE)
+/\ leaderExists = (n1 :> TRUE @@ n2 :> FALSE)
+/\ startList = (n1 :> {} @@ n2 :> {})
+/\ tokens = {}
+/\ wData = (n1 :> {} @@ n2 :> {})
+/\ currentKey = ( n1 :> [sec |-> None, id |-> 0, exp |-> 0] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+/\ loopNow = (n1 :> 0 @@ n2 :> 0)
+/\ wLeader = (n1 :> TRUE @@ n2 :> FALSE)
+/\ zkLeader = n1
+/\ zkKeys = <<>>
+/\ rollPrev = ( n1 :> [sec |-> None, id |-> 0, exp |-> 0] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+
+State 9: <MCNext line 142, col 5 to line 150, col 59 of module MC>
+/\ rollNow = (n1 :> 0 @@ n2 :> 0)
+/\ skew = (n1 :> 0 @@ n2 :> 0)
+/\ allKeys = (n1 :> <<>> @@ n2 :> <<>>)
+/\ isMaster = (n1 :> TRUE @@ n2 :> FALSE)
+/\ startPC = (n1 :> "done" @@ n2 :> "createParents")
+/\ wChild = (n1 :> TRUE @@ n2 :> FALSE)
+/\ targetFired = FALSE
+/\ minted = {}
+/\ lastKeyUpdate = (n1 :> -2 @@ n2 :> -2)
+/\ listening = (n1 :> TRUE @@ n2 :> FALSE)
+/\ cpPC = (n1 :> "idle" @@ n2 :> "idle")
+/\ alive = (n1 :> TRUE @@ n2 :> TRUE)
+/\ stopped = (n1 :> FALSE @@ n2 :> FALSE)
+/\ startFailed = (n1 :> FALSE @@ n2 :> FALSE)
+/\ everHeld = (n1 :> {} @@ n2 :> {})
+/\ evq = (n1 :> <<>> @@ n2 :> <<>>)
+/\ lpc = (n1 :> "loop" @@ n2 :> "none")
+/\ faults = [ tokens |-> 0,
+  crash |-> 0,
+  expire |-> 0,
+  zkFail |-> 0,
+  stop |-> 0,
+  restart |-> 0 ]
+/\ gtime = 2
+/\ cpNow = (n1 :> 0 @@ n2 :> 0)
+/\ idSeq = (n1 :> 0 @@ n2 :> 0)
+/\ epc = (n1 :> "master" @@ n2 :> "none")
+/\ published = {}
+/\ session = (n1 :> TRUE @@ n2 :> TRUE)
+/\ leaderExists = (n1 :> TRUE @@ n2 :> FALSE)
+/\ startList = (n1 :> {} @@ n2 :> {})
+/\ tokens = {}
+/\ wData = (n1 :> {} @@ n2 :> {})
+/\ currentKey = ( n1 :> [sec |-> None, id |-> 0, exp |-> 0] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+/\ loopNow = (n1 :> 0 @@ n2 :> 0)
+/\ wLeader = (n1 :> TRUE @@ n2 :> FALSE)
+/\ zkLeader = n1
+/\ zkKeys = <<>>
+/\ rollPrev = ( n1 :> [sec |-> None, id |-> 0, exp |-> 0] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+
+State 10: <MCNext line 142, col 5 to line 150, col 59 of module MC>
+/\ rollNow = (n1 :> 0 @@ n2 :> 0)
+/\ skew = (n1 :> 0 @@ n2 :> 0)
+/\ allKeys = (n1 :> <<>> @@ n2 :> <<>>)
+/\ isMaster = (n1 :> TRUE @@ n2 :> FALSE)
+/\ startPC = (n1 :> "done" @@ n2 :> "createParents")
+/\ wChild = (n1 :> TRUE @@ n2 :> FALSE)
+/\ targetFired = FALSE
+/\ minted = {}
+/\ lastKeyUpdate = (n1 :> -2 @@ n2 :> -2)
+/\ listening = (n1 :> TRUE @@ n2 :> FALSE)
+/\ cpPC = (n1 :> "idle" @@ n2 :> "idle")
+/\ alive = (n1 :> TRUE @@ n2 :> TRUE)
+/\ stopped = (n1 :> FALSE @@ n2 :> FALSE)
+/\ startFailed = (n1 :> FALSE @@ n2 :> FALSE)
+/\ everHeld = (n1 :> {} @@ n2 :> {})
+/\ evq = (n1 :> <<>> @@ n2 :> <<>>)
+/\ lpc = (n1 :> "removing" @@ n2 :> "none")
+/\ faults = [ tokens |-> 0,
+  crash |-> 0,
+  expire |-> 0,
+  zkFail |-> 0,
+  stop |-> 0,
+  restart |-> 0 ]
+/\ gtime = 2
+/\ cpNow = (n1 :> 0 @@ n2 :> 0)
+/\ idSeq = (n1 :> 0 @@ n2 :> 0)
+/\ epc = (n1 :> "master" @@ n2 :> "none")
+/\ published = {}
+/\ session = (n1 :> TRUE @@ n2 :> TRUE)
+/\ leaderExists = (n1 :> TRUE @@ n2 :> FALSE)
+/\ startList = (n1 :> {} @@ n2 :> {})
+/\ tokens = {}
+/\ wData = (n1 :> {} @@ n2 :> {})
+/\ currentKey = ( n1 :> [sec |-> None, id |-> 0, exp |-> 0] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+/\ loopNow = (n1 :> 2 @@ n2 :> 0)
+/\ wLeader = (n1 :> TRUE @@ n2 :> FALSE)
+/\ zkLeader = n1
+/\ zkKeys = <<>>
+/\ rollPrev = ( n1 :> [sec |-> None, id |-> 0, exp |-> 0] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+
+State 11: <MCNext line 142, col 5 to line 150, col 59 of module MC>
+/\ rollNow = (n1 :> 0 @@ n2 :> 0)
+/\ skew = (n1 :> 0 @@ n2 :> 0)
+/\ allKeys = (n1 :> <<>> @@ n2 :> <<>>)
+/\ isMaster = (n1 :> TRUE @@ n2 :> FALSE)
+/\ startPC = (n1 :> "done" @@ n2 :> "createParents")
+/\ wChild = (n1 :> TRUE @@ n2 :> FALSE)
+/\ targetFired = FALSE
+/\ minted = {}
+/\ lastKeyUpdate = (n1 :> -2 @@ n2 :> -2)
+/\ listening = (n1 :> TRUE @@ n2 :> FALSE)
+/\ cpPC = (n1 :> "idle" @@ n2 :> "idle")
+/\ alive = (n1 :> TRUE @@ n2 :> TRUE)
+/\ stopped = (n1 :> FALSE @@ n2 :> FALSE)
+/\ startFailed = (n1 :> FALSE @@ n2 :> FALSE)
+/\ everHeld = (n1 :> {} @@ n2 :> {})
+/\ evq = (n1 :> <<>> @@ n2 :> <<>>)
+/\ lpc = (n1 :> "rollStart" @@ n2 :> "none")
+/\ faults = [ tokens |-> 0,
+  crash |-> 0,
+  expire |-> 0,
+  zkFail |-> 0,
+  stop |-> 0,
+  restart |-> 0 ]
+/\ gtime = 2
+/\ cpNow = (n1 :> 0 @@ n2 :> 0)
+/\ idSeq = (n1 :> 0 @@ n2 :> 0)
+/\ epc = (n1 :> "master" @@ n2 :> "none")
+/\ published = {}
+/\ session = (n1 :> TRUE @@ n2 :> TRUE)
+/\ leaderExists = (n1 :> TRUE @@ n2 :> FALSE)
+/\ startList = (n1 :> {} @@ n2 :> {})
+/\ tokens = {}
+/\ wData = (n1 :> {} @@ n2 :> {})
+/\ currentKey = ( n1 :> [sec |-> None, id |-> 0, exp |-> 0] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+/\ loopNow = (n1 :> 2 @@ n2 :> 0)
+/\ wLeader = (n1 :> TRUE @@ n2 :> FALSE)
+/\ zkLeader = n1
+/\ zkKeys = <<>>
+/\ rollPrev = ( n1 :> [sec |-> None, id |-> 0, exp |-> 0] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+
+State 12: <MCNext line 142, col 5 to line 150, col 59 of module MC>
+/\ rollNow = (n1 :> 0 @@ n2 :> 0)
+/\ skew = (n1 :> 0 @@ n2 :> 0)
+/\ allKeys = (n1 :> <<>> @@ n2 :> <<>>)
+/\ isMaster = (n1 :> TRUE @@ n2 :> FALSE)
+/\ startPC = (n1 :> "done" @@ n2 :> "createParents")
+/\ wChild = (n1 :> TRUE @@ n2 :> FALSE)
+/\ targetFired = FALSE
+/\ minted = {}
+/\ lastKeyUpdate = (n1 :> -2 @@ n2 :> -2)
+/\ listening = (n1 :> TRUE @@ n2 :> FALSE)
+/\ cpPC = (n1 :> "clockRead" @@ n2 :> "idle")
+/\ alive = (n1 :> TRUE @@ n2 :> TRUE)
+/\ stopped = (n1 :> FALSE @@ n2 :> FALSE)
+/\ startFailed = (n1 :> FALSE @@ n2 :> FALSE)
+/\ everHeld = (n1 :> {} @@ n2 :> {})
+/\ evq = (n1 :> <<>> @@ n2 :> <<>>)
+/\ lpc = (n1 :> "rollStart" @@ n2 :> "none")
+/\ faults = [ tokens |-> 1,
+  crash |-> 0,
+  expire |-> 0,
+  zkFail |-> 0,
+  stop |-> 0,
+  restart |-> 0 ]
+/\ gtime = 2
+/\ cpNow = (n1 :> 2 @@ n2 :> 0)
+/\ idSeq = (n1 :> 0 @@ n2 :> 0)
+/\ epc = (n1 :> "master" @@ n2 :> "none")
+/\ published = {}
+/\ session = (n1 :> TRUE @@ n2 :> TRUE)
+/\ leaderExists = (n1 :> TRUE @@ n2 :> FALSE)
+/\ startList = (n1 :> {} @@ n2 :> {})
+/\ tokens = {}
+/\ wData = (n1 :> {} @@ n2 :> {})
+/\ currentKey = ( n1 :> [sec |-> None, id |-> 0, exp |-> 0] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+/\ loopNow = (n1 :> 2 @@ n2 :> 0)
+/\ wLeader = (n1 :> TRUE @@ n2 :> FALSE)
+/\ zkLeader = n1
+/\ zkKeys = <<>>
+/\ rollPrev = ( n1 :> [sec |-> None, id |-> 0, exp |-> 0] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+
+State 13: <MCNext line 142, col 5 to line 150, col 59 of module MC>
+/\ rollNow = (n1 :> 2 @@ n2 :> 0)
+/\ skew = (n1 :> 0 @@ n2 :> 0)
+/\ allKeys = (n1 :> <<>> @@ n2 :> <<>>)
+/\ isMaster = (n1 :> TRUE @@ n2 :> FALSE)
+/\ startPC = (n1 :> "done" @@ n2 :> "createParents")
+/\ wChild = (n1 :> TRUE @@ n2 :> FALSE)
+/\ targetFired = FALSE
+/\ minted = {}
+/\ lastKeyUpdate = (n1 :> -2 @@ n2 :> -2)
+/\ listening = (n1 :> TRUE @@ n2 :> FALSE)
+/\ cpPC = (n1 :> "clockRead" @@ n2 :> "idle")
+/\ alive = (n1 :> TRUE @@ n2 :> TRUE)
+/\ stopped = (n1 :> FALSE @@ n2 :> FALSE)
+/\ startFailed = (n1 :> FALSE @@ n2 :> FALSE)
+/\ everHeld = (n1 :> {} @@ n2 :> {})
+/\ evq = (n1 :> <<>> @@ n2 :> <<>>)
+/\ lpc = (n1 :> "rollInstall" @@ n2 :> "none")
+/\ faults = [ tokens |-> 1,
+  crash |-> 0,
+  expire |-> 0,
+  zkFail |-> 0,
+  stop |-> 0,
+  restart |-> 0 ]
+/\ gtime = 2
+/\ cpNow = (n1 :> 2 @@ n2 :> 0)
+/\ idSeq = (n1 :> 0 @@ n2 :> 0)
+/\ epc = (n1 :> "master" @@ n2 :> "none")
+/\ published = {}
+/\ session = (n1 :> TRUE @@ n2 :> TRUE)
+/\ leaderExists = (n1 :> TRUE @@ n2 :> FALSE)
+/\ startList = (n1 :> {} @@ n2 :> {})
+/\ tokens = {}
+/\ wData = (n1 :> {} @@ n2 :> {})
+/\ currentKey = ( n1 :> [sec |-> None, id |-> 0, exp |-> 0] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+/\ loopNow = (n1 :> 2 @@ n2 :> 0)
+/\ wLeader = (n1 :> TRUE @@ n2 :> FALSE)
+/\ zkLeader = n1
+/\ zkKeys = <<>>
+/\ rollPrev = ( n1 :> [sec |-> None, id |-> 0, exp |-> 0] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+
+State 14: <MCNext line 142, col 5 to line 150, col 59 of module MC>
+/\ rollNow = (n1 :> 2 @@ n2 :> 0)
+/\ skew = (n1 :> 0 @@ n2 :> 0)
+/\ allKeys = (n1 :> <<[sec |-> n1, id |-> 1, exp |-> 99]>> @@ n2 :> <<>>)
+/\ isMaster = (n1 :> TRUE @@ n2 :> FALSE)
+/\ startPC = (n1 :> "done" @@ n2 :> "createParents")
+/\ wChild = (n1 :> TRUE @@ n2 :> FALSE)
+/\ targetFired = FALSE
+/\ minted = {<<1, n1>>}
+/\ lastKeyUpdate = (n1 :> -2 @@ n2 :> -2)
+/\ listening = (n1 :> TRUE @@ n2 :> FALSE)
+/\ cpPC = (n1 :> "clockRead" @@ n2 :> "idle")
+/\ alive = (n1 :> TRUE @@ n2 :> TRUE)
+/\ stopped = (n1 :> FALSE @@ n2 :> FALSE)
+/\ startFailed = (n1 :> FALSE @@ n2 :> FALSE)
+/\ everHeld = (n1 :> {1} @@ n2 :> {})
+/\ evq = (n1 :> <<>> @@ n2 :> <<>>)
+/\ lpc = (n1 :> "rollPublish" @@ n2 :> "none")
+/\ faults = [ tokens |-> 1,
+  crash |-> 0,
+  expire |-> 0,
+  zkFail |-> 0,
+  stop |-> 0,
+  restart |-> 0 ]
+/\ gtime = 2
+/\ cpNow = (n1 :> 2 @@ n2 :> 0)
+/\ idSeq = (n1 :> 1 @@ n2 :> 0)
+/\ epc = (n1 :> "master" @@ n2 :> "none")
+/\ published = {}
+/\ session = (n1 :> TRUE @@ n2 :> TRUE)
+/\ leaderExists = (n1 :> TRUE @@ n2 :> FALSE)
+/\ startList = (n1 :> {} @@ n2 :> {})
+/\ tokens = {}
+/\ wData = (n1 :> {} @@ n2 :> {})
+/\ currentKey = ( n1 :> [sec |-> n1, id |-> 1, exp |-> 99] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+/\ loopNow = (n1 :> 2 @@ n2 :> 0)
+/\ wLeader = (n1 :> TRUE @@ n2 :> FALSE)
+/\ zkLeader = n1
+/\ zkKeys = <<>>
+/\ rollPrev = ( n1 :> [sec |-> None, id |-> 0, exp |-> 0] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+
+State 15: <MCNext line 142, col 5 to line 150, col 59 of module MC>
+/\ rollNow = (n1 :> 2 @@ n2 :> 0)
+/\ skew = (n1 :> 0 @@ n2 :> 0)
+/\ allKeys = (n1 :> <<[sec |-> n1, id |-> 1, exp |-> 99]>> @@ n2 :> <<>>)
+/\ isMaster = (n1 :> TRUE @@ n2 :> FALSE)
+/\ startPC = (n1 :> "done" @@ n2 :> "createParents")
+/\ wChild = (n1 :> TRUE @@ n2 :> FALSE)
+/\ targetFired = FALSE
+/\ minted = {<<1, n1>>}
+/\ lastKeyUpdate = (n1 :> -2 @@ n2 :> -2)
+/\ listening = (n1 :> TRUE @@ n2 :> FALSE)
+/\ cpPC = (n1 :> "idle" @@ n2 :> "idle")
+/\ alive = (n1 :> TRUE @@ n2 :> TRUE)
+/\ stopped = (n1 :> FALSE @@ n2 :> FALSE)
+/\ startFailed = (n1 :> FALSE @@ n2 :> FALSE)
+/\ everHeld = (n1 :> {1} @@ n2 :> {})
+/\ evq = (n1 :> <<>> @@ n2 :> <<>>)
+/\ lpc = (n1 :> "rollPublish" @@ n2 :> "none")
+/\ faults = [ tokens |-> 1,
+  crash |-> 0,
+  expire |-> 0,
+  zkFail |-> 0,
+  stop |-> 0,
+  restart |-> 0 ]
+/\ gtime = 2
+/\ cpNow = (n1 :> 2 @@ n2 :> 0)
+/\ idSeq = (n1 :> 1 @@ n2 :> 0)
+/\ epc = (n1 :> "master" @@ n2 :> "none")
+/\ published = {}
+/\ session = (n1 :> TRUE @@ n2 :> TRUE)
+/\ leaderExists = (n1 :> TRUE @@ n2 :> FALSE)
+/\ startList = (n1 :> {} @@ n2 :> {})
+/\ tokens = {[keyId |-> 1, sec |-> n1, exp |-> 4, issuer |-> n1]}
+/\ wData = (n1 :> {} @@ n2 :> {})
+/\ currentKey = ( n1 :> [sec |-> n1, id |-> 1, exp |-> 99] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+/\ loopNow = (n1 :> 2 @@ n2 :> 0)
+/\ wLeader = (n1 :> TRUE @@ n2 :> FALSE)
+/\ zkLeader = n1
+/\ zkKeys = <<>>
+/\ rollPrev = ( n1 :> [sec |-> None, id |-> 0, exp |-> 0] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+
+State 16: <MCNext line 142, col 5 to line 150, col 59 of module MC>
+/\ rollNow = (n1 :> 2 @@ n2 :> 0)
+/\ skew = (n1 :> 0 @@ n2 :> 0)
+/\ allKeys = (n1 :> <<[sec |-> n1, id |-> 1, exp |-> 99]>> @@ n2 :> <<>>)
+/\ isMaster = (n1 :> TRUE @@ n2 :> FALSE)
+/\ startPC = (n1 :> "done" @@ n2 :> "watchExists")
+/\ wChild = (n1 :> TRUE @@ n2 :> FALSE)
+/\ targetFired = FALSE
+/\ minted = {<<1, n1>>}
+/\ lastKeyUpdate = (n1 :> -2 @@ n2 :> -2)
+/\ listening = (n1 :> TRUE @@ n2 :> FALSE)
+/\ cpPC = (n1 :> "idle" @@ n2 :> "idle")
+/\ alive = (n1 :> TRUE @@ n2 :> TRUE)
+/\ stopped = (n1 :> FALSE @@ n2 :> FALSE)
+/\ startFailed = (n1 :> FALSE @@ n2 :> FALSE)
+/\ everHeld = (n1 :> {1} @@ n2 :> {})
+/\ evq = (n1 :> <<>> @@ n2 :> <<>>)
+/\ lpc = (n1 :> "rollPublish" @@ n2 :> "none")
+/\ faults = [ tokens |-> 1,
+  crash |-> 0,
+  expire |-> 0,
+  zkFail |-> 0,
+  stop |-> 0,
+  restart |-> 0 ]
+/\ gtime = 2
+/\ cpNow = (n1 :> 2 @@ n2 :> 0)
+/\ idSeq = (n1 :> 1 @@ n2 :> 0)
+/\ epc = (n1 :> "master" @@ n2 :> "none")
+/\ published = {}
+/\ session = (n1 :> TRUE @@ n2 :> TRUE)
+/\ leaderExists = (n1 :> TRUE @@ n2 :> FALSE)
+/\ startList = (n1 :> {} @@ n2 :> {})
+/\ tokens = {[keyId |-> 1, sec |-> n1, exp |-> 4, issuer |-> n1]}
+/\ wData = (n1 :> {} @@ n2 :> {})
+/\ currentKey = ( n1 :> [sec |-> n1, id |-> 1, exp |-> 99] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+/\ loopNow = (n1 :> 2 @@ n2 :> 0)
+/\ wLeader = (n1 :> TRUE @@ n2 :> FALSE)
+/\ zkLeader = n1
+/\ zkKeys = <<>>
+/\ rollPrev = ( n1 :> [sec |-> None, id |-> 0, exp |-> 0] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+
+State 17: <MCNext line 142, col 5 to line 150, col 59 of module MC>
+/\ rollNow = (n1 :> 2 @@ n2 :> 0)
+/\ skew = (n1 :> 0 @@ n2 :> 0)
+/\ allKeys = (n1 :> <<[sec |-> n1, id |-> 1, exp |-> 99]>> @@ n2 :> <<>>)
+/\ isMaster = (n1 :> TRUE @@ n2 :> FALSE)
+/\ startPC = (n1 :> "done" @@ n2 :> "listChildren")
+/\ wChild = (n1 :> TRUE @@ n2 :> FALSE)
+/\ targetFired = FALSE
+/\ minted = {<<1, n1>>}
+/\ lastKeyUpdate = (n1 :> -2 @@ n2 :> -2)
+/\ listening = (n1 :> TRUE @@ n2 :> FALSE)
+/\ cpPC = (n1 :> "idle" @@ n2 :> "idle")
+/\ alive = (n1 :> TRUE @@ n2 :> TRUE)
+/\ stopped = (n1 :> FALSE @@ n2 :> FALSE)
+/\ startFailed = (n1 :> FALSE @@ n2 :> FALSE)
+/\ everHeld = (n1 :> {1} @@ n2 :> {})
+/\ evq = (n1 :> <<>> @@ n2 :> <<>>)
+/\ lpc = (n1 :> "rollPublish" @@ n2 :> "none")
+/\ faults = [ tokens |-> 1,
+  crash |-> 0,
+  expire |-> 0,
+  zkFail |-> 0,
+  stop |-> 0,
+  restart |-> 0 ]
+/\ gtime = 2
+/\ cpNow = (n1 :> 2 @@ n2 :> 0)
+/\ idSeq = (n1 :> 1 @@ n2 :> 0)
+/\ epc = (n1 :> "master" @@ n2 :> "none")
+/\ published = {}
+/\ session = (n1 :> TRUE @@ n2 :> TRUE)
+/\ leaderExists = (n1 :> TRUE @@ n2 :> FALSE)
+/\ startList = (n1 :> {} @@ n2 :> {})
+/\ tokens = {[keyId |-> 1, sec |-> n1, exp |-> 4, issuer |-> n1]}
+/\ wData = (n1 :> {} @@ n2 :> {})
+/\ currentKey = ( n1 :> [sec |-> n1, id |-> 1, exp |-> 99] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+/\ loopNow = (n1 :> 2 @@ n2 :> 0)
+/\ wLeader = (n1 :> TRUE @@ n2 :> FALSE)
+/\ zkLeader = n1
+/\ zkKeys = <<>>
+/\ rollPrev = ( n1 :> [sec |-> None, id |-> 0, exp |-> 0] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+
+State 18: <MCNext line 142, col 5 to line 150, col 59 of module MC>
+/\ rollNow = (n1 :> 2 @@ n2 :> 0)
+/\ skew = (n1 :> 0 @@ n2 :> 0)
+/\ allKeys = (n1 :> <<[sec |-> n1, id |-> 1, exp |-> 99]>> @@ n2 :> <<>>)
+/\ isMaster = (n1 :> TRUE @@ n2 :> FALSE)
+/\ startPC = (n1 :> "done" @@ n2 :> "readChildren")
+/\ wChild = (n1 :> TRUE @@ n2 :> TRUE)
+/\ targetFired = FALSE
+/\ minted = {<<1, n1>>}
+/\ lastKeyUpdate = (n1 :> -2 @@ n2 :> -2)
+/\ listening = (n1 :> TRUE @@ n2 :> FALSE)
+/\ cpPC = (n1 :> "idle" @@ n2 :> "idle")
+/\ alive = (n1 :> TRUE @@ n2 :> TRUE)
+/\ stopped = (n1 :> FALSE @@ n2 :> FALSE)
+/\ startFailed = (n1 :> FALSE @@ n2 :> FALSE)
+/\ everHeld = (n1 :> {1} @@ n2 :> {})
+/\ evq = (n1 :> <<>> @@ n2 :> <<>>)
+/\ lpc = (n1 :> "rollPublish" @@ n2 :> "none")
+/\ faults = [ tokens |-> 1,
+  crash |-> 0,
+  expire |-> 0,
+  zkFail |-> 0,
+  stop |-> 0,
+  restart |-> 0 ]
+/\ gtime = 2
+/\ cpNow = (n1 :> 2 @@ n2 :> 0)
+/\ idSeq = (n1 :> 1 @@ n2 :> 0)
+/\ epc = (n1 :> "master" @@ n2 :> "none")
+/\ published = {}
+/\ session = (n1 :> TRUE @@ n2 :> TRUE)
+/\ leaderExists = (n1 :> TRUE @@ n2 :> FALSE)
+/\ startList = (n1 :> {} @@ n2 :> {})
+/\ tokens = {[keyId |-> 1, sec |-> n1, exp |-> 4, issuer |-> n1]}
+/\ wData = (n1 :> {} @@ n2 :> {})
+/\ currentKey = ( n1 :> [sec |-> n1, id |-> 1, exp |-> 99] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+/\ loopNow = (n1 :> 2 @@ n2 :> 0)
+/\ wLeader = (n1 :> TRUE @@ n2 :> FALSE)
+/\ zkLeader = n1
+/\ zkKeys = <<>>
+/\ rollPrev = ( n1 :> [sec |-> None, id |-> 0, exp |-> 0] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+
+State 19: <MCNext line 142, col 5 to line 150, col 59 of module MC>
+/\ rollNow = (n1 :> 2 @@ n2 :> 0)
+/\ skew = (n1 :> 0 @@ n2 :> 0)
+/\ allKeys = (n1 :> <<[sec |-> n1, id |-> 1, exp |-> 99]>> @@ n2 :> <<>>)
+/\ isMaster = (n1 :> TRUE @@ n2 :> FALSE)
+/\ startPC = (n1 :> "done" @@ n2 :> "done")
+/\ wChild = (n1 :> TRUE @@ n2 :> TRUE)
+/\ targetFired = FALSE
+/\ minted = {<<1, n1>>}
+/\ lastKeyUpdate = (n1 :> -2 @@ n2 :> -2)
+/\ listening = (n1 :> TRUE @@ n2 :> TRUE)
+/\ cpPC = (n1 :> "idle" @@ n2 :> "idle")
+/\ alive = (n1 :> TRUE @@ n2 :> TRUE)
+/\ stopped = (n1 :> FALSE @@ n2 :> FALSE)
+/\ startFailed = (n1 :> FALSE @@ n2 :> FALSE)
+/\ everHeld = (n1 :> {1} @@ n2 :> {})
+/\ evq = (n1 :> <<>> @@ n2 :> <<>>)
+/\ lpc = (n1 :> "rollPublish" @@ n2 :> "none")
+/\ faults = [ tokens |-> 1,
+  crash |-> 0,
+  expire |-> 0,
+  zkFail |-> 0,
+  stop |-> 0,
+  restart |-> 0 ]
+/\ gtime = 2
+/\ cpNow = (n1 :> 2 @@ n2 :> 0)
+/\ idSeq = (n1 :> 1 @@ n2 :> 0)
+/\ epc = (n1 :> "master" @@ n2 :> "started")
+/\ published = {}
+/\ session = (n1 :> TRUE @@ n2 :> TRUE)
+/\ leaderExists = (n1 :> TRUE @@ n2 :> FALSE)
+/\ startList = (n1 :> {} @@ n2 :> {})
+/\ tokens = {[keyId |-> 1, sec |-> n1, exp |-> 4, issuer |-> n1]}
+/\ wData = (n1 :> {} @@ n2 :> {})
+/\ currentKey = ( n1 :> [sec |-> n1, id |-> 1, exp |-> 99] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+/\ loopNow = (n1 :> 2 @@ n2 :> 0)
+/\ wLeader = (n1 :> TRUE @@ n2 :> FALSE)
+/\ zkLeader = n1
+/\ zkKeys = <<>>
+/\ rollPrev = ( n1 :> [sec |-> None, id |-> 0, exp |-> 0] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+
+State 20: <MCNext line 142, col 5 to line 150, col 59 of module MC>
+/\ rollNow = (n1 :> 2 @@ n2 :> 0)
+/\ skew = (n1 :> 0 @@ n2 :> 0)
+/\ allKeys = (n1 :> <<[sec |-> n1, id |-> 1, exp |-> 99]>> @@ n2 :> <<>>)
+/\ isMaster = (n1 :> TRUE @@ n2 :> FALSE)
+/\ startPC = (n1 :> "done" @@ n2 :> "done")
+/\ wChild = (n1 :> TRUE @@ n2 :> TRUE)
+/\ targetFired = TRUE
+/\ minted = {<<1, n1>>}
+/\ lastKeyUpdate = (n1 :> -2 @@ n2 :> -2)
+/\ listening = (n1 :> TRUE @@ n2 :> TRUE)
+/\ cpPC = (n1 :> "idle" @@ n2 :> "idle")
+/\ alive = (n1 :> TRUE @@ n2 :> TRUE)
+/\ stopped = (n1 :> FALSE @@ n2 :> FALSE)
+/\ startFailed = (n1 :> FALSE @@ n2 :> FALSE)
+/\ everHeld = (n1 :> {1} @@ n2 :> {})
+/\ evq = (n1 :> <<>> @@ n2 :> <<>>)
+/\ lpc = (n1 :> "rollPublish" @@ n2 :> "none")
+/\ faults = [ tokens |-> 1,
+  crash |-> 0,
+  expire |-> 0,
+  zkFail |-> 0,
+  stop |-> 0,
+  restart |-> 0 ]
+/\ gtime = 2
+/\ cpNow = (n1 :> 2 @@ n2 :> 0)
+/\ idSeq = (n1 :> 1 @@ n2 :> 0)
+/\ epc = (n1 :> "master" @@ n2 :> "started")
+/\ published = {}
+/\ session = (n1 :> TRUE @@ n2 :> TRUE)
+/\ leaderExists = (n1 :> TRUE @@ n2 :> FALSE)
+/\ startList = (n1 :> {} @@ n2 :> {})
+/\ tokens = {[keyId |-> 1, sec |-> n1, exp |-> 4, issuer |-> n1]}
+/\ wData = (n1 :> {} @@ n2 :> {})
+/\ currentKey = ( n1 :> [sec |-> n1, id |-> 1, exp |-> 99] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+/\ loopNow = (n1 :> 2 @@ n2 :> 0)
+/\ wLeader = (n1 :> TRUE @@ n2 :> FALSE)
+/\ zkLeader = n1
+/\ zkKeys = <<>>
+/\ rollPrev = ( n1 :> [sec |-> None, id |-> 0, exp |-> 0] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+
+4993 states generated, 2156 distinct states found, 425 states left on queue.
+The depth of the complete state graph search is 22.
+Checkpointing of run /tmp/tlc-states-FOErGp/26-11-07-19-58-38.569
+Checkpointing completed at (2026-11-07 19:58:40)
+Finished in 01s at (2026-11-07 19:58:40)
+Trace exploration spec path: ./MC_TTrace_1794081518.tla
+ @@ n2 :> FALSE)
+/\ startFailed = (n1 :> FALSE @@ n2 :> FALSE)
+/\ everHeld = (n1 :> {1} @@ n2 :> {})
+/\ evq = (n1 :> <<>> @@ n2 :> <<>>)
+/\ lpc = (n1 :> "rollPublish" @@ n2 :> "none")
+/\ faults = [ tokens |-> 1,
+  crash |-> 0,
+  expire |-> 0,
+  zkFail |-> 0,
+  stop |-> 0,
+  restart |-> 0 ]
+/\ gtime = 2
+/\ cpNow = (n1 :> 2 @@ n2 :> 0)
+/\ idSeq = (n1 :> 1 @@ n2 :> 0)
+/\ epc = (n1 :> "master" @@ n2 :> "started")
+/\ published = {}
+/\ session = (n1 :> TRUE @@ n2 :> TRUE)
+/\ leaderExists = (n1 :> TRUE @@ n2 :> FALSE)
+/\ startList = (n1 :> {} @@ n2 :> {})
+/\ tokens = {[keyId |-> 1, sec |-> n1, exp |-> 4, issuer |-> n1]}
+/\ wData = (n1 :> {} @@ n2 :> {})
+/\ currentKey = ( n1 :> [sec |-> n1, id |-> 1, exp |-> 99] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+/\ loopNow = (n1 :> 2 @@ n2 :> 0)
+/\ wLeader = (n1 :> TRUE @@ n2 :> FALSE)
+/\ zkLeader = n1
+/\ zkKeys = <<>>
+/\ rollPrev = ( n1 :> [sec |-> None, id |-> 0, exp |-> 0] @@
+  n2 :> [sec |-> None, id |-> 0, exp |-> 0] )
+
+4993 states generated, 2156 distinct states found, 425 states left on queue.
+The depth of the complete state graph search is 22.
+Checkpointing of run /tmp/tlc-states-FOErGp/26-11-07-19-58-38.569
+Checkpointing completed at (2026-11-07 19:58:40)
+Finished in 01s at (2026-11-07 19:58:40)
+Trace exploration spec path: ./MC_TTrace_1794081518.tla
+
+[0;32m================================[0m
+[1;33m⚠ Invariant violation found![0m
+[1;33mPlease check log: output/MC_hunt_S3_bfs.out[0m
+[0;32m================================[0m

@@ -1,0 +1,48 @@
+{
+  "id": "MC-1",
+  "title": "Safe mode suppresses block-key pushes while keys keep rolling, so fresh DEKs fail at DataNodes with InvalidEncryptionKeyException",
+  "status": "REPRODUCED",
+  "source": "model-checking",
+  "cause": "DatanodeManager.handleHeartbeat returns an empty command array while the NameNode is in safe mode (DatanodeManager.java:1884-1886), before the KeyUpdateCommand is added (DatanodeManager.java:1971). HeartbeatManager.Monitor keeps rolling block keys (HeartbeatManager.java:552), and getDataEncryptionKey issues DEKs under the newest current key with no safe-mode check (NameNodeRpcServer.java:1940-1942). After two rolls inside one safe-mode period, the NameNode's current key is one that no DataNode received.",
+  "trigger": "A synced DataNode; the active NameNode enters manual (dfsadmin -safemode enter) or resource-low safe mode; two block-key roll events occur before safe mode ends; a client without a cached DEK fetches a DEK and reads.",
+  "consequence": "The DataNode's SASL handshake throws InvalidEncryptionKeyException at BlockTokenSecretManager.retrieveDataEncryptionKey (throw statement at BlockTokenSecretManager.java:559-561). The client's single DEK refetch returns the same unknown key, so the read fails with BlockMissingException on healthy data. Reads with fresh DEKs keep failing at every DataNode until safe mode ends and a heartbeat delivers the key push.",
+  "sites": [
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/DatanodeManager.java:handleHeartbeat",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/HeartbeatManager.java:Monitor.run",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/NameNodeRpcServer.java:getDataEncryptionKey",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java:retrieveDataEncryptionKey"
+  ],
+  "actions": ["MCEnterSafeMode", "MCRollKeys", "MCSweepNeedKeyUpdate", "MCClientGetDek", "MCClientConnect"],
+  "invariants": ["TargetSafe"],
+  "premises": [
+    "dfs.encrypt.data.transfer=true and dfs.block.access.token.enable=true; the client is not on a trusted channel.",
+    "The active NameNode stays in manual or resource-low safe mode across two block-key roll events (default interval 600 minutes; reproduced with the public config dfs.block.access.key.update.interval=1 and with setKeyUpdateIntervalForTesting).",
+    "DataNodes receive block keys only at registration and through DNA_ACCESSKEYUPDATE; no other path installs keys during safe mode.",
+    "The reading client has no cached DEK issued before the second roll (new client, or cached DEK expired).",
+    "Pinned source 734dd8a67cd; upstream trunk on 2026-10-29 still returns before addKeyUpdateCommand in safe mode."
+  ],
+  "dependencies": [
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/DatanodeManager.java", "start": "  public DatanodeCommand[] handleHeartbeat(DatanodeRegistration nodeReg,", "end": "    blockManager.addKeyUpdateCommand(cmds, nodeinfo);"},
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/HeartbeatManager.java", "start": "  private class Monitor implements Runnable {", "end": "          Thread.sleep(5000);  // 5 seconds"},
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockManager.java", "start": "  boolean shouldUpdateBlockKey(final long updateTime) throws IOException {", "end": "  public void activate(Configuration conf, long blockTotal) {"},
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockManager.java", "start": "  void addKeyUpdateCommand(final List<DatanodeCommand> cmds,", "end": "   * Clamp the specified replication between the minimum and the maximum"},
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java", "start": "  private synchronized void generateKeys() {", "end": "  public Token<BlockTokenIdentifier> generateToken(ExtendedBlock block,"},
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java", "start": "  public DataEncryptionKey generateDataEncryptionKey() {", "end": "  public BlockKey getCurrentKey() {"},
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/NameNodeRpcServer.java", "start": "  public DataEncryptionKey getDataEncryptionKey() throws IOException {", "end": "  public String createSnapshot(String snapshotRoot, String snapshotName)"},
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSNamesystem.java", "start": "  public boolean isInSafeMode() {", "end": "  public boolean isInStartupSafeMode() {"},
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/protocol/datatransfer/sasl/SaslDataTransferServer.java", "start": "  private byte[] getEncryptionKeyFromUserName(String userName)", "end": "  private static void sendInvalidKeySaslErrorMessage(DataOutputStream out,"},
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSInputStream.java", "start": "        if (ex instanceof InvalidEncryptionKeyException && refetchEncryptionKey > 0) {", "end": "  private void checkInterrupted(IOException e) throws IOException {"},
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSClient.java", "start": "  public DataEncryptionKey newDataEncryptionKey() throws IOException {", "end": "  public DataEncryptionKey getEncryptionKey() {"},
+    {"root": "work", "path": "spec/output/hunt/gated/G_S1_synced.out"},
+    {"root": "work", "path": "spec/output/hunt/gated/G_S1_synced.cfg"},
+    {"root": "work", "path": "spec/output/hunt/gated/base.tla"},
+    {"root": "work", "path": "spec/output/hunt/gated/MC.tla"},
+    {"root": "work", "path": "spec/output/hunt/gated/MCGated.tla"}
+  ],
+  "evidence": [
+    "confirmation/MC-1/investigation.md",
+    "repro/test_bugMC-1_safemode_keyroll_dek.sh",
+    "repro/test_bugMC-1_safemode_keyroll_dek.log",
+    "spec/output/hunt/gated/G_S1_synced.out"
+  ]
+}

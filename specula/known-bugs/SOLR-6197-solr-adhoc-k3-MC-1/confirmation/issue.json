@@ -1,0 +1,35 @@
+{
+  "id": "MC-1",
+  "title": "MIGRATE's temp replica2 CoreAdmin CREATE omits coreNodeName, so it fails at CoreAdminHandler:563 when legacyCloud=false",
+  "status": "REPRODUCED",
+  "source": "model-checking",
+  "cause": "OverseerCollectionProcessor.migrateKey builds its own CoreAdmin CREATE for <temp>_shard1_replica2 with only ACTION/NAME/COLLECTION/SHARD. It does not go through ADDREPLICA or set coreNodeName, so in non-legacy mode CoreAdminHandler.handleCreateAction throws 'non legacy mode coreNodeName missing'.",
+  "trigger": "CLUSTERPROP legacyCloud=false, then MIGRATE through the Collections API (MigrateRouteKeyTest workload). Deterministic; needs no fault or race.",
+  "consequence": "MIGRATE always fails under legacyCloud=false. migrateKey aborts with no cleanup, leaving the temp collection, the routing rule on the source slice and the target leader's UpdateLog in BUFFERING (still the case 60s later).",
+  "sites": [
+    "solr/core/src/java/org/apache/solr/cloud/OverseerCollectionProcessor.java:migrateKey",
+    "solr/core/src/java/org/apache/solr/handler/admin/CoreAdminHandler.java:handleCreateAction"
+  ],
+  "actions": ["TargetCheck"],
+  "invariants": ["TargetSafe"],
+  "premises": [
+    "legacyCloud=false is a supported cluster property set via the public CLUSTERPROP API (KNOWN_CLUSTER_PROPS).",
+    "Reproduced on pristine base_commit e75b9596; upstream fixed the same mechanism in SOLR-6197 (4.10/5.0)."
+  ],
+  "dependencies": [
+    {"root": "source", "path": "solr/core/src/java/org/apache/solr/cloud/OverseerCollectionProcessor.java", "start": "  private void migrateKey(ClusterState clusterState, DocCollection sourceCollection, Slice sourceSlice,", "end": "    log.info(\"Successfully created replica of temp source collection on target leader node\");"},
+    {"root": "source", "path": "solr/core/src/java/org/apache/solr/handler/admin/CoreAdminHandler.java", "start": "  protected void handleCreateAction(SolrQueryRequest req, SolrQueryResponse rsp) throws SolrException {", "end": "                \"non legacy mode coreNodeName missing \"+ params);"},
+    {"root": "source", "path": "solr/core/src/java/org/apache/solr/cloud/Overseer.java", "start": "  public static boolean isLegacy(Map clusterProps) {", "end": "    return !\"false\".equals(clusterProps.get(ZkStateReader.LEGACY_CLOUD));"},
+    {"root": "work", "path": "spec/MC_hunt_S1_migrate.cfg"},
+    {"root": "work", "path": "spec/output/hunt_S1_migrate_bfs.out"}
+  ],
+  "evidence": [
+    "confirmation/MC-1/confirmation.md",
+    "confirmation/MC-1/investigation.md",
+    "repro/test_bugMC-1_SpeculaReproMC1MigrateRouteKeyTest.java",
+    "repro/test_bugMC-1_run.sh",
+    "repro/MC-1.run.out",
+    "repro/MC-1.bug.log",
+    "repro/MC-1.control.log"
+  ]
+}

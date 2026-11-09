@@ -1,0 +1,36 @@
+{
+  "id": "CR-5",
+  "title": "getFileChecksum never clears a stale cached DEK on InvalidEncryptionKeyException, so every DN rejects it and the checksum fails",
+  "status": "REPRODUCED",
+  "source": "code-review",
+  "cause": "FileChecksumHelper's per-DN loops (ReplicatedFileChecksumComputer.checksumBlock, StripedFileNonStripedChecksumComputer.checksumBlockGroup) catch InvalidEncryptionKeyException as a generic IOException and try the next DN without calling DFSClient.clearDataEncryptionKey(), so DFSClient.newDataEncryptionKey() keeps returning the same stale cached DEK until it expires.",
+  "trigger": "An encrypted-transfer client caches a DEK. The NN restarts (new block keys) and the DNs restart (they register and receive only the new keys). The client then calls getFileChecksum before doing any read or write.",
+  "consequence": "On every DN, BlockTokenSecretManager.retrieveDataEncryptionKey throws InvalidEncryptionKeyException (BlockTokenSecretManager.java:490-492), and DistributedFileSystem.getFileChecksum throws IOException 'Fail to get block MD5'. This repeats on every call until the DEK expires (dfs.block.access.token.lifetime, 600 min default) or an unrelated read or write clears the cache.",
+  "sites": [
+    "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/FileChecksumHelper.java:ReplicatedFileChecksumComputer.checksumBlock",
+    "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/FileChecksumHelper.java:StripedFileNonStripedChecksumComputer.checksumBlockGroup",
+    "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSClient.java:newDataEncryptionKey",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java:retrieveDataEncryptionKey"
+  ],
+  "actions": [],
+  "invariants": [],
+  "premises": [
+    "dfs.encrypt.data.transfer=true and block access tokens are enabled, and no TrustedChannelResolver exempts the client.",
+    "An NN restart followed by a DN restart is a normal operational event. It leaves a long-lived client's cached DEK naming a block key absent from every DN.",
+    "Between the restart and the getFileChecksum call, the client does no read or write that would clear the DEK as a side effect (DFSInputStream.java:584-590, DataStreamer.java:139).",
+    "Only the replicated path was executed. The striped path (checksumBlockGroup) has the same catch structure but was not run.",
+    "Upstream: HDFS-12931 (Fix Version 3.1.0) reports and fixes this for the replicated path. HDFS-17897 (apache/hadoop PR #8364, merged 2026-03-25) does so for the striped path. The pinned tree e19e80cc0dd (3.1.0-SNAPSHOT) predates both."
+  ],
+  "dependencies": [
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/FileChecksumHelper.java"},
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSClient.java", "start": "  public void clearDataEncryptionKey() {", "end": "  public DataEncryptionKey getEncryptionKey() {"},
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java", "start": "  public byte[] retrieveDataEncryptionKey(int keyId, byte[] nonce)", "end": "    return createPassword(nonce, key.getKey());"},
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/protocol/datatransfer/InvalidEncryptionKeyException.java"}
+  ],
+  "evidence": [
+    "confirmation/CR-5/investigation.md",
+    "repro/test_bugCR-5_checksum_stale_dek.sh",
+    "confirmation/CR-5/repro-run2.log",
+    "confirmation/CR-5/surefire-output-run2.txt"
+  ]
+}

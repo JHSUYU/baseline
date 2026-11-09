@@ -1,0 +1,129 @@
+{
+  "id": "MC-2",
+  "title": "Disk formatted during an unfinalized HDFS upgrade keeps the upgraded cTime and no previous/; the documented rollback then throws at BlockPoolSliceStorage:421",
+  "status": "REPRODUCED",
+  "source": "model-checking",
+  "cause": "BlockPoolSliceStorage.format (L283-292, reached from loadStorageDirectory L167-171) stamps a block-pool slice created on an empty disk with the NameNode's current cTime, which is the upgraded cTime while an upgrade is unfinalized, and creates no previous/. On the DataNode -rollback start doTransition rolls back only slices that have previous/ (L375-387), readProperties (L388) loads the upgraded cTime, and the throw at L421-424 fires. The failed slice's cTime also stays in the shared BlockPoolSliceStorage fields that DataNode.createBPRegistration (DataNode.java:2074) sends to the NameNode.",
+  "trigger": "NameNode -upgrade, not finalized; a DataNode starts with an empty data directory (a new or replaced disk), which is formatted with the upgraded cTime; then the documented rollback: hdfs namenode -rollback, NameNode regular start, DataNode -rollback (start-dfs.sh -rollback).",
+  "consequence": "The empty-disk slice throws java.io.IOException 'Datanode state ... is newer than the namespace state' at BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:424) on the -rollback start and on every later start; DataStorage.loadBlockPoolSliceStorage drops the slice. When it is the last slice loaded, the DataNode registers with the upgraded cTime, the NameNode rejects it (verifyRequest: Registration IDs mismatched), the block-pool actor exits, the NameNode stays in safe mode and pre-upgrade files are unreadable although their replicas are intact on the rolled-back disk.",
+  "sites": [
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java:421",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java:288",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java:375",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java:388",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java:606",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java:474",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java:2074",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/NameNodeRpcServer.java:1781",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPServiceActor.java:793"
+  ],
+  "actions": [
+    "MCNNDoUpgrade",
+    "MCAttachEmptyVolume",
+    "MCDataNodeStart",
+    "MCFormatSetCTime",
+    "MCFormatWriteVersion",
+    "MCDataNodeStop",
+    "MCNNDoRollback",
+    "MCDoTransitionDispatch",
+    "MCRestoreTrashForRollback",
+    "MCReadPropertiesCTime",
+    "MCTargetCheck"
+  ],
+  "invariants": [
+    "TargetSafe"
+  ],
+  "premises": [
+    "An operator may add or replace an empty data disk on a DataNode while a NameNode -upgrade is unfinalized; the HDFS user guide expects days of operation before finalize and documents adding/replacing data volumes.",
+    "Rollback is performed as documented: hdfs namenode -rollback (NameNode.doRollback), then a NameNode regular start and DataNode -rollback (start-dfs.sh -rollback).",
+    "No code path deletes, re-formats or rolls back a block-pool slice that has no previous/; doRollback returns when previous/ is absent (BlockPoolSliceStorage.java:606-609) and nothing resets the shared BPSS cTime after a failed slice.",
+    "The NameNode-rejection consequence needs the failed slice to be the last block-pool slice loaded (dfs.datanode.data.dir order, e.g. a new disk appended to the list); otherwise only that slice fails, at every start.",
+    "Reproduced at escalation level 0 (MiniDFSCluster, JDK 17, pinned 734dd8a67cd, no source patch, no hand-written VERSION file)."
+  ],
+  "dependencies": [
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+      "start": "  private StorageDirectory loadStorageDirectory(NamespaceInfo nsInfo,",
+      "end": "  List<StorageDirectory> loadBpStorageDirectories(NamespaceInfo nsInfo,"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+      "start": "  private void format(StorageDirectory bpSdir, NamespaceInfo nsInfo) throws IOException {",
+      "end": "  void remove(File absPathToRemove) {"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+      "start": "  private boolean doTransition(StorageDirectory sd, NamespaceInfo nsInfo,",
+      "end": "        + nsInfo.getLayoutVersion() + \" CTime = \" + nsInfo.getCTime());"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+      "start": "  void doRollback(StorageDirectory bpSd, NamespaceInfo nsInfo)",
+      "end": "    LOG.info(\"Rollback of {} is complete\", bpSd.getRoot());"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+      "start": "  private List<StorageDirectory> loadBlockPoolSliceStorage(DataNode datanode,",
+      "end": "  synchronized void removeVolumes("
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+      "start": "  void recoverTransitionRead(DataNode datanode, NamespaceInfo nsInfo,",
+      "end": "      throw new IOException(\"All specified directories have failed to load.\");"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java",
+      "start": "  DatanodeRegistration createBPRegistration(NamespaceInfo nsInfo) {",
+      "end": "        new ExportedBlockKeys(), VersionInfo.getVersion());"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPServiceActor.java",
+      "start": "  private void offerService() throws Exception {",
+      "end": "  void register(NamespaceInfo nsInfo) throws IOException {"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/NameNodeRpcServer.java",
+      "start": "  private void verifyRequest(NodeRegistration nodeReg) throws IOException {",
+      "end": "       throw new UnregisteredNodeException(nodeReg);"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSImage.java",
+      "start": "  void doRollback(FSNamesystem fsns) throws IOException {",
+      "end": "        NNUpgradeUtil.doRollBack(sd);"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetImpl.java",
+      "start": "  private static List<VolumeFailureInfo> getInitialVolumeFailureInfos(",
+      "end": "    return volumeFailureInfos;"
+    },
+    {
+      "root": "work",
+      "path": "spec/output/MC_hunt_rollback_gap_bfs.out"
+    },
+    {
+      "root": "work",
+      "path": "spec/output/MC_char_rollback_gap_attach_bfs.out"
+    }
+  ],
+  "evidence": [
+    "repro/test_bugMC-2_rollback_gap.java",
+    "repro/test_bugMC-2_rollback_gap.sh",
+    "repro/test_bugMC-2_rollback_gap.mvn.log",
+    "repro/test_bugMC-2_rollback_gap.surefire.txt",
+    "confirmation/MC-2/logs/run2.log",
+    "confirmation/MC-2/logs/target-stacktrace.txt",
+    "confirmation/MC-2/logs/javap_doTransition.txt",
+    "confirmation/MC-2/investigation.md"
+  ]
+}

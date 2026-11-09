@@ -1,0 +1,123 @@
+== provenance
+tree: /bulk/specula-adhoc/specula-runs/20261030-041020-0aa2/hdfs-adhoc-38/.specula-output/confirmation/MC-1/worktree
+HEAD: 734dd8a67cd6df56b59ff75aa43de57834a0d248
+git status: clean
+      BlockManager blockManager = fsd.getBlockManager();
+      final BlockStoragePolicy lpPolicy = blockManager
+          .getStoragePolicy("LAZY_PERSIST");
+      if (lpPolicy != null && lpPolicy.getId() == file.getStoragePolicyID()) {
+        throw new UnsupportedOperationException(
+            "Cannot append to lazy persist file " + path);
+      }
+== build (offline test-compile)
+build: SUCCESS
+SpeculaNNTrace in FSDirAppendOp bytecode: 0
+SpeculaNNTrace class files: 0
+== control: the workload as written, on the same pristine classes
+  [INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 10.46 s -- in org.apache.hadoop.hdfs.TestFileAppend
+  [INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+  [INFO] BUILD SUCCESS
+== variant: SpeculaAdhocFSDirAppendOpMC1Test
+  [INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 121.1 s -- in org.apache.hadoop.hdfs.SpeculaAdhocFSDirAppendOpMC1Test
+  [INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0
+  [INFO] BUILD SUCCESS
+== evidence (MC1| lines from /bulk/specula-adhoc/specula-runs/20261030-041020-0aa2/hdfs-adhoc-38/.specula-output/confirmation/MC-1/worktree/hadoop-hdfs-project/hadoop-hdfs/target/surefire-reports/org.apache.hadoop.hdfs.SpeculaAdhocFSDirAppendOpMC1Test-output.txt)
+MC1|FSDirAppendOp loaded from file:/bulk/specula-adhoc/specula-runs/20261030-041020-0aa2/hdfs-adhoc-38/.specula-output/confirmation/MC-1/worktree/hadoop-hdfs-project/hadoop-hdfs/target/classes/
+MC1|SpeculaNNTrace on classpath: false
+MC1|t0 after close: /testAppendTwice/foo own=0 eff=0 getStoragePolicy=HOT underConstruction=false replication=1 blockStorageTypes=[DISK]
+MC1|t0: first append succeeded
+MC1|t0 after first append: /testAppendTwice/foo own=0 eff=0 getStoragePolicy=HOT underConstruction=true replication=1 blockStorageTypes=[DISK]
+MC1|t0: second append got org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException
+MC1|t10 control before restart: /testAppendTwice/foo own=0 eff=0 getStoragePolicy=HOT underConstruction=false replication=1 blockStorageTypes=[DISK]
+MC1|t10 control: no tag, exists after restart=true
+MC1|t10 tagged before restart: /testAppendTwice/foo own=0 eff=15 getStoragePolicy=LAZY_PERSIST underConstruction=false replication=1 blockStorageTypes=[DISK]
+MC1|t10 tagged: length=65536 readable=true replicaFileOnDisk=true
+MC1|t10 tagged: exists after restart=false replicaFileOnDisk=true
+MC1|t1 after close: /testAppendTwice/foo own=0 eff=0 getStoragePolicy=HOT underConstruction=false replication=1 blockStorageTypes=[DISK]
+MC1|t1 after setStoragePolicy(/): /testAppendTwice/foo own=0 eff=15 getStoragePolicy=LAZY_PERSIST underConstruction=false replication=1 blockStorageTypes=[DISK]
+MC1|t1: client caught RemoteException(java.lang.UnsupportedOperationException): Cannot append to lazy persist file /testAppendTwice/foo
+MC1|t1: NameNode stack frame: at org.apache.hadoop.hdfs.server.namenode.FSDirAppendOp.appendFile(FSDirAppendOp.java:122)
+MC1|t1: full exception as the client sees it:
+Cannot append to lazy persist file /testAppendTwice/foo
+	at org.apache.hadoop.hdfs.server.namenode.FSDirAppendOp.appendFile(FSDirAppendOp.java:122)
+	at org.apache.hadoop.hdfs.server.namenode.FSNamesystem.appendFile(FSNamesystem.java:3041)
+	at org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer.append(NameNodeRpcServer.java:860)
+	at org.apache.hadoop.hdfs.protocolPB.ClientNamenodeProtocolServerSideTranslatorPB.append(ClientNamenodeProtocolServerSideTranslatorPB.java:521)
+	at org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos$ClientNamenodeProtocol$2.callBlockingMethod(ClientNamenodeProtocolProtos.java)
+	at org.apache.hadoop.ipc.ProtobufRpcEngine2$Server$ProtoBufRpcInvoker.call(ProtobufRpcEngine2.java:631)
+	at org.apache.hadoop.ipc.ProtobufRpcEngine2$Server$ProtoBufRpcInvoker.call(ProtobufRpcEngine2.java:599)
+	at org.apache.hadoop.ipc.ProtobufRpcEngine2$Server$ProtoBufRpcInvoker.call(ProtobufRpcEngine2.java:583)
+	at org.apache.hadoop.ipc.RPC$Server.call(RPC.java:1244)
+	at org.apache.hadoop.ipc.Server$RpcCall.run(Server.java:1312)
+	at org.apache.hadoop.ipc.Server$RpcCall.run(Server.java:1227)
+	at java.base/java.security.AccessController.doPrivileged(AccessController.java:712)
+	at java.base/javax.security.auth.Subject.doAs(Subject.java:439)
+	at org.apache.hadoop.security.authentication.util.SubjectUtil.doAs(SubjectUtil.java:328)
+	at org.apache.hadoop.security.UserGroupInformation.doAs(UserGroupInformation.java:1958)
+	at org.apache.hadoop.ipc.Server$Handler.work(Server.java:3298)
+	at org.apache.hadoop.util.concurrent.SubjectInheritingThread.run(SubjectInheritingThread.java:209)
+
+MC1|t1 after failed append: /testAppendTwice/foo own=0 eff=15 getStoragePolicy=LAZY_PERSIST underConstruction=false replication=1 blockStorageTypes=[DISK]
+MC1|t1w: the workload's own assertion failed: expected: <org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException> but was: <java.lang.UnsupportedOperationException>
+MC1|t2 after setStoragePolicy(/testAppendTwice): /testAppendTwice/foo own=0 eff=15 getStoragePolicy=LAZY_PERSIST underConstruction=false replication=1 blockStorageTypes=[DISK]
+MC1|t2: client caught RemoteException(java.lang.UnsupportedOperationException): Cannot append to lazy persist file /testAppendTwice/foo
+MC1|t2: NameNode stack frame: at org.apache.hadoop.hdfs.server.namenode.FSDirAppendOp.appendFile(FSDirAppendOp.java:122)
+MC1|t3: first append succeeded
+MC1|t3 after tag between appends: /testAppendTwice/foo own=0 eff=15 getStoragePolicy=LAZY_PERSIST underConstruction=true replication=1 blockStorageTypes=[DISK]
+MC1|t3: client caught RemoteException(java.lang.UnsupportedOperationException): Cannot append to lazy persist file /testAppendTwice/foo
+MC1|t3: NameNode stack frame: at org.apache.hadoop.hdfs.server.namenode.FSDirAppendOp.appendFile(FSDirAppendOp.java:122)
+MC1|t4: setStoragePolicy(file, LAZY_PERSIST) refused: org.apache.hadoop.HadoopIllegalArgumentException: Policy BlockStoragePolicy{LAZY_PERSIST:15, storageTypes=[RAM_DISK, DISK], creationFallbacks=[DISK], replicationFallbacks=[DISK]} cannot be set after file creation.
+MC1|t4: append still works after the refusal
+MC1|t4 old file after directory tag: /testAppendTwice/foo own=0 eff=15 getStoragePolicy=LAZY_PERSIST underConstruction=false replication=1 blockStorageTypes=[DISK]
+MC1|t4 old file: client caught RemoteException(java.lang.UnsupportedOperationException): Cannot append to lazy persist file /testAppendTwice/foo
+MC1|t4 old file: NameNode stack frame: at org.apache.hadoop.hdfs.server.namenode.FSDirAppendOp.appendFile(FSDirAppendOp.java:122)
+MC1|t4 new file created under the tag: /testAppendTwice/created_after_tag own=15 eff=15 getStoragePolicy=LAZY_PERSIST underConstruction=false replication=1 blockStorageTypes=[DISK]
+MC1|t4 new file: client caught RemoteException(java.lang.UnsupportedOperationException): Cannot append to lazy persist file /testAppendTwice/created_after_tag
+MC1|t4 new file: NameNode stack frame: at org.apache.hadoop.hdfs.server.namenode.FSDirAppendOp.appendFile(FSDirAppendOp.java:122)
+MC1|t4 old file after unset: /testAppendTwice/foo own=0 eff=0 getStoragePolicy=HOT underConstruction=false replication=1 blockStorageTypes=[DISK]
+MC1|t4 new file after unset: /testAppendTwice/created_after_tag own=15 eff=15 getStoragePolicy=LAZY_PERSIST underConstruction=false replication=1 blockStorageTypes=[DISK]
+MC1|t4: old file appendable again after unset; new file stays stamped
+MC1|t4 new file after unset: client caught RemoteException(java.lang.UnsupportedOperationException): Cannot append to lazy persist file /testAppendTwice/created_after_tag
+MC1|t4 new file after unset: NameNode stack frame: at org.apache.hadoop.hdfs.server.namenode.FSDirAppendOp.appendFile(FSDirAppendOp.java:122)
+MC1|t5 immediately: client caught RemoteException(java.lang.UnsupportedOperationException): Cannot append to lazy persist file /testAppendTwice/foo
+MC1|t5 immediately: NameNode stack frame: at org.apache.hadoop.hdfs.server.namenode.FSDirAppendOp.appendFile(FSDirAppendOp.java:122)
+MC1|t5 retry after 10s: client caught RemoteException(java.lang.UnsupportedOperationException): Cannot append to lazy persist file /testAppendTwice/foo
+MC1|t5 retry after 10s: NameNode stack frame: at org.apache.hadoop.hdfs.server.namenode.FSDirAppendOp.appendFile(FSDirAppendOp.java:122)
+MC1|t5 after NameNode restart (edit log replay): /testAppendTwice/foo own=0 eff=15 getStoragePolicy=LAZY_PERSIST underConstruction=false replication=1 blockStorageTypes=[DISK]
+MC1|t5 after restart from edits: client caught RemoteException(java.lang.UnsupportedOperationException): Cannot append to lazy persist file /testAppendTwice/foo
+MC1|t5 after restart from edits: NameNode stack frame: at org.apache.hadoop.hdfs.server.namenode.FSDirAppendOp.appendFile(FSDirAppendOp.java:122)
+MC1|t5 after checkpoint and NameNode restart (fsimage): /testAppendTwice/foo own=0 eff=15 getStoragePolicy=LAZY_PERSIST underConstruction=false replication=1 blockStorageTypes=[DISK]
+MC1|t5 after restart from fsimage: client caught RemoteException(java.lang.UnsupportedOperationException): Cannot append to lazy persist file /testAppendTwice/foo
+MC1|t5 after restart from fsimage: NameNode stack frame: at org.apache.hadoop.hdfs.server.namenode.FSDirAppendOp.appendFile(FSDirAppendOp.java:122)
+MC1|t5 after explicit unset of /: /testAppendTwice/foo own=0 eff=0 getStoragePolicy=HOT underConstruction=false replication=1 blockStorageTypes=[DISK]
+MC1|t5: append works only after the explicit unset, len=65556
+MC1|t6 before tag: hdfs dfs -appendToFile /tmp/mc117282071921835440744.txt /testAppendTwice/foo exit=0
+MC1|t6 before tag: stderr:
+
+MC1|t6 after tag: hdfs dfs -appendToFile /tmp/mc117282071921835440744.txt /testAppendTwice/foo exit=1
+MC1|t6 after tag: stderr:
+appendToFile: Cannot append to lazy persist file /testAppendTwice/foo
+
+MC1|t7: owner append works before the tag; file mode rw-r--r--
+MC1|t7: non-admin bob has no write access to the file (AccessControlException on append)
+MC1|t7 after bob tagged /shared: /shared/alice.dat own=0 eff=15 getStoragePolicy=LAZY_PERSIST underConstruction=false replication=1 blockStorageTypes=[DISK]
+MC1|t7 owner append: client caught RemoteException(java.lang.UnsupportedOperationException): Cannot append to lazy persist file /shared/alice.dat
+MC1|t7 owner append: NameNode stack frame: at org.apache.hadoop.hdfs.server.namenode.FSDirAppendOp.appendFile(FSDirAppendOp.java:122)
+MC1|t8: truncate caught RemoteException(java.lang.UnsupportedOperationException): Cannot truncate lazy persist file /testAppendTwice/foo
+MC1|t8: NameNode stack frame: at org.apache.hadoop.hdfs.server.namenode.FSDirTruncateOp.truncate(FSDirTruncateOp.java:101)
+MC1|t8: truncate accepted after unset
+MC1|t9 tagged file: /testAppendTwice/foo own=0 eff=15 getStoragePolicy=LAZY_PERSIST underConstruction=false replication=1 blockStorageTypes=[DISK]
+MC1|t9 control file: /control/bar own=0 eff=0 getStoragePolicy=HOT underConstruction=false replication=1 blockStorageTypes=[DISK]
+MC1|t9: DataNode stopped; replica file on disk: true
+MC1|t9: exists(tagged)=false exists(control)=true missingBlocks=1 replicaFileStillOnDisk=true
+MC1|t9: DataNode back; control readable and intact=true; exists(tagged)=false
+== NameNode log lines
+count of NameNode frames FSDirAppendOp.appendFile(FSDirAppendOp.java:122): 26
+2026-10-30 06:47:14,447 [IPC Server handler 2 on default port 39435] WARN  ipc.Server (Server.java:logException(3358)) - IPC Server handler 2 on default port 39435, call Call#188 Retry#0 org.apache.hadoop.hdfs.protocol.ClientProtocol.append from 127.0.0.1:35174
+java.lang.UnsupportedOperationException: Cannot append to lazy persist file /testAppendTwice/foo
+	at org.apache.hadoop.hdfs.server.namenode.FSDirAppendOp.appendFile(FSDirAppendOp.java:122)
+	at org.apache.hadoop.hdfs.server.namenode.FSNamesystem.appendFile(FSNamesystem.java:3041)
+	at org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer.append(NameNodeRpcServer.java:860)
+	at org.apache.hadoop.hdfs.protocolPB.ClientNamenodeProtocolServerSideTranslatorPB.append(ClientNamenodeProtocolServerSideTranslatorPB.java:521)
+2026-10-30 06:46:55,345 [org.apache.hadoop.hdfs.server.namenode.FSNamesystem$LazyPersistFileScrubber@71f4aeb6] WARN  namenode.FSNamesystem (FSNamesystem.java:clearCorruptLazyPersistFiles(4709)) - Removing lazyPersist file /testAppendTwice/foo with no replicas.
+2026-10-30 06:48:17,582 [org.apache.hadoop.hdfs.server.namenode.FSNamesystem$LazyPersistFileScrubber@264340f0] WARN  namenode.FSNamesystem (FSNamesystem.java:clearCorruptLazyPersistFiles(4709)) - Removing lazyPersist file /testAppendTwice/foo with no replicas.

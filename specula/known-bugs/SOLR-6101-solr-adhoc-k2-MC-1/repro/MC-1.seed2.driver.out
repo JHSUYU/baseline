@@ -1,0 +1,22 @@
+== base: 6e6ca4a base; tracked changes: 0
+            throw new SolrException(ErrorCode.SERVER_ERROR,
+== ant exit code: 0 (log: /users/ZhenyuLi/Specula/runs/20261107-215441-5b4d/solr-adhoc-k2/.specula-output/repro/MC-1.seed2.log)
+== evidence
+2422:   [junit4]   2> 26697 T10 oasc.SpeculaMC1SplitNonLegacyTest.doTest MC1-REPRO: CLUSTERPROP legacyCloud=false applied=true clusterProps={legacyCloud=false}
+2620:   [junit4]   2> 28720 T10 oasc.SpeculaMC1SplitNonLegacyTest.doTest MC1-REPRO: SPLITSHARD under legacyCloud=false FAILED code=500 msg=SPLITSHARD failed to create subshard leaders org.apache.solr.client.solrj.impl.HttpSolrServer$RemoteSolrException: SPLITSHARD failed to create subshard leaders
+2669:   [junit4]   2> 28723 T10 oasc.SpeculaMC1SplitNonLegacyTest.doTest MC1-REPRO: after failed split: shard1 state=active shard1_0=construction replicas=[] shard1_1=construction replicas=[]
+2682:   [junit4]   2> 28747 T10 oasc.SpeculaMC1SplitNonLegacyTest.doTest MC1-REPRO: CLUSTERPROP legacyCloud unset applied=true
+2749:   [junit4]   2> 30760 T10 oasc.SpeculaMC1SplitNonLegacyTest.doTest MC1-REPRO: CONTROL SPLITSHARD with legacyCloud unset FAILED Unable to delete already existing sub shard: shard1_0 org.apache.solr.client.solrj.impl.HttpSolrServer$RemoteSolrException: Unable to delete already existing sub shard: shard1_0
+2797:   [junit4]   2> 30762 T10 oasc.SpeculaMC1SplitNonLegacyTest.doTest MC1-REPRO: RESULT bug triggered: SPLITSHARD rejected by CAH:560, sub-slice shard1_0 left in state construction; follow-up split with legacyCloud unset error=Unable to delete already existing sub shard: shard1_0
+2463:   [junit4]   2> 26724 T125 oasc.SolrException.log ERROR org.apache.solr.common.SolrException: Error CREATEing SolrCore 'collection1_shard1_0_replica1': non legacy mode coreNodeName missing action=CREATE&name=collection1_shard1_0_replica1&version=2&qt=/admin/cores&wt=javabin&collection=collection1&shard=shard1_0
+2496:   [junit4]   2> 	Caused by: org.apache.solr.common.SolrException: non legacy mode coreNodeName missing action=CREATE&name=collection1_shard1_0_replica1&version=2&qt=/admin/cores&wt=javabin&collection=collection1&shard=shard1_0
+2500:   [junit4]   2> 26724 T127 oasc.SolrException.log ERROR org.apache.solr.common.SolrException: Error CREATEing SolrCore 'collection1_shard1_1_replica1': non legacy mode coreNodeName missing action=CREATE&name=collection1_shard1_1_replica1&version=2&qt=/admin/cores&wt=javabin&collection=collection1&shard=shard1_1
+2497:   [junit4]   2> 		at org.apache.solr.handler.admin.CoreAdminHandler.handleCreateAction(CoreAdminHandler.java:560)
+2534:   [junit4]   2> 		at org.apache.solr.handler.admin.CoreAdminHandler.handleCreateAction(CoreAdminHandler.java:560)
+2554:   [junit4]   2> 26731 T306 oasc.SolrException.log ERROR Collection splitshard of splitshard failed:org.apache.solr.common.SolrException: SPLITSHARD failed to create subshard leaders
+2573:   [junit4]   2> 26751 T306 oasc.OverseerCollectionProcessor$Runner.run Overseer Collection Processor: Message id:/overseer/collection-queue-work/qn-0000000000 complete, response:{failure={null=org.apache.solr.client.solrj.impl.HttpSolrServer$RemoteSolrException:Error CREATEing SolrCore 'collec
+2556:   [junit4]   2> 		at org.apache.solr.cloud.OverseerCollectionProcessor.splitShard(OverseerCollectionProcessor.java:1350)
+2704:   [junit4]   2> 	Caused by: org.apache.solr.common.SolrException: The slice: shard1_0 is currently construction. Only INACTIVE (or custom-hashed) slices can be deleted.
+3098:   [junit4] Tests summary: 1 suite, 1 test
+3106:BUILD SUCCESSFUL
+RESULT: BUG TRIGGERED (CAH:560 SolrException on SPLITSHARD sub-shard leader CREATE)

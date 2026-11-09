@@ -1,0 +1,36 @@
+{
+  "id": "MC-1",
+  "title": "Failed startLogSegment during rollEditLog leaves the edit log in BETWEEN_LOG_SEGMENTS; the next roll fails checkState at FSEditLog.java:1409",
+  "status": "REPRODUCED",
+  "source": "model-checking",
+  "cause": "rollEditLog runs endCurrentLogSegment (state := BETWEEN_LOG_SEGMENTS unconditionally) and then startLogSegment. When the only non-required journal fails, JournalSet disables it and throws IOException without terminate, so IN_SEGMENT is never restored and the NN stays Active.",
+  "trigger": "Single local edits dir. A roll runs while the dir becomes unwritable: finalize fails (swallowed) and start fails (IOException to the caller). Then another rollEditLog arrives before any client edit.",
+  "consequence": "The next rollEditLog RPC throws IllegalStateException('Bad state: BETWEEN_LOG_SEGMENTS') from FSEditLog.endCurrentLogSegment:1409 on every retry, even after the disk is repaired (attemptRestoreRemovedStorage is never reached). The NN stays up with no working journal.",
+  "sites": [
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLog.java:endCurrentLogSegment",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLog.java:startLogSegment",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/JournalSet.java:mapJournalsAndReportErrors"
+  ],
+  "actions": ["TargetCheck"],
+  "invariants": ["TargetSafe"],
+  "premises": [
+    "All configured edits dirs are non-required (default single local dfs.namenode.edits.dir), so JournalSet throws IOException instead of terminate(1).",
+    "The base tree (3.3.0-SNAPSHOT, c37cda11) predates HDFS-14075 (commit 042c8ef593ce), which makes startLogSegment failure terminate the NN.",
+    "No client edit reaches logSync between the failed roll and the next roll; a client edit would instead terminate the NN via logSync."
+  ],
+  "dependencies": [
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLog.java", "start": "  synchronized long rollEditLog(int layoutVersion) throws IOException {", "end": "  synchronized void abortCurrentLogSegment() {"},
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/JournalSet.java", "start": "  private void mapJournalsAndReportErrors(", "end": "  private void abortAllJournals() {"},
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSNamesystem.java", "start": "  CheckpointSignature rollEditLog() throws IOException {", "end": "  NamenodeCommand startCheckpoint(NamenodeRegistration backupNode,"},
+    {"root": "work", "path": "spec/base.tla"},
+    {"root": "work", "path": "spec/MC.tla"},
+    {"root": "work", "path": "spec/MC_hunt_s1_start_failure.cfg"}
+  ],
+  "evidence": [
+    "spec/output/MC_hunt_s1_bfs.out",
+    "repro/test_bugMC-1_failed_roll_restart_strands_segment.sh",
+    "repro/SpeculaAdhocMC1JournalStartFailureTest.java",
+    "repro/MC-1.run.log",
+    "confirmation/MC-1/investigation.md"
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "id": "MC-1",
+  "title": "Token signed with a freshly rolled key is rejected (InvalidToken, ATSM:147) by a server that has not yet applied the key from ZooKeeper",
+  "status": "REPRODUCED",
+  "source": "model-checking",
+  "cause": "rollCurrentKey installs the new key in allKeys/currentKey (ATSM:254-255) before writing it to ZK (ATSM:256); createPassword signs with currentKey at once (ATSM:129); followers learn keys only asynchronously via ZK watch events (ZKSW:120-131) and retrievePassword has no read-through on a miss (ATSM:145-148).",
+  "trigger": "A client obtains a token from the keymaster right after a key roll and authenticates (SASL DIGEST) to another server before that server's ZK event thread applied the keys NodeChildrenChanged event (or while it starts up and read the children before the key was written).",
+  "consequence": "The follower's RpcServer SASL handler gets InvalidToken('Unknown master key for token') from retrievePassword at ATSM:147; the client's RPC fails with RemoteException(InvalidToken) for a valid, unexpired token the issuer accepts. The follower repairs itself once the event is processed.",
+  "sites": [
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager.java:retrievePassword",
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager.java:rollCurrentKey",
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager.java:createPassword",
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/security/token/ZKSecretWatcher.java:nodeChildrenChanged"
+  ],
+  "actions": ["TargetCheck"],
+  "invariants": ["TargetSafe"],
+  "premises": [
+    "No fault needed; normal key roll every hbase.auth.key.update.interval.",
+    "Token is presented to a non-keymaster server inside its key propagation window (ms normally; widened by a busy follower ZK event thread).",
+    "Pinned tree 92aa67fd15 predates HBASE-15039 (refresh keys from ZK on InvalidToken).",
+    "The raw RPC client does not retry token SASL failures (RpcClientImpl handleSaslConnectionFailure retries only Kerberos); higher-level retrying callers were not evaluated."
+  ],
+  "dependencies": [
+    {"root": "source", "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager.java", "start": "  protected byte[] createPassword(AuthenticationTokenIdentifier identifier) {", "end": "  public AuthenticationTokenIdentifier createIdentifier() {"},
+    {"root": "source", "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager.java", "start": "  public synchronized void addKey(AuthenticationKey key) throws IOException {", "end": "  synchronized boolean removeKey(Integer keyId) {"},
+    {"root": "source", "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager.java", "start": "  synchronized void rollCurrentKey() {", "end": "  public static SecretKey createSecretKey(byte[] raw) {"},
+    {"root": "source", "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/security/token/ZKSecretWatcher.java", "start": "  public void nodeChildrenChanged(String path) {", "end": "  public String getRootKeyZNode() {"},
+    {"root": "work", "path": "spec/base.tla"},
+    {"root": "work", "path": "spec/MC_hunt_S3.cfg"}
+  ],
+  "evidence": [
+    "confirmation/MC-1/investigation.md",
+    "repro/test_bugMC-1_fresh_key_propagation.sh",
+    "repro/test_bugMC-1_SpeculaAdhocMC1Test.java",
+    "repro/MC-1.final.log",
+    "repro/MC-1.final.surefire-output.txt",
+    "repro/MC-1.server-throw.trace.txt"
+  ]
+}

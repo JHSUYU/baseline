@@ -1,0 +1,30 @@
+== bug: ant exit=0
+[MC-1] mode = BUG (legacyCloud=false)
+[MC-1] clusterProps after CLUSTERPROP = {legacyCloud=false}
+[MC-1] target collection created OK (createCollection passes coreNodeName in non-legacy mode)
+[MC-1] MIGRATE result: FAILED: org.apache.solr.client.solrj.impl.HttpSolrServer$RemoteSolrException: MIGRATE failed to create replica of temporary collection in target leader node.
+[MC-1] collections after MIGRATE: [control_collection, collection1, migrate_multipleshardtest_targetCollection, split_shard2_temp_shard1]
+[MC-1] source shard1 routingRules=null
+[MC-1] source shard2 routingRules=[a!]
+[MC-1] target leader core migrate_multipleshardtest_targetCollection_shard1_replica1 on 127.0.0.1:34173_to%2Fnh UpdateLog state=BUFFERING
+[MC-1] target numFound(*:*) = 0
+[MC-1] BUG REPRODUCED: MIGRATE aborted at the temp replica2 CREATE (root cause: CoreAdminHandler.java:563)
+[MC-1] after 60s: collections = [control_collection, collection1, migrate_multipleshardtest_targetCollection, split_shard2_temp_shard1]
+[MC-1] after 60s: source shard1 routingRules=null
+[MC-1] after 60s: source shard2 routingRules=[a!]
+[MC-1] after 60s: target leader core migrate_multipleshardtest_targetCollection_shard1_replica1 UpdateLog state=BUFFERING
+   [junit4] Tests summary: 1 suite, 1 test
+   [junit4]   2> 	Caused by: org.apache.solr.common.SolrException: non legacy mode coreNodeName missing qt=/admin/cores&name=split_shard2_temp_shard1_shard1_replica2&action=CREATE&collection=split_sha
+   [junit4]   2> 		at org.apache.solr.handler.admin.CoreAdminHandler.handleCreateAction(CoreAdminHandler.java:563)
+== control: ant exit=0
+[MC-1] mode = CONTROL (legacyCloud unset)
+[MC-1] clusterProps after CLUSTERPROP = {}
+[MC-1] target collection created OK (createCollection passes coreNodeName in non-legacy mode)
+[MC-1] MIGRATE result: SUCCESS
+[MC-1] collections after MIGRATE: [control_collection, collection1, migrate_multipleshardtest_targetCollection]
+[MC-1] source shard1 routingRules=null
+[MC-1] source shard2 routingRules=[a!]
+[MC-1] target leader core migrate_multipleshardtest_targetCollection_shard1_replica1 on 127.0.0.1:33967_ UpdateLog state=ACTIVE
+[MC-1] target numFound(*:*) = 0
+[MC-1] CONTROL OK: MIGRATE succeeded in legacy mode
+   [junit4] Tests summary: 1 suite, 1 test

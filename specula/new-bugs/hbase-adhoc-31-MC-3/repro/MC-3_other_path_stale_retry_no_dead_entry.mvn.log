@@ -1,0 +1,103 @@
+[INFO] Scanning for projects...
+[INFO] ------------------------------------------------------------------------
+[INFO] Detecting the operating system and CPU architecture
+[INFO] ------------------------------------------------------------------------
+[INFO] os.detected.name: linux
+[INFO] os.detected.arch: x86_64
+[INFO] os.detected.bitness: 64
+[INFO] os.detected.version: 5.15
+[INFO] os.detected.version.major: 5
+[INFO] os.detected.version.minor: 15
+[INFO] os.detected.release: ubuntu
+[INFO] os.detected.release.version: 22.04
+[INFO] os.detected.release.like.ubuntu: true
+[INFO] os.detected.release.like.debian: true
+[INFO] os.detected.classifier: linux-x86_64
+[INFO] 
+[INFO] -------------------< org.apache.hbase:hbase-server >--------------------
+[INFO] Building Apache HBase - Server 4.0.0-alpha-1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-cli) @ hbase-server ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running org.apache.hadoop.hbase.master.TestSpeculaMC3LateRegister
+WARNING: A terminally deprecated method in java.lang.System has been called
+WARNING: System::setSecurityManager has been called by org.apache.hadoop.hbase.HBaseJupiterExtension (file:/bulk/specula-adhoc/hbase/cases/hbase-adhoc-31/deps/org/apache/hbase/hbase-common/4.0.0-alpha-1-SNAPSHOT/hbase-common-4.0.0-alpha-1-SNAPSHOT-tests.jar)
+WARNING: Please consider reporting this to the maintainers of org.apache.hadoop.hbase.HBaseJupiterExtension
+WARNING: System::setSecurityManager will be removed in a future release
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 25.00 s <<< FAILURE! -- in org.apache.hadoop.hbase.master.TestSpeculaMC3LateRegister
+[ERROR] org.apache.hadoop.hbase.master.TestSpeculaMC3LateRegister.level1SessionExpiresLate -- Time elapsed: 24.61 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+close=1 open=0
+org.apache.hbase.thirdparty.com.google.protobuf.ServiceException: org.apache.hadoop.hbase.DoNotRetryIOException: This RPC was intended for a different server with startCode: 1793895812529, this server is: clnode227.clemson.cloudlab.us,39431,1793895824456
+	at org.apache.hadoop.hbase.regionserver.RSRpcServices.throwOnWrongStartCode(RSRpcServices.java:1880)
+	at org.apache.hadoop.hbase.regionserver.RSRpcServices.throwOnWrongStartCode(RSRpcServices.java:1872)
+	at org.apache.hadoop.hbase.regionserver.RSRpcServices.throwOnWrongStartCode(RSRpcServices.java:1892)
+	at org.apache.hadoop.hbase.regionserver.RSRpcServices.executeProcedures(RSRpcServices.java:4025)
+	at org.apache.hadoop.hbase.regionserver.SpeculaMC3RegionServer$MC3RpcServices.executeProcedures(SpeculaMC3RegionServer.java:129)
+	at org.apache.hadoop.hbase.shaded.protobuf.generated.AdminProtos$AdminService$2.callBlockingMethod(AdminProtos.java:34436)
+	at org.apache.hadoop.hbase.ipc.RpcServer.call(RpcServer.java:461)
+	at org.apache.hadoop.hbase.ipc.CallRunner.run(CallRunner.java:125)
+	at org.apache.hadoop.hbase.ipc.RpcHandler.run(RpcHandler.java:102)
+	at org.apache.hadoop.hbase.ipc.RpcHandler.run(RpcHandler.java:82)
+Caused by: org.apache.hadoop.hbase.DoNotRetryIOException: This RPC was intended for a different server with startCode: 1793895812529, this server is: clnode227.clemson.cloudlab.us,39431,1793895824456
+	... 10 more
+ ==> expected: <true> but was: <false>
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+	at org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+	at org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:214)
+	at org.apache.hadoop.hbase.master.TestSpeculaMC3LateRegister.assertFiredAtTarget(TestSpeculaMC3LateRegister.java:243)
+	at org.apache.hadoop.hbase.master.TestSpeculaMC3LateRegister.level1SessionExpiresLate(TestSpeculaMC3LateRegister.java:279)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.apache.hadoop.hbase.HBaseJupiterExtension.lambda$runWithTimeout$0(HBaseJupiterExtension.java:159)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+
+[INFO] 
+[INFO] Results:
+[INFO] 
+[ERROR] Failures: 
+[ERROR]   TestSpeculaMC3LateRegister.level1SessionExpiresLate:279->assertFiredAtTarget:243 close=1 open=0
+org.apache.hbase.thirdparty.com.google.protobuf.ServiceException: org.apache.hadoop.hbase.DoNotRetryIOException: This RPC was intended for a different server with startCode: 1793895812529, this server is: clnode227.clemson.cloudlab.us,39431,1793895824456
+	at org.apache.hadoop.hbase.regionserver.RSRpcServices.throwOnWrongStartCode(RSRpcServices.java:1880)
+	at org.apache.hadoop.hbase.regionserver.RSRpcServices.throwOnWrongStartCode(RSRpcServices.java:1872)
+	at org.apache.hadoop.hbase.regionserver.RSRpcServices.throwOnWrongStartCode(RSRpcServices.java:1892)
+	at org.apache.hadoop.hbase.regionserver.RSRpcServices.executeProcedures(RSRpcServices.java:4025)
+	at org.apache.hadoop.hbase.regionserver.SpeculaMC3RegionServer$MC3RpcServices.executeProcedures(SpeculaMC3RegionServer.java:129)
+	at org.apache.hadoop.hbase.shaded.protobuf.generated.AdminProtos$AdminService$2.callBlockingMethod(AdminProtos.java:34436)
+	at org.apache.hadoop.hbase.ipc.RpcServer.call(RpcServer.java:461)
+	at org.apache.hadoop.hbase.ipc.CallRunner.run(CallRunner.java:125)
+	at org.apache.hadoop.hbase.ipc.RpcHandler.run(RpcHandler.java:102)
+	at org.apache.hadoop.hbase.ipc.RpcHandler.run(RpcHandler.java:82)
+Caused by: org.apache.hadoop.hbase.DoNotRetryIOException: This RPC was intended for a different server with startCode: 1793895812529, this server is: clnode227.clemson.cloudlab.us,39431,1793895824456
+	... 10 more
+ ==> expected: <true> but was: <false>
+[INFO] 
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  30.821 s
+[INFO] Finished at: 2026-11-05T16:23:52Z
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.3:test (default-cli) on project hbase-server: There are test failures.
+[ERROR] 
+[ERROR] See /bulk/specula-adhoc/specula-runs/20261102-200148-8d5f/hbase-adhoc-31/.specula-output/confirmation/MC-3/worktree/hbase-server/target/surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

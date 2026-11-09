@@ -49,7 +49,7 @@ How each was verified:
 - **20/MC-1..MC-3:** the target is a Java `assert`. With `-da` the DN correctly lowers its txid; the production harm (20/CR-2) never reaches the target line.
 - Every other finding is a duplicate, by design, known, or a false positive. See the VERIFY files and `CLASSIFICATION*.md`.
 
-## Not yet verified
+- **34/MC-1, MC-2:** needs a pre-federation disk in a hot add (as 35/MC-1). **39/MC-1:** HDFS-17757, non-default, transient. **52/MC-1, MC-3:** HDFS-17960. **52/MC-2:** HDFS-17399. **52/CR-2:** CheckpointNode only, not severe. Details: `../batches/VERIFY-batch1.md`.
 
-- 33: finished (REACHED_CONFIRMED by an interleaving: hot-swap add vs block-pool shutdown; the target is a Java assert); TLC files kept, verification pending.
-- Cases still running: 34, 39, 40, 45, 48, 49, 50, 52.
+- **33/MC-1..3:** the target is a Java `assert` (as 20/MC-1..3). **40/MC-4:** HDFS-15357, HDFS-7269. **40/CR-1:** HDFS-16987. **40/MC-1, 3, 6, 7, 8:** transient. **40/MC-2:** by design. **40/MC-5:** needs test hooks. **45/MC-4:** stacked non-default settings, empty namespace only (the closest call). **45/MC-3:** off-label `rollEdits`. **45/MC-1, 2, 5:** one failed call, or a node already stopping. **49/MC-1..3:** private flag plus 65536 snapshots. **49/MC-4, 5, 50/MC-4, 5:** HDFS-17399. **50/CR-1:** HDFS-17954. **50/MC-6:** unrealistic. **50/MC-1, 2, 3:** one wrong or failed call, namespace intact. Details: `../batches/VERIFY-batch2.md`.
+- **48:** NOT_REACHED_BOUNDED; its CR-1, CR-2 are false positives.

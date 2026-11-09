@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "target": "solr-adhoc-k2",
+  "check": {"file": "solr/core/src/java/org/apache/solr/handler/admin/CoreAdminHandler.java", "line": 560, "thrown": "org.apache.solr.common.SolrException"},
+  "verdict": "REACHED_CONFIRMED",
+  "mechanism": "CONFIG",
+  "scenario": "Scenario 1: Overseer CREATE paths that never supply coreNodeName (non-legacy SPLITSHARD)",
+  "finding": "MC-1",
+  "counterexample": "spec/output/MC_hunt_split_nonlegacy_bfs.out",
+  "reproduction": "repro/test_bugMC-1_split_nonlegacy.sh",
+  "stackFrame": "org.apache.solr.handler.admin.CoreAdminHandler.handleCreateAction(CoreAdminHandler.java:560)",
+  "bounds": [
+    {"config": "MC_hunt_split_nonlegacy.cfg", "result": "VIOLATION", "states": 179, "diameter": 8, "seconds": 1},
+    {"config": "MC_hunt_legacy_flip_race.cfg", "result": "VIOLATION", "states": 326, "diameter": 11, "seconds": 1},
+    {"config": "output/supp_flip_race_cc_only.cfg", "result": "VIOLATION", "states": 82, "diameter": 16, "seconds": 1}
+  ],
+  "traceValidation": {"traces": 3, "passed": 3},
+  "notes": "The primary result is MC-1, a 6-state TargetSafe counterexample. An operator sends the supported Collections API call CLUSTERPROP legacyCloud=false, and the Overseer writes /clusterprops.json. On a later SPLITSHARD, OverseerCollectionProcessor.splitShard sends the sub-shard leader CoreAdmin CREATE without a coreNodeName (OCP:1339-1347). The receiving node's handleCreateAction reads non-legacy mode live from ZooKeeper, sees coreNodeName == null, and throws at CoreAdminHandler.java:560. No crash, partition, timeout or race is needed; the mechanism is a supported configuration setting. This was reproduced on the unmodified base commit 6e6ca4a by repro/SpeculaMC1SplitNonLegacyTest.java, a ShardSplitTest#testDistribSearch variant in solr/core that uses only public CLUSTERPROP and SPLITSHARD calls, under seeds 1A2B3C4D and DEADBEEF. The CAH:560 frame appears in repro/MC-1.log lines 2502 and 2539 and in repro/MC-1.seed2.log. Two other reproduced entries also reach the same line. MC-2 (Scenario 2, MC_hunt_legacy_flip_race.cfg, mechanism INTERLEAVING) is a legacyCloud flip that lands between the OCP's read and the receiver's live read during ADDREPLICA or CREATE collection; see repro/test_bugMC-2_SpeculaAdhocMC2Test.java and the repro/MC-2_*.log files. CR-1 comes from code review and was not model-checked; CREATESHARD and MIGRATE send a CREATE without coreNodeName under legacyCloud=false (repro/test_bugCR-1_SpeculaCR1NonLegacyCreateShardMigrateTest.java, repro/CR-1-run-*.log). MC.cfg without CLUSTERPROP holds TargetSafe over its complete state space (4,366 distinct states, diameter 42), which matches the passing workload. All three traces pass trace validation: workload, variant_concurrent and variant_rounds."
+}

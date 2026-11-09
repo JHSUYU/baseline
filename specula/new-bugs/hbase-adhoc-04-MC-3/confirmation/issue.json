@@ -1,0 +1,38 @@
+{
+  "id": "MC-3",
+  "title": "Master crash before the observer's enable loses it: the map has advanced, nothing retries, and flush fails at L163 on a table left DISABLED",
+  "status": "REPRODUCED",
+  "source": "model-checking",
+  "cause": "QuotaObserverChore.updateTableQuota writes the observance row and advances its in-memory snapshot before its single enable attempt, and the pending enable is not recorded anywhere that survives a failure.",
+  "trigger": "The active master is killed after the observer's put and map update, or before a run whose connection already knows hbase:quota. The enable fails, the next run is a no-op, and the next master initializes with the table still DISABLED.",
+  "consequence": "admin.flush fails with TableNotEnabledException thrown at AbstractStateMachineTableProcedure.java:163, and the table stays DISABLED until an operator acts.",
+  "sites": [
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/quotas/QuotaObserverChore.java:updateTableQuota",
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/master/procedure/AbstractStateMachineTableProcedure.java:preflightChecks"
+  ],
+  "actions": ["TargetCheck"],
+  "invariants": ["TargetSafe"],
+  "premises": [
+    "The observer's single enable attempt fails because no master is running; in the workload it has client retries = 0.",
+    "In the workload the observer's map outlives the crash because it lives in the test JVM; the same no-retry follows from any failed enable.",
+    "A master kill is in the fault model; the reproduction injects only SingleProcessHBaseCluster.killMaster and restarts the master on its old port.",
+    "The E-stored-but-never-locked branch was not reached on the real system; the confirmation rests on the E-never-stored branch."
+  ],
+  "dependencies": [
+    {"root": "source", "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/quotas/QuotaObserverChore.java", "start": "  void updateTableQuota(TableName table, SpaceQuotaSnapshot currentSnapshot,", "end": "  private boolean isDisableSpaceViolationPolicy(final SpaceViolationPolicy currPolicy,"},
+    {"root": "source", "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/procedure/AbstractStateMachineTableProcedure.java", "start": "  protected void preflightChecks(MasterProcedureEnv env, Boolean enabled) throws HBaseIOException {", "end": "  protected boolean isTableEnabled(MasterProcedureEnv env) {"},
+    {"root": "source", "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/quotas/QuotaUtil.java", "start": "  public static void enableTableIfNotEnabled(Connection conn, TableName tableName)", "end": "   * Method to disable a table, if not already disabled. This method suppresses"},
+    {"root": "source", "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/procedure/FlushTableProcedure.java"},
+    {"root": "work", "path": "spec/base.tla"},
+    {"root": "work", "path": "spec/MC.tla"},
+    {"root": "work", "path": "spec/MC_hunt_S3_master_failover.cfg"}
+  ],
+  "evidence": [
+    "confirmation/MC-3/investigation.md",
+    "spec/output/MC_hunt_S3_master_failover_bfs.out",
+    "repro/test_bugMC-3_master_crash_enable.sh",
+    "repro/test_bugMC-3_SpeculaAdhoc04MC3Test.java",
+    "repro/MC-3.pristine.part1.log",
+    "repro/MC-3.pristine.part2.log"
+  ]
+}

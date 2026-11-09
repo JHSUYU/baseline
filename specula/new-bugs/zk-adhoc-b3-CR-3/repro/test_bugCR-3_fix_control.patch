@@ -1,0 +1,75 @@
+# Fix control only, not part of the Level 0 reproduction. Relative to the instrumented worktree.
+--- ContainerManager.java	2026-11-04 21:57:25.387025123 +0000
++++ zookeeper-server/src/main/java/org/apache/zookeeper/server/ContainerManager.java	2026-11-04 21:57:25.397504713 +0000
+@@ -25,6 +25,7 @@
+ import java.util.TimerTask;
+ import java.util.concurrent.TimeUnit;
+ import java.util.concurrent.atomic.AtomicReference;
++import java.util.function.Supplier;
+ import org.apache.zookeeper.DeleteContainerRequest;
+ import org.apache.zookeeper.ZooDefs;
+ import org.apache.zookeeper.common.Time;
+@@ -42,7 +43,7 @@
+ public class ContainerManager {
+ 
+     private static final Logger LOG = LoggerFactory.getLogger(ContainerManager.class);
+-    private final ZKDatabase zkDb;
++    private final Supplier<ZKDatabase> zkDb;
+     private final RequestProcessor requestProcessor;
+     private final int checkIntervalMs;
+     private final int maxPerMinute;
+@@ -87,6 +88,19 @@
+      *                                  any children is retained
+      */
+     public ContainerManager(ZKDatabase zkDb, RequestProcessor requestProcessor, int checkIntervalMs, int maxPerMinute, long maxNeverUsedIntervalMs) {
++        this(() -> zkDb, requestProcessor, checkIntervalMs, maxPerMinute, maxNeverUsedIntervalMs);
++    }
++
++    public ContainerManager(Supplier<ZKDatabase> zkDb, RequestProcessor requestProcessor) {
++        this(
++            zkDb, requestProcessor,
++            Integer.getInteger("znode.container.checkIntervalMs", (int) TimeUnit.MINUTES.toMillis(1)),
++            Integer.getInteger("znode.container.maxPerMinute", 10000),
++            Long.getLong("znode.container.maxNeverUsedIntervalMs", TimeUnit.MINUTES.toMillis(5))
++        );
++    }
++
++    public ContainerManager(Supplier<ZKDatabase> zkDb, RequestProcessor requestProcessor, int checkIntervalMs, int maxPerMinute, long maxNeverUsedIntervalMs) {
+         this.zkDb = zkDb;
+         this.requestProcessor = requestProcessor;
+         this.checkIntervalMs = checkIntervalMs;
+@@ -184,8 +198,8 @@
+     // VisibleForTesting
+     protected Collection<String> getCandidates() {
+         Set<String> candidates = new HashSet<>();
+-        for (String containerPath : zkDb.getDataTree().getContainers()) {
+-            DataNode node = zkDb.getDataTree().getNode(containerPath);
++        for (String containerPath : zkDb.get().getDataTree().getContainers()) {
++            DataNode node = zkDb.get().getDataTree().getNode(containerPath);
+             if ((node != null) && node.getChildren().isEmpty()) {
+                 /*
+                     cversion > 0: keep newly created containers from being deleted
+@@ -207,8 +221,8 @@
+                 }
+             }
+         }
+-        for (String ttlPath : zkDb.getDataTree().getTtls()) {
+-            DataNode node = zkDb.getDataTree().getNode(ttlPath);
++        for (String ttlPath : zkDb.get().getDataTree().getTtls()) {
++            DataNode node = zkDb.get().getDataTree().getNode(ttlPath);
+             if (node != null) {
+                 Set<String> children = node.getChildren();
+                 if (children.isEmpty()) {
+diff --git a/zookeeper-server/src/main/java/org/apache/zookeeper/server/ZooKeeperServerMain.java b/zookeeper-server/src/main/java/org/apache/zookeeper/server/ZooKeeperServerMain.java
+index c721e685..41a188aa 100644
+--- a/zookeeper-server/src/main/java/org/apache/zookeeper/server/ZooKeeperServerMain.java
++++ b/zookeeper-server/src/main/java/org/apache/zookeeper/server/ZooKeeperServerMain.java
+@@ -167,7 +167,7 @@ public void runFromConfig(ServerConfig config) throws IOException, AdminServerEx
+                 secureCnxnFactory.startup(zkServer, needStartZKServer);
+             }
+ 
+-            containerManager = new ContainerManager(zkServer.getZKDatabase(), zkServer.firstProcessor);
++            containerManager = new ContainerManager(zkServer::getZKDatabase, zkServer.firstProcessor);
+             containerManager.start();
+             ZKAuditProvider.addZKStartStopAuditLog();
+ 

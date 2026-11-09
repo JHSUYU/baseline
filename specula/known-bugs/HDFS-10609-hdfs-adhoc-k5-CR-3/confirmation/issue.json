@@ -1,0 +1,35 @@
+{
+  "id": "CR-3",
+  "title": "addDatanode2ExistingPipeline does not refetch the DEK on InvalidEncryptionKeyException; excludes healthy targets and fails append",
+  "status": "REPRODUCED",
+  "source": "code-review",
+  "cause": "DataStreamer.addDatanode2ExistingPipeline catches every IOException from transfer() as a failure of the new target: it excludes that node and retries up to 3 times without calling dfsClient.clearDataEncryptionKey(), so a stale cached DEK rejected by the source DN at BlockTokenSecretManager.retrieveDataEncryptionKey (line 420) is reused on every try.",
+  "trigger": "Encrypted transfer on; a long-lived client caches a DEK; the NN and DNs restart (new block keys); the client appends to a replication-3 file and the first DN of the append pipeline crashes before data is sent, so pipeline recovery adds a DN by block transfer before any other SASL connection refreshes the DEK.",
+  "consequence": "The append fails for the application (out.close() throws InvalidEncryptionKeyException with 6 DNs, or 'Failed to replace a bad datanode ... no more good datanodes' with 4 DNs), and up to three healthy DNs are excluded. A control that refreshes the DEK first succeeds.",
+  "sites": [
+    "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DataStreamer.java:addDatanode2ExistingPipeline",
+    "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DataStreamer.java:transfer",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java:retrieveDataEncryptionKey"
+  ],
+  "actions": [],
+  "invariants": [],
+  "premises": [
+    "dfs.encrypt.data.transfer=true and block access tokens enabled; no trusted-channel resolver.",
+    "The client's cached DEK keyId is absent from the DN's BlockTokenSecretManager, reached via NN + DN restart while the client stays alive (as in TestEncryptedTransfer#testLongLivedWriteClientAfterRestart).",
+    "Pipeline recovery reaches transfer() before any createBlockOutputStream/read SASL contact that would clear the DEK (here: pipeline[0] dead, so the first contact fails at connect).",
+    "Default replace-datanode-on-failure policy (not best-effort), so the exception propagates to the writer.",
+    "Pinned tree 68a2058 (3.0.0-alpha2-SNAPSHOT) predates the upstream fix HDFS-10609."
+  ],
+  "dependencies": [
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DataStreamer.java", "start": "  private void addDatanode2ExistingPipeline() throws IOException {", "end": "  void failPacket4Testing() {"},
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSClient.java", "start": "  public void clearDataEncryptionKey() {", "end": "   * Get the checksum of the whole file or a range of the file. Note that the"},
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java", "start": "  public DataEncryptionKey generateDataEncryptionKey() {", "end": "    return createPassword(nonce, key.getKey());"},
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/protocol/datatransfer/sasl/SaslDataTransferServer.java"}
+  ],
+  "evidence": [
+    "confirmation/CR-3/investigation.md",
+    "repro/test_bugCR-3_appendTransferStaleDek.sh",
+    "repro/CR-3.runner.out",
+    "repro/CR-3.evidence.log"
+  ]
+}

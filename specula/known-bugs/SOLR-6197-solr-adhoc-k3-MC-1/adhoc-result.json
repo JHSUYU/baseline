@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "target": "solr-adhoc-k3",
+  "check": {"file": "solr/core/src/java/org/apache/solr/handler/admin/CoreAdminHandler.java", "line": 563, "thrown": "org.apache.solr.common.SolrException"},
+  "verdict": "REACHED_CONFIRMED",
+  "mechanism": "CONFIG",
+  "scenario": "Scenario 1: MIGRATE's hand-rolled temp-replica CREATE omits coreNodeName in non-legacy mode (workload path)",
+  "finding": "MC-1",
+  "counterexample": "spec/output/hunt_S1_migrate_bfs.out",
+  "reproduction": "repro/test_bugMC-1_SpeculaReproMC1MigrateRouteKeyTest.java",
+  "stackFrame": "org.apache.solr.handler.admin.CoreAdminHandler.handleCreateAction(CoreAdminHandler.java:563)",
+  "bounds": [
+    {"config": "MC_hunt_S1_migrate.cfg", "result": "VIOLATION", "states": 61, "diameter": 47, "seconds": 1},
+    {"config": "MC_hunt_S2_createshard.cfg", "result": "VIOLATION", "states": 8, "diameter": 8, "seconds": 0},
+    {"config": "MC_hunt_S3_toctou.cfg", "result": "VIOLATION", "states": 197, "diameter": 34, "seconds": 0}
+  ],
+  "traceValidation": {"traces": 3, "passed": 3},
+  "notes": "The target check is reachable along three independent paths, and all three were reproduced on the pristine base commit (e75b9596) through public APIs, in variants of MigrateRouteKeyTest in solr/core. Primary (MC-1, Scenario 1, the workload path): an operator sets the supported cluster property legacyCloud=false through CLUSTERPROP. The workload's target-collection CREATE then succeeds because createCollection pre-registers the replica and passes coreNodeName. MIGRATE buffers updates on the target leader, adds the routing rule, creates the temp collection and splits. It then sends its hand-built CoreAdmin CREATE for the temp replica2 without coreNodeName, and the node reads legacyCloud=false fresh and throws at CoreAdminHandler.java:563. A legacy-mode control run of the same test passes. MC-1 matches the upstream report SOLR-6197, which was fixed after the pinned revision. Second path (MC-2, Scenario 2, CONFIG): with legacyCloud=false, CREATESHARD on an implicit-router collection also omits coreNodeName and fires the check (3 of 3 runs), leaving an empty slice. Third path (MC-3, Scenario 3, INTERLEAVING): a concurrent CLUSTERPROP legacyCloud=false applied between the Overseer's one-time legacy read (createCollection or addReplica) and the node's re-read fires the check on both paths. Its reproduction timed the CLUSTERPROP with a read-only ZooKeeper existence check. CR-1, a claimed NPE ahead of the target on the MIGRATE path, was judged a false positive. Every hunt BFS ran to completion within its bounds, and MC.cfg (default props, workload as written) shows no violation."
+}

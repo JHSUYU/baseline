@@ -1,0 +1,77 @@
+== provenance
+worktree   : /users/ZhenyuLi/Specula/runs/20261029-113905-f621/hdfs-adhoc-26/.specula-output/confirmation/MC-1/worktree
+HEAD       : 734dd8a67cd6df56b59ff75aa43de57834a0d248
+main srcs  : pristine (no diff vs 734dd8a67cd, no untracked files)
+== install test variant
+== run (mvn -o test -Dtest=SpeculaAdhocMC1DnMissedRollbackTest)
+[ERROR] Tests run: 2, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 11.94 s <<< FAILURE! -- in org.apache.hadoop.hdfs.SpeculaAdhocMC1DnMissedRollbackTest
+[ERROR] org.apache.hadoop.hdfs.SpeculaAdhocMC1DnMissedRollbackTest.testDnMissesRollbackThenReupgradeThenRollback -- Time elapsed: 7.626 s <<< FAILURE!
+[ERROR] Failures: 
+[ERROR]   SpeculaAdhocMC1DnMissedRollbackTest.testDnMissesRollbackThenReupgradeThenRollback:319 one throw per stale volume ==> expected: <2> but was: <4>
+[ERROR] Tests run: 2, Failures: 1, Errors: 0, Skipped: 0
+[ERROR] There are test failures.
+[INFO] BUILD SUCCESS
+== [MC-1] step log (from hadoop-hdfs-project/hadoop-hdfs/target/surefire-reports/org.apache.hadoop.hdfs.SpeculaAdhocMC1DnMissedRollbackTest-output.txt)
+[MC-1] [CE 1 Init] formatted cluster, nsInfo.cTime c0=1793307909909, bpid=BP-517677716-130.127.134.14-1793307909906; client wrote /mc1/written-at-c0 (1 replica, on dn0). NN name1{current=1793307909909, previous=<absent>} name2{current=1793307909909, previous=<absent>}; dn0 BP vol1{current=1793307909909, previous=<absent>} vol2{current=1793307909909, previous=<absent>}
+[MC-1] [CE 2-9 MCNNUpgrade, MCDNStart..MCDNInitDone] NN started with -upgrade: nsInfo.cTime c1=1793307913965; dn0 started REGULAR and registered; dn0 BP vol1{current=1793307913965, previous=1793307909909} vol2{current=1793307913965, previous=1793307909909}; client wrote /mc1/written-at-c1
+[MC-1] [CE 10-12 MCDNStop, MCNNStop, MCNNRollback] `hdfs namenode -rollback` done: NN name1{current=1793307909909, previous=<absent>} name2{current=1793307909909, previous=<absent>}
+[MC-1] [CE 13-14 MCDNOutage, MCCloseRollback] dn0 out of service for the whole rollback window (never started with -rollback); dn0 BP vol1{current=1793307913965, previous=1793307909909} vol2{current=1793307913965, previous=1793307909909}
+[MC-1] [CE 15-23 MCNNUpgrade, MCDNRepair, MCDNStart..MCDNInitDone] NN started with -upgrade again: nsInfo.cTime c2=1793307915239; NN name1{current=1793307915239, previous=1793307909909} name2{current=1793307915239, previous=1793307909909}; dn0 started REGULAR, block pool alive=true, NN live DNs=1; dn0 BP vol1{current=1793307915239, previous=1793307913965} vol2{current=1793307915239, previous=17933
+[MC-1] [CE 24-26 MCDNStop, MCNNStop, MCNNRollback] `hdfs namenode -rollback` done: NN name1{current=1793307909909, previous=<absent>} name2{current=1793307909909, previous=<absent>}
+[MC-1] [CE 27 MCNNStart] NN started: nsInfo.cTime=1793307909909 (c0=1793307909909)
+[MC-1] [CE 28-30 MCDNStart(-rollback), MCDNHandshake, MCTargetCheck] org.apache.hadoop.hdfs.server.common.InconsistentFSStateException thrown 4 time(s) (one per dn0 volume)
+[MC-1] TARGET exception: org.apache.hadoop.hdfs.server.common.InconsistentFSStateException: Directory /bulk/specula-adhoc/specula-runs/20261029-113905-f621/hdfs-adhoc-26/.specula-output/confirmation/MC-1/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/dfs/data1/current/BP-517677716-130.127.134.14-1793307909906 is in an inconsistent state: Cannot rollback to a newer state.
+[MC-1] TARGET top frame: org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doRollback(BlockPoolSliceStorage.java:626)
+[MC-1] [CE 1 Init] formatted cluster, nsInfo.cTime c0=1793307916421, bpid=BP-1860384703-130.127.134.14-1793307916421; client wrote /mc1/written-at-c0 (1 replica, on dn0). NN name1{current=1793307916421, previous=<absent>} name2{current=1793307916421, previous=<absent>}; dn0 BP vol1{current=1793307916421, previous=<absent>} vol2{current=1793307916421, previous=<absent>}
+[MC-1] [CE 2-9 MCNNUpgrade, MCDNStart..MCDNInitDone] NN started with -upgrade: nsInfo.cTime c1=1793307917892; dn0 started REGULAR and registered; dn0 BP vol1{current=1793307917892, previous=1793307916421} vol2{current=1793307917892, previous=1793307916421}; client wrote /mc1/written-at-c1
+[MC-1] [CE 10-12 MCDNStop, MCNNStop, MCNNRollback] `hdfs namenode -rollback` done: NN name1{current=1793307916421, previous=<absent>} name2{current=1793307916421, previous=<absent>}
+[MC-1] [CONTROL CE 13'] dn0 took part in the rollback (started with -rollback); dn0 BP vol1{current=1793307916421, previous=<absent>} vol2{current=1793307916421, previous=<absent>}
+[MC-1] [CE 15-23 MCNNUpgrade, MCDNRepair, MCDNStart..MCDNInitDone] NN started with -upgrade again: nsInfo.cTime c2=1793307919486; NN name1{current=1793307919486, previous=1793307916421} name2{current=1793307919486, previous=1793307916421}; dn0 started REGULAR, block pool alive=true, NN live DNs=1; dn0 BP vol1{current=1793307919486, previous=1793307916421} vol2{current=1793307919486, previous=17933
+[MC-1] [CE 24-26 MCDNStop, MCNNStop, MCNNRollback] `hdfs namenode -rollback` done: NN name1{current=1793307916421, previous=<absent>} name2{current=1793307916421, previous=<absent>}
+[MC-1] [CE 27 MCNNStart] NN started: nsInfo.cTime=1793307916421 (c0=1793307916421)
+[MC-1] [CONTROL CE 28-30] dn0 started with -rollback: block pool alive=true, no org.apache.hadoop.hdfs.server.common.InconsistentFSStateException; dn0 BP vol1{current=1793307916421, previous=<absent>} vol2{current=1793307916421, previous=<absent>}; NN live DataNodes=1; client read of /mc1/written-at-c0 OK (8192 bytes)
+[MC-1] CONTROL RESULT: rollback succeeds when dn0 did not miss the first rollback
+== target stack trace as logged by DataStorage.java:474 (first occurrence)
+2026-10-29 21:05:16,175 [Thread-363] INFO  common.Storage (Storage.java:lock(908)) - Locking is disabled for /bulk/specula-adhoc/specula-runs/20261029-113905-f621/hdfs-adhoc-26/.specula-output/confirmation/MC-1/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/dfs/data1/current/BP-517677716-
+2026-10-29 21:05:16,177 [Thread-363] WARN  common.Storage (BlockPoolSliceStorage.java:loadBpStorageDirectories(230)) - Failed to analyze storage directories for block pool BP-517677716-130.127.134.14-1793307909906
+org.apache.hadoop.hdfs.server.common.InconsistentFSStateException: Directory /bulk/specula-adhoc/specula-runs/20261029-113905-f621/hdfs-adhoc-26/.specula-output/confirmation/MC-1/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/dfs/data1/current/BP-517677716-130.127.134.14-1793307909906 is 
+Datanode previous state: LV = -57 CTime = 1793307913965 is newer than the namespace state: LV = -57 CTime = 1793307909909
+	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doRollback(BlockPoolSliceStorage.java:626)
+	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:379)
+	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadStorageDirectory(BlockPoolSliceStorage.java:181)
+	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadBpStorageDirectories(BlockPoolSliceStorage.java:226)
+	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.recoverTransitionRead(BlockPoolSliceStorage.java:257)
+	at org.apache.hadoop.hdfs.server.datanode.DataStorage.loadBlockPoolSliceStorage(DataStorage.java:464)
+	at org.apache.hadoop.hdfs.server.datanode.DataStorage.addStorageLocations(DataStorage.java:396)
+	at org.apache.hadoop.hdfs.server.datanode.DataStorage.recoverTransitionRead(DataStorage.java:566)
+	at org.apache.hadoop.hdfs.server.datanode.DataNode.initStorage(DataNode.java:2263)
+	at org.apache.hadoop.hdfs.server.datanode.DataNode.initBlockPool(DataNode.java:2199)
+	at org.apache.hadoop.hdfs.server.datanode.BPOfferService.verifyAndSetNamespaceInfo(BPOfferService.java:401)
+	at org.apache.hadoop.hdfs.server.datanode.BPServiceActor.connectToNNAndHandshake(BPServiceActor.java:317)
+	at org.apache.hadoop.hdfs.server.datanode.BPServiceActor.run(BPServiceActor.java:908)
+== bytecode line table of BlockPoolSliceStorage.doRollback (the throw statement)
+29:      56: new           #271                // class org/apache/hadoop/hdfs/server/common/InconsistentFSStateException
+41:      86: invokespecial #277                // Method org/apache/hadoop/hdfs/server/common/InconsistentFSStateException."<init>":(Ljava/io/File;Ljava/lang/String;)V
+42:      89: athrow
+77:     162: athrow
+90:     193: athrow
+111:      line 618: 32
+112:      line 619: 37
+113:      line 620: 45
+114:      line 621: 56
+115:      line 623: 66
+116:      line 625: 74
+117:      line 626: 78
+118:      line 629: 90
+121:      line 629: 127
+source BPSS:618-626 at 734dd8a67cd:
+618	    if (!(prevInfo.getLayoutVersion() >=
+619	        DataNodeLayoutVersion.getCurrentLayoutVersion() &&
+620	        prevInfo.getCTime() <= nsInfo.getCTime())) { // cannot rollback
+621	      throw new InconsistentFSStateException(bpSd.getRoot(),
+622	          "Cannot rollback to a newer state.\nDatanode previous state: LV = "
+623	              + prevInfo.getLayoutVersion() + " CTime = " + prevInfo.getCTime()
+624	              + " is newer than the namespace state: LV = "
+625	              + DataNodeLayoutVersion.getCurrentLayoutVersion() + " CTime = "
+626	              + nsInfo.getCTime());
+== exit code of mvn: 0

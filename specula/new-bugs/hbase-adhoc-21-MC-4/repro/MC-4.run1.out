@@ -1,0 +1,28 @@
+HEAD: 1790942bb2
+      if (
+        (currentStatus.getRegionCount() - regionCountOfTable + incr)
+            > TableNamespaceManager.getMaxRegions(nspdesc)
+      ) {
+        throw new QuotaExceededException("The table " + name.getNameAsString()
+          + " region count cannot be updated as it would exceed maximum number "
+mvn exit code: 1
+[ERROR] Tests run: 4, Failures: 0, Errors: 2, Skipped: 0, Time elapsed: 55.04 s <<< FAILURE! -- in org.apache.hadoop.hbase.namespace.SpeculaAdhocMC4RebuildReplicasTest
+[ERROR] org.apache.hadoop.hbase.namespace.SpeculaAdhocMC4RebuildReplicasTest.counterexampleOrder -- Time elapsed: 11.29 s <<< ERROR!
+[ERROR] org.apache.hadoop.hbase.namespace.SpeculaAdhocMC4RebuildReplicasTest.recreateOrder -- Time elapsed: 1.222 s <<< ERROR!
+[ERROR]   SpeculaAdhocMC4RebuildReplicasTest.counterexampleOrder:265 » RetriesExhausted Failed after attempts=5, exceptions:
+[ERROR]   SpeculaAdhocMC4RebuildReplicasTest.recreateOrder:290->createNamespace:99 » RetriesExhausted Failed after attempts=5, exceptions:
+[ERROR] Tests run: 4, Failures: 0, Errors: 2, Skipped: 0
+[INFO] BUILD FAILURE
+--- test markers
+MC4>> control before restore: cache{A=2,B=4,total=6} primaries{A=2,B=4,total=6} quota=10
+MC4>> control after restore: cache{A=3,B=4,total=7} primaries{A=3,B=4,total=7} quota=10
+MC4>> control: restore ADMITTED (no failover, replication 2)
+MC4>> abort active master clnode245.clemson.cloudlab.us,43657,1793892096684
+MC4>> new active master clnode245.clemson.cloudlab.us,44843,1793892097461
+MC4>> no-replica control after failover: cache{A=2,B=4,total=6} primaries{A=2,B=4,total=6} quota=10
+MC4>> no-replica control after restore: cache{A=3,B=4,total=7} primaries{A=3,B=4,total=7} quota=10
+MC4>> no-replica control: restore ADMITTED (failover, replication 1)
+MC4>> before failover: cache{A=2,B=4,total=6} primaries{A=2,B=4,total=6} quota=10
+MC4>> abort active master clnode245.clemson.cloudlab.us,44843,1793892097461
+MC4>> new active master clnode245.clemson.cloudlab.us,37657,1793892126742
+MC4>> after failover: cache{A=2,B=8,total=10} primaries{A=2,B=4,total=6} quota=10

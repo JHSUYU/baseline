@@ -13,7 +13,9 @@ Here it runs as a baseline on the same ad hoc coordination checks: one Specula r
 | --- | --- |
 | [`specula/`](specula/) | Specula's source: upstream `specula-org/Specula` at `39b4a01` plus one commit (`56d8e41`, branch `adhoc-coordination`) that adds the ad hoc mode. Apache-2.0 (`specula/LICENSE`) |
 | [`scripts/`](scripts/) | the run scripts used on the CloudLab cluster (paths are hard-coded to `/bulk/specula-adhoc`) |
-| [`data/hdfs/`](data/hdfs/) | HDFS: inventory and target files, the one ported workload, baseline/reach results, per-case results, the bug classification, and each bug's TLC files |
+| `data/<system>/` | per system (HDFS, ZooKeeper, HBase, Solr): `REPORT.md` (every check's verdict and cost), `VERIFIED-BUGS.md`; for HDFS also: inventory and target files, the one ported workload, baseline/reach results, per-case results, the bug classification, and each bug's TLC files |
+| [`new-bugs/`](new-bugs/README.md) | the 25 verified new bugs: explanation, TLC files, reproduction, time and tokens |
+| [`known-bugs/`](known-bugs/README.md) | the 14 known bugs at their buggy versions: detection result, TLC files, time and tokens |
 | [`data/tlc/`](data/tlc/) | the pinned TLC jars (`SHA256SUMS`) every bug's rerun uses |
 | [`OPERATIONS.md`](OPERATIONS.md) | the full operating handoff: rules, status, procedures, setup of the remaining systems, pitfalls, TODO (snapshot of `/bulk/specula-adhoc/README.md`, 2026-10-30) |
 
@@ -44,45 +46,44 @@ Fixes made while running it on HDFS:
 
 Unit tests: `cd specula && uv sync && .venv/bin/pytest tests/unit -q`. They need Java 21 on `PATH` for one TLC test.
 
-## Results so far (2026-11-02)
+## Results (final, 2026-11-09)
 
-The 84 checks are HDFS 36, ZooKeeper 16, HBase 19, Solr 13.
+**Setup:** every run used the model `claude-opus-5-5[1m]` on Claude Code CLI 2.1.312, with effort `max` before 2026-11-04 and `high` after (counted together). Time is active time: quota sleeps are excluded.
 
-**Status:**
-- HDFS: 28 of 36 runs finished.
-- ZooKeeper (15) and HBase (15) are running.
-- Solr is prepared but not started (`OPERATIONS.md` §2, §7).
+### 84 ad hoc checks on current code
 
-**Setup:** every run used the model `claude-opus-5-5[1m]` and effort `max`, on Claude Code CLI 2.1.312.
+| system | checks | verdicts | active time | tokens | cost | new bugs (A+B) |
+| --- | ---: | --- | ---: | ---: | ---: | ---: |
+| HDFS | 36 | 26 REACHED_CONFIRMED, 10 NOT_REACHED_BOUNDED | 191h39m | 10,776.1M | $5,959.28 | 11 |
+| ZooKeeper | 16 | 15 REACHED_CONFIRMED, 1 incomplete | 65h23m | 1,611.8M | $1,323.40 | 7 |
+| HBase | 19 | 18 REACHED_CONFIRMED, 1 REACHED_UNCONFIRMED | 70h57m | 1,756.6M | $1,385.45 | 7 |
+| Solr | 13 | 12 REACHED_CONFIRMED, 1 not run (counted as no bug) | 26h43m | 728.8M | $448.96 | 0 |
+| **total** | **84** | | **354h42m** | **14,873.3M** | **$9,117.09** | **25** |
 
-**HDFS results:**
-- Per case, with time, tokens, cost and per-phase numbers: [`data/hdfs/RESULTS.md`](data/hdfs/RESULTS.md).
-- 28 runs: $4,864, 9,098M tokens.
-- 19 REACHED_CONFIRMED, 9 NOT_REACHED_BOUNDED.
+- **New bugs:** [`new-bugs/`](new-bugs/README.md) has the 25 real, severe, new bugs that make the ad hoc check fail (7 tier A, 18 tier B). Each folder has the explanation, the TLC files with a rerun command, the reproduction, and the time and tokens.
+- **Per check:** `data/<system>/REPORT.md` has every check's verdict, time, tokens and cost.
+- **Root causes:** `data/<system>/VERIFIED-BUGS.md` has the root causes with file:line citations, and the dropped findings with reasons.
+- **Reviews:** `data/verify/VERIFY-batch*.md` and `data/hdfs/VERIFY-*.md` are the independent reviewers' reports.
+- **Caveat:** most HDFS runs were not fully independent. Until 2026-11-02, Claude Code's auto-memory let agents read notes from earlier runs on the same node. It was then turned off; the ZooKeeper, HBase and Solr runs are clean.
 
-**Source-verified HDFS bugs that make the ad hoc check fail** ([`data/hdfs/VERIFIED-BUGS.md`](data/hdfs/VERIFIED-BUGS.md)). Each was reviewed by an independent verifier against the code, and the decisive code was read again by the operator. None is reported upstream or fixed on trunk.
+### 14 known bugs at their buggy versions
 
-| tier | case/finding | bug | impact |
-| --- | --- | --- | --- |
-| A | 07/MC-1 | JournalNode purge marks a restarted JN's live segment `.stale` | an acknowledged edit is lost after failover |
-| A | 11/MC-4 | `FileChecksumHelper` retry does not restore `remaining` | `getFileChecksum` silently returns a wrong checksum |
-| A | 38/MC-1 | LAZY_PERSIST inherited by existing files | append refused; the scrubber deletes DISK files |
-| A | 24/MC-2 | a disk formatted during an unfinalized upgrade gets the new cTime and no `previous/` | the documented rollback cannot complete |
-| A | 08/MC-1 | epoch selection reads only a quorum's promises | a JN fences the new writer for its whole term |
-| B | 08/MC-2, 24/CR-6, 24/MC-3, 11/MC-1, 14/MC-1, 26/MC-1 | rollback, volume-failure, rolling-upgrade, safe-mode, derived-QOP and DN-upgrade defects | narrower triggers or lower severity |
+Specula ran on each bug's buggy version (the parent of its fix commit), one ad hoc check per bug: the check that the bug makes fail. The fix, the JIRA and the git history were hidden from it.
 
-**Caveat:** most HDFS runs were not fully independent. Claude Code's auto-memory let agents read notes from earlier runs on the same node until 2026-11-02, when it was turned off. The ZooKeeper, HBase and Solr runs are clean.
-
-**Preparation of the other systems:** each `data/<system>/` holds the inventory, the targets, the ported workloads (with porting records) and `baseline/REACH.tsv` (every workload passes on upstream and reaches its check method; Solr's case 22 is blocked).
+- **Results:** 11 detected, 1 partly detected (HDFS-5766), 2 not detected (HDFS-17383, ZOOKEEPER-2886).
+- **Cost:** 27h42m active, 849.3M tokens, $541.08.
+- **Details:** [`known-bugs/`](known-bugs/README.md) has each bug's mechanism, the detection criterion written before the run, Specula's finding, the TLC files and the reproduction.
+- **Targets:** the case targets are `data/<system>/targets/*-adhoc-k<N>.yaml`.
 
 ## Reproducing a bug's counterexample
 
 ```
-cd specula/data/hdfs/bugs/<case>/<finding>
-java -cp ../../../../tlc/tla2tools.jar:../../../../tlc/CommunityModules-deps.jar tlc2.TLC -workers 4 -config <cfg> <root>.tla
+cd specula/new-bugs/<folder>/tlc        # or specula/known-bugs/<folder>/tlc
+java -XX:+UseParallelGC -cp ../../../data/tlc/tla2tools.jar:../../../data/tlc/CommunityModules-deps.jar \
+  tlc2.TLC -workers 4 -config <cfg> <root>.tla
 ```
 
-The exact command is in each folder's `RERUN.md`. TLC reports the target invariant violated and prints the trace.
+The exact command is in each folder's `tlc/RERUN.md`; it needs JDK 21. TLC reports the target invariant violated and prints the trace. The older per-finding TLC files of every reproduced HDFS finding remain in `data/hdfs/bugs/`.
 
 ## Running it
 

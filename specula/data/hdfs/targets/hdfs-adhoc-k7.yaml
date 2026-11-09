@@ -1,0 +1,33 @@
+id: hdfs-adhoc-k7
+system: Apache Hadoop HDFS
+source_tree: /set/by/run-case.sh
+base_commit: b0c5a8f9ae2
+check:
+  file: hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java
+  line: 422
+  method: BlockPoolSliceStorage.doTransition(StorageDirectory, NamespaceInfo, StartupOption, List, Configuration)
+  thrown: java.io.IOException
+  guard: "falls through: !(layoutVersion == DATANODE_LAYOUT_VERSION && cTime == nsInfo.getCTime()) && !(layoutVersion > DATANODE_LAYOUT_VERSION || cTime < nsInfo.getCTime())"
+workload:
+  module: hadoop-hdfs-project/hadoop-hdfs
+  test: org.apache.hadoop.hdfs.TestAdhocWorkload7#run
+  note: the test reaches the check's method and passes; the check does not fail in it
+scope_hint:
+  - org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage
+  - org.apache.hadoop.hdfs.server.datanode.DataStorage
+  - org.apache.hadoop.hdfs.server.datanode.DataNodeLayoutVersion
+  - org.apache.hadoop.hdfs.server.datanode.StorageLocation
+  - org.apache.hadoop.hdfs.server.datanode.DataNode
+  - org.apache.hadoop.hdfs.server.datanode.BPOfferService
+  - org.apache.hadoop.hdfs.server.datanode.BPServiceActor
+  - org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.FsDatasetImpl
+  - org.apache.hadoop.hdfs.server.common.Storage
+  - org.apache.hadoop.hdfs.server.common.StorageInfo
+  - org.apache.hadoop.hdfs.server.common.HdfsServerConstants
+  - org.apache.hadoop.hdfs.server.protocol.NamespaceInfo
+  - org.apache.hadoop.hdfs.server.namenode.FSImage
+  - org.apache.hadoop.hdfs.server.namenode.NNStorage
+build:
+  env: /set/by/run-case.sh
+  prepare: "mvn -B install -DskipTests -Dmaven.javadoc.skip=true -pl hadoop-hdfs-project/hadoop-hdfs -am   (already done once)"
+  test_command: "mvn -B -o surefire:test -pl hadoop-hdfs-project/hadoop-hdfs -Dtest='<Class>#<method>' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false"

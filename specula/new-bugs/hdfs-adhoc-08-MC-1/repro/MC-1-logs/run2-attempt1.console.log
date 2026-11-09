@@ -1,0 +1,257 @@
+HEAD=734dd8a67cd6df56b59ff75aa43de57834a0d248
+git status --porcelain -- hadoop-hdfs-project/hadoop-hdfs/src/main (must be empty):
+java: openjdk version "17.0.21" 2026-10-20
+mvn:  Apache Maven 3.9.15 (98b2cdbfdb5f1ac8781f537ea9acccaed7922349)
+building (hadoop-hdfs-project/hadoop-hdfs, offline) ...
+running org.apache.hadoop.hdfs.qjournal.client.TestSpeculaMC1OrphanPromise ...
+
+===== surefire =====
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.505 s -- in org.apache.hadoop.hdfs.qjournal.client.TestSpeculaMC1OrphanPromise
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+
+===== test log ([MC-1] lines) =====
+[MC-1] ===== testControlTimelyJn0Reply() =====
+[MC-1] attempt A: epoch attempt failed: Got too many exceptions to achieve quorum size 2/3. 1 successful responses:
+[MC-1] attempt A: writer stopped; promises JN0=2 JN1=1 JN2=1
+[MC-1] attempt B: epoch attempt failed: Got too many exceptions to achieve quorum size 2/3. 1 successful responses:
+[MC-1] attempt B: writer stopped; promises JN0=3 JN1=1 JN2=1
+[MC-1] newest writer -> JN0 newEpoch(4): OK
+[MC-1] newest writer -> JN0 startLogSegment(1): OK
+[MC-1] newest writer -> JN0 journal(firstTxId=1): OK
+[MC-1] newest writer -> JN0 finalizeLogSegment(1-3): OK
+[MC-1] newest writer -> JN0 startLogSegment(4): OK
+[MC-1] newest writer -> JN0 journal(firstTxId=4): OK
+[MC-1] newest writer -> JN0 finalizeLogSegment(4-4): OK
+[MC-1] JN0 restarted; promises JN0=4 JN1=4 JN2=4
+[MC-1] newest writer -> JN0 startLogSegment(5): OK
+[MC-1] newest writer -> JN0 journal(firstTxId=5): OK
+[MC-1] newest writer -> JN0 finalizeLogSegment(5-5): OK
+[MC-1] JN1 stopped (one JournalNode failure)
+[MC-1] newest writer -> JN0 startLogSegment(6): OK
+[MC-1] NameNode's JournalSet started segment 6 with JN1 down
+[MC-1] CONTROL timely-reply: JN0 served every RPC of epoch 4; JN1 loss tolerated
+[MC-1] ===== testStopOnlyCounterexample() =====
+[MC-1] attempt A: writer stopped after JN0 handled newEpoch; promises JN0=2 JN1=1 JN2=1
+[MC-1] attempt B: writer stopped after JN0 handled newEpoch; promises JN0=3 JN1=1 JN2=1
+[MC-1] newest writer -> JN0 newEpoch(2): FAILED org.apache.hadoop.ipc.RemoteException(java.io.IOException): Proposed epoch 2 <= last promise 3 ; journal id: test-journal
+[MC-1] JN0's getJournalState reply arrived late: lastPromisedEpoch=3
+[MC-1] newest writer established epoch 2; promises JN0=3 JN1=2 JN2=2
+[MC-1] newest writer -> JN0 startLogSegment(1): FAILED org.apache.hadoop.ipc.RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+[MC-1] newest writer -> JN0 journal(firstTxId=1): FAILED org.apache.hadoop.ipc.RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+[MC-1] newest writer -> JN0 finalizeLogSegment(1-3): FAILED org.apache.hadoop.ipc.RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+[MC-1] newest writer -> JN0 startLogSegment(4): FAILED org.apache.hadoop.ipc.RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+[MC-1] newest writer -> JN0 journal(firstTxId=4): FAILED org.apache.hadoop.hdfs.qjournal.protocol.JournalOutOfSyncException: Journal disabled until next roll
+[MC-1] newest writer -> JN0 finalizeLogSegment(4-4): FAILED org.apache.hadoop.hdfs.qjournal.protocol.JournalOutOfSyncException: Journal disabled until next roll
+[MC-1]   JN0 newEpoch(2): rejected (Proposed epoch 2 <= last promise 3 ; journal id: test-journal), yet the writer set epoch 2 on JN0's channel too
+[MC-1]   JN0 startLogSegment(1): TARGET FIRED: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal | frame: at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[MC-1] first target throw, JN0 server-side stack (RemoteException java.io.IOException):
+[MC-1]   JN0 journal(firstTxId=1): TARGET FIRED: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal | frame: at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[MC-1]   JN0 finalizeLogSegment(1-3): TARGET FIRED: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal | frame: at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[MC-1]   JN0 startLogSegment(4): TARGET FIRED: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal | frame: at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[MC-1]   JN0 journal(firstTxId=4): not sent by the writer (org.apache.hadoop.hdfs.qjournal.protocol.JournalOutOfSyncException: Journal disabled until next roll)
+[MC-1]   JN0 finalizeLogSegment(4-4): not sent by the writer (org.apache.hadoop.hdfs.qjournal.protocol.JournalOutOfSyncException: Journal disabled until next roll)
+[MC-1] JN0 restarted; promises JN0=3 JN1=2 JN2=2
+[MC-1] newest writer -> JN0 startLogSegment(5): FAILED org.apache.hadoop.ipc.RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+[MC-1] newest writer -> JN0 journal(firstTxId=5): FAILED org.apache.hadoop.hdfs.qjournal.protocol.JournalOutOfSyncException: Journal disabled until next roll
+[MC-1] newest writer -> JN0 finalizeLogSegment(5-5): FAILED org.apache.hadoop.hdfs.qjournal.protocol.JournalOutOfSyncException: Journal disabled until next roll
+[MC-1] JN1 stopped (one JournalNode failure)
+[MC-1] newest writer -> JN0 startLogSegment(6): FAILED org.apache.hadoop.ipc.RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+[MC-1] CONSEQUENCE: NameNode terminated (ExitUtil status 1): Error: starting log segment 6 failed for required journal (JournalAndStream(mgr=QJM to [127.0.0.1:43597, 127.0.0.1:43787, 127.0.0.1:34481], stream=null))
+[MC-1] cause logged by JournalSet: 
+[MC-1]   JN0 newEpoch(2): rejected (Proposed epoch 2 <= last promise 3 ; journal id: test-journal), yet the writer set epoch 2 on JN0's channel too
+[MC-1]   JN0 startLogSegment(1): TARGET FIRED: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal | frame: at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[MC-1] first target throw, JN0 server-side stack (RemoteException java.io.IOException):
+[MC-1]   JN0 journal(firstTxId=1): TARGET FIRED: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal | frame: at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[MC-1]   JN0 finalizeLogSegment(1-3): TARGET FIRED: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal | frame: at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[MC-1]   JN0 startLogSegment(4): TARGET FIRED: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal | frame: at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[MC-1]   JN0 journal(firstTxId=4): not sent by the writer (org.apache.hadoop.hdfs.qjournal.protocol.JournalOutOfSyncException: Journal disabled until next roll)
+[MC-1]   JN0 finalizeLogSegment(4-4): not sent by the writer (org.apache.hadoop.hdfs.qjournal.protocol.JournalOutOfSyncException: Journal disabled until next roll)
+[MC-1]   JN0 startLogSegment(5): TARGET FIRED: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal | frame: at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[MC-1]   JN0 journal(firstTxId=5): not sent by the writer (org.apache.hadoop.hdfs.qjournal.protocol.JournalOutOfSyncException: Journal disabled until next roll)
+[MC-1]   JN0 finalizeLogSegment(5-5): not sent by the writer (org.apache.hadoop.hdfs.qjournal.protocol.JournalOutOfSyncException: Journal disabled until next roll)
+[MC-1]   JN0 startLogSegment(6): TARGET FIRED: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal | frame: at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[MC-1] RESULT stop-only CE: target fired 6 times for the newest writer (epoch 2, JN0 promise 3)
+[MC-1] ===== testControlNoOrphanPromise() =====
+[MC-1] newest writer -> JN0 startLogSegment(1): OK
+[MC-1] newest writer -> JN0 journal(firstTxId=1): OK
+[MC-1] newest writer -> JN0 finalizeLogSegment(1-3): OK
+[MC-1] newest writer -> JN0 startLogSegment(4): OK
+[MC-1] newest writer -> JN0 journal(firstTxId=4): OK
+[MC-1] newest writer -> JN0 finalizeLogSegment(4-4): OK
+[MC-1] JN0 restarted; promises JN0=2 JN1=2 JN2=2
+[MC-1] newest writer -> JN0 startLogSegment(5): OK
+[MC-1] newest writer -> JN0 journal(firstTxId=5): OK
+[MC-1] newest writer -> JN0 finalizeLogSegment(5-5): OK
+[MC-1] JN1 stopped (one JournalNode failure)
+[MC-1] newest writer -> JN0 startLogSegment(6): OK
+[MC-1] NameNode's JournalSet started segment 6 with JN1 down
+[MC-1] CONTROL no-orphan: JN0 served every RPC of epoch 2; JN1 loss tolerated
+[MC-1] ===== testLossOnlyCounterexample() =====
+[MC-1] attempt A: epoch attempt failed: Got too many exceptions to achieve quorum size 2/3. 1 successful responses:
+[MC-1] attempt A: writer stopped; promises JN0=2 JN1=1 JN2=1
+[MC-1] attempt B: epoch attempt failed: Got too many exceptions to achieve quorum size 2/3. 1 successful responses:
+[MC-1] attempt B: writer stopped; promises JN0=3 JN1=1 JN2=1
+[MC-1] JN0's getJournalState reply arrived late: lastPromisedEpoch=3
+[MC-1] newest writer established epoch 2; promises JN0=3 JN1=2 JN2=2
+[MC-1] newest writer -> JN0 startLogSegment(1): FAILED org.apache.hadoop.ipc.RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+[MC-1] newest writer -> JN0 journal(firstTxId=1): FAILED org.apache.hadoop.ipc.RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+[MC-1] newest writer -> JN0 finalizeLogSegment(1-3): FAILED org.apache.hadoop.ipc.RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+[MC-1] newest writer -> JN0 startLogSegment(4): FAILED org.apache.hadoop.ipc.RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+[MC-1] newest writer -> JN0 journal(firstTxId=4): FAILED org.apache.hadoop.hdfs.qjournal.protocol.JournalOutOfSyncException: Journal disabled until next roll
+[MC-1] newest writer -> JN0 finalizeLogSegment(4-4): FAILED org.apache.hadoop.hdfs.qjournal.protocol.JournalOutOfSyncException: Journal disabled until next roll
+[MC-1]   JN0 startLogSegment(1): TARGET FIRED: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal | frame: at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[MC-1] first target throw, JN0 server-side stack (RemoteException java.io.IOException):
+[MC-1]   JN0 journal(firstTxId=1): TARGET FIRED: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal | frame: at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[MC-1]   JN0 finalizeLogSegment(1-3): TARGET FIRED: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal | frame: at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[MC-1]   JN0 startLogSegment(4): TARGET FIRED: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal | frame: at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[MC-1]   JN0 journal(firstTxId=4): not sent by the writer (org.apache.hadoop.hdfs.qjournal.protocol.JournalOutOfSyncException: Journal disabled until next roll)
+[MC-1]   JN0 finalizeLogSegment(4-4): not sent by the writer (org.apache.hadoop.hdfs.qjournal.protocol.JournalOutOfSyncException: Journal disabled until next roll)
+[MC-1] JN0 restarted; promises JN0=3 JN1=2 JN2=2
+[MC-1] newest writer -> JN0 startLogSegment(5): FAILED org.apache.hadoop.ipc.RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+[MC-1] newest writer -> JN0 journal(firstTxId=5): FAILED org.apache.hadoop.hdfs.qjournal.protocol.JournalOutOfSyncException: Journal disabled until next roll
+[MC-1] newest writer -> JN0 finalizeLogSegment(5-5): FAILED org.apache.hadoop.hdfs.qjournal.protocol.JournalOutOfSyncException: Journal disabled until next roll
+[MC-1] JN1 stopped (one JournalNode failure)
+[MC-1] newest writer -> JN0 startLogSegment(6): FAILED org.apache.hadoop.ipc.RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+[MC-1] CONSEQUENCE: NameNode terminated (ExitUtil status 1): Error: starting log segment 6 failed for required journal (JournalAndStream(mgr=QJM to [127.0.0.1:35665, 127.0.0.1:34165, 127.0.0.1:37209], stream=null))
+[MC-1] cause logged by JournalSet: 
+[MC-1]   JN0 startLogSegment(1): TARGET FIRED: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal | frame: at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[MC-1] first target throw, JN0 server-side stack (RemoteException java.io.IOException):
+[MC-1]   JN0 journal(firstTxId=1): TARGET FIRED: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal | frame: at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[MC-1]   JN0 finalizeLogSegment(1-3): TARGET FIRED: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal | frame: at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[MC-1]   JN0 startLogSegment(4): TARGET FIRED: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal | frame: at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[MC-1]   JN0 journal(firstTxId=4): not sent by the writer (org.apache.hadoop.hdfs.qjournal.protocol.JournalOutOfSyncException: Journal disabled until next roll)
+[MC-1]   JN0 finalizeLogSegment(4-4): not sent by the writer (org.apache.hadoop.hdfs.qjournal.protocol.JournalOutOfSyncException: Journal disabled until next roll)
+[MC-1]   JN0 startLogSegment(5): TARGET FIRED: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal | frame: at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[MC-1]   JN0 journal(firstTxId=5): not sent by the writer (org.apache.hadoop.hdfs.qjournal.protocol.JournalOutOfSyncException: Journal disabled until next roll)
+[MC-1]   JN0 finalizeLogSegment(5-5): not sent by the writer (org.apache.hadoop.hdfs.qjournal.protocol.JournalOutOfSyncException: Journal disabled until next roll)
+[MC-1]   JN0 startLogSegment(6): TARGET FIRED: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal | frame: at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[MC-1] RESULT loss-only CE: target fired 6 times for the newest writer (epoch 2, JN0 promise 3)
+[MC-1] ===== testWorkloadThenFailover() =====
+[MC-1] attempt A: epoch attempt failed: Got too many exceptions to achieve quorum size 2/3. 1 successful responses:
+[MC-1] attempt A: writer stopped; promises JN0=2 JN1=1 JN2=1
+[MC-1] attempt B: epoch attempt failed: Got too many exceptions to achieve quorum size 2/3. 1 successful responses:
+[MC-1] attempt B: writer stopped; promises JN0=3 JN1=1 JN2=1
+[MC-1] newest writer -> JN0 newEpoch(2): FAILED org.apache.hadoop.ipc.RemoteException(java.io.IOException): Proposed epoch 2 <= last promise 3 ; journal id: test-journal
+[MC-1] newest writer -> JN0 prepareRecovery(4): FAILED org.apache.hadoop.ipc.RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+[MC-1] newest writer -> JN0 acceptRecovery: FAILED org.apache.hadoop.ipc.RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+[MC-1] newest writer -> JN0 finalizeLogSegment(4-4): FAILED org.apache.hadoop.ipc.RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+[MC-1] newest writer established epoch 2; promises JN0=3 JN1=2 JN2=2
+[MC-1] newest writer -> JN0 startLogSegment(5): FAILED org.apache.hadoop.ipc.RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+[MC-1] newest writer -> JN0 journal(firstTxId=5): FAILED org.apache.hadoop.ipc.RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+[MC-1] newest writer -> JN0 finalizeLogSegment(5-7): FAILED org.apache.hadoop.ipc.RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+[MC-1]   JN0 newEpoch(2): rejected (Proposed epoch 2 <= last promise 3 ; journal id: test-journal), yet the writer set epoch 2 on JN0's channel too
+[MC-1]   JN0 prepareRecovery(4): TARGET FIRED: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal | frame: at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[MC-1] first target throw, JN0 server-side stack (RemoteException java.io.IOException):
+[MC-1]   JN0 acceptRecovery: TARGET FIRED: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal | frame: at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[MC-1]   JN0 finalizeLogSegment(4-4): TARGET FIRED: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal | frame: at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[MC-1]   JN0 startLogSegment(5): TARGET FIRED: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal | frame: at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[MC-1]   JN0 journal(firstTxId=5): TARGET FIRED: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal | frame: at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[MC-1]   JN0 finalizeLogSegment(5-7): TARGET FIRED: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal | frame: at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[MC-1] RESULT workload-then-failover: target fired 6 times for the newest writer (epoch 2, JN0 promise 3)
+[MC-1] ===== testPrimaryCounterexample() =====
+[MC-1] attempt A: writer stopped after JN0 handled newEpoch; promises JN0=2 JN1=1 JN2=1
+[MC-1] attempt B: writer stopped after JN0 handled newEpoch; promises JN0=3 JN1=1 JN2=1
+[MC-1] newest writer established epoch 2 = 1 + max(JN1, JN2); promises JN0=3 JN1=2 JN2=2
+[MC-1] newest writer -> JN0 startLogSegment(1): FAILED org.apache.hadoop.ipc.RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+[MC-1] newest writer -> JN0 journal(firstTxId=1): FAILED org.apache.hadoop.ipc.RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+[MC-1] newest writer -> JN0 finalizeLogSegment(1-3): FAILED org.apache.hadoop.ipc.RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+[MC-1] newest writer -> JN0 startLogSegment(4): FAILED org.apache.hadoop.ipc.RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+[MC-1] newest writer -> JN0 journal(firstTxId=4): FAILED org.apache.hadoop.hdfs.qjournal.protocol.JournalOutOfSyncException: Journal disabled until next roll
+[MC-1] newest writer -> JN0 finalizeLogSegment(4-4): FAILED org.apache.hadoop.hdfs.qjournal.protocol.JournalOutOfSyncException: Journal disabled until next roll
+[MC-1]   JN0 startLogSegment(1): TARGET FIRED: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal | frame: at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[MC-1] first target throw, JN0 server-side stack (RemoteException java.io.IOException):
+[MC-1]   JN0 journal(firstTxId=1): TARGET FIRED: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal | frame: at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[MC-1]   JN0 finalizeLogSegment(1-3): TARGET FIRED: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal | frame: at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[MC-1]   JN0 startLogSegment(4): TARGET FIRED: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal | frame: at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[MC-1]   JN0 journal(firstTxId=4): not sent by the writer (org.apache.hadoop.hdfs.qjournal.protocol.JournalOutOfSyncException: Journal disabled until next roll)
+[MC-1]   JN0 finalizeLogSegment(4-4): not sent by the writer (org.apache.hadoop.hdfs.qjournal.protocol.JournalOutOfSyncException: Journal disabled until next roll)
+[MC-1] JN0 restarted; promises JN0=3 JN1=2 JN2=2
+[MC-1] newest writer -> JN0 startLogSegment(5): FAILED org.apache.hadoop.ipc.RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+[MC-1] newest writer -> JN0 journal(firstTxId=5): FAILED org.apache.hadoop.hdfs.qjournal.protocol.JournalOutOfSyncException: Journal disabled until next roll
+[MC-1] newest writer -> JN0 finalizeLogSegment(5-5): FAILED org.apache.hadoop.hdfs.qjournal.protocol.JournalOutOfSyncException: Journal disabled until next roll
+[MC-1] JN1 stopped (one JournalNode failure)
+[MC-1] newest writer -> JN0 startLogSegment(6): FAILED org.apache.hadoop.ipc.RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+[MC-1] CONSEQUENCE: NameNode terminated (ExitUtil status 1): Error: starting log segment 6 failed for required journal (JournalAndStream(mgr=QJM to [127.0.0.1:33111, 127.0.0.1:34065, 127.0.0.1:43121], stream=null))
+[MC-1] cause logged by JournalSet: 
+[MC-1]   JN0 startLogSegment(1): TARGET FIRED: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal | frame: at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[MC-1] first target throw, JN0 server-side stack (RemoteException java.io.IOException):
+[MC-1]   JN0 journal(firstTxId=1): TARGET FIRED: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal | frame: at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[MC-1]   JN0 finalizeLogSegment(1-3): TARGET FIRED: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal | frame: at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[MC-1]   JN0 startLogSegment(4): TARGET FIRED: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal | frame: at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[MC-1]   JN0 journal(firstTxId=4): not sent by the writer (org.apache.hadoop.hdfs.qjournal.protocol.JournalOutOfSyncException: Journal disabled until next roll)
+[MC-1]   JN0 finalizeLogSegment(4-4): not sent by the writer (org.apache.hadoop.hdfs.qjournal.protocol.JournalOutOfSyncException: Journal disabled until next roll)
+[MC-1]   JN0 startLogSegment(5): TARGET FIRED: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal | frame: at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[MC-1]   JN0 journal(firstTxId=5): not sent by the writer (org.apache.hadoop.hdfs.qjournal.protocol.JournalOutOfSyncException: Journal disabled until next roll)
+[MC-1]   JN0 finalizeLogSegment(5-5): not sent by the writer (org.apache.hadoop.hdfs.qjournal.protocol.JournalOutOfSyncException: Journal disabled until next roll)
+[MC-1]   JN0 startLogSegment(6): TARGET FIRED: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal | frame: at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[MC-1] RESULT primary CE: target fired 6 times for the newest writer (epoch 2, JN0 promise 3)
+
+===== JN0 IPC server log: first target throw with its stack (org.apache.hadoop.ipc.Server) =====
+800:java.io.IOException: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+801-	at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+802-	at org.apache.hadoop.hdfs.qjournal.server.Journal.startLogSegment(Journal.java:572)
+803-	at org.apache.hadoop.hdfs.qjournal.server.JournalNodeRpcServer.startLogSegment(JournalNodeRpcServer.java:226)
+804-	at org.apache.hadoop.hdfs.qjournal.protocolPB.QJournalProtocolServerSideTranslatorPB.startLogSegment(QJournalProtocolServerSideTranslatorPB.java:192)
+805-	at org.apache.hadoop.hdfs.qjournal.protocol.QJournalProtocolProtos$QJournalProtocolService$2.callBlockingMethod(QJournalProtocolProtos.java:32270)
+806-	at org.apache.hadoop.ipc.ProtobufRpcEngine2$Server$ProtoBufRpcInvoker.call(ProtobufRpcEngine2.java:631)
+
+===== javap: Journal.checkRequest line table (target throw is the athrow under lines 487-489) =====
+  private synchronized void checkRequest(org.apache.hadoop.hdfs.qjournal.protocol.RequestInfo) throws java.io.IOException;
+    Code:
+       0: aload_1
+       1: invokevirtual #420                // Method org/apache/hadoop/hdfs/qjournal/protocol/RequestInfo.getEpoch:()J
+       4: aload_0
+       5: getfield      #146                // Field lastPromisedEpoch:Lorg/apache/hadoop/hdfs/util/PersistentLongFile;
+       8: invokevirtual #255                // Method org/apache/hadoop/hdfs/util/PersistentLongFile.get:()J
+      11: lcmp
+      12: ifge          43
+      15: new           #275                // class java/io/IOException
+      18: dup
+      19: aload_1
+      20: invokevirtual #420                // Method org/apache/hadoop/hdfs/qjournal/protocol/RequestInfo.getEpoch:()J
+      23: aload_0
+      24: getfield      #146                // Field lastPromisedEpoch:Lorg/apache/hadoop/hdfs/util/PersistentLongFile;
+      27: invokevirtual #255                // Method org/apache/hadoop/hdfs/util/PersistentLongFile.get:()J
+      30: aload_0
+      31: getfield      #52                 // Field journalId:Ljava/lang/String;
+      34: invokedynamic #425,  0            // InvokeDynamic #12:makeConcatWithConstants:(JJLjava/lang/String;)Ljava/lang/String;
+      39: invokespecial #280                // Method java/io/IOException."<init>":(Ljava/lang/String;)V
+      42: athrow
+      43: aload_1
+      44: invokevirtual #420                // Method org/apache/hadoop/hdfs/qjournal/protocol/RequestInfo.getEpoch:()J
+      47: aload_0
+      48: getfield      #146                // Field lastPromisedEpoch:Lorg/apache/hadoop/hdfs/util/PersistentLongFile;
+      51: invokevirtual #255                // Method org/apache/hadoop/hdfs/util/PersistentLongFile.get:()J
+      54: lcmp
+      55: ifle          66
+      58: aload_0
+      59: aload_1
+      60: invokevirtual #420                // Method org/apache/hadoop/hdfs/qjournal/protocol/RequestInfo.getEpoch:()J
+      63: invokevirtual #282                // Method updateLastPromisedEpoch:(J)V
+      66: aload_0
+      67: aload_1
+      68: invokevirtual #426                // Method org/apache/hadoop/hdfs/qjournal/protocol/RequestInfo.getIpcSerialNumber:()J
+      71: aload_0
+      72: getfield      #29                 // Field currentEpochIpcSerial:J
+      75: lcmp
+      76: ifle          83
+      79: iconst_1
+    LineNumberTable:
+      line 486: 0
+      line 487: 15
+      line 489: 27
+      line 490: 43
+      line 493: 58
+      line 497: 66
+      line 499: 94
+      line 500: 103
+      line 497: 124
+      line 501: 127
+      line 503: 135
+      line 504: 142
+--
+
+logs: /users/ZhenyuLi/Specula/runs/20261028-194804-49b4/hdfs-adhoc-08/.specula-output/repro/MC-1-logs/run2-attempt1
+surefire exit status: 0
+EXIT=0

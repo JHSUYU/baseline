@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "target": "hdfs-adhoc-24",
+  "check": {
+    "file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+    "line": 421,
+    "thrown": "java.io.IOException"
+  },
+  "verdict": "REACHED_CONFIRMED",
+  "mechanism": "COMBINED",
+  "scenario": "Scenario 1: Concurrent hot-swap loaders tear the shared guard operands",
+  "finding": "MC-1",
+  "counterexample": "spec/output/MC_hunt_hotswap_race_bfs.out",
+  "reproduction": "repro/test_bugMC-1_hotswap_guard_race.java",
+  "stackFrame": "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:424)",
+  "bounds": [
+    {
+      "config": "MC_hunt_hotswap_race.cfg",
+      "result": "VIOLATION",
+      "states": 12673,
+      "diameter": 33,
+      "seconds": 2,
+      "output": "spec/output/MC_hunt_hotswap_race_bfs.out",
+      "role": "hunt",
+      "counterexampleStates": 29
+    },
+    {
+      "config": "MC_hunt_rollback_gap.cfg",
+      "result": "VIOLATION",
+      "states": 2962,
+      "diameter": 27,
+      "seconds": 1,
+      "output": "spec/output/MC_hunt_rollback_gap_bfs.out",
+      "role": "hunt",
+      "counterexampleStates": 23
+    },
+    {
+      "config": "MC_hunt_ru_marker.cfg",
+      "result": "VIOLATION",
+      "states": 15958,
+      "diameter": 89,
+      "seconds": 2,
+      "output": "spec/output/MC_hunt_ru_marker_bfs.out",
+      "role": "hunt",
+      "counterexampleStates": 83
+    },
+    {
+      "config": "MC_hunt_ctime_regress.cfg",
+      "result": "VIOLATION",
+      "states": 626,
+      "diameter": 23,
+      "seconds": 1,
+      "output": "spec/output/MC_hunt_ctime_regress_bfs.out",
+      "role": "hunt",
+      "counterexampleStates": 13
+    },
+    {
+      "config": "MC_char_rollback_gap_attach.cfg",
+      "result": "VIOLATION",
+      "states": 1391,
+      "diameter": 95,
+      "seconds": 5,
+      "output": "spec/output/MC_char_rollback_gap_attach_bfs.out",
+      "role": "characterization",
+      "counterexampleStates": 51
+    },
+    {
+      "config": "MC_char_rollback_gap_noattach.cfg",
+      "result": "VIOLATION",
+      "states": 3625,
+      "diameter": 51,
+      "seconds": 6,
+      "output": "spec/output/MC_char_rollback_gap_noattach_bfs.out",
+      "role": "characterization",
+      "counterexampleStates": 39
+    },
+    {
+      "config": "MC_char_hotswap_race_ctime.cfg",
+      "result": "VIOLATION",
+      "states": 2231,
+      "diameter": 65,
+      "seconds": 6,
+      "output": "spec/output/MC_char_hotswap_race_ctime_bfs.out",
+      "role": "characterization",
+      "counterexampleStates": 52
+    }
+  ],
+  "traceValidation": {
+    "traces": 3,
+    "passed": 3
+  },
+  "notes": "Chain for MC-1 (Scenario 1; 29-state counterexample spec/output/MC_hunt_hotswap_race_bfs.out): the NameNode is never upgraded; while the DataNode starts, one disk fails and is replaced by an empty disk, and another disk, which holds an older-layout block-pool slice whose cTime equals the namespace's, is offline when the startup loader reaches it, so the block pool comes up on the third disk only; one hot-swap reconfiguration then re-adds both disks, and their two concurrent loaders share the single per-block-pool BlockPoolSliceStorage. The old disk's loader reads its old layoutVersion (L388) and skips the regular return (L404); the empty disk's format then writes the current layoutVersion into the shared field (L287), so the old disk's L408 and L414 reads see the current layout (no trash restore, no layout upgrade), its L415 cTime read is not below the namespace's, and it throws at L421 although it is not newer than the namespace. Mechanism COMBINED = INTERLEAVING (the two hot-swap loaders racing on the shared, unsynchronized layoutVersion/cTime fields) + FAULT (a disk offline at DataNode start and an empty replacement disk). A second form with no old layout and no empty disk (spec/output/MC_char_hotswap_race_ctime_bfs.out, 52 states) fires when one loader's inline-upgrade cTime write (L512) lands between the other's L405 and L415 reads. Phase 4a confirmed MC-1 on the pinned 734dd8a67cd tree with repro/test_bugMC-1_hotswap_guard_race.java (runner repro/test_bugMC-1_hotswap_guard_race.sh, output repro/test_bugMC-1_hotswap_guard_race.log), a variant of TestDFSUpgrade#testUpgrade that uses the workload's UpgradeUtilities fixtures, DataNodeTestUtils.injectDataDirFailure/restoreDataDirFromFailure for the offline steps and TestDataNodeRollingUpgrade.addDataNodeLayoutVersion for a layout-changing DataNode upgrade, and hot-swaps through DataNode.reconfigurePropertyImpl without writing any VERSION file or guard field: with the counterexample's order forced by timing hooks only (a Mockito spy on dn.data, a NamespaceInfo copy whose getter returns the real value late, and a pausing log appender), the real DataNode threw 'Datanode state: LV = -58 CTime = 1793283132879 is newer than the namespace state: LV = -67 CTime = 1793283132879' on the hot-swap path (DataNode$2.call -> FsDatasetImpl.addVolume -> DataStorage.prepareVolume -> BlockPoolSliceStorage.loadBpStorageDirectories -> loadStorageDirectory -> doTransition) for a disk whose own VERSION still held the older layout, the reconfiguration failed with a ReconfigurationException, and the disk was recorded as a failed volume (DataNode failedVolumes=1, NameNode volumeFailures=1); the cTime-only form reproduced the same way, while 101 rounds without timing control added both disks correctly. The stackFrame reads line 424 because the throw statement spans L421-L424 and JDK 17 javac maps its constructor call and athrow to L424 while new IOException is at L421 (javap; Trace.tla's ErrSite uses doTransition:424 for the same reason, spec/changelog.md). Three more TargetSafe findings were REPRODUCED with the same frame: MC-2 (Scenario 2; 23-state spec/output/MC_hunt_rollback_gap_bfs.out, whose DataNode crash is only a shortcut, and the crash-free 51-state spec/output/MC_char_rollback_gap_attach_bfs.out that the reproduction follows; repro/test_bugMC-2_rollback_gap.java, output repro/test_bugMC-2_rollback_gap.output.txt; FAULT + RESTART: a disk added or replaced during an unfinalized NameNode -upgrade is formatted with the upgraded cTime and no previous/, and the documented NameNode -rollback plus DataNode -rollback then throws at L421, with no injected state and no timing control), MC-3 (Scenario 3; 83-state spec/output/MC_hunt_ru_marker_bfs.out; repro/test_bugMC-3_SpeculaAdhocMC3Test.java, runner repro/test_bugMC-3_ru_marker_rollback.sh, output repro/MC-3.run.out; RESTART: a DataNode down across a rolling-upgrade finalize, then a non-HA NameNode -upgrade before any checkpoint, makes the DataNode delete the regular upgrade's previous/, so the documented rollback throws at L421; 3 of 3 runs using operator commands and restarts only) and MC-4 (Scenario 4; 13-state spec/output/MC_hunt_ctime_regress_bfs.out; confirmation/MC-4/src/SpeculaAdhocMC4CTimeRegressTest.java run by repro/test_bugMC-4_ctime_regress.sh, log confirmation/MC-4/logs/repro_attempt2.console.log; CLOCK: a NameNode -upgrade whose clock reads below the earlier cTime, injected as Time.now() one hour behind on the -upgrade thread with Mockito.mockStatic, makes every block-pool slice throw at L421). Three code-review findings, which are not TargetSafe counterexamples, also threw the target exception with the same frame in REPRODUCED runs: CR-6 (a volume that misses the DataNode -rollback start, offline or by a crash right after L637, then a hot swap or a default restart; repro/test_bugCR-6_rollback_missed_volume.java), CR-7 (a NameNode crash inside the per-directory upgrade VERSION loop, then loss of the upgraded name directory, which is the Scenario 4 directory-split sub-mechanism that the model keeps abstract as NNCTimeRegress and spec/bug-report.md left unvalidated; repro/test_bugCR-7_upgrade_crash_dirsplit.sh with confirmation/CR-7/TestSpeculaCR7UpgradeDirSplit.java) and CR-2 (a startup L421 failure is only logged and the volume keeps serving; repro/test_bugCR-2_rollback_dropped_bp_dir.java). The other REPRODUCED code-review findings (CR-3, CR-4, CR-5, CR-8, CR-9) are related bugs whose reproductions did not fail the target check. CR-1 is FALSE POSITIVE: the workload TestDFSUpgrade#testUpgrade does execute the throw three times, contrary to target.yaml's workload note, but only through its 'newer fsscTime' step, which writes cTime = Long.MAX_VALUE into a VERSION file, a guard-operand write outside the fault model, so Trace.cfg does not check TargetSafe. Bounds: every Scenario's hunt config violated TargetSafe in a 12-worker BFS that stopped at its first violation; the MC_char_* rows are characterization runs of the minimal triggers, not hunts. Not in bounds: MC.cfg (spec/output/MC_r1.out: workload actions only, no violation, 173 distinct states, complete, depth 66) and the reach probe MC_sanity_reach.cfg (spec/output/MC_sanity_reach_r1.out: TargetReached violated in 12 states, as required). Trace validation: workload_testUpgrade (120 events, 236 distinct states) and variant_rounds (78 events, 159) pass TraceMatched under Trace.cfg, and variant_hotswap (47 events, 152) is matched under the existential Trace_exists.cfg, where the TraceNotDone violation is the pass signal (spec/output/TV_r1_*.out; the *_before_fix outputs are the failures that the one ErrSite frame-line fix in Trace.tla resolved)."
+}

@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "target": "hbase-adhoc-04",
+  "check": {
+    "file": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/procedure/AbstractStateMachineTableProcedure.java",
+    "line": 163,
+    "thrown": "org.apache.hadoop.hbase.TableNotEnabledException"
+  },
+  "verdict": "REACHED_CONFIRMED",
+  "mechanism": "FAULT",
+  "scenario": "Scenario 1: Observer commits \"observance\" before the re-enable takes effect, then never retries",
+  "finding": "MC-1",
+  "counterexample": "spec/output/MC_hunt_S1_observance_before_enable_bfs.out",
+  "reproduction": "repro/test_bugMC-1_observance_before_enable.java",
+  "stackFrame": "org.apache.hadoop.hbase.master.procedure.AbstractStateMachineTableProcedure.preflightChecks(AbstractStateMachineTableProcedure.java:163)",
+  "bounds": [
+    {
+      "config": "MC_hunt_S1_observance_before_enable.cfg",
+      "result": "VIOLATION",
+      "states": 97,
+      "diameter": 43,
+      "seconds": 1
+    },
+    {
+      "config": "MC_hunt_S2_enable_after_flush_check.cfg",
+      "result": "VIOLATION",
+      "states": 174,
+      "diameter": 42,
+      "seconds": 1
+    },
+    {
+      "config": "MC_hunt_S3_master_failover.cfg",
+      "result": "VIOLATION",
+      "states": 439,
+      "diameter": 44,
+      "seconds": 1
+    }
+  ],
+  "traceValidation": {
+    "traces": 3,
+    "passed": 3
+  },
+  "notes": "All three hunts violated TargetSafe, and all three findings were reproduced at the target line on builds of 1790942bb2 without the trace instrumentation; MC-1 is reported as the primary finding because it is the shared root cause and needs one fault. Chain for MC-1: the table is disabled; QuotaObserverChore.updateTableQuota writes the quota row and commits observance in memory (L325) before its enable (L333); that enable fails without creating a procedure; the next observer run finds current equal to target and sends nothing; the flush reaches FlushTableProcedure PREPARE, reads DISABLED and throws at L163. The same-bug test is met by the frame above, and the table stayed DISABLED until an operator enabled it. The enable failure was injected only at the counterexample's fault step, through a pluggable RPC client on the observer's connection; the unmodified workload passes without firing the check. Production needs a failure outlasting the default retries or a non-retried error, because the workload sets retries to 0; this is argued, not measured. MC-2 (FAULT and INTERLEAVING, spec/output/MC_hunt_S2_enable_after_flush_check_bfs.out, repro/test_bugMC-2_late_enable_flush.java): a client timeout while the enable handler stalls before storing the procedure lets the flush fire L163, after which the table heals; it did not fire with default client retries. MC-3 (RESTART, spec/output/MC_hunt_S3_master_failover_bfs.out, repro/test_bugMC-3_SpeculaAdhoc04MC3Test.java): one master kill loses the enable and fires L163 after the next master initializes, including with a kill alone and no hook; the branch where a stored but unlocked enable is overtaken was not reached. Bounds: S3's diameter is the complete-space value from spec/output/queries/full_S3.log and spec/bug-report.md, while the hunt's own output prints 45; all other numbers match the hunt outputs. Process: MC-1's investigation discloses one git log on QuotaObserverChore.java before its verdict, which returned nothing about this mechanism and did not change the result. All three findings have Novelty KNOWN against open HBASE-30484, which was searched after the verdict."
+}

@@ -1,0 +1,329 @@
+== tree: /tmp/mc1-pristine-eab16599  mode=pristine  commit=eab16599
+== src/main diff vs eab16599: none (exported with git archive; six cited files compared with cmp)
+== handleGetDataRequest as compiled here:
+        GetDataRequest getDataRequest = (GetDataRequest) request;
+        String path = getDataRequest.getPath();
+        DataNode n = zks.getZKDatabase().getNode(path);
+        if (n == null) {
+            throw new KeeperException.NoNodeException();
+        }
+== java: openjdk version "17.0.21" 2026-10-20
+
+################ scenario: workload
+== cmd: mvn -B -o test -pl zookeeper-server -Dtest='TestAdhocWorkloadB3#run' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false -Djvm=<JFR wrapper> -Dcheckstyle.skip=true -Dspotbugs.skip=true
+== mvn exit=0
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.003 s - in org.apache.zookeeper.server.TestAdhocWorkloadB3
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+      1 Using checkIntervalMs=100 maxPerMinute=2147483647 maxNeverUsedIntervalMs=0
+manager log lines 'Attempting to delete candidate container': 1
+FRAMES@674 0
+== SCENARIO workload: mvn_exit=0 frames_at_FinalRequestProcessor_674=0 expected=0 -> PASS  (artifacts: /tmp/mc1-jfr.9vrZLl)
+
+################ scenario: level0-standalone
+== cmd: mvn -B -o test -pl zookeeper-server -Dtest='SpeculaAdhocB3Mc1Level0Test#standalone' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false -Djvm=<JFR wrapper> -Dcheckstyle.skip=true -Dspotbugs.skip=true
+== mvn exit=0
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 91.987 s - in org.apache.zookeeper.server.SpeculaAdhocB3Mc1Level0Test
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+MC1| znode.container.checkIntervalMs=null znode.container.maxPerMinute=null
+MC1| setup: 1000 used empty containers in 766 ms; nodes under / = 1003
+MC1| manager's first deletion seen 59665 ms after setup began; client replaces now
+MC1| IMMEDIATE c6 getData threw org.apache.zookeeper.KeeperException$NoNodeException: KeeperErrorCode = NoNode for /adhoc-workload-b3-67 right after this client's create returned czxid=0x2af
+MC1| client replaced 1000 paths; delete found already cleaned=902; immediate c6 NoNode=1
+MC1| replace loop took 21670 ms
+MC1| RESULT later getData NoNode on 98 of 1000 nodes this client created and never deleted; first=/adhoc-workload-b3-0
+MC1| txnlog: lost=98 removedByDeleteContainerAfterClientCreate=98 removedByAClientDeleteAfterClientCreate=0
+MC1| txnlog sample /adhoc-workload-b3-0: client create czxid=0x1e; deleteContainer zxid=0x426 session=0x0
+MC1| AFTER RESTART getData NoNode on 98 nodes; same set=true
+MC1| TOTAL expected line-674 frames = immediate c6 hits above + 98 + 98
+      2 Using checkIntervalMs=60000 maxPerMinute=10000 maxNeverUsedIntervalMs=300000
+manager log lines 'Attempting to delete candidate container': 1000
+FRAMES@674 197
+threads: {'SyncThread:0': 197}
+jdk.JavaExceptionThrow {
+  startTime = 22:13:45.843
+  message = N/A
+  thrownClass = org.apache.zookeeper.KeeperException$NoNodeException (classLoader = app)
+  eventThread = "SyncThread:0" (javaThreadId = 44)
+  stackTrace = [
+    java.lang.Throwable.<init>() line: 257
+    java.lang.Exception.<init>() line: 55
+    org.apache.zookeeper.KeeperException.<init>(KeeperException$Code) line: 526
+    org.apache.zookeeper.KeeperException$NoNodeException.<init>() line: 775
+    org.apache.zookeeper.server.FinalRequestProcessor.handleGetDataRequest(Record, ServerCnxn, List) line: 674
+    org.apache.zookeeper.server.FinalRequestProcessor.processRequest(Request) line: 403
+    org.apache.zookeeper.server.SyncRequestProcessor.run() line: 208
+  ]
+}
+== SCENARIO level0-standalone: mvn_exit=0 frames_at_FinalRequestProcessor_674=197 expected=+ -> PASS  (artifacts: /tmp/mc1-jfr.yG8NQH)
+
+################ scenario: level0-control
+== cmd: mvn -B -o test -pl zookeeper-server -Dtest='SpeculaAdhocB3Mc1Level0Test#controlReplacedBeforeScan' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false -Djvm=<JFR wrapper> -Dcheckstyle.skip=true -Dspotbugs.skip=true
+== mvn exit=0
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 63.557 s - in org.apache.zookeeper.server.SpeculaAdhocB3Mc1Level0Test
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+MC1| znode.container.checkIntervalMs=null znode.container.maxPerMinute=null
+MC1| client replaced 200 paths; delete found already cleaned=0; immediate c6 NoNode=0
+MC1| replacement done 3867 ms after setup began (first scan is at about 60000 ms)
+MC1| sentinel deleted by the manager 59658 ms after setup began
+MC1| RESULT later getData NoNode on 0 of 200 nodes
+      1 Using checkIntervalMs=60000 maxPerMinute=10000 maxNeverUsedIntervalMs=300000
+manager log lines 'Attempting to delete candidate container': 1
+FRAMES@674 0
+== SCENARIO level0-control: mvn_exit=0 frames_at_FinalRequestProcessor_674=0 expected=0 -> PASS  (artifacts: /tmp/mc1-jfr.nTwdlS)
+
+################ scenario: level0-quorum
+== cmd: mvn -B -o test -pl zookeeper-server -Dtest='SpeculaAdhocB3Mc1Level0Test#quorum' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false -Djvm=<JFR wrapper> -Dcheckstyle.skip=true -Dspotbugs.skip=true
+== mvn exit=0
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 109.844 s - in org.apache.zookeeper.server.SpeculaAdhocB3Mc1Level0Test
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+MC1| znode.container.checkIntervalMs=null znode.container.maxPerMinute=null
+MC1| setup: 1000 used empty containers in 1117 ms; nodes under / = 1003
+MC1| manager's first deletion seen; client replaces now
+MC1| IMMEDIATE c6 getData threw org.apache.zookeeper.KeeperException$NoNodeException: KeeperErrorCode = NoNode for /adhoc-workload-b3-37 right after this client's create returned czxid=0x10000024b
+MC1| client replaced 1000 paths; delete found already cleaned=954; immediate c6 NoNode=1
+MC1| leader is peer 3 type=LeaderZooKeeperServer
+MC1| RESULT later getData NoNode on 45 of 1000 nodes this client created and never deleted; first=/adhoc-workload-b3-0
+MC1| txnlog: lost=45 removedByDeleteContainerAfterClientCreate=45 removedByAClientDeleteAfterClientCreate=0
+MC1| txnlog sample /adhoc-workload-b3-0: client create czxid=0x10000002e; deleteContainer zxid=0x1000003da session=0x0
+MC1| AFTER QUORUM RESTART getData NoNode on 45 nodes; same set=true
+MC1| TOTAL expected line-674 frames = immediate c6 hits above + 45 + 45
+      2 Using checkIntervalMs=60000 maxPerMinute=10000 maxNeverUsedIntervalMs=300000
+manager log lines 'Attempting to delete candidate container': 1000
+FRAMES@674 91
+threads: {'CommitProcWorkThread-1': 91}
+jdk.JavaExceptionThrow {
+  startTime = 22:16:57.420
+  message = N/A
+  thrownClass = org.apache.zookeeper.KeeperException$NoNodeException (classLoader = app)
+  eventThread = "CommitProcWorkThread-1" (javaThreadId = 206)
+  stackTrace = [
+    java.lang.Throwable.<init>() line: 257
+    java.lang.Exception.<init>() line: 55
+    org.apache.zookeeper.KeeperException.<init>(KeeperException$Code) line: 526
+    org.apache.zookeeper.KeeperException$NoNodeException.<init>() line: 775
+    org.apache.zookeeper.server.FinalRequestProcessor.handleGetDataRequest(Record, ServerCnxn, List) line: 674
+    org.apache.zookeeper.server.FinalRequestProcessor.processRequest(Request) line: 403
+    org.apache.zookeeper.server.quorum.CommitProcessor$CommitWorkRequest.doWork() line: 560
+    org.apache.zookeeper.server.WorkerService$ScheduledWorkRequest.run() line: 153
+    java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor$Worker) line: 1136
+    java.util.concurrent.ThreadPoolExecutor$Worker.run() line: 635
+    java.lang.Thread.run() line: 840
+  ]
+}
+== SCENARIO level0-quorum: mvn_exit=0 frames_at_FinalRequestProcessor_674=91 expected=+ -> PASS  (artifacts: /tmp/mc1-jfr.HH3Iyh)
+
+== OVERALL failed=0
+== tree: /tmp/mc1-pristine-eab16599  mode=pristine  commit=eab16599
+== src/main diff vs eab16599: none (exported with git archive; six cited files compared with cmp)
+== handleGetDataRequest as compiled here:
+        GetDataRequest getDataRequest = (GetDataRequest) request;
+        String path = getDataRequest.getPath();
+        DataNode n = zks.getZKDatabase().getNode(path);
+        if (n == null) {
+            throw new KeeperException.NoNodeException();
+        }
+== java: openjdk version "17.0.21" 2026-10-20
+
+################ scenario: level1-persistent
+== cmd: mvn -B -o test -pl zookeeper-server -Dtest='SpeculaAdhocB3Mc1Level1Test#persistent' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false -Djvm=<JFR wrapper> -Dcheckstyle.skip=true -Dspotbugs.skip=true
+== mvn exit=0
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.217 s - in org.apache.zookeeper.server.SpeculaAdhocB3Mc1Level1Test
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+MC1| MgrScan candidates=[/adhoc-workload-b3]
+MC1| c4 delete returned OK
+MC1| c5 create(PERSISTENT) returned OK czxid=0x6
+MC1| MgrPost stale deleteContainer entered PrepRequestProcessor's queue
+MC1| RESULT c6 getData threw org.apache.zookeeper.KeeperException$NoNodeException: KeeperErrorCode = NoNode for /adhoc-workload-b3
+MC1| exists after c6 = null; this client issued no delete after c5
+MC1| AFTER RESTART exists = null; getData threw org.apache.zookeeper.KeeperException$NoNodeException: KeeperErrorCode = NoNode for /adhoc-workload-b3
+MC1| TOTAL expected line-674 frames = 2
+      1 Using checkIntervalMs=100 maxPerMinute=2147483647 maxNeverUsedIntervalMs=0
+manager log lines 'Attempting to delete candidate container': 1
+FRAMES@674 2
+threads: {'SyncThread:0': 2}
+jdk.JavaExceptionThrow {
+  startTime = 22:19:13.667
+  message = N/A
+  thrownClass = org.apache.zookeeper.KeeperException$NoNodeException (classLoader = app)
+  eventThread = "SyncThread:0" (javaThreadId = 51)
+  stackTrace = [
+    java.lang.Throwable.<init>() line: 257
+    java.lang.Exception.<init>() line: 55
+    org.apache.zookeeper.KeeperException.<init>(KeeperException$Code) line: 526
+    org.apache.zookeeper.KeeperException$NoNodeException.<init>() line: 775
+    org.apache.zookeeper.server.FinalRequestProcessor.handleGetDataRequest(Record, ServerCnxn, List) line: 674
+    org.apache.zookeeper.server.FinalRequestProcessor.processRequest(Request) line: 403
+    org.apache.zookeeper.server.SyncRequestProcessor.run() line: 208
+  ]
+}
+== SCENARIO level1-persistent: mvn_exit=0 frames_at_FinalRequestProcessor_674=2 expected=2 -> PASS  (artifacts: /tmp/mc1-jfr.LnmQjw)
+
+################ scenario: level1-container
+== cmd: mvn -B -o test -pl zookeeper-server -Dtest='SpeculaAdhocB3Mc1Level1Test#container' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false -Djvm=<JFR wrapper> -Dcheckstyle.skip=true -Dspotbugs.skip=true
+== mvn exit=0
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.004 s - in org.apache.zookeeper.server.SpeculaAdhocB3Mc1Level1Test
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+MC1| MgrScan candidates=[/adhoc-workload-b3]
+MC1| c5 create(CONTAINER) returned OK czxid=0x6
+MC1| MgrPost stale deleteContainer entered PrepRequestProcessor's queue
+MC1| RESULT c6 getData threw org.apache.zookeeper.KeeperException$NoNodeException: KeeperErrorCode = NoNode for /adhoc-workload-b3 (fresh container, cversion 0, never a candidate)
+MC1| TOTAL expected line-674 frames = 1
+      1 Using checkIntervalMs=100 maxPerMinute=2147483647 maxNeverUsedIntervalMs=0
+manager log lines 'Attempting to delete candidate container': 1
+FRAMES@674 1
+threads: {'SyncThread:0': 1}
+jdk.JavaExceptionThrow {
+  startTime = 22:19:31.656
+  message = N/A
+  thrownClass = org.apache.zookeeper.KeeperException$NoNodeException (classLoader = app)
+  eventThread = "SyncThread:0" (javaThreadId = 51)
+  stackTrace = [
+    java.lang.Throwable.<init>() line: 257
+    java.lang.Exception.<init>() line: 55
+    org.apache.zookeeper.KeeperException.<init>(KeeperException$Code) line: 526
+    org.apache.zookeeper.KeeperException$NoNodeException.<init>() line: 775
+    org.apache.zookeeper.server.FinalRequestProcessor.handleGetDataRequest(Record, ServerCnxn, List) line: 674
+    org.apache.zookeeper.server.FinalRequestProcessor.processRequest(Request) line: 403
+    org.apache.zookeeper.server.SyncRequestProcessor.run() line: 208
+  ]
+}
+== SCENARIO level1-container: mvn_exit=0 frames_at_FinalRequestProcessor_674=1 expected=1 -> PASS  (artifacts: /tmp/mc1-jfr.cPzmPf)
+
+################ scenario: level1-control-post-before-create
+== cmd: mvn -B -o test -pl zookeeper-server -Dtest='SpeculaAdhocB3Mc1Level1Test#controlPostBeforeCreate' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false -Djvm=<JFR wrapper> -Dcheckstyle.skip=true -Dspotbugs.skip=true
+== mvn exit=0
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.988 s - in org.apache.zookeeper.server.SpeculaAdhocB3Mc1Level1Test
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+MC1| MgrScan candidates=[/adhoc-workload-b3]
+MC1| MgrPost stale deleteContainer entered PrepRequestProcessor's queue
+MC1| c5 create(PERSISTENT) returned OK czxid=0x7
+MC1| RESULT c6 getData OK
+MC1| TOTAL expected line-674 frames = 0
+      1 Using checkIntervalMs=100 maxPerMinute=2147483647 maxNeverUsedIntervalMs=0
+manager log lines 'Attempting to delete candidate container': 1
+FRAMES@674 0
+== SCENARIO level1-control-post-before-create: mvn_exit=0 frames_at_FinalRequestProcessor_674=0 expected=0 -> PASS  (artifacts: /tmp/mc1-jfr.Va8mnR)
+
+################ scenario: level1-control-child
+== cmd: mvn -B -o test -pl zookeeper-server -Dtest='SpeculaAdhocB3Mc1Level1Test#controlReplacementHasChild' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false -Djvm=<JFR wrapper> -Dcheckstyle.skip=true -Dspotbugs.skip=true
+== mvn exit=0
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.095 s - in org.apache.zookeeper.server.SpeculaAdhocB3Mc1Level1Test
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+MC1| MgrScan candidates=[/adhoc-workload-b3]
+MC1| c5 create(PERSISTENT) returned OK czxid=0x6
+MC1| MgrPost stale deleteContainer entered PrepRequestProcessor's queue
+MC1| RESULT c6 getData OK
+MC1| TOTAL expected line-674 frames = 0
+      1 Using checkIntervalMs=100 maxPerMinute=2147483647 maxNeverUsedIntervalMs=0
+manager log lines 'Attempting to delete candidate container': 1
+FRAMES@674 0
+== SCENARIO level1-control-child: mvn_exit=0 frames_at_FinalRequestProcessor_674=0 expected=0 -> PASS  (artifacts: /tmp/mc1-jfr.Ht4F7e)
+
+################ scenario: level1-control-ephemeral
+== cmd: mvn -B -o test -pl zookeeper-server -Dtest='SpeculaAdhocB3Mc1Level1Test#controlEphemeral' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false -Djvm=<JFR wrapper> -Dcheckstyle.skip=true -Dspotbugs.skip=true
+== mvn exit=0
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.013 s - in org.apache.zookeeper.server.SpeculaAdhocB3Mc1Level1Test
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+MC1| MgrScan candidates=[/adhoc-workload-b3]
+MC1| c5 create(EPHEMERAL) returned OK czxid=0x6
+MC1| MgrPost stale deleteContainer entered PrepRequestProcessor's queue
+MC1| RESULT c6 getData OK
+MC1| TOTAL expected line-674 frames = 0
+      1 Using checkIntervalMs=100 maxPerMinute=2147483647 maxNeverUsedIntervalMs=0
+manager log lines 'Attempting to delete candidate container': 1
+FRAMES@674 0
+== SCENARIO level1-control-ephemeral: mvn_exit=0 frames_at_FinalRequestProcessor_674=0 expected=0 -> PASS  (artifacts: /tmp/mc1-jfr.obpHiq)
+
+################ scenario: level0-quorum
+== cmd: mvn -B -o test -pl zookeeper-server -Dtest='SpeculaAdhocB3Mc1Level0Test#quorum' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false -Djvm=<JFR wrapper> -Dcheckstyle.skip=true -Dspotbugs.skip=true
+== mvn exit=0
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 153.367 s - in org.apache.zookeeper.server.SpeculaAdhocB3Mc1Level0Test
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+MC1| znode.container.checkIntervalMs=null znode.container.maxPerMinute=null
+MC1| setup: 1000 used empty containers in 1332 ms; nodes under / = 1003
+MC1| manager's first deletion seen; client replaces now
+MC1| IMMEDIATE c6 getData threw org.apache.zookeeper.KeeperException$NoNodeException: KeeperErrorCode = NoNode for /adhoc-workload-b3-38 right after this client's create returned czxid=0x100000250
+MC1| client replaced 1000 paths; delete found already cleaned=955; immediate c6 NoNode=1
+MC1| leader is peer 3 type=LeaderZooKeeperServer
+MC1| RESULT later getData NoNode on 44 of 1000 nodes this client created and never deleted; first=/adhoc-workload-b3-0
+MC1| txnlog: lost=44 removedByDeleteContainerAfterClientCreate=44 removedByAClientDeleteAfterClientCreate=0
+MC1| txnlog sample /adhoc-workload-b3-0: client create czxid=0x100000021; deleteContainer zxid=0x1000003d4 session=0x0
+MC1| AFTER QUORUM RESTART getData NoNode on 44 nodes; same set=true
+MC1| TOTAL expected line-674 frames = immediate c6 hits above + 44 + 44
+      2 Using checkIntervalMs=60000 maxPerMinute=10000 maxNeverUsedIntervalMs=300000
+manager log lines 'Attempting to delete candidate container': 1000
+FRAMES@674 89
+threads: {'CommitProcWorkThread-1': 89}
+jdk.JavaExceptionThrow {
+  startTime = 22:21:46.051
+  message = N/A
+  thrownClass = org.apache.zookeeper.KeeperException$NoNodeException (classLoader = app)
+  eventThread = "CommitProcWorkThread-1" (javaThreadId = 206)
+  stackTrace = [
+    java.lang.Throwable.<init>() line: 257
+    java.lang.Exception.<init>() line: 55
+    org.apache.zookeeper.KeeperException.<init>(KeeperException$Code) line: 526
+    org.apache.zookeeper.KeeperException$NoNodeException.<init>() line: 775
+    org.apache.zookeeper.server.FinalRequestProcessor.handleGetDataRequest(Record, ServerCnxn, List) line: 674
+    org.apache.zookeeper.server.FinalRequestProcessor.processRequest(Request) line: 403
+    org.apache.zookeeper.server.quorum.CommitProcessor$CommitWorkRequest.doWork() line: 560
+    org.apache.zookeeper.server.WorkerService$ScheduledWorkRequest.run() line: 153
+    java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor$Worker) line: 1136
+    java.util.concurrent.ThreadPoolExecutor$Worker.run() line: 635
+    java.lang.Thread.run() line: 840
+  ]
+}
+== SCENARIO level0-quorum: mvn_exit=0 frames_at_FinalRequestProcessor_674=89 expected=+ -> PASS  (artifacts: /tmp/mc1-jfr.2mpvOB)
+
+################ scenario: level0-quorum
+== cmd: mvn -B -o test -pl zookeeper-server -Dtest='SpeculaAdhocB3Mc1Level0Test#quorum' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false -Djvm=<JFR wrapper> -Dcheckstyle.skip=true -Dspotbugs.skip=true
+== mvn exit=0
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 105.551 s - in org.apache.zookeeper.server.SpeculaAdhocB3Mc1Level0Test
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+MC1| znode.container.checkIntervalMs=null znode.container.maxPerMinute=null
+MC1| setup: 1000 used empty containers in 1175 ms; nodes under / = 1003
+MC1| manager's first deletion seen; client replaces now
+MC1| client replaced 1000 paths; delete found already cleaned=885; immediate c6 NoNode=0
+MC1| leader is peer 3 type=LeaderZooKeeperServer
+MC1| RESULT later getData NoNode on 114 of 1000 nodes this client created and never deleted; first=/adhoc-workload-b3-0
+MC1| txnlog: lost=114 removedByDeleteContainerAfterClientCreate=114 removedByAClientDeleteAfterClientCreate=0
+MC1| txnlog sample /adhoc-workload-b3-0: client create czxid=0x10000001f; deleteContainer zxid=0x100000440 session=0x0
+MC1| AFTER QUORUM RESTART getData NoNode on 114 nodes; same set=true
+MC1| TOTAL expected line-674 frames = immediate c6 hits above + 114 + 114
+      2 Using checkIntervalMs=60000 maxPerMinute=10000 maxNeverUsedIntervalMs=300000
+manager log lines 'Attempting to delete candidate container': 1000
+FRAMES@674 228
+threads: {'CommitProcWorkThread-1': 228}
+jdk.JavaExceptionThrow {
+  startTime = 22:25:17.846
+  message = N/A
+  thrownClass = org.apache.zookeeper.KeeperException$NoNodeException (classLoader = app)
+  eventThread = "CommitProcWorkThread-1" (javaThreadId = 206)
+  stackTrace = [
+    java.lang.Throwable.<init>() line: 257
+    java.lang.Exception.<init>() line: 55
+    org.apache.zookeeper.KeeperException.<init>(KeeperException$Code) line: 526
+    org.apache.zookeeper.KeeperException$NoNodeException.<init>() line: 775
+    org.apache.zookeeper.server.FinalRequestProcessor.handleGetDataRequest(Record, ServerCnxn, List) line: 674
+    org.apache.zookeeper.server.FinalRequestProcessor.processRequest(Request) line: 403
+    org.apache.zookeeper.server.quorum.CommitProcessor$CommitWorkRequest.doWork() line: 560
+    org.apache.zookeeper.server.WorkerService$ScheduledWorkRequest.run() line: 153
+    java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor$Worker) line: 1136
+    java.util.concurrent.ThreadPoolExecutor$Worker.run() line: 635
+    java.lang.Thread.run() line: 840
+  ]
+}
+== SCENARIO level0-quorum: mvn_exit=0 frames_at_FinalRequestProcessor_674=228 expected=+ -> PASS  (artifacts: /tmp/mc1-jfr.FBBqpk)
+
+== OVERALL failed=0

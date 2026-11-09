@@ -1,0 +1,39 @@
+id: solr-adhoc-k1
+system: Apache Solr
+source_tree: /set/by/run-case.sh
+base_commit: 1eaa00b6e52
+check:
+  file: solr/test-framework/src/java/org/apache/solr/cloud/AbstractDistribZkTestBase.java
+  line: 185
+  method: AbstractDistribZkTestBase.waitForRecoveriesToFinish(String, ZkStateReader, boolean, boolean, int)
+  thrown: java.lang.AssertionError
+  guard: "sawLiveRecovering && cnt == timeoutSeconds && failOnTimeout   (sawLiveRecovering: a slice of zkStateReader.getClusterState().getCollectionOrNull(collection) is in CONSTRUCTION, or a replica on a live node is RECOVERING, DOWN or RECOVERY_FAILED; fail(...) from org.junit.Assert)"
+workload:
+  module: solr/core
+  test: org.apache.solr.cloud.TestCloudRecovery#leaderRecoverFromLogOnStartupTest
+  note: the test reaches the check's method and passes; the check does not fail in it
+scope_hint:
+  - org.apache.solr.cloud.AbstractDistribZkTestBase
+  - org.apache.solr.cloud.SolrCloudTestCase
+  - org.apache.solr.cloud.MiniSolrCloudCluster
+  - org.apache.solr.client.solrj.impl.CloudSolrClient
+  - org.apache.solr.client.solrj.impl.ZkClientClusterStateProvider
+  - org.apache.solr.common.cloud.ZkStateReader
+  - org.apache.solr.common.cloud.ClusterState
+  - org.apache.solr.common.cloud.DocCollection
+  - org.apache.solr.common.cloud.Slice
+  - org.apache.solr.common.cloud.Replica
+  - org.apache.solr.common.cloud.CollectionStateWatcher
+  - org.apache.solr.common.cloud.CollectionStatePredicate
+  - org.apache.solr.common.cloud.ClusterStateUtil
+  - org.apache.solr.common.cloud.SolrZkClient
+  - org.apache.solr.cloud.ZkController
+  - org.apache.solr.cloud.Overseer
+  - org.apache.solr.cloud.overseer.ZkStateWriter
+  - org.apache.solr.cloud.overseer.ReplicaMutator
+  - org.apache.solr.cloud.RecoveryStrategy
+  - org.apache.solr.cloud.ElectionContext
+build:
+  env: /set/by/run-case.sh
+  prepare: "cd solr/core && ant -lib $IVY_USER_DIR/lib compile-test -Divy_install_path=$IVY_USER_DIR/lib   (already done once)"
+  test_command: "cd solr/core && ant -lib $IVY_USER_DIR/lib test -Dtestcase=<Class> -Dtests.method=<method> -Dtests.jvms=1 -Dtests.useSecurityManager=false -Divy_install_path=$IVY_USER_DIR/lib"

@@ -1,0 +1,88 @@
+# MC-2 evidence summary, extracted from the per-run logs in this directory
+
+===== t2-NETTY
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 18.807 s - in org.apache.zookeeper.test.ReadOnlyDirtyReadMC2Test
+[INFO] BUILD SUCCESS
+MC2-REPRO leader=2, stopping follower 1, then follower 3 under write load
+MC2-REPRO writes sent=281 acknowledged=0 not-acknowledged=281
+MC2-REPRO sid 2 answers isro=ro (read-only server over the fast-forwarded tree)
+MC2-REPRO RO READ first /inflight-0 data=uncommitted-0 czxid=0x100000002 state=CONNECTEDREADONLY
+MC2-REPRO RO READ last  /inflight-259 data=uncommitted-259 czxid=0x100000105 state=CONNECTEDREADONLY ; unacknowledged writes visible=260
+MC2-REPRO next epoch formed: leader=3 follower=1 follower-role=FOLLOWING
+MC2-REPRO REFUSED at the next-epoch follower: reader.state=CONNECTING
+MC2-REPRO seen at read-only server=260 ; absent from the next epoch=260
+MC2-REPRO refusals during 6s with no write in the new epoch: 4, reader.state=CONNECTING
+MC2-REPRO after one new-epoch write the reader reconnects, state=CONNECTED; /inflight-0 it read earlier is now NoNode
+MC2-REPRO old leader sid 2 rejoined as FOLLOWING and no longer has /inflight-0
+2026-11-05 05:28:13,247 [myid:] - INFO  [zkNetty-EpollEventLoopGroup-22-9:o.a.z.s.ZooKeeperServer@1515] - Refusing session(0x0) request for client /127.0.0.1:39390 as it has seen zxid 0x100000105 our last zxid is 0x100000001 client must try another server
+org.apache.zookeeper.server.ServerCnxn$CloseRequestException: Refusing session(0x0) request for client /127.0.0.1:39390 as it has seen zxid 0x100000105 our last zxid is 0x100000001 client must try another server
+	at org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest(ZooKeeperServer.java:1516)
+	at org.apache.zookeeper.server.NettyServerCnxn.receiveMessage(NettyServerCnxn.java:510)
+	at org.apache.zookeeper.server.NettyServerCnxn.processMessage(NettyServerCnxn.java:396)
+
+===== t2-NIO-run1
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 24.454 s - in org.apache.zookeeper.test.ReadOnlyDirtyReadMC2Test
+[INFO] BUILD SUCCESS
+MC2-REPRO leader=2, stopping follower 1, then follower 3 under write load
+MC2-REPRO writes sent=166 acknowledged=0 not-acknowledged=166
+MC2-REPRO sid 2 answers isro=ro (read-only server over the fast-forwarded tree)
+MC2-REPRO RO READ first /inflight-0 data=uncommitted-0 czxid=0x100000002 state=CONNECTEDREADONLY
+MC2-REPRO RO READ last  /inflight-145 data=uncommitted-145 czxid=0x100000093 state=CONNECTEDREADONLY ; unacknowledged writes visible=146
+MC2-REPRO next epoch formed: leader=3 follower=1 follower-role=FOLLOWING
+MC2-REPRO REFUSED at the next-epoch follower: reader.state=CONNECTING
+MC2-REPRO seen at read-only server=146 ; absent from the next epoch=146
+MC2-REPRO refusals during 6s with no write in the new epoch: 2, reader.state=CONNECTING
+MC2-REPRO after one new-epoch write the reader reconnects, state=CONNECTED; /inflight-0 it read earlier is now NoNode
+MC2-REPRO old leader sid 2 rejoined as FOLLOWING and no longer has /inflight-0
+2026-11-05 05:24:58,085 [myid:] - INFO  [NIOWorkerThread-4:o.a.z.s.ZooKeeperServer@1515] - Refusing session(0x0) request for client /127.0.0.1:52122 as it has seen zxid 0x100000093 our last zxid is 0x100000001 client must try another server
+
+===== t1-NETTY-attempt3
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 14.474 s - in org.apache.zookeeper.test.ReadOnlyDirtyReadMC2Test
+[INFO] BUILD SUCCESS
+MC2-REPRO leader=2 follower=3; sid 1 role=FOLLOWING isro=ro
+MC2-REPRO writes sent=113 acknowledged=0 not-acknowledged=113
+MC2-REPRO sid 2 answers isro=ro (read-only server over the fast-forwarded tree)
+MC2-REPRO RO READ first /inflight-0 data=uncommitted-0 czxid=0x200000001 state=CONNECTEDREADONLY
+MC2-REPRO RO READ last  /inflight-92 data=uncommitted-92 czxid=0x20000005d state=CONNECTEDREADONLY ; unacknowledged writes visible=93
+MC2-REPRO REFUSED: sid 1 role=FOLLOWING isro=ro; reader.state=CONNECTING
+MC2-REPRO reader reconnected state=CONNECTED to next-epoch leader sid 2, which kept /inflight-92
+2026-11-05 05:22:34,972 [myid:] - INFO  [zkNetty-EpollEventLoopGroup-13-18:o.a.z.s.ZooKeeperServer@1515] - Refusing session(0x0) request for client /127.0.0.1:42034 as it has seen zxid 0x20000005d our last zxid is 0x0 client must try another server
+org.apache.zookeeper.server.ServerCnxn$CloseRequestException: Refusing session(0x0) request for client /127.0.0.1:42034 as it has seen zxid 0x20000005d our last zxid is 0x0 client must try another server
+	at org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest(ZooKeeperServer.java:1516)
+	at org.apache.zookeeper.server.NettyServerCnxn.receiveMessage(NettyServerCnxn.java:510)
+	at org.apache.zookeeper.server.NettyServerCnxn.processMessage(NettyServerCnxn.java:396)
+
+===== t1-NIO-attempt3
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 13.408 s - in org.apache.zookeeper.test.ReadOnlyDirtyReadMC2Test
+[INFO] BUILD SUCCESS
+MC2-REPRO leader=2 follower=3; sid 1 role=FOLLOWING isro=ro
+MC2-REPRO writes sent=406 acknowledged=0 not-acknowledged=406
+MC2-REPRO sid 2 answers isro=ro (read-only server over the fast-forwarded tree)
+MC2-REPRO RO READ first /inflight-0 data=uncommitted-0 czxid=0x200000001 state=CONNECTEDREADONLY
+MC2-REPRO RO READ last  /inflight-385 data=uncommitted-385 czxid=0x200000182 state=CONNECTEDREADONLY ; unacknowledged writes visible=386
+MC2-REPRO REFUSED: sid 1 role=FOLLOWING isro=ro; reader.state=CONNECTING
+MC2-REPRO reader reconnected state=CONNECTED to next-epoch leader sid 2, which kept /inflight-385
+2026-11-05 05:32:43,933 [myid:] - INFO  [NIOWorkerThread-20:o.a.z.s.ZooKeeperServer@1515] - Refusing session(0x0) request for client /127.0.0.1:46756 as it has seen zxid 0x200000182 our last zxid is 0x0 client must try another server
+
+===== t3-NIO
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 10.513 s - in org.apache.zookeeper.test.ReadOnlyDirtyReadMC2Test
+[INFO] BUILD SUCCESS
+MC2-REPRO writes sent=283 acknowledged=0 not-acknowledged=283
+MC2-REPRO sid 2 answers isro=ro (read-only server over the fast-forwarded tree)
+MC2-REPRO RO READ first /inflight-0 data=uncommitted-0 czxid=0x100000001 state=CONNECTEDREADONLY
+MC2-REPRO RO READ last  /inflight-261 data=uncommitted-261 czxid=0x100000106 state=CONNECTEDREADONLY ; unacknowledged writes visible=262
+MC2-REPRO after restart the read-only server shows 262 unacknowledged writes
+
+===== non-triggering hunt attempts (client rotated back to the old leader)
+t1-NETTY-attempt1: [ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 25.518 s <<< FAILURE! - in o ; org.opentest4j.AssertionFailedError: server never refused the client ==> expected: <true> 
+t1-NETTY-attempt2: [ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 26.207 s <<< FAILURE! - in o ; org.opentest4j.AssertionFailedError: server never refused the client ==> expected: <true> 
+t1-NIO-attempt1: [ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 24.473 s <<< FAILURE! - in o ; org.opentest4j.AssertionFailedError: server never refused the client ==> expected: <true> 
+t1-NIO-attempt2: [ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 24.32 s <<< FAILURE! - in or ; org.opentest4j.AssertionFailedError: server never refused the client ==> expected: <true> 
+
+===== control: unmodified workload ReadOnlyModeTest#testSeekForRwServer
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 9.04 s - in org.apache.zookeeper.test.ReadOnlyModeTest
+[INFO] BUILD SUCCESS
+refusals=0
+
+===== NIO JVM exception log (exception type and message; the message is built only on the guard branch. javap on ZooKeeperServer: line 1516 starts at bci 331)
+[14.530s][2038831] Exception <a 'org/apache/zookeeper/server/ServerCnxn$CloseRequestException'{0x00000000e29fa7e8}: Refusing session(0x0) request for client /127.0.0.1:52122 as it has seen zxid 0x100000093 our last zxid is 0x100000001 client must try another s

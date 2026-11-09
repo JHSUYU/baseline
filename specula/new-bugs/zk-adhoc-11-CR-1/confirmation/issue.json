@@ -1,0 +1,76 @@
+{
+  "id": "CR-1",
+  "title": "One failed SNAP-sync currentEpoch write leaves an observer's syncMode at SNAP, so QuorumPeer:1236 re-fires on every registerWithLeader and it never re-syncs",
+  "status": "REPRODUCED",
+  "source": "code-review",
+  "cause": "Learner.syncWithLeader resets syncMode only after setCurrentEpoch succeeds, so a failed write leaves it at SNAP. Every later Learner.shutdown then clears zkDb, and an observer reloads it in registerWithLeader, where the on-disk epoch is older than the persisted snapshot.",
+  "trigger": "A fresh observer SNAP-syncs from a quorum with data; the snapshot persists at NEWLEADER, then one currentEpoch write fails before the rename, leaving no currentEpoch.tmp.",
+  "consequence": "The observer never serves clients again: about 10 attempts per second each throw the target IOException and log stack traces, through leader changes, and a process restart fails at the same throw until an operator repairs the data directory.",
+  "sites": [
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/QuorumPeer.java:loadDataBase",
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Learner.java:syncWithLeader",
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Learner.java:shutdown"
+  ],
+  "actions": [],
+  "invariants": [],
+  "premises": [
+    "A currentEpoch write can fail with an I/O error before the rename, after the snapshot was persisted; the fault happens once and later writes succeed.",
+    "The peer is an observer (peerType=observer), so FastLeaderElection does not reload the database and the reload happens in registerWithLeader.",
+    "The JVM records the target throw at QuorumPeer.java:1237: the statement starts at 1236 and javac attributes the constructor call to the message argument line."
+  ],
+  "dependencies": [
+    {
+      "root": "source",
+      "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/QuorumPeer.java",
+      "start": "            zkDb.loadDataBase();",
+      "end": "    ResponderThread responder;"
+    },
+    {
+      "root": "source",
+      "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/QuorumPeer.java",
+      "start": "    public long getLastLoggedZxid() {",
+      "end": "    public Follower follower;"
+    },
+    {
+      "root": "source",
+      "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Learner.java",
+      "start": "    protected long registerWithLeader(int pktType) throws IOException {",
+      "end": "        long lastLoggedZxid = self.getLastLoggedZxid();"
+    },
+    {
+      "root": "source",
+      "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Learner.java",
+      "start": "    protected void syncWithLeader(long newLeaderZxid) throws Exception {",
+      "end": "                    self.setSyncMode(QuorumPeer.SyncMode.NONE);"
+    },
+    {
+      "root": "source",
+      "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Learner.java",
+      "start": "    public void shutdown() {",
+      "end": "    boolean isRunning() {"
+    },
+    {
+      "root": "source",
+      "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/ZooKeeperServer.java",
+      "start": "    public final synchronized void shutdown(boolean fullyShutDown) {",
+      "end": "     * @implNote"
+    },
+    {
+      "root": "source",
+      "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/FastLeaderElection.java",
+      "start": "    private long getInitLastLoggedZxid() {",
+      "end": "     * Returns the initial vote value of the peer epoch."
+    },
+    {
+      "root": "source",
+      "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Observer.java"
+    }
+  ],
+  "evidence": [
+    "confirmation/CR-1/investigation.md",
+    "confirmation/CR-1/novelty-search.log",
+    "confirmation/CR-1/run3.log",
+    "confirmation/CR-1/run4-pristine.log",
+    "repro/test_bugCR-1_observer_reload_loop.sh"
+  ]
+}

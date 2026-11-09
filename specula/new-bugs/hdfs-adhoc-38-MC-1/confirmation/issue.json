@@ -1,0 +1,119 @@
+{
+  "id": "MC-1",
+  "title": "LAZY_PERSIST set on an ancestor after create makes append of an existing non-lazy file throw at FSDirAppendOp.java:122",
+  "status": "REPRODUCED",
+  "source": "model-checking",
+  "cause": "INodeFile.getStoragePolicyID resolves an unset file through its current ancestors, and the directory branch of setStoragePolicy has no copy-on-create check, so tagging an ancestor LAZY_PERSIST gives an existing file own=0, eff=15. The append guard compares the effective id.",
+  "trigger": "create and close a file with no policy, setStoragePolicy(<any ancestor>, LAZY_PERSIST), then append. Public API, default configuration, WRITE on the ancestor is enough.",
+  "consequence": "Append fails with RemoteException(java.lang.UnsupportedOperationException) thrown at FSDirAppendOp.java:122 on a DISK file never created lazy; hdfs dfs -appendToFile exits 1. Survives retries and NameNode restarts until the tag is explicitly unset. Same mechanism: truncate fails at FSDirTruncateOp.java:101, and the scrubber deletes such a file when its blocks have no live replica (observed after a transient DataNode outage, and after a NameNode restart with one block in the namespace).",
+  "sites": [
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirAppendOp.java:appendFile",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/INodeFile.java:getStoragePolicyID",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirAttrOp.java:unprotectedSetStoragePolicy",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirWriteFileOp.java:setNewINodeStoragePolicy"
+  ],
+  "actions": [
+    "MCStartFile",
+    "MCCompleteFile",
+    "MCSetDirStoragePolicy",
+    "MCTargetCheck"
+  ],
+  "invariants": [
+    "TargetSafe"
+  ],
+  "premises": [
+    "The file is replicated, not striped: INodeFile.java:603-606 maps LAZY_PERSIST to unspecified for striped files.",
+    "The file's own policy id is unset, so it was created without the flag and before the tag.",
+    "dfs.storage.policy.enabled=true (default). dfs.storage.policy.permissions.superuser-only=false (default) lets non-admins tag; with true a superuser still can.",
+    "The tag stays in place until the append; an explicit unset of the ancestor clears the effect.",
+    "No later revision on origin/trunk through 2026-10-26 changes the sites."
+  ],
+  "dependencies": [
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirAppendOp.java",
+      "start": "      if (lpPolicy != null && lpPolicy.getId() == file.getStoragePolicyID()) {",
+      "end": "            \"Cannot append to lazy persist file \" + path);"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirAttrOp.java",
+      "start": "  static void unprotectedSetStoragePolicy(FSDirectory fsd, BlockManager bm,",
+      "end": "  private static void setDirStoragePolicy("
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/INodeFile.java",
+      "start": "  public byte getStoragePolicyID() {",
+      "end": "  private void setStoragePolicyID(byte storagePolicyId) {"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/INodeDirectory.java",
+      "start": "  public byte getStoragePolicyID() {",
+      "end": "  void setQuota(BlockStoragePolicySuite bsps, long nsQuota, long ssQuota, StorageType type) {"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirWriteFileOp.java",
+      "start": "  private static void setNewINodeStoragePolicy(BlockManager bm,",
+      "end": "  private static class FileState {"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirTruncateOp.java",
+      "start": "      final BlockStoragePolicy lpPolicy = fsd.getBlockManager()",
+      "end": "            \"Cannot truncate lazy persist file \" + src);"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSNamesystem.java",
+      "start": "    private void clearCorruptLazyPersistFiles()",
+      "end": "  public FSImage getFSImage() {"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/protocol/BlockStoragePolicy.java",
+      "start": "   * Whether the policy is inherited during file creation.",
+      "end": "  private boolean copyOnCreateFile;"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockStoragePolicySuite.java",
+      "start": "    final byte lazyPersistId =",
+      "end": "        true);    // Cannot be changed on regular files, but inherited."
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/site/markdown/MemoryStorage.md",
+      "start": "### Invoke `hdfs storagepolicies` command for directories",
+      "end": "        hdfs storagepolicies -setStoragePolicy -path <path> -policy LAZY_PERSIST"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/site/markdown/ArchivalStorage.md",
+      "start": "### Storage Policy Resolution",
+      "end": "The effective storage policy can be retrieved by the \"[`storagepolicies -getStoragePolicy`](#Get_Storage_Policy)\" command."
+    },
+    {
+      "root": "work",
+      "path": "spec/base.tla"
+    },
+    {
+      "root": "work",
+      "path": "spec/MC.tla"
+    },
+    {
+      "root": "work",
+      "path": "spec/MC_hunt_s1.cfg"
+    }
+  ],
+  "evidence": [
+    "confirmation/MC-1/investigation.md",
+    "repro/test_bugMC-1_append_after_ancestor_lazy_persist.java",
+    "repro/test_bugMC-1_append_after_ancestor_lazy_persist.sh",
+    "repro/MC-1.log",
+    "repro/MC-1.stability.txt",
+    "spec/output/MC_hunt_s1_bfs.out"
+  ]
+}

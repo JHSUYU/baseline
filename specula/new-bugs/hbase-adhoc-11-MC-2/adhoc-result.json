@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "target": "hbase-adhoc-11",
+  "check": {
+    "file": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/AssignmentManager.java",
+    "line": 769,
+    "thrown": "org.apache.hadoop.hbase.client.DoNotRetryRegionException"
+  },
+  "verdict": "REACHED_CONFIRMED",
+  "mechanism": "INTERLEAVING",
+  "scenario": "Scenario 2: A TRSP detached by truncate's forced replacement keeps running unattached",
+  "finding": "MC-3",
+  "counterexample": "spec/output/MC_hunt_forced_detach_violation.out",
+  "reproduction": "repro/test_bugMC-3_truncate_detach.java",
+  "stackFrame": "org.apache.hadoop.hbase.master.assignment.AssignmentManager.preTransitCheck(AssignmentManager.java:769)",
+  "bounds": [
+    {
+      "config": "MC_hunt_split_owner.cfg",
+      "result": "VIOLATION",
+      "states": 226,
+      "diameter": 14,
+      "seconds": 1
+    },
+    {
+      "config": "MC_hunt_split_owner_l2.cfg",
+      "result": "VIOLATION",
+      "states": 403,
+      "diameter": 24,
+      "seconds": 1
+    },
+    {
+      "config": "MC_hunt_forced_detach.cfg",
+      "result": "VIOLATION",
+      "states": 1593,
+      "diameter": 28,
+      "seconds": 2
+    },
+    {
+      "config": "MC_hunt_forced_detach_scp.cfg",
+      "result": "NO_VIOLATION",
+      "states": 480326,
+      "diameter": 109,
+      "seconds": 21
+    },
+    {
+      "config": "MC_hunt_forced_detach_scp_pid32.cfg",
+      "result": "NO_VIOLATION",
+      "states": 5816358,
+      "diameter": 221,
+      "seconds": 164
+    },
+    {
+      "config": "MC_hunt_stale_views.cfg",
+      "result": "VIOLATION",
+      "states": 208,
+      "diameter": 7,
+      "seconds": 1
+    },
+    {
+      "config": "MC_hunt_stale_views_failover.cfg",
+      "result": "VIOLATION",
+      "states": 478,
+      "diameter": 14,
+      "seconds": 1
+    }
+  ],
+  "traceValidation": {
+    "traces": 3,
+    "passed": 3
+  },
+  "notes": "All five TargetSafe counterexamples (MC-1 to MC-5) were reproduced, each with the target exception thrown at AssignmentManager.java:769; the fields above give MC-3 as the representative because it needs no injected fault and leaves the region unserved. MC-3 chain: truncate takes the region lock; preTransitCheck does not consult that lock, so a move or balancer plan attaches a TRSP; truncate's forced unassign detaches the TRSP without stopping it and completes; the detached TRSP then writes CLOSING with no owner, the RegionServer's close report is dropped, and the next Admin.move, assign or unassign throws at line 769 while client I/O on the region fails. Evidence: a public-API race of Admin.move against truncateRegionAsync hit in 5 of 5 runs on a pristine export of 1790942bb2, and the counterexample's balancer path hit with only a timing hook on preTruncateRegionAction, on a two-RegionServer mini cluster; the no-move control stayed clean. The other reproduced findings use other mechanisms: MC-1 an operator abort racing split PREPARE, MC-2 a split/unassign race plus a namespace quota failure, MC-4 a decommission racing a split, and MC-5 a master failover with RSGroup enabled. The MC_hunt_forced_detach_scp configs found no violation, but only for one crash during one truncate and with the search cut by the MaxPid bound at both sizes. Code-review findings have no TargetSafe counterexample: CR-1, CR-4, CR-6, CR-8 and CR-12 were also reproduced firing the target line, CR-7 and CR-10 were reproduced without it, CR-3's unaided failure is at line 766, CR-2 and CR-11 are MASKED, and CR-5 and CR-9 are FALSE POSITIVE. A frame at line 769 alone does not show broken coordination: per CR-5, the unmodified workload test throws and catches it, contrary to the target file's note that the check does not fail there, so MC-3's confirmation rests on the ownerless CLOSING state as well as the frame."
+}

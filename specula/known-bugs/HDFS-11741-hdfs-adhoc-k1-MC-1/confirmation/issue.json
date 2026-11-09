@@ -1,0 +1,40 @@
+{
+  "id": "MC-1",
+  "title": "Balancer/Mover KeyManager never refreshes its DataEncryptionKey; after DNs drop its block key every move fails at BlockTokenSecretManager:482",
+  "status": "REPRODUCED",
+  "source": "model-checking",
+  "cause": "KeyManager.newDataEncryptionKey mints the DEK once from the worker currentKey and caches it for the whole Balancer/Mover run: it never checks expiryDate and nothing clears it on InvalidEncryptionKeyException (Dispatcher.PendingMove.dispatch only logs and delays).",
+  "trigger": "Encrypted data transfer + block tokens; a Balancer run that lasts beyond the DN-side expiry of the key current at its first move (about 2I+L, ~3 min at I=L=1 min, ~20-35 h at defaults). The NN retires the key with final expiry R+I+L and every DN removes it at its next addKeys.",
+  "consequence": "Every later Balancer/Mover move fails at the target DN with InvalidEncryptionKeyException thrown from BlockTokenSecretManager.retrieveDataEncryptionKey (line 482 statement); the Balancer exits NO_MOVE_PROGRESS with the cluster unbalanced.",
+  "sites": [
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/balancer/KeyManager.java:newDataEncryptionKey",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/balancer/Dispatcher.java:PendingMove.dispatch",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java:retrieveDataEncryptionKey"
+  ],
+  "actions": ["TargetCheck"],
+  "invariants": ["TargetSafe"],
+  "premises": [
+    "dfs.encrypt.data.transfer=true and dfs.block.access.token.enable=true.",
+    "A single Balancer/Mover run (one NameNodeConnector/KeyManager) keeps issuing moves past the DN-side removal of the block key its DEK was minted from.",
+    "No trusted-channel resolver bypasses SASL for the Balancer->DN connection.",
+    "Known upstream as HDFS-11741 (fixed upstream); the pinned base 595e4680154 lacks the fix."
+  ],
+  "dependencies": [
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/balancer/KeyManager.java", "start": "  public DataEncryptionKey newDataEncryptionKey() {", "end": "  public void close() {"},
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/balancer/Dispatcher.java", "start": "        IOStreamPair saslStreams = saslClient.socketSend(sock, unbufOut,", "end": "        proxySource.activateDelay(delayAfterErrors);"},
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java", "start": "  private synchronized void removeExpiredKeys() {", "end": "  /** Generate an block token for current user */"},
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java", "start": "  public DataEncryptionKey generateDataEncryptionKey() {", "end": "    return createPassword(nonce, key.getKey());"},
+    {"root": "work", "path": "spec/base.tla"},
+    {"root": "work", "path": "spec/MC.tla"},
+    {"root": "work", "path": "spec/MC_hunt_stale_balancer_dek.cfg"}
+  ],
+  "evidence": [
+    "confirmation/MC-1/investigation.md",
+    "confirmation/MC-1/confirmation.md",
+    "repro/test_bugMC-1_stale_balancer_dek.java",
+    "repro/test_bugMC-1_stale_balancer_dek.sh",
+    "repro/MC-1.output.txt",
+    "repro/MC-1.mvn.log",
+    "spec/output/MC_hunt_stale_balancer_dek_final.out"
+  ]
+}

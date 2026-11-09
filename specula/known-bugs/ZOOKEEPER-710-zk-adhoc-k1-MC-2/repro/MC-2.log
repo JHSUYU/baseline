@@ -1,0 +1,122 @@
+[MC2 51333] attempt 1: client went to L first, retrying the move
+[MC2 51539] attempt 2: client opened the session at F; F wrote REVALIDATE (pendingRevalidations has 0xffa1b7257a110000), the packet is held on the F->L link
+[MC2 54001] client CONNECTED to port 11226 (L=11226) after 2467 ms; REVALIDATE still pending at F: true
+[MC2 54008] control: exists(/w/e) and setData(/w) on L succeed before the stale REVALIDATE
+[MC2 54008] releasing F->L link after 2474 ms hold
+[MC2 54013] L processed F's stale REVALIDATE and answered it (F's pendingRevalidations entry gone)
+[MC2 54017] round 0 setData -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 54017] round 0 exists -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w/e  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 54018] round 0 create -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w/c-  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 54020] round 0 getChildren -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 57021] round 1 setData -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 57022] round 1 exists -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w/e  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 57023] round 1 create -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w/c-  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 57024] round 1 getChildren -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 60025] round 2 setData -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 60026] round 2 exists -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w/e  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 60027] round 2 create -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w/c-  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 60027] round 2 getChildren -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 60027] SessionMovedException count = 12 of 12 ops
+[MC2 60027] BUG REPRODUCED: TargetSafe violated -- live connection to L rejected with SessionMovedException
+=== direct run 1 (exit 0)
+[MC2 68479] leader L = s5 127.0.0.1:11226, follower F = s1 127.0.0.1:11222
+[MC2 68524] session 0xffa1b725bd440000 created via 127.0.0.1:11222
+[MC2 68531] attempt 1: client went to L first, retrying the move
+[MC2 68736] attempt 2: client went to L first, retrying the move
+[MC2 68943] attempt 3: client went to L first, retrying the move
+[MC2 69149] attempt 4: client opened the session at F; F wrote REVALIDATE (pendingRevalidations has 0xffa1b725bd440000), the packet is held on the F->L link
+[MC2 72255] client CONNECTED to port 11226 (L=11226) after 3112 ms; REVALIDATE still pending at F: true
+[MC2 72263] control: exists(/w/e) and setData(/w) on L succeed before the stale REVALIDATE
+[MC2 72263] releasing F->L link after 3120 ms hold
+[MC2 72268] L processed F's stale REVALIDATE and answered it (F's pendingRevalidations entry gone)
+[MC2 72291] round 0 setData -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 72294] round 0 exists -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w/e  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 72298] round 0 create -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w/c-  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 72303] round 0 getChildren -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 75307] round 1 setData -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 75310] round 1 exists -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w/e  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 75314] round 1 create -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w/c-  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 75317] round 1 getChildren -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 78320] round 2 setData -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 78322] round 2 exists -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w/e  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 78325] round 2 create -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w/c-  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 78327] round 2 getChildren -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 78327] SessionMovedException count = 12 of 12 ops
+[MC2 78328] BUG REPRODUCED: TargetSafe violated -- live connection to L rejected with SessionMovedException
+OK (1 test)
+2026-11-07 17:54:32,283 - INFO  [ProcessThread:-1:PrepRequestProcessor@405] - Got user-level KeeperException when processing sessionid:0xffa1b725bd440000 type:setData cxid:0x3 zxid:0xfffffffffffffffe txntype:unknown reqpath:/w Error Path:null Error:KeeperErrorCode = Session moved
+2026-11-07 17:54:32,292 - INFO  [ProcessThread:-1:PrepRequestProcessor@405] - Got user-level KeeperException when processing sessionid:0xffa1b725bd440000 type:exists cxid:0x4 zxid:0xfffffffffffffffe txntype:unknown reqpath:/w/e Error Path:null Error:KeeperErrorCode = Session moved
+[JDI] #1 org.apache.zookeeper.KeeperException$SessionMovedException thrown in thread "ProcessThread:-1"
+[JDI]     at org.apache.zookeeper.server.SessionTrackerImpl.checkSession(SessionTrackerImpl.java:246)
+[JDI]     at org.apache.zookeeper.server.PrepRequestProcessor.pRequest(PrepRequestProcessor.java:308)
+[JDI]     at org.apache.zookeeper.server.PrepRequestProcessor.run(PrepRequestProcessor.java:114)
+[JDI] target VM ended; 44 SessionMovedException throw(s) seen
+server-side throws at SessionTrackerImpl.checkSession(SessionTrackerImpl.java:246): 16
+=== direct run 2 (exit 0)
+[MC2 87647] leader L = s5 127.0.0.1:11226, follower F = s1 127.0.0.1:11222
+[MC2 87917] session 0xffa1b72608270000 created via 127.0.0.1:11222
+[MC2 87924] attempt 1: client opened the session at F; F wrote REVALIDATE (pendingRevalidations has 0xffa1b72608270000), the packet is held on the F->L link
+[MC2 90117] client CONNECTED to port 11226 (L=11226) after 2199 ms; REVALIDATE still pending at F: true
+[MC2 90125] control: exists(/w/e) and setData(/w) on L succeed before the stale REVALIDATE
+[MC2 90125] releasing F->L link after 2207 ms hold
+[MC2 90130] L processed F's stale REVALIDATE and answered it (F's pendingRevalidations entry gone)
+[MC2 90156] round 0 setData -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 90159] round 0 exists -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w/e  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 90163] round 0 create -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w/c-  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 90168] round 0 getChildren -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 93172] round 1 setData -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 93175] round 1 exists -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w/e  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 93179] round 1 create -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w/c-  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 93182] round 1 getChildren -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 96702] round 2 setData -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 96705] round 2 exists -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w/e  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 96708] round 2 create -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w/c-  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 96710] round 2 getChildren -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 96710] SessionMovedException count = 12 of 12 ops
+[MC2 96710] BUG REPRODUCED: TargetSafe violated -- live connection to L rejected with SessionMovedException
+OK (1 test)
+2026-11-07 17:54:50,148 - INFO  [ProcessThread:-1:PrepRequestProcessor@405] - Got user-level KeeperException when processing sessionid:0xffa1b72608270000 type:setData cxid:0x3 zxid:0xfffffffffffffffe txntype:unknown reqpath:/w Error Path:null Error:KeeperErrorCode = Session moved
+2026-11-07 17:54:50,157 - INFO  [ProcessThread:-1:PrepRequestProcessor@405] - Got user-level KeeperException when processing sessionid:0xffa1b72608270000 type:exists cxid:0x4 zxid:0xfffffffffffffffe txntype:unknown reqpath:/w/e Error Path:null Error:KeeperErrorCode = Session moved
+[JDI] #1 org.apache.zookeeper.KeeperException$SessionMovedException thrown in thread "ProcessThread:-1"
+[JDI]     at org.apache.zookeeper.server.SessionTrackerImpl.checkSession(SessionTrackerImpl.java:246)
+[JDI]     at org.apache.zookeeper.server.PrepRequestProcessor.pRequest(PrepRequestProcessor.java:308)
+[JDI]     at org.apache.zookeeper.server.PrepRequestProcessor.run(PrepRequestProcessor.java:114)
+[JDI] target VM ended; 44 SessionMovedException throw(s) seen
+server-side throws at SessionTrackerImpl.checkSession(SessionTrackerImpl.java:246): 16
+=== direct run 3 (exit 0)
+[MC2 4822] leader L = s5 127.0.0.1:11226, follower F = s1 127.0.0.1:11222
+[MC2 4881] session 0xffa1b7264b460000 created via 127.0.0.1:11222
+[MC2 4888] attempt 1: client went to L first, retrying the move
+[MC2 5094] attempt 2: client went to L first, retrying the move
+[MC2 5300] attempt 3: client went to L first, retrying the move
+[MC2 5506] attempt 4: client opened the session at F; F wrote REVALIDATE (pendingRevalidations has 0xffa1b7264b460000), the packet is held on the F->L link
+[MC2 7828] client CONNECTED to port 11226 (L=11226) after 2328 ms; REVALIDATE still pending at F: true
+[MC2 7837] control: exists(/w/e) and setData(/w) on L succeed before the stale REVALIDATE
+[MC2 7837] releasing F->L link after 2337 ms hold
+[MC2 7843] L processed F's stale REVALIDATE and answered it (F's pendingRevalidations entry gone)
+[MC2 7870] round 0 setData -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 7873] round 0 exists -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w/e  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 7877] round 0 create -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w/c-  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 7883] round 0 getChildren -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 10888] round 1 setData -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 10892] round 1 exists -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w/e  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 10895] round 1 create -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w/c-  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 10899] round 1 getChildren -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 13903] round 2 setData -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 13906] round 2 exists -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w/e  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 13909] round 2 create -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w/c-  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 13911] round 2 getChildren -> org.apache.zookeeper.KeeperException$SessionMovedException: KeeperErrorCode = Session moved for /w  (client state=CONNECTED, connected to port 11226 = L)
+[MC2 13911] SessionMovedException count = 12 of 12 ops
+[MC2 13911] BUG REPRODUCED: TargetSafe violated -- live connection to L rejected with SessionMovedException
+OK (1 test)
+2026-11-07 17:55:07,861 - INFO  [ProcessThread:-1:PrepRequestProcessor@405] - Got user-level KeeperException when processing sessionid:0xffa1b7264b460000 type:setData cxid:0x3 zxid:0xfffffffffffffffe txntype:unknown reqpath:/w Error Path:null Error:KeeperErrorCode = Session moved
+2026-11-07 17:55:07,871 - INFO  [ProcessThread:-1:PrepRequestProcessor@405] - Got user-level KeeperException when processing sessionid:0xffa1b7264b460000 type:exists cxid:0x4 zxid:0xfffffffffffffffe txntype:unknown reqpath:/w/e Error Path:null Error:KeeperErrorCode = Session moved
+[JDI] #1 org.apache.zookeeper.KeeperException$SessionMovedException thrown in thread "ProcessThread:-1"
+[JDI]     at org.apache.zookeeper.server.SessionTrackerImpl.checkSession(SessionTrackerImpl.java:246)
+[JDI]     at org.apache.zookeeper.server.PrepRequestProcessor.pRequest(PrepRequestProcessor.java:308)
+[JDI]     at org.apache.zookeeper.server.PrepRequestProcessor.run(PrepRequestProcessor.java:114)
+[JDI] target VM ended; 44 SessionMovedException throw(s) seen
+server-side throws at SessionTrackerImpl.checkSession(SessionTrackerImpl.java:246): 16
+=== SUMMARY: bug triggered in 3 / 3 direct runs
+
+[exited with code 0]

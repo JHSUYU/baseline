@@ -1,0 +1,26 @@
+tree=/users/ZhenyuLi/Specula/runs/20261102-193733-896c/zk-adhoc-11/.specula-output/confirmation/MC-3/worktree head=eab16599 method=testLevel1CounterexampleOrder mvn_rc=0
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.621 s - in org.apache.zookeeper.server.quorum.SpeculaAdhocMC3Test
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+MC3| peer 2 read SNAP, syncMode=NONE
+MC3| client write committed by peers 0,1 during the sync: /somePath959158717365737
+MC3| before the stop: packets read=[LEADERINFO, SNAP, PROPOSAL] currentEpoch=0 acceptedEpoch=1 currentEpoch.tmp exists=false txnLog count=0
+MC3| packets read in the sync: [LEADERINFO, SNAP, PROPOSAL]
+MC3| after the stop: currentEpoch=0 acceptedEpoch=1 currentEpoch.tmp exists=false txnLog count=1 first=0x100000bbc last=0x100000bbc
+MC3| start() threw: java.lang.RuntimeException: Unable to run quorum server 
+MC3|   cause: java.io.IOException: The current epoch, 0, is older than the last zxid, 4294970300
+MC3|     at org.apache.zookeeper.server.quorum.QuorumPeer.loadDataBase(QuorumPeer.java:1237)
+MC3|     at org.apache.zookeeper.server.quorum.QuorumPeer.start(QuorumPeer.java:1194)
+MC3|     at org.apache.zookeeper.server.quorum.SpeculaAdhocMC3Test$TestPeer.start(SpeculaAdhocMC3Test.java:191)
+MC3|     at org.apache.zookeeper.server.quorum.QuorumPeerMain.runFromConfig(QuorumPeerMain.java:230)
+MC3| TARGET FIRED: java.io.IOException from org.apache.zookeeper.server.quorum.QuorumPeer.loadDataBase(QuorumPeer.java:1237)
+MC3| second restart on the same data dir:
+MC3| start() threw: java.lang.RuntimeException: Unable to run quorum server 
+MC3|   cause: java.io.IOException: The current epoch, 0, is older than the last zxid, 4294970300
+MC3|     at org.apache.zookeeper.server.quorum.QuorumPeer.loadDataBase(QuorumPeer.java:1237)
+MC3|     at org.apache.zookeeper.server.quorum.QuorumPeer.start(QuorumPeer.java:1194)
+MC3|     at org.apache.zookeeper.server.quorum.SpeculaAdhocMC3Test$TestPeer.start(SpeculaAdhocMC3Test.java:191)
+MC3|     at org.apache.zookeeper.server.quorum.QuorumPeerMain.runFromConfig(QuorumPeerMain.java:230)
+MC3| TARGET FIRED: java.io.IOException from org.apache.zookeeper.server.quorum.QuorumPeer.loadDataBase(QuorumPeer.java:1237)
+MC3| after failed restarts: currentEpoch=0 acceptedEpoch=1 currentEpoch.tmp exists=false txnLog count=1 first=0x100000bbc last=0x100000bbc
+MC3| peer 2 is down; peers 0,1 still serve: /somePath959158831717478

@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "target": "zk-adhoc-b2",
+  "check": {
+    "file": "zookeeper-server/src/main/java/org/apache/zookeeper/server/FinalRequestProcessor.java",
+    "line": 674,
+    "thrown": "org.apache.zookeeper.KeeperException.NoNodeException"
+  },
+  "verdict": "REACHED_CONFIRMED",
+  "mechanism": "INTERLEAVING",
+  "scenario": "Scenario 1: Peer withdrawal inside a listing window",
+  "finding": "MC-1",
+  "counterexample": "spec/output/MC_hunt_s1_bfs.out",
+  "reproduction": "repro/test_bugMC-1_peer_stop_vs_getdata.sh",
+  "stackFrame": "org.apache.zookeeper.server.FinalRequestProcessor.handleGetDataRequest(FinalRequestProcessor.java:674)",
+  "bounds": [
+    {"config": "MC_hunt_s1.cfg", "result": "VIOLATION", "states": 86647, "diameter": 31, "seconds": 6},
+    {"config": "MC_hunt_s2.cfg", "result": "VIOLATION", "states": 87994, "diameter": 48, "seconds": 5},
+    {"config": "MC_hunt_s3.cfg", "result": "VIOLATION", "states": 1207, "diameter": 12, "seconds": 2},
+    {"config": "MC_probe_s2_selfstop.cfg", "result": "VIOLATION", "states": 88321, "diameter": 49, "seconds": 4}
+  ],
+  "traceValidation": {"traces": 3, "passed": 3},
+  "notes": "The check is reachable on the pinned tree with no fault: LeaderElectionSupport.toLeaderOffers lists offers with getChildren, then reads each with a separate getData and does not tolerate a vanished child, so a peer's stop() delete served between those calls makes FinalRequestProcessor.java:674 throw NoNodeException on the server; the client then goes FAILED with its offer still live and the library never retries. MC-1 is the primary result because it needs only concurrency, and its frame was captured by a read-only JDI watcher in a same-module variant of the workload using the public API with no source changes (repro/MC-1-jdi.frames, also seen in the unmodified workload in repro/MC-1-workload.frames, where the tests still passed). Two further TargetSafe findings were also reproduced with the same frame and root cause: MC-2 (INTERLEAVING: a participant's own stop() racing its EventThread re-determination, repro/test_bugMC-2_selfstop.sh) and MC-3 (FAULT: another session's close() or real expiry, repro/test_bugMC-3_second_session_end.sh). Bounds: each BFS stopped at its first violation, so these are distinct-state counts up to that point and not exhaustive counts; diameter is TLC's reported search depth. MC_probe_s2_selfstop.cfg is an attribution probe with the MC_hunt_s2.cfg bounds and the restricted invariant TargetSafeSelfStop, added because the S2 hunt stopped first at a peerStop firing (realization S1-ii of MC-1). Under the workload bounds, MC.cfg exhausted 86473 distinct states at depth 48 with no violation. The three validated traces contain no firing or open race window. Reproductions ran on a standalone server, and MC-1 ran on one shared handle, so a real quorum was not tested."
+}

@@ -1,0 +1,36 @@
+id: hbase-adhoc-k1
+system: Apache HBase
+source_tree: /set/by/run-case.sh
+base_commit: 92aa67fd15
+check:
+  file: hbase-server/src/main/java/org/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager.java
+  line: 147
+  method: AuthenticationTokenSecretManager.retrievePassword(AuthenticationTokenIdentifier)
+  thrown: org.apache.hadoop.security.token.SecretManager.InvalidToken
+  guard: "masterKey == null   (masterKey = allKeys.get(identifier.getKeyId()))"
+workload:
+  module: hbase-server
+  test: org.apache.hadoop.hbase.security.token.TestTokenAuthentication#testTokenAuthentication
+  note: the test reaches the check's method and passes; the check does not fail in it
+scope_hint:
+  - org.apache.hadoop.hbase.security.token.AuthenticationTokenSecretManager
+  - org.apache.hadoop.hbase.security.token.ZKSecretWatcher
+  - org.apache.hadoop.hbase.security.token.AuthenticationKey
+  - org.apache.hadoop.hbase.security.token.AuthenticationTokenIdentifier
+  - org.apache.hadoop.hbase.security.token.TokenProvider
+  - org.apache.hadoop.hbase.security.token.TokenUtil
+  - org.apache.hadoop.hbase.security.token.AuthenticationTokenSelector
+  - org.apache.hadoop.hbase.security.HBaseSaslRpcServer
+  - org.apache.hadoop.hbase.security.HBaseSaslRpcClient
+  - org.apache.hadoop.hbase.security.SaslUtil
+  - org.apache.hadoop.hbase.ipc.RpcServer
+  - org.apache.hadoop.hbase.ipc.RpcClientImpl
+  - org.apache.hadoop.hbase.zookeeper.ZKLeaderManager
+  - org.apache.hadoop.hbase.zookeeper.ZooKeeperWatcher
+  - org.apache.hadoop.hbase.zookeeper.ZooKeeperListener
+  - org.apache.hadoop.hbase.zookeeper.ZKUtil
+  - org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper
+build:
+  env: /set/by/run-case.sh
+  prepare: "mvn -B install -DskipTests -Dmaven.javadoc.skip=true -Denforcer.skip=true -pl hbase-server -am   (already done once)"
+  test_command: "mvn -B -o surefire:test -pl hbase-server -Dtest='<Class>#<method>' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false"

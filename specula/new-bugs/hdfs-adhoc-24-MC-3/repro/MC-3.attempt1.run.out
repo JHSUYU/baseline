@@ -1,0 +1,83 @@
+worktree HEAD: 734dd8a67cd6df56b59ff75aa43de57834a0d248
+tracked-file changes in worktree (expect none):
+dependency jars used from the local repo:
+  2026-10-26_02:30:57 /bulk/specula-adhoc/hdfs/cases/hdfs-adhoc-24/deps/org/apache/hadoop/hadoop-common/3.6.0-SNAPSHOT/hadoop-common-3.6.0-SNAPSHOT.jar
+  2026-10-26_02:30:58 /bulk/specula-adhoc/hdfs/cases/hdfs-adhoc-24/deps/org/apache/hadoop/hadoop-common/3.6.0-SNAPSHOT/hadoop-common-3.6.0-SNAPSHOT-tests.jar
+  2026-10-26_02:32:01 /bulk/specula-adhoc/hdfs/cases/hdfs-adhoc-24/deps/org/apache/hadoop/hadoop-hdfs-client/3.6.0-SNAPSHOT/hadoop-hdfs-client-3.6.0-SNAPSHOT.jar
+  2026-10-26_02:32:01 /bulk/specula-adhoc/hdfs/cases/hdfs-adhoc-24/deps/org/apache/hadoop/hadoop-hdfs-client/3.6.0-SNAPSHOT/hadoop-hdfs-client-3.6.0-SNAPSHOT-tests.jar
+  2026-10-26_02:29:19 /bulk/specula-adhoc/hdfs/cases/hdfs-adhoc-24/deps/org/apache/hadoop/hadoop-auth/3.6.0-SNAPSHOT/hadoop-auth-3.6.0-SNAPSHOT.jar
+  2026-10-26_02:29:19 /bulk/specula-adhoc/hdfs/cases/hdfs-adhoc-24/deps/org/apache/hadoop/hadoop-auth/3.6.0-SNAPSHOT/hadoop-auth-3.6.0-SNAPSHOT-sources.jar
+  2026-10-26_02:29:19 /bulk/specula-adhoc/hdfs/cases/hdfs-adhoc-24/deps/org/apache/hadoop/hadoop-auth/3.6.0-SNAPSHOT/hadoop-auth-3.6.0-SNAPSHOT-tests.jar
+  2026-10-26_02:27:36 /bulk/specula-adhoc/hdfs/cases/hdfs-adhoc-24/deps/org/apache/hadoop/hadoop-annotations/3.6.0-SNAPSHOT/hadoop-annotations-3.6.0-SNAPSHOT.jar
+mvn exit code: 0 (full log: /users/ZhenyuLi/Specula/runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/repro/MC-3.mvn.log)
+[ERROR] Tests run: 2, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 50.87 s <<< FAILURE! -- in org.apache.hadoop.hdfs.SpeculaAdhocMC3Test
+[ERROR] org.apache.hadoop.hdfs.SpeculaAdhocMC3Test.testStaleRuMarkerBreaksRegularUpgradeRollback -- Time elapsed: 27.02 s <<< FAILURE!
+[ERROR] Failures: 
+[ERROR]   SpeculaAdhocMC3Test.testStaleRuMarkerBreaksRegularUpgradeRollback:351 expected frame org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:421) in:
+[ERROR] Tests run: 2, Failures: 1, Errors: 0, Skipped: 0
+[ERROR] There are test failures.
+[INFO] BUILD SUCCESS
+===== [MC-3] lines from /users/ZhenyuLi/Specula/runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/MC-3/worktree/hadoop-hdfs-project/hadoop-hdfs/target/surefire-reports/org.apache.hadoop.hdfs.SpeculaAdhocMC3Test-output.txt =====
+[MC-3][control] cluster up: 1 NN (non-HA), 1 DN with 2 volumes; bpid=BP-575767341-130.127.134.9-1793281829304 NN cTime c0=1793281829306
+[MC-3][control] after RU prepare + heartbeat:
+    vol1 /tmp/junit-4924921096000068252/control/data/data1/current/BP-575767341-130.127.134.9-1793281829304: marker=true previous/=false finalized.tmp=false current.cTime=1793281829306
+    vol2 /tmp/junit-4924921096000068252/control/data/data2/current/BP-575767341-130.127.134.9-1793281829304: marker=true previous/=false finalized.tmp=false current.cTime=1793281829306
+FINALIZE rolling upgrade ...
+[MC-3][control] dfsadmin -rollingUpgrade finalize with DN up (markers cleared by heartbeat), then DN stopped
+[MC-3][control] on disk while DN is down:
+    vol1 /tmp/junit-4924921096000068252/control/data/data1/current/BP-575767341-130.127.134.9-1793281829304: marker=false previous/=false finalized.tmp=false current.cTime=1793281829306
+    vol2 /tmp/junit-4924921096000068252/control/data/data2/current/BP-575767341-130.127.134.9-1793281829304: marker=false previous/=false finalized.tmp=false current.cTime=1793281829306
+[MC-3][control] NN restarted with -upgrade: cTime c1=1793281834613 isUpgradeFinalized=false rollingUpgradeInfo(replayed)=Block Pool ID: BP-575767341-130.127.134.9-1793281829304 Start Time: Thu Oct 29 13:50:33 UTC 2026 (=1793281833374) Finalize Time: Thu Oct 29 13:50:33 UTC 2026 (=1793281833793)
+[MC-3][control] DataNode storage log after the DN restart (in order):
+[MC-3][control]   log| 2026-10-29 13:50:40,268 [pool-42-thread-1] INFO  common.Storage (BlockPoolSliceStorage.java:doUpgrade(518)) - Upgrade of block pool BP-575767341-130.127.134.9-1793281829304 at /tmp/junit-4924921096000068252/control/data/data1/current/BP-575767341-130.127.134.9-1793281829304 is complete
+[MC-3][control]   log| 2026-10-29 13:50:40,268 [pool-42-thread-2] INFO  common.Storage (BlockPoolSliceStorage.java:doUpgrade(518)) - Upgrade of block pool BP-575767341-130.127.134.9-1793281829304 at /tmp/junit-4924921096000068252/control/data/data2/current/BP-575767341-130.127.134.9-1793281829304 is complete
+[MC-3][control] NN regular upgrade finalized? false; on disk:
+    vol1 /tmp/junit-4924921096000068252/control/data/data1/current/BP-575767341-130.127.134.9-1793281829304: marker=false previous/=true finalized.tmp=false current.cTime=1793281834613 previous.cTime=1793281829306
+    vol2 /tmp/junit-4924921096000068252/control/data/data2/current/BP-575767341-130.127.134.9-1793281829304: marker=false previous/=true finalized.tmp=false current.cTime=1793281834613 previous.cTime=1793281829306
+[MC-3][control] namenode -rollback done; NN cTime=1793281829306 (c0=1793281829306)
+[MC-3][control] after datanode -rollback: live DNs at NN=1, DN fully started=true, BP service alive=true, 'Initialization failed' log lines=0, L421 hits=0, NN safemode=false
+[MC-3][control] on disk:
+    vol1 /tmp/junit-4924921096000068252/control/data/data1/current/BP-575767341-130.127.134.9-1793281829304: marker=false previous/=false finalized.tmp=false current.cTime=1793281829306
+    vol2 /tmp/junit-4924921096000068252/control/data/data2/current/BP-575767341-130.127.134.9-1793281829304: marker=false previous/=false finalized.tmp=false current.cTime=1793281829306
+[MC-3][control] read /mc3/written-before-upgrade.dat written before the upgrade: OK, contents identical
+[MC-3][control] RESULT: rollback succeeded, no L421
+[MC-3][variant] cluster up: 1 NN (non-HA), 1 DN with 2 volumes; bpid=BP-1880395443-130.127.134.9-1793281852047 NN cTime c0=1793281852047
+[MC-3][variant] after RU prepare + heartbeat:
+    vol1 /tmp/junit-3132300260262760878/variant/data/data1/current/BP-1880395443-130.127.134.9-1793281852047: marker=true previous/=false finalized.tmp=false current.cTime=1793281852047
+    vol2 /tmp/junit-3132300260262760878/variant/data/data2/current/BP-1880395443-130.127.134.9-1793281852047: marker=true previous/=false finalized.tmp=false current.cTime=1793281852047
+[MC-3][variant] DN stopped, then dfsadmin -rollingUpgrade finalize; NN rollingUpgradeInfo=Block Pool ID: BP-1880395443-130.127.134.9-1793281852047 Start Time: Thu Oct 29 13:50:54 UTC 2026 (=1793281854094) Finalize Time: Thu Oct 29 13:50:54 UTC 2026 (=1793281854521)
+[MC-3][variant] on disk while DN is down:
+    vol1 /tmp/junit-3132300260262760878/variant/data/data1/current/BP-1880395443-130.127.134.9-1793281852047: marker=true previous/=false finalized.tmp=false current.cTime=1793281852047
+    vol2 /tmp/junit-3132300260262760878/variant/data/data2/current/BP-1880395443-130.127.134.9-1793281852047: marker=true previous/=false finalized.tmp=false current.cTime=1793281852047
+[MC-3][variant] NN restarted with -upgrade: cTime c1=1793281855139 isUpgradeFinalized=false rollingUpgradeInfo(replayed)=Block Pool ID: BP-1880395443-130.127.134.9-1793281852047 Start Time: Thu Oct 29 13:50:54 UTC 2026 (=1793281854094) Finalize Time: Thu Oct 29 13:50:54 UTC 2026 (=1793281854521)
+[MC-3][variant] DataNode storage log after the DN restart (in order):
+[MC-3][variant]   log| 2026-10-29 13:51:00,707 [pool-108-thread-1] INFO  common.Storage (BlockPoolSliceStorage.java:doUpgrade(518)) - Upgrade of block pool BP-1880395443-130.127.134.9-1793281852047 at /tmp/junit-3132300260262760878/variant/data/data1/current/BP-1880395443-130.127.134.9-1793281852047 is complete
+[MC-3][variant]   log| 2026-10-29 13:51:00,707 [pool-108-thread-2] INFO  common.Storage (BlockPoolSliceStorage.java:doUpgrade(518)) - Upgrade of block pool BP-1880395443-130.127.134.9-1793281852047 at /tmp/junit-3132300260262760878/variant/data/data2/current/BP-1880395443-130.127.134.9-1793281852047 is complete
+[MC-3][variant]   log| 2026-10-29 13:51:00,778 [BP-1880395443-130.127.134.9-1793281852047 heartbeating to localhost/127.0.0.1:35219] INFO  common.Storage (BlockPoolSliceStorage.java:clearRollingUpgradeMarkers(899)) - Deleting /tmp/junit-3132300260262760878/variant/data/data1/current/BP-1880395443-130.127.134.9-1793281852047/RollingUpgradeInProgress
+[MC-3][variant]   log| 2026-10-29 13:51:00,778 [BP-1880395443-130.127.134.9-1793281852047 heartbeating to localhost/127.0.0.1:35219] INFO  common.Storage (BlockPoolSliceStorage.java:doFinalize(663)) - Finalizing upgrade for storage directory /tmp/junit-3132300260262760878/variant/data/data1/current/BP-1880395443-130.127.134.9-1793281852047.
+[MC-3][variant]   log| 2026-10-29 13:51:00,779 [BP-1880395443-130.127.134.9-1793281852047 heartbeating to localhost/127.0.0.1:35219] INFO  common.Storage (BlockPoolSliceStorage.java:clearRollingUpgradeMarkers(899)) - Deleting /tmp/junit-3132300260262760878/variant/data/data2/current/BP-1880395443-130.127.134.9-1793281852047/RollingUpgradeInProgress
+[MC-3][variant]   log| 2026-10-29 13:51:00,779 [BP-1880395443-130.127.134.9-1793281852047 heartbeating to localhost/127.0.0.1:35219] INFO  common.Storage (BlockPoolSliceStorage.java:doFinalize(663)) - Finalizing upgrade for storage directory /tmp/junit-3132300260262760878/variant/data/data2/current/BP-1880395443-130.127.134.9-1793281852047.
+[MC-3][variant]   log| 2026-10-29 13:51:00,779 [Finalize /tmp/junit-3132300260262760878/variant/data/data1/current/BP-1880395443-130.127.134.9-1793281852047] INFO  common.Storage (BlockPoolSliceStorage.java:run(681)) - Finalize upgrade for /tmp/junit-3132300260262760878/variant/data/data1/current/BP-1880395443-130.127.134.9-1793281852047 is complete.
+[MC-3][variant]   log| 2026-10-29 13:51:00,779 [Finalize /tmp/junit-3132300260262760878/variant/data/data2/current/BP-1880395443-130.127.134.9-1793281852047] INFO  common.Storage (BlockPoolSliceStorage.java:run(681)) - Finalize upgrade for /tmp/junit-3132300260262760878/variant/data/data2/current/BP-1880395443-130.127.134.9-1793281852047 is complete.
+[MC-3][variant] NN regular upgrade finalized? false; on disk:
+    vol1 /tmp/junit-3132300260262760878/variant/data/data1/current/BP-1880395443-130.127.134.9-1793281852047: marker=false previous/=false finalized.tmp=false current.cTime=1793281855139
+    vol2 /tmp/junit-3132300260262760878/variant/data/data2/current/BP-1880395443-130.127.134.9-1793281852047: marker=false previous/=false finalized.tmp=false current.cTime=1793281855139
+[MC-3][variant] namenode -rollback done; NN cTime=1793281852047 (c0=1793281852047)
+[MC-3][variant] datanode -rollback: target check failed. Captured log:
+  | 2026-10-29 13:51:06,790 [Thread-560] WARN  common.Storage (BlockPoolSliceStorage.java:loadBpStorageDirectories(230)) - Failed to analyze storage directories for block pool BP-1880395443-130.127.134.9-1793281852047
+  | java.io.IOException: Datanode state: LV = -57 CTime = 1793281855139 is newer than the namespace state: LV = -67 CTime = 1793281852047
+  |     at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:424)
+  |     at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadStorageDirectory(BlockPoolSliceStorage.java:181)
+  |     at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadBpStorageDirectories(BlockPoolSliceStorage.java:226)
+  |     at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.recoverTransitionRead(BlockPoolSliceStorage.java:257)
+  |     at org.apache.hadoop.hdfs.server.datanode.DataStorage.loadBlockPoolSliceStorage(DataStorage.java:464)
+  |     at org.apache.hadoop.hdfs.server.datanode.DataStorage.addStorageLocations(DataStorage.java:396)
+  |     at org.apache.hadoop.hdfs.server.datanode.DataStorage.recoverTransitionRead(DataStorage.java:566)
+  |     at org.apache.hadoop.hdfs.server.datanode.DataNode.initStorage(DataNode.java:2263)
+
+[MC-3][variant] after datanode -rollback: live DNs at NN=0, DN fully started=true, BP service alive=false, 'Initialization failed' log lines=1, L421 hits=4, NN safemode=false
+[MC-3][variant]   log| 2026-10-29 13:51:06,796 [Thread-560] ERROR datanode.DataNode (BPServiceActor.java:run(920)) - Initialization failed for Block pool <registering> (Datanode Uuid 139fc7b9-6246-4fb3-8007-76b6e4932336) service to localhost/127.0.0.1:35219. Exiting.
+[MC-3][variant] on disk:
+    vol1 /tmp/junit-3132300260262760878/variant/data/data1/current/BP-1880395443-130.127.134.9-1793281852047: marker=false previous/=false finalized.tmp=false current.cTime=1793281855139
+    vol2 /tmp/junit-3132300260262760878/variant/data/data2/current/BP-1880395443-130.127.134.9-1793281852047: marker=false previous/=false finalized.tmp=false current.cTime=1793281855139
+[MC-3][variant] read /mc3/written-before-upgrade.dat written before the upgrade FAILED: org.apache.hadoop.hdfs.BlockMissingException: Could not obtain block: BP-1880395443-130.127.134.9-1793281852047:blk_1073741825_1001 file=/mc3/written-before-upgrade.dat No live nodes contain current block Block locations: Dead nodes:

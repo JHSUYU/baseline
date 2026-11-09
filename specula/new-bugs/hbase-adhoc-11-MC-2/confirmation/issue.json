@@ -1,0 +1,37 @@
+{
+  "id": "MC-2",
+  "title": "Split rollback turns a CLOSED parent's state node to OPEN with no location, so assign is rejected at AssignmentManager:769 and the region stays unserved",
+  "status": "REPRODUCED",
+  "source": "model-checking",
+  "cause": "prepareSplitRegion accepts a CLOSED parent and sets SPLITTING without recording the prior state; rollbackPrepareSplit then sets OPEN unconditionally, in memory only, while meta stays CLOSED and no server hosts the region.",
+  "trigger": "A split request passes checkOnline while the region is OPEN and parks on the region xlock behind a concurrent unassign; PREPARE then sees CLOSED and PRE_OPERATION fails on a saturated namespace region quota or a coprocessor veto, rolling the split back.",
+  "consequence": "Admin.assign throws DoNotRetryRegionException from preTransitCheck at AssignmentManager.java:769 while the region is not served, so client reads fail; unassign or move then kill a procedure worker with an NPE and leave a stuck CLOSING region. Recovery needs HBCK force assign or a master failover.",
+  "sites": [
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/SplitTableRegionProcedure.java:rollbackPrepareSplit",
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/SplitTableRegionProcedure.java:prepareSplitRegion",
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/AssignmentManager.java:preTransitCheck"
+  ],
+  "actions": ["TargetCheck"],
+  "invariants": ["TargetSafe"],
+  "premises": [
+    "A split request reaches SplitTableRegionProcedure's constructor checkOnline before the concurrent unassign's first step moves the state node off OPEN, and is queued behind that unassign on the region xlock.",
+    "PRE_OPERATION fails: namespace region quota saturated with hbase.quota.enabled=true, or a master coprocessor vetoes preSplitRegionAction.",
+    "Persistence was observed for 30 seconds with a 1 second RIT chore; longer durations rest on no code path other than failover, HBCK force or a new TRSP changing the node's state."
+  ],
+  "dependencies": [
+    {"root": "source", "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/SplitTableRegionProcedure.java", "start": "  private static final State[] EXPECTED_SPLIT_STATES = new State[] { State.OPEN, State.CLOSED };", "end": "   * Action before splitting region in a table."},
+    {"root": "source", "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/AssignmentManager.java", "start": "  private void preTransitCheck(RegionStateNode regionNode, RegionState.State[] expectedStates)", "end": "      throw new DoNotRetryIOException(regionNode.getTable() + \" is disabled for \" + regionNode);"},
+    {"root": "source", "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/RegionRemoteProcedureBase.java"},
+    {"root": "work", "path": "spec/MC_hunt_split_owner_l2.cfg"},
+    {"root": "work", "path": "spec/base.tla"}
+  ],
+  "evidence": [
+    "confirmation/MC-2/investigation.md",
+    "repro/test_bugMC-2_TestMC2SplitRollbackClosedParent.java",
+    "repro/test_bugMC-2_split_rollback_closed_parent.sh",
+    "repro/MC-2-logs/final-pristine-console.txt",
+    "repro/MC-2-logs/final-worktree-console.txt",
+    "repro/MC-2-logs/pristine-testRecoveryUnassign-output.txt",
+    "spec/output/MC_hunt_split_owner_l2_violation.out"
+  ]
+}

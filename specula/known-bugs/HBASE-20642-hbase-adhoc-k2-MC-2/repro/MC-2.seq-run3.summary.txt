@@ -1,0 +1,16 @@
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 27.199 s - in org.apache.hadoop.hbase.master.procedure.TestSpeculaBugMC2FailoverAddColumn
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+SPECULA-MC2 BEFORE-CRASH hdfsHasCf1=true
+SPECULA-MC2 CRASH active master index=0 clnode245.clemson.cloudlab.us,38227,1794092714767
+SPECULA-MC2 CRASHED master thread exited; starting replacement master
+SPECULA-MC2 STARTED replacement master clnode245.clemson.cloudlab.us,45281,1794092732762
+2026-11-07 23:05:33,192 DEBUG [RpcServer.default.FPBQ.Fifo.handler=4,queue=0,port=45281] ipc.CallRunner(143): callId: 25 service: MasterService methodName: AddColumn size: 506 connection: 130.127.134.9:40952 deadline: 1794092763190, exception=org.apache.hadoop.hbase.InvalidFamilyOperationException: Column family 'cf1' in table 'testAddColumn' already exists so cannot be added
+SPECULA-MC2 RESULT: addColumnFamily threw org.apache.hadoop.hbase.InvalidFamilyOperationException
+SPECULA-MC2 EXCEPTION-BEGIN
+org.apache.hadoop.hbase.InvalidFamilyOperationException: org.apache.hadoop.hbase.InvalidFamilyOperationException: Column family 'cf1' in table 'testAddColumn' already exists so cannot be added
+	at org.apache.hadoop.hbase.master.HMaster.addColumn(HMaster.java:2255)
+Caused by: org.apache.hadoop.hbase.ipc.RemoteWithExtrasException(org.apache.hadoop.hbase.InvalidFamilyOperationException): org.apache.hadoop.hbase.InvalidFamilyOperationException: Column family 'cf1' in table 'testAddColumn' already exists so cannot be added
+	at org.apache.hadoop.hbase.master.HMaster.addColumn(HMaster.java:2255)
+SPECULA-MC2 EXCEPTION-END
+SPECULA-MC2 TARGET FIRED: InvalidFamilyOperationException from HMaster.addColumn(HMaster.java:2255) on the new master, although the table now has cf1 via the client's own request
+mvn exit code: 0

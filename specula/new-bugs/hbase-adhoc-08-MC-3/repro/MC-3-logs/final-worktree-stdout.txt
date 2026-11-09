@@ -1,0 +1,26 @@
+=== testLevel1CeOrderTakeover
+exit=0 wall=142s [INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+target frames (CSSI:111): 20
+ [HBase-Test-SpeculaAdhocMC3Test-Main-Thread] namespace.SpeculaAdhocMC3Test(221): MC3-CONFIG masters=2 rsgroup=true clientRetries=15 dispatchWaitMs=3000
+ [HBase-Test-SpeculaAdhocMC3Test-Main-Thread] namespace.SpeculaAdhocMC3Test(272): MC3-STEP stopping the active master clnode245.clemson.cloudlab.us,46397,1793877656548 cleanly; backup is clnode245.cle
+ [master/clnode245:0:becomeActiveMaster] namespace.SpeculaAdhocMC3Test$HookedMaster(124): MC3-STEP WaitForMetaOnline passed on clnode245.clemson.cloudlab.us,34759,1793877659018, meta on clnode245.clem
+ [master/clnode245:0:becomeActiveMaster] namespace.SpeculaAdhocMC3Test$HookedMaster(128): MC3-STEP RSCrash clnode245.clemson.cloudlab.us,46727,1793877659588
+ [master/clnode245:0:becomeActiveMaster] namespace.SpeculaAdhocMC3Test$HookedMaster(146): MC3-STEP publishing the schema service; meta TRSP=pid=26, ppid=23, state=RUNNABLE:REGION_STATE_TRANSITION_OPEN
+ [HBase-Test-SpeculaAdhocMC3Test-Main-Thread] namespace.SpeculaAdhocMC3Test(281): MC3-RESULT master=clnode245.clemson.cloudlab.us,34759,1793877659018 initialized=false aborted=true stopped=true
+ [HBase-Test-SpeculaAdhocMC3Test-Main-Thread] namespace.SpeculaAdhocMC3Test(318): MC3-RESULT no live master thread is left; live RegionServers=1
+ [HBase-Test-SpeculaAdhocMC3Test-Main-Thread] namespace.SpeculaAdhocMC3Test(327): MC3-RESULT fresh master initialized in 7798ms, namespaces=3
+org.apache.hadoop.hbase.HBaseIOException: Failed to generate group assignments
+	at org.apache.hadoop.hbase.rsgroup.RSGroupBasedLoadBalancer.generateGroupAssignments(RSGroupBasedLoadBalancer.java:270)
+	at org.apache.hadoop.hbase.rsgroup.RSGroupBasedLoadBalancer.roundRobinAssignment(RSGroupBasedLoadBalancer.java:185)
+	at org.apache.hadoop.hbase.master.assignment.AssignmentManager.processAssignmentPlans(AssignmentManager.java:2636)
+	at org.apache.hadoop.hbase.master.assignment.AssignmentManager.processAssignQueue(AssignmentManager.java:2583)
+	at org.apache.hadoop.hbase.master.assignment.AssignmentManager$1.run(AssignmentManager.java:2468)
+Caused by: org.apache.hadoop.hbase.NamespaceNotFoundException: hbase
+	at org.apache.hadoop.hbase.master.ClusterSchemaServiceImpl.getNamespace(ClusterSchemaServiceImpl.java:111)
+	at org.apache.hadoop.hbase.rsgroup.RSGroupUtil.getRSGroupInfo(RSGroupUtil.java:119)
+	at org.apache.hadoop.hbase.rsgroup.RSGroupBasedLoadBalancer.generateGroupAssignments(RSGroupBasedLoadBalancer.java:235)
+2026-11-05T11:22:37,937 ERROR [master/clnode245:0:becomeActiveMaster] master.HMaster(2635): Failed to become active master
+java.lang.IllegalStateException: Expected the service ClusterSchemaServiceImpl [FAILED] to be RUNNING, but the service has FAILED
+Caused by: org.apache.hadoop.hbase.client.RetriesExhaustedException: Failed after attempts=13, exceptions:
+2026-11-05T11:22:37,938 ERROR [master/clnode245:0:becomeActiveMaster] master.HMaster(3325): ***** ABORTING master clnode245.clemson.cloudlab.us,34759,1793877659018: Unhan
+BUG TRIGGERED: yes (target frames=20, master aborts=1)

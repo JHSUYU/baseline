@@ -1,0 +1,42 @@
+{
+  "id": "MC-2",
+  "title": "Master failover after ModifyTableProcedure writes the HDFS tableinfo makes the client's retried addColumn fail at HMaster.java:2255",
+  "status": "REPRODUCED",
+  "source": "model-checking",
+  "cause": "HMaster.addColumn checks old.hasColumnFamily() against committed table descriptors before any nonce dedup, and HBaseAdmin generates a fresh nonce per retry attempt; ModifyTableProcedure makes the new descriptor durable on HDFS before the blocked handler replies.",
+  "trigger": "Client addColumn(cf1) is in flight; MTP has written tableinfo {cf0,cf1} to HDFS and not finished; the active master crashes; a new master loads descriptors from HDFS and reloads MTP; HBaseAdmin retries with a new nonce.",
+  "consequence": "Admin.addColumnFamily throws InvalidFamilyOperationException ('already exists so cannot be added') from HMaster.addColumn(HMaster.java:2255) although the reloaded procedure completes the client's own add (table ends with cf1).",
+  "sites": [
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/master/HMaster.java:addColumn",
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/master/HMaster.java:modifyTable",
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/util/FSTableDescriptors.java:updateTableDescriptor",
+    "hbase-client/src/main/java/org/apache/hadoop/hbase/client/HBaseAdmin.java:addColumnFamilyAsync"
+  ],
+  "actions": ["ClientSend", "TargetCheck", "MTPUpdateDescWriteFS", "MasterCrash", "MasterRecover", "MasterFinishInitialization", "ClientReceiveRetriable"],
+  "invariants": ["TargetSafe"],
+  "premises": [
+    "One active-master crash after the HDFS tableinfo write and before ModifyTableProcedure completion (master failure is in HBase's fault model).",
+    "HBaseAdmin retries a retriable connection failure and re-resolves the active master; the retry builds a new nonce inside MasterCallable.rpcCall().",
+    "The new master reads table descriptors from HDFS (preload or cache miss) before serving the retry.",
+    "Pinned tree base_commit 6e53c90; upstream fix HBASE-20642 (72784c2) is not present."
+  ],
+  "dependencies": [
+    {"root": "source", "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/HMaster.java", "start": "  public long addColumn(", "end": "  public long modifyColumn("},
+    {"root": "source", "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/HMaster.java", "start": "  public long modifyTable(final TableName tableName, final TableDescriptor newDescriptor,", "end": "  public long restoreSnapshot(final SnapshotDescription snapshotDesc,"},
+    {"root": "source", "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/util/FSTableDescriptors.java", "start": "  @VisibleForTesting Path updateTableDescriptor(TableDescriptor td)", "end": "   * Deletes all the table descriptor files from the file system."},
+    {"root": "source", "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/procedure/MasterProcedureUtil.java", "start": "  public static long submitProcedure(final NonceProcedureRunnable runnable) throws IOException {", "end": "  private static final Pattern pattern = Pattern.compile(\".*pv2-\\\\d{20}.log\");"},
+    {"root": "source", "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/procedure/ModifyTableProcedure.java"},
+    {"root": "source", "path": "hbase-client/src/main/java/org/apache/hadoop/hbase/client/HBaseAdmin.java", "start": "  public Future<Void> addColumnFamilyAsync(final TableName tableName,", "end": "  private static class AddColumnFamilyFuture extends ModifyTableFuture {"},
+    {"root": "work", "path": "spec/base.tla"},
+    {"root": "work", "path": "spec/MC_hunt_s2_failover.cfg"}
+  ],
+  "evidence": [
+    "confirmation/MC-2/investigation.md",
+    "spec/output/MC_hunt_s2_failover_bfs.out",
+    "repro/test_bugMC-2_failover_addcolumn.sh",
+    "repro/test_bugMC-2_TestSpeculaBugMC2FailoverAddColumn.java",
+    "repro/MC-2.seq-run3.summary.txt",
+    "repro/MC-2.seq-run3.test-output.txt",
+    "repro/MC-2.run1.test-output.txt"
+  ]
+}

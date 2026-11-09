@@ -1,0 +1,33 @@
+HEAD: 1790942bb2
+      if (
+        (currentStatus.getRegionCount() - regionCountOfTable + incr)
+            > TableNamespaceManager.getMaxRegions(nspdesc)
+      ) {
+        throw new QuotaExceededException("The table " + name.getNameAsString()
+          + " region count cannot be updated as it would exceed maximum number "
+mvn exit code: 1
+[ERROR] Tests run: 4, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 72.20 s <<< FAILURE! -- in org.apache.hadoop.hbase.namespace.SpeculaAdhocMC4RebuildReplicasTest
+[ERROR] org.apache.hadoop.hbase.namespace.SpeculaAdhocMC4RebuildReplicasTest.counterexampleOrder -- Time elapsed: 14.77 s <<< FAILURE!
+[ERROR] org.apache.hadoop.hbase.namespace.SpeculaAdhocMC4RebuildReplicasTest.recreateOrder -- Time elapsed: 13.92 s <<< FAILURE!
+[ERROR]   SpeculaAdhocMC4RebuildReplicasTest.counterexampleOrder:267->assertRestoreFiresTarget:192 Unexpected exception type thrown, expected: <org.apache.hadoop.hbase.quotas.QuotaExceededException> but was: <org.apache.hadoop.hbase.snapshot.RestoreSnapshotException>
+[ERROR]   SpeculaAdhocMC4RebuildReplicasTest.recreateOrder:306->assertRestoreFiresTarget:192 Unexpected exception type thrown, expected: <org.apache.hadoop.hbase.quotas.QuotaExceededException> but was: <org.apache.hadoop.hbase.snapshot.RestoreSnapshotException>
+[ERROR] Tests run: 4, Failures: 2, Errors: 0, Skipped: 0
+[INFO] BUILD FAILURE
+--- test markers
+MC4>> control before restore: cache{A=2,B=4,total=6} primaries{A=2,B=4,total=6} quota=10
+MC4>> control after restore: cache{A=3,B=4,total=7} primaries{A=3,B=4,total=7} quota=10
+MC4>> control: restore ADMITTED (no failover, replication 2)
+MC4>> abort active master clnode245.clemson.cloudlab.us,40285,1793892188502
+MC4>> new active master clnode245.clemson.cloudlab.us,35583,1793892188345
+MC4>> no-replica control after failover: cache{A=2,B=4,total=6} primaries{A=2,B=4,total=6} quota=10
+MC4>> no-replica control after restore: cache{A=3,B=4,total=7} primaries{A=3,B=4,total=7} quota=10
+MC4>> no-replica control: restore ADMITTED (failover, replication 1)
+MC4>> before failover: cache{A=2,B=4,total=6} primaries{A=2,B=4,total=6} quota=10
+MC4>> abort active master clnode245.clemson.cloudlab.us,35583,1793892188345
+MC4>> new active master clnode245.clemson.cloudlab.us,39121,1793892188403
+MC4>> after failover: cache{A=2,B=8,total=10} primaries{A=2,B=4,total=6} quota=10
+MC4>> before restore: cache{A=2,B=8,total=10} primaries{A=2,B=4,total=6} quota=10
+MC4>> before failover: cache{A=1,B=4,total=5} primaries{A=1,B=4,total=5} quota=10
+MC4>> abort active master clnode245.clemson.cloudlab.us,39121,1793892188403
+MC4>> new active master clnode245.clemson.cloudlab.us,35909,1793892188454
+MC4>> after failover: cache{A=1,B=8,total=9} primaries{A=1,B=4,total=5} quota=10

@@ -1,0 +1,19 @@
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 19.58 s -- in org.apache.hadoop.hdfs.TestSpeculaMC4CachedDekAfterRestart
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+MC4-EVIDENCE pre-restart: client 'control-nn-restart-only' read OK; cached DEK keyId=369489071, expires in 35999 s
+MC4-EVIDENCE control-0 (no restart): target throws at the DNs = 0
+MC4-EVIDENCE control-1 (NN restart only): stale-DEK client read from d1 OK; target throws = 0; client kept DEK keyId 369489071
+MC4-EVIDENCE CE state 12 realized: restarted d1 currentKey=832008743, d1 hasKey(369489071)=false; non-restarted d2 hasKey(369489071)=true; clients still cache DEK keyIds 369489071,369489071,369489071,369489071,369489071,369489071
+MC4-EVIDENCE checksum-whole-file: expected MD5-of-0MD5-of-512CRC32C:bea308dd22e035bff32801faea602cbf, got MD5-of-0MD5-of-512CRC32C:bea308dd22e035bff32801faea602cbf
+MC4-EVIDENCE checksum-snapshot-path: expected MD5-of-0MD5-of-512CRC32C:bea308dd22e035bff32801faea602cbf, got MD5-of-0MD5-of-512CRC32C:454b7d1c8eec2b86ac4b00b197efdbf4
+MC4-EVIDENCE checksum-explicit-length: expected MD5-of-0MD5-of-512CRC32C:bea308dd22e035bff32801faea602cbf, got MD5-of-0MD5-of-512CRC32C:454b7d1c8eec2b86ac4b00b197efdbf4
+MC4-EVIDENCE control-2: fresh client (DEK of incarnation 2) snapshot/length/whole checksums correct = true; the same long-lived clients repeating snapshot/length checksums with their refetched DEK correct = true; target throws during control-2 = 0
+MC4-EVIDENCE SUMMARY path | target throws at d1 | DEK cleared+refetched | caller's result correct
+MC4-EVIDENCE SUMMARY stateful-read | 1 | true | true
+MC4-EVIDENCE SUMMARY pread | 1 | true | true
+MC4-EVIDENCE SUMMARY checksum-whole-file | 1 | true | true
+MC4-EVIDENCE SUMMARY checksum-snapshot-path | 1 | true | false
+MC4-EVIDENCE SUMMARY checksum-explicit-length | 1 | true | false
+MC4-EVIDENCE SUMMARY append | 1 | true | true
+MC4-EVIDENCE RESULT target fired on every stale-DEK path = true; DEK refetched on every path = true; paths whose caller got a wrong result = [checksum-snapshot-path, checksum-explicit-length]; controls: fresh/repeat checksums correct = true

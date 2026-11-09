@@ -1,0 +1,521 @@
+== provenance: 734dd8a67cd; tracked changes: 0; untracked: ?? hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/SpeculaAdhocCR6Test.java 
+== compile (mvn -o test-compile -pl hadoop-hdfs-project/hadoop-hdfs)
+== run SpeculaAdhocCR6Test
+   mvn exit 0 after 257s
+-------------------------------------------------------------------------------
+Test set: org.apache.hadoop.hdfs.SpeculaAdhocCR6Test
+-------------------------------------------------------------------------------
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 251.3 s -- in org.apache.hadoop.hdfs.SpeculaAdhocCR6Test
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 251.3 s -- in org.apache.hadoop.hdfs.SpeculaAdhocCR6Test
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0
+== [CR-6] lines (full log: /users/ZhenyuLi/Specula/runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/repro/test_bugCR-6_rollback_missed_volume.output.txt)
+[CR-6] ==== hotswap ====
+[CR-6] Phase A: format a cluster (1 NN, 1 DN, volumes /bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-hotswap/data1, /bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-hotswap/data2), write 4 files
+[CR-6] C0 = NN cTime at format = 1793297942722, bpid=BP-1257466544-130.127.134.9-1793297942720; vol1 BP [current] cTime=1793297942722, vol2 BP [current] cTime=1793297942722
+[CR-6] pre-upgrade files: /pre-0=blk_1073741825@data1 /pre-1=blk_1073741826@data2 /pre-2=blk_1073741827@data1 /pre-3=blk_1073741828@data2
+[CR-6] Phase B: NN started with -upgrade, DN started REGULAR (the workload's 'Normal DataNode upgrade'); write 4 files, delete the 4 old ones
+[CR-6] C1 = NN cTime after upgrade = 1793297949048; vol1 BP [current, previous], vol2 BP [current, previous] (current cTime=1793297949048, previous cTime=1793297942722)
+[CR-6] post-upgrade files: /post-0=blk_1073741829@data1 /post-1=blk_1073741830@data2 /post-2=blk_1073741831@data1 /post-3=blk_1073741832@data2; old replicas now only in previous/
+[CR-6] Phase C: NN rollback (NameNode.doRollback = hdfs namenode -rollback)
+[CR-6] Phase D: disk /bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-hotswap/data2 offline (DataNodeTestUtils.injectDataDirFailure); DN started with -rollback
+[CR-6] after the -rollback start: NN cTime=1793297942722; data1 BP [current] current.cTime=1793297942722 (rolled back); data2 skipped (failed volumes=1)
+[CR-6] Phase E: the disk /bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-hotswap/data2 is back; re-add it by hot swap (DataNode#reconfigurePropertyImpl dfs.datanode.data.dir=/bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-hotswap/data1,/bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-hotswap/data2)
+[CR-6] before hot swap: data2 BP [current, previous] current.cTime=1793297949048 previous.cTime=1793297942722; NN cTime=1793297942722
+[CR-6] hot swap failed: java.io.IOException: FAILED TO ADD: [DISK]file:/bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-hotswap/data2: Datanode state: LV = -57 CTime = 1793297949048 is newer than the namespace state: LV = -67 CTime = 1793297942722
+[CR-6] TARGET exception (excerpt 1):
+    2026-10-29 18:19:20,344 [pool-71-thread-1] WARN  common.Storage (BlockPoolSliceStorage.java:loadBpStorageDirectories(230)) - Failed to analyze storage directories for block pool BP-1257466544-130.127.134.9-1793297942720
+    java.io.IOException: Datanode state: LV = -57 CTime = 1793297949048 is newer than the namespace state: LV = -67 CTime = 1793297942722
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:424)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadStorageDirectory(BlockPoolSliceStorage.java:181)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadBpStorageDirectories(BlockPoolSliceStorage.java:226)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.prepareVolume(DataStorage.java:341)
+    	at org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.FsDatasetImpl.addVolume(FsDatasetImpl.java:521)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode$2.call(DataNode.java:1322)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode$2.call(DataNode.java:1318)
+    	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+    	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+    2026-10-29 18:19:20,344 [pool-71-thread-1] WARN  common.Storage (BlockPoolSliceStorage.java:loadBpStorageDirectories(230)) - Failed to analyze storage directories for block pool BP-1257466544-130.127.134.9-1793297942720
+    java.io.IOException: Datanode state: LV = -57 CTime = 1793297949048 is newer than the namespace state: LV = -67 CTime = 1793297942722
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:424)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadStorageDirectory(BlockPoolSliceStorage.java:181)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadBpStorageDirectories(BlockPoolSliceStorage.java:226)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.prepareVolume(DataStorage.java:341)
+    	at org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.FsDatasetImpl.addVolume(FsDatasetImpl.java:521)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode$2.call(DataNode.java:1322)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode$2.call(DataNode.java:1318)
+    	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+    	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+[CR-6] after hot swap: volumes in service [/bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-hotswap/data1], failed volumes 1
+[CR-6] NN safe mode: true; status: Safe mode is ON. The reported blocks 2 needs additional 1 blocks to reach the threshold 0.9990 of total blocks 4. The minimum number of live datanodes is not required. Safe mode will be turned off automatically once the thresholds have been reached.
+[CR-6] operator forces the NN out of safe mode (dfsadmin -safemode leave)
+[CR-6] read /pre-0 (replica on data1): OK
+[CR-6] read /pre-1 (in the rolled-back namespace; replica on data2): BlockMissingException: Could not obtain block: BP-1257466544-130.127.134.9-1793297942720:blk_1073741826_1002 file=/pre-1 No live nodes contain current block Block locations: Dead nodes: 
+[CR-6] read /pre-2 (replica on data1): OK
+[CR-6] read /pre-3 (in the rolled-back namespace; replica on data2): BlockMissingException: Could not obtain block: BP-1257466544-130.127.134.9-1793297942720:blk_1073741828_1004 file=/pre-3 No live nodes contain current block Block locations: Dead nodes: 
+[CR-6] NN missing blocks: 2 (expected 2)
+[CR-6] after the failed hot swap: data2 BP [current, previous] current.cTime=1793297949048 previous.cTime=1793297942722 (previous/ kept: the volume is not in DataStorage, so DNA_FINALIZE does not reach it)
+[CR-6] ==== control ====
+[CR-6] Phase A: format a cluster (1 NN, 1 DN, volumes /bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-control/data1, /bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-control/data2), write 4 files
+[CR-6] C0 = NN cTime at format = 1793297962707, bpid=BP-592891584-130.127.134.9-1793297962707; vol1 BP [current] cTime=1793297962707, vol2 BP [current] cTime=1793297962707
+[CR-6] pre-upgrade files: /pre-0=blk_1073741825@data1 /pre-1=blk_1073741826@data2 /pre-2=blk_1073741827@data1 /pre-3=blk_1073741828@data2
+[CR-6] Phase B: NN started with -upgrade, DN started REGULAR (the workload's 'Normal DataNode upgrade'); write 4 files, delete the 4 old ones
+[CR-6] C1 = NN cTime after upgrade = 1793297965981; vol1 BP [current, previous], vol2 BP [current, previous] (current cTime=1793297965981, previous cTime=1793297962707)
+[CR-6] post-upgrade files: /post-0=blk_1073741829@data1 /post-1=blk_1073741830@data2 /post-2=blk_1073741831@data1 /post-3=blk_1073741832@data2; old replicas now only in previous/
+[CR-6] Phase C: NN rollback (NameNode.doRollback = hdfs namenode -rollback)
+[CR-6] Phase D: DN started with -rollback, all volumes online
+[CR-6] Phase E: DN restarted with default options
+[CR-6] control: BP alive=true, data1 BP [current] current.cTime=1793297962707; data2 BP [current] current.cTime=1793297962707; NN cTime=1793297962707, L421 message logged=false
+[CR-6] control: all 4 files restored by the rollback are readable
+[CR-6] ==== crash1 ====
+[CR-6] Phase A: format a cluster (1 NN, 1 DN, volumes /bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-crash1/data1, /bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-crash1/data2), write 4 files
+[CR-6] C0 = NN cTime at format = 1793297971355, bpid=BP-55061179-130.127.134.9-1793297971355; vol1 BP [current] cTime=1793297971355, vol2 BP [current] cTime=1793297971355
+[CR-6] pre-upgrade files: /pre-0=blk_1073741825@data1 /pre-1=blk_1073741826@data2 /pre-2=blk_1073741827@data1 /pre-3=blk_1073741828@data2
+[CR-6] Phase B: NN started with -upgrade, DN started REGULAR (the workload's 'Normal DataNode upgrade'); write 4 files, delete the 4 old ones
+[CR-6] C1 = NN cTime after upgrade = 1793297974627; vol1 BP [current, previous], vol2 BP [current, previous] (current cTime=1793297974627, previous cTime=1793297971355)
+[CR-6] post-upgrade files: /post-0=blk_1073741829@data1 /post-1=blk_1073741830@data2 /post-2=blk_1073741831@data1 /post-3=blk_1073741832@data2; old replicas now only in previous/
+[CR-6] Phase C: NN rollback (NameNode.doRollback = hdfs namenode -rollback)
+[CR-6] Phase D: NN restarted after its rollback; DN started with -rollback in its own JVM (DataNode.main -rollback)
+[CR-6] child DataNode command: java ... -agentlib:jdwp=...suspend=y ... org.apache.hadoop.hdfs.server.datanode.DataNode -rollback
+[CR-6] JDI: breakpoint at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doRollback line 640
+[CR-6] JDI: DataNode paused, hit #1 at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doRollback:640 (L637 rename(current, removed.tmp) done); stack:
+        at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doRollback(BlockPoolSliceStorage.java:640)
+        at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:379)
+        at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadStorageDirectory(BlockPoolSliceStorage.java:181)
+        at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadBpStorageDirectories(BlockPoolSliceStorage.java:226)
+        at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.recoverTransitionRead(BlockPoolSliceStorage.java:257)
+        at org.apache.hadoop.hdfs.server.datanode.DataStorage.loadBlockPoolSliceStorage(DataStorage.java:464)
+        at org.apache.hadoop.hdfs.server.datanode.DataStorage.addStorageLocations(DataStorage.java:396)
+        at org.apache.hadoop.hdfs.server.datanode.DataStorage.recoverTransitionRead(DataStorage.java:566)
+        at org.apache.hadoop.hdfs.server.datanode.DataNode.initStorage(DataNode.java:2263)
+        at org.apache.hadoop.hdfs.server.datanode.DataNode.initBlockPool(DataNode.java:2199)
+        at org.apache.hadoop.hdfs.server.datanode.BPOfferService.verifyAndSetNamespaceInfo(BPOfferService.java:401)
+        at org.apache.hadoop.hdfs.server.datanode.BPServiceActor.connectToNNAndHandshake(BPServiceActor.java:317)
+        at org.apache.hadoop.hdfs.server.datanode.BPServiceActor.run(BPServiceActor.java:908)
+        at org.apache.hadoop.util.concurrent.SubjectInheritingThread.work(SubjectInheritingThread.java:188)
+        at org.apache.hadoop.util.concurrent.SubjectInheritingThread.run(SubjectInheritingThread.java:209)
+        at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doRollback(BlockPoolSliceStorage.java:640)
+        at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:379)
+        at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadStorageDirectory(BlockPoolSliceStorage.java:181)
+        at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadBpStorageDirectories(BlockPoolSliceStorage.java:226)
+        at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.recoverTransitionRead(BlockPoolSliceStorage.java:257)
+        at org.apache.hadoop.hdfs.server.datanode.DataStorage.loadBlockPoolSliceStorage(DataStorage.java:464)
+        at org.apache.hadoop.hdfs.server.datanode.DataStorage.addStorageLocations(DataStorage.java:396)
+        at org.apache.hadoop.hdfs.server.datanode.DataStorage.recoverTransitionRead(DataStorage.java:566)
+        at org.apache.hadoop.hdfs.server.datanode.DataNode.initStorage(DataNode.java:2263)
+        at org.apache.hadoop.hdfs.server.datanode.DataNode.initBlockPool(DataNode.java:2199)
+        at org.apache.hadoop.hdfs.server.datanode.BPOfferService.verifyAndSetNamespaceInfo(BPOfferService.java:401)
+        at org.apache.hadoop.hdfs.server.datanode.BPServiceActor.connectToNNAndHandshake(BPServiceActor.java:317)
+        at org.apache.hadoop.hdfs.server.datanode.BPServiceActor.run(BPServiceActor.java:908)
+        at org.apache.hadoop.util.concurrent.SubjectInheritingThread.work(SubjectInheritingThread.java:188)
+        at org.apache.hadoop.util.concurrent.SubjectInheritingThread.run(SubjectInheritingThread.java:209)
+[CR-6] on disk now: vol1 BP [previous, removed.tmp] ; vol2 BP [current, previous]
+[CR-6] CRASH: SIGKILL the DataNode JVM pid 2422048 inside BlockPoolSliceStorage.doRollback (volume /bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-crash1/data1)
+[CR-6] DataNode JVM exit value 137
+[CR-6] child DataNode log (/bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-crash1/child-dn/datanode.log), rollback lines:
+    [child-dn] Listening for transport dt_socket at address: 60505
+    [child-dn] STARTUP_MSG:   args = [-rollback]
+    [child-dn] 2026-10-29 18:19:43,850 [Thread-26] INFO  common.Storage (DataStorage.java:doRollback(929)) - Layout version rolled back to -57 for storage /bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-crash1/data1
+    [child-dn] 2026-10-29 18:19:44,219 [Thread-26] INFO  common.Storage (DataStorage.java:doRollback(929)) - Layout version rolled back to -57 for storage /bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-crash1/data2
+    [child-dn] 2026-10-29 18:19:44,268 [Thread-26] INFO  common.Storage (BlockPoolSliceStorage.java:doRollback(629)) - Rolling back storage directory /bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-crash1/data1/current/BP-55061179-130.127.134.9-1793297971355.
+[CR-6] after the crash: data1 BP [previous, removed.tmp] previous.cTime=1793297971355 removed.tmp.cTime=1793297974627; data2 BP [current, previous] current.cTime=1793297974627 previous.cTime=1793297971355
+[CR-6] Phase E': DN restarted with default options (supervisor restart)
+[CR-6]   log| 2026-10-29 18:19:44,562 [Thread-954] INFO  common.Storage (Storage.java:doRecover(814)) - Recovering storage directory /bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-crash1/data1/current/BP-55061179-130.127.134.9-1793297971355 from previous rollback
+[CR-6] TARGET exception (excerpt 1):
+    2026-10-29 18:19:44,562 [Thread-954] WARN  common.Storage (BlockPoolSliceStorage.java:loadBpStorageDirectories(230)) - Failed to analyze storage directories for block pool BP-55061179-130.127.134.9-1793297971355
+    java.io.IOException: Datanode state: LV = -57 CTime = 1793297974627 is newer than the namespace state: LV = -67 CTime = 1793297971355
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:424)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadStorageDirectory(BlockPoolSliceStorage.java:181)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadBpStorageDirectories(BlockPoolSliceStorage.java:226)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.recoverTransitionRead(BlockPoolSliceStorage.java:257)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.loadBlockPoolSliceStorage(DataStorage.java:464)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.addStorageLocations(DataStorage.java:396)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.recoverTransitionRead(DataStorage.java:566)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initStorage(DataNode.java:2263)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initBlockPool(DataNode.java:2199)
+    2026-10-29 18:19:44,562 [Thread-954] WARN  common.Storage (BlockPoolSliceStorage.java:loadBpStorageDirectories(230)) - Failed to analyze storage directories for block pool BP-55061179-130.127.134.9-1793297971355
+    java.io.IOException: Datanode state: LV = -57 CTime = 1793297974627 is newer than the namespace state: LV = -67 CTime = 1793297971355
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:424)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadStorageDirectory(BlockPoolSliceStorage.java:181)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadBpStorageDirectories(BlockPoolSliceStorage.java:226)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.recoverTransitionRead(BlockPoolSliceStorage.java:257)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.loadBlockPoolSliceStorage(DataStorage.java:464)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.addStorageLocations(DataStorage.java:396)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.recoverTransitionRead(DataStorage.java:566)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initStorage(DataNode.java:2263)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initBlockPool(DataNode.java:2199)
+[CR-6] TARGET exception (excerpt 2):
+    2026-10-29 18:19:44,562 [Thread-954] WARN  common.Storage (DataStorage.java:loadBlockPoolSliceStorage(474)) - Failed to add storage directory [DISK]file:/bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-crash1/data1 for block pool BP-55061179-130.127.134.9-1793297971355
+    java.io.IOException: Datanode state: LV = -57 CTime = 1793297974627 is newer than the namespace state: LV = -67 CTime = 1793297971355
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:424)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadStorageDirectory(BlockPoolSliceStorage.java:181)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadBpStorageDirectories(BlockPoolSliceStorage.java:226)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.recoverTransitionRead(BlockPoolSliceStorage.java:257)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.loadBlockPoolSliceStorage(DataStorage.java:464)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.addStorageLocations(DataStorage.java:396)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.recoverTransitionRead(DataStorage.java:566)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initStorage(DataNode.java:2263)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initBlockPool(DataNode.java:2199)
+    2026-10-29 18:19:44,562 [Thread-954] WARN  common.Storage (DataStorage.java:loadBlockPoolSliceStorage(474)) - Failed to add storage directory [DISK]file:/bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-crash1/data1 for block pool BP-55061179-130.127.134.9-1793297971355
+    java.io.IOException: Datanode state: LV = -57 CTime = 1793297974627 is newer than the namespace state: LV = -67 CTime = 1793297971355
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:424)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadStorageDirectory(BlockPoolSliceStorage.java:181)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadBpStorageDirectories(BlockPoolSliceStorage.java:226)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.recoverTransitionRead(BlockPoolSliceStorage.java:257)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.loadBlockPoolSliceStorage(DataStorage.java:464)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.addStorageLocations(DataStorage.java:396)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.recoverTransitionRead(DataStorage.java:566)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initStorage(DataNode.java:2263)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initBlockPool(DataNode.java:2199)
+[CR-6]   log| 2026-10-29 18:19:44,567 [Thread-954] ERROR datanode.DataNode (BPServiceActor.java:run(920)) - Initialization failed for Block pool <registering> (Datanode Uuid 38e44aeb-bccd-45d9-8575-62c0c2ccb133) service to localhost/127.0.0.1:37201. Exiting. 
+[CR-6] after the restart: data1 BP [current, previous] current.cTime=1793297974627 previous.cTime=1793297971355; data2 BP [current, previous] current.cTime=1793297974627 previous.cTime=1793297971355; NN cTime=1793297971355
+[CR-6] block pool BP-55061179-130.127.134.9-1793297971355 alive on the restarted DN: false
+[CR-6] Phase F: the operator restarts the DN with -rollback
+[CR-6] after the -rollback restart: data1 BP [current] current.cTime=1793297971355; data2 BP [current] current.cTime=1793297971355; L421 logged: false; BP alive: true; all 4 files readable
+[CR-6] ==== crash2 ====
+[CR-6] Phase A: format a cluster (1 NN, 1 DN, volumes /bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-crash2/data1, /bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-crash2/data2), write 4 files
+[CR-6] C0 = NN cTime at format = 1793297985340, bpid=BP-130680992-130.127.134.9-1793297985340; vol1 BP [current] cTime=1793297985340, vol2 BP [current] cTime=1793297985340
+[CR-6] pre-upgrade files: /pre-0=blk_1073741825@data1 /pre-1=blk_1073741826@data2 /pre-2=blk_1073741827@data1 /pre-3=blk_1073741828@data2
+[CR-6] Phase B: NN started with -upgrade, DN started REGULAR (the workload's 'Normal DataNode upgrade'); write 4 files, delete the 4 old ones
+[CR-6] C1 = NN cTime after upgrade = 1793297989120; vol1 BP [current, previous], vol2 BP [current, previous] (current cTime=1793297989120, previous cTime=1793297985340)
+[CR-6] post-upgrade files: /post-0=blk_1073741829@data1 /post-1=blk_1073741830@data2 /post-2=blk_1073741831@data1 /post-3=blk_1073741832@data2; old replicas now only in previous/
+[CR-6] Phase C: NN rollback (NameNode.doRollback = hdfs namenode -rollback)
+[CR-6] Phase D: NN restarted after its rollback; DN started with -rollback in its own JVM (DataNode.main -rollback)
+[CR-6] child DataNode command: java ... -agentlib:jdwp=...suspend=y ... org.apache.hadoop.hdfs.server.datanode.DataNode -rollback
+[CR-6] JDI: breakpoint at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doRollback line 640
+[CR-6] JDI: DataNode paused, hit #1 at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doRollback:640 (L637 rename(current, removed.tmp) done); stack:
+        at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doRollback(BlockPoolSliceStorage.java:640)
+        at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:379)
+        at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadStorageDirectory(BlockPoolSliceStorage.java:181)
+        at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadBpStorageDirectories(BlockPoolSliceStorage.java:226)
+        at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.recoverTransitionRead(BlockPoolSliceStorage.java:257)
+        at org.apache.hadoop.hdfs.server.datanode.DataStorage.loadBlockPoolSliceStorage(DataStorage.java:464)
+        at org.apache.hadoop.hdfs.server.datanode.DataStorage.addStorageLocations(DataStorage.java:396)
+        at org.apache.hadoop.hdfs.server.datanode.DataStorage.recoverTransitionRead(DataStorage.java:566)
+        at org.apache.hadoop.hdfs.server.datanode.DataNode.initStorage(DataNode.java:2263)
+        at org.apache.hadoop.hdfs.server.datanode.DataNode.initBlockPool(DataNode.java:2199)
+        at org.apache.hadoop.hdfs.server.datanode.BPOfferService.verifyAndSetNamespaceInfo(BPOfferService.java:401)
+        at org.apache.hadoop.hdfs.server.datanode.BPServiceActor.connectToNNAndHandshake(BPServiceActor.java:317)
+        at org.apache.hadoop.hdfs.server.datanode.BPServiceActor.run(BPServiceActor.java:908)
+        at org.apache.hadoop.util.concurrent.SubjectInheritingThread.work(SubjectInheritingThread.java:188)
+        at org.apache.hadoop.util.concurrent.SubjectInheritingThread.run(SubjectInheritingThread.java:209)
+        at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doRollback(BlockPoolSliceStorage.java:640)
+        at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:379)
+        at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadStorageDirectory(BlockPoolSliceStorage.java:181)
+        at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadBpStorageDirectories(BlockPoolSliceStorage.java:226)
+        at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.recoverTransitionRead(BlockPoolSliceStorage.java:257)
+        at org.apache.hadoop.hdfs.server.datanode.DataStorage.loadBlockPoolSliceStorage(DataStorage.java:464)
+        at org.apache.hadoop.hdfs.server.datanode.DataStorage.addStorageLocations(DataStorage.java:396)
+        at org.apache.hadoop.hdfs.server.datanode.DataStorage.recoverTransitionRead(DataStorage.java:566)
+        at org.apache.hadoop.hdfs.server.datanode.DataNode.initStorage(DataNode.java:2263)
+        at org.apache.hadoop.hdfs.server.datanode.DataNode.initBlockPool(DataNode.java:2199)
+        at org.apache.hadoop.hdfs.server.datanode.BPOfferService.verifyAndSetNamespaceInfo(BPOfferService.java:401)
+        at org.apache.hadoop.hdfs.server.datanode.BPServiceActor.connectToNNAndHandshake(BPServiceActor.java:317)
+        at org.apache.hadoop.hdfs.server.datanode.BPServiceActor.run(BPServiceActor.java:908)
+        at org.apache.hadoop.util.concurrent.SubjectInheritingThread.work(SubjectInheritingThread.java:188)
+        at org.apache.hadoop.util.concurrent.SubjectInheritingThread.run(SubjectInheritingThread.java:209)
+[CR-6] on disk now: vol1 BP [previous, removed.tmp] ; vol2 BP [current, previous]
+[CR-6] JDI: DataNode paused, hit #2 at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doRollback:640 (L637 rename(current, removed.tmp) done); stack:
+        at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doRollback(BlockPoolSliceStorage.java:640)
+        at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:379)
+        at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadStorageDirectory(BlockPoolSliceStorage.java:181)
+        at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadBpStorageDirectories(BlockPoolSliceStorage.java:226)
+        at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.recoverTransitionRead(BlockPoolSliceStorage.java:257)
+        at org.apache.hadoop.hdfs.server.datanode.DataStorage.loadBlockPoolSliceStorage(DataStorage.java:464)
+        at org.apache.hadoop.hdfs.server.datanode.DataStorage.addStorageLocations(DataStorage.java:396)
+        at org.apache.hadoop.hdfs.server.datanode.DataStorage.recoverTransitionRead(DataStorage.java:566)
+        at org.apache.hadoop.hdfs.server.datanode.DataNode.initStorage(DataNode.java:2263)
+        at org.apache.hadoop.hdfs.server.datanode.DataNode.initBlockPool(DataNode.java:2199)
+        at org.apache.hadoop.hdfs.server.datanode.BPOfferService.verifyAndSetNamespaceInfo(BPOfferService.java:401)
+        at org.apache.hadoop.hdfs.server.datanode.BPServiceActor.connectToNNAndHandshake(BPServiceActor.java:317)
+        at org.apache.hadoop.hdfs.server.datanode.BPServiceActor.run(BPServiceActor.java:908)
+        at org.apache.hadoop.util.concurrent.SubjectInheritingThread.work(SubjectInheritingThread.java:188)
+        at org.apache.hadoop.util.concurrent.SubjectInheritingThread.run(SubjectInheritingThread.java:209)
+        at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doRollback(BlockPoolSliceStorage.java:640)
+        at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:379)
+        at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadStorageDirectory(BlockPoolSliceStorage.java:181)
+        at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadBpStorageDirectories(BlockPoolSliceStorage.java:226)
+        at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.recoverTransitionRead(BlockPoolSliceStorage.java:257)
+        at org.apache.hadoop.hdfs.server.datanode.DataStorage.loadBlockPoolSliceStorage(DataStorage.java:464)
+        at org.apache.hadoop.hdfs.server.datanode.DataStorage.addStorageLocations(DataStorage.java:396)
+        at org.apache.hadoop.hdfs.server.datanode.DataStorage.recoverTransitionRead(DataStorage.java:566)
+        at org.apache.hadoop.hdfs.server.datanode.DataNode.initStorage(DataNode.java:2263)
+        at org.apache.hadoop.hdfs.server.datanode.DataNode.initBlockPool(DataNode.java:2199)
+        at org.apache.hadoop.hdfs.server.datanode.BPOfferService.verifyAndSetNamespaceInfo(BPOfferService.java:401)
+        at org.apache.hadoop.hdfs.server.datanode.BPServiceActor.connectToNNAndHandshake(BPServiceActor.java:317)
+        at org.apache.hadoop.hdfs.server.datanode.BPServiceActor.run(BPServiceActor.java:908)
+        at org.apache.hadoop.util.concurrent.SubjectInheritingThread.work(SubjectInheritingThread.java:188)
+        at org.apache.hadoop.util.concurrent.SubjectInheritingThread.run(SubjectInheritingThread.java:209)
+[CR-6] on disk now: vol1 BP [current] ; vol2 BP [previous, removed.tmp]
+[CR-6] CRASH: SIGKILL the DataNode JVM pid 2429722 inside BlockPoolSliceStorage.doRollback (volume /bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-crash2/data2)
+[CR-6] DataNode JVM exit value 137
+[CR-6] child DataNode log (/bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-crash2/child-dn/datanode.log), rollback lines:
+    [child-dn] Listening for transport dt_socket at address: 58079
+    [child-dn] STARTUP_MSG:   args = [-rollback]
+    [child-dn] 2026-10-29 18:19:55,345 [Thread-26] INFO  common.Storage (DataStorage.java:doRollback(929)) - Layout version rolled back to -57 for storage /bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-crash2/data1
+    [child-dn] 2026-10-29 18:19:55,429 [Thread-26] INFO  common.Storage (DataStorage.java:doRollback(929)) - Layout version rolled back to -57 for storage /bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-crash2/data2
+    [child-dn] 2026-10-29 18:19:55,469 [Thread-26] INFO  common.Storage (BlockPoolSliceStorage.java:doRollback(629)) - Rolling back storage directory /bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-crash2/data1/current/BP-130680992-130.127.134.9-1793297985340.
+    [child-dn] 2026-10-29 18:19:55,479 [Thread-26] INFO  common.Storage (BlockPoolSliceStorage.java:doRollback(644)) - Rollback of /bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-crash2/data1/current/BP-130680992-130.127.134.9-1793297985340 is complete
+    [child-dn] 2026-10-29 18:19:55,529 [Thread-26] INFO  common.Storage (BlockPoolSliceStorage.java:doRollback(629)) - Rolling back storage directory /bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-crash2/data2/current/BP-130680992-130.127.134.9-1793297985340.
+[CR-6] after the crash: data1 BP [current] current.cTime=1793297985340; data2 BP [previous, removed.tmp] previous.cTime=1793297985340 removed.tmp.cTime=1793297989120
+[CR-6] before the restart: data1 BP [current] current.cTime=1793297985340; data2 BP [previous, removed.tmp] previous.cTime=1793297985340 removed.tmp.cTime=1793297989120
+[CR-6] Phase E': DN started with default options
+[CR-6]   log| 2026-10-29 18:19:55,745 [Thread-1297] INFO  common.Storage (Storage.java:doRecover(814)) - Recovering storage directory /bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-crash2/data2/current/BP-130680992-130.127.134.9-1793297985340 from previous rollback
+[CR-6] TARGET exception (excerpt 1):
+    2026-10-29 18:19:55,745 [Thread-1297] WARN  common.Storage (BlockPoolSliceStorage.java:loadBpStorageDirectories(230)) - Failed to analyze storage directories for block pool BP-130680992-130.127.134.9-1793297985340
+    java.io.IOException: Datanode state: LV = -57 CTime = 1793297989120 is newer than the namespace state: LV = -67 CTime = 1793297985340
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:424)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadStorageDirectory(BlockPoolSliceStorage.java:181)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadBpStorageDirectories(BlockPoolSliceStorage.java:226)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.recoverTransitionRead(BlockPoolSliceStorage.java:257)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.loadBlockPoolSliceStorage(DataStorage.java:464)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.addStorageLocations(DataStorage.java:396)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.recoverTransitionRead(DataStorage.java:566)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initStorage(DataNode.java:2263)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initBlockPool(DataNode.java:2199)
+    2026-10-29 18:19:55,745 [Thread-1297] WARN  common.Storage (BlockPoolSliceStorage.java:loadBpStorageDirectories(230)) - Failed to analyze storage directories for block pool BP-130680992-130.127.134.9-1793297985340
+    java.io.IOException: Datanode state: LV = -57 CTime = 1793297989120 is newer than the namespace state: LV = -67 CTime = 1793297985340
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:424)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadStorageDirectory(BlockPoolSliceStorage.java:181)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadBpStorageDirectories(BlockPoolSliceStorage.java:226)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.recoverTransitionRead(BlockPoolSliceStorage.java:257)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.loadBlockPoolSliceStorage(DataStorage.java:464)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.addStorageLocations(DataStorage.java:396)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.recoverTransitionRead(DataStorage.java:566)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initStorage(DataNode.java:2263)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initBlockPool(DataNode.java:2199)
+[CR-6] TARGET exception (excerpt 2):
+    2026-10-29 18:19:55,745 [Thread-1297] WARN  common.Storage (DataStorage.java:loadBlockPoolSliceStorage(474)) - Failed to add storage directory [DISK]file:/bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-crash2/data2 for block pool BP-130680992-130.127.134.9-1793297985340
+    java.io.IOException: Datanode state: LV = -57 CTime = 1793297989120 is newer than the namespace state: LV = -67 CTime = 1793297985340
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:424)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadStorageDirectory(BlockPoolSliceStorage.java:181)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadBpStorageDirectories(BlockPoolSliceStorage.java:226)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.recoverTransitionRead(BlockPoolSliceStorage.java:257)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.loadBlockPoolSliceStorage(DataStorage.java:464)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.addStorageLocations(DataStorage.java:396)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.recoverTransitionRead(DataStorage.java:566)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initStorage(DataNode.java:2263)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initBlockPool(DataNode.java:2199)
+    2026-10-29 18:19:55,745 [Thread-1297] WARN  common.Storage (DataStorage.java:loadBlockPoolSliceStorage(474)) - Failed to add storage directory [DISK]file:/bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-crash2/data2 for block pool BP-130680992-130.127.134.9-1793297985340
+    java.io.IOException: Datanode state: LV = -57 CTime = 1793297989120 is newer than the namespace state: LV = -67 CTime = 1793297985340
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:424)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadStorageDirectory(BlockPoolSliceStorage.java:181)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadBpStorageDirectories(BlockPoolSliceStorage.java:226)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.recoverTransitionRead(BlockPoolSliceStorage.java:257)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.loadBlockPoolSliceStorage(DataStorage.java:464)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.addStorageLocations(DataStorage.java:396)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.recoverTransitionRead(DataStorage.java:566)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initStorage(DataNode.java:2263)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initBlockPool(DataNode.java:2199)
+[CR-6]   log| 2026-10-29 18:19:55,800 [BP-130680992-130.127.134.9-1793297985340 heartbeating to localhost/127.0.0.1:42883] INFO  datanode.DataNode (BPServiceActor.java:register(870)) - Block pool BP-130680992-130.127.134.9-1793297985340 (Datanode Uuid ed1e0dd9-261e-4be6-b5d8-765e6e6494b2) service to localhost/127.0.0.1:42883 successfully registered with NN: localhost/127.0.0.1:42883.
+[CR-6]   log| 2026-10-29 18:19:55,801 [IPC Server handler 8 on default port 42883] WARN  namenode.NameNode (NameNodeRpcServer.java:verifyRequest(1782)) - Registration IDs mismatched: the DatanodeRegistration ID is NS-373102716-testClusterID-1793297989120 but the expected ID is NS-373102716-testClusterID-1793297985340
+[CR-6]   log| 2026-10-29 18:19:55,804 [BP-130680992-130.127.134.9-1793297985340 heartbeating to localhost/127.0.0.1:42883] WARN  datanode.DataNode (BPServiceActor.java:offerService(796)) - Block pool BP-130680992-130.127.134.9-1793297985340 (Datanode Uuid ed1e0dd9-261e-4be6-b5d8-765e6e6494b2) service to localhost/127.0.0.1:42883 is shutting down
+[CR-6]   log| 2026-10-29 18:19:55,804 [BP-130680992-130.127.134.9-1793297985340 heartbeating to localhost/127.0.0.1:42883] WARN  datanode.DataNode (BPServiceActor.java:run(944)) - Ending block pool service for: Block pool BP-130680992-130.127.134.9-1793297985340 (Datanode Uuid ed1e0dd9-261e-4be6-b5d8-765e6e6494b2) service to localhost/127.0.0.1:42883
+[CR-6] block pool BP-130680992-130.127.134.9-1793297985340 alive on the restarted DN: false; data1 BP [current] current.cTime=1793297985340; data2 BP [current, previous] current.cTime=1793297989120 previous.cTime=1793297985340; NN cTime=1793297985340
+[CR-6] NN safe mode: true; status: Safe mode is ON. The reported blocks 0 needs additional 3 blocks to reach the threshold 0.9990 of total blocks 4. The minimum number of live datanodes is not required. Safe mode will be turned off automatically once the thresholds have been reached.
+[CR-6] operator forces the NN out of safe mode (dfsadmin -safemode leave)
+[CR-6] read /pre-0 (in the rolled-back namespace; replica on data1): BlockMissingException: Could not obtain block: BP-130680992-130.127.134.9-1793297985340:blk_1073741825_1001 file=/pre-0 No live nodes contain current block Block locations: Dead nodes: 
+[CR-6] read /pre-1 (in the rolled-back namespace; replica on data2): BlockMissingException: Could not obtain block: BP-130680992-130.127.134.9-1793297985340:blk_1073741826_1002 file=/pre-1 No live nodes contain current block Block locations: Dead nodes: 
+[CR-6] read /pre-2 (in the rolled-back namespace; replica on data1): BlockMissingException: Could not obtain block: BP-130680992-130.127.134.9-1793297985340:blk_1073741827_1003 file=/pre-2 No live nodes contain current block Block locations: Dead nodes: 
+[CR-6] read /pre-3 (in the rolled-back namespace; replica on data2): BlockMissingException: Could not obtain block: BP-130680992-130.127.134.9-1793297985340:blk_1073741828_1004 file=/pre-3 No live nodes contain current block Block locations: Dead nodes: 
+[CR-6] Phase F: the operator restarts the DN with -rollback
+[CR-6] after the -rollback restart: data1 BP [current] current.cTime=1793297985340; data2 BP [current] current.cTime=1793297985340; L421 logged: false; BP alive: true; all 4 files readable
+[CR-6] ==== restart-last ====
+[CR-6] Phase A: format a cluster (1 NN, 1 DN, volumes /bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-restart-last/data1, /bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-restart-last/data2), write 4 files
+[CR-6] C0 = NN cTime at format = 1793297998769, bpid=BP-973384622-130.127.134.9-1793297998769; vol1 BP [current] cTime=1793297998769, vol2 BP [current] cTime=1793297998769
+[CR-6] pre-upgrade files: /pre-0=blk_1073741825@data1 /pre-1=blk_1073741826@data2 /pre-2=blk_1073741827@data1 /pre-3=blk_1073741828@data2
+[CR-6] Phase B: NN started with -upgrade, DN started REGULAR (the workload's 'Normal DataNode upgrade'); write 4 files, delete the 4 old ones
+[CR-6] C1 = NN cTime after upgrade = 1793298001981; vol1 BP [current, previous], vol2 BP [current, previous] (current cTime=1793298001981, previous cTime=1793297998769)
+[CR-6] post-upgrade files: /post-0=blk_1073741829@data1 /post-1=blk_1073741830@data2 /post-2=blk_1073741831@data1 /post-3=blk_1073741832@data2; old replicas now only in previous/
+[CR-6] Phase C: NN rollback (NameNode.doRollback = hdfs namenode -rollback)
+[CR-6] Phase D: disk /bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-restart-last/data2 offline (DataNodeTestUtils.injectDataDirFailure); DN started with -rollback
+[CR-6] after the -rollback start: NN cTime=1793297998769; data1 BP [current] current.cTime=1793297998769 (rolled back); data2 skipped (failed volumes=1)
+[CR-6] Phase E: DN stopped; the disk /bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-restart-last/data2 is back; DN restarted with default options
+[CR-6] before the restart: data1 BP [current] current.cTime=1793297998769; data2 BP [current, previous] current.cTime=1793298001981 previous.cTime=1793297998769
+[CR-6] Phase E': DN started with default options
+[CR-6] TARGET exception (excerpt 1):
+    2026-10-29 18:20:09,261 [Thread-1684] WARN  common.Storage (BlockPoolSliceStorage.java:loadBpStorageDirectories(230)) - Failed to analyze storage directories for block pool BP-973384622-130.127.134.9-1793297998769
+    java.io.IOException: Datanode state: LV = -57 CTime = 1793298001981 is newer than the namespace state: LV = -67 CTime = 1793297998769
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:424)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadStorageDirectory(BlockPoolSliceStorage.java:181)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadBpStorageDirectories(BlockPoolSliceStorage.java:226)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.recoverTransitionRead(BlockPoolSliceStorage.java:257)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.loadBlockPoolSliceStorage(DataStorage.java:464)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.addStorageLocations(DataStorage.java:396)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.recoverTransitionRead(DataStorage.java:566)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initStorage(DataNode.java:2263)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initBlockPool(DataNode.java:2199)
+    2026-10-29 18:20:09,261 [Thread-1684] WARN  common.Storage (BlockPoolSliceStorage.java:loadBpStorageDirectories(230)) - Failed to analyze storage directories for block pool BP-973384622-130.127.134.9-1793297998769
+    java.io.IOException: Datanode state: LV = -57 CTime = 1793298001981 is newer than the namespace state: LV = -67 CTime = 1793297998769
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:424)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadStorageDirectory(BlockPoolSliceStorage.java:181)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadBpStorageDirectories(BlockPoolSliceStorage.java:226)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.recoverTransitionRead(BlockPoolSliceStorage.java:257)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.loadBlockPoolSliceStorage(DataStorage.java:464)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.addStorageLocations(DataStorage.java:396)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.recoverTransitionRead(DataStorage.java:566)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initStorage(DataNode.java:2263)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initBlockPool(DataNode.java:2199)
+[CR-6] TARGET exception (excerpt 2):
+    2026-10-29 18:20:09,262 [Thread-1684] WARN  common.Storage (DataStorage.java:loadBlockPoolSliceStorage(474)) - Failed to add storage directory [DISK]file:/bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-restart-last/data2 for block pool BP-973384622-130.127.134.9-1793297998769
+    java.io.IOException: Datanode state: LV = -57 CTime = 1793298001981 is newer than the namespace state: LV = -67 CTime = 1793297998769
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:424)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadStorageDirectory(BlockPoolSliceStorage.java:181)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadBpStorageDirectories(BlockPoolSliceStorage.java:226)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.recoverTransitionRead(BlockPoolSliceStorage.java:257)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.loadBlockPoolSliceStorage(DataStorage.java:464)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.addStorageLocations(DataStorage.java:396)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.recoverTransitionRead(DataStorage.java:566)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initStorage(DataNode.java:2263)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initBlockPool(DataNode.java:2199)
+    2026-10-29 18:20:09,262 [Thread-1684] WARN  common.Storage (DataStorage.java:loadBlockPoolSliceStorage(474)) - Failed to add storage directory [DISK]file:/bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-restart-last/data2 for block pool BP-973384622-130.127.134.9-1793297998769
+    java.io.IOException: Datanode state: LV = -57 CTime = 1793298001981 is newer than the namespace state: LV = -67 CTime = 1793297998769
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:424)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadStorageDirectory(BlockPoolSliceStorage.java:181)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadBpStorageDirectories(BlockPoolSliceStorage.java:226)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.recoverTransitionRead(BlockPoolSliceStorage.java:257)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.loadBlockPoolSliceStorage(DataStorage.java:464)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.addStorageLocations(DataStorage.java:396)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.recoverTransitionRead(DataStorage.java:566)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initStorage(DataNode.java:2263)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initBlockPool(DataNode.java:2199)
+[CR-6]   log| 2026-10-29 18:20:09,315 [BP-973384622-130.127.134.9-1793297998769 heartbeating to localhost/127.0.0.1:35537] INFO  datanode.DataNode (BPServiceActor.java:register(870)) - Block pool BP-973384622-130.127.134.9-1793297998769 (Datanode Uuid b87456a6-171a-4547-8c90-c7e6ed25ed91) service to localhost/127.0.0.1:35537 successfully registered with NN: localhost/127.0.0.1:35537.
+[CR-6]   log| 2026-10-29 18:20:09,315 [IPC Server handler 2 on default port 35537] WARN  namenode.NameNode (NameNodeRpcServer.java:verifyRequest(1782)) - Registration IDs mismatched: the DatanodeRegistration ID is NS-688317959-testClusterID-1793298001981 but the expected ID is NS-688317959-testClusterID-1793297998769
+[CR-6]   log| 2026-10-29 18:20:09,316 [BP-973384622-130.127.134.9-1793297998769 heartbeating to localhost/127.0.0.1:35537] WARN  datanode.DataNode (BPServiceActor.java:offerService(796)) - Block pool BP-973384622-130.127.134.9-1793297998769 (Datanode Uuid b87456a6-171a-4547-8c90-c7e6ed25ed91) service to localhost/127.0.0.1:35537 is shutting down
+[CR-6]   log| 2026-10-29 18:20:09,316 [BP-973384622-130.127.134.9-1793297998769 heartbeating to localhost/127.0.0.1:35537] WARN  datanode.DataNode (BPServiceActor.java:run(944)) - Ending block pool service for: Block pool BP-973384622-130.127.134.9-1793297998769 (Datanode Uuid b87456a6-171a-4547-8c90-c7e6ed25ed91) service to localhost/127.0.0.1:35537
+[CR-6] block pool BP-973384622-130.127.134.9-1793297998769 alive on the restarted DN: false; data1 BP [current] current.cTime=1793297998769; data2 BP [current, previous] current.cTime=1793298001981 previous.cTime=1793297998769; NN cTime=1793297998769
+[CR-6] NN safe mode: true; status: Safe mode is ON. The reported blocks 2 needs additional 1 blocks to reach the threshold 0.9990 of total blocks 4. The minimum number of live datanodes is not required. Safe mode will be turned off automatically once the thresholds have been reached.
+[CR-6] operator forces the NN out of safe mode (dfsadmin -safemode leave)
+[CR-6] read /pre-0 (in the rolled-back namespace; replica on data1): BlockMissingException: Could not obtain block: BP-973384622-130.127.134.9-1793297998769:blk_1073741825_1001 file=/pre-0 No live nodes contain current block Block locations: DatanodeInfoWithStorage[127.0.0.1:43393,DS-a2175cff-6188-42b5-87d3-02b25f1e2f9a,DISK] Dead
+[CR-6] read /pre-1 (in the rolled-back namespace; replica on data2): BlockMissingException: Could not obtain block: BP-973384622-130.127.134.9-1793297998769:blk_1073741826_1002 file=/pre-1 No live nodes contain current block Block locations: Dead nodes: 
+[CR-6] read /pre-2 (in the rolled-back namespace; replica on data1): BlockMissingException: Could not obtain block: BP-973384622-130.127.134.9-1793297998769:blk_1073741827_1003 file=/pre-2 No live nodes contain current block Block locations: DatanodeInfoWithStorage[127.0.0.1:43393,DS-a2175cff-6188-42b5-87d3-02b25f1e2f9a,DISK] Dead
+[CR-6] read /pre-3 (in the rolled-back namespace; replica on data2): BlockMissingException: Could not obtain block: BP-973384622-130.127.134.9-1793297998769:blk_1073741828_1004 file=/pre-3 No live nodes contain current block Block locations: Dead nodes: 
+[CR-6] Phase F: the operator restarts the DN with -rollback
+[CR-6] after the -rollback restart: data1 BP [current] current.cTime=1793297998769; data2 BP [current] current.cTime=1793297998769; L421 logged: false; BP alive: true; all 4 files readable
+[CR-6] ==== restart-first ====
+[CR-6] Phase A: format a cluster (1 NN, 1 DN, volumes /bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-restart-first/data1, /bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-restart-first/data2), write 4 files
+[CR-6] C0 = NN cTime at format = 1793298180291, bpid=BP-438801500-130.127.134.9-1793298180291; vol1 BP [current] cTime=1793298180291, vol2 BP [current] cTime=1793298180291
+[CR-6] pre-upgrade files: /pre-0=blk_1073741825@data1 /pre-1=blk_1073741826@data2 /pre-2=blk_1073741827@data1 /pre-3=blk_1073741828@data2
+[CR-6] Phase B: NN started with -upgrade, DN started REGULAR (the workload's 'Normal DataNode upgrade'); write 4 files, delete the 4 old ones
+[CR-6] C1 = NN cTime after upgrade = 1793298183406; vol1 BP [current, previous], vol2 BP [current, previous] (current cTime=1793298183406, previous cTime=1793298180291)
+[CR-6] post-upgrade files: /post-0=blk_1073741829@data1 /post-1=blk_1073741830@data2 /post-2=blk_1073741831@data1 /post-3=blk_1073741832@data2; old replicas now only in previous/
+[CR-6] Phase C: NN rollback (NameNode.doRollback = hdfs namenode -rollback)
+[CR-6] Phase D: disk /bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-restart-first/data1 offline (DataNodeTestUtils.injectDataDirFailure); DN started with -rollback
+[CR-6] after the -rollback start: NN cTime=1793298180291; data2 BP [current] current.cTime=1793298180291 (rolled back); data1 skipped (failed volumes=1)
+[CR-6] Phase E: DN stopped; the disk /bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-restart-first/data1 is back; DN restarted with default options
+[CR-6] before the restart: data1 BP [current, previous] current.cTime=1793298183406 previous.cTime=1793298180291; data2 BP [current] current.cTime=1793298180291; the only replicas of [/pre-0, /pre-2] (files of the rolled-back namespace) are in data1 BP previous/
+[CR-6] Phase E': DN started with default options
+[CR-6] TARGET exception (excerpt 1):
+    2026-10-29 18:23:07,852 [Thread-2087] WARN  common.Storage (BlockPoolSliceStorage.java:loadBpStorageDirectories(230)) - Failed to analyze storage directories for block pool BP-438801500-130.127.134.9-1793298180291
+    java.io.IOException: Datanode state: LV = -57 CTime = 1793298183406 is newer than the namespace state: LV = -67 CTime = 1793298180291
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:424)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadStorageDirectory(BlockPoolSliceStorage.java:181)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadBpStorageDirectories(BlockPoolSliceStorage.java:226)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.recoverTransitionRead(BlockPoolSliceStorage.java:257)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.loadBlockPoolSliceStorage(DataStorage.java:464)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.addStorageLocations(DataStorage.java:396)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.recoverTransitionRead(DataStorage.java:566)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initStorage(DataNode.java:2263)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initBlockPool(DataNode.java:2199)
+    2026-10-29 18:23:07,852 [Thread-2087] WARN  common.Storage (BlockPoolSliceStorage.java:loadBpStorageDirectories(230)) - Failed to analyze storage directories for block pool BP-438801500-130.127.134.9-1793298180291
+    java.io.IOException: Datanode state: LV = -57 CTime = 1793298183406 is newer than the namespace state: LV = -67 CTime = 1793298180291
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:424)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadStorageDirectory(BlockPoolSliceStorage.java:181)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadBpStorageDirectories(BlockPoolSliceStorage.java:226)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.recoverTransitionRead(BlockPoolSliceStorage.java:257)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.loadBlockPoolSliceStorage(DataStorage.java:464)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.addStorageLocations(DataStorage.java:396)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.recoverTransitionRead(DataStorage.java:566)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initStorage(DataNode.java:2263)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initBlockPool(DataNode.java:2199)
+[CR-6] TARGET exception (excerpt 2):
+    2026-10-29 18:23:07,852 [Thread-2087] WARN  common.Storage (DataStorage.java:loadBlockPoolSliceStorage(474)) - Failed to add storage directory [DISK]file:/bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-restart-first/data1 for block pool BP-438801500-130.127.134.9-1793298180291
+    java.io.IOException: Datanode state: LV = -57 CTime = 1793298183406 is newer than the namespace state: LV = -67 CTime = 1793298180291
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:424)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadStorageDirectory(BlockPoolSliceStorage.java:181)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadBpStorageDirectories(BlockPoolSliceStorage.java:226)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.recoverTransitionRead(BlockPoolSliceStorage.java:257)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.loadBlockPoolSliceStorage(DataStorage.java:464)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.addStorageLocations(DataStorage.java:396)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.recoverTransitionRead(DataStorage.java:566)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initStorage(DataNode.java:2263)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initBlockPool(DataNode.java:2199)
+    2026-10-29 18:23:07,852 [Thread-2087] WARN  common.Storage (DataStorage.java:loadBlockPoolSliceStorage(474)) - Failed to add storage directory [DISK]file:/bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-restart-first/data1 for block pool BP-438801500-130.127.134.9-1793298180291
+    java.io.IOException: Datanode state: LV = -57 CTime = 1793298183406 is newer than the namespace state: LV = -67 CTime = 1793298180291
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:424)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadStorageDirectory(BlockPoolSliceStorage.java:181)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadBpStorageDirectories(BlockPoolSliceStorage.java:226)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.recoverTransitionRead(BlockPoolSliceStorage.java:257)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.loadBlockPoolSliceStorage(DataStorage.java:464)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.addStorageLocations(DataStorage.java:396)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.recoverTransitionRead(DataStorage.java:566)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initStorage(DataNode.java:2263)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initBlockPool(DataNode.java:2199)
+[CR-6] volumes in service: [/bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-restart-first/data1, /bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-restart-first/data2], failed volumes: 0
+[CR-6] DN replica map: /post-0 (written after the upgrade, unknown to the rolled-back namespace) blk_1073741829 in replica map: true
+[CR-6] DN replica map: /post-2 (written after the upgrade, unknown to the rolled-back namespace) blk_1073741831 in replica map: true
+[CR-6]   log| 2026-10-29 18:23:07,957 [Command processor] INFO  datanode.DataNode (BPOfferService.java:processCommandFromActive(776)) - Got finalize command for block pool BP-438801500-130.127.134.9-1793298180291
+[CR-6]   log| 2026-10-29 18:23:07,957 [Command processor] INFO  common.Storage (BlockPoolSliceStorage.java:doFinalize(663)) - Finalizing upgrade for storage directory /bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-restart-first/data1/current/BP-438801500-130.127.134.9-1793298180291.
+[CR-6]   log| 2026-10-29 18:23:07,959 [Finalize /bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-restart-first/data1/current/BP-438801500-130.127.134.9-1793298180291] INFO  common.Storage (BlockPoolSliceStorage.java:run(681)) - Finalize upgrade for /bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adh
+[CR-6] after the finalize: data1 BP [current] current.cTime=1793298183406; data2 BP [current] current.cTime=1793298180291; NN cTime=1793298180291
+[CR-6] replica of /pre-0 (blk_1073741825) still anywhere on the DN's disks: false
+[CR-6] replica of /pre-2 (blk_1073741827) still anywhere on the DN's disks: false
+[CR-6] NN safe mode: true; status: Safe mode is ON. The reported blocks 2 needs additional 1 blocks to reach the threshold 0.9990 of total blocks 4. The minimum number of live datanodes is not required. Name node detected blocks with generation stamps in future. This means that Name node metadata is inconsistent. This can happen if Name node metadata files have been manually replaced. Exiting safe mode will cause loss of 8192 byte(s). Please restart name node with right metadata or use "hdfs dfsadmin -safemode forceExit" if you are certain that the NameNode was started with the correct FsImage and edit logs. If you encountered this during a rollback, it is safe to exit with -safemode forceExit.
+[CR-6] operator forces the NN out of safe mode (dfsadmin -safemode leave)
+[CR-6] NN refused 'leave' (blocks with future generation stamps were reported); operator follows the NN's advice for a rollback: dfsadmin -safemode forceExit
+[CR-6] read /pre-0 (in the rolled-back namespace; replica on data1): BlockMissingException: Could not obtain block: BP-438801500-130.127.134.9-1793298180291:blk_1073741825_1001 file=/pre-0 No live nodes contain current block Block locations: Dead nodes: 
+[CR-6] read /pre-1 (replica on data2): OK
+[CR-6] read /pre-2 (in the rolled-back namespace; replica on data1): BlockMissingException: Could not obtain block: BP-438801500-130.127.134.9-1793298180291:blk_1073741827_1003 file=/pre-2 No live nodes contain current block Block locations: Dead nodes: 
+[CR-6] read /pre-3 (replica on data2): OK
+[CR-6] NN missing blocks: 2 (expected 2)
+[CR-6] Phase F: the operator restarts the DN with -rollback
+[CR-6] TARGET exception (excerpt 1):
+    2026-10-29 18:23:10,493 [Thread-2130] WARN  common.Storage (BlockPoolSliceStorage.java:loadBpStorageDirectories(230)) - Failed to analyze storage directories for block pool BP-438801500-130.127.134.9-1793298180291
+    java.io.IOException: Datanode state: LV = -57 CTime = 1793298183406 is newer than the namespace state: LV = -67 CTime = 1793298180291
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:424)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadStorageDirectory(BlockPoolSliceStorage.java:181)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadBpStorageDirectories(BlockPoolSliceStorage.java:226)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.recoverTransitionRead(BlockPoolSliceStorage.java:257)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.loadBlockPoolSliceStorage(DataStorage.java:464)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.addStorageLocations(DataStorage.java:396)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.recoverTransitionRead(DataStorage.java:566)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initStorage(DataNode.java:2263)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initBlockPool(DataNode.java:2199)
+    2026-10-29 18:23:10,493 [Thread-2130] WARN  common.Storage (BlockPoolSliceStorage.java:loadBpStorageDirectories(230)) - Failed to analyze storage directories for block pool BP-438801500-130.127.134.9-1793298180291
+    java.io.IOException: Datanode state: LV = -57 CTime = 1793298183406 is newer than the namespace state: LV = -67 CTime = 1793298180291
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:424)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadStorageDirectory(BlockPoolSliceStorage.java:181)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadBpStorageDirectories(BlockPoolSliceStorage.java:226)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.recoverTransitionRead(BlockPoolSliceStorage.java:257)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.loadBlockPoolSliceStorage(DataStorage.java:464)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.addStorageLocations(DataStorage.java:396)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.recoverTransitionRead(DataStorage.java:566)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initStorage(DataNode.java:2263)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initBlockPool(DataNode.java:2199)
+[CR-6] TARGET exception (excerpt 2):
+    2026-10-29 18:23:10,493 [Thread-2130] WARN  common.Storage (DataStorage.java:loadBlockPoolSliceStorage(474)) - Failed to add storage directory [DISK]file:/bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-restart-first/data1 for block pool BP-438801500-130.127.134.9-1793298180291
+    java.io.IOException: Datanode state: LV = -57 CTime = 1793298183406 is newer than the namespace state: LV = -67 CTime = 1793298180291
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:424)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadStorageDirectory(BlockPoolSliceStorage.java:181)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadBpStorageDirectories(BlockPoolSliceStorage.java:226)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.recoverTransitionRead(BlockPoolSliceStorage.java:257)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.loadBlockPoolSliceStorage(DataStorage.java:464)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.addStorageLocations(DataStorage.java:396)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.recoverTransitionRead(DataStorage.java:566)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initStorage(DataNode.java:2263)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initBlockPool(DataNode.java:2199)
+    2026-10-29 18:23:10,493 [Thread-2130] WARN  common.Storage (DataStorage.java:loadBlockPoolSliceStorage(474)) - Failed to add storage directory [DISK]file:/bulk/specula-adhoc/specula-runs/20261029-090048-2c84/hdfs-adhoc-24/.specula-output/confirmation/CR-6/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test/data/specula-cr6-restart-first/data1 for block pool BP-438801500-130.127.134.9-1793298180291
+    java.io.IOException: Datanode state: LV = -57 CTime = 1793298183406 is newer than the namespace state: LV = -67 CTime = 1793298180291
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(BlockPoolSliceStorage.java:424)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadStorageDirectory(BlockPoolSliceStorage.java:181)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadBpStorageDirectories(BlockPoolSliceStorage.java:226)
+    	at org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.recoverTransitionRead(BlockPoolSliceStorage.java:257)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.loadBlockPoolSliceStorage(DataStorage.java:464)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.addStorageLocations(DataStorage.java:396)
+    	at org.apache.hadoop.hdfs.server.datanode.DataStorage.recoverTransitionRead(DataStorage.java:566)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initStorage(DataNode.java:2263)
+    	at org.apache.hadoop.hdfs.server.datanode.DataNode.initBlockPool(DataNode.java:2199)
+[CR-6] after the -rollback restart: data1 BP [current] current.cTime=1793298183406; data2 BP [current] current.cTime=1793298180291 (no previous/ left on data1)
+[CR-6] after the -rollback restart, read /pre-0: BlockMissingException
+[CR-6] after the -rollback restart, read /pre-2: BlockMissingException
+[CR-6] NN missing blocks: 2
+exit=0

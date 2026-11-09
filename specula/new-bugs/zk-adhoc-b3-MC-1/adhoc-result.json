@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "target": "zk-adhoc-b3",
+  "check": {
+    "file": "zookeeper-server/src/main/java/org/apache/zookeeper/server/FinalRequestProcessor.java",
+    "line": 674,
+    "thrown": "org.apache.zookeeper.KeeperException.NoNodeException"
+  },
+  "verdict": "REACHED_CONFIRMED",
+  "mechanism": "INTERLEAVING",
+  "scenario": "Scenario 1: Stale container delete removes the client's replacement node",
+  "finding": "MC-1",
+  "counterexample": "spec/output/MC_hunt_stale_container_delete_bfs.out",
+  "reproduction": "repro/test_bugMC-1_stale_container_delete.sh",
+  "stackFrame": "org.apache.zookeeper.server.FinalRequestProcessor.handleGetDataRequest(FinalRequestProcessor.java:674)",
+  "bounds": [
+    {
+      "config": "MC_hunt_stale_container_delete.cfg",
+      "result": "VIOLATION",
+      "states": 191,
+      "diameter": 35,
+      "seconds": 1
+    }
+  ],
+  "traceValidation": {
+    "traces": 3,
+    "passed": 3
+  },
+  "notes": "ContainerManager selects P as an empty used container from a scan, then later posts a path-only deleteContainer straight into PrepRequestProcessor. If the client has since deleted P and re-created it as PERSISTENT, PrepRequestProcessor accepts the delete because it checks only existence, no children and not a NORMAL ephemeral; DataTree removes the node, and the client's getData finds n == null and throws NoNodeException at FinalRequestProcessor.java:674. No fault injection is needed. The bounds row is the run that produced the cited 35-state counterexample with MaxEarlyPost = 1 and stopped at the first violation; a -continue run of the same config finished the space at 242 distinct states, diameter 43, about 1 s, with 2 violating states (spec/output/MC_hunt_stale_container_delete_bfs_exhaustive.out). The script reproduced the throw on an unmodified export of eab16599 without editing src/main, with JFR capturing the frame: with default settings and only the client API, standalone lost 98 of 1000 nodes (197 frames at line 674) and three quorum runs lost 45, 44 and 114 of 1000 (91, 89 and 228 frames), while the deletions survived restart (repro/MC-1.pristine.log). Default-settings runs used 1000 candidates to stretch the manager's pass, because a single candidate was reproduced only with the workload's postDeleteRequest hook in the counterexample's order, and one earlier quorum run lost 0 of 1000 (repro/MC-1.pristine-quorum-setup-crossed-scan.log). CR-2 through CR-6 also report NoNode at the target line through other mechanisms and CR-7 is a server crash with no target frame, but those six are code-review findings with no TargetSafe counterexample, so this verdict rests on MC-1 alone."
+}

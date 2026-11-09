@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "target": "zk-adhoc-11",
+  "check": {
+    "file": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/QuorumPeer.java",
+    "line": 1236,
+    "thrown": "java.io.IOException"
+  },
+  "verdict": "REACHED_CONFIRMED",
+  "mechanism": "RESTART",
+  "scenario": "Scenario 1: Crash inside the learner's persist-before-epoch window (NEWLEADER)",
+  "finding": "MC-1",
+  "counterexample": "spec/output/MC_hunt_crash_window_bfs.out",
+  "reproduction": "repro/test_bugMC-1_crash_window.java",
+  "stackFrame": "org.apache.zookeeper.server.quorum.QuorumPeer.loadDataBase(QuorumPeer.java:1237)",
+  "bounds": [
+    {"config": "MC_hunt_crash_window.cfg", "result": "VIOLATION", "states": 54806, "diameter": 30, "seconds": 5},
+    {"config": "MC_hunt_epoch_write_fail.cfg", "result": "VIOLATION", "states": 39942, "diameter": 31, "seconds": 3},
+    {"config": "MC_hunt_shutdown_race.cfg", "result": "VIOLATION", "states": 132069, "diameter": 34, "seconds": 5}
+  ],
+  "traceValidation": {"traces": 3, "passed": 3},
+  "notes": "All three hunt configs violated TargetSafe with Server = {1,2,3}, MaxEpoch = 3, MaxTxnPerEpoch = 2 and one fault counter set to 1; `states` is TLC's distinct-state count, and BFS stopped at the first violation. All three counterexamples were reproduced in the real system, and MC-1 is reported as the primary result because its evidence uses real process starts, a real SIGKILL and no hooks on pristine eab16599. Chain for MC-1: a late-joining learner gets SNAP, persists snapshot.100000000 at Learner.java:760 on NEWLEADER, and is killed before setCurrentEpoch at Learner.java:813 opens currentEpoch.tmp; every restart then has epochOfZxid 1 > currentEpoch 0 with no tmp, throws 'The current epoch, 0, is older than the last zxid, 4294967296', and exits with code 1, while the other two peers keep serving. The mechanism is a single process crash followed by a restart. The stack frame reads line 1237, not 1236, because the throw statement spans lines 1236-1238 and javac attributes the IOException constructor call to line 1237 while `new` is at line 1236 (repro/MC-1-javap-loadDataBase.txt); it is the same statement, the only throw with this message. Other confirmed routes: MC-2 (FAULT: Scenario 2, spec/output/MC_hunt_epoch_write_fail_bfs.out, repro/test_bugMC-2_snap_epoch_write_fail.java) fires on the next election from one failed currentEpoch write using the codebase's writeLongToFile hook, with no crash; MC-3 (COMBINED, INTERLEAVING and RESTART: Scenario 3, spec/output/MC_hunt_shutdown_race_bfs.out, repro/test_bugMC-3_SpeculaAdhocMC3Test.java) fires on restart after a graceful in-process stop ends the sync loop before NEWLEADER, in 29 of 437 unhooked trials. Code-review findings CR-1, CR-2, CR-3 and CR-7 also reproduced with the target exception thrown, and CR-4 and CR-5 are MASKED, per confirmed-bugs.md. Limits: the MC-1 kill was aimed at the window, so its 5 of 5 hit rate shows reachability, not a natural crash rate; the MC-1 Level 0 kill comes from a test file watcher rather than an existing codebase utility, though it writes no guard operand and is backed by a Level 1 crash at the existing writeLongToFile hook; no trace covers ElectReload, SNAP-mode LearnerAbort or LoopExit as reported in spec/bug-report.md, though the Phase 4 reproductions exercised those paths in the real system."
+}

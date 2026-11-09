@@ -1,0 +1,835 @@
+# MC-2 reproduction console log (this turn, 2026-10-29 02:57:13 UTC)
+# pinned tree 734dd8a67cd, harness instrumentation set aside for the runs (pristine sources)
+# command A: bash repro/test_bugMC-2_rollback_cached_promise.sh --l0-iters 20   (bug mode, full class, fresh build)
+[runner] tree 734dd8a67cd; git status of hadoop-hdfs-project/hadoop-hdfs/src after setting instrumentation aside:
+[runner] pristine hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java:484-494 (target) and :1189-1196 (doRollback):
+[runner]   |   private synchronized void checkRequest(RequestInfo reqInfo) throws IOException {
+[runner]   |     // Invariant 25 from ZAB paper
+[runner]   |     if (reqInfo.getEpoch() < lastPromisedEpoch.get()) {
+[runner]   |       throw new IOException("IPC's epoch " + reqInfo.getEpoch() +
+[runner]   |           " is less than the last promised epoch " +
+[runner]   |           lastPromisedEpoch.get() + " ; journal id: " + journalId);
+[runner]   |     } else if (reqInfo.getEpoch() > lastPromisedEpoch.get()) {
+[runner]   |       // A newer client has arrived. Fence any previous writers by updating
+[runner]   |       // the promise.
+[runner]   |       updateLastPromisedEpoch(reqInfo.getEpoch());
+[runner]   |     }
+[runner]   |   public synchronized void doRollback() throws IOException {
+[runner]   |     // Do not hold file lock on committedTxnId, because the containing
+[runner]   |     // directory will be renamed.  It will be reopened lazily on next access.
+[runner]   |     IOUtils.cleanupWithLogger(LOG, committedTxnId);
+[runner]   |     storage.getJournalManager().doRollback();
+[runner]   |     // HADOOP-17142: refresh properties after rollback performed.
+[runner]   |     storage.refreshStorage();
+[runner]   |   }
+[runner] building hadoop-hdfs-project/hadoop-hdfs: mvn -B -o test-compile (log /users/ZhenyuLi/Specula/runs/20261028-194804-49b4/hdfs-adhoc-08/.specula-output/confirmation/MC-2/repro-work/turn2/final-A/build-bug.log)
+[runner] build rc=0; [INFO] Total time:  01:01 min
+[runner] javap -c -l of the compiled Journal.checkRequest (target throw = new IOException ... athrow):
+[runner]   private synchronized void checkRequest(org.apache.hadoop.hdfs.qjournal.protocol.RequestInfo) throws java.io.IOException;
+[runner]       12: ifge          43
+[runner]       15: new           #275                // class java/io/IOException
+[runner]       39: invokespecial #280                // Method java/io/IOException."<init>":(Ljava/lang/String;)V
+[runner]       42: athrow
+[runner]     LineNumberTable:
+[runner]       line 486: 0
+[runner]       line 487: 15
+[runner]       line 489: 27
+[runner]       line 490: 43
+[runner] run 1/1 (bug): MC2_EXPECT=bug MC2_L0_ITERS=20 mvn -B -o surefire:test -pl hadoop-hdfs-project/hadoop-hdfs -Dtest='org.apache.hadoop.hdfs.qjournal.client.TestBugMC2RollbackCachedPromise'
+[runner] mvn rc=0
+[runner]   [INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 14.17 s -- in org.apache.hadoop.hdfs.qjournal.client.TestBugMC2RollbackCachedPromise
+[runner]   [INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0
+[runner]   [INFO] BUILD SUCCESS
+    MC2: === scenario CE_ORDER === (MC2_EXPECT=bug)
+    MC2: j0 = JournalNode /127.0.0.1:45523
+    MC2: j1 = JournalNode /127.0.0.1:44895
+    MC2: j2 = JournalNode /127.0.0.1:36221
+    MC2: CE 17 Upgrade(1) done; previous/ promise on disk = 1,1,1
+    MC2: W2 established epoch 2 (its requests to j2 still in flight); WriterStop(2)
+    MC2: W3 established epoch 3 (its requests to j2 still in flight); WriterStop(3)
+    MC2: after W3: current/ promise on disk = 3,3,1; caches j0[loaded=true value=3] j1[loaded=true value=3] j2[loaded=true value=1]
+    MC2: CE 43 JNRestart(j0); j0: no Journal object
+    MC2: between canRollBack and doRollback: j0 cache: loaded=true value=3; on-disk current/ promise = 3,3,1
+    MC2: CE 44 Rollback done; current/ promise on disk = 1,1,1; caches j0[loaded=true value=3] j1[loaded=true value=3] j2[loaded=true value=1]
+    MC2: W4 getJournalState lastPromisedEpoch reported by j0,j1,j2 = 3,3,1 (j1's reply arrived after the choice); on-disk current/ promise = 4,4,4
+    MC2: W4 established epoch 4; j1 newEpoch -> OK
+    MC2: W4 startLogSegment(1) returned (quorum reached); j1 -> OK
+    MC2: W4 wrote txns 1-3 (quorum); j1 journal() -> OK
+    MC2: after a log roll, W4 startLogSegment(4); j1 -> OK
+    MC2: j1 on-disk promise = 4, j1 cache: loaded=true value=4
+    MC2: with j2 down, W4 write of txn 4 -> OK
+    MC2: MC2-RESULT scenario=CE_ORDER w4Epoch=4 reported(j0,j1,j2)=3,3,1 targetFiredOnJ1=false frame=- j1FencedAfterRoll=false writeWithJ2Down=OK
+    MC2: === scenario CONTROL_REPLY_IN_TIME === (MC2_EXPECT=bug)
+    MC2: j0 = JournalNode /127.0.0.1:32807
+    MC2: j1 = JournalNode /127.0.0.1:33807
+    MC2: j2 = JournalNode /127.0.0.1:46405
+    MC2: CE 17 Upgrade(1) done; previous/ promise on disk = 1,1,1
+    MC2: W2 established epoch 2 (its requests to j2 still in flight); WriterStop(2)
+    MC2: W3 established epoch 3 (its requests to j2 still in flight); WriterStop(3)
+    MC2: after W3: current/ promise on disk = 3,3,1; caches j0[loaded=true value=3] j1[loaded=true value=3] j2[loaded=true value=1]
+    MC2: CE 44 Rollback done; current/ promise on disk = 1,1,1, previous/ exists = false,false,false; caches j0[loaded=true value=3] j1[loaded=true value=3] j2[loaded=true value=1]
+    MC2: CE 43 JNRestart(j0) (after the rollback); j0: no Journal object
+    MC2: W4 getJournalState lastPromisedEpoch reported by j0,j1,j2 = 1,3,1; on-disk current/ promise = 4,4,4
+    MC2: W4 established epoch 4; j1 newEpoch -> OK
+    MC2: W4 startLogSegment(1) returned (quorum reached); j1 -> OK
+    MC2: W4 wrote txns 1-3 (quorum); j1 journal() -> OK
+    MC2: after a log roll, W4 startLogSegment(4); j1 -> OK
+    MC2: j1 on-disk promise = 4, j1 cache: loaded=true value=4
+    MC2: with j2 down, W4 write of txn 4 -> OK
+    MC2: MC2-RESULT scenario=CONTROL_REPLY_IN_TIME w4Epoch=4 reported(j0,j1,j2)=1,3,1 targetFiredOnJ1=false frame=- j1FencedAfterRoll=false writeWithJ2Down=OK
+    MC2: L0 iteration 1: W4's epoch RPCs as its IPC client saw them:
+        2026-10-29 02:58:28,375 820: Call -> j0: getJournalState {}
+        2026-10-29 02:58:28,375 822: Call -> j2: getJournalState {}
+        2026-10-29 02:58:28,375 821: Call -> j1: getJournalState {}
+    MC2: L0 iteration 1: JN-side trace:
+    java.io.IOException: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.startLogSegment(Journal.java:572)
+    	at org.apache.hadoop.hdfs.qjournal.server.JournalNodeRpcServer.startLogSegment(JournalNodeRpcServer.java:226)
+    MC2: L0 iteration 1: W4 epoch=2 targetFiredOnJ1=true
+    MC2: L0 iteration 2: W4's epoch RPCs as its IPC client saw them:
+        2026-10-29 02:58:28,877 1110: Call -> j0: getJournalState {}
+        2026-10-29 02:58:28,877 1112: Call -> j2: getJournalState {}
+        2026-10-29 02:58:28,877 1111: Call -> j1: getJournalState {}
+        2026-10-29 02:58:28,878 1112: Response <- j2: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 02:58:28,878 1112: Response <- j2: getJournalState {lastPromisedEpoch: 1}
+    MC2: L0 iteration 2: JN-side trace:
+    java.io.IOException: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.startLogSegment(Journal.java:572)
+    	at org.apache.hadoop.hdfs.qjournal.server.JournalNodeRpcServer.startLogSegment(JournalNodeRpcServer.java:226)
+    MC2: L0 iteration 2: W4 epoch=2 targetFiredOnJ1=true
+    MC2: L0 iteration 3: W4's epoch RPCs as its IPC client saw them:
+        2026-10-29 02:58:29,406 1400: Call -> j0: getJournalState {}
+        2026-10-29 02:58:29,407 1402: Call -> j2: getJournalState {}
+        2026-10-29 02:58:29,407 1401: Call -> j1: getJournalState {}
+        2026-10-29 02:58:29,408 1400: Response <- j0: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 02:58:29,408 1400: Response <- j0: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 02:58:29,408 1402: Response <- j2: getJournalState {lastPromisedEpoch: 1}
+    MC2: L0 iteration 3: W4 epoch=4 targetFiredOnJ1=false
+    MC2: L0 iteration 4: W4's epoch RPCs as its IPC client saw them:
+        2026-10-29 02:58:29,845 1690: Call -> j0: getJournalState {}
+        2026-10-29 02:58:29,845 1692: Call -> j2: getJournalState {}
+        2026-10-29 02:58:29,846 1691: Call -> j1: getJournalState {}
+        2026-10-29 02:58:29,847 1690: Response <- j0: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 02:58:29,847 1692: Response <- j2: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 02:58:29,847 1691: Response <- j1: getJournalState {lastPromisedEpoch: 3}
+        2026-10-29 02:58:29,847 1690: Call -> j0: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVers
+    MC2: L0 iteration 4: JN-side trace:
+    java.io.IOException: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.startLogSegment(Journal.java:572)
+    	at org.apache.hadoop.hdfs.qjournal.server.JournalNodeRpcServer.startLogSegment(JournalNodeRpcServer.java:226)
+    MC2: L0 iteration 4: W4 epoch=2 targetFiredOnJ1=true
+    MC2: L0 iteration 5: W4's epoch RPCs as its IPC client saw them:
+        2026-10-29 02:58:30,303 1980: Call -> j0: getJournalState {}
+        2026-10-29 02:58:30,303 1982: Call -> j2: getJournalState {}
+        2026-10-29 02:58:30,304 1981: Call -> j1: getJournalState {}
+        2026-10-29 02:58:30,305 1980: Response <- j0: getJournalState {lastPromisedEpoch: 1}
+    MC2: L0 iteration 5: JN-side trace:
+    java.io.IOException: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.startLogSegment(Journal.java:572)
+    	at org.apache.hadoop.hdfs.qjournal.server.JournalNodeRpcServer.startLogSegment(JournalNodeRpcServer.java:226)
+    MC2: L0 iteration 5: W4 epoch=2 targetFiredOnJ1=true
+    MC2: L0 iteration 6: W4's epoch RPCs as its IPC client saw them:
+        2026-10-29 02:58:30,750 2270: Call -> j0: getJournalState {}
+        2026-10-29 02:58:30,751 2272: Call -> j2: getJournalState {}
+        2026-10-29 02:58:30,751 2271: Call -> j1: getJournalState {}
+        2026-10-29 02:58:30,752 2270: Response <- j0: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 02:58:30,752 2272: Response <- j2: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 02:58:30,752 2271: Response <- j1: getJournalState {lastPromisedEpoch: 3}
+        2026-10-29 02:58:30,752 2272: Call -> j2: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVers
+        2026-10-29 02:58:30,752 2272: Call -> j2: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVers
+        2026-10-29 02:58:30,752 2271: Call -> j1: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVers
+        2026-10-29 02:58:30,752 2270: Call -> j0: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVers
+        2026-10-29 02:58:30,754 2271: Exception <- j1: newEpoch {org.apache.hadoop.ipc.RemoteException(java.io.IOException): Proposed epoch 2 <= last promise 3 ; journal id: test-jou
+        2026-10-29 02:58:30,757 2270: Response <- j0: newEpoch {}
+        2026-10-29 02:58:30,757 2272: Response <- j2: newEpoch {}
+    MC2: L0 iteration 6: JN-side trace:
+    java.io.IOException: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.startLogSegment(Journal.java:572)
+    	at org.apache.hadoop.hdfs.qjournal.server.JournalNodeRpcServer.startLogSegment(JournalNodeRpcServer.java:226)
+    MC2: L0 iteration 6: W4 epoch=2 targetFiredOnJ1=true
+    MC2: L0 iteration 7: W4's epoch RPCs as its IPC client saw them:
+        2026-10-29 02:58:31,199 2560: Call -> j0: getJournalState {}
+        2026-10-29 02:58:31,199 2562: Call -> j2: getJournalState {}
+        2026-10-29 02:58:31,199 2561: Call -> j1: getJournalState {}
+        2026-10-29 02:58:31,200 2560: Response <- j0: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 02:58:31,200 2562: Response <- j2: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 02:58:31,200 2561: Response <- j1: getJournalState {lastPromisedEpoch: 3}
+        2026-10-29 02:58:31,200 2562: Call -> j2: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVers
+    MC2: L0 iteration 7: JN-side trace:
+    java.io.IOException: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.startLogSegment(Journal.java:572)
+    	at org.apache.hadoop.hdfs.qjournal.server.JournalNodeRpcServer.startLogSegment(JournalNodeRpcServer.java:226)
+    MC2: L0 iteration 7: W4 epoch=2 targetFiredOnJ1=true
+    MC2: L0 iteration 8: W4's epoch RPCs as its IPC client saw them:
+        2026-10-29 02:58:31,625 2850: Call -> j0: getJournalState {}
+        2026-10-29 02:58:31,625 2852: Call -> j2: getJournalState {}
+        2026-10-29 02:58:31,625 2851: Call -> j1: getJournalState {}
+        2026-10-29 02:58:31,626 2850: Response <- j0: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 02:58:31,626 2850: Response <- j0: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 02:58:31,626 2852: Response <- j2: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 02:58:31,626 2851: Response <- j1: getJournalState {lastPromisedEpoch: 3}
+        2026-10-29 02:58:31,627 2852: Call -> j2: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVers
+        2026-10-29 02:58:31,627 2852: Call -> j2: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVers
+    MC2: L0 iteration 8: JN-side trace:
+    java.io.IOException: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.startLogSegment(Journal.java:572)
+    	at org.apache.hadoop.hdfs.qjournal.server.JournalNodeRpcServer.startLogSegment(JournalNodeRpcServer.java:226)
+    MC2: L0 iteration 8: W4 epoch=2 targetFiredOnJ1=true
+    MC2: L0 iteration 9: W4's epoch RPCs as its IPC client saw them:
+        2026-10-29 02:58:32,041 3140: Call -> j0: getJournalState {}
+        2026-10-29 02:58:32,042 3142: Call -> j2: getJournalState {}
+        2026-10-29 02:58:32,042 3141: Call -> j1: getJournalState {}
+        2026-10-29 02:58:32,042 3140: Response <- j0: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 02:58:32,042 3142: Response <- j2: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 02:58:32,043 3142: Call -> j2: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVers
+        2026-10-29 02:58:32,043 3140: Call -> j0: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVers
+        2026-10-29 02:58:32,043 3141: Response <- j1: getJournalState {lastPromisedEpoch: 3}
+        2026-10-29 02:58:32,043 3141: Call -> j1: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVers
+        2026-10-29 02:58:32,044 3141: Exception <- j1: newEpoch {org.apache.hadoop.ipc.RemoteException(java.io.IOException): Proposed epoch 2 <= last promise 3 ; journal id: test-jou
+    MC2: L0 iteration 9: JN-side trace:
+    java.io.IOException: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.startLogSegment(Journal.java:572)
+    	at org.apache.hadoop.hdfs.qjournal.server.JournalNodeRpcServer.startLogSegment(JournalNodeRpcServer.java:226)
+    MC2: L0 iteration 9: W4 epoch=2 targetFiredOnJ1=true
+    MC2: L0 iteration 10: W4's epoch RPCs as its IPC client saw them:
+        2026-10-29 02:58:32,469 3430: Call -> j0: getJournalState {}
+        2026-10-29 02:58:32,470 3432: Call -> j2: getJournalState {}
+        2026-10-29 02:58:32,470 3431: Call -> j1: getJournalState {}
+        2026-10-29 02:58:32,470 3430: Response <- j0: getJournalState {lastPromisedEpoch: 1}
+    MC2: L0 iteration 10: JN-side trace:
+    java.io.IOException: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.startLogSegment(Journal.java:572)
+    	at org.apache.hadoop.hdfs.qjournal.server.JournalNodeRpcServer.startLogSegment(JournalNodeRpcServer.java:226)
+    MC2: L0 iteration 10: W4 epoch=2 targetFiredOnJ1=true
+    MC2: L0 iteration 11: W4's epoch RPCs as its IPC client saw them:
+        2026-10-29 02:58:32,851 3720: Call -> j0: getJournalState {}
+        2026-10-29 02:58:32,852 3722: Call -> j2: getJournalState {}
+        2026-10-29 02:58:32,852 3721: Call -> j1: getJournalState {}
+    MC2: L0 iteration 11: JN-side trace:
+    java.io.IOException: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.startLogSegment(Journal.java:572)
+    	at org.apache.hadoop.hdfs.qjournal.server.JournalNodeRpcServer.startLogSegment(JournalNodeRpcServer.java:226)
+    MC2: L0 iteration 11: W4 epoch=2 targetFiredOnJ1=true
+    MC2: L0 iteration 12: W4's epoch RPCs as its IPC client saw them:
+        2026-10-29 02:58:33,266 4010: Call -> j0: getJournalState {}
+        2026-10-29 02:58:33,267 4012: Call -> j2: getJournalState {}
+        2026-10-29 02:58:33,267 4011: Call -> j1: getJournalState {}
+        2026-10-29 02:58:33,267 4010: Response <- j0: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 02:58:33,267 4010: Response <- j0: getJournalState {lastPromisedEpoch: 1}
+    MC2: L0 iteration 12: JN-side trace:
+    java.io.IOException: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.startLogSegment(Journal.java:572)
+    	at org.apache.hadoop.hdfs.qjournal.server.JournalNodeRpcServer.startLogSegment(JournalNodeRpcServer.java:226)
+    MC2: L0 iteration 12: W4 epoch=2 targetFiredOnJ1=true
+    MC2: L0 iteration 13: W4's epoch RPCs as its IPC client saw them:
+        2026-10-29 02:58:33,657 4300: Call -> j0: getJournalState {}
+        2026-10-29 02:58:33,657 4302: Call -> j2: getJournalState {}
+        2026-10-29 02:58:33,657 4301: Call -> j1: getJournalState {}
+        2026-10-29 02:58:33,658 4300: Response <- j0: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 02:58:33,658 4302: Response <- j2: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 02:58:33,658 4301: Response <- j1: getJournalState {lastPromisedEpoch: 3}
+        2026-10-29 02:58:33,658 4300: Call -> j0: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVers
+    MC2: L0 iteration 13: JN-side trace:
+    java.io.IOException: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.startLogSegment(Journal.java:572)
+    	at org.apache.hadoop.hdfs.qjournal.server.JournalNodeRpcServer.startLogSegment(JournalNodeRpcServer.java:226)
+    MC2: L0 iteration 13: W4 epoch=2 targetFiredOnJ1=true
+    MC2: L0 iteration 14: W4's epoch RPCs as its IPC client saw them:
+        2026-10-29 02:58:34,062 4590: Call -> j0: getJournalState {}
+        2026-10-29 02:58:34,062 4592: Call -> j2: getJournalState {}
+        2026-10-29 02:58:34,062 4591: Call -> j1: getJournalState {}
+        2026-10-29 02:58:34,063 4590: Response <- j0: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 02:58:34,063 4592: Response <- j2: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 02:58:34,063 4591: Response <- j1: getJournalState {lastPromisedEpoch: 3}
+        2026-10-29 02:58:34,063 4592: Call -> j2: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVers
+        2026-10-29 02:58:34,063 4590: Call -> j0: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVers
+        2026-10-29 02:58:34,063 4590: Call -> j0: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVers
+        2026-10-29 02:58:34,063 4591: Call -> j1: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVers
+        2026-10-29 02:58:34,064 4591: Exception <- j1: newEpoch {org.apache.hadoop.ipc.RemoteException(java.io.IOException): Proposed epoch 2 <= last promise 3 ; journal id: test-jou
+        2026-10-29 02:58:34,065 4592: Response <- j2: newEpoch {}
+        2026-10-29 02:58:34,066 4590: Response <- j0: newEpoch {}
+    MC2: L0 iteration 14: JN-side trace:
+    java.io.IOException: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.startLogSegment(Journal.java:572)
+    	at org.apache.hadoop.hdfs.qjournal.server.JournalNodeRpcServer.startLogSegment(JournalNodeRpcServer.java:226)
+    MC2: L0 iteration 14: W4 epoch=2 targetFiredOnJ1=true
+    MC2: L0 iteration 15: W4's epoch RPCs as its IPC client saw them:
+        2026-10-29 02:58:34,490 4880: Call -> j0: getJournalState {}
+        2026-10-29 02:58:34,490 4882: Call -> j2: getJournalState {}
+        2026-10-29 02:58:34,490 4881: Call -> j1: getJournalState {}
+        2026-10-29 02:58:34,491 4880: Response <- j0: getJournalState {lastPromisedEpoch: 1}
+    MC2: L0 iteration 15: W4 epoch=4 targetFiredOnJ1=false
+    MC2: L0 iteration 16: W4's epoch RPCs as its IPC client saw them:
+        2026-10-29 02:58:34,860 5170: Call -> j0: getJournalState {}
+        2026-10-29 02:58:34,860 5172: Call -> j2: getJournalState {}
+        2026-10-29 02:58:34,860 5171: Call -> j1: getJournalState {}
+    MC2: L0 iteration 16: JN-side trace:
+    java.io.IOException: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.startLogSegment(Journal.java:572)
+    	at org.apache.hadoop.hdfs.qjournal.server.JournalNodeRpcServer.startLogSegment(JournalNodeRpcServer.java:226)
+    MC2: L0 iteration 16: W4 epoch=2 targetFiredOnJ1=true
+    MC2: L0 iteration 17: W4's epoch RPCs as its IPC client saw them:
+        2026-10-29 02:58:35,223 5460: Call -> j0: getJournalState {}
+        2026-10-29 02:58:35,223 5462: Call -> j2: getJournalState {}
+        2026-10-29 02:58:35,223 5461: Call -> j1: getJournalState {}
+        2026-10-29 02:58:35,224 5460: Response <- j0: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 02:58:35,224 5462: Response <- j2: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 02:58:35,224 5461: Response <- j1: getJournalState {lastPromisedEpoch: 3}
+        2026-10-29 02:58:35,224 5460: Call -> j0: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVers
+        2026-10-29 02:58:35,224 5460: Call -> j0: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVers
+    MC2: L0 iteration 17: JN-side trace:
+    java.io.IOException: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.startLogSegment(Journal.java:572)
+    	at org.apache.hadoop.hdfs.qjournal.server.JournalNodeRpcServer.startLogSegment(JournalNodeRpcServer.java:226)
+    MC2: L0 iteration 17: W4 epoch=2 targetFiredOnJ1=true
+    MC2: L0 iteration 18: W4's epoch RPCs as its IPC client saw them:
+        2026-10-29 02:58:35,613 5750: Call -> j0: getJournalState {}
+        2026-10-29 02:58:35,613 5752: Call -> j2: getJournalState {}
+        2026-10-29 02:58:35,613 5751: Call -> j1: getJournalState {}
+        2026-10-29 02:58:35,614 5750: Response <- j0: getJournalState {lastPromisedEpoch: 1}
+    MC2: L0 iteration 18: JN-side trace:
+    java.io.IOException: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.startLogSegment(Journal.java:572)
+    	at org.apache.hadoop.hdfs.qjournal.server.JournalNodeRpcServer.startLogSegment(JournalNodeRpcServer.java:226)
+    MC2: L0 iteration 18: W4 epoch=2 targetFiredOnJ1=true
+    MC2: L0 iteration 19: W4's epoch RPCs as its IPC client saw them:
+        2026-10-29 02:58:35,974 6040: Call -> j0: getJournalState {}
+        2026-10-29 02:58:35,974 6042: Call -> j2: getJournalState {}
+        2026-10-29 02:58:35,974 6041: Call -> j1: getJournalState {}
+        2026-10-29 02:58:35,975 6040: Response <- j0: getJournalState {lastPromisedEpoch: 1}
+    MC2: L0 iteration 19: JN-side trace:
+    java.io.IOException: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.startLogSegment(Journal.java:572)
+    	at org.apache.hadoop.hdfs.qjournal.server.JournalNodeRpcServer.startLogSegment(JournalNodeRpcServer.java:226)
+    MC2: L0 iteration 19: W4 epoch=2 targetFiredOnJ1=true
+    MC2: L0 iteration 20: W4's epoch RPCs as its IPC client saw them:
+        2026-10-29 02:58:36,363 6330: Call -> j0: getJournalState {}
+        2026-10-29 02:58:36,363 6332: Call -> j2: getJournalState {}
+        2026-10-29 02:58:36,363 6331: Call -> j1: getJournalState {}
+    MC2: L0 iteration 20: JN-side trace:
+    java.io.IOException: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.startLogSegment(Journal.java:572)
+    	at org.apache.hadoop.hdfs.qjournal.server.JournalNodeRpcServer.startLogSegment(JournalNodeRpcServer.java:226)
+    MC2: L0 iteration 20: W4 epoch=2 targetFiredOnJ1=true
+    MC2: MC2-L0-RESULT iterations=20 w4Epoch2=18 targetFired=18
+    MC2: === scenario CE_STEPS_RESTART_AFTER_ROLLBACK === (MC2_EXPECT=bug)
+    MC2: j0 = JournalNode /127.0.0.1:34447
+    MC2: j1 = JournalNode /127.0.0.1:40189
+    MC2: j2 = JournalNode /127.0.0.1:43397
+    MC2: CE 17 Upgrade(1) done; previous/ promise on disk = 1,1,1
+    MC2: W2 established epoch 2 (its requests to j2 still in flight); WriterStop(2)
+    MC2: W3 established epoch 3 (its requests to j2 still in flight); WriterStop(3)
+    MC2: after W3: current/ promise on disk = 3,3,1; caches j0[loaded=true value=3] j1[loaded=true value=3] j2[loaded=true value=1]
+    MC2: CE 44 Rollback done; current/ promise on disk = 1,1,1, previous/ exists = false,false,false; caches j0[loaded=true value=3] j1[loaded=true value=3] j2[loaded=true value=1]
+    MC2: CE 43 JNRestart(j0) (after the rollback); j0: no Journal object
+    MC2: W4 getJournalState lastPromisedEpoch reported by j0,j1,j2 = 1,3,1 (j1's reply arrived after the choice); on-disk current/ promise = 2,1,2
+    MC2: W4 established epoch 2; j1 newEpoch -> RemoteException(java.io.IOException): Proposed epoch 2 <= last promise 3 ; journal id: test-journal
+    MC2: W4 startLogSegment(1) returned (quorum reached); j1 -> RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    MC2: W4 wrote txns 1-3 (quorum); j1 journal() -> RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    MC2: after a log roll, W4 startLogSegment(4); j1 -> RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    MC2: j1 on-disk promise = 1, j1 cache: loaded=true value=3
+    MC2: with j2 down, W4 write of txn 4 -> FAILED: org.apache.hadoop.hdfs.qjournal.client.QuorumException: Got too many exceptions to achieve quorum size 2/3. 1 successful responses:
+    MC2: JN-side stack trace of the IOException j1 returned to W4's startLogSegment (IPC server log):
+    java.io.IOException: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.startLogSegment(Journal.java:572)
+    	at org.apache.hadoop.hdfs.qjournal.server.JournalNodeRpcServer.startLogSegment(JournalNodeRpcServer.java:226)
+    MC2: MC2-RESULT scenario=CE_STEPS_RESTART_AFTER_ROLLBACK w4Epoch=2 reported(j0,j1,j2)=1,3,1 targetFiredOnJ1=true frame=org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489) j1FencedAfterRoll=true writeWithJ2Down=FAILED
+    MC2: === scenario TWO_RESTARTS_AFTER_ROLLBACK === (MC2_EXPECT=bug)
+    MC2: j0 = JournalNode /127.0.0.1:33551
+    MC2: j1 = JournalNode /127.0.0.1:43893
+    MC2: j2 = JournalNode /127.0.0.1:39905
+    MC2: CE 17 Upgrade(1) done; previous/ promise on disk = 1,1,1
+    MC2: W2 established epoch 2 on j0,j1,j2; WriterStop(2)
+    MC2: W3 established epoch 3 on j0,j1,j2; WriterStop(3)
+    MC2: after W3: current/ promise on disk = 3,3,3; caches j0[loaded=true value=3] j1[loaded=true value=3] j2[loaded=true value=3]
+    MC2: CE 44 Rollback done; current/ promise on disk = 1,1,1, previous/ exists = false,false,false; caches j0[loaded=true value=3] j1[loaded=true value=3] j2[loaded=true value=3]
+    MC2: CE 43 JNRestart(j0) (after the rollback); j0: no Journal object
+    MC2: JNRestart(j2) (after the rollback); j2: no Journal object
+    MC2: W4 getJournalState lastPromisedEpoch reported by j0,j1,j2 = 1,3,1 (j1's reply arrived after the choice); on-disk current/ promise = 2,1,2
+    MC2: W4 established epoch 2; j1 newEpoch -> RemoteException(java.io.IOException): Proposed epoch 2 <= last promise 3 ; journal id: test-journal
+    MC2: W4 startLogSegment(1) returned (quorum reached); j1 -> RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    MC2: W4 wrote txns 1-3 (quorum); j1 journal() -> RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    MC2: after a log roll, W4 startLogSegment(4); j1 -> RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    MC2: j1 on-disk promise = 1, j1 cache: loaded=true value=3
+    MC2: with j2 down, W4 write of txn 4 -> FAILED: org.apache.hadoop.hdfs.qjournal.client.QuorumException: Got too many exceptions to achieve quorum size 2/3. 1 successful responses:
+    MC2: JN-side stack trace of the IOException j1 returned to W4's startLogSegment (IPC server log):
+    java.io.IOException: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.startLogSegment(Journal.java:572)
+    	at org.apache.hadoop.hdfs.qjournal.server.JournalNodeRpcServer.startLogSegment(JournalNodeRpcServer.java:226)
+    MC2: MC2-RESULT scenario=TWO_RESTARTS_AFTER_ROLLBACK w4Epoch=2 reported(j0,j1,j2)=1,3,1 targetFiredOnJ1=true frame=org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489) j1FencedAfterRoll=true writeWithJ2Down=FAILED
+[runner] CE scenario (CE steps, JNRestart(j0) after the rollback): target fired on j1 in 1 of 1 runs (bug)
+[runner] Level 0: MC2: MC2-L0-RESULT iterations=20 w4Epoch2=18 targetFired=18
+[runner] target frame: 	at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[runner] harness instrumentation restored from /users/ZhenyuLi/Specula/runs/20261028-194804-49b4/hdfs-adhoc-08/.specula-output/confirmation/MC-2/repro-work/saved-instrumentation
+
+# command B: bash repro/test_bugMC-2_rollback_cached_promise.sh --no-build --repeat 2 --only 'testCeStepsRestartAfterRollback+testTwoRestartsAfterRollback+testCeLiteralOrder+testControlReplyInTime'   (bug mode, determinism repeats)
+[runner] tree 734dd8a67cd; git status of hadoop-hdfs-project/hadoop-hdfs/src after setting instrumentation aside:
+[runner] pristine hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java:484-494 (target) and :1189-1196 (doRollback):
+[runner]   |   private synchronized void checkRequest(RequestInfo reqInfo) throws IOException {
+[runner]   |     // Invariant 25 from ZAB paper
+[runner]   |     if (reqInfo.getEpoch() < lastPromisedEpoch.get()) {
+[runner]   |       throw new IOException("IPC's epoch " + reqInfo.getEpoch() +
+[runner]   |           " is less than the last promised epoch " +
+[runner]   |           lastPromisedEpoch.get() + " ; journal id: " + journalId);
+[runner]   |     } else if (reqInfo.getEpoch() > lastPromisedEpoch.get()) {
+[runner]   |       // A newer client has arrived. Fence any previous writers by updating
+[runner]   |       // the promise.
+[runner]   |       updateLastPromisedEpoch(reqInfo.getEpoch());
+[runner]   |     }
+[runner]   |   public synchronized void doRollback() throws IOException {
+[runner]   |     // Do not hold file lock on committedTxnId, because the containing
+[runner]   |     // directory will be renamed.  It will be reopened lazily on next access.
+[runner]   |     IOUtils.cleanupWithLogger(LOG, committedTxnId);
+[runner]   |     storage.getJournalManager().doRollback();
+[runner]   |     // HADOOP-17142: refresh properties after rollback performed.
+[runner]   |     storage.refreshStorage();
+[runner]   |   }
+[runner] javap -c -l of the compiled Journal.checkRequest (target throw = new IOException ... athrow):
+[runner]   private synchronized void checkRequest(org.apache.hadoop.hdfs.qjournal.protocol.RequestInfo) throws java.io.IOException;
+[runner]       12: ifge          43
+[runner]       15: new           #275                // class java/io/IOException
+[runner]       39: invokespecial #280                // Method java/io/IOException."<init>":(Ljava/lang/String;)V
+[runner]       42: athrow
+[runner]     LineNumberTable:
+[runner]       line 486: 0
+[runner]       line 487: 15
+[runner]       line 489: 27
+[runner]       line 490: 43
+[runner] run 1/2 (bug): MC2_EXPECT=bug MC2_L0_ITERS=20 mvn -B -o surefire:test -pl hadoop-hdfs-project/hadoop-hdfs -Dtest='org.apache.hadoop.hdfs.qjournal.client.TestBugMC2RollbackCachedPromise#testCeStepsRestartAfterRollback+testTwoRestartsAfterRollback+testCeLiteralOrder+testControlReplyInTime'
+[runner] mvn rc=0
+[runner]   [INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.497 s -- in org.apache.hadoop.hdfs.qjournal.client.TestBugMC2RollbackCachedPromise
+[runner]   [INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0
+[runner]   [INFO] BUILD SUCCESS
+    MC2: === scenario CE_ORDER === (MC2_EXPECT=bug)
+    MC2: j0 = JournalNode /127.0.0.1:34081
+    MC2: j1 = JournalNode /127.0.0.1:38243
+    MC2: j2 = JournalNode /127.0.0.1:42599
+    MC2: CE 17 Upgrade(1) done; previous/ promise on disk = 1,1,1
+    MC2: W2 established epoch 2 (its requests to j2 still in flight); WriterStop(2)
+    MC2: W3 established epoch 3 (its requests to j2 still in flight); WriterStop(3)
+    MC2: after W3: current/ promise on disk = 3,3,1; caches j0[loaded=true value=3] j1[loaded=true value=3] j2[loaded=true value=1]
+    MC2: CE 43 JNRestart(j0); j0: no Journal object
+    MC2: between canRollBack and doRollback: j0 cache: loaded=true value=3; on-disk current/ promise = 3,3,1
+    MC2: CE 44 Rollback done; current/ promise on disk = 1,1,1; caches j0[loaded=true value=3] j1[loaded=true value=3] j2[loaded=true value=1]
+    MC2: W4 getJournalState lastPromisedEpoch reported by j0,j1,j2 = 3,3,1 (j1's reply arrived after the choice); on-disk current/ promise = 4,4,4
+    MC2: W4 established epoch 4; j1 newEpoch -> OK
+    MC2: W4 startLogSegment(1) returned (quorum reached); j1 -> OK
+    MC2: W4 wrote txns 1-3 (quorum); j1 journal() -> OK
+    MC2: after a log roll, W4 startLogSegment(4); j1 -> OK
+    MC2: j1 on-disk promise = 4, j1 cache: loaded=true value=4
+    MC2: with j2 down, W4 write of txn 4 -> OK
+    MC2: MC2-RESULT scenario=CE_ORDER w4Epoch=4 reported(j0,j1,j2)=3,3,1 targetFiredOnJ1=false frame=- j1FencedAfterRoll=false writeWithJ2Down=OK
+    MC2: === scenario CONTROL_REPLY_IN_TIME === (MC2_EXPECT=bug)
+    MC2: j0 = JournalNode /127.0.0.1:38833
+    MC2: j1 = JournalNode /127.0.0.1:35061
+    MC2: j2 = JournalNode /127.0.0.1:40561
+    MC2: CE 17 Upgrade(1) done; previous/ promise on disk = 1,1,1
+    MC2: W2 established epoch 2 (its requests to j2 still in flight); WriterStop(2)
+    MC2: W3 established epoch 3 (its requests to j2 still in flight); WriterStop(3)
+    MC2: after W3: current/ promise on disk = 3,3,1; caches j0[loaded=true value=3] j1[loaded=true value=3] j2[loaded=true value=1]
+    MC2: CE 44 Rollback done; current/ promise on disk = 1,1,1, previous/ exists = false,false,false; caches j0[loaded=true value=3] j1[loaded=true value=3] j2[loaded=true value=1]
+    MC2: CE 43 JNRestart(j0) (after the rollback); j0: no Journal object
+    MC2: W4 getJournalState lastPromisedEpoch reported by j0,j1,j2 = 1,3,1; on-disk current/ promise = 4,4,4
+    MC2: W4 established epoch 4; j1 newEpoch -> OK
+    MC2: W4 startLogSegment(1) returned (quorum reached); j1 -> OK
+    MC2: W4 wrote txns 1-3 (quorum); j1 journal() -> OK
+    MC2: after a log roll, W4 startLogSegment(4); j1 -> OK
+    MC2: j1 on-disk promise = 4, j1 cache: loaded=true value=4
+    MC2: with j2 down, W4 write of txn 4 -> OK
+    MC2: MC2-RESULT scenario=CONTROL_REPLY_IN_TIME w4Epoch=4 reported(j0,j1,j2)=1,3,1 targetFiredOnJ1=false frame=- j1FencedAfterRoll=false writeWithJ2Down=OK
+    MC2: === scenario CE_STEPS_RESTART_AFTER_ROLLBACK === (MC2_EXPECT=bug)
+    MC2: j0 = JournalNode /127.0.0.1:46517
+    MC2: j1 = JournalNode /127.0.0.1:39783
+    MC2: j2 = JournalNode /127.0.0.1:41269
+    MC2: CE 17 Upgrade(1) done; previous/ promise on disk = 1,1,1
+    MC2: W2 established epoch 2 (its requests to j2 still in flight); WriterStop(2)
+    MC2: W3 established epoch 3 (its requests to j2 still in flight); WriterStop(3)
+    MC2: after W3: current/ promise on disk = 3,3,1; caches j0[loaded=true value=3] j1[loaded=true value=3] j2[loaded=true value=1]
+    MC2: CE 44 Rollback done; current/ promise on disk = 1,1,1, previous/ exists = false,false,false; caches j0[loaded=true value=3] j1[loaded=true value=3] j2[loaded=true value=1]
+    MC2: CE 43 JNRestart(j0) (after the rollback); j0: no Journal object
+    MC2: W4 getJournalState lastPromisedEpoch reported by j0,j1,j2 = 1,3,1 (j1's reply arrived after the choice); on-disk current/ promise = 2,1,2
+    MC2: W4 established epoch 2; j1 newEpoch -> RemoteException(java.io.IOException): Proposed epoch 2 <= last promise 3 ; journal id: test-journal
+    MC2: W4 startLogSegment(1) returned (quorum reached); j1 -> RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    MC2: W4 wrote txns 1-3 (quorum); j1 journal() -> RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    MC2: after a log roll, W4 startLogSegment(4); j1 -> RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    MC2: j1 on-disk promise = 1, j1 cache: loaded=true value=3
+    MC2: with j2 down, W4 write of txn 4 -> FAILED: org.apache.hadoop.hdfs.qjournal.client.QuorumException: Got too many exceptions to achieve quorum size 2/3. 1 successful responses:
+    MC2: JN-side stack trace of the IOException j1 returned to W4's startLogSegment (IPC server log):
+    java.io.IOException: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.startLogSegment(Journal.java:572)
+    	at org.apache.hadoop.hdfs.qjournal.server.JournalNodeRpcServer.startLogSegment(JournalNodeRpcServer.java:226)
+    MC2: MC2-RESULT scenario=CE_STEPS_RESTART_AFTER_ROLLBACK w4Epoch=2 reported(j0,j1,j2)=1,3,1 targetFiredOnJ1=true frame=org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489) j1FencedAfterRoll=true writeWithJ2Down=FAILED
+    MC2: === scenario TWO_RESTARTS_AFTER_ROLLBACK === (MC2_EXPECT=bug)
+    MC2: j0 = JournalNode /127.0.0.1:38999
+    MC2: j1 = JournalNode /127.0.0.1:42825
+    MC2: j2 = JournalNode /127.0.0.1:44161
+    MC2: CE 17 Upgrade(1) done; previous/ promise on disk = 1,1,1
+    MC2: W2 established epoch 2 on j0,j1,j2; WriterStop(2)
+    MC2: W3 established epoch 3 on j0,j1,j2; WriterStop(3)
+    MC2: after W3: current/ promise on disk = 3,3,3; caches j0[loaded=true value=3] j1[loaded=true value=3] j2[loaded=true value=3]
+    MC2: CE 44 Rollback done; current/ promise on disk = 1,1,1, previous/ exists = false,false,false; caches j0[loaded=true value=3] j1[loaded=true value=3] j2[loaded=true value=3]
+    MC2: CE 43 JNRestart(j0) (after the rollback); j0: no Journal object
+    MC2: JNRestart(j2) (after the rollback); j2: no Journal object
+    MC2: W4 getJournalState lastPromisedEpoch reported by j0,j1,j2 = 1,3,1 (j1's reply arrived after the choice); on-disk current/ promise = 2,1,2
+    MC2: W4 established epoch 2; j1 newEpoch -> RemoteException(java.io.IOException): Proposed epoch 2 <= last promise 3 ; journal id: test-journal
+    MC2: W4 startLogSegment(1) returned (quorum reached); j1 -> RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    MC2: W4 wrote txns 1-3 (quorum); j1 journal() -> RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    MC2: after a log roll, W4 startLogSegment(4); j1 -> RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    MC2: j1 on-disk promise = 1, j1 cache: loaded=true value=3
+    MC2: with j2 down, W4 write of txn 4 -> FAILED: org.apache.hadoop.hdfs.qjournal.client.QuorumException: Got too many exceptions to achieve quorum size 2/3. 1 successful responses:
+    MC2: JN-side stack trace of the IOException j1 returned to W4's startLogSegment (IPC server log):
+    java.io.IOException: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.startLogSegment(Journal.java:572)
+    	at org.apache.hadoop.hdfs.qjournal.server.JournalNodeRpcServer.startLogSegment(JournalNodeRpcServer.java:226)
+    MC2: MC2-RESULT scenario=TWO_RESTARTS_AFTER_ROLLBACK w4Epoch=2 reported(j0,j1,j2)=1,3,1 targetFiredOnJ1=true frame=org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489) j1FencedAfterRoll=true writeWithJ2Down=FAILED
+[runner] run 2/2 (bug): MC2_EXPECT=bug MC2_L0_ITERS=20 mvn -B -o surefire:test -pl hadoop-hdfs-project/hadoop-hdfs -Dtest='org.apache.hadoop.hdfs.qjournal.client.TestBugMC2RollbackCachedPromise#testCeStepsRestartAfterRollback+testTwoRestartsAfterRollback+testCeLiteralOrder+testControlReplyInTime'
+[runner] mvn rc=0
+[runner]   [INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.396 s -- in org.apache.hadoop.hdfs.qjournal.client.TestBugMC2RollbackCachedPromise
+[runner]   [INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0
+[runner]   [INFO] BUILD SUCCESS
+    MC2: === scenario CE_ORDER === (MC2_EXPECT=bug)
+    MC2: j0 = JournalNode /127.0.0.1:41629
+    MC2: j1 = JournalNode /127.0.0.1:39433
+    MC2: j2 = JournalNode /127.0.0.1:38033
+    MC2: CE 17 Upgrade(1) done; previous/ promise on disk = 1,1,1
+    MC2: W2 established epoch 2 (its requests to j2 still in flight); WriterStop(2)
+    MC2: W3 established epoch 3 (its requests to j2 still in flight); WriterStop(3)
+    MC2: after W3: current/ promise on disk = 3,3,1; caches j0[loaded=true value=3] j1[loaded=true value=3] j2[loaded=true value=1]
+    MC2: CE 43 JNRestart(j0); j0: no Journal object
+    MC2: between canRollBack and doRollback: j0 cache: loaded=true value=3; on-disk current/ promise = 3,3,1
+    MC2: CE 44 Rollback done; current/ promise on disk = 1,1,1; caches j0[loaded=true value=3] j1[loaded=true value=3] j2[loaded=true value=1]
+    MC2: W4 getJournalState lastPromisedEpoch reported by j0,j1,j2 = 3,3,1 (j1's reply arrived after the choice); on-disk current/ promise = 4,4,4
+    MC2: W4 established epoch 4; j1 newEpoch -> OK
+    MC2: W4 startLogSegment(1) returned (quorum reached); j1 -> OK
+    MC2: W4 wrote txns 1-3 (quorum); j1 journal() -> OK
+    MC2: after a log roll, W4 startLogSegment(4); j1 -> OK
+    MC2: j1 on-disk promise = 4, j1 cache: loaded=true value=4
+    MC2: with j2 down, W4 write of txn 4 -> OK
+    MC2: MC2-RESULT scenario=CE_ORDER w4Epoch=4 reported(j0,j1,j2)=3,3,1 targetFiredOnJ1=false frame=- j1FencedAfterRoll=false writeWithJ2Down=OK
+    MC2: === scenario CONTROL_REPLY_IN_TIME === (MC2_EXPECT=bug)
+    MC2: j0 = JournalNode /127.0.0.1:41671
+    MC2: j1 = JournalNode /127.0.0.1:33541
+    MC2: j2 = JournalNode /127.0.0.1:35685
+    MC2: CE 17 Upgrade(1) done; previous/ promise on disk = 1,1,1
+    MC2: W2 established epoch 2 (its requests to j2 still in flight); WriterStop(2)
+    MC2: W3 established epoch 3 (its requests to j2 still in flight); WriterStop(3)
+    MC2: after W3: current/ promise on disk = 3,3,1; caches j0[loaded=true value=3] j1[loaded=true value=3] j2[loaded=true value=1]
+    MC2: CE 44 Rollback done; current/ promise on disk = 1,1,1, previous/ exists = false,false,false; caches j0[loaded=true value=3] j1[loaded=true value=3] j2[loaded=true value=1]
+    MC2: CE 43 JNRestart(j0) (after the rollback); j0: no Journal object
+    MC2: W4 getJournalState lastPromisedEpoch reported by j0,j1,j2 = 1,3,1; on-disk current/ promise = 4,4,4
+    MC2: W4 established epoch 4; j1 newEpoch -> OK
+    MC2: W4 startLogSegment(1) returned (quorum reached); j1 -> OK
+    MC2: W4 wrote txns 1-3 (quorum); j1 journal() -> OK
+    MC2: after a log roll, W4 startLogSegment(4); j1 -> OK
+    MC2: j1 on-disk promise = 4, j1 cache: loaded=true value=4
+    MC2: with j2 down, W4 write of txn 4 -> OK
+    MC2: MC2-RESULT scenario=CONTROL_REPLY_IN_TIME w4Epoch=4 reported(j0,j1,j2)=1,3,1 targetFiredOnJ1=false frame=- j1FencedAfterRoll=false writeWithJ2Down=OK
+    MC2: === scenario CE_STEPS_RESTART_AFTER_ROLLBACK === (MC2_EXPECT=bug)
+    MC2: j0 = JournalNode /127.0.0.1:45111
+    MC2: j1 = JournalNode /127.0.0.1:36659
+    MC2: j2 = JournalNode /127.0.0.1:37659
+    MC2: CE 17 Upgrade(1) done; previous/ promise on disk = 1,1,1
+    MC2: W2 established epoch 2 (its requests to j2 still in flight); WriterStop(2)
+    MC2: W3 established epoch 3 (its requests to j2 still in flight); WriterStop(3)
+    MC2: after W3: current/ promise on disk = 3,3,1; caches j0[loaded=true value=3] j1[loaded=true value=3] j2[loaded=true value=1]
+    MC2: CE 44 Rollback done; current/ promise on disk = 1,1,1, previous/ exists = false,false,false; caches j0[loaded=true value=3] j1[loaded=true value=3] j2[loaded=true value=1]
+    MC2: CE 43 JNRestart(j0) (after the rollback); j0: no Journal object
+    MC2: W4 getJournalState lastPromisedEpoch reported by j0,j1,j2 = 1,3,1 (j1's reply arrived after the choice); on-disk current/ promise = 2,1,2
+    MC2: W4 established epoch 2; j1 newEpoch -> RemoteException(java.io.IOException): Proposed epoch 2 <= last promise 3 ; journal id: test-journal
+    MC2: W4 startLogSegment(1) returned (quorum reached); j1 -> RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    MC2: W4 wrote txns 1-3 (quorum); j1 journal() -> RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    MC2: after a log roll, W4 startLogSegment(4); j1 -> RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    MC2: j1 on-disk promise = 1, j1 cache: loaded=true value=3
+    MC2: with j2 down, W4 write of txn 4 -> FAILED: org.apache.hadoop.hdfs.qjournal.client.QuorumException: Got too many exceptions to achieve quorum size 2/3. 1 successful responses:
+    MC2: JN-side stack trace of the IOException j1 returned to W4's startLogSegment (IPC server log):
+    java.io.IOException: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.startLogSegment(Journal.java:572)
+    	at org.apache.hadoop.hdfs.qjournal.server.JournalNodeRpcServer.startLogSegment(JournalNodeRpcServer.java:226)
+    MC2: MC2-RESULT scenario=CE_STEPS_RESTART_AFTER_ROLLBACK w4Epoch=2 reported(j0,j1,j2)=1,3,1 targetFiredOnJ1=true frame=org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489) j1FencedAfterRoll=true writeWithJ2Down=FAILED
+    MC2: === scenario TWO_RESTARTS_AFTER_ROLLBACK === (MC2_EXPECT=bug)
+    MC2: j0 = JournalNode /127.0.0.1:34331
+    MC2: j1 = JournalNode /127.0.0.1:34555
+    MC2: j2 = JournalNode /127.0.0.1:40559
+    MC2: CE 17 Upgrade(1) done; previous/ promise on disk = 1,1,1
+    MC2: W2 established epoch 2 on j0,j1,j2; WriterStop(2)
+    MC2: W3 established epoch 3 on j0,j1,j2; WriterStop(3)
+    MC2: after W3: current/ promise on disk = 3,3,3; caches j0[loaded=true value=3] j1[loaded=true value=3] j2[loaded=true value=3]
+    MC2: CE 44 Rollback done; current/ promise on disk = 1,1,1, previous/ exists = false,false,false; caches j0[loaded=true value=3] j1[loaded=true value=3] j2[loaded=true value=3]
+    MC2: CE 43 JNRestart(j0) (after the rollback); j0: no Journal object
+    MC2: JNRestart(j2) (after the rollback); j2: no Journal object
+    MC2: W4 getJournalState lastPromisedEpoch reported by j0,j1,j2 = 1,3,1 (j1's reply arrived after the choice); on-disk current/ promise = 2,1,2
+    MC2: W4 established epoch 2; j1 newEpoch -> RemoteException(java.io.IOException): Proposed epoch 2 <= last promise 3 ; journal id: test-journal
+    MC2: W4 startLogSegment(1) returned (quorum reached); j1 -> RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    MC2: W4 wrote txns 1-3 (quorum); j1 journal() -> RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    MC2: after a log roll, W4 startLogSegment(4); j1 -> RemoteException(java.io.IOException): IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    MC2: j1 on-disk promise = 1, j1 cache: loaded=true value=3
+    MC2: with j2 down, W4 write of txn 4 -> FAILED: org.apache.hadoop.hdfs.qjournal.client.QuorumException: Got too many exceptions to achieve quorum size 2/3. 1 successful responses:
+    MC2: JN-side stack trace of the IOException j1 returned to W4's startLogSegment (IPC server log):
+    java.io.IOException: IPC's epoch 2 is less than the last promised epoch 3 ; journal id: test-journal
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+    	at org.apache.hadoop.hdfs.qjournal.server.Journal.startLogSegment(Journal.java:572)
+    	at org.apache.hadoop.hdfs.qjournal.server.JournalNodeRpcServer.startLogSegment(JournalNodeRpcServer.java:226)
+    MC2: MC2-RESULT scenario=TWO_RESTARTS_AFTER_ROLLBACK w4Epoch=2 reported(j0,j1,j2)=1,3,1 targetFiredOnJ1=true frame=org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489) j1FencedAfterRoll=true writeWithJ2Down=FAILED
+[runner] CE scenario (CE steps, JNRestart(j0) after the rollback): target fired on j1 in 2 of 2 runs (bug)
+[runner] target frame: 	at org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(Journal.java:489)
+[runner] harness instrumentation restored from /users/ZhenyuLi/Specula/runs/20261028-194804-49b4/hdfs-adhoc-08/.specula-output/confirmation/MC-2/repro-work/saved-instrumentation
+
+# command C: bash repro/test_bugMC-2_rollback_cached_promise.sh --fix-control --l0-iters 10   (FIX CONTROL: refreshCachedData() added to Journal.doRollback; MC2_EXPECT=fixed)
+[runner] tree 734dd8a67cd; git status of hadoop-hdfs-project/hadoop-hdfs/src after setting instrumentation aside:
+[runner] pristine hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java:484-494 (target) and :1189-1196 (doRollback):
+[runner]   |   private synchronized void checkRequest(RequestInfo reqInfo) throws IOException {
+[runner]   |     // Invariant 25 from ZAB paper
+[runner]   |     if (reqInfo.getEpoch() < lastPromisedEpoch.get()) {
+[runner]   |       throw new IOException("IPC's epoch " + reqInfo.getEpoch() +
+[runner]   |           " is less than the last promised epoch " +
+[runner]   |           lastPromisedEpoch.get() + " ; journal id: " + journalId);
+[runner]   |     } else if (reqInfo.getEpoch() > lastPromisedEpoch.get()) {
+[runner]   |       // A newer client has arrived. Fence any previous writers by updating
+[runner]   |       // the promise.
+[runner]   |       updateLastPromisedEpoch(reqInfo.getEpoch());
+[runner]   |     }
+[runner]   |   public synchronized void doRollback() throws IOException {
+[runner]   |     // Do not hold file lock on committedTxnId, because the containing
+[runner]   |     // directory will be renamed.  It will be reopened lazily on next access.
+[runner]   |     IOUtils.cleanupWithLogger(LOG, committedTxnId);
+[runner]   |     storage.getJournalManager().doRollback();
+[runner]   |     // HADOOP-17142: refresh properties after rollback performed.
+[runner]   |     storage.refreshStorage();
+[runner]   |   }
+[runner] FIX CONTROL applied:
+[runner]   diff --git a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java
+[runner]   index e0ac692e60a..28da618b775 100644
+[runner]   --- a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java
+[runner]   +++ b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java
+[runner]   @@ -1193,6 +1193,7 @@ public synchronized void doRollback() throws IOException {
+[runner]        storage.getJournalManager().doRollback();
+[runner]        // HADOOP-17142: refresh properties after rollback performed.
+[runner]        storage.refreshStorage();
+[runner]   +    refreshCachedData();
+[runner]      }
+[runner]    
+[runner]      synchronized void discardSegments(long startTxId) throws IOException {
+[runner] building hadoop-hdfs-project/hadoop-hdfs: mvn -B -o test-compile (log /users/ZhenyuLi/Specula/runs/20261028-194804-49b4/hdfs-adhoc-08/.specula-output/confirmation/MC-2/repro-work/turn2/final-C-fix/build-fixed.log)
+[runner] build rc=0; [INFO] Total time:  55.425 s
+[runner] javap -c -l of the compiled Journal.checkRequest (target throw = new IOException ... athrow):
+[runner]   private synchronized void checkRequest(org.apache.hadoop.hdfs.qjournal.protocol.RequestInfo) throws java.io.IOException;
+[runner]       12: ifge          43
+[runner]       15: new           #275                // class java/io/IOException
+[runner]       39: invokespecial #280                // Method java/io/IOException."<init>":(Ljava/lang/String;)V
+[runner]       42: athrow
+[runner]     LineNumberTable:
+[runner]       line 486: 0
+[runner]       line 487: 15
+[runner]       line 489: 27
+[runner]       line 490: 43
+[runner] run 1/1 (fixed): MC2_EXPECT=fixed MC2_L0_ITERS=10 mvn -B -o surefire:test -pl hadoop-hdfs-project/hadoop-hdfs -Dtest='org.apache.hadoop.hdfs.qjournal.client.TestBugMC2RollbackCachedPromise'
+[runner] mvn rc=0
+[runner]   [INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 41.58 s -- in org.apache.hadoop.hdfs.qjournal.client.TestBugMC2RollbackCachedPromise
+[runner]   [INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0
+[runner]   [INFO] BUILD SUCCESS
+    MC2: === scenario CE_ORDER === (MC2_EXPECT=fixed)
+    MC2: j0 = JournalNode /127.0.0.1:43417
+    MC2: j1 = JournalNode /127.0.0.1:45761
+    MC2: j2 = JournalNode /127.0.0.1:43255
+    MC2: CE 17 Upgrade(1) done; previous/ promise on disk = 1,1,1
+    MC2: W2 established epoch 2 (its requests to j2 still in flight); WriterStop(2)
+    MC2: W3 established epoch 3 (its requests to j2 still in flight); WriterStop(3)
+    MC2: after W3: current/ promise on disk = 3,3,1; caches j0[loaded=true value=3] j1[loaded=true value=3] j2[loaded=true value=1]
+    MC2: CE 43 JNRestart(j0); j0: no Journal object
+    MC2: between canRollBack and doRollback: j0 cache: loaded=true value=3; on-disk current/ promise = 3,3,1
+    MC2: CE 44 Rollback done; current/ promise on disk = 1,1,1; caches j0[loaded=false value=0] j1[loaded=false value=0] j2[loaded=false value=0]
+    MC2: W4 getJournalState lastPromisedEpoch reported by j0,j1,j2 = 1,1,1 (j1's reply arrived after the choice); on-disk current/ promise = 2,2,2
+    MC2: W4 established epoch 2; j1 newEpoch -> OK
+    MC2: W4 startLogSegment(1) returned (quorum reached); j1 -> OK
+    MC2: W4 wrote txns 1-3 (quorum); j1 journal() -> OK
+    MC2: after a log roll, W4 startLogSegment(4); j1 -> OK
+    MC2: j1 on-disk promise = 2, j1 cache: loaded=true value=2
+    MC2: with j2 down, W4 write of txn 4 -> OK
+    MC2: MC2-RESULT scenario=CE_ORDER w4Epoch=2 reported(j0,j1,j2)=1,1,1 targetFiredOnJ1=false frame=- j1FencedAfterRoll=false writeWithJ2Down=OK
+    MC2: === scenario CONTROL_REPLY_IN_TIME === (MC2_EXPECT=fixed)
+    MC2: j0 = JournalNode /127.0.0.1:36459
+    MC2: j1 = JournalNode /127.0.0.1:41189
+    MC2: j2 = JournalNode /127.0.0.1:34841
+    MC2: CE 17 Upgrade(1) done; previous/ promise on disk = 1,1,1
+    MC2: W2 established epoch 2 (its requests to j2 still in flight); WriterStop(2)
+    MC2: W3 established epoch 3 (its requests to j2 still in flight); WriterStop(3)
+    MC2: after W3: current/ promise on disk = 3,3,1; caches j0[loaded=true value=3] j1[loaded=true value=3] j2[loaded=true value=1]
+    MC2: CE 44 Rollback done; current/ promise on disk = 1,1,1, previous/ exists = false,false,false; caches j0[loaded=false value=0] j1[loaded=false value=0] j2[loaded=false value=0]
+    MC2: CE 43 JNRestart(j0) (after the rollback); j0: no Journal object
+    MC2: W4 getJournalState lastPromisedEpoch reported by j0,j1,j2 = 1,1,1; on-disk current/ promise = 2,2,2
+    MC2: W4 established epoch 2; j1 newEpoch -> OK
+    MC2: W4 startLogSegment(1) returned (quorum reached); j1 -> OK
+    MC2: W4 wrote txns 1-3 (quorum); j1 journal() -> OK
+    MC2: after a log roll, W4 startLogSegment(4); j1 -> OK
+    MC2: j1 on-disk promise = 2, j1 cache: loaded=true value=2
+    MC2: with j2 down, W4 write of txn 4 -> OK
+    MC2: MC2-RESULT scenario=CONTROL_REPLY_IN_TIME w4Epoch=2 reported(j0,j1,j2)=1,1,1 targetFiredOnJ1=false frame=- j1FencedAfterRoll=false writeWithJ2Down=OK
+    MC2: L0 iteration 1: W4's epoch RPCs as its IPC client saw them:
+        2026-10-29 03:00:42,198 820: Call -> j0: getJournalState {}
+        2026-10-29 03:00:42,198 822: Call -> j2: getJournalState {}
+        2026-10-29 03:00:42,198 821: Call -> j1: getJournalState {}
+        2026-10-29 03:00:42,199 820: Response <- j0: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 03:00:42,199 822: Response <- j2: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 03:00:42,200 820: Call -> j0: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVersi
+        2026-10-29 03:00:42,200 822: Call -> j2: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVersi
+        2026-10-29 03:00:42,200 821: Response <- j1: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 03:00:42,200 821: Call -> j1: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVersi
+    MC2: L0 iteration 1: W4 epoch=2 targetFiredOnJ1=false
+    MC2: L0 iteration 2: W4's epoch RPCs as its IPC client saw them:
+        2026-10-29 03:00:45,701 1110: Call -> j0: getJournalState {}
+        2026-10-29 03:00:45,701 1112: Call -> j2: getJournalState {}
+        2026-10-29 03:00:45,702 1111: Call -> j1: getJournalState {}
+        2026-10-29 03:00:45,703 1110: Response <- j0: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 03:00:45,703 1112: Response <- j2: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 03:00:45,703 1112: Call -> j2: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVers
+        2026-10-29 03:00:45,703 1110: Call -> j0: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVers
+        2026-10-29 03:00:45,704 1111: Response <- j1: getJournalState {lastPromisedEpoch: 1}
+    MC2: L0 iteration 2: W4 epoch=2 targetFiredOnJ1=false
+    MC2: L0 iteration 3: W4's epoch RPCs as its IPC client saw them:
+        2026-10-29 03:00:49,209 1400: Call -> j0: getJournalState {}
+        2026-10-29 03:00:49,209 1402: Call -> j2: getJournalState {}
+        2026-10-29 03:00:49,210 1401: Call -> j1: getJournalState {}
+        2026-10-29 03:00:49,211 1402: Response <- j2: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 03:00:49,211 1402: Response <- j2: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 03:00:49,211 1400: Response <- j0: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 03:00:49,211 1401: Response <- j1: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 03:00:49,211 1402: Call -> j2: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVers
+        2026-10-29 03:00:49,211 1402: Call -> j2: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVers
+        2026-10-29 03:00:49,211 1400: Call -> j0: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVers
+        2026-10-29 03:00:49,211 1401: Call -> j1: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVers
+        2026-10-29 03:00:49,214 1402: Response <- j2: newEpoch {}
+        2026-10-29 03:00:49,214 1402: Response <- j2: newEpoch {}
+        2026-10-29 03:00:49,214 1401: Response <- j1: newEpoch {}
+        2026-10-29 03:00:49,214 1400: Response <- j0: newEpoch {}
+    MC2: L0 iteration 3: W4 epoch=2 targetFiredOnJ1=false
+    MC2: L0 iteration 4: W4's epoch RPCs as its IPC client saw them:
+        2026-10-29 03:00:52,768 1690: Call -> j0: getJournalState {}
+        2026-10-29 03:00:52,768 1692: Call -> j2: getJournalState {}
+        2026-10-29 03:00:52,769 1691: Call -> j1: getJournalState {}
+        2026-10-29 03:00:52,770 1692: Response <- j2: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 03:00:52,770 1690: Response <- j0: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 03:00:52,770 1690: Call -> j0: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVers
+    MC2: L0 iteration 4: W4 epoch=2 targetFiredOnJ1=false
+    MC2: L0 iteration 5: W4's epoch RPCs as its IPC client saw them:
+        2026-10-29 03:00:56,351 1980: Call -> j0: getJournalState {}
+        2026-10-29 03:00:56,351 1982: Call -> j2: getJournalState {}
+        2026-10-29 03:00:56,352 1981: Call -> j1: getJournalState {}
+        2026-10-29 03:00:56,353 1980: Response <- j0: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 03:00:56,353 1982: Response <- j2: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 03:00:56,354 1981: Response <- j1: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 03:00:56,354 1982: Call -> j2: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVers
+        2026-10-29 03:00:56,354 1980: Call -> j0: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVers
+        2026-10-29 03:00:56,354 1981: Call -> j1: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVers
+        2026-10-29 03:00:56,357 1980: Response <- j0: newEpoch {}
+        2026-10-29 03:00:56,358 1981: Response <- j1: newEpoch {}
+    MC2: L0 iteration 5: W4 epoch=2 targetFiredOnJ1=false
+    MC2: L0 iteration 6: W4's epoch RPCs as its IPC client saw them:
+        2026-10-29 03:00:59,991 2270: Call -> j0: getJournalState {}
+        2026-10-29 03:00:59,991 2272: Call -> j2: getJournalState {}
+        2026-10-29 03:00:59,991 2271: Call -> j1: getJournalState {}
+        2026-10-29 03:00:59,992 2270: Response <- j0: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 03:00:59,992 2272: Response <- j2: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 03:00:59,993 2272: Call -> j2: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVers
+        2026-10-29 03:00:59,993 2270: Call -> j0: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVers
+        2026-10-29 03:00:59,993 2271: Response <- j1: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 03:00:59,993 2271: Call -> j1: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVers
+        2026-10-29 03:00:59,996 2271: Response <- j1: newEpoch {}
+    MC2: L0 iteration 6: W4 epoch=2 targetFiredOnJ1=false
+    MC2: L0 iteration 7: W4's epoch RPCs as its IPC client saw them:
+        2026-10-29 03:01:03,672 2560: Call -> j0: getJournalState {}
+        2026-10-29 03:01:03,672 2562: Call -> j2: getJournalState {}
+        2026-10-29 03:01:03,673 2561: Call -> j1: getJournalState {}
+        2026-10-29 03:01:03,674 2560: Response <- j0: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 03:01:03,674 2562: Response <- j2: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 03:01:03,674 2560: Call -> j0: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVers
+        2026-10-29 03:01:03,674 2562: Call -> j2: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVers
+        2026-10-29 03:01:03,675 2561: Response <- j1: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 03:01:03,675 2561: Call -> j1: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVers
+        2026-10-29 03:01:03,678 2560: Response <- j0: newEpoch {}
+        2026-10-29 03:01:03,678 2560: Response <- j0: newEpoch {}
+        2026-10-29 03:01:03,678 2562: Response <- j2: newEpoch {}
+    MC2: L0 iteration 7: W4 epoch=2 targetFiredOnJ1=false
+    MC2: L0 iteration 8: W4's epoch RPCs as its IPC client saw them:
+        2026-10-29 03:01:07,344 2850: Call -> j0: getJournalState {}
+        2026-10-29 03:01:07,344 2852: Call -> j2: getJournalState {}
+        2026-10-29 03:01:07,344 2851: Call -> j1: getJournalState {}
+        2026-10-29 03:01:07,346 2850: Response <- j0: getJournalState {lastPromisedEpoch: 1}
+    MC2: L0 iteration 8: W4 epoch=2 targetFiredOnJ1=false
+    MC2: L0 iteration 9: W4's epoch RPCs as its IPC client saw them:
+        2026-10-29 03:01:10,926 3140: Call -> j0: getJournalState {}
+        2026-10-29 03:01:10,926 3142: Call -> j2: getJournalState {}
+        2026-10-29 03:01:10,926 3141: Call -> j1: getJournalState {}
+    MC2: L0 iteration 9: W4 epoch=2 targetFiredOnJ1=false
+    MC2: L0 iteration 10: W4's epoch RPCs as its IPC client saw them:
+        2026-10-29 03:01:14,505 3428: Call -> j0: getJournalState {}
+        2026-10-29 03:01:14,505 3430: Call -> j2: getJournalState {}
+        2026-10-29 03:01:14,506 3429: Call -> j1: getJournalState {}
+        2026-10-29 03:01:14,507 3428: Response <- j0: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 03:01:14,507 3430: Response <- j2: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 03:01:14,508 3429: Response <- j1: getJournalState {lastPromisedEpoch: 1}
+        2026-10-29 03:01:14,508 3428: Call -> j0: newEpoch { nsInfo { buildVersion: "734dd8a67cd6df56b59ff75aa43de57834a0d248" unused: 0 blockPoolID: "my-bp" storageInfo { layoutVers
+    MC2: L0 iteration 10: W4 epoch=2 targetFiredOnJ1=false
+    MC2: MC2-L0-RESULT iterations=10 w4Epoch2=10 targetFired=0
+    MC2: === scenario CE_STEPS_RESTART_AFTER_ROLLBACK === (MC2_EXPECT=fixed)
+    MC2: j0 = JournalNode /127.0.0.1:38255
+    MC2: j1 = JournalNode /127.0.0.1:44685
+    MC2: j2 = JournalNode /127.0.0.1:44253
+    MC2: CE 17 Upgrade(1) done; previous/ promise on disk = 1,1,1
+    MC2: W2 established epoch 2 (its requests to j2 still in flight); WriterStop(2)
+    MC2: W3 established epoch 3 (its requests to j2 still in flight); WriterStop(3)
+    MC2: after W3: current/ promise on disk = 3,3,1; caches j0[loaded=true value=3] j1[loaded=true value=3] j2[loaded=true value=1]
+    MC2: CE 44 Rollback done; current/ promise on disk = 1,1,1, previous/ exists = false,false,false; caches j0[loaded=false value=0] j1[loaded=false value=0] j2[loaded=false value=0]
+    MC2: CE 43 JNRestart(j0) (after the rollback); j0: no Journal object
+    MC2: W4 getJournalState lastPromisedEpoch reported by j0,j1,j2 = 1,1,1 (j1's reply arrived after the choice); on-disk current/ promise = 2,2,2
+    MC2: W4 established epoch 2; j1 newEpoch -> OK
+    MC2: W4 startLogSegment(1) returned (quorum reached); j1 -> OK
+    MC2: W4 wrote txns 1-3 (quorum); j1 journal() -> OK
+    MC2: after a log roll, W4 startLogSegment(4); j1 -> OK
+    MC2: j1 on-disk promise = 2, j1 cache: loaded=true value=2
+    MC2: with j2 down, W4 write of txn 4 -> OK
+    MC2: MC2-RESULT scenario=CE_STEPS_RESTART_AFTER_ROLLBACK w4Epoch=2 reported(j0,j1,j2)=1,1,1 targetFiredOnJ1=false frame=- j1FencedAfterRoll=false writeWithJ2Down=OK
+    MC2: === scenario TWO_RESTARTS_AFTER_ROLLBACK === (MC2_EXPECT=fixed)
+    MC2: j0 = JournalNode /127.0.0.1:35971
+    MC2: j1 = JournalNode /127.0.0.1:37651
+    MC2: j2 = JournalNode /127.0.0.1:35403
+    MC2: CE 17 Upgrade(1) done; previous/ promise on disk = 1,1,1
+    MC2: W2 established epoch 2 on j0,j1,j2; WriterStop(2)
+    MC2: W3 established epoch 3 on j0,j1,j2; WriterStop(3)
+    MC2: after W3: current/ promise on disk = 3,3,3; caches j0[loaded=true value=3] j1[loaded=true value=3] j2[loaded=true value=3]
+    MC2: CE 44 Rollback done; current/ promise on disk = 1,1,1, previous/ exists = false,false,false; caches j0[loaded=false value=0] j1[loaded=false value=0] j2[loaded=false value=0]
+    MC2: CE 43 JNRestart(j0) (after the rollback); j0: no Journal object
+    MC2: JNRestart(j2) (after the rollback); j2: no Journal object
+    MC2: W4 getJournalState lastPromisedEpoch reported by j0,j1,j2 = 1,1,1 (j1's reply arrived after the choice); on-disk current/ promise = 2,2,2
+    MC2: W4 established epoch 2; j1 newEpoch -> OK
+    MC2: W4 startLogSegment(1) returned (quorum reached); j1 -> OK
+    MC2: W4 wrote txns 1-3 (quorum); j1 journal() -> OK
+    MC2: after a log roll, W4 startLogSegment(4); j1 -> OK
+    MC2: j1 on-disk promise = 2, j1 cache: loaded=true value=2
+    MC2: with j2 down, W4 write of txn 4 -> OK
+    MC2: MC2-RESULT scenario=TWO_RESTARTS_AFTER_ROLLBACK w4Epoch=2 reported(j0,j1,j2)=1,1,1 targetFiredOnJ1=false frame=- j1FencedAfterRoll=false writeWithJ2Down=OK
+[runner] CE scenario (CE steps, JNRestart(j0) after the rollback): target fired on j1 in 0 of 1 runs (fixed)
+[runner] Level 0: MC2: MC2-L0-RESULT iterations=10 w4Epoch2=10 targetFired=0
+[runner] harness instrumentation restored from /users/ZhenyuLi/Specula/runs/20261028-194804-49b4/hdfs-adhoc-08/.specula-output/confirmation/MC-2/repro-work/saved-instrumentation

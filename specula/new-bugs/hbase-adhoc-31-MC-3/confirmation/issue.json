@@ -1,0 +1,95 @@
+{
+ "id": "MC-3",
+ "title": "After failover a crashed RS read from ZK with a pending SCP stays online: stale RPCs hit the target check and cluster shutdown never completes",
+ "status": "REPRODUCED",
+ "source": "model-checking",
+ "cause": "RegionServerTracker.upgrade records a crashed predecessor online from its lingering znode and dead from its unfinished SCP; ServerManager.expireServer returns early for a dead server before removing it from onlineServers.",
+ "trigger": "RS crashes with its znode lingering, dispatcher fail-fast expires it and stores an SCP, the master hands off promptly, and a same-port successor registers before the new master is initialized. For the permanent form the znode also expires before the dead entry is cleared.",
+ "consequence": "The restored close reaches the successor and RSRpcServices.throwOnWrongStartCode throws. If the session expires before initialization the predecessor is never retired: Admin#getRegionServers lists it and Admin#shutdown leaves the master running because onlineServers never empties.",
+ "sites": [
+  "hbase-server/src/main/java/org/apache/hadoop/hbase/master/RegionServerTracker.java:upgrade",
+  "hbase-server/src/main/java/org/apache/hadoop/hbase/master/ServerManager.java:expireServer",
+  "hbase-server/src/main/java/org/apache/hadoop/hbase/master/ServerManager.java:shutdownCluster",
+  "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/RSRpcServices.java:throwOnWrongStartCode"
+ ],
+ "actions": [
+  "MCRsCrash",
+  "CallFailed_",
+  "MCMasterCrash",
+  "MasterStartup_",
+  "RsReportForDuty_",
+  "RrpDispatch_",
+  "TargetCheck_"
+ ],
+ "invariants": [
+  "TargetSafe"
+ ],
+ "premises": [
+  "The fault is a kill -9 with the znode lingering, realized by parking the RS exit between rpcServices.stop and deleteMyEphemeralNode in a test subclass.",
+  "The master hands off promptly (abort or stop). A master kill -9 with an equal session timeout is argued not to reach this.",
+  "SCP is still pending at the handoff: one of eight default-limit runs lost that race.",
+  "The successor registers before initialized, using HBase's default wait-on-regionservers settings, not the mini-cluster's pinned ones.",
+  "The permanent form needs session expiry inside the window before the dead entry is cleared; the test chose that moment."
+ ],
+ "dependencies": [
+  {
+   "root": "source",
+   "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/RegionServerTracker.java",
+   "start": "  public void upgrade(Map<ServerName, Long> deadServersWithDeathTimeFromPE,",
+   "end": "      active = true;"
+  },
+  {
+   "root": "source",
+   "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/ServerManager.java",
+   "start": "  boolean checkAndRecordNewServer(final ServerName serverName, final ServerMetrics sl) {",
+   "end": "  private void checkClockSkew(final ServerName serverName, final long serverCurrentTime)"
+  },
+  {
+   "root": "source",
+   "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/ServerManager.java",
+   "start": "  private void checkIsDead(final ServerName serverName, final String what)",
+   "end": "      LOG.debug(\"{} {} came back up, removed it from the dead servers list\", what, serverName);"
+  },
+  {
+   "root": "source",
+   "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/ServerManager.java",
+   "start": "  synchronized long expireServer(final ServerName serverName, boolean force) {",
+   "end": "    LOG.info(\"Processing expiration of \" + serverName + \" on \" + this.master.getServerName());"
+  },
+  {
+   "root": "source",
+   "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/ServerManager.java",
+   "start": "  public void shutdownCluster() {",
+   "end": "      master.stop(\"OnlineServer=0 right after cluster shutdown set\");"
+  },
+  {
+   "root": "source",
+   "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/RSRpcServices.java",
+   "start": "  private void throwOnWrongStartCode(long serverStartCode) throws ServiceException {",
+   "end": "          + \", this server is: \" + server.getServerName()));"
+  },
+  {
+   "root": "work",
+   "path": "spec/base.tla"
+  },
+  {
+   "root": "work",
+   "path": "spec/MC.tla"
+  },
+  {
+   "root": "work",
+   "path": "spec/MC_hunt_s3_late_register.cfg"
+  }
+ ],
+ "evidence": [
+  "confirmation/MC-3/investigation.md",
+  "repro/test_bugMC-3_late_register.sh",
+  "repro/test_bugMC-3_TestSpeculaMC3LateRegister.java",
+  "repro/test_bugMC-3_SpeculaMC3RegionServer.java",
+  "repro/MC-3_pristine_early_default_1.log",
+  "repro/MC-3_pristine_late_default_splitproc.log",
+  "repro/MC-3_wt_early_default_2.log",
+  "repro/MC-3_shutdown_hang.jstack",
+  "repro/MC-3_results.txt"
+ ]
+}

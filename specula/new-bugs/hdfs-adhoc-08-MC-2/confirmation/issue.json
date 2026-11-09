@@ -1,0 +1,73 @@
+{
+  "id": "MC-2",
+  "title": "Journal.doRollback keeps the cached lastPromisedEpoch, so a JournalNode that stayed up fences the next writer at Journal.checkRequest",
+  "status": "REPRODUCED",
+  "source": "model-checking",
+  "cause": "Journal.doRollback (Journal.java:1189-1196) renames previous/ back to current/ and re-reads VERSION but never calls refreshCachedData() (Journal.java:202-213; format() does at :259), and JournalNode.doRollback (JournalNode.java:487-491) runs on the live Journal. The PersistentLongFile caches of lastPromisedEpoch/lastWriterEpoch (PersistentLongFile.java:53-59) of a JournalNode that stays up across 'namenode -rollback' therefore keep their post-upgrade values while the disk holds the pre-upgrade ones.",
+  "trigger": "After an HA upgrade at epoch E_up, two or more later active NameNodes raise a JN's (j1) promise to E_up+2 or more; 'namenode -rollback' runs with j1 left running (documented procedure); the next writer's getJournalState majority comes from JNs that report the rolled-back promise (restarted after the rollback, or never saw the post-upgrade epochs) while j1's reply arrives after that majority, so the writer picks an epoch below j1's cached promise (QuorumJournalManager.java:232-242).",
+  "consequence": "j1 rejects every request of the only live writer with java.io.IOException 'IPC's epoch 2 is less than the last promised epoch 3' from the target throw of Journal.checkRequest (Journal.java:487-489, JVM frame Journal.java:489), including startLogSegment after each log roll; the writer runs on 2 of 3 JNs and its next flush fails with QuorumException once one more JN is down, which terminates the NameNode (JournalSet.java:395-408, FSEditLog.java:735-748).",
+  "sites": [
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java:1189 Journal.doRollback",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java:202 Journal.refreshCachedData",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java:487 Journal.checkRequest",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/JournalNode.java:487 JournalNode.doRollback",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/util/PersistentLongFile.java:53 PersistentLongFile.get",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/client/QuorumJournalManager.java:232 QuorumJournalManager.createNewUniqueEpoch"
+  ],
+  "actions": [
+    "MCUpgrade",
+    "MCWriterStop",
+    "MCRollback",
+    "MCJNRestart",
+    "MCHandleGetJournalState",
+    "MCRecvReply",
+    "MCChooseEpoch",
+    "MCHandleNewEpoch",
+    "MCEstablish",
+    "MCStartLogSegment",
+    "MCTargetCheck"
+  ],
+  "invariants": [
+    "TargetSafe"
+  ],
+  "premises": [
+    "JournalNodes stay running across 'namenode -rollback', as the HA upgrade/rollback procedure requires (HDFSHighAvailabilityWithQJM.md:708-712, 733); NameNodes may be restarted between upgrade and rollback (:727).",
+    "A JN that stayed up caches a promise at least two above the upgrade-time promise (two or more writers became active between upgrade and rollback).",
+    "The next writer's getJournalState quorum consists of JNs whose promise equals the rolled-back value and the stale JN's reply arrives after that quorum (observed naturally in 56 of 60 Level 0 iterations; forced deterministically at Level 1 with SpyQJournalUtil spies).",
+    "A JN restarted before the rollback is stale as well: its Journal is created by the rollback's canRollBack RPC and the JournalMetrics gauge loads the pre-rollback promise during construction (JMX getMBeanInfo/updateJmxCache); only JNs restarted after the rollback, or that never saw the post-upgrade epochs, answer with the rolled-back promise.",
+    "CE states 43 (JNRestart(j0)) and 44 (Rollback) write disjoint variables, so the reproduced order 44 then 43 reaches the counterexample's state 44.",
+    "All bug runs used the pristine sources of base commit 734dd8a67cd; the fix control adds refreshCachedData() at the end of Journal.doRollback and removes the target throw."
+  ],
+  "dependencies": [
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java", "start": "  public synchronized void doRollback() throws IOException {", "end": "  synchronized void discardSegments(long startTxId) throws IOException {"},
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java", "start": "  private synchronized void refreshCachedData() {", "end": "  private synchronized EditLogFile scanStorageForLatestEdits() throws IOException {"},
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java", "start": "  private synchronized void checkRequest(RequestInfo reqInfo) throws IOException {", "end": "  private synchronized void checkWriteRequest(RequestInfo reqInfo) throws IOException {"},
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java", "start": "  Journal(Configuration conf, File logDir, String journalId,", "end": "  private JournaledEditsCache createCache() {"},
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java", "start": "  synchronized long getLastPromisedEpoch() throws IOException {", "end": "  synchronized public long getLastWriterEpoch() throws IOException {"},
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java", "start": "  synchronized NewEpochResponseProto newEpoch(", "end": "  private void updateLastPromisedEpoch(long newEpoch) throws IOException {"},
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java", "start": "  public synchronized void doUpgrade(StorageInfo sInfo) throws IOException {", "end": "  public synchronized void doFinalize() throws IOException {"},
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/JournalNode.java", "start": "  synchronized Journal getOrCreateJournal(String jid,", "end": "  public JournalNodeSyncer getJournalSyncer(String jid) {"},
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/JournalNode.java", "start": "  public Boolean canRollBack(String journalId, StorageInfo storage,", "end": "  public void discardSegments(String journalId, long startTxId,"},
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/util/PersistentLongFile.java"},
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/JournalMetrics.java", "start": "  @Metric(\"Last accepted epoch\")", "end": "  @Metric(\"The highest txid stored on this JN\")"},
+    {"root": "source", "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/metrics2/impl/MetricsSourceAdapter.java"},
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/client/QuorumJournalManager.java", "start": "  Map<AsyncLogger, NewEpochResponseProto> createNewUniqueEpoch()", "end": "  public void format(NamespaceInfo nsInfo, boolean force) throws IOException {"},
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/client/AsyncLoggerSet.java", "start": "  <V> Map<AsyncLogger, V> waitForWriteQuorum(QuorumCall<AsyncLogger, V> q,", "end": "  int getMajoritySize() {"},
+    {"root": "source", "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/client/QuorumCall.java"},
+    {"root": "work", "path": "spec/base.tla"},
+    {"root": "work", "path": "spec/MC.tla"},
+    {"root": "work", "path": "spec/MC_hunt_rollback_cache.cfg"}
+  ],
+  "evidence": [
+    "confirmation/MC-2/confirmation.md",
+    "confirmation/MC-2/investigation.md",
+    "repro/test_bugMC-2_rollback_cached_promise.java",
+    "repro/test_bugMC-2_rollback_cached_promise.sh",
+    "repro/MC-2.log",
+    "spec/output/MC_hunt_rollback_cache_bfs_w1.out",
+    "confirmation/MC-2/repro-work/turn2/final-A/summary-bug.txt",
+    "confirmation/MC-2/repro-work/turn2/final-B/summary-bug.txt",
+    "confirmation/MC-2/repro-work/turn2/final-C-fix/summary-fixed.txt",
+    "confirmation/MC-2/repro-work/turn2/final-B/surefire-output-bug-1.txt"
+  ]
+}

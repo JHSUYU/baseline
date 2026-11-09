@@ -1,0 +1,37 @@
+{
+  "id": "MC-1",
+  "title": "SPLITSHARD always fails the CoreAdminHandler:560 coreNodeName check when legacyCloud=false",
+  "status": "REPRODUCED",
+  "source": "model-checking",
+  "cause": "OverseerCollectionProcessor.splitShard sends sub-shard leader (and replica) CoreAdmin CREATE requests without coreNodeName and never consults legacyCloud; CoreAdminHandler.handleCreateAction rejects any CREATE lacking coreNodeName when the live ZK cluster prop legacyCloud=false.",
+  "trigger": "Operator sets CLUSTERPROP legacyCloud=false through the Collections API, then issues SPLITSHARD on any shard; no race or fault needed.",
+  "consequence": "Every SPLITSHARD fails (HTTP 500 'SPLITSHARD failed to create subshard leaders', root cause SolrException at CoreAdminHandler.java:560) and leaves CONSTRUCTION sub-slices with no replicas in cluster state; a later SPLITSHARD of the same shard, even after legacyCloud is unset, fails with 'Unable to delete already existing sub shard' because deleteShard refuses CONSTRUCTION slices.",
+  "sites": [
+    "solr/core/src/java/org/apache/solr/handler/admin/CoreAdminHandler.java:handleCreateAction",
+    "solr/core/src/java/org/apache/solr/cloud/OverseerCollectionProcessor.java:splitShard",
+    "solr/core/src/java/org/apache/solr/cloud/Overseer.java:isLegacy"
+  ],
+  "actions": ["TargetCheck"],
+  "invariants": ["TargetSafe"],
+  "premises": [
+    "legacyCloud=false is a supported cluster property settable via the public CLUSTERPROP Collections API (KNOWN_CLUSTER_PROPS).",
+    "ZkStateReader.getClusterProps reads /clusterprops.json live from ZK on each call.",
+    "No caller of splitShard supplies coreNodeName (property.coreNodeName is not set by any caller).",
+    "Pinned base 6e6ca4a predates the upstream fix SOLR-6101 (switch split to ADDREPLICA)."
+  ],
+  "dependencies": [
+    {"root": "source", "path": "solr/core/src/java/org/apache/solr/handler/admin/CoreAdminHandler.java", "start": "  protected void handleCreateAction(SolrQueryRequest req, SolrQueryResponse rsp) throws SolrException {", "end": "          \"Error CREATEing SolrCore '\" + dcore.getName() + \"': \" +"},
+    {"root": "source", "path": "solr/core/src/java/org/apache/solr/cloud/OverseerCollectionProcessor.java", "start": "  private boolean splitShard(ClusterState clusterState, ZkNodeProps message, NamedList results) {", "end": "        log.info(\"Asking parent leader to wait for: \" + subShardName + \" to be alive on: \" + nodeName);"},
+    {"root": "source", "path": "solr/core/src/java/org/apache/solr/cloud/Overseer.java", "start": "  public static boolean isLegacy(Map clusterProps) {", "end": "    return !\"false\".equals(clusterProps.get(ZkStateReader.LEGACY_CLOUD));"},
+    {"root": "work", "path": "spec/base.tla"},
+    {"root": "work", "path": "spec/MC_hunt_split_nonlegacy.cfg"}
+  ],
+  "evidence": [
+    "confirmation/MC-1/investigation.md",
+    "repro/test_bugMC-1_split_nonlegacy.sh",
+    "repro/SpeculaMC1SplitNonLegacyTest.java",
+    "repro/MC-1.driver.out",
+    "repro/MC-1.log",
+    "spec/output/MC_hunt_split_nonlegacy_bfs.out"
+  ]
+}

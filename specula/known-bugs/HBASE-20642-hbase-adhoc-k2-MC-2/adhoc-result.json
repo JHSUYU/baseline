@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "target": "hbase-adhoc-k2",
+  "check": {"file": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/HMaster.java", "line": 2255, "thrown": "org.apache.hadoop.hbase.InvalidFamilyOperationException"},
+  "verdict": "REACHED_CONFIRMED",
+  "mechanism": "FAULT",
+  "scenario": "Scenario 1: retry after descriptor commit on the same master (timeout / lost reply)",
+  "finding": "MC-1",
+  "counterexample": "spec/output/MC_hunt_s1_retry_after_commit_bfs.out",
+  "reproduction": "repro/test_bugMC-1_TestSpeculaBugMC1AddColumnRetryAfterCommit.java",
+  "stackFrame": "org.apache.hadoop.hbase.master.HMaster.addColumn(HMaster.java:2255)",
+  "bounds": [
+    {"config": "MC_hunt_s1_retry_after_commit.cfg", "result": "VIOLATION", "states": 312, "diameter": 22, "seconds": 1},
+    {"config": "MC_hunt_s2_failover.cfg", "result": "VIOLATION", "states": 520, "diameter": 23, "seconds": 1},
+    {"config": "MC_hunt_s3_same_nonce.cfg", "result": "VIOLATION", "states": 217, "diameter": 24, "seconds": 1}
+  ],
+  "traceValidation": {"traces": 3, "passed": 3},
+  "notes": "HMaster.addColumn reads the committed table descriptor and throws if the family exists (HM:2253-2255) before modifyTable reaches nonce registration (MPU:128). The RPC handler is blocked on a latch that ModifyTableProcedure releases only in completionCleanup, long after the descriptor is written at UPDATE_TABLE_DESCRIPTOR. In MC-1, one client RPC timeout (a FAULT) falls inside that window. HBaseAdmin retries with a fresh nonce, the retry sees the family its own first attempt added, and the call fails with a non-retriable InvalidFamilyOperationException, while procedure pid 11 succeeds. MC-1 was reproduced in 3 of 3 runs from a variant of the workload test TestTableDescriptorModificationFromClient#testAddColumn on the pristine pinned tree. The variant uses only a lowered hbase.rpc.timeout and a sleep-only MasterObserver in postCompletedModifyTableAction, and the server frame is HMaster.addColumn(HMaster.java:2255). The same root cause also fired the target in two other reproductions. MC-2 (RESTART): one active-master crash after the HDFS descriptor write, with the retry rejected on the new master; 3 of 3 runs, repro/test_bugMC-2_TestSpeculaBugMC2FailoverAddColumn.java. MC-3 (FAULT): the async client reuses the same nonce, but the guard still runs before registerNonce; public API plus a client RPC timeout only, 4 of 4 runs, repro/test_bugMC-3_same_nonce_retry.java. CR-2 (deleteColumn, HMaster.java:2301) was also reproduced, but it is not a TargetSafe confirmation because it throws at a different line. Ablation control MC_ablation_no_retry_all_faults.cfg (MaxAttempts=1, every fault enabled) had no violation, exhaustively over 219 states with diameter 21, so client re-delivery is necessary. Trace validation: all 3 traces conformed, and variant_timeout_after_commit.ndjson itself ended in TargetCheck fired=true. Novelty: known upstream as HBASE-20642, fixed after the pinned base commit 6e53c90757."
+}

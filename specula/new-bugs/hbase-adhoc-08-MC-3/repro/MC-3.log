@@ -1,0 +1,106 @@
+# MC-3 reproduction output. Produced by repro/test_bugMC-3_metaSelfDependency.sh on 2026-11-05.
+
+##### A. Pinned commit 1790942bb2, no harness (pristine git-archive export): CE order
+$ SPECULA_SOURCE=<export> ./test_bugMC-3_metaSelfDependency.sh testLevel1CeOrderTakeover
+=== testLevel1CeOrderTakeover
+exit=0 wall=142s [INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+target frames (CSSI:111): 20
+ MC3-CONFIG masters=2 rsgroup=true clientRetries=15 dispatchWaitMs=3000
+ MC3-STEP stopping the active master h,43129,1793877658945 cleanly; backup is clnode245.cle
+ MC3-STEP WaitForMetaOnline passed on h,44425,1793877656893, meta on clnode245.clem
+ MC3-STEP RSCrash h,37151,1793877659542
+ MC3-STEP publishing the schema service; meta TRSP=pid=26, ppid=23, state=RUNNABLE:REGION_STATE_TRANSITION_OPEN
+ MC3-RESULT master=h,44425,1793877656893 initialized=false aborted=true stopped=true
+ MC3-RESULT no live master thread is left; live RegionServers=1
+ MC3-RESULT fresh master initialized in 7628ms, namespaces=3
+org.apache.hadoop.hbase.HBaseIOException: Failed to generate group assignments
+	at org.apache.hadoop.hbase.rsgroup.RSGroupBasedLoadBalancer.generateGroupAssignments(RSGroupBasedLoadBalancer.java:270)
+	at org.apache.hadoop.hbase.rsgroup.RSGroupBasedLoadBalancer.roundRobinAssignment(RSGroupBasedLoadBalancer.java:185)
+	at org.apache.hadoop.hbase.master.assignment.AssignmentManager.processAssignmentPlans(AssignmentManager.java:2633)
+	at org.apache.hadoop.hbase.master.assignment.AssignmentManager.processAssignQueue(AssignmentManager.java:2581)
+	at org.apache.hadoop.hbase.master.assignment.AssignmentManager$1.run(AssignmentManager.java:2467)
+Caused by: org.apache.hadoop.hbase.NamespaceNotFoundException: hbase
+	at org.apache.hadoop.hbase.master.ClusterSchemaServiceImpl.getNamespace(ClusterSchemaServiceImpl.java:111)
+	at org.apache.hadoop.hbase.rsgroup.RSGroupUtil.getRSGroupInfo(RSGroupUtil.java:117)
+	at org.apache.hadoop.hbase.rsgroup.RSGroupBasedLoadBalancer.generateGroupAssignments(RSGroupBasedLoadBalancer.java:235)
+2026-11-05T11:22:38,084 ERROR [master/clnode245:0:becomeActiveMaster] master.HMaster(2619): Failed to become active master
+java.lang.IllegalStateException: Expected the service ClusterSchemaServiceImpl [FAILED] to be RUNNING, but the service has FAILED
+Caused by: org.apache.hadoop.hbase.client.RetriesExhaustedException: Failed after attempts=13, exceptions:
+2026-11-05T11:22:38,085 ERROR [master/clnode245:0:becomeActiveMaster] master.HMaster(3309): ***** ABORTING master h,44425,1793877656893: Unhan
+BUG TRIGGERED: yes (target frames=20, master aborts=1)
+
+##### B. Pinned commit, no harness: default dispatch wait (earlier run; surefire directly)
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+target frames CSSI:111=398 RGU:117=398
+MC3-CONFIG masters=2 rsgroup=true clientRetries=15 dispatchWaitMs=150
+MC3-STEP stopping the active master h,40691,1793877087229 cleanly; backup is h,41863,1793877088370
+MC3-STEP WaitForMetaOnline passed on h,41863,1793877088370, meta on h,32987,1793877088839
+MC3-STEP RSCrash h,32987,1793877088839
+MC3-STEP publishing the schema service; meta TRSP=null, state=OPEN
+MC3-RESULT master=h,41863,1793877088370 initialized=false aborted=true stopped=true
+MC3-RESULT no live master thread is left; live RegionServers=1
+MC3-RESULT fresh master initialized in 6918ms, namespaces=3
+2026-11-05T11:12:51,656 ERROR [master/clnode245:0:becomeActiveMaster] master.HMaster(3309): ***** ABORTING master h,41863,1793877088370: Unhandled exc
+
+##### C. Probe samples, run A's schedule on the pinned commit (read-only)
+t=0ms published=false hbaseNsCached=false metaState=OPEN metaLocation=h,39203,1793876960421 onlineServers=2 initialized=false aborted=false stopped=false
+t=2000ms published=true hbaseNsCached=false metaState=OPEN metaLocation=null onlineServers=1 initialized=false aborted=false stopped=false
+t=8003ms published=true hbaseNsCached=false metaState=OPEN metaLocation=null onlineServers=1 initialized=false aborted=false stopped=false
+t=60016ms published=true hbaseNsCached=false metaState=OPEN metaLocation=null onlineServers=1 initialized=false aborted=false stopped=false
+
+##### D. Harness worktree: trace events from the final CE-order run (nid order; m2 is the CE's m1)
+m1 BecomeActive {} x1
+m1 WaitForMetaOnline {} x1
+m1 InitClusterSchemaService {} x1
+m1 TrspQueueAssign {"region": "u1"} x1
+m1 TargetCheck_Assign {"regions": ["u1"], "checked": true, "found": true, "host": "r1"} x1
+m2 BecomeActive {} x1
+m2 WaitForMetaOnline {} x1
+r1 RSCrash {} x1
+m2 TrspQueueAssign {"region": "meta"} x1
+m2 InitClusterSchemaService {} x1
+m2 TargetCheck_Assign {"regions": ["meta"], "checked": true, "found": false, "host": "None"} x20
+m2 LoadFail {} x1
+m3 BecomeActive {} x1
+m3 TrspQueueAssign {"region": "meta"} x1
+m3 TargetCheck_Assign {"regions": ["meta"], "checked": false, "found": true, "host": "r2"} x1
+m3 WaitForMetaOnline {} x1
+m3 InitClusterSchemaService {} x1
+
+##### E. Harness worktree: first boot with one master, and the rsgroup-off control
+=== testLevel1FirstBootSingleMaster
+exit=0 wall=264s [INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+target frames (CSSI:111): 20
+ MC3-CONFIG masters=1 rsgroup=true clientRetries=15 dispatchWaitMs=3000
+ MC3-STEP WaitForMetaOnline passed on h,43093,1793876958897, meta on clnode245.clem
+ MC3-STEP RSCrash h,36961,1793876959812
+ MC3-STEP publishing the schema service; meta TRSP=pid=7, ppid=4, state=RUNNABLE:REGION_STATE_TRANSITION_OPEN, 
+ MC3-RESULT startMiniCluster failed: java.io.IOException: Shutting down
+ MC3-RESULT first boot: started=false initialized=false aborted=true
+=== testControlRsGroupOff
+exit=0 wall=68s [INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+target frames (CSSI:111): 0
+ MC3-CONFIG masters=2 rsgroup=false clientRetries=15 dispatchWaitMs=3000
+ MC3-STEP stopping the active master h,43615,1793877224857 cleanly; backup is clnode245.cle
+ MC3-STEP WaitForMetaOnline passed on h,32863,1793877223787, meta on clnode245.clem
+ MC3-STEP RSCrash h,36199,1793877225200
+ MC3-STEP publishing the schema service; meta TRSP=pid=23, ppid=20, state=RUNNABLE:REGION_STATE_TRANSITION_OPEN
+ MC3-RESULT master=h,32863,1793877223787 initialized=true aborted=false stopped=false
+
+##### F. Level 0 race, no hook, default dispatch wait (harness worktree, 3 runs of the final test)
+run 1: target frames=0 masterAborts=1
+MC3-RESULT master=h,46717,1793877356732 initialized=true aborted=false stopped=false
+run 2: target frames=389 masterAborts=1
+MC3-RESULT master=h,43725,1793877399675 initialized=false aborted=true stopped=true
+run 3: target frames=0 masterAborts=1
+MC3-RESULT master=h,37743,1793877516865 initialized=true aborted=false stopped=false
+org.apache.hadoop.hbase.HBaseIOException: Failed to generate group assignments
+	at org.apache.hadoop.hbase.rsgroup.RSGroupBasedLoadBalancer.generateGroupAssignments(RSGroupBasedLoadBalancer.java:270)
+	at org.apache.hadoop.hbase.rsgroup.RSGroupBasedLoadBalancer.roundRobinAssignment(RSGroupBasedLoadBalancer.java:185)
+	at org.apache.hadoop.hbase.master.assignment.AssignmentManager.processAssignmentPlans(AssignmentManager.java:2636)
+	at org.apache.hadoop.hbase.master.assignment.AssignmentManager.processAssignQueue(AssignmentManager.java:2583)
+	at org.apache.hadoop.hbase.master.assignment.AssignmentManager$1.run(AssignmentManager.java:2468)
+Caused by: org.apache.hadoop.hbase.NamespaceNotFoundException: hbase
+	at org.apache.hadoop.hbase.master.ClusterSchemaServiceImpl.getNamespace(ClusterSchemaServiceImpl.java:111)
+	at org.apache.hadoop.hbase.rsgroup.RSGroupUtil.getRSGroupInfo(RSGroupUtil.java:119)
+	at org.apache.hadoop.hbase.rsgroup.RSGroupBasedLoadBalancer.generateGroupAssignments(RSGroupBasedLoadBalancer.java:235)

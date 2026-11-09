@@ -1,0 +1,36 @@
+id: hdfs-adhoc-k6
+system: Apache Hadoop HDFS
+source_tree: /set/by/run-case.sh
+base_commit: c37cda11e9c
+check:
+  file: hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLog.java
+  line: 1409
+  method: FSEditLog.endCurrentLogSegment(boolean)
+  thrown: java.lang.IllegalStateException
+  guard: "Preconditions.checkState(isSegmentOpen(), \"Bad state: %s\", state)   (isSegmentOpen(): state == State.IN_SEGMENT)"
+workload:
+  module: hadoop-hdfs-project/hadoop-hdfs
+  test: org.apache.hadoop.hdfs.server.namenode.TestEditLogRace#testEditLogRolling[1]
+  note: the test reaches the check's method and passes; the check does not fail in it
+scope_hint:
+  - org.apache.hadoop.hdfs.server.namenode.FSEditLog
+  - org.apache.hadoop.hdfs.server.namenode.FSEditLogAsync
+  - org.apache.hadoop.hdfs.server.namenode.FSEditLogOp
+  - org.apache.hadoop.hdfs.server.namenode.JournalSet
+  - org.apache.hadoop.hdfs.server.namenode.JournalManager
+  - org.apache.hadoop.hdfs.server.namenode.FileJournalManager
+  - org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream
+  - org.apache.hadoop.hdfs.server.namenode.EditLogFileOutputStream
+  - org.apache.hadoop.hdfs.server.namenode.NNStorage
+  - org.apache.hadoop.hdfs.server.namenode.FSImage
+  - org.apache.hadoop.hdfs.server.namenode.CheckpointSignature
+  - org.apache.hadoop.hdfs.server.namenode.FSNamesystem
+  - org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer
+  - org.apache.hadoop.hdfs.server.namenode.NameNode
+  - org.apache.hadoop.hdfs.server.namenode.ha.EditLogTailer
+  - org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager
+  - org.apache.hadoop.util.ExitUtil
+build:
+  env: /set/by/run-case.sh
+  prepare: "mvn -B install -DskipTests -Dmaven.javadoc.skip=true -pl hadoop-hdfs-project/hadoop-hdfs -am   (already done once)"
+  test_command: "mvn -B -o surefire:test -pl hadoop-hdfs-project/hadoop-hdfs -Dtest='<Class>#<method>' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false"

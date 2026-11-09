@@ -1,0 +1,150 @@
+== worktree: /users/ZhenyuLi/Specula/runs/20261029-002846-8337/hdfs-adhoc-11/.specula-output/confirmation/MC-4/worktree
+== HEAD: 734dd8a67cd (expected 734dd8a67cd)
+== tracked sources unmodified: yes
+== installed /users/ZhenyuLi/Specula/runs/20261029-002846-8337/hdfs-adhoc-11/.specula-output/confirmation/MC-4/worktree/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestSpeculaMC4CachedDekAfterRestart.java
+== compiling test sources (offline)
+
+================ RUN 1: TestSpeculaMC4CachedDekAfterRestart ================
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 20.02 s -- in org.apache.hadoop.hdfs.TestSpeculaMC4CachedDekAfterRestart
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+-- evidence (from /users/ZhenyuLi/Specula/runs/20261029-002846-8337/hdfs-adhoc-11/.specula-output/confirmation/MC-4/worktree/hadoop-hdfs-project/hadoop-hdfs/target/surefire-reports/org.apache.hadoop.hdfs.TestSpeculaMC4CachedDekAfterRestart-output.txt):
+  setup: 2 DNs, encrypted transfer (algorithm '', cipher suites '', no trusted-channel resolver); block BP-1014469758-130.127.134.14-1793255754309:blk_1073741825_1001 has its only replica on d1=127.0.0.1:42941; d2=127.0.0.1:42361
+  pre-restart: client 'stateful-read' read OK; cached DEK keyId=859747037, expires in 35999 s
+  pre-restart: client 'pread' read OK; cached DEK keyId=859747037, expires in 35999 s
+  pre-restart: client 'checksum-whole-file' read OK; cached DEK keyId=859747037, expires in 35999 s
+  pre-restart: client 'checksum-snapshot-path' read OK; cached DEK keyId=859747037, expires in 35999 s
+  pre-restart: client 'checksum-explicit-length' read OK; cached DEK keyId=859747037, expires in 35999 s
+  pre-restart: client 'append' read OK; cached DEK keyId=859747037, expires in 35999 s
+  pre-restart: client 'control-nn-restart-only' read OK; cached DEK keyId=859747037, expires in 35999 s
+  pre-restart checksums: whole=MD5-of-0MD5-of-512CRC32C:bea308dd22e035bff32801faea602cbf snapshot=MD5-of-0MD5-of-512CRC32C:bea308dd22e035bff32801faea602cbf length(30)=MD5-of-0MD5-of-512CRC32C:bea308dd22e035bff32801faea602cbf
+  NN incarnation 1 currentKey=859747037
+  control-0 (no restart): target throws at the DNs = 0
+  NN incarnation 2 currentKey=1837928039; incarnation 2 hasKey(859747037)=false
+  after the NN restart, before the DN restart: d1 hasKey(859747037)=true, hasKey(1837928039)=true
+  control-1 (NN restart only): stale-DEK client read from d1 OK; target throws = 0; client kept DEK keyId 859747037
+  CE state 12 realized: restarted d1 currentKey=1837928039, d1 hasKey(859747037)=false; non-restarted d2 hasKey(859747037)=true; clients still cache DEK keyIds 859747037,859747037,859747037,859747037,859747037,859747037
+  stateful-read: client cached DEK keyId before = 859747037
+  stateful-read: target throws at d1 during this operation = 1
+  stateful-read: d1 message keyID=859747037 (= client's cached DEK keyId 859747037), d1 currentKey=1837928039
+  stateful-read DN | 2026-10-29 06:36:09,306 [org.apache.hadoop.hdfs.server.datanode.DataXceiver@1750da95] ERROR datanode.DataNode (DataXceiver.java:run(333)) - 127.0.0.1:42941:DataXceiver error processing unknown operation  src: /127.0.0.1:57892 dst: /127.0.0.1:42941
+  stateful-read DN | Caused by: org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException: Can't re-compute encryption key for nonce, since the required block key (keyID=859747037) doesn't exist. Current key: 1837928039
+  stateful-read DN | at org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrieveDataEncryptionKey(BlockTokenSecretManager.java:561)
+  stateful-read DN | at org.apache.hadoop.hdfs.security.token.block.BlockPoolTokenSecretManager.retrieveDataEncryptionKey(BlockPoolTokenSecretManager.java:173)
+  stateful-read DN | at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer.getEncryptionKeyFromUserName(SaslDataTransferServer.java:292)
+  stateful-read CLIENT | 2026-10-29 06:36:09,305 [main] INFO  hdfs.DFSClient (DFSInputStream.java:blockSeekTo(664)) - Will fetch a new encryption key and retry, encryption key was invalid when connecting to /127.0.0.1:42941 : org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException: Can't re-compute encryption key for nonce, since the required block key (keyID=859747037) doesn't exist. Current key: 1837928039
+  stateful-read CLIENT | 2026-10-29 06:36:09,305 [main] DEBUG hdfs.DFSClient (DFSClient.java:clearDataEncryptionKey(1838)) - Clearing encryption key
+  stateful-read CLIENT | 2026-10-29 06:36:09,306 [main] DEBUG hdfs.DFSClient (DFSClient.java:newDataEncryptionKey(1860)) - Getting new encryption token from NN
+  stateful-read: client DEK keyId 859747037 -> 1837928039; restarted d1 hasKey(1837928039)=true
+  stateful-read: result correct = true 
+  pread: client cached DEK keyId before = 859747037
+  pread: target throws at d1 during this operation = 1
+  pread: d1 message keyID=859747037 (= client's cached DEK keyId 859747037), d1 currentKey=1837928039
+  pread DN | 2026-10-29 06:36:09,627 [org.apache.hadoop.hdfs.server.datanode.DataXceiver@1da8b1e5] ERROR datanode.DataNode (DataXceiver.java:run(333)) - 127.0.0.1:42941:DataXceiver error processing unknown operation  src: /127.0.0.1:57912 dst: /127.0.0.1:42941
+  pread DN | Caused by: org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException: Can't re-compute encryption key for nonce, since the required block key (keyID=859747037) doesn't exist. Current key: 1837928039
+  pread DN | at org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrieveDataEncryptionKey(BlockTokenSecretManager.java:561)
+  pread DN | at org.apache.hadoop.hdfs.security.token.block.BlockPoolTokenSecretManager.retrieveDataEncryptionKey(BlockPoolTokenSecretManager.java:173)
+  pread DN | at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer.getEncryptionKeyFromUserName(SaslDataTransferServer.java:292)
+  pread CLIENT | DFSInputStream.java:actualGetFromOneDataNode(1264)) - Will fetch a new encryption key and retry, encryption key was invalid when connecting to /127.0.0.1:42941 : org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException: Can't re-compute encryption key for nonce, since the required block key (keyID=859747037) doesn't exist. Current key: 1837928039
+  pread CLIENT | 2026-10-29 06:36:09,627 [main] DEBUG hdfs.DFSClient (DFSClient.java:clearDataEncryptionKey(1838)) - Clearing encryption key
+  pread CLIENT | 2026-10-29 06:36:09,628 [main] DEBUG hdfs.DFSClient (DFSClient.java:newDataEncryptionKey(1860)) - Getting new encryption token from NN
+  pread: client DEK keyId 859747037 -> 1837928039; restarted d1 hasKey(1837928039)=true
+  pread: result correct = true 
+  checksum-whole-file: client cached DEK keyId before = 859747037
+  checksum-whole-file: expected MD5-of-0MD5-of-512CRC32C:bea308dd22e035bff32801faea602cbf, got MD5-of-0MD5-of-512CRC32C:bea308dd22e035bff32801faea602cbf
+  checksum-whole-file: target throws at d1 during this operation = 1
+  checksum-whole-file: d1 message keyID=859747037 (= client's cached DEK keyId 859747037), d1 currentKey=1837928039
+  checksum-whole-file DN | 2026-10-29 06:36:09,942 [org.apache.hadoop.hdfs.server.datanode.DataXceiver@493fc1c6] ERROR datanode.DataNode (DataXceiver.java:run(333)) - 127.0.0.1:42941:DataXceiver error processing unknown operation  src: /127.0.0.1:57926 dst: /127.0.0.1:42941
+  checksum-whole-file DN | Caused by: org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException: Can't re-compute encryption key for nonce, since the required block key (keyID=859747037) doesn't exist. Current key: 1837928039
+  checksum-whole-file DN | at org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrieveDataEncryptionKey(BlockTokenSecretManager.java:561)
+  checksum-whole-file DN | at org.apache.hadoop.hdfs.security.token.block.BlockPoolTokenSecretManager.retrieveDataEncryptionKey(BlockPoolTokenSecretManager.java:173)
+  checksum-whole-file DN | at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer.getEncryptionKeyFromUserName(SaslDataTransferServer.java:292)
+  checksum-whole-file CLIENT | 2026-10-29 06:36:09,943 [main] DEBUG hdfs.DFSClient (DFSClient.java:clearDataEncryptionKey(1838)) - Clearing encryption key
+  checksum-whole-file CLIENT | 2026-10-29 06:36:09,943 [main] DEBUG hdfs.DFSClient (DFSClient.java:newDataEncryptionKey(1860)) - Getting new encryption token from NN
+  checksum-whole-file CLIENT | FileChecksumHelper.java:checksumBlock(538)) - Got invalid encryption key error in response to OP_BLOCK_CHECKSUM for file /mc4/file for block BP-1014469758-130.127.134.14-1793255754309:blk_1073741825_1001 from datanode DatanodeInfoWithStorage[127.0.0.1:42941,DS-677c97e8-526e-440b-af33-44250d6ad49e,DISK]. Will retry the block once.
+  checksum-whole-file: client DEK keyId 859747037 -> 1837928039; restarted d1 hasKey(1837928039)=true
+  checksum-whole-file: result correct = true 
+  checksum-snapshot-path: client cached DEK keyId before = 859747037
+  checksum-snapshot-path: expected MD5-of-0MD5-of-512CRC32C:bea308dd22e035bff32801faea602cbf, got MD5-of-0MD5-of-512CRC32C:454b7d1c8eec2b86ac4b00b197efdbf4
+  checksum-snapshot-path: target throws at d1 during this operation = 1
+  checksum-snapshot-path: d1 message keyID=859747037 (= client's cached DEK keyId 859747037), d1 currentKey=1837928039
+  checksum-snapshot-path DN | 2026-10-29 06:36:10,255 [org.apache.hadoop.hdfs.server.datanode.DataXceiver@31c702eb] ERROR datanode.DataNode (DataXceiver.java:run(333)) - 127.0.0.1:42941:DataXceiver error processing unknown operation  src: /127.0.0.1:57948 dst: /127.0.0.1:42941
+  checksum-snapshot-path DN | Caused by: org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException: Can't re-compute encryption key for nonce, since the required block key (keyID=859747037) doesn't exist. Current key: 1837928039
+  checksum-snapshot-path DN | at org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrieveDataEncryptionKey(BlockTokenSecretManager.java:561)
+  checksum-snapshot-path DN | at org.apache.hadoop.hdfs.security.token.block.BlockPoolTokenSecretManager.retrieveDataEncryptionKey(BlockPoolTokenSecretManager.java:173)
+  checksum-snapshot-path DN | at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer.getEncryptionKeyFromUserName(SaslDataTransferServer.java:292)
+  checksum-snapshot-path CLIENT | 2026-10-29 06:36:10,256 [main] DEBUG hdfs.DFSClient (DFSClient.java:clearDataEncryptionKey(1838)) - Clearing encryption key
+  checksum-snapshot-path CLIENT | 2026-10-29 06:36:10,256 [main] DEBUG hdfs.DFSClient (DFSClient.java:newDataEncryptionKey(1860)) - Getting new encryption token from NN
+  checksum-snapshot-path CLIENT | FileChecksumHelper.java:checksumBlock(538)) - Got invalid encryption key error in response to OP_BLOCK_CHECKSUM for file /mc4/.snapshot/s1/file for block BP-1014469758-130.127.134.14-1793255754309:blk_1073741825_1001 from datanode DatanodeInfoWithStorage[127.0.0.1:42941,DS-677c97e8-526e-440b-af33-44250d6ad49e,DISK]. Will retry the block once.
+  checksum-snapshot-path: client DEK keyId 859747037 -> 1837928039; restarted d1 hasKey(1837928039)=true
+  checksum-snapshot-path: result correct = false 
+  checksum-explicit-length: client cached DEK keyId before = 859747037
+  checksum-explicit-length: expected MD5-of-0MD5-of-512CRC32C:bea308dd22e035bff32801faea602cbf, got MD5-of-0MD5-of-512CRC32C:454b7d1c8eec2b86ac4b00b197efdbf4
+  checksum-explicit-length: target throws at d1 during this operation = 1
+  checksum-explicit-length: d1 message keyID=859747037 (= client's cached DEK keyId 859747037), d1 currentKey=1837928039
+  checksum-explicit-length DN | 2026-10-29 06:36:10,568 [org.apache.hadoop.hdfs.server.datanode.DataXceiver@f03145c] ERROR datanode.DataNode (DataXceiver.java:run(333)) - 127.0.0.1:42941:DataXceiver error processing unknown operation  src: /127.0.0.1:57966 dst: /127.0.0.1:42941
+  checksum-explicit-length DN | Caused by: org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException: Can't re-compute encryption key for nonce, since the required block key (keyID=859747037) doesn't exist. Current key: 1837928039
+  checksum-explicit-length DN | at org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrieveDataEncryptionKey(BlockTokenSecretManager.java:561)
+  checksum-explicit-length DN | at org.apache.hadoop.hdfs.security.token.block.BlockPoolTokenSecretManager.retrieveDataEncryptionKey(BlockPoolTokenSecretManager.java:173)
+  checksum-explicit-length DN | at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer.getEncryptionKeyFromUserName(SaslDataTransferServer.java:292)
+  checksum-explicit-length CLIENT | 2026-10-29 06:36:10,569 [main] DEBUG hdfs.DFSClient (DFSClient.java:clearDataEncryptionKey(1838)) - Clearing encryption key
+  checksum-explicit-length CLIENT | 2026-10-29 06:36:10,569 [main] DEBUG hdfs.DFSClient (DFSClient.java:newDataEncryptionKey(1860)) - Getting new encryption token from NN
+  checksum-explicit-length CLIENT | FileChecksumHelper.java:checksumBlock(538)) - Got invalid encryption key error in response to OP_BLOCK_CHECKSUM for file /mc4/file for block BP-1014469758-130.127.134.14-1793255754309:blk_1073741825_1001 from datanode DatanodeInfoWithStorage[127.0.0.1:42941,DS-677c97e8-526e-440b-af33-44250d6ad49e,DISK]. Will retry the block once.
+  checksum-explicit-length: client DEK keyId 859747037 -> 1837928039; restarted d1 hasKey(1837928039)=true
+  checksum-explicit-length: result correct = false 
+  control-2: fresh client (DEK of incarnation 2) snapshot/length/whole checksums correct = true; the same long-lived clients repeating snapshot/length checksums with their refetched DEK correct = true; target throws during control-2 = 0
+  append: client cached DEK keyId before = 859747037
+  append: target throws at d1 during this operation = 1
+  append: d1 message keyID=859747037 (= client's cached DEK keyId 859747037), d1 currentKey=1837928039
+  append DN | 2026-10-29 06:36:11,951 [org.apache.hadoop.hdfs.server.datanode.DataXceiver@a42f9e4] ERROR datanode.DataNode (DataXceiver.java:run(333)) - 127.0.0.1:42941:DataXceiver error processing unknown operation  src: /127.0.0.1:58030 dst: /127.0.0.1:42941
+  append DN | Caused by: org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException: Can't re-compute encryption key for nonce, since the required block key (keyID=859747037) doesn't exist. Current key: 1837928039
+  append DN | at org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrieveDataEncryptionKey(BlockTokenSecretManager.java:561)
+  append DN | at org.apache.hadoop.hdfs.security.token.block.BlockPoolTokenSecretManager.retrieveDataEncryptionKey(BlockPoolTokenSecretManager.java:173)
+  append DN | at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer.getEncryptionKeyFromUserName(SaslDataTransferServer.java:292)
+  append CLIENT | 2026-10-29 06:36:11,951 [Thread-275] DEBUG hdfs.DFSClient (DFSClient.java:clearDataEncryptionKey(1838)) - Clearing encryption key
+  append CLIENT | 2026-10-29 06:36:11,952 [Thread-275] DEBUG hdfs.DFSClient (DFSClient.java:newDataEncryptionKey(1860)) - Getting new encryption token from NN
+  append CLIENT | 2026-10-29 06:36:11,951 [Thread-275] INFO  hdfs.DataStreamer (DataStreamer.java:createBlockOutputStream(1963)) - Will fetch a new encryption key and retry, encryption key was invalid when connecting to DatanodeInfoWithStorage[127.0.0.1:42941,DS-677c97e8-526e-440b-af33-44250d6ad49e,DISK] : org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException: Can't re-compute encryption key for nonce, since the required block key (keyID=859747037) doesn't exist. Current key: 1837928039
+  append: client DEK keyId 859747037 -> 1837928039; restarted d1 hasKey(1837928039)=true
+  append: result correct = true 
+  append: a fresh client reads back both copies = true
+  SUMMARY path | target throws at d1 | DEK cleared+refetched | caller's result correct
+  SUMMARY stateful-read | 1 | true | true
+  SUMMARY pread | 1 | true | true
+  SUMMARY checksum-whole-file | 1 | true | true
+  SUMMARY checksum-snapshot-path | 1 | true | false
+  SUMMARY checksum-explicit-length | 1 | true | false
+  SUMMARY append | 1 | true | true
+  RESULT target fired on every stale-DEK path = true; DEK refetched on every path = true; paths whose caller got a wrong result = [checksum-snapshot-path, checksum-explicit-length]; controls: fresh/repeat checksums correct = true
+-- one complete DN-side stack trace of the target throw:
+  2026-10-29 06:36:09,306 [org.apache.hadoop.hdfs.server.datanode.DataXceiver@1750da95] ERROR datanode.DataNode (DataXceiver.java:run(333)) - 127.0.0.1:42941:DataXceiver error processing unknown operation  src: /127.0.0.1:57892 dst: /127.0.0.1:42941
+  javax.security.sasl.SaslException: DIGEST-MD5: IO error acquiring password [Caused by org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException: Can't re-compute encryption key for nonce, since the required block key (keyID=859747037) doesn't exist. Current key: 1837928039]
+  	at java.security.sasl/com.sun.security.sasl.digest.DigestMD5Server.validateClientResponse(DigestMD5Server.java:597)
+  	at java.security.sasl/com.sun.security.sasl.digest.DigestMD5Server.evaluateResponse(DigestMD5Server.java:248)
+  	at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslParticipant.evaluateChallengeOrResponse(SaslParticipant.java:148)
+  	at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer.doSaslHandshake(SaslDataTransferServer.java:415)
+  	at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer.getEncryptedStreams(SaslDataTransferServer.java:192)
+  	at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer.receive(SaslDataTransferServer.java:124)
+  	at org.apache.hadoop.hdfs.server.datanode.DataXceiver.run(DataXceiver.java:236)
+  	at org.apache.hadoop.util.Daemon.work(Daemon.java:59)
+  	at org.apache.hadoop.util.Daemon.run(Daemon.java:76)
+  Caused by: org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException: Can't re-compute encryption key for nonce, since the required block key (keyID=859747037) doesn't exist. Current key: 1837928039
+  	at org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrieveDataEncryptionKey(BlockTokenSecretManager.java:561)
+
+================ RUN 2: in-tree TestEncryptedTransfer#testLongLivedReadClientAfterRestart (unmodified) ================
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 31.42 s -- in org.apache.hadoop.hdfs.TestEncryptedTransfer
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+-- target frames at the DN: 1
+  Caused by: org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException: Can't re-compute encryption key for nonce, since the required block key (keyID=1172280243) doesn't exist. Current key: 502503292
+  	at org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrieveDataEncryptionKey(BlockTokenSecretManager.java:561)
+  2026-10-29 06:36:37,095 [main] INFO  hdfs.DFSClient (DFSInputStream.java:blockSeekTo(664)) - Will fetch a new encryption key and retry, encryption key was invalid when connecting to /127.0.0.1:33569 : org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException: Can't re-compute encryption key for nonce, since the required block key (keyID=1172280243) doesn't exist. Current key: 502503292
+-- surefire summary:
+  -------------------------------------------------------------------------------
+  Test set: org.apache.hadoop.hdfs.TestEncryptedTransfer
+  -------------------------------------------------------------------------------
+  Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 31.42 s -- in org.apache.hadoop.hdfs.TestEncryptedTransfer
+  -------------------------------------------------------------------------------
+  Test set: org.apache.hadoop.hdfs.TestSpeculaMC4CachedDekAfterRestart
+  -------------------------------------------------------------------------------
+  Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 20.02 s -- in org.apache.hadoop.hdfs.TestSpeculaMC4CachedDekAfterRestart
+EXIT=0

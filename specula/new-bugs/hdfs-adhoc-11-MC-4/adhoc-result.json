@@ -1,0 +1,201 @@
+{
+  "schemaVersion": 1,
+  "target": "hdfs-adhoc-11",
+  "check": {
+    "file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+    "line": 559,
+    "thrown": "org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException"
+  },
+  "verdict": "REACHED_CONFIRMED",
+  "mechanism": "COMBINED",
+  "scenario": "Scenario 1: Safe mode suppresses key pushes while rolls and DEK issue continue",
+  "finding": "MC-1",
+  "counterexample": "spec/output/hunt/gated/G_S1_synced.out",
+  "reproduction": "repro/test_bugMC-1_safemode_keyroll_dek.sh",
+  "stackFrame": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrieveDataEncryptionKey(BlockTokenSecretManager.java:561)",
+  "bounds": [
+    {
+      "config": "MC_hunt_S1_safemode.cfg",
+      "result": "VIOLATION",
+      "states": 2154,
+      "diameter": 11,
+      "seconds": 2,
+      "output": "spec/output/h1_MC_hunt_S1_safemode.out"
+    },
+    {
+      "config": "output/hunt/gated/G_S1_synced.cfg",
+      "result": "VIOLATION",
+      "states": 1405,
+      "diameter": 11,
+      "seconds": 1,
+      "output": "spec/output/hunt/gated/G_S1_synced.out"
+    },
+    {
+      "config": "MC_hunt_S2_lostpush.cfg",
+      "result": "VIOLATION",
+      "states": 2119,
+      "diameter": 12,
+      "seconds": 2,
+      "output": "spec/output/h1_MC_hunt_S2_lostpush.out"
+    },
+    {
+      "config": "output/hunt/gated/G_S2_synced.cfg",
+      "result": "VIOLATION",
+      "states": 1387,
+      "diameter": 12,
+      "seconds": 1,
+      "output": "spec/output/hunt/gated/G_S2_synced.out"
+    },
+    {
+      "config": "MC_hunt_S3_regrace.cfg",
+      "result": "VIOLATION",
+      "states": 5344,
+      "diameter": 11,
+      "seconds": 3,
+      "output": "spec/output/h1_MC_hunt_S3_regrace.out"
+    },
+    {
+      "config": "MC_hunt_S4_restart.cfg",
+      "result": "VIOLATION",
+      "states": 1060,
+      "diameter": 8,
+      "seconds": 2,
+      "output": "spec/output/h1_MC_hunt_S4_restart.out"
+    },
+    {
+      "config": "output/hunt/gated/G_S4a_backward.cfg",
+      "result": "VIOLATION",
+      "states": 2764,
+      "diameter": 13,
+      "seconds": 1,
+      "output": "spec/output/hunt/gated/G_S4a_backward.out",
+      "invariant": "TargetSafeBackward"
+    },
+    {
+      "config": "output/hunt/gated/G_S4b_forward.cfg",
+      "result": "VIOLATION",
+      "states": 931,
+      "diameter": 10,
+      "seconds": 1,
+      "output": "spec/output/hunt/gated/G_S4b_forward.out",
+      "invariant": "TargetSafeForward"
+    },
+    {
+      "config": "output/hunt/gated/G_S4c_dntransfer.cfg",
+      "result": "VIOLATION",
+      "states": 1002,
+      "diameter": 12,
+      "seconds": 1,
+      "output": "spec/output/hunt/gated/G_S4c_dntransfer.out"
+    },
+    {
+      "config": "MC_hunt_S5_ha.cfg",
+      "result": "VIOLATION",
+      "states": 106207,
+      "diameter": 11,
+      "seconds": 7,
+      "output": "spec/output/h1w1_MC_hunt_S5_ha.out"
+    },
+    {
+      "config": "output/hunt/gated/G_S5_synced.cfg",
+      "result": "VIOLATION",
+      "states": 65566,
+      "diameter": 11,
+      "seconds": 6,
+      "output": "spec/output/hunt/gated/G_S5_synced.out"
+    },
+    {
+      "config": "output/hunt/startoff/MC_hunt_S1_safemode_off.cfg",
+      "result": "VIOLATION",
+      "states": 1837,
+      "diameter": 11,
+      "seconds": 1,
+      "output": "spec/output/hunt/startoff/MC_hunt_S1_safemode_off.out"
+    },
+    {
+      "config": "output/hunt/startoff/MC_hunt_S2_lostpush_off.cfg",
+      "result": "VIOLATION",
+      "states": 1477,
+      "diameter": 12,
+      "seconds": 1,
+      "output": "spec/output/hunt/startoff/MC_hunt_S2_lostpush_off.out"
+    },
+    {
+      "config": "output/hunt/startoff/MC_hunt_S3_regrace_off.cfg",
+      "result": "VIOLATION",
+      "states": 3320,
+      "diameter": 11,
+      "seconds": 1,
+      "output": "spec/output/hunt/startoff/MC_hunt_S3_regrace_off.out"
+    },
+    {
+      "config": "output/hunt/startoff/MC_hunt_S4_restart_off.cfg",
+      "result": "VIOLATION",
+      "states": 578,
+      "diameter": 8,
+      "seconds": 1,
+      "output": "spec/output/hunt/startoff/MC_hunt_S4_restart_off.out"
+    },
+    {
+      "config": "output/hunt/startoff/MC_hunt_S5_ha_off.cfg",
+      "result": "VIOLATION",
+      "states": 69284,
+      "diameter": 11,
+      "seconds": 6,
+      "output": "spec/output/hunt/startoff/MC_hunt_S5_ha_off.out"
+    },
+    {
+      "config": "output/hunt/gated/v1/G_S1_synced.cfg",
+      "result": "VIOLATION",
+      "states": 1441,
+      "diameter": 11,
+      "seconds": 1,
+      "output": "spec/output/hunt/gated/v1/G_S1_synced.out"
+    },
+    {
+      "config": "output/hunt/gated/v1/G_S2_synced.cfg",
+      "result": "VIOLATION",
+      "states": 1387,
+      "diameter": 12,
+      "seconds": 1,
+      "output": "spec/output/hunt/gated/v1/G_S2_synced.out"
+    },
+    {
+      "config": "output/hunt/gated/v1/G_S4a_backward.cfg",
+      "result": "VIOLATION",
+      "states": 2628,
+      "diameter": 13,
+      "seconds": 1,
+      "output": "spec/output/hunt/gated/v1/G_S4a_backward.out"
+    },
+    {
+      "config": "output/hunt/gated/v1/G_S4b_forward.cfg",
+      "result": "VIOLATION",
+      "states": 931,
+      "diameter": 10,
+      "seconds": 1,
+      "output": "spec/output/hunt/gated/v1/G_S4b_forward.out"
+    },
+    {
+      "config": "output/hunt/gated/v1/G_S4c_dntransfer.cfg",
+      "result": "VIOLATION",
+      "states": 1956,
+      "diameter": 12,
+      "seconds": 1,
+      "output": "spec/output/hunt/gated/v1/G_S4c_dntransfer.out"
+    },
+    {
+      "config": "output/hunt/gated/v1/G_S5_synced.cfg",
+      "result": "VIOLATION",
+      "states": 66818,
+      "diameter": 11,
+      "seconds": 6,
+      "output": "spec/output/hunt/gated/v1/G_S5_synced.out"
+    }
+  ],
+  "traceValidation": {
+    "traces": 3,
+    "passed": 3
+  },
+  "notes": "Chain for MC-1 (Scenario 1; spec/output/hunt/gated/G_S1_synced.out, 11 states, from a pruning-only variant of MC_hunt_S1_safemode.cfg whose own shortest trace, spec/output/h1_MC_hunt_S1_safemode.out, is also 11 states): with one NameNode and one DataNode, the DataNode registers, installs the NameNode's current and next block keys and ends startup safe mode with its block report; the NameNode then enters manual or resource-low safe mode while the DataNode is in sync; the first interval roll makes the old next key current and its sweep sets needKeyUpdate, but every heartbeat reply in safe mode is empty (DatanodeManager.handleHeartbeat returns at DatanodeManager.java:1884-1886, before addKeyUpdateCommand at :1971), so the push is never built; the second roll makes current a key the DataNode never received; getDataEncryptionKey only checks NameNode startup, so a new client's DEK names that key, and the DataNode's lookup finds allKeys.get(keyId) == null and throws InvalidEncryptionKeyException. The trigger needs one safe-mode entry, which the model counts as a fault (FAULT), and two timer-driven key rolls, i.e. at least one key-update interval elapsing inside safe mode (CLOCK), hence COMBINED. Phase 4a reproduced it on the pristine base commit 734dd8a67cd with a variant of the workload test in the same module (repro/test_bugMC-1_safemode_keyroll_dek.sh, log repro/test_bugMC-1_safemode_keyroll_dek.log), injecting only one manual safe-mode entry through DistributedFileSystem.setSafeMode, with the public dfs.block.access.key.update.interval set to 1 minute and normal reads (plus a variant that compresses time with setKeyUpdateIntervalForTesting, and a negative control): after two rolls in safe mode a fresh client's DEK named the key created by roll 1, the DataNode threw the target exception, the client's single refetch returned the same key, and the read failed with BlockMissingException until safe mode ended, while reads in safe mode before any roll and after the exit succeeded. The frame reads BlockTokenSecretManager.java:561 rather than 559 because the method's only throw new InvalidEncryptionKeyException statement spans lines 559-561, and javap of the pristine class, captured in the repro log, maps the new (bytecode 28) to line 559 and the constructor call and athrow (45, 48) to line 561. Six more TargetSafe findings were confirmed, all REPRODUCED with the same frame: MC-2 (Scenario 2; spec/output/hunt/gated/G_S2_synced.out, 12 states; repro/test_bugMC-2_lost_key_push.java), a roll whose key push is lost with its heartbeat reply and then the next roll (FAULT and CLOCK); MC-3 (Scenario 3; spec/output/h1_MC_hunt_S3_regrace.out, 11 states; repro/test_bugMC-3_regrace.java), a roll between the registration key export and the heartbeat-set join and then the next roll, with no fault (INTERLEAVING and CLOCK); MC-4 (Scenario 4, backward sub-case; spec/output/hunt/gated/G_S4a_backward.out, 13 states; repro/test_bugMC-4_cached_dek_nn_dn_restart.sh), a NameNode restart and a DataNode restart under a long-lived client's cached DEK (RESTART); MC-5 (Scenario 5; spec/output/hunt/gated/G_S5_synced.out, 11 states; repro/test_bugMC-5_nonactive_nn_dek.java), safe mode on a non-active NameNode across two of its rolls with the DEK served by that NameNode (FAULT and CLOCK); MC-6 (Scenario 4, forward sub-case; spec/output/hunt/gated/G_S4b_forward.out, 10 states; repro/test_bugMC-6_forward_dek_after_nn_restart.java), a NameNode restart with a new-incarnation DEK used before the DataNode re-registers (RESTART and INTERLEAVING); and MC-7 (Scenario 4, DN-originated DEK; spec/output/hunt/gated/G_S4c_dntransfer.out, 12 states; repro/test_bugMC-7_dn_originated_dek.java), a NameNode restart and a mirror restart followed by a DN-to-DN transfer from a DataNode that has not re-registered (RESTART and INTERLEAVING). The code-review entries are not TargetSafe findings in spec/findings.json: CR-3 (REPRODUCED; repro/test_bugCR-3_dead_cpt_key_push.java) and CR-6 (MASKED by the client's refetch-and-retry; repro/test_bugCR-6_client_clock_skew_dek.sh) also threw the target exception at the same frame, CR-7 (MASKED by key retention and the next roll's re-push; repro/test_bugCR-7_keyupdate_lifo.java) threw it only after a command stall of several key intervals, and CR-4 (REPRODUCED; repro/test_bugCR-4_sasl_before_keys.java) entered the guard's key == null branch during DataNode startup but threw a NullPointerException at line 561 (or an IllegalArgumentException earlier, in BlockPoolTokenSecretManager.get) instead of the target exception. Every row in bounds is a 1-worker BFS run that violated its invariant, so its trace is the shortest for that config; diameter is TLC's reported search depth and seconds its Finished-in time. Rows under output/hunt/gated/ add pruning-only ACTION_CONSTRAINT guides to their parent hunt config, so each violation is also one of the parent; G_S4a_backward.cfg and G_S4b_forward.cfg check TargetSafeBackward and TargetSafeForward, whose violations imply TargetSafe's. Rows under output/hunt/startoff/ re-run each Scenario hunt with StartSafeModes = {\"off\"}, the workload's start state, and rows under output/hunt/gated/v1/ are a superseded first version of the gated variants (guides wrapped around MCNext, with a weaker safe-mode-entry guide), kept for the record and not cited by bug-report.md. MC_hunt_S5_ha.cfg first ran with 8 workers (spec/output/h1_MC_hunt_S5_ha.out: VIOLATION, 194,165 distinct states, depth 12, 7 s); its row is the 1-worker rerun. Outside the hunts, MC.cfg (workload bounds, no rolls or faults) checked TypeOK, KeyProvenance, FaultsBounded and TargetSafe without violation (66 distinct states, depth 9; spec/output/r1_MC.out), and the MC_sanity_reach.cfg probe violated TargetReached at depth 6 (spec/output/r1_MC_sanity_reach.out). All 3 harness traces (traces/workload.ndjson, traces/variant_keyroll.ndjson, traces/variant_nnrestart.ndjson) passed trace validation against the final spec (harness/logs/validate-p3-final-*.log: 13, 24 and 29 distinct states for 12, 22 and 27 events), and all 22 single-field trace mutants were rejected at their corrupted event."
+}

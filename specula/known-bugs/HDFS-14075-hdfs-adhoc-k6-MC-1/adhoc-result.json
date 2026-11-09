@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "target": "hdfs-adhoc-k6",
+  "check": {
+    "file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLog.java",
+    "line": 1409,
+    "thrown": "java.lang.IllegalStateException"
+  },
+  "verdict": "REACHED_CONFIRMED",
+  "mechanism": "FAULT",
+  "scenario": "Scenario 1: A failed segment re-open leaves the log BETWEEN_LOG_SEGMENTS, and the next roll trips the check",
+  "finding": "MC-1",
+  "counterexample": "spec/output/MC_hunt_s1_bfs.out",
+  "reproduction": "repro/SpeculaAdhocMC1JournalStartFailureTest.java",
+  "stackFrame": "org.apache.hadoop.hdfs.server.namenode.FSEditLog.endCurrentLogSegment(FSEditLog.java:1409)",
+  "bounds": [
+    {
+      "config": "MC_hunt_s1_start_failure.cfg",
+      "result": "VIOLATION",
+      "states": 1021,
+      "diameter": 14,
+      "seconds": 1
+    },
+    {
+      "config": "MC_hunt_s2_stop.cfg",
+      "result": "VIOLATION",
+      "states": 111,
+      "diameter": 12,
+      "seconds": 0
+    },
+    {
+      "config": "MC_probe_s1_clean_finalize.cfg",
+      "result": "VIOLATION",
+      "states": 1188,
+      "diameter": 15,
+      "seconds": 0
+    },
+    {
+      "config": "MC_probe_s1_savens.cfg",
+      "result": "VIOLATION",
+      "states": 1282,
+      "diameter": 15,
+      "seconds": 0
+    },
+    {
+      "config": "MC_probe_s1_sync.cfg",
+      "result": "VIOLATION",
+      "states": 859,
+      "diameter": 14,
+      "seconds": 1
+    },
+    {
+      "config": "MC_probe_s2_roller.cfg",
+      "result": "VIOLATION",
+      "states": 141,
+      "diameter": 14,
+      "seconds": 0
+    },
+    {
+      "config": "MC_counterpart_s2_standby.cfg",
+      "result": "NO_VIOLATION",
+      "states": 130,
+      "diameter": 25,
+      "seconds": 0
+    }
+  ],
+  "traceValidation": {
+    "traces": 3,
+    "passed": 3
+  },
+  "notes": "Two independent TargetSafe violations were found and both were reproduced on the pristine base commit, with java.lang.IllegalStateException thrown at FSEditLog.endCurrentLogSegment(FSEditLog.java:1409). MC-1 (reported here, mechanism FAULT): a rollEditLog RPC ends the segment (state BETWEEN_LOG_SEGMENTS), then the only, non-required edits dir fails, so JournalSet disables it and startLogSegment rethrows an IOException without terminating. The NameNode stays Active and stranded, and the next admitted roll fails the check with 'Bad state: BETWEEN_LOG_SEGMENTS'. This was reproduced from a TestEditLogRace#testEditLogRolling variant (run by repro/test_bugMC-1_failed_roll_restart_strands_segment.sh, log repro/MC-1.run.log) using the public roll RPC and a real read-only edits dir, in both sync and async modes. It matches known upstream issue HDFS-14075, fixed after the pinned revision. MC-2 (mechanism INTERLEAVING, no fault): NameNode.stop closes the edit log (CLOSED) while the HA state stays ACTIVE and the RPC server is still up, so a roll queued on the FSN write lock fails the check with 'Bad state: CLOSED'. Its counterexample is spec/output/MC_hunt_s2_bfs.out and its reproduction is repro/test_bugMC-2_TestEditLogStopRollRace.java, run under timing control with the codebase's own lock and GenericTestUtils.waitFor. The probe configs check TargetSafe restricted to one sub-path (ProbeS1CleanFinalize, ProbeS1SaveNs, ProbeS2Roller, and TargetSafe in sync mode). The HA transitionToStandby counterpart ran exhaustively with no violation. The fault-free MC.cfg also holds (154 distinct states, depth 25). Code-review finding CR-1 (a null-stream NPE after the MC-1 stranding) is MASKED, and CR-2 is a FALSE POSITIVE."
+}

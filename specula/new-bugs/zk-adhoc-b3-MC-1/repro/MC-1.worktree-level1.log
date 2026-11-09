@@ -1,0 +1,47 @@
+== tree: /users/ZhenyuLi/Specula/runs/20261102-193732-53d6/zk-adhoc-b3/.specula-output/confirmation/MC-1/worktree  mode=worktree  commit=eab16599
+== src/main diff vs eab16599:  4 files changed, 8 insertions(+), 8 deletions(-)
+== handleGetDataRequest as compiled here:
+        GetDataRequest getDataRequest = (GetDataRequest) request;
+        String path = getDataRequest.getPath();
+        DataNode n = zks.getZKDatabase().getNode(path);
+        if (n == null) {
+            throw new KeeperException.NoNodeException();
+        }
+== java: openjdk version "17.0.21" 2026-10-20
+
+################ scenario: level1-persistent
+== cmd: mvn -B -o test -pl zookeeper-server -Dtest='SpeculaAdhocB3Mc1Level1Test#persistent' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false -Djvm=<JFR wrapper> -Dcheckstyle.skip=true -Dspotbugs.skip=true
+== mvn exit=0
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.103 s - in org.apache.zookeeper.server.SpeculaAdhocB3Mc1Level1Test
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+MC1| MgrScan candidates=[/adhoc-workload-b3]
+MC1| c4 delete returned OK
+MC1| c5 create(PERSISTENT) returned OK czxid=0x6
+MC1| MgrPost stale deleteContainer entered PrepRequestProcessor's queue
+MC1| RESULT c6 getData threw org.apache.zookeeper.KeeperException$NoNodeException: KeeperErrorCode = NoNode for /adhoc-workload-b3
+MC1| exists after c6 = null; this client issued no delete after c5
+MC1| AFTER RESTART exists = null; getData threw org.apache.zookeeper.KeeperException$NoNodeException: KeeperErrorCode = NoNode for /adhoc-workload-b3
+MC1| TOTAL expected line-674 frames = 2
+      1 Using checkIntervalMs=100 maxPerMinute=2147483647 maxNeverUsedIntervalMs=0
+manager log lines 'Attempting to delete candidate container': 1
+FRAMES@674 2
+threads: {'SyncThread:0': 2}
+jdk.JavaExceptionThrow {
+  startTime = 22:25:48.750
+  message = N/A
+  thrownClass = org.apache.zookeeper.KeeperException$NoNodeException (classLoader = app)
+  eventThread = "SyncThread:0" (javaThreadId = 51)
+  stackTrace = [
+    java.lang.Throwable.<init>() line: 257
+    java.lang.Exception.<init>() line: 55
+    org.apache.zookeeper.KeeperException.<init>(KeeperException$Code) line: 526
+    org.apache.zookeeper.KeeperException$NoNodeException.<init>() line: 775
+    org.apache.zookeeper.server.FinalRequestProcessor.handleGetDataRequest(Record, ServerCnxn, List) line: 674
+    org.apache.zookeeper.server.FinalRequestProcessor.processRequest(Request) line: 403
+    org.apache.zookeeper.server.SyncRequestProcessor.run() line: 208
+  ]
+}
+== SCENARIO level1-persistent: mvn_exit=0 frames_at_FinalRequestProcessor_674=2 expected=2 -> PASS  (artifacts: /tmp/mc1-jfr.xUsyM0)
+
+== OVERALL failed=0

@@ -1,0 +1,49 @@
+== tree: /users/ZhenyuLi/Specula/runs/20261102-193732-53d6/zk-adhoc-b3/.specula-output/confirmation/MC-1/worktree  mode=worktree  commit=eab16599
+== src/main diff vs eab16599:  4 files changed, 8 insertions(+), 8 deletions(-)
+== handleGetDataRequest as compiled here:
+        GetDataRequest getDataRequest = (GetDataRequest) request;
+        String path = getDataRequest.getPath();
+        DataNode n = zks.getZKDatabase().getNode(path);
+        if (n == null) {
+            throw new KeeperException.NoNodeException();
+        }
+== java: openjdk version "17.0.21" 2026-10-20
+
+################ scenario: level0-standalone
+== cmd: mvn -B -o test -pl zookeeper-server -Dtest='SpeculaAdhocB3Mc1Level0Test#standalone' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false -Djvm=<JFR wrapper> -Dcheckstyle.skip=true -Dspotbugs.skip=true
+== mvn exit=0
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 70.9 s - in org.apache.zookeeper.server.SpeculaAdhocB3Mc1Level0Test
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+MC1| znode.container.checkIntervalMs=null znode.container.maxPerMinute=null
+MC1| setup: 1000 used empty containers in 190 ms; nodes under / = 1003
+MC1| manager's first deletion seen 59713 ms after setup began; client replaces now
+MC1| client replaced 1000 paths; delete found already cleaned=69; immediate c6 NoNode=0
+MC1| replace loop took 622 ms
+MC1| RESULT later getData NoNode on 931 of 1000 nodes this client created and never deleted; first=/adhoc-workload-b3-0
+MC1| txnlog: lost=931 removedByDeleteContainerAfterClientCreate=931 removedByAClientDeleteAfterClientCreate=0
+MC1| txnlog sample /adhoc-workload-b3-0: client create czxid=0x18; deleteContainer zxid=0xb22 session=0x0
+MC1| AFTER RESTART getData NoNode on 931 nodes; same set=true
+MC1| TOTAL expected line-674 frames = immediate c6 hits above + 931 + 931
+      2 Using checkIntervalMs=60000 maxPerMinute=10000 maxNeverUsedIntervalMs=300000
+manager log lines 'Attempting to delete candidate container': 1000
+FRAMES@674 1862
+threads: {'SyncThread:0': 1862}
+jdk.JavaExceptionThrow {
+  startTime = 22:27:17.342
+  message = N/A
+  thrownClass = org.apache.zookeeper.KeeperException$NoNodeException (classLoader = app)
+  eventThread = "SyncThread:0" (javaThreadId = 44)
+  stackTrace = [
+    java.lang.Throwable.<init>() line: 257
+    java.lang.Exception.<init>() line: 55
+    org.apache.zookeeper.KeeperException.<init>(KeeperException$Code) line: 526
+    org.apache.zookeeper.KeeperException$NoNodeException.<init>() line: 775
+    org.apache.zookeeper.server.FinalRequestProcessor.handleGetDataRequest(Record, ServerCnxn, List) line: 674
+    org.apache.zookeeper.server.FinalRequestProcessor.processRequest(Request) line: 403
+    org.apache.zookeeper.server.SyncRequestProcessor.run() line: 208
+  ]
+}
+== SCENARIO level0-standalone: mvn_exit=0 frames_at_FinalRequestProcessor_674=1862 expected=+ -> PASS  (artifacts: /tmp/mc1-jfr.1gQPjr)
+
+== OVERALL failed=0

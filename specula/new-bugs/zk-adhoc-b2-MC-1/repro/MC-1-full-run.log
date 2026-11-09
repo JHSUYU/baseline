@@ -1,0 +1,193 @@
+=== RUN 1: plain, no debugger, rounds=200 ===
+mvn exit=0
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 24.476 s - in org.apache.zookeeper.recipes.leader.SpeculaAdhocMC1Test
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+MC1 S1-ii round 1: p2 events=[START, OFFER_START, OFFER_COMPLETE, DETERMINE_START, DETERMINE_COMPLETE, READY_START, READY_COMPLETE, DETERMINE_START, FAILED] elected=false live offers=[n_0000000004]
+MC1 S1-ii after 3000ms: live offers=[n_0000000004] getLeaderHostName()=p2 p2.toString={ state:FAILED leaderOffer:{ id:4 nodePath:/1793829251058_1/n_0000000004 hostName:p2 } zooKeeper:State:CONNECTED Timeout:30000 sessionid:0x100378d13910000 local:/127.0.0.1:48152 remoteserver:/127.0.0.1:11223 lastZxid:13 xid:45 sent:45 recv:48 queuedpkts:0 pendingresp:0 queuedevents:0 hostName:p2 listeners:[org.apache.zookeeper.recipes.leader.SpeculaAdhocMC1Test$Participant$$Lambda$471/0x00007ff5501d6920@602e0143] }
+MC1 S1-ii events of p2 after FAILED: []
+MC1 S1-ii new joiner p4 events=[START, OFFER_START, OFFER_COMPLETE, DETERMINE_START, DETERMINE_COMPLETE, READY_START, READY_COMPLETE] elected within 3000ms=false
+MC1 S1-ii RESULT: no participant holds ELECTED while live offers exist; healthy p4 is blocked behind FAILED p2
+MC1 S1-ii only after an explicit p2.stop(): p4 elected=true
+MC1 S1-ii rounds=200 p2FAILED=19
+MC1 OBEYING round 2: p2 FAILED then stop() from its listener; p2 events=[START, OFFER_START, OFFER_COMPLETE, DETERMINE_START, DETERMINE_COMPLETE, READY_START, READY_COMPLETE, DETERMINE_START, STOP_START, STOP_COMPLETE, FAILED]
+MC1 OBEYING after 3000ms: live offers=[] getLeaderHostName()=null elected events on p2=false
+MC1 OBEYING RESULT: blocking offer gone, but the only live candidate left the election; no leader
+MC1 OBEYING application-level re-start() (not documented by the recipe): elected=true
+MC1 OBEYING hits=1
+MC1 GETLEADER rounds=200 NoNodeException to caller=128
+MC1 GETLEADER sample: org.apache.zookeeper.KeeperException$NoNodeException: KeeperErrorCode = NoNode for /1793829251058_1/n_0000000599
+MC1 GETLEADER   at org.apache.zookeeper.ZooKeeper.getData(ZooKeeper.java:2062)
+MC1 GETLEADER   at org.apache.zookeeper.ZooKeeper.getData(ZooKeeper.java:2090)
+MC1 GETLEADER   at org.apache.zookeeper.recipes.leader.LeaderElectionSupport.toLeaderOffers(LeaderElectionSupport.java:310)
+MC1 GETLEADER   at org.apache.zookeeper.recipes.leader.LeaderElectionSupport.getLeaderHostName(LeaderElectionSupport.java:291)
+MC1 S1-i round 4: p3 events=[START, OFFER_START, OFFER_COMPLETE, DETERMINE_START, FAILED] p3 offer live, p2 elected=true live offers=[n_0000000014, n_0000000013]
+MC1 S1-i (control would hand leadership to p3 on p2.stop()); stopping p2 now
+MC1 S1-i after 3000ms: live offers=[n_0000000014] getLeaderHostName()=p3 p3.toString={ state:FAILED leaderOffer:{ id:14 nodePath:/1793829251058_1/n_0000000014 hostName:p3 } zooKeeper:State:CONNECTED Timeout:30000 sessionid:0x100378d50a30000 local:/127.0.0.1:58648 remoteserver:/127.0.0.1:11228 lastZxid:31 xid:106 sent:106 recv:115 queuedpkts:0 pendingresp:0 queuedevents:0 hostName:p3 listeners:[org.apache.zookeeper.recipes.leader.SpeculaAdhocMC1Test$Participant$$Lambda$471/0x00007ff5501d6920@659eef7] }
+MC1 S1-i events of p3 after FAILED: []
+MC1 S1-i new joiner p4 events=[START, OFFER_START, OFFER_COMPLETE, DETERMINE_START, DETERMINE_COMPLETE, READY_START, READY_COMPLETE] elected within 3000ms=false
+MC1 S1-i RESULT: no participant holds ELECTED while live offers exist; healthy p4 is blocked behind FAILED p3
+MC1 S1-i only after an explicit p3.stop(): p4 elected=true
+MC1 S1-i rounds=200 p3FAILED=12
+MC1 WORKLOAD-SHAPE rounds=200 roundsWithFAILED=39 FAILEDparticipants=39 workload failureCounter=0
+MC1 CONTROL p2 elected=true p3 elected=true anyFailed=false
+=== RUN 2: with read-only JDI watcher, rounds=200 ===
+mvn exit=0
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 24.691 s - in org.apache.zookeeper.recipes.leader.SpeculaAdhocMC1Test
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+MC1 S1-ii round 1: p2 events=[START, OFFER_START, OFFER_COMPLETE, DETERMINE_START, DETERMINE_COMPLETE, READY_START, READY_COMPLETE, DETERMINE_START, FAILED] elected=false live offers=[n_0000000004]
+MC1 S1-ii after 3000ms: live offers=[n_0000000004] getLeaderHostName()=p2 p2.toString={ state:FAILED leaderOffer:{ id:4 nodePath:/1793829281292_1/n_0000000004 hostName:p2 } zooKeeper:State:CONNECTED Timeout:30000 sessionid:0x100378d89ad0000 local:/127.0.0.1:54096 remoteserver:/127.0.0.1:11223 lastZxid:13 xid:45 sent:45 recv:48 queuedpkts:0 pendingresp:0 queuedevents:0 hostName:p2 listeners:[org.apache.zookeeper.recipes.leader.SpeculaAdhocMC1Test$Participant$$Lambda$454/0x00007fa734197800@1e461e41] }
+MC1 S1-ii events of p2 after FAILED: []
+MC1 S1-ii new joiner p4 events=[START, OFFER_START, OFFER_COMPLETE, DETERMINE_START, DETERMINE_COMPLETE, READY_START, READY_COMPLETE] elected within 3000ms=false
+MC1 S1-ii RESULT: no participant holds ELECTED while live offers exist; healthy p4 is blocked behind FAILED p2
+MC1 S1-ii only after an explicit p2.stop(): p4 elected=true
+MC1 S1-ii rounds=200 p2FAILED=15
+MC1 OBEYING round 0: p2 FAILED then stop() from its listener; p2 events=[START, OFFER_START, OFFER_COMPLETE, DETERMINE_START, DETERMINE_COMPLETE, READY_START, READY_COMPLETE, DETERMINE_START, FAILED, STOP_START, STOP_COMPLETE]
+MC1 OBEYING after 3000ms: live offers=[] getLeaderHostName()=null elected events on p2=false
+MC1 OBEYING RESULT: blocking offer gone, but the only live candidate left the election; no leader
+MC1 OBEYING application-level re-start() (not documented by the recipe): elected=true
+MC1 OBEYING hits=1
+MC1 GETLEADER rounds=200 NoNodeException to caller=124
+MC1 GETLEADER sample: org.apache.zookeeper.KeeperException$NoNodeException: KeeperErrorCode = NoNode for /1793829281292_1/n_0000000599
+MC1 GETLEADER   at org.apache.zookeeper.ZooKeeper.getData(ZooKeeper.java:2062)
+MC1 GETLEADER   at org.apache.zookeeper.ZooKeeper.getData(ZooKeeper.java:2090)
+MC1 GETLEADER   at org.apache.zookeeper.recipes.leader.LeaderElectionSupport.toLeaderOffers(LeaderElectionSupport.java:310)
+MC1 GETLEADER   at org.apache.zookeeper.recipes.leader.LeaderElectionSupport.getLeaderHostName(LeaderElectionSupport.java:291)
+MC1 S1-i round 19: p3 events=[START, OFFER_START, OFFER_COMPLETE, DETERMINE_START, FAILED] p3 offer live, p2 elected=true live offers=[n_0000000058, n_0000000059]
+MC1 S1-i (control would hand leadership to p3 on p2.stop()); stopping p2 now
+MC1 S1-i after 3000ms: live offers=[n_0000000059] getLeaderHostName()=p3 p3.toString={ state:FAILED leaderOffer:{ id:59 nodePath:/1793829281292_1/n_0000000059 hostName:p3 } zooKeeper:State:CONNECTED Timeout:30000 sessionid:0x100378dc64f0000 local:/127.0.0.1:37482 remoteserver:/127.0.0.1:11228 lastZxid:121 xid:415 sent:415 recv:454 queuedpkts:0 pendingresp:0 queuedevents:0 hostName:p3 listeners:[org.apache.zookeeper.recipes.leader.SpeculaAdhocMC1Test$Participant$$Lambda$454/0x00007fa734197800@162be91c] }
+MC1 S1-i events of p3 after FAILED: []
+MC1 S1-i new joiner p4 events=[START, OFFER_START, OFFER_COMPLETE, DETERMINE_START, DETERMINE_COMPLETE, READY_START, READY_COMPLETE] elected within 3000ms=false
+MC1 S1-i RESULT: no participant holds ELECTED while live offers exist; healthy p4 is blocked behind FAILED p3
+MC1 S1-i only after an explicit p3.stop(): p4 elected=true
+MC1 S1-i rounds=200 p3FAILED=8
+MC1 WORKLOAD-SHAPE rounds=200 roundsWithFAILED=39 FAILEDparticipants=39 workload failureCounter=0
+MC1 CONTROL p2 elected=true p3 elected=true anyFailed=false
+JDI-THROW org.apache.zookeeper.KeeperException$NoNodeException thread=ProcessThread(sid:0 cport:11223): path="/1793829281292_1"
+JDI-THROW   at org.apache.zookeeper.server.PrepRequestProcessor.getRecordForPath(PrepRequestProcessor.java:184)
+JDI-THROW   at org.apache.zookeeper.server.PrepRequestProcessor.pRequest2TxnCreate(PrepRequestProcessor.java:671)
+JDI-THROW   at org.apache.zookeeper.server.PrepRequestProcessor.pRequest2Txn(PrepRequestProcessor.java:323)
+JDI-THROW   at org.apache.zookeeper.server.PrepRequestProcessor.pRequestHelper(PrepRequestProcessor.java:783)
+JDI-THROW   at org.apache.zookeeper.server.PrepRequestProcessor.pRequest(PrepRequestProcessor.java:763)
+JDI-THROW   at org.apache.zookeeper.server.PrepRequestProcessor.run(PrepRequestProcessor.java:154)
+JDI-THROW org.apache.zookeeper.KeeperException$NoNodeException thread=ProcessThread(sid:0 cport:11223): path="/1793829281292_1/n_0000000000"
+JDI-THROW   at org.apache.zookeeper.server.PrepRequestProcessor.getRecordForPath(PrepRequestProcessor.java:184)
+JDI-THROW   at org.apache.zookeeper.server.PrepRequestProcessor.pRequest2TxnCreate(PrepRequestProcessor.java:671)
+JDI-THROW   at org.apache.zookeeper.server.PrepRequestProcessor.pRequest2Txn(PrepRequestProcessor.java:323)
+JDI-THROW   at org.apache.zookeeper.server.PrepRequestProcessor.pRequestHelper(PrepRequestProcessor.java:783)
+JDI-THROW   at org.apache.zookeeper.server.PrepRequestProcessor.pRequest(PrepRequestProcessor.java:763)
+JDI-THROW   at org.apache.zookeeper.server.PrepRequestProcessor.run(PrepRequestProcessor.java:154)
+JDI-THROW org.apache.zookeeper.KeeperException$NoNodeException thread=SyncThread:0 path="/1793829281292_1/n_0000000005"
+JDI-THROW   at org.apache.zookeeper.server.FinalRequestProcessor.handleGetDataRequest(FinalRequestProcessor.java:674)
+JDI-THROW   at org.apache.zookeeper.server.FinalRequestProcessor.processRequest(FinalRequestProcessor.java:403)
+JDI-THROW   at org.apache.zookeeper.server.SyncRequestProcessor.run(SyncRequestProcessor.java:208)
+JDI-THROW org.apache.zookeeper.KeeperException$NoNodeException thread=main-EventThread path="/1793829281292_1/n_0000000005"
+JDI-THROW   at org.apache.zookeeper.ZooKeeper.getData(ZooKeeper.java:2062)
+JDI-THROW   at org.apache.zookeeper.ZooKeeper.getData(ZooKeeper.java:2090)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.LeaderElectionSupport.toLeaderOffers(LeaderElectionSupport.java:310)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.LeaderElectionSupport.determineElectionStatus(LeaderElectionSupport.java:199)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.LeaderElectionSupport.process(LeaderElectionSupport.java:335)
+JDI-THROW   at org.apache.zookeeper.ClientCnxn$EventThread.processEvent(ClientCnxn.java:591)
+JDI-THROW   at org.apache.zookeeper.ClientCnxn$EventThread.run(ClientCnxn.java:566)
+JDI-THROW org.apache.zookeeper.KeeperException$NoNodeException thread=SyncThread:0 path="/1793829281292_1/n_0000000009"
+JDI-THROW   at org.apache.zookeeper.server.FinalRequestProcessor.handleGetDataRequest(FinalRequestProcessor.java:674)
+JDI-THROW   at org.apache.zookeeper.server.FinalRequestProcessor.processRequest(FinalRequestProcessor.java:403)
+JDI-THROW   at org.apache.zookeeper.server.SyncRequestProcessor.run(SyncRequestProcessor.java:208)
+JDI-THROW org.apache.zookeeper.KeeperException$NoNodeException thread=main-EventThread path="/1793829281292_1/n_0000000009"
+JDI-THROW   at org.apache.zookeeper.ZooKeeper.getData(ZooKeeper.java:2062)
+JDI-THROW   at org.apache.zookeeper.ZooKeeper.getData(ZooKeeper.java:2090)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.LeaderElectionSupport.toLeaderOffers(LeaderElectionSupport.java:310)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.LeaderElectionSupport.determineElectionStatus(LeaderElectionSupport.java:199)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.LeaderElectionSupport.process(LeaderElectionSupport.java:335)
+JDI-THROW   at org.apache.zookeeper.ClientCnxn$EventThread.processEvent(ClientCnxn.java:591)
+JDI-THROW   at org.apache.zookeeper.ClientCnxn$EventThread.run(ClientCnxn.java:566)
+JDI-THROW org.apache.zookeeper.KeeperException$NoNodeException thread=Thread-402 path="/1793829281292_1/n_0000000002"
+JDI-THROW   at org.apache.zookeeper.ZooKeeper.getData(ZooKeeper.java:2062)
+JDI-THROW   at org.apache.zookeeper.ZooKeeper.getData(ZooKeeper.java:2090)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.LeaderElectionSupport.toLeaderOffers(LeaderElectionSupport.java:310)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.LeaderElectionSupport.getLeaderHostName(LeaderElectionSupport.java:291)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.SpeculaAdhocMC1Test.lambda$testGetLeaderHostNameVsPeerStop$4(SpeculaAdhocMC1Test.java:353)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.SpeculaAdhocMC1Test$$Lambda$495/0x00007fa7341a3170.run(?:-1)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.SpeculaAdhocMC1Test.lambda$race$0(SpeculaAdhocMC1Test.java:119)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.SpeculaAdhocMC1Test$$Lambda$469/0x00007fa73419eb38.run(?:-1)
+JDI-THROW   at java.lang.Thread.run(Thread.java:840)
+JDI-THROW org.apache.zookeeper.KeeperException$NoNodeException thread=Thread-404 path="/1793829281292_1/n_0000000005"
+JDI-THROW   at org.apache.zookeeper.ZooKeeper.getData(ZooKeeper.java:2062)
+JDI-THROW   at org.apache.zookeeper.ZooKeeper.getData(ZooKeeper.java:2090)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.LeaderElectionSupport.toLeaderOffers(LeaderElectionSupport.java:310)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.LeaderElectionSupport.getLeaderHostName(LeaderElectionSupport.java:291)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.SpeculaAdhocMC1Test.lambda$testGetLeaderHostNameVsPeerStop$4(SpeculaAdhocMC1Test.java:353)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.SpeculaAdhocMC1Test$$Lambda$495/0x00007fa7341a3170.run(?:-1)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.SpeculaAdhocMC1Test.lambda$race$0(SpeculaAdhocMC1Test.java:119)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.SpeculaAdhocMC1Test$$Lambda$469/0x00007fa73419eb38.run(?:-1)
+JDI-THROW   at java.lang.Thread.run(Thread.java:840)
+JDI-THROW org.apache.zookeeper.KeeperException$NoNodeException thread=Thread-840 path="/1793829281292_1/n_0000000057"
+JDI-THROW   at org.apache.zookeeper.ZooKeeper.getData(ZooKeeper.java:2062)
+JDI-THROW   at org.apache.zookeeper.ZooKeeper.getData(ZooKeeper.java:2090)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.LeaderElectionSupport.toLeaderOffers(LeaderElectionSupport.java:310)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.LeaderElectionSupport.determineElectionStatus(LeaderElectionSupport.java:199)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.LeaderElectionSupport.start(LeaderElectionSupport.java:137)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.SpeculaAdhocMC1Test$$Lambda$497/0x00007fa7341a37e0.run(?:-1)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.SpeculaAdhocMC1Test.lambda$race$0(SpeculaAdhocMC1Test.java:119)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.SpeculaAdhocMC1Test$$Lambda$469/0x00007fa73419eb38.run(?:-1)
+JDI-THROW   at java.lang.Thread.run(Thread.java:840)
+JDI-THROW org.apache.zookeeper.KeeperException$NoNodeException thread=Thread-854 path="/1793829281292_1/n_0000000079"
+JDI-THROW   at org.apache.zookeeper.ZooKeeper.getData(ZooKeeper.java:2062)
+JDI-THROW   at org.apache.zookeeper.ZooKeeper.getData(ZooKeeper.java:2090)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.LeaderElectionSupport.toLeaderOffers(LeaderElectionSupport.java:310)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.LeaderElectionSupport.determineElectionStatus(LeaderElectionSupport.java:199)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.LeaderElectionSupport.start(LeaderElectionSupport.java:137)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.SpeculaAdhocMC1Test$$Lambda$497/0x00007fa7341a37e0.run(?:-1)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.SpeculaAdhocMC1Test.lambda$race$0(SpeculaAdhocMC1Test.java:119)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.SpeculaAdhocMC1Test$$Lambda$469/0x00007fa73419eb38.run(?:-1)
+JDI-THROW   at java.lang.Thread.run(Thread.java:840)
+JDI-THROW org.apache.zookeeper.KeeperException$NoNodeException thread=SyncThread:0 path="/1793829281292_1/n_0000000000"
+JDI-THROW   at org.apache.zookeeper.server.DataTree.statNode(DataTree.java:714)
+JDI-THROW   at org.apache.zookeeper.server.ZKDatabase.statNode(ZKDatabase.java:506)
+JDI-THROW   at org.apache.zookeeper.server.FinalRequestProcessor.processRequest(FinalRequestProcessor.java:393)
+JDI-THROW   at org.apache.zookeeper.server.SyncRequestProcessor.run(SyncRequestProcessor.java:208)
+JDI-THROW org.apache.zookeeper.KeeperException$NoNodeException thread=Thread-1203 path="/1793829281292_1/n_0000000002"
+JDI-THROW   at org.apache.zookeeper.ZooKeeper.getData(ZooKeeper.java:2062)
+JDI-THROW   at org.apache.zookeeper.ZooKeeper.getData(ZooKeeper.java:2090)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.LeaderElectionSupport.toLeaderOffers(LeaderElectionSupport.java:310)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.LeaderElectionSupport.determineElectionStatus(LeaderElectionSupport.java:199)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.LeaderElectionSupport.becomeReady(LeaderElectionSupport.java:256)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.LeaderElectionSupport.determineElectionStatus(LeaderElectionSupport.java:218)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.LeaderElectionSupport.start(LeaderElectionSupport.java:137)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.SpeculaAdhocMC1Test.lambda$testWorkloadShape$2(SpeculaAdhocMC1Test.java:204)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.SpeculaAdhocMC1Test$$Lambda$499/0x00007fa7341a3c30.run(?:-1)
+JDI-THROW org.apache.zookeeper.KeeperException$NoNodeException thread=SyncThread:0 path="/1793829281292_1/n_0000000015"
+JDI-THROW   at org.apache.zookeeper.server.DataTree.statNode(DataTree.java:714)
+JDI-THROW   at org.apache.zookeeper.server.ZKDatabase.statNode(ZKDatabase.java:506)
+JDI-THROW   at org.apache.zookeeper.server.FinalRequestProcessor.processRequest(FinalRequestProcessor.java:393)
+JDI-THROW   at org.apache.zookeeper.server.SyncRequestProcessor.run(SyncRequestProcessor.java:208)
+JDI-THROW org.apache.zookeeper.KeeperException$NoNodeException thread=Thread-1218 path="/1793829281292_1/n_0000000017"
+JDI-THROW   at org.apache.zookeeper.ZooKeeper.getData(ZooKeeper.java:2062)
+JDI-THROW   at org.apache.zookeeper.ZooKeeper.getData(ZooKeeper.java:2090)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.LeaderElectionSupport.toLeaderOffers(LeaderElectionSupport.java:310)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.LeaderElectionSupport.determineElectionStatus(LeaderElectionSupport.java:199)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.LeaderElectionSupport.becomeReady(LeaderElectionSupport.java:256)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.LeaderElectionSupport.determineElectionStatus(LeaderElectionSupport.java:218)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.LeaderElectionSupport.start(LeaderElectionSupport.java:137)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.SpeculaAdhocMC1Test.lambda$testWorkloadShape$2(SpeculaAdhocMC1Test.java:204)
+JDI-THROW   at org.apache.zookeeper.recipes.leader.SpeculaAdhocMC1Test$$Lambda$499/0x00007fa7341a3c30.run(?:-1)
+JDI-SUMMARY (throw location | first LeaderElectionSupport frames) count:
+JDI-SUMMARY 39  org.apache.zookeeper.ZooKeeper.getData:2062 | toLeaderOffers:310 determineElectionStatus:199 becomeReady:256 determineElectionStatus:218 start:137 
+JDI-SUMMARY 403  org.apache.zookeeper.ZooKeeper.getData:2062 | toLeaderOffers:310 determineElectionStatus:199 process:335 
+JDI-SUMMARY 8  org.apache.zookeeper.ZooKeeper.getData:2062 | toLeaderOffers:310 determineElectionStatus:199 start:137 
+JDI-SUMMARY 124  org.apache.zookeeper.ZooKeeper.getData:2062 | toLeaderOffers:310 getLeaderHostName:291 
+JDI-SUMMARY 40  org.apache.zookeeper.server.DataTree.statNode:714 | 
+JDI-SUMMARY 574  org.apache.zookeeper.server.FinalRequestProcessor.handleGetDataRequest:674 | 
+JDI-SUMMARY 2415  org.apache.zookeeper.server.PrepRequestProcessor.getRecordForPath:184 | 
+=== RUN 3: UNMODIFIED LeaderElectionSupportTest#testNodes3+testNodes20+testNodes100 with read-only JDI watcher ===
+mvn exit=0
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 10.801 s - in org.apache.zookeeper.recipes.leader.LeaderElectionSupportTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+JDI-SUMMARY (throw location | first LeaderElectionSupport frames) count:
+JDI-SUMMARY 1  org.apache.zookeeper.ZooKeeper.getData:2062 | toLeaderOffers:310 determineElectionStatus:199 process:335 
+JDI-SUMMARY 1  org.apache.zookeeper.server.FinalRequestProcessor.handleGetDataRequest:674 | 
+JDI-SUMMARY 126  org.apache.zookeeper.server.PrepRequestProcessor.getRecordForPath:184 | 
+BUG TRIGGERED: target frame and consequence observed
+timeout 28m $OUT/repro/test_bugMC-1_peer_stop_vs_getdata.sh 200  114.73s user 10.89s system 162% cpu 1:17.41 total

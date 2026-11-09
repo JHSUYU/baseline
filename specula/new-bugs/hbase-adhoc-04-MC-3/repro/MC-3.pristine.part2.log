@@ -1,0 +1,48 @@
+mvn rc=0 (124 = the outer timeout fired)
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 229.7 s -- in org.apache.hadoop.hbase.quotas.SpeculaAdhoc04MC3Test
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+--- classpath check: where the modules loaded from
+/bulk/specula-adhoc/specula-runs/20261102-195741-2e6a/hbase-adhoc-04/.specula-output/confirmation/MC-3/pristine/hbase-server/target/classes
+/bulk/specula-adhoc/specula-runs/20261102-195741-2e6a/hbase-adhoc-04/.specula-output/confirmation/MC-3/pristine/hbase-common/target/classes
+/bulk/specula-adhoc/specula-runs/20261102-195741-2e6a/hbase-adhoc-04/.specula-output/confirmation/MC-3/pristine/hbase-procedure/target/classes
+/bulk/specula-adhoc/specula-runs/20261102-195741-2e6a/hbase-adhoc-04/.specula-output/confirmation/MC-3/pristine/hbase-client/target/classes
+--- evidence
+2026-11-05T10:55:19,724 prodShape: the master's observer disabled mc3prod0 for its quota violation
+2026-11-05T10:55:19,724 killing active master clnode245.clemson.cloudlab.us,45977,1793876091613
+2026-11-05T10:55:21,397 master clnode245.clemson.cloudlab.us,45977,1793876091613 is down
+2026-11-05T10:55:26,519 new active master clnode245.clemson.cloudlab.us,45977,1793876121425 initialized
+2026-11-05T10:56:11,548 prodShape: 45s after raising the limit on the new master: disabled=true row=SpaceQuotaSnapshot[policy=SpaceQuotaStatus[policy=Optional[DISABLE], inViolation=true], use=3.41 MB/2 MB]
+2026-11-05T10:56:11,671 client admin.flush threw org.apache.hadoop.hbase.TableNotEnabledException: mc3prod0
+2026-11-05T10:56:11,671 server procedure pid=63, state=ROLLEDBACK, hasLock=false, exception=org.apache.hadoop.hbase.TableNotEnabledException via master-flush-table:org.apache.hadoop.hbase.TableNotEnabledException: mc3prod0; org.apache.hadoop.hbase.master.procedure.FlushTableProcedure, id=63, table=mc3prod0 failed with org.apache
+2026-11-05T10:56:11,672   server frame: org.apache.hadoop.hbase.master.procedure.AbstractStateMachineTableProcedure.preflightChecks(AbstractStateMachineTableProcedure.java:163)
+2026-11-05T10:56:11,672   server frame: org.apache.hadoop.hbase.master.procedure.FlushTableProcedure.preflightChecks(FlushTableProcedure.java:119)
+2026-11-05T10:56:11,672   server frame: org.apache.hadoop.hbase.master.procedure.FlushTableProcedure.executeFromState(FlushTableProcedure.java:96)
+2026-11-05T10:56:11,672   server frame: org.apache.hadoop.hbase.master.procedure.FlushTableProcedure.executeFromState(FlushTableProcedure.java:47)
+2026-11-05T10:56:11,672   server frame: org.apache.hadoop.hbase.procedure2.StateMachineProcedure.execute(StateMachineProcedure.java:188)
+2026-11-05T10:56:11,672   server frame: org.apache.hadoop.hbase.procedure2.Procedure.doExecute(Procedure.java:969)
+2026-11-05T10:56:11,672   server frame: org.apache.hadoop.hbase.procedure2.ProcedureExecutor.execProcedure(ProcedureExecutor.java:1826)
+2026-11-05T10:56:11,672   server frame: org.apache.hadoop.hbase.procedure2.ProcedureExecutor.executeProcedure(ProcedureExecutor.java:1503)
+2026-11-05T10:56:11,672   server frame: org.apache.hadoop.hbase.procedure2.ProcedureExecutor$WorkerThread.runProcedure(ProcedureExecutor.java:2159)
+2026-11-05T10:56:11,672   server frame: org.apache.hadoop.hbase.trace.TraceUtil.trace(TraceUtil.java:216)
+2026-11-05T10:56:11,672   server frame: org.apache.hadoop.hbase.procedure2.ProcedureExecutor$WorkerThread.run(ProcedureExecutor.java:2186)
+2026-11-05T10:56:11,672 TARGET FIRED: TableNotEnabledException thrown at AbstractStateMachineTableProcedure.java:163
+2026-11-05T10:56:11,684 prodShape: manual admin.enableTable threw org.apache.hadoop.hbase.security.AccessDeniedException: org.apache.hadoop.hbase.security.AccessDeniedException: Enabling the table 'mc3prod0' is disallowed due to a violated space quota.
+2026-11-05T10:56:11,686 prodShape: finally disabled=true
+2026-11-05T10:56:51,263 prodShape: the master's observer disabled mc3ctl0 for its quota violation
+2026-11-05T10:56:53,281 prodShape control: limit raised, the observer enabled mc3ctl0
+2026-11-05T10:56:53,609 prodShape control: flush succeeded
+2026-11-05T10:57:23,989 E reached the hold point: E in its first action step, lock persisted
+2026-11-05T10:57:27,054 master clnode245.clemson.cloudlab.us,36483,1793876230899 is down
+2026-11-05T10:57:32,552 new active master clnode245.clemson.cloudlab.us,36483,1793876247082 initialized
+2026-11-05T10:57:42,250 observer run 0: returned normally; current=SpaceQuotaSnapshot[policy=SpaceQuotaStatus[policy=Optional[DISABLE], inViolation=true], use=2 KB/1 KB] equalsTarget=false
+2026-11-05T10:57:42,251 observer run 1: returned normally; current=SpaceQuotaSnapshot[policy=SpaceQuotaStatus[policy=Optional.empty, inViolation=false], use=2 KB/4 KB] equalsTarget=true
+2026-11-05T10:57:42,251 E in its first action step, lock persisted: observer runs that failed = 0
+2026-11-05T10:57:42,581 E in its first action step, lock persisted: flush succeeded; table enabled = true
+2026-11-05T10:58:10,246 E reached the hold point: E submitted, response not sent
+2026-11-05T10:58:11,860 observer run 0: FAILED with org.apache.hadoop.hbase.client.RetriesExhaustedException: Failed after attempts=1, exceptions:
+2026-11-05T10:58:11,860 observer run 1: returned normally; current=SpaceQuotaSnapshot[policy=SpaceQuotaStatus[policy=Optional.empty, inViolation=false], use=2 KB/4 KB] equalsTarget=true
+2026-11-05T10:58:11,860 E submitted, response not sent: observer runs that failed = 1
+2026-11-05T10:58:14,137 master clnode245.clemson.cloudlab.us,45927,1793876278862 is down
+2026-11-05T10:58:19,230 new active master clnode245.clemson.cloudlab.us,45927,1793876294163 initialized
+2026-11-05T10:58:20,364 E submitted, response not sent: flush succeeded; table enabled = true

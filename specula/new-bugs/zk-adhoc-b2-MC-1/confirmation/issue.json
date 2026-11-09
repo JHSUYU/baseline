@@ -1,0 +1,37 @@
+{
+  "id": "MC-1",
+  "title": "A peer's stop() deletes a listed offer before a participant's getData on it, leaving a FAILED live offer and no leader",
+  "status": "REPRODUCED",
+  "source": "model-checking",
+  "cause": "LeaderElectionSupport.toLeaderOffers reads each child from an earlier getChildren with a separate getData (LES:199, 310) and does not tolerate a vanished child, so a peer's delete at LES:155 makes FinalRequestProcessor.java:674 throw NoNodeException.",
+  "trigger": "A participant inside start() or a watch re-determination has listed offers when a peer's ordinary stop() delete is served before its getData on that offer. No fault is needed.",
+  "consequence": "The participant goes FAILED with its offer live and no watch and never re-enters the election. Listeners never get ELECTED, getLeaderHostName names the FAILED host, a healthy joiner stays READY behind it until an explicit stop(), and getLeaderHostName callers get NoNodeException.",
+  "sites": [
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/FinalRequestProcessor.java:handleGetDataRequest",
+    "zookeeper-recipes/zookeeper-recipes-election/src/main/java/org/apache/zookeeper/recipes/leader/LeaderElectionSupport.java:toLeaderOffers"
+  ],
+  "actions": [],
+  "invariants": ["TargetSafe"],
+  "premises": [
+    "A start() or watch re-determination overlaps a peer's stop(); stop() is documented as allowed at any time.",
+    "Reproduced with all participants on one shared handle and one standalone ClientBase server, as in the workload; separate sessions were not exercised.",
+    "A listener that obeys the Javadoc by calling stop() on FAILED removes the blocking offer but the participant leaves the election; only an application-level re-start() rejoins, and the recipe does not document that."
+  ],
+  "dependencies": [
+    {"root": "source", "path": "zookeeper-recipes/zookeeper-recipes-election/src/main/java/org/apache/zookeeper/recipes/leader/LeaderElectionSupport.java"},
+    {"root": "source", "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/FinalRequestProcessor.java", "start": "    private Record handleGetDataRequest(Record request, ServerCnxn cnxn, List<Id> authInfo) throws KeeperException, IOException {", "end": "        return new GetDataResponse(b, stat);"},
+    {"root": "work", "path": "spec/base.tla"},
+    {"root": "work", "path": "spec/MC.tla"},
+    {"root": "work", "path": "spec/MC_hunt_s1.cfg"}
+  ],
+  "evidence": [
+    "confirmation/MC-1/investigation.md",
+    "repro/test_bugMC-1_peer_stop_vs_getdata.sh",
+    "repro/MC-1-full-run.log",
+    "repro/MC-1-plain.out",
+    "repro/MC-1-jdi.out",
+    "repro/MC-1-jdi.frames",
+    "repro/MC-1-workload.frames",
+    "spec/output/MC_hunt_s1_bfs.out"
+  ]
+}

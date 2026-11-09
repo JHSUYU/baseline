@@ -1,0 +1,96 @@
+HEAD: 1790942bb2
+      if (
+        (currentStatus.getRegionCount() - regionCountOfTable + incr)
+            > TableNamespaceManager.getMaxRegions(nspdesc)
+      ) {
+        throw new QuotaExceededException("The table " + name.getNameAsString()
+          + " region count cannot be updated as it would exceed maximum number "
+mvn exit code: 0
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 98.28 s -- in org.apache.hadoop.hbase.namespace.SpeculaAdhocMC4RebuildReplicasTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+--- test markers
+MC4>> control before restore: cache{A=2,B=4,total=6} primaries{A=2,B=4,total=6} quota=10
+MC4>> control after restore: cache{A=3,B=4,total=7} primaries{A=3,B=4,total=7} quota=10
+MC4>> control: restore ADMITTED (no failover, replication 2)
+MC4>> abort active master clnode245.clemson.cloudlab.us,41511,1793892530623
+MC4>> new active master clnode245.clemson.cloudlab.us,45659,1793892530571
+MC4>> no-replica control after failover: cache{A=2,B=4,total=6} primaries{A=2,B=4,total=6} quota=10
+MC4>> no-replica control after restore: cache{A=3,B=4,total=7} primaries{A=3,B=4,total=7} quota=10
+MC4>> no-replica control: restore ADMITTED (failover, replication 1)
+MC4>> before failover: cache{A=2,B=4,total=6} primaries{A=2,B=4,total=6} quota=10
+MC4>> abort active master clnode245.clemson.cloudlab.us,45659,1793892530571
+MC4>> new active master clnode245.clemson.cloudlab.us,36423,1793892530447
+MC4>> after failover: cache{A=2,B=8,total=10} primaries{A=2,B=4,total=6} quota=10
+MC4>> before restore: cache{A=2,B=8,total=10} primaries{A=2,B=4,total=6} quota=10
+MC4>> first restore: restoreSnapshot threw org.apache.hadoop.hbase.snapshot.RestoreSnapshotException: Restore snapshot=mc4_ce_s failed, Rollback to snapshot=hbase-failsafe-mc4_ce_s-1793892574701 succeeded.
+MC4>>   caused by org.apache.hadoop.hbase.quotas.QuotaExceededException: The table mc4_ce:A region count cannot be updated as it would exceed maximum number of regions allowed in the namespace.  The total number of regions permitted is 10
+MC4>>     at org.apache.hadoop.hbase.namespace.NamespaceStateManager.checkAndUpdateNamespaceRegionCount(NamespaceStateManager.java:133)
+MC4>>     at org.apache.hadoop.hbase.namespace.NamespaceAuditor.checkQuotaToUpdateRegion(NamespaceAuditor.java:81)
+MC4>>     at org.apache.hadoop.hbase.quotas.MasterQuotaManager.checkAndUpdateNamespaceRegionQuota(MasterQuotaManager.java:524)
+MC4>>     at org.apache.hadoop.hbase.master.procedure.RestoreSnapshotProcedure.prepareRestore(RestoreSnapshotProcedure.java:389)
+MC4>>     at org.apache.hadoop.hbase.master.procedure.RestoreSnapshotProcedure.executeFromState(RestoreSnapshotProcedure.java:152)
+MC4>>     at org.apache.hadoop.hbase.master.procedure.RestoreSnapshotProcedure.executeFromState(RestoreSnapshotProcedure.java:71)
+MC4>>     at org.apache.hadoop.hbase.procedure2.StateMachineProcedure.execute(StateMachineProcedure.java:188)
+MC4>>     at org.apache.hadoop.hbase.procedure2.Procedure.doExecute(Procedure.java:969)
+MC4>>     at org.apache.hadoop.hbase.procedure2.ProcedureExecutor.execProcedure(ProcedureExecutor.java:1826)
+MC4>>     at org.apache.hadoop.hbase.procedure2.ProcedureExecutor.executeProcedure(ProcedureExecutor.java:1503)
+MC4>>     at org.apache.hadoop.hbase.procedure2.ProcedureExecutor$WorkerThread.runProcedure(ProcedureExecutor.java:2159)
+MC4>>     at org.apache.hadoop.hbase.trace.TraceUtil.trace(TraceUtil.java:216)
+MC4>>     at org.apache.hadoop.hbase.procedure2.ProcedureExecutor$WorkerThread.run(ProcedureExecutor.java:2186)
+MC4>> guard: 10 - 2 + 3 = 11 > 10; admitting it would really leave 3 + 4 = 7 primaries
+MC4>> after 20s and a janitor run: cache{A=2,B=8,total=10} primaries{A=2,B=4,total=6} quota=10
+MC4>> retry after wait: restoreSnapshot threw org.apache.hadoop.hbase.snapshot.RestoreSnapshotException: Restore snapshot=mc4_ce_s failed, Rollback to snapshot=hbase-failsafe-mc4_ce_s-1793892597688 succeeded.
+MC4>>   caused by org.apache.hadoop.hbase.quotas.QuotaExceededException: The table mc4_ce:A region count cannot be updated as it would exceed maximum number of regions allowed in the namespace.  The total number of regions permitted is 10
+MC4>>     at org.apache.hadoop.hbase.namespace.NamespaceStateManager.checkAndUpdateNamespaceRegionCount(NamespaceStateManager.java:133)
+MC4>>     at org.apache.hadoop.hbase.namespace.NamespaceAuditor.checkQuotaToUpdateRegion(NamespaceAuditor.java:81)
+MC4>>     at org.apache.hadoop.hbase.quotas.MasterQuotaManager.checkAndUpdateNamespaceRegionQuota(MasterQuotaManager.java:524)
+MC4>>     at org.apache.hadoop.hbase.master.procedure.RestoreSnapshotProcedure.prepareRestore(RestoreSnapshotProcedure.java:389)
+MC4>>     at org.apache.hadoop.hbase.master.procedure.RestoreSnapshotProcedure.executeFromState(RestoreSnapshotProcedure.java:152)
+MC4>>     at org.apache.hadoop.hbase.master.procedure.RestoreSnapshotProcedure.executeFromState(RestoreSnapshotProcedure.java:71)
+MC4>>     at org.apache.hadoop.hbase.procedure2.StateMachineProcedure.execute(StateMachineProcedure.java:188)
+MC4>>     at org.apache.hadoop.hbase.procedure2.Procedure.doExecute(Procedure.java:969)
+MC4>>     at org.apache.hadoop.hbase.procedure2.ProcedureExecutor.execProcedure(ProcedureExecutor.java:1826)
+MC4>>     at org.apache.hadoop.hbase.procedure2.ProcedureExecutor.executeProcedure(ProcedureExecutor.java:1503)
+MC4>>     at org.apache.hadoop.hbase.procedure2.ProcedureExecutor$WorkerThread.runProcedure(ProcedureExecutor.java:2159)
+MC4>>     at org.apache.hadoop.hbase.trace.TraceUtil.trace(TraceUtil.java:216)
+MC4>>     at org.apache.hadoop.hbase.procedure2.ProcedureExecutor$WorkerThread.run(ProcedureExecutor.java:2186)
+MC4>> abort active master clnode245.clemson.cloudlab.us,36423,1793892530447
+MC4>> new active master clnode245.clemson.cloudlab.us,37293,1793892530670
+MC4>> after second failover: cache{A=2,B=8,total=10} primaries{A=2,B=4,total=6} quota=10
+MC4>> retry after second failover: restoreSnapshot threw org.apache.hadoop.hbase.snapshot.RestoreSnapshotException: Restore snapshot=mc4_ce_s failed, Rollback to snapshot=hbase-failsafe-mc4_ce_s-1793892601911 succeeded.
+MC4>>   caused by org.apache.hadoop.hbase.quotas.QuotaExceededException: The table mc4_ce:A region count cannot be updated as it would exceed maximum number of regions allowed in the namespace.  The total number of regions permitted is 10
+MC4>>     at org.apache.hadoop.hbase.namespace.NamespaceStateManager.checkAndUpdateNamespaceRegionCount(NamespaceStateManager.java:133)
+MC4>>     at org.apache.hadoop.hbase.namespace.NamespaceAuditor.checkQuotaToUpdateRegion(NamespaceAuditor.java:81)
+MC4>>     at org.apache.hadoop.hbase.quotas.MasterQuotaManager.checkAndUpdateNamespaceRegionQuota(MasterQuotaManager.java:524)
+MC4>>     at org.apache.hadoop.hbase.master.procedure.RestoreSnapshotProcedure.prepareRestore(RestoreSnapshotProcedure.java:389)
+MC4>>     at org.apache.hadoop.hbase.master.procedure.RestoreSnapshotProcedure.executeFromState(RestoreSnapshotProcedure.java:152)
+MC4>>     at org.apache.hadoop.hbase.master.procedure.RestoreSnapshotProcedure.executeFromState(RestoreSnapshotProcedure.java:71)
+MC4>>     at org.apache.hadoop.hbase.procedure2.StateMachineProcedure.execute(StateMachineProcedure.java:188)
+MC4>>     at org.apache.hadoop.hbase.procedure2.Procedure.doExecute(Procedure.java:969)
+MC4>>     at org.apache.hadoop.hbase.procedure2.ProcedureExecutor.execProcedure(ProcedureExecutor.java:1826)
+MC4>>     at org.apache.hadoop.hbase.procedure2.ProcedureExecutor.executeProcedure(ProcedureExecutor.java:1503)
+MC4>>     at org.apache.hadoop.hbase.procedure2.ProcedureExecutor$WorkerThread.runProcedure(ProcedureExecutor.java:2159)
+MC4>>     at org.apache.hadoop.hbase.trace.TraceUtil.trace(TraceUtil.java:216)
+MC4>>     at org.apache.hadoop.hbase.procedure2.ProcedureExecutor$WorkerThread.run(ProcedureExecutor.java:2186)
+MC4>> end: cache{A=2,B=8,total=10} primaries{A=2,B=4,total=6} quota=10
+MC4>> before failover: cache{A=1,B=4,total=5} primaries{A=1,B=4,total=5} quota=10
+MC4>> abort active master clnode245.clemson.cloudlab.us,37293,1793892530670
+MC4>> new active master clnode245.clemson.cloudlab.us,37097,1793892529642
+MC4>> after failover: cache{A=1,B=8,total=9} primaries{A=1,B=4,total=5} quota=10
+MC4>> restore: restoreSnapshot threw org.apache.hadoop.hbase.snapshot.RestoreSnapshotException: Restore snapshot=mc4_recreate_s failed, Rollback to snapshot=hbase-failsafe-mc4_recreate_s-1793892616639 succeeded.
+MC4>>   caused by org.apache.hadoop.hbase.quotas.QuotaExceededException: The table mc4_recreate:A region count cannot be updated as it would exceed maximum number of regions allowed in the namespace.  The total number of regions permitted is 10
+MC4>>     at org.apache.hadoop.hbase.namespace.NamespaceStateManager.checkAndUpdateNamespaceRegionCount(NamespaceStateManager.java:133)
+MC4>>     at org.apache.hadoop.hbase.namespace.NamespaceAuditor.checkQuotaToUpdateRegion(NamespaceAuditor.java:81)
+MC4>>     at org.apache.hadoop.hbase.quotas.MasterQuotaManager.checkAndUpdateNamespaceRegionQuota(MasterQuotaManager.java:524)
+MC4>>     at org.apache.hadoop.hbase.master.procedure.RestoreSnapshotProcedure.prepareRestore(RestoreSnapshotProcedure.java:389)
+MC4>>     at org.apache.hadoop.hbase.master.procedure.RestoreSnapshotProcedure.executeFromState(RestoreSnapshotProcedure.java:152)
+MC4>>     at org.apache.hadoop.hbase.master.procedure.RestoreSnapshotProcedure.executeFromState(RestoreSnapshotProcedure.java:71)
+MC4>>     at org.apache.hadoop.hbase.procedure2.StateMachineProcedure.execute(StateMachineProcedure.java:188)
+MC4>>     at org.apache.hadoop.hbase.procedure2.Procedure.doExecute(Procedure.java:969)
+MC4>>     at org.apache.hadoop.hbase.procedure2.ProcedureExecutor.execProcedure(ProcedureExecutor.java:1826)
+MC4>>     at org.apache.hadoop.hbase.procedure2.ProcedureExecutor.executeProcedure(ProcedureExecutor.java:1503)
+MC4>>     at org.apache.hadoop.hbase.procedure2.ProcedureExecutor$WorkerThread.runProcedure(ProcedureExecutor.java:2159)
+MC4>>     at org.apache.hadoop.hbase.trace.TraceUtil.trace(TraceUtil.java:216)
+MC4>>     at org.apache.hadoop.hbase.procedure2.ProcedureExecutor$WorkerThread.run(ProcedureExecutor.java:2186)
+MC4>> guard: 9 - 1 + 3 = 11 > 10; admitting it would really leave 3 + 4 = 7 primaries

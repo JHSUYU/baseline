@@ -1,0 +1,42 @@
+id: zk-adhoc-k2
+system: Apache ZooKeeper
+source_tree: /set/by/run-case.sh
+base_commit: 7f7b3bc307
+check:
+  file: src/java/main/org/apache/zookeeper/server/SessionTrackerImpl.java
+  line: 310
+  method: SessionTrackerImpl.checkSession(long, Object)
+  thrown: org.apache.zookeeper.KeeperException.SessionMovedException
+  guard: "session.owner != owner   (session = sessionsById.get(sessionId); taken when session.owner is already set)"
+workload:
+  module: .
+  test: org.apache.zookeeper.test.SessionUpgradeTest#testUpgradeWithEphemeralOnFollower
+  note: the test reaches the check's method and passes; the check does not fail in it
+scope_hint:
+  - org.apache.zookeeper.server.SessionTrackerImpl
+  - org.apache.zookeeper.server.SessionTracker
+  - org.apache.zookeeper.server.PrepRequestProcessor
+  - org.apache.zookeeper.server.FinalRequestProcessor
+  - org.apache.zookeeper.server.ZooKeeperServer
+  - org.apache.zookeeper.server.ServerCnxn
+  - org.apache.zookeeper.server.NIOServerCnxn
+  - org.apache.zookeeper.server.Request
+  - org.apache.zookeeper.server.quorum.Leader
+  - org.apache.zookeeper.server.quorum.LeaderZooKeeperServer
+  - org.apache.zookeeper.server.quorum.LearnerHandler
+  - org.apache.zookeeper.server.quorum.Learner
+  - org.apache.zookeeper.server.quorum.Follower
+  - org.apache.zookeeper.server.quorum.FollowerZooKeeperServer
+  - org.apache.zookeeper.server.quorum.FollowerRequestProcessor
+  - org.apache.zookeeper.server.quorum.CommitProcessor
+  - org.apache.zookeeper.server.quorum.LearnerSessionTracker
+  - org.apache.zookeeper.server.quorum.LeaderSessionTracker
+  - org.apache.zookeeper.server.quorum.UpgradeableSessionTracker
+  - org.apache.zookeeper.server.quorum.LearnerZooKeeperServer
+  - org.apache.zookeeper.ClientCnxn
+  - org.apache.zookeeper.ZooKeeper
+  - org.apache.zookeeper.KeeperException
+build:
+  env: /set/by/run-case.sh
+  prepare: "ant test-init   (already done once)"
+  test_command: "ant -Dtestcase=<Class> -Dtest.method=<method> test-core-java   (test reports in build/test/logs/TEST-<package>.<Class>.txt)"

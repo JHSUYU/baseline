@@ -1,0 +1,182 @@
+# CR-3 reproduction output (unpatched = instrumented eab16599; trace disabled)
+
+##### A. Level 0, compressed intervals (final test version)
+### method=restoreLeavesManagerOnOldTree mvn_exit=0 extra=
+eab16599
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 36.825 s - in org.apache.zookeeper.server.SpeculaAdhocB3RestoreCR3Test
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+### test output
+2026-11-04 21:58:37,556 [myid:] - INFO  [Standalone server with clientPort:11222:o.a.z.s.ContainerManager@97] - Using checkIntervalMs=4000 maxPerMinute=10000 maxNeverUsedIntervalMs=20000
+[CR3] 1793829517735 server up: ZooKeeperServerMain client=11222 admin=11224 checkMs=4000 neverUsedMs=20000 defaults=false
+[CR3] 1793829518102 GET /commands/snapshot -> 200 last_zxid=0x5 bytes=867
+[CR3] 1793829518119 old tree before restore: /adhoc-workload-b3 {ephemeralOwner=0x0 cversion=2}  /cr3-never-used {ephemeralOwner=0x0 cversion=0}
+2026-11-04 21:58:38,237 [myid:] - INFO  [qtp388026024-35:o.a.z.s.ZooKeeperServer@616] - Restored to a new database. lastProcessedZxid=5, nodeCount=8, sessionCount=1
+2026-11-04 21:58:38,237 [myid:] - INFO  [qtp388026024-35:o.a.z.s.ZooKeeperServer@637] - After restore database. lastProcessedZxid=5, nodeCount=8, sessionCount=1
+[CR3] 1793829518397 POST /commands/restore -> 200 { "last_zxid" : 5, "command" : "restore", "error" : null }
+[CR3] 1793829518410 restored tree: /adhoc-workload-b3 {ephemeralOwner=0x0 cversion=0} data=v1  /cr3-never-used {ephemeralOwner=0x0 cversion=0}  /cr3-control {ephemeralOwner=0x0 cversion=0} data=v1
+2026-11-04 21:58:41,558 [myid:] - INFO  [ContainerManagerTask:o.a.z.s.ContainerManager@148] - Attempting to delete candidate container: /adhoc-workload-b3
+[CR3] 1793829521580 getData(/adhoc-workload-b3) -> org.apache.zookeeper.KeeperException$NoNodeException: KeeperErrorCode = NoNode for /adhoc-workload-b3 after 3170 ms
+2026-11-04 21:58:45,557 [myid:] - INFO  [ContainerManagerTask:o.a.z.s.ContainerManager@148] - Attempting to delete candidate container: /adhoc-workload-b3
+2026-11-04 21:58:49,558 [myid:] - INFO  [ContainerManagerTask:o.a.z.s.ContainerManager@148] - Attempting to delete candidate container: /adhoc-workload-b3
+2026-11-04 21:58:53,557 [myid:] - INFO  [ContainerManagerTask:o.a.z.s.ContainerManager@148] - Attempting to delete candidate container: /adhoc-workload-b3
+2026-11-04 21:58:57,558 [myid:] - INFO  [ContainerManagerTask:o.a.z.s.ContainerManager@148] - Attempting to delete candidate container: /adhoc-workload-b3
+2026-11-04 21:59:01,557 [myid:] - INFO  [ContainerManagerTask:o.a.z.s.ContainerManager@148] - Attempting to delete candidate container: /cr3-never-used
+2026-11-04 21:59:01,563 [myid:] - INFO  [ContainerManagerTask:o.a.z.s.ContainerManager@148] - Attempting to delete candidate container: /adhoc-workload-b3
+[CR3] 1793829541658 getData(/cr3-never-used) -> org.apache.zookeeper.KeeperException$NoNodeException: KeeperErrorCode = NoNode for /cr3-never-used after 20078 ms
+[CR3] 1793829541658 restored nodes gone 23261 ms after restore
+[CR3] 1793829541660 re-created persistent /adhoc-workload-b3 (cycle 1) {ephemeralOwner=0x0 cversion=0}
+2026-11-04 21:59:05,557 [myid:] - INFO  [ContainerManagerTask:o.a.z.s.ContainerManager@148] - Attempting to delete candidate container: /cr3-never-used
+2026-11-04 21:59:05,562 [myid:] - INFO  [ContainerManagerTask:o.a.z.s.ContainerManager@148] - Attempting to delete candidate container: /adhoc-workload-b3
+[CR3] 1793829545583 getData(/adhoc-workload-b3) -> org.apache.zookeeper.KeeperException$NoNodeException: KeeperErrorCode = NoNode for /adhoc-workload-b3 after 3923 ms
+[CR3] 1793829545584 re-created persistent /adhoc-workload-b3 (cycle 2) {ephemeralOwner=0x0 cversion=0}
+2026-11-04 21:59:09,558 [myid:] - INFO  [ContainerManagerTask:o.a.z.s.ContainerManager@148] - Attempting to delete candidate container: /cr3-never-used
+2026-11-04 21:59:09,563 [myid:] - INFO  [ContainerManagerTask:o.a.z.s.ContainerManager@148] - Attempting to delete candidate container: /adhoc-workload-b3
+[CR3] 1793829549605 getData(/adhoc-workload-b3) -> org.apache.zookeeper.KeeperException$NoNodeException: KeeperErrorCode = NoNode for /adhoc-workload-b3 after 4021 ms
+[CR3] 1793829549606 re-created persistent /adhoc-workload-b3 (cycle 3) {ephemeralOwner=0x0 cversion=0}
+2026-11-04 21:59:13,557 [myid:] - INFO  [ContainerManagerTask:o.a.z.s.ContainerManager@148] - Attempting to delete candidate container: /cr3-never-used
+2026-11-04 21:59:13,564 [myid:] - INFO  [ContainerManagerTask:o.a.z.s.ContainerManager@148] - Attempting to delete candidate container: /adhoc-workload-b3
+[CR3] 1793829553627 getData(/adhoc-workload-b3) -> org.apache.zookeeper.KeeperException$NoNodeException: KeeperErrorCode = NoNode for /adhoc-workload-b3 after 4021 ms
+[CR3] 1793829553627 control /cr3-control still present with data=v1 after 35230 ms
+[CR3] 1793829553729 RESULT restoreLeavesManagerOnOldTree: BUG TRIGGERED
+### JDI watcher
+[watch] 1793829517980 other org.apache.zookeeper.KeeperException$NoNodeException thread=ProcessThread(sid:0 cport:11222):
+[watch]    at org.apache.zookeeper.server.PrepRequestProcessor.getRecordForPath(PrepRequestProcessor.java:184)
+[watch]    at org.apache.zookeeper.server.PrepRequestProcessor.pRequest2TxnCreate(PrepRequestProcessor.java:671)
+[watch]    at org.apache.zookeeper.server.PrepRequestProcessor.pRequest2Txn(PrepRequestProcessor.java:323)
+[watch]    at org.apache.zookeeper.server.PrepRequestProcessor.pRequestHelper(PrepRequestProcessor.java:783)
+[watch] 1793829521568 TARGET org.apache.zookeeper.KeeperException$NoNodeException thread=SyncThread:0 path="/adhoc-workload-b3" n=null
+[watch]    at org.apache.zookeeper.server.FinalRequestProcessor.handleGetDataRequest(FinalRequestProcessor.java:674)
+[watch]    at org.apache.zookeeper.server.FinalRequestProcessor.processRequest(FinalRequestProcessor.java:403)
+[watch]    at org.apache.zookeeper.server.SyncRequestProcessor.run(SyncRequestProcessor.java:208)
+[watch] 1793829521578 other org.apache.zookeeper.KeeperException$NoNodeException thread=main
+[watch]    at org.apache.zookeeper.ZooKeeper.getData(ZooKeeper.java:2062)
+[watch]    at org.apache.zookeeper.ZooKeeper.getData(ZooKeeper.java:2090)
+[watch]    at org.apache.zookeeper.server.SpeculaAdhocB3RestoreCR3Test.readUntilNoNode(SpeculaAdhocB3RestoreCR3Test.java:145)
+[watch]    at org.apache.zookeeper.server.SpeculaAdhocB3RestoreCR3Test.restoreLeavesManagerOnOldTree(SpeculaAdhocB3RestoreCR3Test.java:202)
+[watch] 1793829541655 TARGET org.apache.zookeeper.KeeperException$NoNodeException thread=SyncThread:0 path="/cr3-never-used" n=null
+[watch]    at org.apache.zookeeper.server.FinalRequestProcessor.handleGetDataRequest(FinalRequestProcessor.java:674)
+[watch]    at org.apache.zookeeper.server.FinalRequestProcessor.processRequest(FinalRequestProcessor.java:403)
+[watch]    at org.apache.zookeeper.server.SyncRequestProcessor.run(SyncRequestProcessor.java:208)
+[watch] 1793829545581 TARGET org.apache.zookeeper.KeeperException$NoNodeException thread=SyncThread:0 path="/adhoc-workload-b3" n=null
+[watch]    at org.apache.zookeeper.server.FinalRequestProcessor.handleGetDataRequest(FinalRequestProcessor.java:674)
+[watch]    at org.apache.zookeeper.server.FinalRequestProcessor.processRequest(FinalRequestProcessor.java:403)
+[watch]    at org.apache.zookeeper.server.SyncRequestProcessor.run(SyncRequestProcessor.java:208)
+[watch] 1793829549603 TARGET org.apache.zookeeper.KeeperException$NoNodeException thread=SyncThread:0 path="/adhoc-workload-b3" n=null
+[watch]    at org.apache.zookeeper.server.FinalRequestProcessor.handleGetDataRequest(FinalRequestProcessor.java:674)
+[watch]    at org.apache.zookeeper.server.FinalRequestProcessor.processRequest(FinalRequestProcessor.java:403)
+[watch]    at org.apache.zookeeper.server.SyncRequestProcessor.run(SyncRequestProcessor.java:208)
+[watch] 1793829553625 TARGET org.apache.zookeeper.KeeperException$NoNodeException thread=SyncThread:0 path="/adhoc-workload-b3" n=null
+[watch]    at org.apache.zookeeper.server.FinalRequestProcessor.handleGetDataRequest(FinalRequestProcessor.java:674)
+[watch]    at org.apache.zookeeper.server.FinalRequestProcessor.processRequest(FinalRequestProcessor.java:403)
+[watch]    at org.apache.zookeeper.server.SyncRequestProcessor.run(SyncRequestProcessor.java:208)
+[watch] NoNodeException throw sites: {org.apache.zookeeper.ZooKeeper.getData:2062=5, org.apache.zookeeper.server.FinalRequestProcessor.handleGetDataRequest:674=5, org.apache.zookeeper.server.PrepRequestProcessor.getRecordForPath:184=17}
+
+##### B. Level 0, shipped default intervals (-Dcr3.defaults=true)
+### method=restoreLeavesManagerOnOldTree mvn_exit=0 extra=-Dcr3.defaults=true
+eab16599
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 420.841 s - in org.apache.zookeeper.server.SpeculaAdhocB3RestoreCR3Test
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+### test output
+2026-11-04 21:59:38,886 [myid:] - INFO  [Standalone server with clientPort:11222:o.a.z.s.ContainerManager@97] - Using checkIntervalMs=60000 maxPerMinute=10000 maxNeverUsedIntervalMs=300000
+[CR3] 1793829579054 server up: ZooKeeperServerMain client=11222 admin=11223 checkMs=60000 neverUsedMs=300000 defaults=true
+[CR3] 1793829579451 GET /commands/snapshot -> 200 last_zxid=0x5 bytes=867
+[CR3] 1793829579468 old tree before restore: /adhoc-workload-b3 {ephemeralOwner=0x0 cversion=2}  /cr3-never-used {ephemeralOwner=0x0 cversion=0}
+2026-11-04 21:59:39,588 [myid:] - INFO  [qtp682743286-36:o.a.z.s.ZooKeeperServer@616] - Restored to a new database. lastProcessedZxid=5, nodeCount=8, sessionCount=1
+2026-11-04 21:59:39,589 [myid:] - INFO  [qtp682743286-36:o.a.z.s.ZooKeeperServer@637] - After restore database. lastProcessedZxid=5, nodeCount=8, sessionCount=1
+[CR3] 1793829579751 POST /commands/restore -> 200 { "last_zxid" : 5, "command" : "restore", "error" : null }
+[CR3] 1793829579764 restored tree: /adhoc-workload-b3 {ephemeralOwner=0x0 cversion=0} data=v1  /cr3-never-used {ephemeralOwner=0x0 cversion=0}  /cr3-control {ephemeralOwner=0x0 cversion=0} data=v1
+2026-11-04 22:00:38,889 [myid:] - INFO  [ContainerManagerTask:o.a.z.s.ContainerManager@148] - Attempting to delete candidate container: /adhoc-workload-b3
+[CR3] 1793829638990 getData(/adhoc-workload-b3) -> org.apache.zookeeper.KeeperException$NoNodeException: KeeperErrorCode = NoNode for /adhoc-workload-b3 after 59226 ms
+2026-11-04 22:01:38,887 [myid:] - INFO  [ContainerManagerTask:o.a.z.s.ContainerManager@148] - Attempting to delete candidate container: /adhoc-workload-b3
+2026-11-04 22:02:38,887 [myid:] - INFO  [ContainerManagerTask:o.a.z.s.ContainerManager@148] - Attempting to delete candidate container: /adhoc-workload-b3
+2026-11-04 22:03:38,887 [myid:] - INFO  [ContainerManagerTask:o.a.z.s.ContainerManager@148] - Attempting to delete candidate container: /adhoc-workload-b3
+2026-11-04 22:04:38,888 [myid:] - INFO  [ContainerManagerTask:o.a.z.s.ContainerManager@148] - Attempting to delete candidate container: /adhoc-workload-b3
+2026-11-04 22:05:38,887 [myid:] - INFO  [ContainerManagerTask:o.a.z.s.ContainerManager@148] - Attempting to delete candidate container: /cr3-never-used
+2026-11-04 22:05:38,894 [myid:] - INFO  [ContainerManagerTask:o.a.z.s.ContainerManager@148] - Attempting to delete candidate container: /adhoc-workload-b3
+[CR3] 1793829938969 getData(/cr3-never-used) -> org.apache.zookeeper.KeeperException$NoNodeException: KeeperErrorCode = NoNode for /cr3-never-used after 299979 ms
+[CR3] 1793829938969 restored nodes gone 359218 ms after restore
+[CR3] 1793829938971 re-created persistent /adhoc-workload-b3 (cycle 1) {ephemeralOwner=0x0 cversion=0}
+2026-11-04 22:06:38,887 [myid:] - INFO  [ContainerManagerTask:o.a.z.s.ContainerManager@148] - Attempting to delete candidate container: /cr3-never-used
+2026-11-04 22:06:38,894 [myid:] - INFO  [ContainerManagerTask:o.a.z.s.ContainerManager@148] - Attempting to delete candidate container: /adhoc-workload-b3
+[CR3] 1793829998928 getData(/adhoc-workload-b3) -> org.apache.zookeeper.KeeperException$NoNodeException: KeeperErrorCode = NoNode for /adhoc-workload-b3 after 59957 ms
+[CR3] 1793829998928 control /cr3-control still present with data=v1 after 419177 ms
+[CR3] 1793829999030 RESULT restoreLeavesManagerOnOldTree: BUG TRIGGERED
+### JDI watcher
+[watch] 1793829579321 other org.apache.zookeeper.KeeperException$NoNodeException thread=ProcessThread(sid:0 cport:11222):
+[watch]    at org.apache.zookeeper.server.PrepRequestProcessor.getRecordForPath(PrepRequestProcessor.java:184)
+[watch]    at org.apache.zookeeper.server.PrepRequestProcessor.pRequest2TxnCreate(PrepRequestProcessor.java:671)
+[watch]    at org.apache.zookeeper.server.PrepRequestProcessor.pRequest2Txn(PrepRequestProcessor.java:323)
+[watch]    at org.apache.zookeeper.server.PrepRequestProcessor.pRequestHelper(PrepRequestProcessor.java:783)
+[watch] 1793829638978 TARGET org.apache.zookeeper.KeeperException$NoNodeException thread=SyncThread:0 path="/adhoc-workload-b3" n=null
+[watch]    at org.apache.zookeeper.server.FinalRequestProcessor.handleGetDataRequest(FinalRequestProcessor.java:674)
+[watch]    at org.apache.zookeeper.server.FinalRequestProcessor.processRequest(FinalRequestProcessor.java:403)
+[watch]    at org.apache.zookeeper.server.SyncRequestProcessor.run(SyncRequestProcessor.java:208)
+[watch] 1793829638987 other org.apache.zookeeper.KeeperException$NoNodeException thread=main
+[watch]    at org.apache.zookeeper.ZooKeeper.getData(ZooKeeper.java:2062)
+[watch]    at org.apache.zookeeper.ZooKeeper.getData(ZooKeeper.java:2090)
+[watch]    at org.apache.zookeeper.server.SpeculaAdhocB3RestoreCR3Test.readUntilNoNode(SpeculaAdhocB3RestoreCR3Test.java:145)
+[watch]    at org.apache.zookeeper.server.SpeculaAdhocB3RestoreCR3Test.restoreLeavesManagerOnOldTree(SpeculaAdhocB3RestoreCR3Test.java:202)
+[watch] 1793829938967 TARGET org.apache.zookeeper.KeeperException$NoNodeException thread=SyncThread:0 path="/cr3-never-used" n=null
+[watch]    at org.apache.zookeeper.server.FinalRequestProcessor.handleGetDataRequest(FinalRequestProcessor.java:674)
+[watch]    at org.apache.zookeeper.server.FinalRequestProcessor.processRequest(FinalRequestProcessor.java:403)
+[watch]    at org.apache.zookeeper.server.SyncRequestProcessor.run(SyncRequestProcessor.java:208)
+[watch] 1793829998926 TARGET org.apache.zookeeper.KeeperException$NoNodeException thread=SyncThread:0 path="/adhoc-workload-b3" n=null
+[watch]    at org.apache.zookeeper.server.FinalRequestProcessor.handleGetDataRequest(FinalRequestProcessor.java:674)
+[watch]    at org.apache.zookeeper.server.FinalRequestProcessor.processRequest(FinalRequestProcessor.java:403)
+[watch]    at org.apache.zookeeper.server.SyncRequestProcessor.run(SyncRequestProcessor.java:208)
+[watch] NoNodeException throw sites: {org.apache.zookeeper.ZooKeeper.getData:2062=3, org.apache.zookeeper.server.FinalRequestProcessor.handleGetDataRequest:674=3, org.apache.zookeeper.server.PrepRequestProcessor.getRecordForPath:184=13}
+
+##### C. Negative control: no restore
+### method=controlNoRestore mvn_exit=0 extra=
+eab16599
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 20.866 s - in org.apache.zookeeper.server.SpeculaAdhocB3RestoreCR3Test
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+### test output
+2026-11-04 21:54:39,816 [myid:] - INFO  [Standalone server with clientPort:11222:o.a.z.s.ContainerManager@97] - Using checkIntervalMs=4000 maxPerMinute=10000 maxNeverUsedIntervalMs=20000
+[CR3] 1793829279998 server up: ZooKeeperServerMain client=11222 admin=11225 checkMs=4000 neverUsedMs=20000 defaults=false
+2026-11-04 21:54:43,819 [myid:] - INFO  [ContainerManagerTask:o.a.z.s.ContainerManager@148] - Attempting to delete candidate container: /adhoc-workload-b3
+[CR3] 1793829283931 getData(/adhoc-workload-b3) -> org.apache.zookeeper.KeeperException$NoNodeException: KeeperErrorCode = NoNode for /adhoc-workload-b3 after 3665 ms
+[CR3] 1793829299940 RESULT controlNoRestore: persistent /adhoc-workload-b3 survived 16000 ms of checks {ephemeralOwner=0x0 cversion=0}
+### JDI watcher
+[watch] 1793829280242 other org.apache.zookeeper.KeeperException$NoNodeException thread=ProcessThread(sid:0 cport:11222):
+[watch]    at org.apache.zookeeper.server.PrepRequestProcessor.getRecordForPath(PrepRequestProcessor.java:184)
+[watch]    at org.apache.zookeeper.server.PrepRequestProcessor.pRequest2TxnCreate(PrepRequestProcessor.java:671)
+[watch]    at org.apache.zookeeper.server.PrepRequestProcessor.pRequest2Txn(PrepRequestProcessor.java:323)
+[watch]    at org.apache.zookeeper.server.PrepRequestProcessor.pRequestHelper(PrepRequestProcessor.java:783)
+[watch] 1793829283919 TARGET org.apache.zookeeper.KeeperException$NoNodeException thread=SyncThread:0 path="/adhoc-workload-b3" n=null
+[watch]    at org.apache.zookeeper.server.FinalRequestProcessor.handleGetDataRequest(FinalRequestProcessor.java:674)
+[watch]    at org.apache.zookeeper.server.FinalRequestProcessor.processRequest(FinalRequestProcessor.java:403)
+[watch]    at org.apache.zookeeper.server.SyncRequestProcessor.run(SyncRequestProcessor.java:208)
+[watch] 1793829283928 other org.apache.zookeeper.KeeperException$NoNodeException thread=main
+[watch]    at org.apache.zookeeper.ZooKeeper.getData(ZooKeeper.java:2062)
+[watch]    at org.apache.zookeeper.ZooKeeper.getData(ZooKeeper.java:2090)
+[watch]    at org.apache.zookeeper.server.SpeculaAdhocB3RestoreCR3Test.readUntilNoNode(SpeculaAdhocB3RestoreCR3Test.java:145)
+[watch]    at org.apache.zookeeper.server.SpeculaAdhocB3RestoreCR3Test.controlNoRestore(SpeculaAdhocB3RestoreCR3Test.java:219)
+[watch] NoNodeException throw sites: {org.apache.zookeeper.ZooKeeper.getData:2062=1, org.apache.zookeeper.server.FinalRequestProcessor.handleGetDataRequest:674=1, org.apache.zookeeper.server.PrepRequestProcessor.getRecordForPath:184=3}
+
+##### D. Fix control: test_bugCR-3_fix_control.patch applied, then reverted (-Dcr3.expectSurvive=true)
+### method=restoreLeavesManagerOnOldTree mvn_exit=0 extra=-Dcr3.expectSurvive=true
+eab16599
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 33.646 s - in org.apache.zookeeper.server.SpeculaAdhocB3RestoreCR3Test
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+### test output
+2026-11-04 21:57:45,146 [myid:] - INFO  [Standalone server with clientPort:11224:o.a.z.s.ContainerManager@111] - Using checkIntervalMs=4000 maxPerMinute=10000 maxNeverUsedIntervalMs=20000
+[CR3] 1793829465301 server up: ZooKeeperServerMain client=11224 admin=11227 checkMs=4000 neverUsedMs=20000 defaults=false
+[CR3] 1793829465691 GET /commands/snapshot -> 200 last_zxid=0x5 bytes=867
+[CR3] 1793829465708 old tree before restore: /adhoc-workload-b3 {ephemeralOwner=0x0 cversion=2}  /cr3-never-used {ephemeralOwner=0x0 cversion=0}
+2026-11-04 21:57:45,825 [myid:] - INFO  [qtp1756647013-37:o.a.z.s.ZooKeeperServer@616] - Restored to a new database. lastProcessedZxid=5, nodeCount=8, sessionCount=1
+2026-11-04 21:57:45,826 [myid:] - INFO  [qtp1756647013-37:o.a.z.s.ZooKeeperServer@637] - After restore database. lastProcessedZxid=5, nodeCount=8, sessionCount=1
+[CR3] 1793829465994 POST /commands/restore -> 200 { "last_zxid" : 5, "command" : "restore", "error" : null }
+[CR3] 1793829466008 restored tree: /adhoc-workload-b3 {ephemeralOwner=0x0 cversion=0} data=v1  /cr3-never-used {ephemeralOwner=0x0 cversion=0}  /cr3-control {ephemeralOwner=0x0 cversion=0} data=v1
+[CR3] 1793829498012 RESULT fix control: all restored nodes survived 32018 ms after restore
+### JDI watcher
+[watch] 1793829465564 other org.apache.zookeeper.KeeperException$NoNodeException thread=ProcessThread(sid:0 cport:11224):
+[watch]    at org.apache.zookeeper.server.PrepRequestProcessor.getRecordForPath(PrepRequestProcessor.java:184)
+[watch]    at org.apache.zookeeper.server.PrepRequestProcessor.pRequest2TxnCreate(PrepRequestProcessor.java:671)
+[watch]    at org.apache.zookeeper.server.PrepRequestProcessor.pRequest2Txn(PrepRequestProcessor.java:323)
+[watch]    at org.apache.zookeeper.server.PrepRequestProcessor.pRequestHelper(PrepRequestProcessor.java:783)
+[watch] NoNodeException throw sites: {org.apache.zookeeper.server.PrepRequestProcessor.getRecordForPath:184=6}

@@ -1,0 +1,36 @@
+{
+  "id": "CR-3",
+  "title": "removeCollectionStateWatcher leaves a stale watchedCollectionStates entry, freezing a client reader's collection view (fails waitForRecoveriesToFinish:185)",
+  "status": "REPRODUCED",
+  "source": "code-review",
+  "cause": "ZkStateReader.removeCollectionStateWatcher drops the collectionWatches entry on last removal but keeps watchedCollectionStates[coll] and adds no LazyCollectionRef; constructState prefers the watched entry and StateWatcher.process ignores events for un-watched collections.",
+  "trigger": "On a client ZkStateReader with no local cores: CloudSolrClient.waitForState (register+remove watcher) while a node's replicas are DOWN, then the node restarts and recovers.",
+  "consequence": "getClusterState() keeps returning the frozen DocCollection (DOWN replicas on a live node); AbstractDistribZkTestBase.waitForRecoveriesToFinish polls 30 times and fails with AssertionError at line 185 although ZK state.json is all active (ad hoc target TargetSafe violated in the real system).",
+  "sites": [
+    "solr/solrj/src/java/org/apache/solr/common/cloud/ZkStateReader.java:removeCollectionStateWatcher",
+    "solr/solrj/src/java/org/apache/solr/common/cloud/ZkStateReader.java:constructState",
+    "solr/test-framework/src/java/org/apache/solr/cloud/AbstractDistribZkTestBase.java:waitForRecoveriesToFinish"
+  ],
+  "actions": [],
+  "invariants": [],
+  "premises": [
+    "The reader's collection has coreRefCount 0 (client-side CloudSolrClient reader).",
+    "A waitForState/registerCollectionStateWatcher on that reader returns while a replica is non-active; no later watcher registration, registerCore or forceUpdate occurs before the poller times out.",
+    "Known upstream as SOLR-9440 (fixed in 7.2/8.0, commit 39376cd); pinned base 1eaa00b predates the fix."
+  ],
+  "dependencies": [
+    {"root": "source", "path": "solr/solrj/src/java/org/apache/solr/common/cloud/ZkStateReader.java", "start": "  public void removeCollectionStateWatcher(String collection, CollectionStateWatcher watcher) {", "end": "  /* package-private for testing */"},
+    {"root": "source", "path": "solr/solrj/src/java/org/apache/solr/common/cloud/ZkStateReader.java", "start": "  private void constructState(Set<String> changedCollections) {", "end": "    // Finally, add any lazy collections that aren't already accounted for."},
+    {"root": "source", "path": "solr/solrj/src/java/org/apache/solr/common/cloud/ZkStateReader.java", "start": "  public void unregisterCore(String collection) {", "end": "  public void registerCollectionStateWatcher(String collection, CollectionStateWatcher stateWatcher) {"},
+    {"root": "source", "path": "solr/solrj/src/java/org/apache/solr/common/cloud/ZkStateReader.java", "start": "  class StateWatcher implements Watcher {", "end": "  /** Watches the legacy clusterstate.json. */"},
+    {"root": "source", "path": "solr/test-framework/src/java/org/apache/solr/cloud/AbstractDistribZkTestBase.java", "start": "  public static void waitForRecoveriesToFinish(String collection,", "end": "  public static void waitForCollectionToDisappear(String collection,"}
+  ],
+  "evidence": [
+    "confirmation/CR-3/investigation.md",
+    "repro/test_bugCR-3_frozen_view_after_watcher_removal.sh",
+    "repro/SpeculaCR3FrozenViewTest.java",
+    "repro/test_bugCR-3_fix_control.patch",
+    "repro/CR-3_L0_run3.summary",
+    "repro/CR-3_fixcontrol.log"
+  ]
+}

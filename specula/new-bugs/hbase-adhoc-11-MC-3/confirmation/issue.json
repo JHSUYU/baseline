@@ -1,0 +1,44 @@
+{
+  "id": "MC-3",
+  "title": "Truncate force-detaches a concurrent move TRSP, which later strands the region in CLOSING and makes operator requests fail at AssignmentManager:769",
+  "status": "REPRODUCED",
+  "source": "model-checking",
+  "cause": "preTransitCheck ignores the scheduler region lock, so a move can attach a TRSP while truncate holds that lock. Truncate's forced unassign unsets the TRSP without stopping it, and the TRSP never checks that it still owns the region node.",
+  "trigger": "A balancer or Admin.move request attaches a move TRSP between truncate taking the region lock and running MAKE_OFFLINE, using public APIs and no fault.",
+  "consequence": "After truncate succeeds, the detached TRSP closes the region and the RS report is dropped because no procedure is attached. The region stays CLOSING and unserved, Admin.move, assign and unassign throw DoNotRetryRegionException at AssignmentManager:769, and client I/O fails.",
+  "sites": [
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/AssignmentManager.java:preTransitCheck",
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/AssignmentManager.java:createOneUnassignProcedure",
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/AssignmentManager.java:reportTransition",
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/TransitRegionStateProcedure.java:closeRegion",
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/master/procedure/TruncateRegionProcedure.java:createUnAssignProcedures"
+  ],
+  "actions": ["TargetCheck"],
+  "invariants": ["TargetSafe"],
+  "premises": [
+    "Recovery snapshots before destructive actions are disabled (the default), so truncate holds the region lock throughout.",
+    "A move request lands inside the window between truncate taking the lock and MAKE_OFFLINE; hit in 5 of 5 Level 0 mini-cluster runs, frequency on a real multi-host cluster not measured.",
+    "Reproduced on a two-RegionServer mini cluster at pristine base_commit, not on a multi-host cluster.",
+    "Permanence rests on bounded observation (180s idle, 150s after master failover, 180s after RS crash) plus the absence of a timeout or wake path in the code; HBCK2 bypass was not tested."
+  ],
+  "dependencies": [
+    {"root": "source", "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/procedure/TruncateRegionProcedure.java"},
+    {"root": "source", "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/AssignmentManager.java"},
+    {"root": "source", "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/TransitRegionStateProcedure.java"},
+    {"root": "source", "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/RegionRemoteProcedureBase.java"},
+    {"root": "work", "path": "spec/base.tla"},
+    {"root": "work", "path": "spec/MC.tla"},
+    {"root": "work", "path": "spec/MC_hunt_forced_detach.cfg"}
+  ],
+  "evidence": [
+    "confirmation/MC-3/investigation.md",
+    "spec/output/MC_hunt_forced_detach_violation.out",
+    "repro/test_bugMC-3_truncate_detach.java",
+    "repro/test_bugMC-3_truncate_detach.sh",
+    "repro/MC-3-logs/testLevel1BalancerCounterexample.mc3.txt",
+    "repro/MC-3-logs/testLevel0PureRace.mc3.txt",
+    "repro/MC-3-logs/testControlHookWithoutMove.mc3.txt",
+    "repro/MC-3-logs/testRecoveryMasterFailover.mc3.txt",
+    "repro/MC-3-logs/testRecoveryRegionServerCrash.mc3.txt"
+  ]
+}

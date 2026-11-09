@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "target": "hdfs-adhoc-k5",
+  "check": {
+    "file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+    "line": 420,
+    "thrown": "org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException"
+  },
+  "verdict": "REACHED_CONFIRMED",
+  "mechanism": "INTERLEAVING",
+  "scenario": "Scenario 4: registration race",
+  "finding": "MC-4",
+  "counterexample": "spec/output/hunt_regrace_bfs.out",
+  "reproduction": "repro/test_bugMC-4_SpeculaAdhocMC4RegRaceTest.java",
+  "stackFrame": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrieveDataEncryptionKey(BlockTokenSecretManager.java:422)",
+  "bounds": [
+    {
+      "config": "MC_hunt_safemode.cfg",
+      "result": "VIOLATION",
+      "states": 97790,
+      "diameter": 24,
+      "seconds": 4
+    },
+    {
+      "config": "MC_hunt_balancer.cfg",
+      "result": "VIOLATION",
+      "states": 176374,
+      "diameter": 29,
+      "seconds": 5
+    },
+    {
+      "config": "MC_hunt_lostreply.cfg",
+      "result": "VIOLATION",
+      "states": 52494,
+      "diameter": 23,
+      "seconds": 3
+    },
+    {
+      "config": "MC_hunt_regrace.cfg",
+      "result": "VIOLATION",
+      "states": 402265,
+      "diameter": 23,
+      "seconds": 8
+    },
+    {
+      "config": "MC_hunt_ha.cfg",
+      "result": "VIOLATION",
+      "states": 996631,
+      "diameter": 25,
+      "seconds": 32
+    },
+    {
+      "config": "MC_hunt_nnrestart.cfg",
+      "result": "VIOLATION",
+      "states": 70646,
+      "diameter": 28,
+      "seconds": 4
+    },
+    {
+      "config": "MC_steady_safemode.cfg",
+      "result": "VIOLATION",
+      "states": 211207,
+      "diameter": 33,
+      "seconds": 8
+    },
+    {
+      "config": "MC_steady_balancer.cfg",
+      "result": "VIOLATION",
+      "states": 150365,
+      "diameter": 49,
+      "seconds": 6
+    },
+    {
+      "config": "MC_steady_lostreply.cfg",
+      "result": "VIOLATION",
+      "states": 195168,
+      "diameter": 32,
+      "seconds": 8
+    },
+    {
+      "config": "MC_steady_regrace.cfg",
+      "result": "VIOLATION",
+      "states": 402769,
+      "diameter": 45,
+      "seconds": 15
+    },
+    {
+      "config": "MC_steady_ha.cfg",
+      "result": "VIOLATION",
+      "states": 17227995,
+      "diameter": 48,
+      "seconds": 616
+    },
+    {
+      "config": "MC_steady_nnrestart.cfg",
+      "result": "VIOLATION",
+      "states": 72321,
+      "diameter": 29,
+      "seconds": 4
+    }
+  ],
+  "traceValidation": {
+    "traces": 3,
+    "passed": 3
+  },
+  "notes": "Primary finding MC-4 (Scenario 4, registration race, no fault needed): DatanodeManager.registerDatanode exports the NameNode's block keys into the registration reply before the node joins HeartbeatManager.datanodes; a HeartbeatManager.Monitor key roll that lands between export and join flags only nodes already joined, so the registering DataNode keeps a key set without the new next key and needKeyUpdate=false; at the following roll that key becomes the NameNode currentKey, clients and peer DataNodes present DEKs on it, and the DataNode's retrieveDataEncryptionKey finds allKeys.get(keyId)==null and throws InvalidEncryptionKeyException. Reproduced from a variant of the workload TestEncryptedTransfer#testEncryptedAppendRequiringBlockTransfer in the same module on the pinned base with timing control only (a pass-through hosts provider pausing inside registration, the existing setKeyUpdateIntervalForTesting hook, triggerHeartbeat); the workload append failed to the application and a no-race control passed. The frame reports line 422 because the single throw statement spans lines 420-422 (javap maps the new to 420 and the constructor call to 422); it is the method's only throw. Every one of the six hunt configs and six steady-cluster cross-checks (oracle TargetSafeAfterFault) violated; the fault-free control MC_control.cfg (907,004 distinct states, diameter 37) and the workload MC.cfg held. All six model findings were reproduced as REPRODUCED with the target exception thrown at BTSM.java:420-422: MC-1 safe mode spanning two key rolls (NEW), MC-2 Balancer DEK never refreshed (KNOWN, fixed upstream as HDFS-11741), MC-3 one lost heartbeat response (FAULT, KNOWN unfixed HDFS-13441), MC-4, MC-5 HA standby restart key space (RESTART, KNOWN fixed HDFS-17383), MC-6 non-HA NameNode restart before DataNode re-registration (RESTART, NEW). Code-review CR-3 (stale client DEK in pipeline recovery, KNOWN HDFS-10609) also fired the target; CR-1 (NullPointerException from the failing branch when currentKey is null) is MASKED and is not a TargetSafe confirmation. Bounds 'states' are distinct states."
+}

@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "target": "hdfs-adhoc-14",
+  "check": {
+    "file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+    "line": 418,
+    "thrown": "org.apache.hadoop.security.token.SecretManager.InvalidToken"
+  },
+  "verdict": "REACHED_CONFIRMED",
+  "mechanism": "COMBINED",
+  "scenario": "Scenario 1: Rotation skew at a mirroring DN",
+  "finding": "MC-1",
+  "counterexample": "spec/output/hunt/guided/s1_rotation_skew_w1_steady.out",
+  "reproduction": "repro/test_bugMC-1_rotation_skew.java",
+  "stackFrame": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.checkAccess(BlockTokenSecretManager.java:418)",
+  "bounds": [
+    {
+      "config": "MC_hunt_s1_rotation_skew.cfg",
+      "result": "VIOLATION",
+      "states": 55526,
+      "diameter": 19,
+      "seconds": 15,
+      "output": "spec/output/hunt/s1_rotation_skew_r1.out"
+    },
+    {
+      "config": "output/hunt/guided/MC_hunt_s1_rotation_skew_w1.cfg",
+      "result": "VIOLATION",
+      "states": 14730,
+      "diameter": 20,
+      "seconds": 5,
+      "output": "spec/output/hunt/guided/s1_rotation_skew_w1.out"
+    },
+    {
+      "config": "output/hunt/guided/MC_hunt_s1_rotation_skew_w1_steady.cfg",
+      "result": "VIOLATION",
+      "states": 921,
+      "diameter": 12,
+      "seconds": 1,
+      "output": "spec/output/hunt/guided/s1_rotation_skew_w1_steady.out"
+    },
+    {
+      "config": "output/hunt/guided/MC_hunt_s1_rotation_skew_w1_steady_oldtok.cfg",
+      "result": "VIOLATION",
+      "states": 2371,
+      "diameter": 16,
+      "seconds": 2,
+      "output": "spec/output/hunt/guided/s1_rotation_skew_w1_steady_oldtok.out",
+      "invariant": "TargetSafeOldToken"
+    },
+    {
+      "config": "MC_hunt_s1_lost_push.cfg",
+      "result": "VIOLATION",
+      "states": 87086,
+      "diameter": 20,
+      "seconds": 14,
+      "output": "spec/output/hunt/s1_lost_push_r1.out",
+      "invariant": "TargetSafeLostPush"
+    },
+    {
+      "config": "MC_hunt_s1_lost_flag.cfg",
+      "result": "VIOLATION",
+      "states": 32634,
+      "diameter": 22,
+      "seconds": 8,
+      "output": "spec/output/hunt/s1_lost_flag_r1.out",
+      "invariant": "TargetSafeLostPush"
+    },
+    {
+      "config": "MC_hunt_s2_dn_replication.cfg",
+      "result": "VIOLATION",
+      "states": 1065,
+      "diameter": 17,
+      "seconds": 2,
+      "output": "spec/output/hunt/s2_dn_replication_r1.out"
+    },
+    {
+      "config": "MC_hunt_s3_ha_key_source.cfg",
+      "result": "VIOLATION",
+      "states": 70856,
+      "diameter": 11,
+      "seconds": 16,
+      "output": "spec/output/hunt/s3_ha_key_source_r1.out"
+    },
+    {
+      "config": "MC_hunt_s3_stale_active.cfg",
+      "result": "VIOLATION",
+      "states": 1556201,
+      "diameter": 22,
+      "seconds": 387,
+      "output": "spec/output/hunt/s3_stale_active_r1.out",
+      "invariant": "TargetSafeStaleReg"
+    },
+    {
+      "config": "MC_hunt_s4_nn_restart.cfg",
+      "result": "VIOLATION",
+      "states": 3828,
+      "diameter": 23,
+      "seconds": 2,
+      "output": "spec/output/hunt/s4_nn_restart_r1.out"
+    }
+  ],
+  "traceValidation": {
+    "traces": 3,
+    "passed": 3
+  },
+  "notes": "Chain for MC-1 (Scenario 1; spec/output/hunt/guided/s1_rotation_skew_w1_steady.out, 12 states, from a pruning-only guided copy of MC_hunt_s1_rotation_skew.cfg that starts in the registered steady state, which spec/output/hunt/guided/probe_steady_reach.out shows is reachable from the parent's initial state after 18 registration and heartbeat steps): with dfs.encrypt.data.overwrite.downstream.derived.qop=true, encrypted transfer with the algorithm unset and a two-DataNode pipeline, the NameNode's HeartbeatManager.Monitor rotates the block key (current 1 to 2; key 2 was already exported to every DataNode as the next key) and marks every DataNode for a key update that waits for its next heartbeat; a client's addBlock returns a write token with keyId 2 signed with key 2; the head DataNode holds key 2, so its own checkAccess passes, but it has not applied the KeyUpdateCommand yet, so DataXceiver.writeBlock takes its current key 1 as the re-sign secret and SaslDataTransferClient.updateToken replaces the password with HMAC(key 1) while keeping keyId 2; the downstream DataNode recomputes HMAC(allKeys[2]) and throws InvalidToken at BlockTokenSecretManager.java:418. No fault is involved: the trigger needs the supported, documented, non-default overwrite flag (CONFIG: the re-sign happens only under it, bug-report.md records that with the flag at its default TokenProvenance ties every password to one BlockKey snapshot, and every flag-off control in Phase 4a stayed clean), the periodic key rotation (CLOCK) and a write that reaches the head DataNode before that DataNode's next heartbeat (INTERLEAVING), hence COMBINED. Phase 4a reproduced it at Level 0 on the pristine base commit 734dd8a67cd (worktree reverted; each run's classpath check shows no harness instrumentation) with repro/test_bugMC-1_rotation_skew.java, a variant of the workload test in hadoop-hdfs run by repro/test_bugMC-1_rotation_skew.sh that adds only the overwrite flag, dfs.block.access.key.update.interval=1 (minutes) and four writer threads, with the algorithm unset: the NameNode's own monitor rotated the key, the rejected token carried the NameNode's new keyId while every DataNode still held the old current key, and the target frame, reached through DataXceiver.writeBlock, DataXceiver.checkAccess and BlockPoolTokenSecretManager.checkAccess (BlockPoolTokenSecretManager.java:137), appeared 108 times with three DataNodes (54 writes completed with a pipeline shorter than replication, none failed) and 1977 times with six DataNodes, where 492 application writes failed with \"Unable to create new block.\", while the flag-off control fired 0 times (confirmation/MC-1/runs/final/evidence-final.txt). The frame equals check.line: the throw statement spans lines 418-419, and analysis-report.md section 1.3 records that javap maps its whole bytecode (new, string concatenation, constructor call, athrow) to line 418. Three more TargetSafe findings were confirmed, all REPRODUCED with the same frame on the second DataNode of a pipeline and all caused by the same re-sign (DataXceiver.java:823-832 with SaslDataTransferClient.updateToken): MC-2 (Scenario 2; spec/output/hunt/s2_dn_replication_r1.out, 17 states; repro/test_bugMC-2_dn_replication_token_resign.java with its .sh runner; frame in confirmation/MC-2/logs/level0.surefire-output.txt), a NameNode-scheduled two-target re-replication whose source applied the key update before signing while the first target had not, reproduced at Level 0 without test hooks and replayed in counterexample order at Level 1 (CONFIG + CLOCK + INTERLEAVING, no fault); MC-3 (Scenario 3; spec/output/hunt/s3_ha_key_source_r1.out, 11 states; repro/test_bugMC-3_ha_failover_key_source.java; evidence repro/logs-MC-3/MC-3-evidence-run2-final.txt), a client write after one HA failover before the DataNodes heartbeat the new active, reproduced at Level 0 in 5 of 5 repeats (CONFIG + FAULT + INTERLEAVING); MC-4 (Scenario 4; spec/output/hunt/s4_nn_restart_r1.out, 23 states; repro/test_bugMC-4_nn_restart_resign.java; log repro/test_bugMC-4_nn_restart_resign.log), a pre-restart token re-signed with the post-restart key by a head DataNode held across one NameNode restart with the codebase's DataNodeFaultInjector, reproduced at Level 1 after 4961 black-box writes across a restart hit the target 0 times (CONFIG + RESTART + INTERLEAVING). Bounds: all ten rows are BFS with one worker and a 30-minute cap (tla2tools rev 2ef2af8) on the converged Round 1 spec, which was not changed during hunting, and every hunt config violated its property; the three output/hunt/guided rows run MCGuided.tla over byte-identical copies of base.tla and MC.tla that only add pruning ACTION_CONSTRAINTs (plus the TargetSafeOldToken refinement), so their violations are violations of MC_hunt_s1_rotation_skew.cfg; rows with an \"invariant\" key checked a window-selecting refinement whose violation implies TargetSafe's (TargetSafeLostPush, TargetSafeStaleReg, TargetSafeOldToken). The shortest unguided Scenario 1 counterexample (spec/output/hunt/s1_rotation_skew_r1.out, 19 states) fires through the registration-gap window W4 but leaves the Monitor's mark pending for 15 steps after the rotation, a schedule artifact, so bug-report.md does not use it as evidence; windows W3 and W4 (MC_hunt_s1_lost_flag.cfg, MC_hunt_s1_lost_push.cfg) and the stale-active window W6 (MC_hunt_s3_stale_active.cfg) were model-checked only and not separately reproduced. Not in bounds: MC.cfg (flag off, no rotation, failover or restart; exhaustive, 3,035 distinct states, depth 25, all invariants hold, 4 workers), MC_sanity_reach.cfg (the required TargetReached violation, 142 distinct states, depth 9), MC_sanity_overwrite.cfg (flag on with no key change; exhaustive, 1,763,864 distinct states, depth 46, 125 s, 8 workers, all hold) and the reachability probe output/hunt/guided/MC_probe_steady_reach.cfg (ProbeSteadyStateNotReached violated at depth 19 after 63,280 distinct states). Trace validation: workload.ndjson (20 events, 21 distinct states), variant1_write_pipeline_rotation.ndjson (88 events, 89 states) and variant2_replication_nn_restart.ndjson (99 events, 100 states) passed (harness/logs/tv-*.log); NNFailover and NNRemoveDeadDatanode appear in no trace, so the model's failover and dead-node steps rest on code reading, and MC-3 was then reproduced in the real system. Side issue, not a TargetSafe finding: the workload's literal dfs.encrypt.data.transfer.algorithm=\"\" makes every DataNode-to-DataNode encrypted handshake fail at the sending DataNode before any downstream check, so all four reproductions left the algorithm unset, as shipped."
+}

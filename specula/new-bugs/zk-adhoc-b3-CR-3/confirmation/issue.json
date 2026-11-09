@@ -1,0 +1,76 @@
+{
+  "id": "CR-3",
+  "title": "After admin restore, ContainerManager keeps scanning the old ZKDatabase and its stale deleteContainer posts delete restored persistent nodes",
+  "status": "REPRODUCED",
+  "source": "code-review",
+  "cause": "ContainerManager holds the ZKDatabase it was built with in a final field and ZooKeeperServer.restoreFromSnapshot swaps the server's database without rebinding it, so candidates come from the frozen old tree while PrepRequestProcessor validates the path-only deleteContainer against the new tree and does not check that the node is a container.",
+  "trigger": "A path is PERSISTENT in a snapshot and later becomes an empty or never-used container on the running server (or an expired TTL node, by code reading); an operator restores the snapshot through POST /commands/restore on that live server.",
+  "consequence": "At the next container check the restored childless persistent node is deleted, a client getData on it fails with NoNodeException thrown at FinalRequestProcessor.handleGetDataRequest:674, and the path is deleted again after every re-create for as long as the manager runs (observed over 3 cycles; recovery by restart is argued from the code, not run).",
+  "sites": [
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/ContainerManager.java:getCandidates",
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/ZooKeeperServer.java:restoreFromSnapshot",
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/ZooKeeperServerMain.java:runFromConfig",
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/PrepRequestProcessor.java:pRequest2Txn",
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/FinalRequestProcessor.java:handleGetDataRequest"
+  ],
+  "actions": [],
+  "invariants": [],
+  "premises": [
+    "The admin restore command is enabled (default) and the operator has ALL on /.",
+    "Restore runs on a live server whose old tree holds an empty or never-used container (or expired TTL node, not run) at a path that is childless and non-ephemeral in the restored data.",
+    "Standalone ZooKeeperServerMain was exercised; LeaderZooKeeperServer has the same binding but was not run.",
+    "Restore is outside the modeling brief's fault model and was never model-checked; it is a supported operator command, not a fault."
+  ],
+  "dependencies": [
+    {
+      "root": "source",
+      "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/ContainerManager.java",
+      "start": "public class ContainerManager {",
+      "end": "    protected long getElapsed(DataNode node) {"
+    },
+    {
+      "root": "source",
+      "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/ZooKeeperServerMain.java",
+      "start": "    public void runFromConfig(ServerConfig config) throws IOException, AdminServerException {",
+      "end": "            containerManager.start();"
+    },
+    {
+      "root": "source",
+      "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/ZooKeeperServer.java",
+      "start": "    public long restoreFromSnapshot(final InputStream inputStream) throws IOException {",
+      "end": "    public boolean shouldForceWriteInitialSnapshotAfterLeaderElection() {"
+    },
+    {
+      "root": "source",
+      "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/ZooKeeperServer.java",
+      "start": "    public void submitRequest(Request si) {",
+      "end": "    public void submitRequestNow(Request si) {"
+    },
+    {
+      "root": "source",
+      "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/PrepRequestProcessor.java",
+      "start": "        case OpCode.deleteContainer: {",
+      "end": "        case OpCode.delete:"
+    },
+    {
+      "root": "source",
+      "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/FinalRequestProcessor.java",
+      "start": "    private Record handleGetDataRequest(Record request, ServerCnxn cnxn, List<Id> authInfo) throws KeeperException, IOException {",
+      "end": "    private boolean closeSession(ServerCnxnFactory serverCnxnFactory, long sessionId) {"
+    },
+    {
+      "root": "source",
+      "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/admin/Commands.java",
+      "start": "    public static class RestoreCommand extends PostCommand {",
+      "end": "    public static class RuokCommand extends GetCommand {"
+    }
+  ],
+  "evidence": [
+    "confirmation/CR-3/investigation.md",
+    "repro/test_bugCR-3_restore_stale_manager.sh",
+    "repro/test_bugCR-3_SpeculaAdhocB3RestoreCR3Test.java",
+    "repro/test_bugCR-3_NoNodeWatcher.java",
+    "repro/test_bugCR-3_fix_control.patch",
+    "repro/CR-3-reproduction-output.log"
+  ]
+}

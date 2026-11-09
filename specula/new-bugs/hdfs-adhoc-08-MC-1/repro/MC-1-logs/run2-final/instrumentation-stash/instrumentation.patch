@@ -1,0 +1,361 @@
+diff --git a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/client/AsyncLoggerSet.java b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/client/AsyncLoggerSet.java
+index a65120e3610..ad18ec01466 100644
+--- a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/client/AsyncLoggerSet.java
++++ b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/client/AsyncLoggerSet.java
+@@ -209,7 +209,7 @@ public QuorumCall<AsyncLogger, GetJournalStateResponseProto> getJournalState() {
+     Map<AsyncLogger, ListenableFuture<GetJournalStateResponseProto>> calls =
+         Maps.newHashMap();
+     for (AsyncLogger logger : loggers) {
+-      calls.put(logger, logger.getJournalState());
++      calls.put(logger, SpeculaClientTrace.call(this, logger, "GJS", () -> logger.getJournalState()));
+     }
+     return QuorumCall.create(calls);    
+   }
+@@ -228,7 +228,7 @@ public QuorumCall<AsyncLogger,NewEpochResponseProto> newEpoch(
+     Map<AsyncLogger, ListenableFuture<NewEpochResponseProto>> calls =
+         Maps.newHashMap();
+     for (AsyncLogger logger : loggers) {
+-      calls.put(logger, logger.newEpoch(epoch));
++      calls.put(logger, SpeculaClientTrace.call(this, logger, "NE", () -> logger.newEpoch(epoch)));
+     }
+     return QuorumCall.create(calls);    
+   }
+@@ -237,7 +237,7 @@ public QuorumCall<AsyncLogger, Void> startLogSegment(
+       long txid, int layoutVersion) {
+     Map<AsyncLogger, ListenableFuture<Void>> calls = Maps.newHashMap();
+     for (AsyncLogger logger : loggers) {
+-      calls.put(logger, logger.startLogSegment(txid, layoutVersion));
++      calls.put(logger, SpeculaClientTrace.call(this, logger, "SLS", () -> logger.startLogSegment(txid, layoutVersion)));
+     }
+     return QuorumCall.create(calls);
+   }
+@@ -246,7 +246,7 @@ public QuorumCall<AsyncLogger, Void> finalizeLogSegment(long firstTxId,
+       long lastTxId) {
+     Map<AsyncLogger, ListenableFuture<Void>> calls = Maps.newHashMap();
+     for (AsyncLogger logger : loggers) {
+-      calls.put(logger, logger.finalizeLogSegment(firstTxId, lastTxId));
++      calls.put(logger, SpeculaClientTrace.call(this, logger, "FIN", () -> logger.finalizeLogSegment(firstTxId, lastTxId)));
+     }
+     return QuorumCall.create(calls);
+   }
+@@ -256,7 +256,7 @@ public QuorumCall<AsyncLogger, Void> sendEdits(
+     Map<AsyncLogger, ListenableFuture<Void>> calls = Maps.newHashMap();
+     for (AsyncLogger logger : loggers) {
+       ListenableFuture<Void> future = 
+-        logger.sendEdits(segmentTxId, firstTxnId, numTxns, data);
++        SpeculaClientTrace.call(this, logger, "J", () -> logger.sendEdits(segmentTxId, firstTxnId, numTxns, data));
+       calls.put(logger, future);
+     }
+     return QuorumCall.create(calls);
+@@ -295,7 +295,7 @@ public QuorumCall<AsyncLogger, RemoteEditLogManifest> getEditLogManifest(
+       = Maps.newHashMap();
+     for (AsyncLogger logger : loggers) {
+       ListenableFuture<PrepareRecoveryResponseProto> future =
+-          logger.prepareRecovery(segmentTxId);
++          SpeculaClientTrace.call(this, logger, "PR", () -> logger.prepareRecovery(segmentTxId));
+       calls.put(logger, future);
+     }
+     return QuorumCall.create(calls);
+@@ -307,7 +307,7 @@ public QuorumCall<AsyncLogger, RemoteEditLogManifest> getEditLogManifest(
+       = Maps.newHashMap();
+     for (AsyncLogger logger : loggers) {
+       ListenableFuture<Void> future =
+-          logger.acceptRecovery(log, fromURL);
++          SpeculaClientTrace.call(this, logger, "AR", () -> logger.acceptRecovery(log, fromURL));
+       calls.put(logger, future);
+     }
+     return QuorumCall.create(calls);
+diff --git a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/client/IPCLoggerChannel.java b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/client/IPCLoggerChannel.java
+index 67fc8581027..95ea3523fdf 100644
+--- a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/client/IPCLoggerChannel.java
++++ b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/client/IPCLoggerChannel.java
+@@ -529,8 +529,8 @@ public ListenableFuture<PrepareRecoveryResponseProto> prepareRecovery(final long
+       if (!hasHttpServerEndPoint()) {
+         // force an RPC call, so we know what the HTTP port should be if it
+         // hasn't done so.
+-        GetJournalStateResponseProto ret = getProxy().getJournalState(
+-            journalId, nameServiceId);
++        SpeculaClientTrace.inPrepareProbe = true; GetJournalStateResponseProto ret; try { ret = getProxy().getJournalState(
++            journalId, nameServiceId); } finally { SpeculaClientTrace.inPrepareProbe = false; }
+         constructHttpServerURI(ret);
+       }
+       return getProxy().prepareRecovery(createReqInfo(), segmentTxId);
+diff --git a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/client/QuorumJournalManager.java b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/client/QuorumJournalManager.java
+index faf71a7b545..2d97466c5af 100644
+--- a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/client/QuorumJournalManager.java
++++ b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/client/QuorumJournalManager.java
+@@ -228,9 +228,9 @@ Map<AsyncLogger, NewEpochResponseProto> createNewUniqueEpoch()
+       throws IOException {
+     Preconditions.checkState(!loggers.isEpochEstablished(),
+         "epoch already created");
+-    
++    SpeculaClientTrace.getJournalState(loggers);
+     Map<AsyncLogger, GetJournalStateResponseProto> lastPromises =
+-      loggers.waitForWriteQuorum(loggers.getJournalState(),
++      SpeculaClientTrace.waitForWriteQuorum(loggers, loggers.getJournalState(),
+           getJournalStateTimeoutMs, "getJournalState()");
+     
+     long maxPromised = Long.MIN_VALUE;
+@@ -239,9 +239,9 @@ Map<AsyncLogger, NewEpochResponseProto> createNewUniqueEpoch()
+     }
+     assert maxPromised >= 0;
+     
+-    long myEpoch = maxPromised + 1;
++    long myEpoch = maxPromised + 1; SpeculaClientTrace.newEpoch(loggers, myEpoch);
+     Map<AsyncLogger, NewEpochResponseProto> resps =
+-        loggers.waitForWriteQuorum(loggers.newEpoch(nsInfo, myEpoch),
++        SpeculaClientTrace.waitForWriteQuorum(loggers, loggers.newEpoch(nsInfo, myEpoch),
+             newEpochTimeoutMs, "newEpoch(" + myEpoch + ")");
+         
+     loggers.setEpoch(myEpoch);
+@@ -317,7 +317,7 @@ private void recoverUnclosedSegment(long segmentTxId) throws IOException {
+     QuorumCall<AsyncLogger,PrepareRecoveryResponseProto> prepare =
+         loggers.prepareRecovery(segmentTxId);
+     Map<AsyncLogger, PrepareRecoveryResponseProto> prepareResponses=
+-        loggers.waitForWriteQuorum(prepare, prepareRecoveryTimeoutMs,
++        SpeculaClientTrace.waitForWriteQuorum(loggers, prepare, prepareRecoveryTimeoutMs,
+             "prepareRecovery(" + segmentTxId + ")");
+     LOG.info("Recovery prepare phase complete. Responses:\n" +
+         QuorumCall.mapToString(prepareResponses));
+@@ -368,7 +368,7 @@ private void recoverUnclosedSegment(long segmentTxId) throws IOException {
+ 
+       LOG.info("None of the responders had a log to recover: " +
+           QuorumCall.mapToString(prepareResponses));
+-      return;
++      SpeculaClientTrace.recoveryNoLog(loggers); return;
+     }
+     
+     SegmentStateProto logToSync = bestResponse.getSegmentState();
+@@ -391,20 +391,20 @@ private void recoverUnclosedSegment(long segmentTxId) throws IOException {
+     
+     URL syncFromUrl = bestLogger.buildURLToFetchLogs(segmentTxId);
+     
+-    QuorumCall<AsyncLogger,Void> accept = loggers.acceptRecovery(logToSync, syncFromUrl);
+-    loggers.waitForWriteQuorum(accept, acceptRecoveryTimeoutMs,
++    SpeculaClientTrace.acceptRecovery(loggers); QuorumCall<AsyncLogger,Void> accept = loggers.acceptRecovery(logToSync, syncFromUrl);
++    SpeculaClientTrace.waitForWriteQuorum(loggers, accept, acceptRecoveryTimeoutMs,
+         "acceptRecovery(" + TextFormat.shortDebugString(logToSync) + ")");
+ 
+     // If one of the loggers above missed the synchronization step above, but
+     // we send a finalize() here, that's OK. It validates the log before
+     // finalizing. Hence, even if it is not "in sync", it won't incorrectly
+     // finalize.
+-    QuorumCall<AsyncLogger, Void> finalize =
++    SpeculaClientTrace.finalizeLogSegment(loggers, true); QuorumCall<AsyncLogger, Void> finalize =
+         loggers.finalizeLogSegment(logToSync.getStartTxId(), logToSync.getEndTxId()); 
+-    loggers.waitForWriteQuorum(finalize, finalizeSegmentTimeoutMs,
++    SpeculaClientTrace.waitForWriteQuorum(loggers, finalize, finalizeSegmentTimeoutMs,
+         String.format("finalizeLogSegment(%s-%s)",
+             logToSync.getStartTxId(),
+-            logToSync.getEndTxId()));
++            logToSync.getEndTxId())); SpeculaClientTrace.recoveryDone(loggers);
+   }
+   
+   static List<AsyncLogger> createLoggers(Configuration conf,
+@@ -431,9 +431,9 @@ public EditLogOutputStream startLogSegment(long txId, int layoutVersion)
+       throws IOException {
+     Preconditions.checkState(isActiveWriter,
+         "must recover segments before starting a new one");
+-    QuorumCall<AsyncLogger, Void> q = loggers.startLogSegment(txId,
++    SpeculaClientTrace.startLogSegment(loggers); QuorumCall<AsyncLogger, Void> q = loggers.startLogSegment(txId,
+         layoutVersion);
+-    loggers.waitForWriteQuorum(q, startSegmentTimeoutMs,
++    SpeculaClientTrace.waitForWriteQuorum(loggers, q, startSegmentTimeoutMs,
+         "startLogSegment(" + txId + ")");
+     return new QuorumOutputStream(loggers, txId, outputBufferCapacity,
+         writeTxnsTimeoutMs, layoutVersion);
+@@ -442,10 +442,10 @@ public EditLogOutputStream startLogSegment(long txId, int layoutVersion)
+   @Override
+   public void finalizeLogSegment(long firstTxId, long lastTxId)
+       throws IOException {
+-    QuorumCall<AsyncLogger,Void> q = loggers.finalizeLogSegment(
++    SpeculaClientTrace.finalizeLogSegment(loggers, false); QuorumCall<AsyncLogger,Void> q = loggers.finalizeLogSegment(
+         firstTxId, lastTxId);
+-    loggers.waitForWriteQuorum(q, finalizeSegmentTimeoutMs,
+-        String.format("finalizeLogSegment(%s-%s)", firstTxId, lastTxId));
++    SpeculaClientTrace.waitForWriteQuorum(loggers, q, finalizeSegmentTimeoutMs,
++        String.format("finalizeLogSegment(%s-%s)", firstTxId, lastTxId)); SpeculaClientTrace.segmentFinalized(loggers);
+   }
+ 
+   @Override
+@@ -489,7 +489,7 @@ public void recoverUnfinalizedSegments() throws IOException {
+             r.getLastSegmentTxId());
+       }
+     }
+-    
++    SpeculaClientTrace.establish(loggers, mostRecentSegmentTxId != Long.MIN_VALUE);
+     // On a completely fresh system, none of the journals have any
+     // segments, so there's nothing to recover.
+     if (mostRecentSegmentTxId != Long.MIN_VALUE) {
+@@ -500,7 +500,7 @@ public void recoverUnfinalizedSegments() throws IOException {
+ 
+   @Override
+   public void close() throws IOException {
+-    loggers.close();
++    SpeculaClientTrace.writerStop(loggers); loggers.close();
+     connectionFactory.destroy();
+   }
+ 
+@@ -696,7 +696,7 @@ public void doUpgrade(Storage storage) throws IOException {
+       throw new IOException("Interrupted waiting for doUpgrade() response");
+     } catch (TimeoutException e) {
+       throw new IOException("Timed out waiting for doUpgrade() response");
+-    }
++    } SpeculaClientTrace.upgrade(loggers);
+   }
+   
+   @Override
+@@ -765,7 +765,7 @@ public void doRollback() throws IOException {
+       throw new IOException("Interrupted waiting for doFinalize() response");
+     } catch (TimeoutException e) {
+       throw new IOException("Timed out waiting for doFinalize() response");
+-    }
++    } SpeculaClientTrace.rollback();
+   }
+   
+   @Override
+diff --git a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/client/QuorumOutputStream.java b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/client/QuorumOutputStream.java
+index a02c0f9f1b2..da54dacf157 100644
+--- a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/client/QuorumOutputStream.java
++++ b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/client/QuorumOutputStream.java
+@@ -107,10 +107,10 @@ protected void flushAndSync(boolean durable) throws IOException {
+       byte[] data = bufToSend.getData();
+       assert data.length == bufToSend.getLength();
+ 
+-      QuorumCall<AsyncLogger, Void> qcall = loggers.sendEdits(
++      SpeculaClientTrace.sendEdits(loggers); QuorumCall<AsyncLogger, Void> qcall = loggers.sendEdits(
+           segmentTxId, firstTxToFlush,
+           numReadyTxns, data);
+-      loggers.waitForWriteQuorum(qcall, writeTimeoutMs, "sendEdits");
++      SpeculaClientTrace.waitForWriteQuorum(loggers, qcall, writeTimeoutMs, "sendEdits");
+       
+       // Since we successfully wrote this batch, let the loggers know. Any future
+       // RPCs will thus let the loggers know of the most recent transaction, even
+diff --git a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java
+index e0ac692e60a..f4f3b64fcaf 100644
+--- a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java
++++ b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java
+@@ -473,7 +473,7 @@ synchronized void journal(RequestInfo reqInfo,
+   }
+ 
+   public void heartbeat(RequestInfo reqInfo) throws IOException {
+-    checkRequest(reqInfo);
++    speculaCheckRequest(reqInfo, "HB");
+   }
+   
+   /**
+@@ -512,7 +512,7 @@ private synchronized void checkRequest(RequestInfo reqInfo) throws IOException {
+   }
+   
+   private synchronized void checkWriteRequest(RequestInfo reqInfo) throws IOException {
+-    checkRequest(reqInfo);
++    speculaCheckRequest(reqInfo, "J");
+     
+     if (reqInfo.getEpoch() != lastWriterEpoch.get()) {
+       throw new IOException("IPC's epoch " + reqInfo.getEpoch() +
+@@ -569,7 +569,7 @@ public synchronized void startLogSegment(RequestInfo reqInfo, long txid,
+       int layoutVersion) throws IOException {
+     assert fjm != null;
+     checkFormatted();
+-    checkRequest(reqInfo);
++    speculaCheckRequest(reqInfo, "SLS");
+     
+     if (curSegment != null) {
+       LOG.warn("Client is requesting a new log segment " + txid + 
+@@ -629,7 +629,7 @@ public synchronized void startLogSegment(RequestInfo reqInfo, long txid,
+   public synchronized void finalizeLogSegment(RequestInfo reqInfo, long startTxId,
+       long endTxId) throws IOException {
+     checkFormatted();
+-    checkRequest(reqInfo);
++    speculaCheckRequest(reqInfo, "FIN");
+ 
+     boolean needsValidation = true;
+ 
+@@ -690,7 +690,7 @@ public synchronized void finalizeLogSegment(RequestInfo reqInfo, long startTxId,
+   public synchronized void purgeLogsOlderThan(RequestInfo reqInfo,
+       long minTxIdToKeep) throws IOException {
+     checkFormatted();
+-    checkRequest(reqInfo);
++    speculaCheckRequest(reqInfo, "PURGE");
+     
+     storage.purgeDataOlderThan(minTxIdToKeep);
+   }
+@@ -827,7 +827,7 @@ SegmentStateProto getSegmentInfo(long segmentTxId)
+   public synchronized PrepareRecoveryResponseProto prepareRecovery(
+       RequestInfo reqInfo, long segmentTxId) throws IOException {
+     checkFormatted();
+-    checkRequest(reqInfo);
++    speculaCheckRequest(reqInfo, "PR");
+     
+     abortCurSegment();
+     
+@@ -872,7 +872,7 @@ public synchronized void acceptRecovery(RequestInfo reqInfo,
+       SegmentStateProto segment, URL fromUrl)
+       throws IOException {
+     checkFormatted();
+-    checkRequest(reqInfo);
++    speculaCheckRequest(reqInfo, "AR");
+     
+     abortCurSegment();
+ 
+@@ -1238,4 +1238,25 @@ JournaledEditsCache getJournaledEditsCache() {
+     return cache;
+   }
+ 
++  // ---- Specula trace instrumentation (hdfs-adhoc-08) ----
++  // Appended after the last method so that no line above moves.
++  // checkRequest (J:484-512) itself is not modified: each of its call sites
++  // calls this wrapper on the same line instead.
++  private void speculaCheckRequest(RequestInfo reqInfo, String kind)
++      throws IOException {
++    try {
++      checkRequest(reqInfo);
++    } catch (Throwable t) {
++      SpeculaServerTrace.targetCheck(this, kind, reqInfo.getEpoch(),
++          SpeculaServerTrace.isTargetThrow(t));
++      throw t;
++    }
++    SpeculaServerTrace.targetCheck(this, kind, reqInfo.getEpoch(), false);
++  }
++
++  /** The lastPromisedEpoch PersistentLongFile, for side-effect-free reads. */
++  PersistentLongFile speculaLastPromisedEpoch() {
++    return lastPromisedEpoch;
++  }
++
+ }
+diff --git a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/JournalNodeRpcServer.java b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/JournalNodeRpcServer.java
+index b09d09aed03..76dc4d2c1f1 100644
+--- a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/JournalNodeRpcServer.java
++++ b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/JournalNodeRpcServer.java
+@@ -144,7 +144,7 @@ protected int getHandlerCount() {
+   }
+ 
+   void start() {
+-    this.server.start();
++    this.server.start(); SpeculaServerTrace.registerJN(jn, getAddress());
+   }
+ 
+   public InetSocketAddress getAddress() {
+@@ -178,8 +178,8 @@ public boolean isFormatted(String journalId,
+   public GetJournalStateResponseProto getJournalState(String journalId,
+                                                       String nameServiceId)
+         throws IOException {
+-    long epoch = jn.getOrCreateJournal(journalId,
+-        nameServiceId).getLastPromisedEpoch();
++    Journal speculaJournal = jn.getOrCreateJournal(journalId,
++        nameServiceId); long epoch = speculaJournal.getLastPromisedEpoch(); SpeculaServerTrace.handleGetJournalState(speculaJournal, epoch);
+     return GetJournalStateResponseProto.newBuilder()
+         .setLastPromisedEpoch(epoch)
+         .setHttpPort(jn.getBoundHttpAddress().getPort())
+@@ -192,8 +192,8 @@ public NewEpochResponseProto newEpoch(String journalId,
+                                         String nameServiceId,
+                                         NamespaceInfo nsInfo,
+       long epoch) throws IOException {
+-    return jn.getOrCreateJournal(journalId,
+-        nameServiceId).newEpoch(nsInfo, epoch);
++    return SpeculaServerTrace.handleNewEpoch(jn.getOrCreateJournal(journalId,
++        nameServiceId), nsInfo, epoch);
+   }
+ 
+   @Override

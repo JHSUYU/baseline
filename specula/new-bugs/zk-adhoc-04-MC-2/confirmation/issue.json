@@ -1,0 +1,45 @@
+{
+  "id": "MC-2",
+  "title": "Read-only server exposes a never-committed txn, and a next-epoch follower then refuses the client",
+  "status": "REPRODUCED",
+  "source": "model-checking",
+  "cause": "shutdown(false) and restart replay apply every logged txn to the data tree with no commit check, and ReadOnlyZooKeeperServer serves that tree, so reads return logged-only data and a zxid that was never committed.",
+  "trigger": "With readonlymode.enabled=true, a leader logs a write after its last follower stops and before its next quorum check, then loses quorum and starts a read-only server over the fast-forwarded tree. A client reads there, then reconnects to a server lacking the txn.",
+  "consequence": "The client reads znodes that were never committed and later become NoNode, and servers lacking the txn refuse it at ZooKeeperServer.java:1516 until a new-epoch write arrives or it reaches the new leader.",
+  "sites": [
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/ZooKeeperServer.java:shutdown",
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/ZooKeeperServer.java:processConnectRequest",
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/persistence/FileTxnSnapLog.java:fastForwardFromEdits",
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/ZKDatabase.java:fastForwardDataBase",
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/QuorumPeer.java:run"
+  ],
+  "actions": ["TargetCheck"],
+  "invariants": ["TargetSafe"],
+  "premises": [
+    "readonlymode.enabled=true and the client uses canBeReadOnly=true.",
+    "The leader accepts writes between losing its last follower and its next quorum check, one tick at most in the test configuration.",
+    "The dirty read needs the old leader to stay LOOKING for the read-only grace period; the never-committed outcome needs the next epoch to form without the old leader, which the reproduction achieves by stopping it.",
+    "The refusal lasts until a new-epoch write arrives or the client reaches the new leader."
+  ],
+  "dependencies": [
+    {"root": "source", "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/ZooKeeperServer.java", "start": "    public final synchronized void shutdown(boolean fullyShutDown) {", "end": "            setState(State.SHUTDOWN);"},
+    {"root": "source", "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/ZooKeeperServer.java", "start": "    public void processConnectRequest(ServerCnxn cnxn, ConnectRequest request) throws IOException, ClientCnxnLimitException {", "end": "            throw new CloseRequestException(msg, ServerCnxn.DisconnectReason.CLIENT_ZXID_AHEAD);"},
+    {"root": "source", "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/persistence/FileTxnSnapLog.java", "start": "    public long fastForwardFromEdits(", "end": "        LOG.info(\"{} txns loaded in {} ms\", txnLoaded, loadTime);"},
+    {"root": "source", "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/ZKDatabase.java", "start": "    public long fastForwardDataBase() throws IOException {", "end": "    private void addCommittedProposal(TxnHeader hdr, Record txn, TxnDigest digest) {"},
+    {"root": "source", "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/QuorumPeer.java", "start": "                        LOG.info(\"Attempting to start ReadOnlyZooKeeperServer\");", "end": "                            roZk.shutdown();"},
+    {"root": "source", "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/ReadOnlyZooKeeperServer.java"},
+    {"root": "work", "path": "spec/base.tla"},
+    {"root": "work", "path": "spec/MC_hunt_S2_uncommitted_ro.cfg"},
+    {"root": "work", "path": "spec/MC_route_S2_next_epoch.cfg"}
+  ],
+  "evidence": [
+    "confirmation/MC-2/investigation.md",
+    "repro/test_bugMC-2_dirty_read.sh",
+    "repro/test_bugMC-2_ReadOnlyDirtyReadMC2Test.java",
+    "repro/MC-2.log",
+    "repro/MC-2-logs/t2-NETTY.log.server-output.txt",
+    "repro/MC-2-logs/t1-NETTY-attempt3.log.server-output.txt",
+    "spec/output/hunt_S2_uncommitted_ro_bfs.out",
+    "spec/output/route_S2_next_epoch.out"
+  ]
+}

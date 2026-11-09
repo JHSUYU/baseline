@@ -1,0 +1,51 @@
+# CR-3 evidence excerpt from CR-3.test-output.txt
+[CR3 numDns=4 refreshDekFirst=false] append pipeline = [DatanodeInfoWithStorage[127.0.0.1:34857,DS-48472c66-b626-4310-8c5f-03339aad0efa,DISK], DatanodeInfoWithStorage[127.0.0.1:45353,DS-45d8baaf-4128-4e65-a758-14758d2f6cf9,DISK], DatanodeInfoWithStorage[127.0.0.1:43647,DS-65d6c863-45e1-4430-b2b5-e940e702e93c,DISK]]
+[CR3 numDns=4 refreshDekFirst=false] shutting down pipeline[0] = DatanodeInfoWithStorage[127.0.0.1:34857,DS-48472c66-b626-4310-8c5f-03339aad0efa,DISK]
+2026-11-07 20:44:37,804 [Thread-392] WARN  hdfs.DFSClient (DataStreamer.java:addDatanode2ExistingPipeline(1257)) - Error transferring data from DatanodeInfoWithStorage[127.0.0.1:45353,DS-45d8baaf-4128-4e65-a758-14758d2f6cf9,DISK] to DatanodeInfoWithStorage[127.0.0.1:35013,DS-52fad74b-17c0-41e7-9bc3-1a7be9f4a95d,DISK]: Can't re-compute encryption key for nonce, since the required block key (keyID=1391909637) doesn't exist. Current key: -1320591588
+[CR3 numDns=4 refreshDekFirst=false] APPLICATION SAW: java.io.IOException: Failed to replace a bad datanode on the existing pipeline due to no more good datanodes being available to try. (Nodes: current=[DatanodeInfoWithStorage[127.0.0.1:45353,DS-45d8baaf-4128-4e65-a758-14758d2f6cf9,DISK], DatanodeInfoWithStorage[127.0.0.1:43647,DS-65d6c863-45e1-4430-b2b5-e940e702e93c,DISK]], original=[DatanodeInfoWithStorage[127.0.0.1:45353,DS-45d8baaf-4128-4e65-a758-14758d2f6cf9,DISK], DatanodeInfoWithStorage[127.0.0.1:43647,DS-65d6c863-45e1-4430-b2b5-e940e702e93c,DISK]]). The current failed datanode replace
+[CR3 RESULT 4dn] BUG TRIGGERED: append failed: java.io.IOException: Failed to replace a bad datanode on the existing pipeline due to no more good datanodes being available to try. (Nodes: current=[DatanodeInfoWithStorage[127.0.0.1:45353,DS-45d8baaf-4128-4e65-a758-14758d2f6cf9,DISK], DatanodeInfoWithStorage[127.0.0.1:43647,DS-65d6c863-45e1-4430-b2b5-e940e702e93c,DISK]], original=[DatanodeInfoWithStorage[127.0.0.1:45353,DS-45d8baaf-4128-4e65-a758-14758d2f6cf9,DISK], DatanodeInfoWithStorage[127.0.0.1:43647,DS-65d6c863-45e1-4430-b2b5-e940e702e93c,DISK]]). The current failed datanode replacement po
+[CR3 numDns=6 refreshDekFirst=false] append pipeline = [DatanodeInfoWithStorage[127.0.0.1:37019,DS-1f70a962-08de-4347-81ee-cbce40306df6,DISK], DatanodeInfoWithStorage[127.0.0.1:32779,DS-80cb46ea-33a3-479d-bc49-c21b722946f7,DISK], DatanodeInfoWithStorage[127.0.0.1:38495,DS-88ac6c54-6a14-4748-9010-122e849cd315,DISK]]
+[CR3 numDns=6 refreshDekFirst=false] shutting down pipeline[0] = DatanodeInfoWithStorage[127.0.0.1:37019,DS-1f70a962-08de-4347-81ee-cbce40306df6,DISK]
+2026-11-07 20:44:48,950 [Thread-924] WARN  hdfs.DFSClient (DataStreamer.java:addDatanode2ExistingPipeline(1257)) - Error transferring data from DatanodeInfoWithStorage[127.0.0.1:32779,DS-80cb46ea-33a3-479d-bc49-c21b722946f7,DISK] to DatanodeInfoWithStorage[127.0.0.1:37331,DS-7a9dd776-489b-4146-bf0f-9b4719fcf306,DISK]: Can't re-compute encryption key for nonce, since the required block key (keyID=652208306) doesn't exist. Current key: 406574077
+2026-11-07 20:44:48,960 [Thread-924] WARN  hdfs.DFSClient (DataStreamer.java:addDatanode2ExistingPipeline(1257)) - Error transferring data from DatanodeInfoWithStorage[127.0.0.1:38495,DS-88ac6c54-6a14-4748-9010-122e849cd315,DISK] to DatanodeInfoWithStorage[127.0.0.1:46079,DS-96dae201-397d-438f-ac2b-e9bfd87a0b77,DISK]: Can't re-compute encryption key for nonce, since the required block key (keyID=652208306) doesn't exist. Current key: 406574077
+2026-11-07 20:44:48,963 [Thread-924] WARN  hdfs.DFSClient (DataStreamer.java:addDatanode2ExistingPipeline(1257)) - Error transferring data from DatanodeInfoWithStorage[127.0.0.1:32779,DS-80cb46ea-33a3-479d-bc49-c21b722946f7,DISK] to DatanodeInfoWithStorage[127.0.0.1:40563,DS-0fbdb445-4432-464f-915a-f5dde398e617,DISK]: Can't re-compute encryption key for nonce, since the required block key (keyID=652208306) doesn't exist. Current key: 406574077
+[CR3 numDns=6 refreshDekFirst=false] APPLICATION SAW: org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException: Can't re-compute encryption key for nonce, since the required block key (keyID=652208306) doesn't exist. Current key: 406574077
+[CR3 RESULT 6dn] BUG TRIGGERED: append failed: org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException: Can't re-compute encryption key for nonce, since the required block key (keyID=652208306) doesn't exist. Current key: 406574077
+2026-11-07 20:45:00,040 [Thread-928] INFO  hdfs.DFSClient (DFSInputStream.java:blockSeekTo(585)) - Will fetch a new encryption key and retry, encryption key was invalid when connecting to /127.0.0.1:37091 : org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException: Can't re-compute encryption key for nonce, since the required block key (keyID=225094673) doesn't exist. Current key: 721192643
+[CR3 numDns=6 refreshDekFirst=true] append pipeline = [DatanodeInfoWithStorage[127.0.0.1:37091,DS-ca2ac615-9085-46bf-b827-81b92f171fc0,DISK], DatanodeInfoWithStorage[127.0.0.1:34125,DS-57941db3-4457-4dc0-8c20-f299921b355c,DISK], DatanodeInfoWithStorage[127.0.0.1:45957,DS-9777b6fb-0af8-4688-9ec3-3e0c13a9a6ba,DISK]]
+[CR3 numDns=6 refreshDekFirst=true] shutting down pipeline[0] = DatanodeInfoWithStorage[127.0.0.1:37091,DS-ca2ac615-9085-46bf-b827-81b92f171fc0,DISK]
+[CR3 numDns=6 refreshDekFirst=true] append succeeded, content verified
+[CR3 RESULT control] append OK with fresh DEK
+
+## DN-side stack (first occurrence)
+2026-11-07 20:44:37,796 [org.apache.hadoop.hdfs.server.datanode.DataXceiver@1c6b4924] DEBUG sasl.SaslDataTransferServer (SaslDataTransferServer.java:getEncryptedStreams(169)) - Server using encryption algorithm null
+2026-11-07 20:44:37,804 [org.apache.hadoop.hdfs.server.datanode.DataXceiver@1c6b4924] ERROR datanode.DataNode (DataXceiver.java:run(322)) - 127.0.0.1:45353:DataXceiver error processing unknown operation  src: /127.0.0.1:52056 dst: /127.0.0.1:45353
+javax.security.sasl.SaslException: DIGEST-MD5: IO error acquiring password [Caused by org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException: Can't re-compute encryption key for nonce, since the required block key (keyID=1391909637) doesn't exist. Current key: -1320591588]
+	at com.sun.security.sasl.digest.DigestMD5Server.validateClientResponse(DigestMD5Server.java:598)
+	at com.sun.security.sasl.digest.DigestMD5Server.evaluateResponse(DigestMD5Server.java:244)
+	at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslParticipant.evaluateChallengeOrResponse(SaslParticipant.java:115)
+	at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer.doSaslHandshake(SaslDataTransferServer.java:376)
+	at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer.getEncryptedStreams(SaslDataTransferServer.java:180)
+	at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer.receive(SaslDataTransferServer.java:112)
+	at org.apache.hadoop.hdfs.server.datanode.DataXceiver.run(DataXceiver.java:232)
+	at java.lang.Thread.run(Thread.java:750)
+Caused by: org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException: Can't re-compute encryption key for nonce, since the required block key (keyID=1391909637) doesn't exist. Current key: -1320591588
+	at org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrieveDataEncryptionKey(BlockTokenSecretManager.java:422)
+	at org.apache.hadoop.hdfs.security.token.block.BlockPoolTokenSecretManager.retrieveDataEncryptionKey(BlockPoolTokenSecretManager.java:129)
+	at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer.getEncryptionKeyFromUserName(SaslDataTransferServer.java:269)
+
+## client-side stack seen by application (6 DN case)
+[CR3 numDns=6 refreshDekFirst=false] APPLICATION SAW: org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException: Can't re-compute encryption key for nonce, since the required block key (keyID=652208306) doesn't exist. Current key: 406574077
+org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException: Can't re-compute encryption key for nonce, since the required block key (keyID=652208306) doesn't exist. Current key: 406574077
+	at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.DataTransferSaslUtil.readSaslMessageAndNegotiatedCipherOption(DataTransferSaslUtil.java:418)
+	at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferClient.doSaslHandshake(SaslDataTransferClient.java:475)
+	at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferClient.getEncryptedStreams(SaslDataTransferClient.java:299)
+	at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferClient.send(SaslDataTransferClient.java:241)
+	at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferClient.checkTrustAndSend(SaslDataTransferClient.java:211)
+	at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferClient.socketSend(SaslDataTransferClient.java:183)
+	at org.apache.hadoop.hdfs.DataStreamer.transfer(DataStreamer.java:1293)
+	at org.apache.hadoop.hdfs.DataStreamer.addDatanode2ExistingPipeline(DataStreamer.java:1255)
+	at org.apache.hadoop.hdfs.DataStreamer.handleDatanodeReplacement(DataStreamer.java:1439)
+	at org.apache.hadoop.hdfs.DataStreamer.setupPipelineInternal(DataStreamer.java:1354)
+	at org.apache.hadoop.hdfs.DataStreamer.setupPipelineForAppendOrRecovery(DataStreamer.java:1337)
+	at org.apache.hadoop.hdfs.DataStreamer.run(DataStreamer.java:606)

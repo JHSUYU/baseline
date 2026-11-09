@@ -1,0 +1,1356 @@
+TLC2 Version 2026.10.24.013619 (rev: 2ef2af8)
+Running breadth-first search Model-Checking with fp 112 and seed 7419171043914285539 with 16 workers on 64 cores with 7851MB heap and 12288MB offheap memory [pid: 72364] (Linux 5.15.0-198-generic amd64, Eclipse Adoptium 21.0.13 64bit, OffHeapDiskFPSet, DiskStateQueue).
+Parsing file /bulk/specula-adhoc/specula-runs/20261102-200148-8d5f/hbase-adhoc-31/.specula-output/spec/MC.tla
+Parsing file /bulk/specula-adhoc/specula-runs/20261102-200148-8d5f/hbase-adhoc-31/.specula-output/spec/base.tla
+Parsing file /tmp/tlc-12557222004007080553/TLC.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLC.tla)
+Parsing file /tmp/tlc-12557222004007080553/_TLCTrace.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/_TLCTrace.tla)
+Parsing file /tmp/tlc-12557222004007080553/Naturals.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Naturals.tla)
+Parsing file /tmp/tlc-12557222004007080553/Integers.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Integers.tla)
+Parsing file /tmp/tlc-12557222004007080553/FiniteSets.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/FiniteSets.tla)
+Parsing file /tmp/tlc-12557222004007080553/Sequences.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Sequences.tla)
+Parsing file /tmp/tlc-12557222004007080553/TLCExt.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLCExt.tla)
+Semantic processing of module Naturals
+Semantic processing of module Integers
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module TLC
+Semantic processing of module base
+Semantic processing of module TLCExt
+Semantic processing of module _TLCTrace
+Semantic processing of module MC
+Linting of module base
+Linting of module TLCExt
+Linting of module _TLCTrace
+Linting of module MC
+Starting... (2026-11-05 16:04:08)
+Computing initial states...
+Finished computing initial states: 2 distinct states generated at 2026-11-05 16:04:10.
+Progress(19) at 2026-11-05 16:04:13: 166,076 states generated (166,076 s/min), 49,342 distinct states found (49,342 ds/min), 15,505 states left on queue.
+Error: Invariant TargetSafe is violated.
+Error: The behavior up to this point is:
+State 1: <Initial predicate>
+/\ srvNode = <<"ONLINE", "ONLINE", "none">>
+/\ online = <<"lower", "lower", "none">>
+/\ rsList = 1..2
+/\ trsp = ( r1 :>
+      [ type |-> "none",
+        st |-> "none",
+        cand |-> [i |-> 0, sp |-> "none"],
+        fnp |-> FALSE,
+        child |-> 0,
+        parent |-> 0 ] )
+/\ rstView = 1..2
+/\ znode = <<TRUE, TRUE, FALSE>>
+/\ scp = <<"none", "none", "none">>
+/\ calls = {}
+/\ fc = [ client |-> 0,
+  stop |-> 0,
+  crash |-> 0,
+  restart |-> 0,
+  clock |-> 0,
+  failover |-> 0,
+  snrye |-> 0,
+  giveup |-> 0 ]
+/\ reported = <<TRUE, TRUE, FALSE>>
+/\ rsPhase = <<"online", "online", "none">>
+/\ targetFired = FALSE
+/\ mPhase = "ready"
+/\ nextPid = 1
+/\ holder = <<1, 2>>
+/\ rrp = <<>>
+/\ lastHost = (r1 :> [i |-> 0, sp |-> "none"])
+/\ rsRegions = <<{}, {r1}, {}>>
+/\ buf = <<{}, {}, {}>>
+/\ dead = <<"none", "none", "none">>
+/\ scpRegs = <<{}, {}, {}>>
+/\ rstate = (r1 :> "OPEN")
+/\ dNode = <<"lower", "lower", "none">>
+/\ sc = <<1, 2, 0>>
+/\ incAddr = <<1, 2, 0>>
+/\ loc = (r1 :> [i |-> 2, sp |-> "lower"])
+/\ failedSrv = {}
+/\ rsTasks = <<{}, {}, {}>>
+
+State 2: <MCClientMove(r1,1) line 59, col 5 to line 63, col 41 of module MC>
+/\ srvNode = <<"ONLINE", "ONLINE", "none">>
+/\ online = <<"lower", "lower", "none">>
+/\ rsList = 1..2
+/\ trsp = ( r1 :>
+      [ type |-> "MOVE",
+        st |-> "CLOSE",
+        cand |-> [i |-> 1, sp |-> "lower"],
+        fnp |-> FALSE,
+        child |-> 0,
+        parent |-> 0 ] )
+/\ rstView = 1..2
+/\ znode = <<TRUE, TRUE, FALSE>>
+/\ scp = <<"none", "none", "none">>
+/\ calls = {}
+/\ fc = [ client |-> 1,
+  stop |-> 0,
+  crash |-> 0,
+  restart |-> 0,
+  clock |-> 0,
+  failover |-> 0,
+  snrye |-> 0,
+  giveup |-> 0 ]
+/\ reported = <<TRUE, TRUE, FALSE>>
+/\ rsPhase = <<"online", "online", "none">>
+/\ targetFired = FALSE
+/\ mPhase = "ready"
+/\ nextPid = 1
+/\ holder = <<1, 2>>
+/\ rrp = <<>>
+/\ lastHost = (r1 :> [i |-> 0, sp |-> "none"])
+/\ rsRegions = <<{}, {r1}, {}>>
+/\ buf = <<{}, {}, {}>>
+/\ dead = <<"none", "none", "none">>
+/\ scpRegs = <<{}, {}, {}>>
+/\ rstate = (r1 :> "OPEN")
+/\ dNode = <<"lower", "lower", "none">>
+/\ sc = <<1, 2, 0>>
+/\ incAddr = <<1, 2, 0>>
+/\ loc = (r1 :> [i |-> 2, sp |-> "lower"])
+/\ failedSrv = {}
+/\ rsTasks = <<{}, {}, {}>>
+
+State 3: <TrspClose_(r1) line 190, col 33 to line 190, col 76 of module MC>
+/\ srvNode = <<"ONLINE", "ONLINE", "none">>
+/\ online = <<"lower", "lower", "none">>
+/\ rsList = 1..2
+/\ trsp = ( r1 :>
+      [ type |-> "MOVE",
+        st |-> "CONFIRM_CLOSED",
+        cand |-> [i |-> 1, sp |-> "lower"],
+        fnp |-> FALSE,
+        child |-> 1,
+        parent |-> 0 ] )
+/\ rstView = 1..2
+/\ znode = <<TRUE, TRUE, FALSE>>
+/\ scp = <<"none", "none", "none">>
+/\ calls = {}
+/\ fc = [ client |-> 1,
+  stop |-> 0,
+  crash |-> 0,
+  restart |-> 0,
+  clock |-> 0,
+  failover |-> 0,
+  snrye |-> 0,
+  giveup |-> 0 ]
+/\ reported = <<TRUE, TRUE, FALSE>>
+/\ rsPhase = <<"online", "online", "none">>
+/\ targetFired = FALSE
+/\ mPhase = "ready"
+/\ nextPid = 2
+/\ holder = <<1, 2>>
+/\ rrp = << [ r |-> r1,
+     k |-> "close",
+     st |-> "DISPATCH",
+     tgt |-> [i |-> 2, sp |-> "lower"],
+     fin |-> FALSE,
+     disp |-> FALSE ] >>
+/\ lastHost = (r1 :> [i |-> 0, sp |-> "none"])
+/\ rsRegions = <<{}, {r1}, {}>>
+/\ buf = <<{}, {}, {}>>
+/\ dead = <<"none", "none", "none">>
+/\ scpRegs = <<{}, {}, {}>>
+/\ rstate = (r1 :> "CLOSING")
+/\ dNode = <<"lower", "lower", "none">>
+/\ sc = <<1, 2, 0>>
+/\ incAddr = <<1, 2, 0>>
+/\ loc = (r1 :> [i |-> 2, sp |-> "lower"])
+/\ failedSrv = {}
+/\ rsTasks = <<{}, {}, {}>>
+
+State 4: <RrpDispatch_(1) line 184, col 33 to line 184, col 78 of module MC>
+/\ srvNode = <<"ONLINE", "ONLINE", "none">>
+/\ online = <<"lower", "lower", "none">>
+/\ rsList = 1..2
+/\ trsp = ( r1 :>
+      [ type |-> "MOVE",
+        st |-> "CONFIRM_CLOSED",
+        cand |-> [i |-> 1, sp |-> "lower"],
+        fnp |-> FALSE,
+        child |-> 1,
+        parent |-> 0 ] )
+/\ rstView = 1..2
+/\ znode = <<TRUE, TRUE, FALSE>>
+/\ scp = <<"none", "none", "none">>
+/\ calls = {}
+/\ fc = [ client |-> 1,
+  stop |-> 0,
+  crash |-> 0,
+  restart |-> 0,
+  clock |-> 0,
+  failover |-> 0,
+  snrye |-> 0,
+  giveup |-> 0 ]
+/\ reported = <<TRUE, TRUE, FALSE>>
+/\ rsPhase = <<"online", "online", "none">>
+/\ targetFired = FALSE
+/\ mPhase = "ready"
+/\ nextPid = 2
+/\ holder = <<1, 2>>
+/\ rrp = << [ r |-> r1,
+     k |-> "close",
+     st |-> "DISPATCH",
+     tgt |-> [i |-> 2, sp |-> "lower"],
+     fin |-> FALSE,
+     disp |-> TRUE ] >>
+/\ lastHost = (r1 :> [i |-> 0, sp |-> "none"])
+/\ rsRegions = <<{}, {r1}, {}>>
+/\ buf = <<{}, {1}, {}>>
+/\ dead = <<"none", "none", "none">>
+/\ scpRegs = <<{}, {}, {}>>
+/\ rstate = (r1 :> "CLOSING")
+/\ dNode = <<"lower", "lower", "none">>
+/\ sc = <<1, 2, 0>>
+/\ incAddr = <<1, 2, 0>>
+/\ loc = (r1 :> [i |-> 2, sp |-> "lower"])
+/\ failedSrv = {}
+/\ rsTasks = <<{}, {}, {}>>
+
+State 5: <BufferFlush_(2) line 167, col 33 to line 167, col 78 of module MC>
+/\ srvNode = <<"ONLINE", "ONLINE", "none">>
+/\ online = <<"lower", "lower", "none">>
+/\ rsList = 1..2
+/\ trsp = ( r1 :>
+      [ type |-> "MOVE",
+        st |-> "CONFIRM_CLOSED",
+        cand |-> [i |-> 1, sp |-> "lower"],
+        fnp |-> FALSE,
+        child |-> 1,
+        parent |-> 0 ] )
+/\ rstView = 1..2
+/\ znode = <<TRUE, TRUE, FALSE>>
+/\ scp = <<"none", "none", "none">>
+/\ calls = { [ procs |-> {1},
+    att |-> 0,
+    sn |-> [i |-> 2, sp |-> "lower"],
+    mode |-> "run",
+    snr |-> FALSE,
+    ops |-> {},
+    out |-> "none" ] }
+/\ fc = [ client |-> 1,
+  stop |-> 0,
+  crash |-> 0,
+  restart |-> 0,
+  clock |-> 0,
+  failover |-> 0,
+  snrye |-> 0,
+  giveup |-> 0 ]
+/\ reported = <<TRUE, TRUE, FALSE>>
+/\ rsPhase = <<"online", "online", "none">>
+/\ targetFired = FALSE
+/\ mPhase = "ready"
+/\ nextPid = 2
+/\ holder = <<1, 2>>
+/\ rrp = << [ r |-> r1,
+     k |-> "close",
+     st |-> "DISPATCH",
+     tgt |-> [i |-> 2, sp |-> "lower"],
+     fin |-> FALSE,
+     disp |-> TRUE ] >>
+/\ lastHost = (r1 :> [i |-> 0, sp |-> "none"])
+/\ rsRegions = <<{}, {r1}, {}>>
+/\ buf = <<{}, {}, {}>>
+/\ dead = <<"none", "none", "none">>
+/\ scpRegs = <<{}, {}, {}>>
+/\ rstate = (r1 :> "CLOSING")
+/\ dNode = <<"lower", "lower", "none">>
+/\ sc = <<1, 2, 0>>
+/\ incAddr = <<1, 2, 0>>
+/\ loc = (r1 :> [i |-> 2, sp |-> "lower"])
+/\ failedSrv = {}
+/\ rsTasks = <<{}, {}, {}>>
+
+State 6: <CallSend_({1}) line 176, col 33 to line 176, col 110 of module MC>
+/\ srvNode = <<"ONLINE", "ONLINE", "none">>
+/\ online = <<"lower", "lower", "none">>
+/\ rsList = 1..2
+/\ trsp = ( r1 :>
+      [ type |-> "MOVE",
+        st |-> "CONFIRM_CLOSED",
+        cand |-> [i |-> 1, sp |-> "lower"],
+        fnp |-> FALSE,
+        child |-> 1,
+        parent |-> 0 ] )
+/\ rstView = 1..2
+/\ znode = <<TRUE, TRUE, FALSE>>
+/\ scp = <<"none", "none", "none">>
+/\ calls = { [ procs |-> {1},
+    att |-> 0,
+    sn |-> [i |-> 2, sp |-> "lower"],
+    mode |-> "sent",
+    snr |-> FALSE,
+    ops |-> {1},
+    out |-> "none" ] }
+/\ fc = [ client |-> 1,
+  stop |-> 0,
+  crash |-> 0,
+  restart |-> 0,
+  clock |-> 0,
+  failover |-> 0,
+  snrye |-> 0,
+  giveup |-> 0 ]
+/\ reported = <<TRUE, TRUE, FALSE>>
+/\ rsPhase = <<"online", "online", "none">>
+/\ targetFired = FALSE
+/\ mPhase = "ready"
+/\ nextPid = 2
+/\ holder = <<1, 2>>
+/\ rrp = << [ r |-> r1,
+     k |-> "close",
+     st |-> "DISPATCH",
+     tgt |-> [i |-> 2, sp |-> "lower"],
+     fin |-> FALSE,
+     disp |-> TRUE ] >>
+/\ lastHost = (r1 :> [i |-> 0, sp |-> "none"])
+/\ rsRegions = <<{}, {r1}, {}>>
+/\ buf = <<{}, {}, {}>>
+/\ dead = <<"none", "none", "none">>
+/\ scpRegs = <<{}, {}, {}>>
+/\ rstate = (r1 :> "CLOSING")
+/\ dNode = <<"lower", "lower", "none">>
+/\ sc = <<1, 2, 0>>
+/\ incAddr = <<1, 2, 0>>
+/\ loc = (r1 :> [i |-> 2, sp |-> "lower"])
+/\ failedSrv = {}
+/\ rsTasks = <<{}, {}, {}>>
+
+State 7: <MCRsCrash(2) line 73, col 5 to line 77, col 40 of module MC>
+/\ srvNode = <<"ONLINE", "ONLINE", "none">>
+/\ online = <<"lower", "lower", "none">>
+/\ rsList = 1..2
+/\ trsp = ( r1 :>
+      [ type |-> "MOVE",
+        st |-> "CONFIRM_CLOSED",
+        cand |-> [i |-> 1, sp |-> "lower"],
+        fnp |-> FALSE,
+        child |-> 1,
+        parent |-> 0 ] )
+/\ rstView = 1..2
+/\ znode = <<TRUE, TRUE, FALSE>>
+/\ scp = <<"none", "none", "none">>
+/\ calls = { [ procs |-> {1},
+    att |-> 0,
+    sn |-> [i |-> 2, sp |-> "lower"],
+    mode |-> "sent",
+    snr |-> FALSE,
+    ops |-> {1},
+    out |-> "none" ] }
+/\ fc = [ client |-> 1,
+  stop |-> 0,
+  crash |-> 1,
+  restart |-> 0,
+  clock |-> 0,
+  failover |-> 0,
+  snrye |-> 0,
+  giveup |-> 0 ]
+/\ reported = <<TRUE, TRUE, FALSE>>
+/\ rsPhase = <<"online", "exited", "none">>
+/\ targetFired = FALSE
+/\ mPhase = "ready"
+/\ nextPid = 2
+/\ holder = <<1, 0>>
+/\ rrp = << [ r |-> r1,
+     k |-> "close",
+     st |-> "DISPATCH",
+     tgt |-> [i |-> 2, sp |-> "lower"],
+     fin |-> FALSE,
+     disp |-> TRUE ] >>
+/\ lastHost = (r1 :> [i |-> 0, sp |-> "none"])
+/\ rsRegions = <<{}, {}, {}>>
+/\ buf = <<{}, {}, {}>>
+/\ dead = <<"none", "none", "none">>
+/\ scpRegs = <<{}, {}, {}>>
+/\ rstate = (r1 :> "CLOSING")
+/\ dNode = <<"lower", "lower", "none">>
+/\ sc = <<1, 2, 0>>
+/\ incAddr = <<1, 2, 0>>
+/\ loc = (r1 :> [i |-> 2, sp |-> "lower"])
+/\ failedSrv = {}
+/\ rsTasks = <<{}, {}, {}>>
+
+State 8: <CallDeliverNoServer_({1}) line 177, col 33 to line 177, col 121 of module MC>
+/\ srvNode = <<"ONLINE", "ONLINE", "none">>
+/\ online = <<"lower", "lower", "none">>
+/\ rsList = 1..2
+/\ trsp = ( r1 :>
+      [ type |-> "MOVE",
+        st |-> "CONFIRM_CLOSED",
+        cand |-> [i |-> 1, sp |-> "lower"],
+        fnp |-> FALSE,
+        child |-> 1,
+        parent |-> 0 ] )
+/\ rstView = 1..2
+/\ znode = <<TRUE, TRUE, FALSE>>
+/\ scp = <<"none", "none", "none">>
+/\ calls = { [ procs |-> {1},
+    att |-> 0,
+    sn |-> [i |-> 2, sp |-> "lower"],
+    mode |-> "resp",
+    snr |-> FALSE,
+    ops |-> {1},
+    out |-> "conn" ] }
+/\ fc = [ client |-> 1,
+  stop |-> 0,
+  crash |-> 1,
+  restart |-> 0,
+  clock |-> 0,
+  failover |-> 0,
+  snrye |-> 0,
+  giveup |-> 0 ]
+/\ reported = <<TRUE, TRUE, FALSE>>
+/\ rsPhase = <<"online", "exited", "none">>
+/\ targetFired = FALSE
+/\ mPhase = "ready"
+/\ nextPid = 2
+/\ holder = <<1, 0>>
+/\ rrp = << [ r |-> r1,
+     k |-> "close",
+     st |-> "DISPATCH",
+     tgt |-> [i |-> 2, sp |-> "lower"],
+     fin |-> FALSE,
+     disp |-> TRUE ] >>
+/\ lastHost = (r1 :> [i |-> 0, sp |-> "none"])
+/\ rsRegions = <<{}, {}, {}>>
+/\ buf = <<{}, {}, {}>>
+/\ dead = <<"none", "none", "none">>
+/\ scpRegs = <<{}, {}, {}>>
+/\ rstate = (r1 :> "CLOSING")
+/\ dNode = <<"lower", "lower", "none">>
+/\ sc = <<1, 2, 0>>
+/\ incAddr = <<1, 2, 0>>
+/\ loc = (r1 :> [i |-> 2, sp |-> "lower"])
+/\ failedSrv = {2}
+/\ rsTasks = <<{}, {}, {}>>
+
+State 9: <FailedServerExpire_(2) line 174, col 33 to line 174, col 85 of module MC>
+/\ srvNode = <<"ONLINE", "ONLINE", "none">>
+/\ online = <<"lower", "lower", "none">>
+/\ rsList = 1..2
+/\ trsp = ( r1 :>
+      [ type |-> "MOVE",
+        st |-> "CONFIRM_CLOSED",
+        cand |-> [i |-> 1, sp |-> "lower"],
+        fnp |-> FALSE,
+        child |-> 1,
+        parent |-> 0 ] )
+/\ rstView = 1..2
+/\ znode = <<TRUE, TRUE, FALSE>>
+/\ scp = <<"none", "none", "none">>
+/\ calls = { [ procs |-> {1},
+    att |-> 0,
+    sn |-> [i |-> 2, sp |-> "lower"],
+    mode |-> "resp",
+    snr |-> FALSE,
+    ops |-> {1},
+    out |-> "conn" ] }
+/\ fc = [ client |-> 1,
+  stop |-> 0,
+  crash |-> 1,
+  restart |-> 0,
+  clock |-> 0,
+  failover |-> 0,
+  snrye |-> 0,
+  giveup |-> 0 ]
+/\ reported = <<TRUE, TRUE, FALSE>>
+/\ rsPhase = <<"online", "exited", "none">>
+/\ targetFired = FALSE
+/\ mPhase = "ready"
+/\ nextPid = 2
+/\ holder = <<1, 0>>
+/\ rrp = << [ r |-> r1,
+     k |-> "close",
+     st |-> "DISPATCH",
+     tgt |-> [i |-> 2, sp |-> "lower"],
+     fin |-> FALSE,
+     disp |-> TRUE ] >>
+/\ lastHost = (r1 :> [i |-> 0, sp |-> "none"])
+/\ rsRegions = <<{}, {}, {}>>
+/\ buf = <<{}, {}, {}>>
+/\ dead = <<"none", "none", "none">>
+/\ scpRegs = <<{}, {}, {}>>
+/\ rstate = (r1 :> "CLOSING")
+/\ dNode = <<"lower", "lower", "none">>
+/\ sc = <<1, 2, 0>>
+/\ incAddr = <<1, 2, 0>>
+/\ loc = (r1 :> [i |-> 2, sp |-> "lower"])
+/\ failedSrv = {}
+/\ rsTasks = <<{}, {}, {}>>
+
+State 10: <CallFailed_({1}) line 183, col 33 to line 183, col 112 of module MC>
+/\ srvNode = <<"ONLINE", "ONLINE", "none">>
+/\ online = <<"lower", "lower", "none">>
+/\ rsList = 1..2
+/\ trsp = ( r1 :>
+      [ type |-> "MOVE",
+        st |-> "CONFIRM_CLOSED",
+        cand |-> [i |-> 1, sp |-> "lower"],
+        fnp |-> FALSE,
+        child |-> 1,
+        parent |-> 0 ] )
+/\ rstView = 1..2
+/\ znode = <<TRUE, TRUE, FALSE>>
+/\ scp = <<"none", "none", "none">>
+/\ calls = { [ procs |-> {1},
+    att |-> 1,
+    sn |-> [i |-> 2, sp |-> "lower"],
+    mode |-> "run",
+    snr |-> FALSE,
+    ops |-> {},
+    out |-> "none" ] }
+/\ fc = [ client |-> 1,
+  stop |-> 0,
+  crash |-> 1,
+  restart |-> 0,
+  clock |-> 0,
+  failover |-> 0,
+  snrye |-> 0,
+  giveup |-> 0 ]
+/\ reported = <<TRUE, TRUE, FALSE>>
+/\ rsPhase = <<"online", "exited", "none">>
+/\ targetFired = FALSE
+/\ mPhase = "ready"
+/\ nextPid = 2
+/\ holder = <<1, 0>>
+/\ rrp = << [ r |-> r1,
+     k |-> "close",
+     st |-> "DISPATCH",
+     tgt |-> [i |-> 2, sp |-> "lower"],
+     fin |-> FALSE,
+     disp |-> TRUE ] >>
+/\ lastHost = (r1 :> [i |-> 0, sp |-> "none"])
+/\ rsRegions = <<{}, {}, {}>>
+/\ buf = <<{}, {}, {}>>
+/\ dead = <<"none", "none", "none">>
+/\ scpRegs = <<{}, {}, {}>>
+/\ rstate = (r1 :> "CLOSING")
+/\ dNode = <<"lower", "lower", "none">>
+/\ sc = <<1, 2, 0>>
+/\ incAddr = <<1, 2, 0>>
+/\ loc = (r1 :> [i |-> 2, sp |-> "lower"])
+/\ failedSrv = {}
+/\ rsTasks = <<{}, {}, {}>>
+
+State 11: <CallSend_({1}) line 176, col 33 to line 176, col 110 of module MC>
+/\ srvNode = <<"ONLINE", "ONLINE", "none">>
+/\ online = <<"lower", "lower", "none">>
+/\ rsList = 1..2
+/\ trsp = ( r1 :>
+      [ type |-> "MOVE",
+        st |-> "CONFIRM_CLOSED",
+        cand |-> [i |-> 1, sp |-> "lower"],
+        fnp |-> FALSE,
+        child |-> 1,
+        parent |-> 0 ] )
+/\ rstView = 1..2
+/\ znode = <<TRUE, TRUE, FALSE>>
+/\ scp = <<"none", "none", "none">>
+/\ calls = { [ procs |-> {1},
+    att |-> 1,
+    sn |-> [i |-> 2, sp |-> "lower"],
+    mode |-> "sent",
+    snr |-> FALSE,
+    ops |-> {1},
+    out |-> "none" ] }
+/\ fc = [ client |-> 1,
+  stop |-> 0,
+  crash |-> 1,
+  restart |-> 0,
+  clock |-> 0,
+  failover |-> 0,
+  snrye |-> 0,
+  giveup |-> 0 ]
+/\ reported = <<TRUE, TRUE, FALSE>>
+/\ rsPhase = <<"online", "exited", "none">>
+/\ targetFired = FALSE
+/\ mPhase = "ready"
+/\ nextPid = 2
+/\ holder = <<1, 0>>
+/\ rrp = << [ r |-> r1,
+     k |-> "close",
+     st |-> "DISPATCH",
+     tgt |-> [i |-> 2, sp |-> "lower"],
+     fin |-> FALSE,
+     disp |-> TRUE ] >>
+/\ lastHost = (r1 :> [i |-> 0, sp |-> "none"])
+/\ rsRegions = <<{}, {}, {}>>
+/\ buf = <<{}, {}, {}>>
+/\ dead = <<"none", "none", "none">>
+/\ scpRegs = <<{}, {}, {}>>
+/\ rstate = (r1 :> "CLOSING")
+/\ dNode = <<"lower", "lower", "none">>
+/\ sc = <<1, 2, 0>>
+/\ incAddr = <<1, 2, 0>>
+/\ loc = (r1 :> [i |-> 2, sp |-> "lower"])
+/\ failedSrv = {}
+/\ rsTasks = <<{}, {}, {}>>
+
+State 12: <CallDeliverNoServer_({1}) line 177, col 33 to line 177, col 121 of module MC>
+/\ srvNode = <<"ONLINE", "ONLINE", "none">>
+/\ online = <<"lower", "lower", "none">>
+/\ rsList = 1..2
+/\ trsp = ( r1 :>
+      [ type |-> "MOVE",
+        st |-> "CONFIRM_CLOSED",
+        cand |-> [i |-> 1, sp |-> "lower"],
+        fnp |-> FALSE,
+        child |-> 1,
+        parent |-> 0 ] )
+/\ rstView = 1..2
+/\ znode = <<TRUE, TRUE, FALSE>>
+/\ scp = <<"none", "none", "none">>
+/\ calls = { [ procs |-> {1},
+    att |-> 1,
+    sn |-> [i |-> 2, sp |-> "lower"],
+    mode |-> "resp",
+    snr |-> FALSE,
+    ops |-> {1},
+    out |-> "conn" ] }
+/\ fc = [ client |-> 1,
+  stop |-> 0,
+  crash |-> 1,
+  restart |-> 0,
+  clock |-> 0,
+  failover |-> 0,
+  snrye |-> 0,
+  giveup |-> 0 ]
+/\ reported = <<TRUE, TRUE, FALSE>>
+/\ rsPhase = <<"online", "exited", "none">>
+/\ targetFired = FALSE
+/\ mPhase = "ready"
+/\ nextPid = 2
+/\ holder = <<1, 0>>
+/\ rrp = << [ r |-> r1,
+     k |-> "close",
+     st |-> "DISPATCH",
+     tgt |-> [i |-> 2, sp |-> "lower"],
+     fin |-> FALSE,
+     disp |-> TRUE ] >>
+/\ lastHost = (r1 :> [i |-> 0, sp |-> "none"])
+/\ rsRegions = <<{}, {}, {}>>
+/\ buf = <<{}, {}, {}>>
+/\ dead = <<"none", "none", "none">>
+/\ scpRegs = <<{}, {}, {}>>
+/\ rstate = (r1 :> "CLOSING")
+/\ dNode = <<"lower", "lower", "none">>
+/\ sc = <<1, 2, 0>>
+/\ incAddr = <<1, 2, 0>>
+/\ loc = (r1 :> [i |-> 2, sp |-> "lower"])
+/\ failedSrv = {2}
+/\ rsTasks = <<{}, {}, {}>>
+
+State 13: <CallFailed_({1}) line 183, col 33 to line 183, col 112 of module MC>
+/\ srvNode = <<"ONLINE", "CRASHED", "none">>
+/\ online = <<"lower", "none", "none">>
+/\ rsList = {1}
+/\ trsp = ( r1 :>
+      [ type |-> "MOVE",
+        st |-> "CONFIRM_CLOSED",
+        cand |-> [i |-> 1, sp |-> "lower"],
+        fnp |-> FALSE,
+        child |-> 1,
+        parent |-> 0 ] )
+/\ rstView = 1..2
+/\ znode = <<TRUE, TRUE, FALSE>>
+/\ scp = <<"none", "START", "none">>
+/\ calls = {}
+/\ fc = [ client |-> 1,
+  stop |-> 0,
+  crash |-> 1,
+  restart |-> 0,
+  clock |-> 0,
+  failover |-> 0,
+  snrye |-> 0,
+  giveup |-> 0 ]
+/\ reported = <<TRUE, FALSE, FALSE>>
+/\ rsPhase = <<"online", "exited", "none">>
+/\ targetFired = FALSE
+/\ mPhase = "ready"
+/\ nextPid = 2
+/\ holder = <<1, 0>>
+/\ rrp = << [ r |-> r1,
+     k |-> "close",
+     st |-> "DISPATCH",
+     tgt |-> [i |-> 2, sp |-> "lower"],
+     fin |-> FALSE,
+     disp |-> TRUE ] >>
+/\ lastHost = (r1 :> [i |-> 0, sp |-> "none"])
+/\ rsRegions = <<{}, {}, {}>>
+/\ buf = <<{}, {}, {}>>
+/\ dead = <<"none", "lower", "none">>
+/\ scpRegs = <<{}, {}, {}>>
+/\ rstate = (r1 :> "CLOSING")
+/\ dNode = <<"lower", "none", "none">>
+/\ sc = <<1, 2, 0>>
+/\ incAddr = <<1, 2, 0>>
+/\ loc = (r1 :> [i |-> 2, sp |-> "lower"])
+/\ failedSrv = {2}
+/\ rsTasks = <<{}, {}, {}>>
+
+State 14: <MCRsConstruct(2) line 80, col 5 to line 83, col 42 of module MC>
+/\ srvNode = <<"ONLINE", "CRASHED", "none">>
+/\ online = <<"lower", "none", "none">>
+/\ rsList = {1}
+/\ trsp = ( r1 :>
+      [ type |-> "MOVE",
+        st |-> "CONFIRM_CLOSED",
+        cand |-> [i |-> 1, sp |-> "lower"],
+        fnp |-> FALSE,
+        child |-> 1,
+        parent |-> 0 ] )
+/\ rstView = 1..2
+/\ znode = <<TRUE, TRUE, FALSE>>
+/\ scp = <<"none", "START", "none">>
+/\ calls = {}
+/\ fc = [ client |-> 1,
+  stop |-> 0,
+  crash |-> 1,
+  restart |-> 1,
+  clock |-> 0,
+  failover |-> 0,
+  snrye |-> 0,
+  giveup |-> 0 ]
+/\ reported = <<TRUE, FALSE, FALSE>>
+/\ rsPhase = <<"online", "exited", "bound">>
+/\ targetFired = FALSE
+/\ mPhase = "ready"
+/\ nextPid = 2
+/\ holder = <<1, 3>>
+/\ rrp = << [ r |-> r1,
+     k |-> "close",
+     st |-> "DISPATCH",
+     tgt |-> [i |-> 2, sp |-> "lower"],
+     fin |-> FALSE,
+     disp |-> TRUE ] >>
+/\ lastHost = (r1 :> [i |-> 0, sp |-> "none"])
+/\ rsRegions = <<{}, {}, {}>>
+/\ buf = <<{}, {}, {}>>
+/\ dead = <<"none", "lower", "none">>
+/\ scpRegs = <<{}, {}, {}>>
+/\ rstate = (r1 :> "CLOSING")
+/\ dNode = <<"lower", "none", "none">>
+/\ sc = <<1, 2, 3>>
+/\ incAddr = <<1, 2, 2>>
+/\ loc = (r1 :> [i |-> 2, sp |-> "lower"])
+/\ failedSrv = {2}
+/\ rsTasks = <<{}, {}, {}>>
+
+State 15: <MCMasterCrash line 93, col 5 to line 96, col 43 of module MC>
+/\ srvNode = <<"none", "none", "none">>
+/\ online = <<"none", "none", "none">>
+/\ rsList = {1}
+/\ trsp = ( r1 :>
+      [ type |-> "MOVE",
+        st |-> "CONFIRM_CLOSED",
+        cand |-> [i |-> 1, sp |-> "lower"],
+        fnp |-> FALSE,
+        child |-> 1,
+        parent |-> 0 ] )
+/\ rstView = {}
+/\ znode = <<TRUE, TRUE, FALSE>>
+/\ scp = <<"none", "START", "none">>
+/\ calls = {}
+/\ fc = [ client |-> 1,
+  stop |-> 0,
+  crash |-> 1,
+  restart |-> 1,
+  clock |-> 0,
+  failover |-> 1,
+  snrye |-> 0,
+  giveup |-> 0 ]
+/\ reported = <<FALSE, FALSE, FALSE>>
+/\ rsPhase = <<"online", "exited", "bound">>
+/\ targetFired = FALSE
+/\ mPhase = "down"
+/\ nextPid = 2
+/\ holder = <<1, 3>>
+/\ rrp = << [ r |-> r1,
+     k |-> "close",
+     st |-> "DISPATCH",
+     tgt |-> [i |-> 2, sp |-> "lower"],
+     fin |-> FALSE,
+     disp |-> FALSE ] >>
+/\ lastHost = (r1 :> [i |-> 0, sp |-> "none"])
+/\ rsRegions = <<{}, {}, {}>>
+/\ buf = <<{}, {}, {}>>
+/\ dead = <<"none", "none", "none">>
+/\ scpRegs = <<{}, {}, {}>>
+/\ rstate = (r1 :> "CLOSING")
+/\ dNode = <<"none", "none", "none">>
+/\ sc = <<1, 2, 3>>
+/\ incAddr = <<1, 2, 2>>
+/\ loc = (r1 :> [i |-> 2, sp |-> "lower"])
+/\ failedSrv = {}
+/\ rsTasks = <<{}, {}, {}>>
+
+State 16: <RsStartRpc_(3) line 156, col 33 to line 156, col 77 of module MC>
+/\ srvNode = <<"none", "none", "none">>
+/\ online = <<"none", "none", "none">>
+/\ rsList = {1}
+/\ trsp = ( r1 :>
+      [ type |-> "MOVE",
+        st |-> "CONFIRM_CLOSED",
+        cand |-> [i |-> 1, sp |-> "lower"],
+        fnp |-> FALSE,
+        child |-> 1,
+        parent |-> 0 ] )
+/\ rstView = {}
+/\ znode = <<TRUE, TRUE, FALSE>>
+/\ scp = <<"none", "START", "none">>
+/\ calls = {}
+/\ fc = [ client |-> 1,
+  stop |-> 0,
+  crash |-> 1,
+  restart |-> 1,
+  clock |-> 0,
+  failover |-> 1,
+  snrye |-> 0,
+  giveup |-> 0 ]
+/\ reported = <<FALSE, FALSE, FALSE>>
+/\ rsPhase = <<"online", "exited", "started">>
+/\ targetFired = FALSE
+/\ mPhase = "down"
+/\ nextPid = 2
+/\ holder = <<1, 3>>
+/\ rrp = << [ r |-> r1,
+     k |-> "close",
+     st |-> "DISPATCH",
+     tgt |-> [i |-> 2, sp |-> "lower"],
+     fin |-> FALSE,
+     disp |-> FALSE ] >>
+/\ lastHost = (r1 :> [i |-> 0, sp |-> "none"])
+/\ rsRegions = <<{}, {}, {}>>
+/\ buf = <<{}, {}, {}>>
+/\ dead = <<"none", "none", "none">>
+/\ scpRegs = <<{}, {}, {}>>
+/\ rstate = (r1 :> "CLOSING")
+/\ dNode = <<"none", "none", "none">>
+/\ sc = <<1, 2, 3>>
+/\ incAddr = <<1, 2, 2>>
+/\ loc = (r1 :> [i |-> 2, sp |-> "lower"])
+/\ failedSrv = {}
+/\ rsTasks = <<{}, {}, {}>>
+
+State 17: <MasterStartup_ line 192, col 33 to line 192, col 77 of module MC>
+/\ srvNode = <<"ONLINE", "ONLINE", "none">>
+/\ online = <<"lower", "lower", "none">>
+/\ rsList = {1}
+/\ trsp = ( r1 :>
+      [ type |-> "MOVE",
+        st |-> "CONFIRM_CLOSED",
+        cand |-> [i |-> 1, sp |-> "lower"],
+        fnp |-> FALSE,
+        child |-> 1,
+        parent |-> 0 ] )
+/\ rstView = {1, 2}
+/\ znode = <<TRUE, TRUE, FALSE>>
+/\ scp = <<"none", "START", "none">>
+/\ calls = {}
+/\ fc = [ client |-> 1,
+  stop |-> 0,
+  crash |-> 1,
+  restart |-> 1,
+  clock |-> 0,
+  failover |-> 1,
+  snrye |-> 0,
+  giveup |-> 0 ]
+/\ reported = <<FALSE, FALSE, FALSE>>
+/\ rsPhase = <<"online", "exited", "started">>
+/\ targetFired = FALSE
+/\ mPhase = "upgraded"
+/\ nextPid = 2
+/\ holder = <<1, 3>>
+/\ rrp = << [ r |-> r1,
+     k |-> "close",
+     st |-> "DISPATCH",
+     tgt |-> [i |-> 2, sp |-> "lower"],
+     fin |-> FALSE,
+     disp |-> FALSE ] >>
+/\ lastHost = (r1 :> [i |-> 0, sp |-> "none"])
+/\ rsRegions = <<{}, {}, {}>>
+/\ buf = <<{}, {}, {}>>
+/\ dead = <<"none", "lower", "none">>
+/\ scpRegs = <<{}, {}, {}>>
+/\ rstate = (r1 :> "CLOSING")
+/\ dNode = <<"lower", "lower", "none">>
+/\ sc = <<1, 2, 3>>
+/\ incAddr = <<1, 2, 2>>
+/\ loc = (r1 :> [i |-> 2, sp |-> "lower"])
+/\ failedSrv = {}
+/\ rsTasks = <<{}, {}, {}>>
+
+State 18: <MasterServiceStarted_ line 193, col 33 to line 193, col 84 of module MC>
+/\ srvNode = <<"ONLINE", "ONLINE", "none">>
+/\ online = <<"lower", "lower", "none">>
+/\ rsList = {1}
+/\ trsp = ( r1 :>
+      [ type |-> "MOVE",
+        st |-> "CONFIRM_CLOSED",
+        cand |-> [i |-> 1, sp |-> "lower"],
+        fnp |-> FALSE,
+        child |-> 1,
+        parent |-> 0 ] )
+/\ rstView = {1, 2}
+/\ znode = <<TRUE, TRUE, FALSE>>
+/\ scp = <<"none", "START", "none">>
+/\ calls = {}
+/\ fc = [ client |-> 1,
+  stop |-> 0,
+  crash |-> 1,
+  restart |-> 1,
+  clock |-> 0,
+  failover |-> 1,
+  snrye |-> 0,
+  giveup |-> 0 ]
+/\ reported = <<FALSE, FALSE, FALSE>>
+/\ rsPhase = <<"online", "exited", "started">>
+/\ targetFired = FALSE
+/\ mPhase = "serviceStarted"
+/\ nextPid = 2
+/\ holder = <<1, 3>>
+/\ rrp = << [ r |-> r1,
+     k |-> "close",
+     st |-> "DISPATCH",
+     tgt |-> [i |-> 2, sp |-> "lower"],
+     fin |-> FALSE,
+     disp |-> FALSE ] >>
+/\ lastHost = (r1 :> [i |-> 0, sp |-> "none"])
+/\ rsRegions = <<{}, {}, {}>>
+/\ buf = <<{}, {}, {}>>
+/\ dead = <<"none", "lower", "none">>
+/\ scpRegs = <<{}, {}, {}>>
+/\ rstate = (r1 :> "CLOSING")
+/\ dNode = <<"lower", "lower", "none">>
+/\ sc = <<1, 2, 3>>
+/\ incAddr = <<1, 2, 2>>
+/\ loc = (r1 :> [i |-> 2, sp |-> "lower"])
+/\ failedSrv = {}
+/\ rsTasks = <<{}, {}, {}>>
+
+State 19: <RsReportForDuty_(3) line 157, col 33 to line 158, col 69 of module MC>
+/\ srvNode = <<"ONLINE", "ONLINE", "ONLINE">>
+/\ online = <<"lower", "lower", "lower">>
+/\ rsList = {1, 3}
+/\ trsp = ( r1 :>
+      [ type |-> "MOVE",
+        st |-> "CONFIRM_CLOSED",
+        cand |-> [i |-> 1, sp |-> "lower"],
+        fnp |-> FALSE,
+        child |-> 1,
+        parent |-> 0 ] )
+/\ rstView = {1, 2}
+/\ znode = <<TRUE, TRUE, FALSE>>
+/\ scp = <<"none", "START", "none">>
+/\ calls = {}
+/\ fc = [ client |-> 1,
+  stop |-> 0,
+  crash |-> 1,
+  restart |-> 1,
+  clock |-> 0,
+  failover |-> 1,
+  snrye |-> 0,
+  giveup |-> 0 ]
+/\ reported = <<FALSE, FALSE, FALSE>>
+/\ rsPhase = <<"online", "exited", "registered">>
+/\ targetFired = FALSE
+/\ mPhase = "serviceStarted"
+/\ nextPid = 2
+/\ holder = <<1, 3>>
+/\ rrp = << [ r |-> r1,
+     k |-> "close",
+     st |-> "DISPATCH",
+     tgt |-> [i |-> 2, sp |-> "lower"],
+     fin |-> FALSE,
+     disp |-> FALSE ] >>
+/\ lastHost = (r1 :> [i |-> 0, sp |-> "none"])
+/\ rsRegions = <<{}, {}, {}>>
+/\ buf = <<{}, {}, {}>>
+/\ dead = <<"none", "lower", "none">>
+/\ scpRegs = <<{}, {}, {}>>
+/\ rstate = (r1 :> "CLOSING")
+/\ dNode = <<"lower", "lower", "lower">>
+/\ sc = <<1, 2, 3>>
+/\ incAddr = <<1, 2, 2>>
+/\ loc = (r1 :> [i |-> 2, sp |-> "lower"])
+/\ failedSrv = {}
+/\ rsTasks = <<{}, {}, {}>>
+
+State 20: <RrpDispatch_(1) line 184, col 33 to line 184, col 78 of module MC>
+/\ srvNode = <<"ONLINE", "ONLINE", "ONLINE">>
+/\ online = <<"lower", "lower", "lower">>
+/\ rsList = {1, 3}
+/\ trsp = ( r1 :>
+      [ type |-> "MOVE",
+        st |-> "CONFIRM_CLOSED",
+        cand |-> [i |-> 1, sp |-> "lower"],
+        fnp |-> FALSE,
+        child |-> 1,
+        parent |-> 0 ] )
+/\ rstView = {1, 2}
+/\ znode = <<TRUE, TRUE, FALSE>>
+/\ scp = <<"none", "START", "none">>
+/\ calls = {}
+/\ fc = [ client |-> 1,
+  stop |-> 0,
+  crash |-> 1,
+  restart |-> 1,
+  clock |-> 0,
+  failover |-> 1,
+  snrye |-> 0,
+  giveup |-> 0 ]
+/\ reported = <<FALSE, FALSE, FALSE>>
+/\ rsPhase = <<"online", "exited", "registered">>
+/\ targetFired = FALSE
+/\ mPhase = "serviceStarted"
+/\ nextPid = 2
+/\ holder = <<1, 3>>
+/\ rrp = << [ r |-> r1,
+     k |-> "close",
+     st |-> "DISPATCH",
+     tgt |-> [i |-> 2, sp |-> "lower"],
+     fin |-> FALSE,
+     disp |-> TRUE ] >>
+/\ lastHost = (r1 :> [i |-> 0, sp |-> "none"])
+/\ rsRegions = <<{}, {}, {}>>
+/\ buf = <<{}, {1}, {}>>
+/\ dead = <<"none", "lower", "none">>
+/\ scpRegs = <<{}, {}, {}>>
+/\ rstate = (r1 :> "CLOSING")
+/\ dNode = <<"lower", "lower", "lower">>
+/\ sc = <<1, 2, 3>>
+/\ incAddr = <<1, 2, 2>>
+/\ loc = (r1 :> [i |-> 2, sp |-> "lower"])
+/\ failedSrv = {}
+/\ rsTasks = <<{}, {}, {}>>
+
+State 21: <BufferFlush_(2) line 167, col 33 to line 167, col 78 of module MC>
+/\ srvNode = <<"ONLINE", "ONLINE", "ONLINE">>
+/\ online = <<"lower", "lower", "lower">>
+/\ rsList = {1, 3}
+/\ trsp = ( r1 :>
+      [ type |-> "MOVE",
+        st |-> "CONFIRM_CLOSED",
+        cand |-> [i |-> 1, sp |-> "lower"],
+        fnp |-> FALSE,
+        child |-> 1,
+        parent |-> 0 ] )
+/\ rstView = {1, 2}
+/\ znode = <<TRUE, TRUE, FALSE>>
+/\ scp = <<"none", "START", "none">>
+/\ calls = { [ procs |-> {1},
+    att |-> 0,
+    sn |-> [i |-> 2, sp |-> "lower"],
+    mode |-> "run",
+    snr |-> FALSE,
+    ops |-> {},
+    out |-> "none" ] }
+/\ fc = [ client |-> 1,
+  stop |-> 0,
+  crash |-> 1,
+  restart |-> 1,
+  clock |-> 0,
+  failover |-> 1,
+  snrye |-> 0,
+  giveup |-> 0 ]
+/\ reported = <<FALSE, FALSE, FALSE>>
+/\ rsPhase = <<"online", "exited", "registered">>
+/\ targetFired = FALSE
+/\ mPhase = "serviceStarted"
+/\ nextPid = 2
+/\ holder = <<1, 3>>
+/\ rrp = << [ r |-> r1,
+     k |-> "close",
+     st |-> "DISPATCH",
+     tgt |-> [i |-> 2, sp |-> "lower"],
+     fin |-> FALSE,
+     disp |-> TRUE ] >>
+/\ lastHost = (r1 :> [i |-> 0, sp |-> "none"])
+/\ rsRegions = <<{}, {}, {}>>
+/\ buf = <<{}, {}, {}>>
+/\ dead = <<"none", "lower", "none">>
+/\ scpRegs = <<{}, {}, {}>>
+/\ rstate = (r1 :> "CLOSING")
+/\ dNode = <<"lower", "lower", "lower">>
+/\ sc = <<1, 2, 3>>
+/\ incAddr = <<1, 2, 2>>
+/\ loc = (r1 :> [i |-> 2, sp |-> "lower"])
+/\ failedSrv = {}
+/\ rsTasks = <<{}, {}, {}>>
+
+State 22: <CallSend_({1}) line 176, col 33 to line 176, col 110 of module MC>
+/\ srvNode = <<"ONLINE", "ONLINE", "ONLINE">>
+/\ online = <<"lower", "lower", "lower">>
+/\ rsList = {1, 3}
+/\ trsp = ( r1 :>
+      [ type |-> "MOVE",
+        st |-> "CONFIRM_CLOSED",
+        cand |-> [i |-> 1, sp |-> "lower"],
+        fnp |-> FALSE,
+        child |-> 1,
+        parent |-> 0 ] )
+/\ rstView = {1, 2}
+/\ znode = <<TRUE, TRUE, FALSE>>
+/\ scp = <<"none", "START", "none">>
+/\ calls = { [ procs |-> {1},
+    att |-> 0,
+    sn |-> [i |-> 2, sp |-> "lower"],
+    mode |-> "sent",
+    snr |-> FALSE,
+    ops |-> {1},
+    out |-> "none" ] }
+/\ fc = [ client |-> 1,
+  stop |-> 0,
+  crash |-> 1,
+  restart |-> 1,
+  clock |-> 0,
+  failover |-> 1,
+  snrye |-> 0,
+  giveup |-> 0 ]
+/\ reported = <<FALSE, FALSE, FALSE>>
+/\ rsPhase = <<"online", "exited", "registered">>
+/\ targetFired = FALSE
+/\ mPhase = "serviceStarted"
+/\ nextPid = 2
+/\ holder = <<1, 3>>
+/\ rrp = << [ r |-> r1,
+     k |-> "close",
+     st |-> "DISPATCH",
+     tgt |-> [i |-> 2, sp |-> "lower"],
+     fin |-> FALSE,
+     disp |-> TRUE ] >>
+/\ lastHost = (r1 :> [i |-> 0, sp |-> "none"])
+/\ rsRegions = <<{}, {}, {}>>
+/\ buf = <<{}, {}, {}>>
+/\ dead = <<"none", "lower", "none">>
+/\ scpRegs = <<{}, {}, {}>>
+/\ rstate = (r1 :> "CLOSING")
+/\ dNode = <<"lower", "lower", "lower">>
+/\ sc = <<1, 2, 3>>
+/\ incAddr = <<1, 2, 2>>
+/\ loc = (r1 :> [i |-> 2, sp |-> "lower"])
+/\ failedSrv = {}
+/\ rsTasks = <<{}, {}, {}>>
+
+State 23: <RsCreateEphemeralNode_(3) line 159, col 33 to line 159, col 88 of module MC>
+/\ srvNode = <<"ONLINE", "ONLINE", "ONLINE">>
+/\ online = <<"lower", "lower", "lower">>
+/\ rsList = {1, 3}
+/\ trsp = ( r1 :>
+      [ type |-> "MOVE",
+        st |-> "CONFIRM_CLOSED",
+        cand |-> [i |-> 1, sp |-> "lower"],
+        fnp |-> FALSE,
+        child |-> 1,
+        parent |-> 0 ] )
+/\ rstView = {1, 2}
+/\ znode = <<TRUE, TRUE, TRUE>>
+/\ scp = <<"none", "START", "none">>
+/\ calls = { [ procs |-> {1},
+    att |-> 0,
+    sn |-> [i |-> 2, sp |-> "lower"],
+    mode |-> "sent",
+    snr |-> FALSE,
+    ops |-> {1},
+    out |-> "none" ] }
+/\ fc = [ client |-> 1,
+  stop |-> 0,
+  crash |-> 1,
+  restart |-> 1,
+  clock |-> 0,
+  failover |-> 1,
+  snrye |-> 0,
+  giveup |-> 0 ]
+/\ reported = <<FALSE, FALSE, FALSE>>
+/\ rsPhase = <<"online", "exited", "registered">>
+/\ targetFired = FALSE
+/\ mPhase = "serviceStarted"
+/\ nextPid = 2
+/\ holder = <<1, 3>>
+/\ rrp = << [ r |-> r1,
+     k |-> "close",
+     st |-> "DISPATCH",
+     tgt |-> [i |-> 2, sp |-> "lower"],
+     fin |-> FALSE,
+     disp |-> TRUE ] >>
+/\ lastHost = (r1 :> [i |-> 0, sp |-> "none"])
+/\ rsRegions = <<{}, {}, {}>>
+/\ buf = <<{}, {}, {}>>
+/\ dead = <<"none", "lower", "none">>
+/\ scpRegs = <<{}, {}, {}>>
+/\ rstate = (r1 :> "CLOSING")
+/\ dNode = <<"lower", "lower", "lower">>
+/\ sc = <<1, 2, 3>>
+/\ incAddr = <<1, 2, 2>>
+/\ loc = (r1 :> [i |-> 2, sp |-> "lower"])
+/\ failedSrv = {}
+/\ rsTasks = <<{}, {}, {}>>
+
+State 24: <RsOnline_(3) line 160, col 33 to line 160, col 75 of module MC>
+/\ srvNode = <<"ONLINE", "ONLINE", "ONLINE">>
+/\ online = <<"lower", "lower", "lower">>
+/\ rsList = {1, 3}
+/\ trsp = ( r1 :>
+      [ type |-> "MOVE",
+        st |-> "CONFIRM_CLOSED",
+        cand |-> [i |-> 1, sp |-> "lower"],
+        fnp |-> FALSE,
+        child |-> 1,
+        parent |-> 0 ] )
+/\ rstView = {1, 2}
+/\ znode = <<TRUE, TRUE, TRUE>>
+/\ scp = <<"none", "START", "none">>
+/\ calls = { [ procs |-> {1},
+    att |-> 0,
+    sn |-> [i |-> 2, sp |-> "lower"],
+    mode |-> "sent",
+    snr |-> FALSE,
+    ops |-> {1},
+    out |-> "none" ] }
+/\ fc = [ client |-> 1,
+  stop |-> 0,
+  crash |-> 1,
+  restart |-> 1,
+  clock |-> 0,
+  failover |-> 1,
+  snrye |-> 0,
+  giveup |-> 0 ]
+/\ reported = <<FALSE, FALSE, FALSE>>
+/\ rsPhase = <<"online", "exited", "online">>
+/\ targetFired = FALSE
+/\ mPhase = "serviceStarted"
+/\ nextPid = 2
+/\ holder = <<1, 3>>
+/\ rrp = << [ r |-> r1,
+     k |-> "close",
+     st |-> "DISPATCH",
+     tgt |-> [i |-> 2, sp |-> "lower"],
+     fin |-> FALSE,
+     disp |-> TRUE ] >>
+/\ lastHost = (r1 :> [i |-> 0, sp |-> "none"])
+/\ rsRegions = <<{}, {}, {}>>
+/\ buf = <<{}, {}, {}>>
+/\ dead = <<"none", "lower", "none">>
+/\ scpRegs = <<{}, {}, {}>>
+/\ rstate = (r1 :> "CLOSING")
+/\ dNode = <<"lower", "lower", "lower">>
+/\ sc = <<1, 2, 3>>
+/\ incAddr = <<1, 2, 2>>
+/\ loc = (r1 :> [i |-> 2, sp |-> "lower"])
+/\ failedSrv = {}
+/\ rsTasks = <<{}, {}, {}>>
+
+State 25: <TargetCheck_({1}) line 181, col 33 to line 181, col 129 of module MC>
+/\ srvNode = <<"ONLINE", "ONLINE", "ONLINE">>
+/\ online = <<"lower", "lower", "lower">>
+/\ rsList = {1, 3}
+/\ trsp = ( r1 :>
+      [ type |-> "MOVE",
+        st |-> "CONFIRM_CLOSED",
+        cand |-> [i |-> 1, sp |-> "lower"],
+        fnp |-> FALSE,
+        child |-> 1,
+        parent |-> 0 ] )
+/\ rstView = {1, 2}
+/\ znode = <<TRUE, TRUE, TRUE>>
+/\ scp = <<"none", "START", "none">>
+/\ calls = { [ procs |-> {1},
+    att |-> 0,
+    sn |-> [i |-> 2, sp |-> "lower"],
+    mode |-> "resp",
+    snr |-> FALSE,
+    ops |-> {1},
+    out |-> "dnr" ] }
+/\ fc = [ client |-> 1,
+  stop |-> 0,
+  crash |-> 1,
+  restart |-> 1,
+  clock |-> 0,
+  failover |-> 1,
+  snrye |-> 0,
+  giveup |-> 0 ]
+/\ reported = <<FALSE, FALSE, FALSE>>
+/\ rsPhase = <<"online", "exited", "online">>
+/\ targetFired = TRUE
+/\ mPhase = "serviceStarted"
+/\ nextPid = 2
+/\ holder = <<1, 3>>
+/\ rrp = << [ r |-> r1,
+     k |-> "close",
+     st |-> "DISPATCH",
+     tgt |-> [i |-> 2, sp |-> "lower"],
+     fin |-> FALSE,
+     disp |-> TRUE ] >>
+/\ lastHost = (r1 :> [i |-> 0, sp |-> "none"])
+/\ rsRegions = <<{}, {}, {}>>
+/\ buf = <<{}, {}, {}>>
+/\ dead = <<"none", "lower", "none">>
+/\ scpRegs = <<{}, {}, {}>>
+/\ rstate = (r1 :> "CLOSING")
+/\ dNode = <<"lower", "lower", "lower">>
+/\ sc = <<1, 2, 3>>
+/\ incAddr = <<1, 2, 2>>
+/\ loc = (r1 :> [i |-> 2, sp |-> "lower"])
+/\ failedSrv = {}
+/\ rsTasks = <<{}, {}, {}>>
+
+2898573 states generated, 641816 distinct states found, 121509 states left on queue.
+The depth of the complete state graph search is 28.
+Checkpointing of run /tmp/tlc-states-PTUL4A/26-11-05-16-04-08.333
+Checkpointing completed at (2026-11-05 16:04:25)
+Finished in 17s at (2026-11-05 16:04:25)
+Trace exploration spec path: ./MC_TTrace_1793894648.tla
+, "START", "none">>
+/\ calls = { [ procs |-> {1},
+    att |-> 0,
+    sn |-> [i |-> 2, sp |-> "lower"],
+    mode |-> "resp",
+    snr |-> FALSE,
+    ops |-> {1},
+    out |-> "dnr" ] }
+/\ fc = [ client |-> 1,
+  stop |-> 0,
+  crash |-> 1,
+  restart |-> 1,
+  clock |-> 0,
+  failover |-> 1,
+  snrye |-> 0,
+  giveup |-> 0 ]
+/\ reported = <<FALSE, FALSE, FALSE>>
+/\ rsPhase = <<"online", "exited", "online">>
+/\ targetFired = TRUE
+/\ mPhase = "serviceStarted"
+/\ nextPid = 2
+/\ holder = <<1, 3>>
+/\ rrp = << [ r |-> r1,
+     k |-> "close",
+     st |-> "DISPATCH",
+     tgt |-> [i |-> 2, sp |-> "lower"],
+     fin |-> FALSE,
+     disp |-> TRUE ] >>
+/\ lastHost = (r1 :> [i |-> 0, sp |-> "none"])
+/\ rsRegions = <<{}, {}, {}>>
+/\ buf = <<{}, {}, {}>>
+/\ dead = <<"none", "lower", "none">>
+/\ scpRegs = <<{}, {}, {}>>
+/\ rstate = (r1 :> "CLOSING")
+/\ dNode = <<"lower", "lower", "lower">>
+/\ sc = <<1, 2, 3>>
+/\ incAddr = <<1, 2, 2>>
+/\ loc = (r1 :> [i |-> 2, sp |-> "lower"])
+/\ failedSrv = {}
+/\ rsTasks = <<{}, {}, {}>>
+
+2898573 states generated, 641816 distinct states found, 121509 states left on queue.
+The depth of the complete state graph search is 28.
+Checkpointing of run /tmp/tlc-states-PTUL4A/26-11-05-16-04-08.333
+Checkpointing completed at (2026-11-05 16:04:25)
+Finished in 17s at (2026-11-05 16:04:25)
+Trace exploration spec path: ./MC_TTrace_1793894648.tla
+
+[0;32m================================[0m
+[1;33m⚠ Invariant violation found![0m
+[1;33mPlease check log: output/MC_hunt_s3_late_register.out[0m
+[0;32m================================[0m

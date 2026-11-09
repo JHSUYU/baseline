@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "target": "zk-adhoc-k1",
+  "check": {
+    "file": "src/java/main/org/apache/zookeeper/server/SessionTrackerImpl.java",
+    "line": 246,
+    "thrown": "org.apache.zookeeper.KeeperException.SessionMovedException"
+  },
+  "verdict": "REACHED_CONFIRMED",
+  "mechanism": "COMBINED",
+  "scenario": "Scenario 2: A stale session-open overwrites the owner of a live connection",
+  "finding": "MC-2",
+  "counterexample": "spec/output/MC_hunt_s2_bfs.out",
+  "reproduction": "repro/test_bugMC-2_stale_revalidate.sh",
+  "stackFrame": "org.apache.zookeeper.server.SessionTrackerImpl.checkSession(SessionTrackerImpl.java:246)",
+  "bounds": [
+    {"config": "MC_hunt_s1_learner_sync.cfg", "result": "VIOLATION", "states": 256, "diameter": 13, "seconds": 1},
+    {"config": "MC_hunt_s2_stale_open.cfg", "result": "VIOLATION", "states": 1067, "diameter": 15, "seconds": 1}
+  ],
+  "traceValidation": {"traces": 3, "passed": 3},
+  "notes": "MC-2 (REPRODUCED) reached the target. The mechanism combines FAULT and INTERLEAVING. The FAULT is a 2-3 s delay on the follower-to-leader link, longer than the client connectTimeout but shorter than syncLimit*tickTime, so no peer fails. The INTERLEAVING is a client that abandons the follower handshake and reopens at the leader before the delayed REVALIDATE is processed. The chain of events: the client reopens its session at follower F, and F writes a REVALIDATE that is held on the F->L link. The client's connect times out, so it reopens at leader L, which sets owner = ServerCnxn.me. The stale REVALIDATE then reaches L, where LearnerHandler runs setOwner(id, this) without checking that the handshake is still current. From then on, every op on the client's live connection to L fails checkSession, and the guard session.owner != owner throws SessionMovedException at SessionTrackerImpl.java:246. Reproduction: a variant of TestAdhocWorkloadK1 on unmodified base-commit sources triggered it in 4 of 4 runs (one Ant run plus three direct runs with a read-only JDI observer that captured the frame), and 12 of 12 ops failed. The pinned tree lacks the ZOOKEEPER-710 mitigation. MC-1 (MASKED) also reaches L246 with no fault: a follower-forwarded sync carries a null owner, so the check fails on every follower sync. That exception is swallowed: Prep only logs it, ProposalRequestProcessor/Leader.processSync ignore it, and the follower answers the sync locally, so the client gets OK. CR-1 and CR-3 were judged FALSE POSITIVE. The convergence config MC.cfg (no faults; 1573 distinct states, depth 36) found no violation, and MC_sanity_reach.cfg confirmed TargetCheck is reachable. Bounds per bug-report.md: 2 followers and at most 2-3 client ops and reopens. Both hunts stopped at their first violation."
+}

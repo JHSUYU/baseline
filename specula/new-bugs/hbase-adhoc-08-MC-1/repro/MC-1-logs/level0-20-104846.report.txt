@@ -1,0 +1,28 @@
+[level0 #1 tables=20] m2 up, quota initialized after 6143 ms; held=0
+OUTCOME mode=level0 round=1 tables=20 => M2_OK
+[level0 #2 tables=20] m2 ABORTED after 4301 ms
+  HMaster logged: Failed to become active master; exception = org.apache.hadoop.hbase.NamespaceNotFoundException: TestNamespaceAuditor_np2
+    at org.apache.hadoop.hbase.master.ClusterSchemaServiceImpl.getNamespace(ClusterSchemaServiceImpl.java:111)
+    at org.apache.hadoop.hbase.master.HMaster.getTableDescriptors(HMaster.java:3876)
+    at org.apache.hadoop.hbase.master.HMaster.listTableNames(HMaster.java:3853)
+    at org.apache.hadoop.hbase.master.HMaster.listTableNamesByNamespace(HMaster.java:3760)
+    at org.apache.hadoop.hbase.namespace.NamespaceStateManager.initialize(NamespaceStateManager.java:227)
+    at org.apache.hadoop.hbase.namespace.NamespaceStateManager.start(NamespaceStateManager.java:61)
+    at org.apache.hadoop.hbase.namespace.NamespaceAuditor.start(NamespaceAuditor.java:49)
+    at org.apache.hadoop.hbase.quotas.MasterQuotaManager.start(MasterQuotaManager.java:115)
+    at org.apache.hadoop.hbase.master.HMaster.initQuotaManager(HMaster.java:1623)
+    at org.apache.hadoop.hbase.master.HMaster.finishActiveMasterInitialization(HMaster.java:1335)
+    at org.apache.hadoop.hbase.master.HMaster.startActiveMasterManager(HMaster.java:2615)
+    at org.apache.hadoop.hbase.master.HMaster.lambda$run$0(HMaster.java:638)
+  thrown from ClusterSchemaServiceImpl.getNamespace:111 = true
+  active master visible to the cluster: null
+  client listNamespaceDescriptors FAILED after 1141 ms: RetriesExhaustedException
+  third master: aborted=false quotaInitialized=true
+  after third master: namespace TestNamespaceAuditor_np2 gone from its cache = true
+  DNP final state on third master: ROLLEDBACK exception=java.lang.NullPointerException: Cannot invoke "org.apache.hadoop.hbase.quotas.MasterQuotaManager.removeNamespaceQuota(String)" because the return value of "org.apache.hadoop.hbase.master.MasterServices.getMasterQuotaManager()" is null
+OUTCOME mode=level0 round=2 tables=20 => TARGET_FIRED
+[level0 #3 tables=20] m2 up, quota initialized after 5006 ms; held=0
+OUTCOME mode=level0 round=3 tables=20 => M2_OK
+[level0 #4 tables=20] m2 up, quota initialized after 5037 ms; held=0
+OUTCOME mode=level0 round=4 tables=20 => M2_OK
+SUMMARY mode=level0 tables=20 fired=1/4

@@ -1,0 +1,92 @@
+{
+  "id": "MC-1",
+  "title": "DataNode that misses an NN rollback silently re-upgrades its abandoned epoch, so the next rollback throws at BlockPoolSliceStorage.java:621",
+  "status": "REPRODUCED",
+  "source": "model-checking",
+  "cause": "BlockPoolSliceStorage.doTransition upgrades any block-pool dir whose cTime is older than the NameNode's (BPSS:414-417), and doUpgrade deletes an existing un-finalized previous without checking it (BPSS:477-480) before snapshotting current as previous (BPSS:486, 512-517). A DataNode that missed an NN rollback (current=c1, previous=c0) is therefore silently upgraded after a re-upgrade to c2>c1: its only valid c0 snapshot is deleted and the abandoned c1 epoch becomes previous.",
+  "trigger": "Upgrade c0->c1; a DataNode is out of service through `hdfs namenode -rollback` and the rollback window; the operator re-upgrades (c2=now()>c1, allowed by FSImage.checkUpgrade because the NN has no previous); the repaired DataNode starts normally; later `hdfs namenode -rollback` again and the DataNode is started with -rollback.",
+  "consequence": "BlockPoolSliceStorage.doRollback throws InconsistentFSStateException at BPSS:621 (previous cTime c1 > namespace cTime c0) on every volume; DataStorage.recoverTransitionRead fails ('All specified directories have failed to load'), the BPServiceActor exits, the DataNode never rejoins (a REGULAR restart is refused at BPSS:421-424), and replicas held only by it are unreadable (BlockMissingException). The c0 snapshot is gone, so recovery needs manual storage surgery.",
+  "sites": [
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java:doRollback",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java:doTransition",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java:doUpgrade"
+  ],
+  "actions": [
+    "MCNNUpgrade",
+    "MCNNRollback",
+    "MCDNOutage",
+    "MCCloseRollback",
+    "MCDNRepair",
+    "MCDNStart",
+    "MCDNHandshake",
+    "MCDNLoadVolume",
+    "MCDNUpgradeContinuation",
+    "MCTargetCheck"
+  ],
+  "invariants": [
+    "TargetSafe"
+  ],
+  "premises": [
+    "A DataNode can be out of service for the whole window of a regular (non-rolling) upgrade rollback and be repaired only after the operator has re-upgraded.",
+    "During an upgrade DataNodes start without -rollback (only the NameNode gets -upgrade), and the NameNode handshake (NamespaceInfo) carries no information about rolled-back upgrades.",
+    "The re-upgrade cTime is now() and the wall clock advances between upgrades, so c2 > c1 (no clock skew needed).",
+    "Reproduced at Level 0 on pristine base_commit 734dd8a67cd with MiniDFSCluster, two volumes on one DataNode, and an unchanged DataNode layout version (LV -57 throughout); a DataNode layout-version change was not tested."
+  ],
+  "dependencies": [
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+      "start": "  private StorageDirectory loadStorageDirectory(NamespaceInfo nsInfo,",
+      "end": "  List<StorageDirectory> loadBpStorageDirectories(NamespaceInfo nsInfo,"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+      "start": "  private boolean doTransition(StorageDirectory sd, NamespaceInfo nsInfo,",
+      "end": "    LOG.info(\"Rollback of {} is complete\", bpSd.getRoot());"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+      "start": "  private List<StorageDirectory> loadBlockPoolSliceStorage(DataNode datanode,",
+      "end": "      throw new IOException(\"All specified directories have failed to load.\");"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSImage.java",
+      "start": "  public static void checkUpgrade(NNStorage storage) throws IOException {",
+      "end": "    storage.cTime = now();  // generate new cTime for the state"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPOfferService.java",
+      "start": "  void verifyAndSetNamespaceInfo(BPServiceActor actor, NamespaceInfo nsInfo)",
+      "end": "            setNamespaceInfo(null);"
+    },
+    {
+      "root": "work",
+      "path": "spec/base.tla"
+    },
+    {
+      "root": "work",
+      "path": "spec/MC.tla"
+    },
+    {
+      "root": "work",
+      "path": "spec/MC_hunt_S1_dn_outage.cfg"
+    },
+    {
+      "root": "work",
+      "path": "spec/output/MC_hunt_S1_bfs.out"
+    }
+  ],
+  "evidence": [
+    "confirmation/MC-1/verdict.md",
+    "confirmation/MC-1/investigation.md",
+    "repro/test_bugMC-1_dn_missed_rollback_reupgrade.java",
+    "repro/test_bugMC-1_dn_missed_rollback_reupgrade.sh",
+    "repro/test_bugMC-1_dn_missed_rollback_reupgrade.run.txt",
+    "repro/test_bugMC-1_dn_missed_rollback_reupgrade.excerpt.txt",
+    "repro/test_bugMC-1_dn_missed_rollback_reupgrade.output.txt.gz"
+  ]
+}

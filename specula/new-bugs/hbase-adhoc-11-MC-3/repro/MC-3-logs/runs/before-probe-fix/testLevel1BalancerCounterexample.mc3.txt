@@ -1,0 +1,78 @@
+[MC3] 1793878364018 workload ready: 6 regions on one server
+[MC3] 1793878364039 CE state 3: all truncates are in PRE_OPERATION holding the region lock
+[MC3] 1793878364045   before balance: ca030786bedd483c919ade4f0876c0d0 rsnState=OPEN rsnProc=null metaState=OPEN onAnyRS=true liveTRSPs=[]
+[MC3] 1793878364047   before balance: 53138bcfd79e569c8456f02cde73eba5 rsnState=OPEN rsnProc=null metaState=OPEN onAnyRS=true liveTRSPs=[]
+[MC3] 1793878364049   before balance: fcd0bce8c8ac154efdfb7b39509c6f73 rsnState=OPEN rsnProc=null metaState=OPEN onAnyRS=true liveTRSPs=[]
+[MC3] 1793878364051   before balance: fa1dcccb7948baff3440fa42e81bdf96 rsnState=OPEN rsnProc=null metaState=OPEN onAnyRS=true liveTRSPs=[]
+[MC3] 1793878364053   before balance: d92783d5397185d2c39e062fb8fb5979 rsnState=OPEN rsnProc=null metaState=OPEN onAnyRS=true liveTRSPs=[]
+[MC3] 1793878364055   before balance: 5f1799b10ea5dd1dd288bba0bcb0995e rsnState=OPEN rsnProc=null metaState=OPEN onAnyRS=true liveTRSPs=[]
+[MC3] 1793878369673 balance done=true response=org.apache.hadoop.hbase.client.BalanceResponse@75d7e2a4
+[MC3] 1793878369674 CE state 5: preTransitCheck passed while truncate holds the lock; attached MOVE TRSP on 3 regions
+[MC3] 1793878369677   attached: ca030786bedd483c919ade4f0876c0d0 rsnState=OPEN rsnProc=pid=32 metaState=OPEN onAnyRS=true liveTRSPs=[pid=32, state=RUNNABLE:REGION_STATE_TRANSITION_CLOSE, hasLock=false; TransitRegionStateProcedure table=mc3, region=ca030786bedd483c919ade4f0876c0d0, REOPEN/MOVE]
+[MC3] 1793878369680   attached: 53138bcfd79e569c8456f02cde73eba5 rsnState=OPEN rsnProc=pid=33 metaState=OPEN onAnyRS=true liveTRSPs=[pid=33, state=RUNNABLE:REGION_STATE_TRANSITION_CLOSE, hasLock=false; TransitRegionStateProcedure table=mc3, region=53138bcfd79e569c8456f02cde73eba5, REOPEN/MOVE]
+[MC3] 1793878369683   attached: fa1dcccb7948baff3440fa42e81bdf96 rsnState=OPEN rsnProc=pid=34 metaState=OPEN onAnyRS=true liveTRSPs=[pid=34, state=RUNNABLE:REGION_STATE_TRANSITION_CLOSE, hasLock=false; TransitRegionStateProcedure table=mc3, region=fa1dcccb7948baff3440fa42e81bdf96, REOPEN/MOVE]
+[MC3] 1793878369683 released truncates
+[MC3] 1793878372233 CE state 23: every truncate reported SUCCESS to the client and released its lock
+[MC3] 1793878372234 CE state 24: 3/3 regions are CLOSING with no attached procedure. Detached move pids=[32, 33, 34]
+[MC3] 1793878372238 state right after stranding: ca030786bedd483c919ade4f0876c0d0 rsnState=CLOSING rsnProc=null metaState=CLOSING onAnyRS=false liveTRSPs=[pid=32, state=WAITING:REGION_STATE_TRANSITION_CONFIRM_CLOSED, hasLock=true; TransitRegionStateProcedure table=mc3, region=ca030786bedd483c919ade4f0876c0d0, REOPEN/MOVE]
+[MC3] 1793878372268   Admin.move threw org.apache.hadoop.hbase.client.DoNotRetryRegionException typeIsTarget=true frame769=true
+[MC3] 1793878372268   message: org.apache.hadoop.hbase.client.DoNotRetryRegionException: Unexpected state for state=CLOSING, location=clnode250.clemson.cloudlab.us,35123,1793878358434, table=mc3, region=ca030786bedd483c919ade4f0876c0d0
+	at org.apache.hadoop.hbase.master.assignment.AssignmentManager.preTransitCheck(AssignmentManager.java:769)
+	at org.apache.hadoop.hbase.master.assignment.AssignmentManager.createMoveRegionProcedure(AssignmentManager.java:883)
+	at org.apache.hadoop.hbase.master.HMaster.move(HMaster.java:2480)
+	at org.apache.hadoop.hbase.master.MasterRpcServices.moveRegion(MasterRpcServices.java:1614)
+[MC3] 1793878372276   Admin.assign threw org.apache.hadoop.hbase.client.DoNotRetryRegionException typeIsTarget=true frame769=true
+[MC3] 1793878372276   message: org.apache.hadoop.hbase.client.DoNotRetryRegionException: Unexpected state for state=CLOSING, location=clnode250.clemson.cloudlab.us,35123,1793878358434, table=mc3, region=ca030786bedd483c919ade4f0876c0d0
+	at org.apache.hadoop.hbase.master.assignment.AssignmentManager.preTransitCheck(AssignmentManager.java:769)
+	at org.apache.hadoop.hbase.master.assignment.AssignmentManager.createAssignProcedure(AssignmentManager.java:797)
+	at org.apache.hadoop.hbase.master.assignment.AssignmentManager.assign(AssignmentManager.java:828)
+	at org.apache.hadoop.hbase.master.assignment.AssignmentManager.assign(AssignmentManager.java:834)
+[MC3] 1793878372283   Admin.unassign threw org.apache.hadoop.hbase.client.DoNotRetryRegionException typeIsTarget=true frame769=true
+[MC3] 1793878372283   message: org.apache.hadoop.hbase.client.DoNotRetryRegionException: Unexpected state for state=CLOSING, location=clnode250.clemson.cloudlab.us,35123,1793878358434, table=mc3, region=ca030786bedd483c919ade4f0876c0d0
+	at org.apache.hadoop.hbase.master.assignment.AssignmentManager.preTransitCheck(AssignmentManager.java:769)
+	at org.apache.hadoop.hbase.master.assignment.AssignmentManager.unassign(AssignmentManager.java:863)
+	at org.apache.hadoop.hbase.master.MasterRpcServices.unassignRegion(MasterRpcServices.java:1871)
+	at org.apache.hadoop.hbase.shaded.protobuf.generated.MasterProtos$MasterService$2.callBlockingMethod(MasterProtos.java)
+[MC3] 1793878372954   client Put on ca030786bedd483c919ade4f0876c0d0 FAILED: RetriesExhaustedException: Failed after attempts=4, exceptions: 2026-11-05T11:32:52.320Z, org.apache.hadoop.hbase.exceptions.RegionMovedException: Region moved to: hostname=clnode250.clemson.cloudlab.us port=32831 startCode=1793878358593. As of lo
+[MC3] 1793878373584   client Get on ca030786bedd483c919ade4f0876c0d0 FAILED: RetriesExhaustedException
+[MC3] 1793878373593 watching for a mechanism that clears the state for 180s
+[MC3] 1793878403606   stranded t+30s ca030786bedd483c919ade4f0876c0d0 rsnState=CLOSING rsnProc=null metaState=CLOSING onAnyRS=false liveTRSPs=[pid=32, state=WAITING:REGION_STATE_TRANSITION_CONFIRM_CLOSED, hasLock=true; TransitRegionStateProcedure table=mc3, region=ca030786bedd483c919ade4f0876c0d0, REOPEN/MOVE]
+[MC3] 1793878403609   stranded t+30s 53138bcfd79e569c8456f02cde73eba5 rsnState=CLOSING rsnProc=null metaState=CLOSING onAnyRS=false liveTRSPs=[pid=33, state=WAITING:REGION_STATE_TRANSITION_CONFIRM_CLOSED, hasLock=true; TransitRegionStateProcedure table=mc3, region=53138bcfd79e569c8456f02cde73eba5, REOPEN/MOVE]
+[MC3] 1793878403611   stranded t+30s fa1dcccb7948baff3440fa42e81bdf96 rsnState=CLOSING rsnProc=null metaState=CLOSING onAnyRS=false liveTRSPs=[pid=34, state=WAITING:REGION_STATE_TRANSITION_CONFIRM_CLOSED, hasLock=true; TransitRegionStateProcedure table=mc3, region=fa1dcccb7948baff3440fa42e81bdf96, REOPEN/MOVE]
+[MC3] 1793878433614   stranded t+60s ca030786bedd483c919ade4f0876c0d0 rsnState=CLOSING rsnProc=null metaState=CLOSING onAnyRS=false liveTRSPs=[pid=32, state=WAITING:REGION_STATE_TRANSITION_CONFIRM_CLOSED, hasLock=true; TransitRegionStateProcedure table=mc3, region=ca030786bedd483c919ade4f0876c0d0, REOPEN/MOVE]
+[MC3] 1793878433617   stranded t+60s 53138bcfd79e569c8456f02cde73eba5 rsnState=CLOSING rsnProc=null metaState=CLOSING onAnyRS=false liveTRSPs=[pid=33, state=WAITING:REGION_STATE_TRANSITION_CONFIRM_CLOSED, hasLock=true; TransitRegionStateProcedure table=mc3, region=53138bcfd79e569c8456f02cde73eba5, REOPEN/MOVE]
+[MC3] 1793878433619   stranded t+60s fa1dcccb7948baff3440fa42e81bdf96 rsnState=CLOSING rsnProc=null metaState=CLOSING onAnyRS=false liveTRSPs=[pid=34, state=WAITING:REGION_STATE_TRANSITION_CONFIRM_CLOSED, hasLock=true; TransitRegionStateProcedure table=mc3, region=fa1dcccb7948baff3440fa42e81bdf96, REOPEN/MOVE]
+[MC3] 1793878463624   stranded t+90s ca030786bedd483c919ade4f0876c0d0 rsnState=CLOSING rsnProc=null metaState=CLOSING onAnyRS=false liveTRSPs=[pid=32, state=WAITING:REGION_STATE_TRANSITION_CONFIRM_CLOSED, hasLock=true; TransitRegionStateProcedure table=mc3, region=ca030786bedd483c919ade4f0876c0d0, REOPEN/MOVE]
+[MC3] 1793878463627   stranded t+90s 53138bcfd79e569c8456f02cde73eba5 rsnState=CLOSING rsnProc=null metaState=CLOSING onAnyRS=false liveTRSPs=[pid=33, state=WAITING:REGION_STATE_TRANSITION_CONFIRM_CLOSED, hasLock=true; TransitRegionStateProcedure table=mc3, region=53138bcfd79e569c8456f02cde73eba5, REOPEN/MOVE]
+[MC3] 1793878463628   stranded t+90s fa1dcccb7948baff3440fa42e81bdf96 rsnState=CLOSING rsnProc=null metaState=CLOSING onAnyRS=false liveTRSPs=[pid=34, state=WAITING:REGION_STATE_TRANSITION_CONFIRM_CLOSED, hasLock=true; TransitRegionStateProcedure table=mc3, region=fa1dcccb7948baff3440fa42e81bdf96, REOPEN/MOVE]
+[MC3] 1793878493632   stranded t+120s ca030786bedd483c919ade4f0876c0d0 rsnState=CLOSING rsnProc=null metaState=CLOSING onAnyRS=false liveTRSPs=[pid=32, state=WAITING:REGION_STATE_TRANSITION_CONFIRM_CLOSED, hasLock=true; TransitRegionStateProcedure table=mc3, region=ca030786bedd483c919ade4f0876c0d0, REOPEN/MOVE]
+[MC3] 1793878493635   stranded t+120s 53138bcfd79e569c8456f02cde73eba5 rsnState=CLOSING rsnProc=null metaState=CLOSING onAnyRS=false liveTRSPs=[pid=33, state=WAITING:REGION_STATE_TRANSITION_CONFIRM_CLOSED, hasLock=true; TransitRegionStateProcedure table=mc3, region=53138bcfd79e569c8456f02cde73eba5, REOPEN/MOVE]
+[MC3] 1793878493637   stranded t+120s fa1dcccb7948baff3440fa42e81bdf96 rsnState=CLOSING rsnProc=null metaState=CLOSING onAnyRS=false liveTRSPs=[pid=34, state=WAITING:REGION_STATE_TRANSITION_CONFIRM_CLOSED, hasLock=true; TransitRegionStateProcedure table=mc3, region=fa1dcccb7948baff3440fa42e81bdf96, REOPEN/MOVE]
+[MC3] 1793878523643   stranded t+150s ca030786bedd483c919ade4f0876c0d0 rsnState=CLOSING rsnProc=null metaState=CLOSING onAnyRS=false liveTRSPs=[pid=32, state=WAITING:REGION_STATE_TRANSITION_CONFIRM_CLOSED, hasLock=true; TransitRegionStateProcedure table=mc3, region=ca030786bedd483c919ade4f0876c0d0, REOPEN/MOVE]
+[MC3] 1793878523646   stranded t+150s 53138bcfd79e569c8456f02cde73eba5 rsnState=CLOSING rsnProc=null metaState=CLOSING onAnyRS=false liveTRSPs=[pid=33, state=WAITING:REGION_STATE_TRANSITION_CONFIRM_CLOSED, hasLock=true; TransitRegionStateProcedure table=mc3, region=53138bcfd79e569c8456f02cde73eba5, REOPEN/MOVE]
+[MC3] 1793878523648   stranded t+150s fa1dcccb7948baff3440fa42e81bdf96 rsnState=CLOSING rsnProc=null metaState=CLOSING onAnyRS=false liveTRSPs=[pid=34, state=WAITING:REGION_STATE_TRANSITION_CONFIRM_CLOSED, hasLock=true; TransitRegionStateProcedure table=mc3, region=fa1dcccb7948baff3440fa42e81bdf96, REOPEN/MOVE]
+[MC3] 1793878553652   stranded t+180s ca030786bedd483c919ade4f0876c0d0 rsnState=CLOSING rsnProc=null metaState=CLOSING onAnyRS=false liveTRSPs=[pid=32, state=WAITING:REGION_STATE_TRANSITION_CONFIRM_CLOSED, hasLock=true; TransitRegionStateProcedure table=mc3, region=ca030786bedd483c919ade4f0876c0d0, REOPEN/MOVE]
+[MC3] 1793878553655   stranded t+180s 53138bcfd79e569c8456f02cde73eba5 rsnState=CLOSING rsnProc=null metaState=CLOSING onAnyRS=false liveTRSPs=[pid=33, state=WAITING:REGION_STATE_TRANSITION_CONFIRM_CLOSED, hasLock=true; TransitRegionStateProcedure table=mc3, region=53138bcfd79e569c8456f02cde73eba5, REOPEN/MOVE]
+[MC3] 1793878553657   stranded t+180s fa1dcccb7948baff3440fa42e81bdf96 rsnState=CLOSING rsnProc=null metaState=CLOSING onAnyRS=false liveTRSPs=[pid=34, state=WAITING:REGION_STATE_TRANSITION_CONFIRM_CLOSED, hasLock=true; TransitRegionStateProcedure table=mc3, region=fa1dcccb7948baff3440fa42e81bdf96, REOPEN/MOVE]
+[MC3] 1793878553660 after watch: ca030786bedd483c919ade4f0876c0d0 rsnState=CLOSING rsnProc=null metaState=CLOSING onAnyRS=false liveTRSPs=[pid=32, state=WAITING:REGION_STATE_TRANSITION_CONFIRM_CLOSED, hasLock=true; TransitRegionStateProcedure table=mc3, region=ca030786bedd483c919ade4f0876c0d0, REOPEN/MOVE]
+[MC3] 1793878553674   Admin.move threw org.apache.hadoop.hbase.client.DoNotRetryRegionException typeIsTarget=true frame769=true
+[MC3] 1793878553675   message: org.apache.hadoop.hbase.client.DoNotRetryRegionException: Unexpected state for state=CLOSING, location=clnode250.clemson.cloudlab.us,35123,1793878358434, table=mc3, region=ca030786bedd483c919ade4f0876c0d0
+	at org.apache.hadoop.hbase.master.assignment.AssignmentManager.preTransitCheck(AssignmentManager.java:769)
+	at org.apache.hadoop.hbase.master.assignment.AssignmentManager.createMoveRegionProcedure(AssignmentManager.java:883)
+	at org.apache.hadoop.hbase.master.HMaster.move(HMaster.java:2480)
+	at org.apache.hadoop.hbase.master.MasterRpcServices.moveRegion(MasterRpcServices.java:1614)
+[MC3] 1793878553679   Admin.assign threw org.apache.hadoop.hbase.client.DoNotRetryRegionException typeIsTarget=true frame769=true
+[MC3] 1793878553680   message: org.apache.hadoop.hbase.client.DoNotRetryRegionException: Unexpected state for state=CLOSING, location=clnode250.clemson.cloudlab.us,35123,1793878358434, table=mc3, region=ca030786bedd483c919ade4f0876c0d0
+	at org.apache.hadoop.hbase.master.assignment.AssignmentManager.preTransitCheck(AssignmentManager.java:769)
+	at org.apache.hadoop.hbase.master.assignment.AssignmentManager.createAssignProcedure(AssignmentManager.java:797)
+	at org.apache.hadoop.hbase.master.assignment.AssignmentManager.assign(AssignmentManager.java:828)
+	at org.apache.hadoop.hbase.master.assignment.AssignmentManager.assign(AssignmentManager.java:834)
+[MC3] 1793878553683   Admin.unassign threw org.apache.hadoop.hbase.client.DoNotRetryRegionException typeIsTarget=true frame769=true
+[MC3] 1793878553684   message: org.apache.hadoop.hbase.client.DoNotRetryRegionException: Unexpected state for state=CLOSING, location=clnode250.clemson.cloudlab.us,35123,1793878358434, table=mc3, region=ca030786bedd483c919ade4f0876c0d0
+	at org.apache.hadoop.hbase.master.assignment.AssignmentManager.preTransitCheck(AssignmentManager.java:769)
+	at org.apache.hadoop.hbase.master.assignment.AssignmentManager.unassign(AssignmentManager.java:863)
+	at org.apache.hadoop.hbase.master.MasterRpcServices.unassignRegion(MasterRpcServices.java:1871)
+	at org.apache.hadoop.hbase.shaded.protobuf.generated.MasterProtos$MasterService$2.callBlockingMethod(MasterProtos.java)
+[MC3] 1793878554357   client Put on ca030786bedd483c919ade4f0876c0d0 FAILED: RetriesExhaustedException: Failed after attempts=4, exceptions: 2026-11-05T11:35:53.721Z, org.apache.hadoop.hbase.NotServingRegionException: org.apache.hadoop.hbase.NotServingRegionException: mc3,aaaaa,1793878361249.53138bcfd79e569c8456f02cde73eba
+[MC3] 1793878554997   client Get on ca030786bedd483c919ade4f0876c0d0 FAILED: RetriesExhaustedException
+[MC3] 1793878554998 RESULT level1: target fired and the region stayed stranded

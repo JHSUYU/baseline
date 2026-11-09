@@ -1,0 +1,125 @@
+{
+  "id": "MC-3",
+  "title": "Stale DN rolling-upgrade marker plus replayed finalized RU status deletes a regular upgrade's previous/; DN rollback then throws at BlockPoolSliceStorage:421",
+  "status": "REPRODUCED",
+  "source": "model-checking",
+  "cause": "BlockPoolSliceStorage.clearRollingUpgradeMarkers calls doFinalize for every volume that still has a RollingUpgradeInProgress marker when a finalized RU status arrives, without checking that previous/ was created by that rolling upgrade; after a NameNode restart without checkpoint, OP_ROLLING_UPGRADE_START/FINALIZE are replayed, the finalized rollingUpgradeInfo does not block -upgrade and is sent in every heartbeat.",
+  "trigger": "Non-HA NN: dfsadmin -rollingUpgrade prepare (DN creates markers); DN down while the RU is finalized; NN restarted with -upgrade before any checkpoint; DN restarted (regular upgrade creates previous/); its first heartbeat carries the replayed finalized RU status so doFinalize deletes previous/; documented rollback: namenode -rollback, datanode -rollback.",
+  "consequence": "DataNode rollback throws java.io.IOException 'Datanode state ... is newer than the namespace state' from BlockPoolSliceStorage.doTransition (throw statement L421-424, frame :424) on every marked volume; DataStorage.recoverTransitionRead fails 'All specified directories have failed to load.', the block-pool actor exits, the NN has 0 live DataNodes and files written before the upgrade are unreadable (BlockMissingException); the regular upgrade's rollback snapshot is permanently deleted.",
+  "sites": [
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java:clearRollingUpgradeMarkers",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java:doFinalize",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java:doTransition",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPOfferService.java:signalRollingUpgrade",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPServiceActor.java:handleRollingUpgradeStatus",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLogLoader.java:applyEditLogOp",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSNamesystem.java:handleHeartbeat",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSImage.java:doUpgrade"
+  ],
+  "actions": [
+    "MCNNStartRollingUpgrade",
+    "MCSignalRollingUpgrade",
+    "MCNNFinalizeRollingUpgrade",
+    "MCDataNodeStop",
+    "MCNNDoUpgrade",
+    "MCDataNodeStart",
+    "MCDoUpgradeRenameTmp",
+    "MCNNDoRollback",
+    "MCRestoreTrashForRollback",
+    "MCTargetCheck"
+  ],
+  "invariants": [
+    "TargetSafe"
+  ],
+  "premises": [
+    "No checkpoint between OP_ROLLING_UPGRADE_FINALIZE and the NameNode -upgrade restart (non-HA, no SecondaryNameNode checkpoint yet), so START/FINALIZE are replayed and the finalized rollingUpgradeInfo is re-created.",
+    "A DataNode holds RollingUpgradeInProgress markers and does not process a heartbeat between the RU finalize and its shutdown (e.g. down during the finalize).",
+    "That DataNode is restarted after the NameNode -upgrade restart; the operator later follows the documented rollback (namenode -rollback, datanode -rollback).",
+    "Same software version suffices: NameNode -upgrade changes cTime (FSImage.doUpgrade), which drives the DataNode block-pool upgrade.",
+    "Reproduced at Level 0 in MiniDFSCluster (3/3 runs); control with the DataNode up across the RU finalize rolls back cleanly."
+  ],
+  "dependencies": [
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPOfferService.java",
+      "start": "  void signalRollingUpgrade(RollingUpgradeStatus rollingUpgradeStatus)",
+      "end": "      dn.getFSDataset().clearRollingUpgradeMarker(bpid);"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPServiceActor.java",
+      "start": "  private void handleRollingUpgradeStatus(HeartbeatResponse resp) throws IOException {",
+      "end": "      bpos.signalRollingUpgrade(rollingUpgradeStatus);"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPServiceActor.java",
+      "start": "            if (state == HAServiceState.ACTIVE) {",
+      "end": "              handleRollingUpgradeStatus(resp);"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+      "start": "  public void setRollingUpgradeMarker(String bpid) throws IOException {",
+      "end": "    getBPStorage(bpid).clearRollingUpgradeMarkers(getStorageDirs());"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+      "start": "  private List<StorageDirectory> loadBlockPoolSliceStorage(DataNode datanode,",
+      "end": "  void recoverTransitionRead(DataNode datanode, NamespaceInfo nsInfo,"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLogLoader.java",
+      "start": "    case OP_ROLLING_UPGRADE_START: {",
+      "end": "      fsNamesys.setNeedRollbackFsImage(false);"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSNamesystem.java",
+      "start": "  HeartbeatResponse handleHeartbeat(DatanodeRegistration nodeReg,",
+      "end": "          blockReportLeaseId, isSlownode);"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSNamesystem.java",
+      "start": "  public boolean isRollingUpgrade() {",
+      "end": "    return rollingUpgradeInfo != null && !rollingUpgradeInfo.isFinalized();"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSNamesystem.java",
+      "start": "  void checkRollingUpgrade(String action) throws RollingUpgradeException {",
+      "end": "          + \" Existing rolling upgrade info:\\n\" + rollingUpgradeInfo);"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSNamesystem.java",
+      "start": "      if (RollingUpgradeStartupOption.ROLLBACK.matches(startOpt)) {",
+      "end": "        rollingUpgradeInfo = null;"
+    },
+    {
+      "root": "source",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSImage.java",
+      "start": "  void doUpgrade(FSNamesystem target) throws IOException {",
+      "end": "    target.checkRollingUpgrade(\"upgrade namenode\");"
+    },
+    {
+      "root": "work",
+      "path": "spec/output/MC_hunt_ru_marker_bfs.out"
+    }
+  ],
+  "evidence": [
+    "confirmation/MC-3/confirmation.md",
+    "confirmation/MC-3/investigation.md",
+    "repro/test_bugMC-3_SpeculaAdhocMC3Test.java",
+    "repro/test_bugMC-3_ru_marker_rollback.sh",
+    "repro/MC-3.run.out",
+    "repro/MC-3.mvn.run1.log"
+  ]
+}

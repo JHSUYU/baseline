@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "target": "solr-adhoc-k1",
+  "check": {
+    "file": "solr/test-framework/src/java/org/apache/solr/cloud/AbstractDistribZkTestBase.java",
+    "line": 185,
+    "thrown": "java.lang.AssertionError"
+  },
+  "verdict": "REACHED_CONFIRMED",
+  "mechanism": "FAULT",
+  "scenario": "Scenario 1: register failure leaves a terminal DOWN with no repair",
+  "finding": "MC-1",
+  "counterexample": "spec/output/hunt_s1_register_failure_bfs.out",
+  "reproduction": "repro/test_bugMC-1_register_forceupdate_connloss.sh",
+  "stackFrame": "org.apache.solr.cloud.AbstractDistribZkTestBase.waitForRecoveriesToFinish(AbstractDistribZkTestBase.java:185)",
+  "bounds": [
+    {
+      "config": "MC_hunt_s1_register_failure.cfg",
+      "mode": "bfs",
+      "result": "VIOLATION",
+      "states": 81124212,
+      "diameter": 145,
+      "seconds": 1632
+    },
+    {
+      "config": "MC_hunt_s2_expiry_reregister_race.cfg",
+      "mode": "bfs",
+      "result": "VIOLATION",
+      "states": 2097839,
+      "diameter": 112,
+      "seconds": 79
+    },
+    {
+      "config": "MC_hunt_s3_post_expiry_nonconvergence.cfg",
+      "mode": "bfs",
+      "result": "VIOLATION",
+      "states": 4114734,
+      "diameter": 128,
+      "seconds": 197
+    },
+    {
+      "config": "MC_hunt_s4_overseer_stale_replay.cfg",
+      "mode": "bfs",
+      "result": "NO_VIOLATION",
+      "states": 26575,
+      "diameter": 111,
+      "seconds": 5
+    },
+    {
+      "config": "supp/MC_hunt_s1_register_failure_2shard.cfg",
+      "mode": "simulation",
+      "result": "NO_VIOLATION_TIMEOUT",
+      "states": 119277230,
+      "diameter": null,
+      "seconds": 1800
+    },
+    {
+      "config": "supp/MC_hunt_s2_expiry_reregister_race_2shard.cfg",
+      "mode": "bfs",
+      "result": "NO_VIOLATION_TIMEOUT",
+      "states": 42895410,
+      "diameter": 23,
+      "seconds": 1800
+    },
+    {
+      "config": "supp/MC_hunt_s2_expiry_reregister_race_2shard.cfg",
+      "mode": "simulation",
+      "result": "NO_VIOLATION_TIMEOUT",
+      "states": 130457705,
+      "diameter": null,
+      "seconds": 1800
+    },
+    {
+      "config": "supp/MC_hunt_s3_post_expiry_nonconvergence_2shard.cfg",
+      "mode": "bfs",
+      "result": "NO_VIOLATION_TIMEOUT",
+      "states": 26808418,
+      "diameter": 73,
+      "seconds": 1800
+    },
+    {
+      "config": "supp/MC_hunt_s3_post_expiry_nonconvergence_2shard.cfg",
+      "mode": "simulation",
+      "result": "NO_VIOLATION_TIMEOUT",
+      "states": 98292924,
+      "diameter": null,
+      "seconds": 1800
+    },
+    {
+      "config": "supp/MC_hunt_s4_overseer_stale_replay_2shard.cfg",
+      "mode": "bfs",
+      "result": "NO_VIOLATION_TIMEOUT",
+      "states": 25978169,
+      "diameter": 101,
+      "seconds": 1800
+    }
+  ],
+  "traceValidation": {
+    "traces": 9,
+    "passed": 9
+  },
+  "notes": "Reached and confirmed. Primary finding MC-1 (Scenario 1, fault: ZooKeeper connection loss only, no session expiry): during the workload's collection CREATE, a follower core publishes ACTIVE, then two disconnects of its node's ZK client, each shorter than the 20 s session timeout, exhaust all 8 ZkCmdExecutor ConnectionLoss retries of forceUpdateCollection. The exception escapes ZkController.register, ZkContainer.registerInZk's catch-all publishes DOWN and swallows it, CREATE reports success, and nothing re-registers or recovers the core, so all 31 polls see a DOWN replica on a live node and fail() throws at AbstractDistribZkTestBase.java:185 (2 of 2 runs; reproduction used real disconnects through the framework's SocketProxy plus a timing-only 1 s pause, per confirmed-bugs.md). Two more TargetSafe counterexamples were also reproduced at the same frame: MC-2 (Scenario 2, one session expiry racing the reconnect's re-registration, spec/output/hunt_s2_expiry_reregister_race_bfs.out, repro/test_bugMC-2_expiry_reregister_race.sh; mechanism kinds FAULT+INTERLEAVING) and MC-3 (Scenario 3, two session expiries leaving an uncancelled recovery blocked in PrepRecovery, spec/output/hunt_s3_post_expiry_nonconvergence_bfs.out, repro/test_bugMC-3_post_expiry_stale_recovery.sh; FAULT+INTERLEAVING). Code-review findings CR-2 (transposed shardId in checkRecovery, KNOWN-fixed upstream) and CR-3 (removeCollectionStateWatcher leaves a frozen cached view, KNOWN-fixed as SOLR-9440) also fire the target at line 185 but have no model counterexample. Scenario 4 (Overseer stale replay) found no violation in an exhaustive 1-shard run, and CR-1 for that mechanism is a FALSE POSITIVE. Primary hunts used 2 nodes, 1 shard x 2 replicas; the supplementary 2-shard runs on the workload layout timed out at 30 min without a violation and are inconclusive."
+}

@@ -1,0 +1,36 @@
+{
+  "id": "MC-1",
+  "title": "Namespace deletion recovered after failover races quota init: NamespaceStateManager.initialize throws from CSSI:111 and the new active master aborts",
+  "status": "REPRODUCED",
+  "source": "model-checking",
+  "cause": "A recovered DeleteNamespaceProcedure is released by setInitialized(true) at HMaster:1300, before initQuotaManager at HMaster:1335, and nothing orders it against NamespaceStateManager.initialize, which snapshots namespaces at NSM:224 and looks each up at NSM:227 with no handling of a namespace deleted in between.",
+  "trigger": "Quota enabled. A master crashes after a DeleteNamespaceProcedure is persisted and before its meta delete. On the backup master the procedure removes the namespace from the cache between NSM:224 and NSM:227. Tables in namespaces sorting before the deleted one widen the window; 5 were enough.",
+  "consequence": "NamespaceNotFoundException from ClusterSchemaServiceImpl.getNamespace:111 propagates uncaught to HMaster.startActiveMasterManager, which aborts the new active master. One master crash costs a second master; in a two-master cluster no active master remains and client master operations fail until another master starts.",
+  "sites": [
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/master/ClusterSchemaServiceImpl.java:getNamespace",
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/namespace/NamespaceStateManager.java:initialize",
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/master/HMaster.java:finishActiveMasterInitialization",
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/master/TableNamespaceManager.java:deleteNamespace"
+  ],
+  "actions": ["ClientDeleteNamespace", "MasterCrash", "GateInitialized", "QuotaSnapshot", "DnpPrepare", "DnpMetaDelete", "DnpCacheRemove", "TargetCheck_NsmInit"],
+  "invariants": ["TargetSafe"],
+  "premises": [
+    "Quota support is enabled (hbase.quota.enabled); MasterQuotaManager.start returns early otherwise.",
+    "The master dies between the DeleteNamespaceProcedure store insert and its meta delete, a window of a few ms on an idle mini cluster.",
+    "The namespace cache lookup at NSM:227 happens after the procedure's cache.remove; a namespace with tables sorting earlier widens this window, and with none the race was not lost in 3 of 3 control rounds.",
+    "Reproduced in a single-JVM mini cluster where the master crash is HMaster.abort, not an OS process kill."
+  ],
+  "dependencies": [
+    {"root": "source", "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/ClusterSchemaServiceImpl.java", "start": "  public NamespaceDescriptor getNamespace(String name) throws IOException {", "end": "  public List<NamespaceDescriptor> getNamespaces() throws IOException {"},
+    {"root": "source", "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/namespace/NamespaceStateManager.java", "start": "  private void initialize() throws IOException {", "end": "    LOG.info(\"Finished updating state of {} namespaces.\", nsStateCache.size());"},
+    {"root": "source", "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/TableNamespaceManager.java", "start": "  public void deleteNamespace(String namespaceName) throws IOException {", "end": "  public List<NamespaceDescriptor> list() throws IOException {"},
+    {"root": "source", "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/HMaster.java", "start": "    // Set master as 'initialized'.", "end": "    initQuotaManager();"},
+    {"root": "source", "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/HMaster.java", "start": "  private void initQuotaManager() throws IOException {", "end": "  private SpaceQuotaSnapshotNotifier createQuotaSnapshotNotifier() {"},
+    {"root": "source", "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/HMaster.java", "start": "        finishActiveMasterInitialization();", "end": "        abort(\"Unhandled exception. Starting shutdown.\", t);"},
+    {"root": "source", "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/procedure/AbstractStateMachineNamespaceProcedure.java", "start": "  protected boolean waitInitialized(MasterProcedureEnv env) {", "end": "  protected LockState acquireLock(final MasterProcedureEnv env) {"},
+    {"root": "source", "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/quotas/MasterQuotaManager.java", "start": "  public void start() throws IOException {", "end": "  public void stop() {"},
+    {"root": "work", "path": "spec/MC_hunt_S1a.cfg"},
+    {"root": "work", "path": "spec/output/MC_hunt_S1a_bfs.out"}
+  ],
+  "evidence": ["confirmation/MC-1/investigation.md", "repro/test_bugMC-1_nsm_init_abort.sh", "repro/MC-1.log"]
+}

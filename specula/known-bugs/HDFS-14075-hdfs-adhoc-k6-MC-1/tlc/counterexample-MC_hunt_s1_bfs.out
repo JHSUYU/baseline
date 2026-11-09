@@ -1,0 +1,358 @@
+TLC2 Version 2026.10.24.013619 (rev: 2ef2af8)
+Running breadth-first search Model-Checking with fp 20 and seed -9201488290575981615 with 16 workers on 64 cores with 6372MB heap and 64MB offheap memory [pid: 982694] (Linux 5.15.0-198-generic amd64, Eclipse Adoptium 21.0.13 64bit, MSBDiskFPSet, DiskStateQueue).
+Parsing file /bulk/specula-adhoc/specula-runs/20261107-165603-d4a1/hdfs-adhoc-k6/.specula-output/spec/MC.tla
+Parsing file /bulk/specula-adhoc/specula-runs/20261107-165603-d4a1/hdfs-adhoc-k6/.specula-output/spec/base.tla
+Parsing file /tmp/tlc-3587367827167165835/TLC.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLC.tla)
+Parsing file /tmp/tlc-3587367827167165835/_TLCTrace.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/_TLCTrace.tla)
+Parsing file /tmp/tlc-3587367827167165835/Naturals.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Naturals.tla)
+Parsing file /tmp/tlc-3587367827167165835/FiniteSets.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/FiniteSets.tla)
+Parsing file /tmp/tlc-3587367827167165835/Sequences.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Sequences.tla)
+Parsing file /tmp/tlc-3587367827167165835/TLCExt.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLCExt.tla)
+Parsing file /tmp/tlc-3587367827167165835/Integers.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Integers.tla)
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module base
+Semantic processing of module TLC
+Semantic processing of module Integers
+Semantic processing of module TLCExt
+Semantic processing of module _TLCTrace
+Semantic processing of module MC
+Linting of module base
+Linting of module TLCExt
+Linting of module _TLCTrace
+Linting of module MC
+Starting... (2026-11-07 17:37:09)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-11-07 17:37:09.
+Error: Invariant TargetSafe is violated.
+Error: The behavior up to this point is:
+State 1: <Initial predicate>
+/\ targetFired = FALSE
+/\ jDisk = (j1 :> "ok")
+/\ stopPhase = "running"
+/\ pc = [rpc |-> "idle", roller |-> "idle", admin |-> "idle"]
+/\ rollerShouldRun = TRUE
+/\ lockHolder = "none"
+/\ jStream = (j1 :> "active")
+/\ pendingEdits = 0
+/\ cnt = [ rpcRoll |-> 0,
+  rollerCheck |-> 0,
+  clientEdit |-> 0,
+  jFault |-> 0,
+  jRepair |-> 0,
+  smEnter |-> 0,
+  smLeave |-> 0,
+  saveNs |-> 0,
+  stop |-> 0,
+  standby |-> 0 ]
+/\ halted = FALSE
+/\ haState = "Active"
+/\ elState = "IN_SEGMENT"
+/\ streamOpen = TRUE
+/\ safeMode = FALSE
+
+State 2: <MCNext line 48, col 5 to line 69, col 26 of module MC>
+/\ targetFired = FALSE
+/\ jDisk = (j1 :> "ok")
+/\ stopPhase = "running"
+/\ pc = [rpc |-> "waitLock", roller |-> "idle", admin |-> "idle"]
+/\ rollerShouldRun = TRUE
+/\ lockHolder = "none"
+/\ jStream = (j1 :> "active")
+/\ pendingEdits = 0
+/\ cnt = [ rpcRoll |-> 1,
+  rollerCheck |-> 0,
+  clientEdit |-> 0,
+  jFault |-> 0,
+  jRepair |-> 0,
+  smEnter |-> 0,
+  smLeave |-> 0,
+  saveNs |-> 0,
+  stop |-> 0,
+  standby |-> 0 ]
+/\ halted = FALSE
+/\ haState = "Active"
+/\ elState = "IN_SEGMENT"
+/\ streamOpen = TRUE
+/\ safeMode = FALSE
+
+State 3: <MCNext line 48, col 5 to line 69, col 26 of module MC>
+/\ targetFired = FALSE
+/\ jDisk = (j1 :> "ok")
+/\ stopPhase = "running"
+/\ pc = [rpc |-> "waitLock", roller |-> "idle", admin |-> "idle"]
+/\ rollerShouldRun = TRUE
+/\ lockHolder = "none"
+/\ jStream = (j1 :> "active")
+/\ pendingEdits = 1
+/\ cnt = [ rpcRoll |-> 1,
+  rollerCheck |-> 0,
+  clientEdit |-> 1,
+  jFault |-> 0,
+  jRepair |-> 0,
+  smEnter |-> 0,
+  smLeave |-> 0,
+  saveNs |-> 0,
+  stop |-> 0,
+  standby |-> 0 ]
+/\ halted = FALSE
+/\ haState = "Active"
+/\ elState = "IN_SEGMENT"
+/\ streamOpen = TRUE
+/\ safeMode = FALSE
+
+State 4: <MCNext line 48, col 5 to line 69, col 26 of module MC>
+/\ targetFired = FALSE
+/\ jDisk = (j1 :> "ok")
+/\ stopPhase = "running"
+/\ pc = [rpc |-> "atCheck", roller |-> "idle", admin |-> "idle"]
+/\ rollerShouldRun = TRUE
+/\ lockHolder = "rpc"
+/\ jStream = (j1 :> "active")
+/\ pendingEdits = 1
+/\ cnt = [ rpcRoll |-> 1,
+  rollerCheck |-> 0,
+  clientEdit |-> 1,
+  jFault |-> 0,
+  jRepair |-> 0,
+  smEnter |-> 0,
+  smLeave |-> 0,
+  saveNs |-> 0,
+  stop |-> 0,
+  standby |-> 0 ]
+/\ halted = FALSE
+/\ haState = "Active"
+/\ elState = "IN_SEGMENT"
+/\ streamOpen = TRUE
+/\ safeMode = FALSE
+
+State 5: <MCNext line 48, col 5 to line 69, col 26 of module MC>
+/\ targetFired = FALSE
+/\ jDisk = (j1 :> "ok")
+/\ stopPhase = "running"
+/\ pc = [rpc |-> "endSync", roller |-> "idle", admin |-> "idle"]
+/\ rollerShouldRun = TRUE
+/\ lockHolder = "rpc"
+/\ jStream = (j1 :> "active")
+/\ pendingEdits = 1
+/\ cnt = [ rpcRoll |-> 1,
+  rollerCheck |-> 0,
+  clientEdit |-> 1,
+  jFault |-> 0,
+  jRepair |-> 0,
+  smEnter |-> 0,
+  smLeave |-> 0,
+  saveNs |-> 0,
+  stop |-> 0,
+  standby |-> 0 ]
+/\ halted = FALSE
+/\ haState = "Active"
+/\ elState = "IN_SEGMENT"
+/\ streamOpen = TRUE
+/\ safeMode = FALSE
+
+State 6: <MCNext line 48, col 5 to line 69, col 26 of module MC>
+/\ targetFired = FALSE
+/\ jDisk = (j1 :> "ok")
+/\ stopPhase = "running"
+/\ pc = [rpc |-> "endSync", roller |-> "idle", admin |-> "idle"]
+/\ rollerShouldRun = TRUE
+/\ lockHolder = "rpc"
+/\ jStream = (j1 :> "active")
+/\ pendingEdits = 0
+/\ cnt = [ rpcRoll |-> 1,
+  rollerCheck |-> 0,
+  clientEdit |-> 1,
+  jFault |-> 0,
+  jRepair |-> 0,
+  smEnter |-> 0,
+  smLeave |-> 0,
+  saveNs |-> 0,
+  stop |-> 0,
+  standby |-> 0 ]
+/\ halted = FALSE
+/\ haState = "Active"
+/\ elState = "IN_SEGMENT"
+/\ streamOpen = TRUE
+/\ safeMode = FALSE
+
+State 7: <MCNext line 48, col 5 to line 69, col 26 of module MC>
+/\ targetFired = FALSE
+/\ jDisk = (j1 :> "ok")
+/\ stopPhase = "running"
+/\ pc = [rpc |-> "endFinalize", roller |-> "idle", admin |-> "idle"]
+/\ rollerShouldRun = TRUE
+/\ lockHolder = "rpc"
+/\ jStream = (j1 :> "active")
+/\ pendingEdits = 0
+/\ cnt = [ rpcRoll |-> 1,
+  rollerCheck |-> 0,
+  clientEdit |-> 1,
+  jFault |-> 0,
+  jRepair |-> 0,
+  smEnter |-> 0,
+  smLeave |-> 0,
+  saveNs |-> 0,
+  stop |-> 0,
+  standby |-> 0 ]
+/\ halted = FALSE
+/\ haState = "Active"
+/\ elState = "IN_SEGMENT"
+/\ streamOpen = TRUE
+/\ safeMode = FALSE
+
+State 8: <MCNext line 48, col 5 to line 69, col 26 of module MC>
+/\ targetFired = FALSE
+/\ jDisk = (j1 :> "failed")
+/\ stopPhase = "running"
+/\ pc = [rpc |-> "endFinalize", roller |-> "idle", admin |-> "idle"]
+/\ rollerShouldRun = TRUE
+/\ lockHolder = "rpc"
+/\ jStream = (j1 :> "active")
+/\ pendingEdits = 0
+/\ cnt = [ rpcRoll |-> 1,
+  rollerCheck |-> 0,
+  clientEdit |-> 1,
+  jFault |-> 1,
+  jRepair |-> 0,
+  smEnter |-> 0,
+  smLeave |-> 0,
+  saveNs |-> 0,
+  stop |-> 0,
+  standby |-> 0 ]
+/\ halted = FALSE
+/\ haState = "Active"
+/\ elState = "IN_SEGMENT"
+/\ streamOpen = TRUE
+/\ safeMode = FALSE
+
+State 9: <MCNext line 48, col 5 to line 69, col 26 of module MC>
+/\ targetFired = FALSE
+/\ jDisk = (j1 :> "failed")
+/\ stopPhase = "running"
+/\ pc = [rpc |-> "starting", roller |-> "idle", admin |-> "idle"]
+/\ rollerShouldRun = TRUE
+/\ lockHolder = "rpc"
+/\ jStream = (j1 :> "disabled")
+/\ pendingEdits = 0
+/\ cnt = [ rpcRoll |-> 1,
+  rollerCheck |-> 0,
+  clientEdit |-> 1,
+  jFault |-> 1,
+  jRepair |-> 0,
+  smEnter |-> 0,
+  smLeave |-> 0,
+  saveNs |-> 0,
+  stop |-> 0,
+  standby |-> 0 ]
+/\ halted = FALSE
+/\ haState = "Active"
+/\ elState = "BETWEEN_LOG_SEGMENTS"
+/\ streamOpen = TRUE
+/\ safeMode = FALSE
+
+State 10: <MCNext line 48, col 5 to line 69, col 26 of module MC>
+/\ targetFired = FALSE
+/\ jDisk = (j1 :> "failed")
+/\ stopPhase = "running"
+/\ pc = [rpc |-> "idle", roller |-> "idle", admin |-> "idle"]
+/\ rollerShouldRun = TRUE
+/\ lockHolder = "none"
+/\ jStream = (j1 :> "disabled")
+/\ pendingEdits = 0
+/\ cnt = [ rpcRoll |-> 1,
+  rollerCheck |-> 0,
+  clientEdit |-> 1,
+  jFault |-> 1,
+  jRepair |-> 0,
+  smEnter |-> 0,
+  smLeave |-> 0,
+  saveNs |-> 0,
+  stop |-> 0,
+  standby |-> 0 ]
+/\ halted = FALSE
+/\ haState = "Active"
+/\ elState = "BETWEEN_LOG_SEGMENTS"
+/\ streamOpen = TRUE
+/\ safeMode = FALSE
+
+State 11: <MCNext line 48, col 5 to line 69, col 26 of module MC>
+/\ targetFired = FALSE
+/\ jDisk = (j1 :> "failed")
+/\ stopPhase = "running"
+/\ pc = [rpc |-> "waitLock", roller |-> "idle", admin |-> "idle"]
+/\ rollerShouldRun = TRUE
+/\ lockHolder = "none"
+/\ jStream = (j1 :> "disabled")
+/\ pendingEdits = 0
+/\ cnt = [ rpcRoll |-> 2,
+  rollerCheck |-> 0,
+  clientEdit |-> 1,
+  jFault |-> 1,
+  jRepair |-> 0,
+  smEnter |-> 0,
+  smLeave |-> 0,
+  saveNs |-> 0,
+  stop |-> 0,
+  standby |-> 0 ]
+/\ halted = FALSE
+/\ haState = "Active"
+/\ elState = "BETWEEN_LOG_SEGMENTS"
+/\ streamOpen = TRUE
+/\ safeMode = FALSE
+
+State 12: <MCNext line 48, col 5 to line 69, col 26 of module MC>
+/\ targetFired = FALSE
+/\ jDisk = (j1 :> "failed")
+/\ stopPhase = "running"
+/\ pc = [rpc |-> "atCheck", roller |-> "idle", admin |-> "idle"]
+/\ rollerShouldRun = TRUE
+/\ lockHolder = "rpc"
+/\ jStream = (j1 :> "disabled")
+/\ pendingEdits = 0
+/\ cnt = [ rpcRoll |-> 2,
+  rollerCheck |-> 0,
+  clientEdit |-> 1,
+  jFault |-> 1,
+  jRepair |-> 0,
+  smEnter |-> 0,
+  smLeave |-> 0,
+  saveNs |-> 0,
+  stop |-> 0,
+  standby |-> 0 ]
+/\ halted = FALSE
+/\ haState = "Active"
+/\ elState = "BETWEEN_LOG_SEGMENTS"
+/\ streamOpen = TRUE
+/\ safeMode = FALSE
+
+State 13: <MCNext line 48, col 5 to line 69, col 26 of module MC>
+/\ targetFired = TRUE
+/\ jDisk = (j1 :> "failed")
+/\ stopPhase = "running"
+/\ pc = [rpc |-> "atCheck", roller |-> "idle", admin |-> "idle"]
+/\ rollerShouldRun = TRUE
+/\ lockHolder = "rpc"
+/\ jStream = (j1 :> "disabled")
+/\ pendingEdits = 0
+/\ cnt = [ rpcRoll |-> 2,
+  rollerCheck |-> 0,
+  clientEdit |-> 1,
+  jFault |-> 1,
+  jRepair |-> 0,
+  smEnter |-> 0,
+  smLeave |-> 0,
+  saveNs |-> 0,
+  stop |-> 0,
+  standby |-> 0 ]
+/\ halted = FALSE
+/\ haState = "Active"
+/\ elState = "BETWEEN_LOG_SEGMENTS"
+/\ streamOpen = TRUE
+/\ safeMode = FALSE
+
+1794 states generated, 1021 distinct states found, 196 states left on queue.
+The depth of the complete state graph search is 14.
+Finished in 01s at (2026-11-07 17:37:10)
+Trace exploration spec path: ./MC_TTrace_1794073029.tla

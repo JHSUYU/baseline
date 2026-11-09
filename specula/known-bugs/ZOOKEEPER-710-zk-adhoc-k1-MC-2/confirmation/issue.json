@@ -1,0 +1,77 @@
+{
+  "id": "MC-2",
+  "title": "Stale REVALIDATE from an abandoned follower handshake overwrites session owner; live leader connection gets SessionMovedException",
+  "status": "REPRODUCED",
+  "source": "model-checking",
+  "cause": "LearnerHandler REVALIDATE handling runs leader.zk.setOwner(id, this) whenever touch succeeds, with no check that the follower handshake is still the client's current connection; it overwrites the owner ServerCnxn.me set by LeaderZooKeeperServer.revalidateSession.",
+  "trigger": "Client reopens its session at follower F (server list {F, L}); F's REVALIDATE is delayed on the F->L link beyond connectTimeout (sessionTimeout/#hosts); client abandons F and reopens at leader L; the delayed REVALIDATE then reaches L.",
+  "consequence": "Every request from the client on its only live connection (to L) fails checkSession with SessionMovedException at SessionTrackerImpl.java:246 (setData/exists/create/getChildren and pings), persistently while connected.",
+  "sites": [
+    "src/java/main/org/apache/zookeeper/server/quorum/LearnerHandler.java:409",
+    "src/java/main/org/apache/zookeeper/server/quorum/LeaderZooKeeperServer.java:171",
+    "src/java/main/org/apache/zookeeper/server/SessionTrackerImpl.java:246"
+  ],
+  "actions": [
+    "FollowerReadConnect",
+    "ClientAbandonOpen",
+    "LeaderReadConnect",
+    "LeaderRecvRevalidate",
+    "TargetCheck"
+  ],
+  "invariants": [
+    "TargetSafe"
+  ],
+  "premises": [
+    "Pinned tree 31794056e6 (3.3.0 trunk) lacks the ZOOKEEPER-710 mitigation (FinalRequestProcessor closing the connection on SessionMovedException).",
+    "A follower->leader delay shorter than syncLimit*tickTime but longer than the client connectTimeout; no peer fails.",
+    "Client server list contains the follower and the leader."
+  ],
+  "dependencies": [
+    {
+      "root": "source",
+      "path": "src/java/main/org/apache/zookeeper/server/quorum/LearnerHandler.java",
+      "start": "                case Leader.REVALIDATE:",
+      "end": "                case Leader.REQUEST:                    "
+    },
+    {
+      "root": "source",
+      "path": "src/java/main/org/apache/zookeeper/server/quorum/LeaderZooKeeperServer.java"
+    },
+    {
+      "root": "source",
+      "path": "src/java/main/org/apache/zookeeper/server/quorum/Learner.java"
+    },
+    {
+      "root": "source",
+      "path": "src/java/main/org/apache/zookeeper/server/quorum/LearnerZooKeeperServer.java"
+    },
+    {
+      "root": "source",
+      "path": "src/java/main/org/apache/zookeeper/server/SessionTrackerImpl.java"
+    },
+    {
+      "root": "source",
+      "path": "src/java/main/org/apache/zookeeper/server/FinalRequestProcessor.java"
+    },
+    {
+      "root": "work",
+      "path": "spec/base.tla"
+    },
+    {
+      "root": "work",
+      "path": "spec/MC.tla"
+    },
+    {
+      "root": "work",
+      "path": "spec/MC_hunt_s2_stale_open.cfg"
+    }
+  ],
+  "evidence": [
+    "confirmation/MC-2/investigation.md",
+    "repro/test_bugMC-2_stale_revalidate.sh",
+    "repro/MC-2.SpeculaAdhocK1StaleOpenTest.java",
+    "repro/MC-2.log",
+    "repro/MC-2.jdi.log",
+    "repro/MC-2.ant-report.txt"
+  ]
+}

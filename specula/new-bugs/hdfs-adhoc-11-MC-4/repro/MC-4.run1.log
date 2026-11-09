@@ -1,0 +1,50 @@
+== worktree: /users/ZhenyuLi/Specula/runs/20261029-002846-8337/hdfs-adhoc-11/.specula-output/confirmation/MC-4/worktree
+== HEAD: 734dd8a67cd (expected 734dd8a67cd)
+== tracked sources unmodified: yes
+== installed /users/ZhenyuLi/Specula/runs/20261029-002846-8337/hdfs-adhoc-11/.specula-output/confirmation/MC-4/worktree/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestSpeculaMC4CachedDekAfterRestart.java
+== compiling test sources (offline)
+
+================ RUN 1: TestSpeculaMC4CachedDekAfterRestart ================
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 6.760 s <<< FAILURE! -- in org.apache.hadoop.hdfs.TestSpeculaMC4CachedDekAfterRestart
+[ERROR] org.apache.hadoop.hdfs.TestSpeculaMC4CachedDekAfterRestart.testLongLivedClientsAfterNameNodeAndDataNodeRestart -- Time elapsed: 6.728 s <<< FAILURE!
+[ERROR] Failures: 
+[ERROR]   TestSpeculaMC4CachedDekAfterRestart.testLongLivedClientsAfterNameNodeAndDataNodeRestart:262->keyIdOf:104 client has no cached DEK ==> expected: not <null>
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0
+[ERROR] There are test failures.
+[INFO] BUILD SUCCESS
+-- evidence (from /users/ZhenyuLi/Specula/runs/20261029-002846-8337/hdfs-adhoc-11/.specula-output/confirmation/MC-4/worktree/hadoop-hdfs-project/hadoop-hdfs/target/surefire-reports/org.apache.hadoop.hdfs.TestSpeculaMC4CachedDekAfterRestart-output.txt):
+  setup: 2 DNs, encrypted transfer (algorithm '', cipher suites '', no trusted-channel resolver); block BP-2092038975-130.127.134.14-1793255591655:blk_1073741825_1001 has its only replica on d1=127.0.0.1:45413; d2=127.0.0.1:36293
+  pre-restart: client 'stateful-read' read OK; cached DEK keyId=140949469, expires in 35999 s
+-- one complete DN-side stack trace of the target throw:
+
+================ RUN 2: in-tree TestEncryptedTransfer#testLongLivedReadClientAfterRestart (unmodified) ================
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 34.11 s -- in org.apache.hadoop.hdfs.TestEncryptedTransfer
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+-- target frames at the DN: 1
+  Caused by: org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException: Can't re-compute encryption key for nonce, since the required block key (keyID=1757937396) doesn't exist. Current key: 1046062008
+  	at org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrieveDataEncryptionKey(BlockTokenSecretManager.java:561)
+  2026-10-29 06:33:44,851 [main] INFO  hdfs.DFSClient (DFSInputStream.java:blockSeekTo(664)) - Will fetch a new encryption key and retry, encryption key was invalid when connecting to /127.0.0.1:36451 : org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException: Can't re-compute encryption key for nonce, since the required block key (keyID=1757937396) doesn't exist. Current key: 1046062008
+-- surefire summary:
+  -------------------------------------------------------------------------------
+  Test set: org.apache.hadoop.hdfs.TestEncryptedTransfer
+  -------------------------------------------------------------------------------
+  Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 34.11 s -- in org.apache.hadoop.hdfs.TestEncryptedTransfer
+  -------------------------------------------------------------------------------
+  Test set: org.apache.hadoop.hdfs.TestSpeculaMC4CachedDekAfterRestart
+  -------------------------------------------------------------------------------
+  Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 6.760 s <<< FAILURE! -- in org.apache.hadoop.hdfs.TestSpeculaMC4CachedDekAfterRestart
+  org.apache.hadoop.hdfs.TestSpeculaMC4CachedDekAfterRestart.testLongLivedClientsAfterNameNodeAndDataNodeRestart -- Time elapsed: 6.728 s <<< FAILURE!
+  org.opentest4j.AssertionFailedError: client has no cached DEK ==> expected: not <null>
+  	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:152)
+  	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+  	at org.junit.jupiter.api.AssertNotNull.failNull(AssertNotNull.java:49)
+  	at org.junit.jupiter.api.AssertNotNull.assertNotNull(AssertNotNull.java:35)
+  	at org.junit.jupiter.api.Assertions.assertNotNull(Assertions.java:312)
+  	at org.apache.hadoop.hdfs.TestSpeculaMC4CachedDekAfterRestart.keyIdOf(TestSpeculaMC4CachedDekAfterRestart.java:104)
+  	at org.apache.hadoop.hdfs.TestSpeculaMC4CachedDekAfterRestart.testLongLivedClientsAfterNameNodeAndDataNodeRestart(TestSpeculaMC4CachedDekAfterRestart.java:262)
+  	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+  	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+  	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+  
+EXIT=0

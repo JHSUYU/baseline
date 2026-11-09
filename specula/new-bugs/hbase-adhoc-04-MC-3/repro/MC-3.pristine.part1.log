@@ -1,0 +1,79 @@
+mvn rc=0 (124 = the outer timeout fired)
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 173.3 s -- in org.apache.hadoop.hbase.quotas.SpeculaAdhoc04MC3Test
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+--- classpath check: where the modules loaded from
+/bulk/specula-adhoc/specula-runs/20261102-195741-2e6a/hbase-adhoc-04/.specula-output/confirmation/MC-3/pristine/hbase-server/target/classes
+/bulk/specula-adhoc/specula-runs/20261102-195741-2e6a/hbase-adhoc-04/.specula-output/confirmation/MC-3/pristine/hbase-common/target/classes
+/bulk/specula-adhoc/specula-runs/20261102-195741-2e6a/hbase-adhoc-04/.specula-output/confirmation/MC-3/pristine/hbase-procedure/target/classes
+/bulk/specula-adhoc/specula-runs/20261102-195741-2e6a/hbase-adhoc-04/.specula-output/confirmation/MC-3/pristine/hbase-client/target/classes
+--- evidence
+2026-11-05T10:51:29,781 killing active master clnode245.clemson.cloudlab.us,43253,1793875874403
+2026-11-05T10:51:30,617 master clnode245.clemson.cloudlab.us,43253,1793875874403 is down
+2026-11-05T10:51:30,636 observer run 0: FAILED with org.apache.hadoop.hbase.client.RetriesExhaustedException: Failed after attempts=1, exceptions:
+2026-11-05T10:51:30,642 observer run 1: FAILED with org.apache.hadoop.hbase.client.RetriesExhaustedException: Failed after attempts=1, exceptions:
+2026-11-05T10:51:30,642 level0: observer runs that failed = 2
+2026-11-05T10:51:36,038 new active master clnode245.clemson.cloudlab.us,43253,1793875890669 initialized
+2026-11-05T10:51:36,178 level0: table disabled = true
+2026-11-05T10:51:36,179 client admin.flush threw org.apache.hadoop.hbase.TableNotEnabledException: adhoc_workload_04
+2026-11-05T10:51:36,179 server procedure pid=14, state=ROLLEDBACK, hasLock=false, exception=org.apache.hadoop.hbase.TableNotEnabledException via master-flush-table:org.apache.hadoop.hbase.TableNotEnabledException: adhoc_workload_04; org.apache.hadoop.hbase.master.procedure.FlushTableProcedure, id=14, table=adhoc_workload_04 fail
+2026-11-05T10:51:36,179   server frame: org.apache.hadoop.hbase.master.procedure.AbstractStateMachineTableProcedure.preflightChecks(AbstractStateMachineTableProcedure.java:163)
+2026-11-05T10:51:36,179   server frame: org.apache.hadoop.hbase.master.procedure.FlushTableProcedure.preflightChecks(FlushTableProcedure.java:119)
+2026-11-05T10:51:36,179   server frame: org.apache.hadoop.hbase.master.procedure.FlushTableProcedure.executeFromState(FlushTableProcedure.java:96)
+2026-11-05T10:51:36,179   server frame: org.apache.hadoop.hbase.master.procedure.FlushTableProcedure.executeFromState(FlushTableProcedure.java:47)
+2026-11-05T10:51:36,179   server frame: org.apache.hadoop.hbase.procedure2.StateMachineProcedure.execute(StateMachineProcedure.java:188)
+2026-11-05T10:51:36,179   server frame: org.apache.hadoop.hbase.procedure2.Procedure.doExecute(Procedure.java:969)
+2026-11-05T10:51:36,179   server frame: org.apache.hadoop.hbase.procedure2.ProcedureExecutor.execProcedure(ProcedureExecutor.java:1826)
+2026-11-05T10:51:36,179   server frame: org.apache.hadoop.hbase.procedure2.ProcedureExecutor.executeProcedure(ProcedureExecutor.java:1503)
+2026-11-05T10:51:36,179   server frame: org.apache.hadoop.hbase.procedure2.ProcedureExecutor$WorkerThread.runProcedure(ProcedureExecutor.java:2159)
+2026-11-05T10:51:36,180   server frame: org.apache.hadoop.hbase.trace.TraceUtil.trace(TraceUtil.java:216)
+2026-11-05T10:51:36,180   server frame: org.apache.hadoop.hbase.procedure2.ProcedureExecutor$WorkerThread.run(ProcedureExecutor.java:2186)
+2026-11-05T10:51:36,180 TARGET FIRED: TableNotEnabledException thrown at AbstractStateMachineTableProcedure.java:163
+2026-11-05T10:51:57,838 killing active master clnode245.clemson.cloudlab.us,37387,1793875907023
+2026-11-05T10:51:59,036 master clnode245.clemson.cloudlab.us,37387,1793875907023 is down
+2026-11-05T10:51:59,044 observer run 0: FAILED with org.apache.hadoop.hbase.client.RetriesExhaustedException: Failed after attempts=1, exceptions:
+2026-11-05T10:51:59,044 observer run 1: returned normally; current=SpaceQuotaSnapshot[policy=SpaceQuotaStatus[policy=Optional.empty, inViolation=false], use=2 KB/4 KB] equalsTarget=true
+2026-11-05T10:51:59,046 after both runs: observer map=SpaceQuotaSnapshot[policy=SpaceQuotaStatus[policy=Optional.empty, inViolation=false], use=2 KB/4 KB] enableAttempts=1
+2026-11-05T10:52:01,049 flush outstanding while the master is down
+2026-11-05T10:52:05,444 new active master clnode245.clemson.cloudlab.us,37387,1793875921073 initialized
+2026-11-05T10:52:07,504 client admin.flush threw org.apache.hadoop.hbase.TableNotEnabledException: adhoc_workload_04
+2026-11-05T10:52:07,504 server procedure pid=14, state=ROLLEDBACK, hasLock=false, exception=org.apache.hadoop.hbase.TableNotEnabledException via master-flush-table:org.apache.hadoop.hbase.TableNotEnabledException: adhoc_workload_04; org.apache.hadoop.hbase.master.procedure.FlushTableProcedure, id=14, table=adhoc_workload_04 fail
+2026-11-05T10:52:07,504   server frame: org.apache.hadoop.hbase.master.procedure.AbstractStateMachineTableProcedure.preflightChecks(AbstractStateMachineTableProcedure.java:163)
+2026-11-05T10:52:07,504   server frame: org.apache.hadoop.hbase.master.procedure.FlushTableProcedure.preflightChecks(FlushTableProcedure.java:119)
+2026-11-05T10:52:07,504   server frame: org.apache.hadoop.hbase.master.procedure.FlushTableProcedure.executeFromState(FlushTableProcedure.java:96)
+2026-11-05T10:52:07,504   server frame: org.apache.hadoop.hbase.master.procedure.FlushTableProcedure.executeFromState(FlushTableProcedure.java:47)
+2026-11-05T10:52:07,504   server frame: org.apache.hadoop.hbase.procedure2.StateMachineProcedure.execute(StateMachineProcedure.java:188)
+2026-11-05T10:52:07,504   server frame: org.apache.hadoop.hbase.procedure2.Procedure.doExecute(Procedure.java:969)
+2026-11-05T10:52:07,504   server frame: org.apache.hadoop.hbase.procedure2.ProcedureExecutor.execProcedure(ProcedureExecutor.java:1826)
+2026-11-05T10:52:07,504   server frame: org.apache.hadoop.hbase.procedure2.ProcedureExecutor.executeProcedure(ProcedureExecutor.java:1503)
+2026-11-05T10:52:07,504   server frame: org.apache.hadoop.hbase.procedure2.ProcedureExecutor$WorkerThread.runProcedure(ProcedureExecutor.java:2159)
+2026-11-05T10:52:07,505   server frame: org.apache.hadoop.hbase.trace.TraceUtil.trace(TraceUtil.java:216)
+2026-11-05T10:52:07,505   server frame: org.apache.hadoop.hbase.procedure2.ProcedureExecutor$WorkerThread.run(ProcedureExecutor.java:2186)
+2026-11-05T10:52:07,505 TARGET FIRED: TableNotEnabledException thrown at AbstractStateMachineTableProcedure.java:163
+2026-11-05T10:52:07,510 table DISABLED on the new master: true
+2026-11-05T10:52:37,634 30s later: table still DISABLED, second flush throws org.apache.hadoop.hbase.TableNotEnabledException
+2026-11-05T10:52:38,613 manual admin.enableTable, then flush succeeded
+2026-11-05T10:53:14,212 killing active master clnode245.clemson.cloudlab.us,33129,1793875978691
+2026-11-05T10:53:15,176 master clnode245.clemson.cloudlab.us,33129,1793875978691 is down
+2026-11-05T10:53:15,185 observer run 0: FAILED with org.apache.hadoop.hbase.client.RetriesExhaustedException: Failed after attempts=1, exceptions:
+2026-11-05T10:53:15,185 observer run 1: returned normally; current=SpaceQuotaSnapshot[policy=SpaceQuotaStatus[policy=Optional.empty, inViolation=false], use=2 KB/4 KB] equalsTarget=true
+2026-11-05T10:53:21,571 new active master clnode245.clemson.cloudlab.us,33129,1793875995213 initialized
+2026-11-05T10:53:21,694 client admin.flush threw org.apache.hadoop.hbase.TableNotEnabledException: adhoc_workload_04
+2026-11-05T10:53:21,694 server procedure pid=14, state=ROLLEDBACK, hasLock=false, exception=org.apache.hadoop.hbase.TableNotEnabledException via master-flush-table:org.apache.hadoop.hbase.TableNotEnabledException: adhoc_workload_04; org.apache.hadoop.hbase.master.procedure.FlushTableProcedure, id=14, table=adhoc_workload_04 fail
+2026-11-05T10:53:21,694   server frame: org.apache.hadoop.hbase.master.procedure.AbstractStateMachineTableProcedure.preflightChecks(AbstractStateMachineTableProcedure.java:163)
+2026-11-05T10:53:21,694   server frame: org.apache.hadoop.hbase.master.procedure.FlushTableProcedure.preflightChecks(FlushTableProcedure.java:119)
+2026-11-05T10:53:21,695   server frame: org.apache.hadoop.hbase.master.procedure.FlushTableProcedure.executeFromState(FlushTableProcedure.java:96)
+2026-11-05T10:53:21,695   server frame: org.apache.hadoop.hbase.master.procedure.FlushTableProcedure.executeFromState(FlushTableProcedure.java:47)
+2026-11-05T10:53:21,695   server frame: org.apache.hadoop.hbase.procedure2.StateMachineProcedure.execute(StateMachineProcedure.java:188)
+2026-11-05T10:53:21,695   server frame: org.apache.hadoop.hbase.procedure2.Procedure.doExecute(Procedure.java:969)
+2026-11-05T10:53:21,695   server frame: org.apache.hadoop.hbase.procedure2.ProcedureExecutor.execProcedure(ProcedureExecutor.java:1826)
+2026-11-05T10:53:21,695   server frame: org.apache.hadoop.hbase.procedure2.ProcedureExecutor.executeProcedure(ProcedureExecutor.java:1503)
+2026-11-05T10:53:21,695   server frame: org.apache.hadoop.hbase.procedure2.ProcedureExecutor$WorkerThread.runProcedure(ProcedureExecutor.java:2159)
+2026-11-05T10:53:21,695   server frame: org.apache.hadoop.hbase.trace.TraceUtil.trace(TraceUtil.java:216)
+2026-11-05T10:53:21,695   server frame: org.apache.hadoop.hbase.procedure2.ProcedureExecutor$WorkerThread.run(ProcedureExecutor.java:2186)
+2026-11-05T10:53:21,695 TARGET FIRED: TableNotEnabledException thrown at AbstractStateMachineTableProcedure.java:163
+2026-11-05T10:53:21,698 level0-warm: table still DISABLED after the flush failed
+2026-11-05T10:53:49,664 observer run 0: returned normally; current=SpaceQuotaSnapshot[policy=SpaceQuotaStatus[policy=Optional[DISABLE], inViolation=true], use=2 KB/1 KB] equalsTarget=false
+2026-11-05T10:53:49,664 observer run 1: returned normally; current=SpaceQuotaSnapshot[policy=SpaceQuotaStatus[policy=Optional.empty, inViolation=false], use=2 KB/4 KB] equalsTarget=true
+2026-11-05T10:53:50,094 control: table enabled and flush succeeded
+./test_bugMC-3_master_crash_enable.sh $W/pristine   187.81s user 11.64s system 96% cpu 3:27.29 total

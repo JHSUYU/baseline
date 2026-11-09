@@ -1,0 +1,10 @@
+2026-11-05 05:23:09,744 [myid:] - INFO  [main:o.a.z.t.QuorumBase@512] - Shutting down leader election QuorumPeer[myid=2](plain=127.0.0.1:11228)(secure=disabled)
+2026-11-05 05:23:09,744 [myid:] - INFO  [main:o.a.z.t.QuorumBase@517] - Waiting for QuorumPeer[myid=2](plain=127.0.0.1:11228)(secure=disabled) to exit thread
+MC3| trial 18: delay=3473us disk: currentEpoch=0 acceptedEpoch=1 currentEpoch.tmp exists=false txnLog count=88 first=0x10004da21 last=0x10004da78
+MC3| start() threw: java.lang.RuntimeException: Unable to run quorum server 
+MC3|   cause: java.io.IOException: The current epoch, 0, is older than the last zxid, 4295285368
+MC3|     at org.apache.zookeeper.server.quorum.QuorumPeer.loadDataBase(QuorumPeer.java:1237)
+MC3|     at org.apache.zookeeper.server.quorum.QuorumPeer.start(QuorumPeer.java:1194)
+MC3|     at org.apache.zookeeper.server.quorum.SpeculaAdhocMC3Test$TestPeer.start(SpeculaAdhocMC3Test.java:191)
+MC3|     at org.apache.zookeeper.server.quorum.QuorumPeerMain.runFromConfig(QuorumPeerMain.java:230)
+MC3| TARGET FIRED: java.io.IOException from org.apache.zookeeper.server.quorum.QuorumPeer.loadDataBase(QuorumPeer.java:1237)

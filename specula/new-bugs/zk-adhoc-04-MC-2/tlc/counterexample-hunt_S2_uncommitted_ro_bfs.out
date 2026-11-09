@@ -1,0 +1,1026 @@
+TLC2 Version 2026.10.24.013619 (rev: 2ef2af8)
+Running breadth-first search Model-Checking with fp 110 and seed -8370108653710787901 with 8 workers on 64 cores with 2944MB heap and 3072MB offheap memory [pid: 1895306] (Linux 5.15.0-198-generic amd64, Eclipse Adoptium 21.0.13 64bit, OffHeapDiskFPSet, DiskStateQueue).
+Parsing file /bulk/specula-adhoc/specula-runs/20261102-194733-497b/zk-adhoc-04/.specula-output/spec/MC.tla
+Parsing file /bulk/specula-adhoc/specula-runs/20261102-194733-497b/zk-adhoc-04/.specula-output/spec/base.tla
+Parsing file /tmp/tlc-504049101348631350/_TLCTrace.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/_TLCTrace.tla)
+Parsing file /tmp/tlc-504049101348631350/Integers.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Integers.tla)
+Parsing file /tmp/tlc-504049101348631350/Sequences.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Sequences.tla)
+Parsing file /tmp/tlc-504049101348631350/FiniteSets.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/FiniteSets.tla)
+Parsing file /tmp/tlc-504049101348631350/TLC.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLC.tla)
+Parsing file /tmp/tlc-504049101348631350/Naturals.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/Naturals.tla)
+Parsing file /tmp/tlc-504049101348631350/TLCExt.tla (jar:file:/users/ZhenyuLi/Specula/lib/tla2tools.jar!/tla2sany/StandardModules/TLCExt.tla)
+Semantic processing of module Naturals
+Semantic processing of module Integers
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module TLC
+Semantic processing of module base
+Semantic processing of module TLCExt
+Semantic processing of module _TLCTrace
+Semantic processing of module MC
+Linting of module base
+Linting of module TLCExt
+Linting of module _TLCTrace
+Linting of module MC
+Starting... (2026-11-05 04:59:02)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-11-05 04:59:03.
+Progress(13) at 2026-11-05 04:59:06: 21,584 states generated (21,584 s/min), 5,185 distinct states found (5,185 ds/min), 1,609 states left on queue.
+Error: Invariant TargetSafe is violated.
+Error: The behavior up to this point is:
+State 1: <Initial predicate>
+/\ lpz = <<0, 0, 0>>
+/\ syncMode = <<"NONE", "NONE", "NONE">>
+/\ acks = <<{}, {}, {}>>
+/\ pktCommitted = <<<<>>, <<>>, <<>>>>
+/\ inbox = <<<<>>, <<>>, <<>>>>
+/\ clog = <<{}, {}, {}>>
+/\ toLog = <<<<>>, <<>>, <<>>>>
+/\ cReplies = <<<<>>>>
+/\ accEpoch = <<0, 0, 0>>
+/\ dbInit = <<FALSE, FALSE, FALSE>>
+/\ targetFired = FALSE
+/\ pktNotLogged = <<<<>>, <<>>, <<>>>>
+/\ cState = <<"CONNECTING">>
+/\ lepoch = <<0, 0, 0>>
+/\ role = <<"DOWN", "DOWN", "DOWN">>
+/\ cSeenRw = <<FALSE>>
+/\ faults = [aband |-> 0, stop |-> 0, part |-> 0, move |-> 0, write |-> 0]
+/\ targetInfo = [ sid |-> 0,
+  role |-> "NONE",
+  cid |-> 0,
+  cz |-> 0,
+  sz |-> 0,
+  srv |-> "NONE",
+  cls |-> "NONE" ]
+/\ hzxid = <<0, 0, 0>>
+/\ cRwTarget = <<0>>
+/\ phase = <<"NONE", "NONE", "NONE">>
+/\ lastCommitted = <<0, 0, 0>>
+/\ curEpoch = <<0, 0, 0>>
+/\ snapZ = <<-1, -1, -1>>
+/\ serving = <<"NONE", "NONE", "NONE">>
+/\ committed = {}
+/\ fwd = <<{}, {}, {}>>
+/\ commitQ = <<<<>>, <<>>, <<>>>>
+/\ pendingTxns = <<<<>>, <<>>, <<>>>>
+/\ cConn = <<0>>
+/\ cLastZxid = <<0>>
+/\ log = <<{}, {}, {}>>
+/\ leaderOf = <<0, 0, 0>>
+/\ served = {}
+/\ utdSent = <<{}, {}, {}>>
+/\ nlAcks = <<{}, {}, {}>>
+/\ cSess = <<0>>
+
+State 2: <MCNext line 95, col 26 to line 95, col 53 of module MC>
+/\ lpz = <<0, 0, 0>>
+/\ syncMode = <<"NONE", "NONE", "NONE">>
+/\ acks = <<{}, {}, {}>>
+/\ pktCommitted = <<<<>>, <<>>, <<>>>>
+/\ inbox = <<<<>>, <<>>, <<>>>>
+/\ clog = <<{}, {}, {}>>
+/\ toLog = <<<<>>, <<>>, <<>>>>
+/\ cReplies = <<<<>>>>
+/\ accEpoch = <<0, 0, 0>>
+/\ dbInit = <<TRUE, FALSE, FALSE>>
+/\ targetFired = FALSE
+/\ pktNotLogged = <<<<>>, <<>>, <<>>>>
+/\ cState = <<"CONNECTING">>
+/\ lepoch = <<0, 0, 0>>
+/\ role = <<"LOOKING", "DOWN", "DOWN">>
+/\ cSeenRw = <<FALSE>>
+/\ faults = [aband |-> 0, stop |-> 0, part |-> 0, move |-> 0, write |-> 0]
+/\ targetInfo = [ sid |-> 0,
+  role |-> "NONE",
+  cid |-> 0,
+  cz |-> 0,
+  sz |-> 0,
+  srv |-> "NONE",
+  cls |-> "NONE" ]
+/\ hzxid = <<0, 0, 0>>
+/\ cRwTarget = <<0>>
+/\ phase = <<"NONE", "NONE", "NONE">>
+/\ lastCommitted = <<0, 0, 0>>
+/\ curEpoch = <<0, 0, 0>>
+/\ snapZ = <<0, -1, -1>>
+/\ serving = <<"NONE", "NONE", "NONE">>
+/\ committed = {}
+/\ fwd = <<{}, {}, {}>>
+/\ commitQ = <<<<>>, <<>>, <<>>>>
+/\ pendingTxns = <<<<>>, <<>>, <<>>>>
+/\ cConn = <<0>>
+/\ cLastZxid = <<0>>
+/\ log = <<{}, {}, {}>>
+/\ leaderOf = <<0, 0, 0>>
+/\ served = {}
+/\ utdSent = <<{}, {}, {}>>
+/\ nlAcks = <<{}, {}, {}>>
+/\ cSess = <<0>>
+
+State 3: <MCNext line 95, col 26 to line 95, col 53 of module MC>
+/\ lpz = <<0, 0, 0>>
+/\ syncMode = <<"NONE", "NONE", "NONE">>
+/\ acks = <<{}, {}, {}>>
+/\ pktCommitted = <<<<>>, <<>>, <<>>>>
+/\ inbox = <<<<>>, <<>>, <<>>>>
+/\ clog = <<{}, {}, {}>>
+/\ toLog = <<<<>>, <<>>, <<>>>>
+/\ cReplies = <<<<>>>>
+/\ accEpoch = <<0, 0, 0>>
+/\ dbInit = <<TRUE, FALSE, TRUE>>
+/\ targetFired = FALSE
+/\ pktNotLogged = <<<<>>, <<>>, <<>>>>
+/\ cState = <<"CONNECTING">>
+/\ lepoch = <<0, 0, 0>>
+/\ role = <<"LOOKING", "DOWN", "LOOKING">>
+/\ cSeenRw = <<FALSE>>
+/\ faults = [aband |-> 0, stop |-> 0, part |-> 0, move |-> 0, write |-> 0]
+/\ targetInfo = [ sid |-> 0,
+  role |-> "NONE",
+  cid |-> 0,
+  cz |-> 0,
+  sz |-> 0,
+  srv |-> "NONE",
+  cls |-> "NONE" ]
+/\ hzxid = <<0, 0, 0>>
+/\ cRwTarget = <<0>>
+/\ phase = <<"NONE", "NONE", "NONE">>
+/\ lastCommitted = <<0, 0, 0>>
+/\ curEpoch = <<0, 0, 0>>
+/\ snapZ = <<0, -1, 0>>
+/\ serving = <<"NONE", "NONE", "NONE">>
+/\ committed = {}
+/\ fwd = <<{}, {}, {}>>
+/\ commitQ = <<<<>>, <<>>, <<>>>>
+/\ pendingTxns = <<<<>>, <<>>, <<>>>>
+/\ cConn = <<0>>
+/\ cLastZxid = <<0>>
+/\ log = <<{}, {}, {}>>
+/\ leaderOf = <<0, 0, 0>>
+/\ served = {}
+/\ utdSent = <<{}, {}, {}>>
+/\ nlAcks = <<{}, {}, {}>>
+/\ cSess = <<0>>
+
+State 4: <MCNext line 95, col 26 to line 95, col 53 of module MC>
+/\ lpz = <<0, 0, 0>>
+/\ syncMode = <<"NONE", "NONE", "NONE">>
+/\ acks = <<{}, {}, {}>>
+/\ pktCommitted = <<<<>>, <<>>, <<>>>>
+/\ inbox = <<<<>>, <<>>, <<>>>>
+/\ clog = <<{}, {}, {}>>
+/\ toLog = <<<<>>, <<>>, <<>>>>
+/\ cReplies = <<<<>>>>
+/\ accEpoch = <<0, 0, 0>>
+/\ dbInit = <<TRUE, TRUE, TRUE>>
+/\ targetFired = FALSE
+/\ pktNotLogged = <<<<>>, <<>>, <<>>>>
+/\ cState = <<"CONNECTING">>
+/\ lepoch = <<0, 0, 0>>
+/\ role = <<"LOOKING", "LOOKING", "LOOKING">>
+/\ cSeenRw = <<FALSE>>
+/\ faults = [aband |-> 0, stop |-> 0, part |-> 0, move |-> 0, write |-> 0]
+/\ targetInfo = [ sid |-> 0,
+  role |-> "NONE",
+  cid |-> 0,
+  cz |-> 0,
+  sz |-> 0,
+  srv |-> "NONE",
+  cls |-> "NONE" ]
+/\ hzxid = <<0, 0, 0>>
+/\ cRwTarget = <<0>>
+/\ phase = <<"NONE", "NONE", "NONE">>
+/\ lastCommitted = <<0, 0, 0>>
+/\ curEpoch = <<0, 0, 0>>
+/\ snapZ = <<0, 0, 0>>
+/\ serving = <<"NONE", "NONE", "NONE">>
+/\ committed = {}
+/\ fwd = <<{}, {}, {}>>
+/\ commitQ = <<<<>>, <<>>, <<>>>>
+/\ pendingTxns = <<<<>>, <<>>, <<>>>>
+/\ cConn = <<0>>
+/\ cLastZxid = <<0>>
+/\ log = <<{}, {}, {}>>
+/\ leaderOf = <<0, 0, 0>>
+/\ served = {}
+/\ utdSent = <<{}, {}, {}>>
+/\ nlAcks = <<{}, {}, {}>>
+/\ cSess = <<0>>
+
+State 5: <MCNext line 97, col 26 to line 97, col 51 of module MC>
+/\ lpz = <<0, 0, 0>>
+/\ syncMode = <<"NONE", "NONE", "NONE">>
+/\ acks = <<{}, {}, {}>>
+/\ pktCommitted = <<<<>>, <<>>, <<>>>>
+/\ inbox = <<<<>>, <<>>, <<>>>>
+/\ clog = <<{}, {}, {}>>
+/\ toLog = <<<<>>, <<>>, <<>>>>
+/\ cReplies = <<<<>>>>
+/\ accEpoch = <<0, 0, 0>>
+/\ dbInit = <<TRUE, TRUE, TRUE>>
+/\ targetFired = FALSE
+/\ pktNotLogged = <<<<>>, <<>>, <<>>>>
+/\ cState = <<"CONNECTING">>
+/\ lepoch = <<0, 0, 0>>
+/\ role = <<"LOOKING", "LOOKING", "LOOKING">>
+/\ cSeenRw = <<FALSE>>
+/\ faults = [aband |-> 0, stop |-> 0, part |-> 0, move |-> 0, write |-> 0]
+/\ targetInfo = [ sid |-> 0,
+  role |-> "NONE",
+  cid |-> 0,
+  cz |-> 0,
+  sz |-> 0,
+  srv |-> "NONE",
+  cls |-> "NONE" ]
+/\ hzxid = <<0, 0, 0>>
+/\ cRwTarget = <<0>>
+/\ phase = <<"NONE", "NONE", "NONE">>
+/\ lastCommitted = <<0, 0, 0>>
+/\ curEpoch = <<0, 0, 0>>
+/\ snapZ = <<0, 0, 0>>
+/\ serving = <<"RO", "NONE", "NONE">>
+/\ committed = {}
+/\ fwd = <<{}, {}, {}>>
+/\ commitQ = <<<<>>, <<>>, <<>>>>
+/\ pendingTxns = <<<<>>, <<>>, <<>>>>
+/\ cConn = <<0>>
+/\ cLastZxid = <<0>>
+/\ log = <<{}, {}, {}>>
+/\ leaderOf = <<0, 0, 0>>
+/\ served = {}
+/\ utdSent = <<{}, {}, {}>>
+/\ nlAcks = <<{}, {}, {}>>
+/\ cSess = <<0>>
+
+State 6: <MCNext line 101, col 47 to line 101, col 73 of module MC>
+/\ lpz = <<0, 0, 0>>
+/\ syncMode = <<"NONE", "NONE", "NONE">>
+/\ acks = <<{}, {}, {}>>
+/\ pktCommitted = <<<<>>, <<>>, <<>>>>
+/\ inbox = <<<<>>, <<>>, <<>>>>
+/\ clog = <<{}, {}, {}>>
+/\ toLog = <<<<>>, <<>>, <<>>>>
+/\ cReplies = <<<<>>>>
+/\ accEpoch = <<0, 0, 0>>
+/\ dbInit = <<TRUE, TRUE, TRUE>>
+/\ targetFired = FALSE
+/\ pktNotLogged = <<<<>>, <<>>, <<>>>>
+/\ cState = <<"CONNECTING">>
+/\ lepoch = <<0, 0, 0>>
+/\ role = <<"LOOKING", "FOLLOWING", "LEADING">>
+/\ cSeenRw = <<FALSE>>
+/\ faults = [aband |-> 0, stop |-> 0, part |-> 0, move |-> 0, write |-> 0]
+/\ targetInfo = [ sid |-> 0,
+  role |-> "NONE",
+  cid |-> 0,
+  cz |-> 0,
+  sz |-> 0,
+  srv |-> "NONE",
+  cls |-> "NONE" ]
+/\ hzxid = <<0, 0, 0>>
+/\ cRwTarget = <<0>>
+/\ phase = <<"NONE", "ELECTED", "ELECTED">>
+/\ lastCommitted = <<0, 0, 0>>
+/\ curEpoch = <<0, 0, 0>>
+/\ snapZ = <<0, 0, 0>>
+/\ serving = <<"RO", "NONE", "NONE">>
+/\ committed = {}
+/\ fwd = <<{}, {}, {}>>
+/\ commitQ = <<<<>>, <<>>, <<>>>>
+/\ pendingTxns = <<<<>>, <<>>, <<>>>>
+/\ cConn = <<0>>
+/\ cLastZxid = <<0>>
+/\ log = <<{}, {}, {}>>
+/\ leaderOf = <<0, 3, 0>>
+/\ served = {}
+/\ utdSent = <<{}, {}, {}>>
+/\ nlAcks = <<{}, {}, {}>>
+/\ cSess = <<0>>
+
+State 7: <MCNext line 105, col 47 to line 105, col 77 of module MC>
+/\ lpz = <<0, 0, 0>>
+/\ syncMode = <<"NONE", "NONE", "NONE">>
+/\ acks = <<{}, {}, {}>>
+/\ pktCommitted = <<<<>>, <<>>, <<>>>>
+/\ inbox = <<<<>>, <<>>, <<>>>>
+/\ clog = <<{}, {}, {}>>
+/\ toLog = <<<<>>, <<>>, <<>>>>
+/\ cReplies = <<<<>>>>
+/\ accEpoch = <<0, 1, 1>>
+/\ dbInit = <<TRUE, TRUE, TRUE>>
+/\ targetFired = FALSE
+/\ pktNotLogged = <<<<>>, <<>>, <<>>>>
+/\ cState = <<"CONNECTING">>
+/\ lepoch = <<0, 1, 1>>
+/\ role = <<"LOOKING", "FOLLOWING", "LEADING">>
+/\ cSeenRw = <<FALSE>>
+/\ faults = [aband |-> 0, stop |-> 0, part |-> 0, move |-> 0, write |-> 0]
+/\ targetInfo = [ sid |-> 0,
+  role |-> "NONE",
+  cid |-> 0,
+  cz |-> 0,
+  sz |-> 0,
+  srv |-> "NONE",
+  cls |-> "NONE" ]
+/\ hzxid = <<0, 0, 10>>
+/\ cRwTarget = <<0>>
+/\ phase = <<"NONE", "DISCOVERED", "SYNC">>
+/\ lastCommitted = <<0, 0, 0>>
+/\ curEpoch = <<0, 0, 1>>
+/\ snapZ = <<0, 0, 0>>
+/\ serving = <<"RO", "NONE", "NONE">>
+/\ committed = {}
+/\ fwd = <<{}, {}, {}>>
+/\ commitQ = <<<<>>, <<>>, <<>>>>
+/\ pendingTxns = <<<<>>, <<>>, <<>>>>
+/\ cConn = <<0>>
+/\ cLastZxid = <<0>>
+/\ log = <<{}, {}, {}>>
+/\ leaderOf = <<0, 3, 0>>
+/\ served = {}
+/\ utdSent = <<{}, {}, {}>>
+/\ nlAcks = <<{}, {}, {3}>>
+/\ cSess = <<0>>
+
+State 8: <MCNext line 106, col 29 to line 106, col 68 of module MC>
+/\ lpz = <<0, 0, 0>>
+/\ syncMode = <<"NONE", "NONE", "NONE">>
+/\ acks = <<{}, {}, {}>>
+/\ pktCommitted = <<<<>>, <<>>, <<>>>>
+/\ inbox = <<<<>>, <<[z |-> 0, t |-> "DIFF"], [z |-> 10, t |-> "NEWLEADER"]>>, <<>>>>
+/\ clog = <<{}, {}, {}>>
+/\ toLog = <<<<>>, <<>>, <<>>>>
+/\ cReplies = <<<<>>>>
+/\ accEpoch = <<0, 1, 1>>
+/\ dbInit = <<TRUE, TRUE, TRUE>>
+/\ targetFired = FALSE
+/\ pktNotLogged = <<<<>>, <<>>, <<>>>>
+/\ cState = <<"CONNECTING">>
+/\ lepoch = <<0, 1, 1>>
+/\ role = <<"LOOKING", "FOLLOWING", "LEADING">>
+/\ cSeenRw = <<FALSE>>
+/\ faults = [aband |-> 0, stop |-> 0, part |-> 0, move |-> 0, write |-> 0]
+/\ targetInfo = [ sid |-> 0,
+  role |-> "NONE",
+  cid |-> 0,
+  cz |-> 0,
+  sz |-> 0,
+  srv |-> "NONE",
+  cls |-> "NONE" ]
+/\ hzxid = <<0, 0, 10>>
+/\ cRwTarget = <<0>>
+/\ phase = <<"NONE", "SYNC", "SYNC">>
+/\ lastCommitted = <<0, 0, 0>>
+/\ curEpoch = <<0, 0, 1>>
+/\ snapZ = <<0, 0, 0>>
+/\ serving = <<"RO", "NONE", "NONE">>
+/\ committed = {}
+/\ fwd = <<{}, {}, {2}>>
+/\ commitQ = <<<<>>, <<>>, <<>>>>
+/\ pendingTxns = <<<<>>, <<>>, <<>>>>
+/\ cConn = <<0>>
+/\ cLastZxid = <<0>>
+/\ log = <<{}, {}, {}>>
+/\ leaderOf = <<0, 3, 0>>
+/\ served = {}
+/\ utdSent = <<{}, {}, {}>>
+/\ nlAcks = <<{}, {}, {3}>>
+/\ cSess = <<0>>
+
+State 9: <MCNext line 115, col 26 to line 115, col 59 of module MC>
+/\ lpz = <<0, 0, 0>>
+/\ syncMode = <<"NONE", "DIFF", "NONE">>
+/\ acks = <<{}, {}, {}>>
+/\ pktCommitted = <<<<>>, <<>>, <<>>>>
+/\ inbox = <<<<>>, <<[z |-> 10, t |-> "NEWLEADER"]>>, <<>>>>
+/\ clog = <<{}, {}, {}>>
+/\ toLog = <<<<>>, <<>>, <<>>>>
+/\ cReplies = <<<<>>>>
+/\ accEpoch = <<0, 1, 1>>
+/\ dbInit = <<TRUE, TRUE, TRUE>>
+/\ targetFired = FALSE
+/\ pktNotLogged = <<<<>>, <<>>, <<>>>>
+/\ cState = <<"CONNECTING">>
+/\ lepoch = <<0, 1, 1>>
+/\ role = <<"LOOKING", "FOLLOWING", "LEADING">>
+/\ cSeenRw = <<FALSE>>
+/\ faults = [aband |-> 0, stop |-> 0, part |-> 0, move |-> 0, write |-> 0]
+/\ targetInfo = [ sid |-> 0,
+  role |-> "NONE",
+  cid |-> 0,
+  cz |-> 0,
+  sz |-> 0,
+  srv |-> "NONE",
+  cls |-> "NONE" ]
+/\ hzxid = <<0, 0, 10>>
+/\ cRwTarget = <<0>>
+/\ phase = <<"NONE", "SYNC", "SYNC">>
+/\ lastCommitted = <<0, 0, 0>>
+/\ curEpoch = <<0, 0, 1>>
+/\ snapZ = <<0, 0, 0>>
+/\ serving = <<"RO", "NONE", "NONE">>
+/\ committed = {}
+/\ fwd = <<{}, {}, {2}>>
+/\ commitQ = <<<<>>, <<>>, <<>>>>
+/\ pendingTxns = <<<<>>, <<>>, <<>>>>
+/\ cConn = <<0>>
+/\ cLastZxid = <<0>>
+/\ log = <<{}, {}, {}>>
+/\ leaderOf = <<0, 3, 0>>
+/\ served = {}
+/\ utdSent = <<{}, {}, {}>>
+/\ nlAcks = <<{}, {}, {3}>>
+/\ cSess = <<0>>
+
+State 10: <MCNext line 120, col 26 to line 120, col 64 of module MC>
+/\ lpz = <<0, 0, 0>>
+/\ syncMode = <<"NONE", "NONE", "NONE">>
+/\ acks = <<{}, {}, {}>>
+/\ pktCommitted = <<<<>>, <<>>, <<>>>>
+/\ inbox = <<<<>>, <<>>, <<>>>>
+/\ clog = <<{}, {}, {}>>
+/\ toLog = <<<<>>, <<>>, <<>>>>
+/\ cReplies = <<<<>>>>
+/\ accEpoch = <<0, 1, 1>>
+/\ dbInit = <<TRUE, TRUE, TRUE>>
+/\ targetFired = FALSE
+/\ pktNotLogged = <<<<>>, <<>>, <<>>>>
+/\ cState = <<"CONNECTING">>
+/\ lepoch = <<0, 1, 1>>
+/\ role = <<"LOOKING", "FOLLOWING", "LEADING">>
+/\ cSeenRw = <<FALSE>>
+/\ faults = [aband |-> 0, stop |-> 0, part |-> 0, move |-> 0, write |-> 0]
+/\ targetInfo = [ sid |-> 0,
+  role |-> "NONE",
+  cid |-> 0,
+  cz |-> 0,
+  sz |-> 0,
+  srv |-> "NONE",
+  cls |-> "NONE" ]
+/\ hzxid = <<0, 0, 10>>
+/\ cRwTarget = <<0>>
+/\ phase = <<"NONE", "SYNC2", "SYNC">>
+/\ lastCommitted = <<0, 0, 0>>
+/\ curEpoch = <<0, 1, 1>>
+/\ snapZ = <<0, 0, 0>>
+/\ serving = <<"RO", "NONE", "NONE">>
+/\ committed = {}
+/\ fwd = <<{}, {}, {2}>>
+/\ commitQ = <<<<>>, <<>>, <<>>>>
+/\ pendingTxns = <<<<>>, <<>>, <<>>>>
+/\ cConn = <<0>>
+/\ cLastZxid = <<0>>
+/\ log = <<{}, {}, {}>>
+/\ leaderOf = <<0, 3, 0>>
+/\ served = {}
+/\ utdSent = <<{}, {}, {}>>
+/\ nlAcks = <<{}, {}, {2, 3}>>
+/\ cSess = <<0>>
+
+State 11: <MCNext line 107, col 26 to line 107, col 57 of module MC>
+/\ lpz = <<0, 0, 0>>
+/\ syncMode = <<"NONE", "NONE", "NONE">>
+/\ acks = <<{}, {}, {}>>
+/\ pktCommitted = <<<<>>, <<>>, <<>>>>
+/\ inbox = <<<<>>, <<>>, <<>>>>
+/\ clog = <<{}, {}, {}>>
+/\ toLog = <<<<>>, <<>>, <<>>>>
+/\ cReplies = <<<<>>>>
+/\ accEpoch = <<0, 1, 1>>
+/\ dbInit = <<TRUE, TRUE, TRUE>>
+/\ targetFired = FALSE
+/\ pktNotLogged = <<<<>>, <<>>, <<>>>>
+/\ cState = <<"CONNECTING">>
+/\ lepoch = <<0, 1, 1>>
+/\ role = <<"LOOKING", "FOLLOWING", "LEADING">>
+/\ cSeenRw = <<FALSE>>
+/\ faults = [aband |-> 0, stop |-> 0, part |-> 0, move |-> 0, write |-> 0]
+/\ targetInfo = [ sid |-> 0,
+  role |-> "NONE",
+  cid |-> 0,
+  cz |-> 0,
+  sz |-> 0,
+  srv |-> "NONE",
+  cls |-> "NONE" ]
+/\ hzxid = <<0, 0, 10>>
+/\ cRwTarget = <<0>>
+/\ phase = <<"NONE", "SYNC2", "STARTED">>
+/\ lastCommitted = <<0, 0, 10>>
+/\ curEpoch = <<0, 1, 1>>
+/\ snapZ = <<0, 0, 0>>
+/\ serving = <<"RO", "NONE", "NONE">>
+/\ committed = {}
+/\ fwd = <<{}, {}, {2}>>
+/\ commitQ = <<<<>>, <<>>, <<>>>>
+/\ pendingTxns = <<<<>>, <<>>, <<>>>>
+/\ cConn = <<0>>
+/\ cLastZxid = <<0>>
+/\ log = <<{}, {}, {}>>
+/\ leaderOf = <<0, 3, 0>>
+/\ served = {}
+/\ utdSent = <<{}, {}, {}>>
+/\ nlAcks = <<{}, {}, {2, 3}>>
+/\ cSess = <<0>>
+
+State 12: <MCNext line 108, col 26 to line 108, col 55 of module MC>
+/\ lpz = <<0, 0, 10>>
+/\ syncMode = <<"NONE", "NONE", "NONE">>
+/\ acks = <<{}, {}, {}>>
+/\ pktCommitted = <<<<>>, <<>>, <<>>>>
+/\ inbox = <<<<>>, <<>>, <<>>>>
+/\ clog = <<{}, {}, {}>>
+/\ toLog = <<<<>>, <<>>, <<>>>>
+/\ cReplies = <<<<>>>>
+/\ accEpoch = <<0, 1, 1>>
+/\ dbInit = <<TRUE, TRUE, TRUE>>
+/\ targetFired = FALSE
+/\ pktNotLogged = <<<<>>, <<>>, <<>>>>
+/\ cState = <<"CONNECTING">>
+/\ lepoch = <<0, 1, 1>>
+/\ role = <<"LOOKING", "FOLLOWING", "LEADING">>
+/\ cSeenRw = <<FALSE>>
+/\ faults = [aband |-> 0, stop |-> 0, part |-> 0, move |-> 0, write |-> 0]
+/\ targetInfo = [ sid |-> 0,
+  role |-> "NONE",
+  cid |-> 0,
+  cz |-> 0,
+  sz |-> 0,
+  srv |-> "NONE",
+  cls |-> "NONE" ]
+/\ hzxid = <<0, 0, 10>>
+/\ cRwTarget = <<0>>
+/\ phase = <<"NONE", "SYNC2", "BROADCAST">>
+/\ lastCommitted = <<0, 0, 10>>
+/\ curEpoch = <<0, 1, 1>>
+/\ snapZ = <<0, 0, 0>>
+/\ serving = <<"RO", "NONE", "RW">>
+/\ committed = {}
+/\ fwd = <<{}, {}, {2}>>
+/\ commitQ = <<<<>>, <<>>, <<>>>>
+/\ pendingTxns = <<<<>>, <<>>, <<>>>>
+/\ cConn = <<0>>
+/\ cLastZxid = <<0>>
+/\ log = <<{}, {}, {}>>
+/\ leaderOf = <<0, 3, 0>>
+/\ served = {}
+/\ utdSent = <<{}, {}, {}>>
+/\ nlAcks = <<{}, {}, {2, 3}>>
+/\ cSess = <<0>>
+
+State 13: <MCNext line 110, col 26 to line 110, col 51 of module MC>
+/\ lpz = <<0, 0, 10>>
+/\ syncMode = <<"NONE", "NONE", "NONE">>
+/\ acks = <<{}, {}, {}>>
+/\ pktCommitted = <<<<>>, <<>>, <<>>>>
+/\ inbox = <<<<>>, <<[z |-> 11, t |-> "PROPOSAL"]>>, <<>>>>
+/\ clog = <<{}, {}, {}>>
+/\ toLog = <<<<>>, <<>>, <<>>>>
+/\ cReplies = <<<<>>>>
+/\ accEpoch = <<0, 1, 1>>
+/\ dbInit = <<TRUE, TRUE, TRUE>>
+/\ targetFired = FALSE
+/\ pktNotLogged = <<<<>>, <<>>, <<>>>>
+/\ cState = <<"CONNECTING">>
+/\ lepoch = <<0, 1, 1>>
+/\ role = <<"LOOKING", "FOLLOWING", "LEADING">>
+/\ cSeenRw = <<FALSE>>
+/\ faults = [aband |-> 0, stop |-> 0, part |-> 0, move |-> 0, write |-> 1]
+/\ targetInfo = [ sid |-> 0,
+  role |-> "NONE",
+  cid |-> 0,
+  cz |-> 0,
+  sz |-> 0,
+  srv |-> "NONE",
+  cls |-> "NONE" ]
+/\ hzxid = <<0, 0, 11>>
+/\ cRwTarget = <<0>>
+/\ phase = <<"NONE", "SYNC2", "BROADCAST">>
+/\ lastCommitted = <<0, 0, 10>>
+/\ curEpoch = <<0, 1, 1>>
+/\ snapZ = <<0, 0, 0>>
+/\ serving = <<"RO", "NONE", "RW">>
+/\ committed = {}
+/\ fwd = <<{}, {}, {2}>>
+/\ commitQ = <<<<>>, <<>>, <<>>>>
+/\ pendingTxns = <<<<>>, <<>>, <<>>>>
+/\ cConn = <<0>>
+/\ cLastZxid = <<0>>
+/\ log = <<{}, {}, {}>>
+/\ leaderOf = <<0, 3, 0>>
+/\ served = {}
+/\ utdSent = <<{}, {}, {}>>
+/\ nlAcks = <<{}, {}, {2, 3}>>
+/\ cSess = <<0>>
+
+State 14: <MCNext line 128, col 41 to line 128, col 64 of module MC>
+/\ lpz = <<0, 0, 10>>
+/\ syncMode = <<"NONE", "NONE", "NONE">>
+/\ acks = <<{}, {}, {}>>
+/\ pktCommitted = <<<<>>, <<>>, <<>>>>
+/\ inbox = <<<<>>, <<>>, <<>>>>
+/\ clog = <<{}, {}, {}>>
+/\ toLog = <<<<>>, <<>>, <<>>>>
+/\ cReplies = <<<<>>>>
+/\ accEpoch = <<0, 1, 1>>
+/\ dbInit = <<TRUE, FALSE, TRUE>>
+/\ targetFired = FALSE
+/\ pktNotLogged = <<<<>>, <<>>, <<>>>>
+/\ cState = <<"CONNECTING">>
+/\ lepoch = <<0, 0, 1>>
+/\ role = <<"LOOKING", "DOWN", "LEADING">>
+/\ cSeenRw = <<FALSE>>
+/\ faults = [aband |-> 0, stop |-> 1, part |-> 0, move |-> 0, write |-> 1]
+/\ targetInfo = [ sid |-> 0,
+  role |-> "NONE",
+  cid |-> 0,
+  cz |-> 0,
+  sz |-> 0,
+  srv |-> "NONE",
+  cls |-> "NONE" ]
+/\ hzxid = <<0, 0, 11>>
+/\ cRwTarget = <<0>>
+/\ phase = <<"NONE", "NONE", "BROADCAST">>
+/\ lastCommitted = <<0, 0, 10>>
+/\ curEpoch = <<0, 1, 1>>
+/\ snapZ = <<0, 0, 0>>
+/\ serving = <<"RO", "NONE", "RW">>
+/\ committed = {}
+/\ fwd = <<{}, {}, {}>>
+/\ commitQ = <<<<>>, <<>>, <<>>>>
+/\ pendingTxns = <<<<>>, <<>>, <<>>>>
+/\ cConn = <<0>>
+/\ cLastZxid = <<0>>
+/\ log = <<{}, {}, {}>>
+/\ leaderOf = <<0, 0, 0>>
+/\ served = {}
+/\ utdSent = <<{}, {}, {}>>
+/\ nlAcks = <<{}, {}, {3}>>
+/\ cSess = <<0>>
+
+State 15: <MCNext line 113, col 26 to line 113, col 52 of module MC>
+/\ lpz = <<0, 0, 11>>
+/\ syncMode = <<"NONE", "NONE", "NONE">>
+/\ acks = <<{}, {}, {}>>
+/\ pktCommitted = <<<<>>, <<>>, <<>>>>
+/\ inbox = <<<<>>, <<>>, <<>>>>
+/\ clog = <<{}, {}, {11}>>
+/\ toLog = <<<<>>, <<>>, <<>>>>
+/\ cReplies = <<<<>>>>
+/\ accEpoch = <<0, 1, 1>>
+/\ dbInit = <<TRUE, FALSE, TRUE>>
+/\ targetFired = FALSE
+/\ pktNotLogged = <<<<>>, <<>>, <<>>>>
+/\ cState = <<"CONNECTING">>
+/\ lepoch = <<0, 0, 0>>
+/\ role = <<"LOOKING", "DOWN", "LOOKING">>
+/\ cSeenRw = <<FALSE>>
+/\ faults = [aband |-> 1, stop |-> 1, part |-> 0, move |-> 0, write |-> 1]
+/\ targetInfo = [ sid |-> 0,
+  role |-> "NONE",
+  cid |-> 0,
+  cz |-> 0,
+  sz |-> 0,
+  srv |-> "NONE",
+  cls |-> "NONE" ]
+/\ hzxid = <<0, 0, 0>>
+/\ cRwTarget = <<0>>
+/\ phase = <<"NONE", "NONE", "NONE">>
+/\ lastCommitted = <<0, 0, 0>>
+/\ curEpoch = <<0, 1, 1>>
+/\ snapZ = <<0, 0, 0>>
+/\ serving = <<"RO", "NONE", "NONE">>
+/\ committed = {}
+/\ fwd = <<{}, {}, {}>>
+/\ commitQ = <<<<>>, <<>>, <<>>>>
+/\ pendingTxns = <<<<>>, <<>>, <<>>>>
+/\ cConn = <<0>>
+/\ cLastZxid = <<0>>
+/\ log = <<{}, {}, {11}>>
+/\ leaderOf = <<0, 0, 0>>
+/\ served = {}
+/\ utdSent = <<{}, {}, {}>>
+/\ nlAcks = <<{}, {}, {}>>
+/\ cSess = <<0>>
+
+State 16: <MCNext line 97, col 26 to line 97, col 51 of module MC>
+/\ lpz = <<0, 0, 11>>
+/\ syncMode = <<"NONE", "NONE", "NONE">>
+/\ acks = <<{}, {}, {}>>
+/\ pktCommitted = <<<<>>, <<>>, <<>>>>
+/\ inbox = <<<<>>, <<>>, <<>>>>
+/\ clog = <<{}, {}, {11}>>
+/\ toLog = <<<<>>, <<>>, <<>>>>
+/\ cReplies = <<<<>>>>
+/\ accEpoch = <<0, 1, 1>>
+/\ dbInit = <<TRUE, FALSE, TRUE>>
+/\ targetFired = FALSE
+/\ pktNotLogged = <<<<>>, <<>>, <<>>>>
+/\ cState = <<"CONNECTING">>
+/\ lepoch = <<0, 0, 0>>
+/\ role = <<"LOOKING", "DOWN", "LOOKING">>
+/\ cSeenRw = <<FALSE>>
+/\ faults = [aband |-> 1, stop |-> 1, part |-> 0, move |-> 0, write |-> 1]
+/\ targetInfo = [ sid |-> 0,
+  role |-> "NONE",
+  cid |-> 0,
+  cz |-> 0,
+  sz |-> 0,
+  srv |-> "NONE",
+  cls |-> "NONE" ]
+/\ hzxid = <<0, 0, 0>>
+/\ cRwTarget = <<0>>
+/\ phase = <<"NONE", "NONE", "NONE">>
+/\ lastCommitted = <<0, 0, 0>>
+/\ curEpoch = <<0, 1, 1>>
+/\ snapZ = <<0, 0, 0>>
+/\ serving = <<"RO", "NONE", "RO">>
+/\ committed = {}
+/\ fwd = <<{}, {}, {}>>
+/\ commitQ = <<<<>>, <<>>, <<>>>>
+/\ pendingTxns = <<<<>>, <<>>, <<>>>>
+/\ cConn = <<0>>
+/\ cLastZxid = <<0>>
+/\ log = <<{}, {}, {11}>>
+/\ leaderOf = <<0, 0, 0>>
+/\ served = {}
+/\ utdSent = <<{}, {}, {}>>
+/\ nlAcks = <<{}, {}, {}>>
+/\ cSess = <<0>>
+
+State 17: <MCNext line 101, col 47 to line 101, col 73 of module MC>
+/\ lpz = <<0, 0, 11>>
+/\ syncMode = <<"NONE", "NONE", "NONE">>
+/\ acks = <<{}, {}, {}>>
+/\ pktCommitted = <<<<>>, <<>>, <<>>>>
+/\ inbox = <<<<>>, <<>>, <<>>>>
+/\ clog = <<{}, {}, {11}>>
+/\ toLog = <<<<>>, <<>>, <<>>>>
+/\ cReplies = <<<<>>>>
+/\ accEpoch = <<0, 1, 1>>
+/\ dbInit = <<TRUE, FALSE, TRUE>>
+/\ targetFired = FALSE
+/\ pktNotLogged = <<<<>>, <<>>, <<>>>>
+/\ cState = <<"CONNECTING">>
+/\ lepoch = <<0, 0, 0>>
+/\ role = <<"FOLLOWING", "DOWN", "LEADING">>
+/\ cSeenRw = <<FALSE>>
+/\ faults = [aband |-> 1, stop |-> 1, part |-> 0, move |-> 0, write |-> 1]
+/\ targetInfo = [ sid |-> 0,
+  role |-> "NONE",
+  cid |-> 0,
+  cz |-> 0,
+  sz |-> 0,
+  srv |-> "NONE",
+  cls |-> "NONE" ]
+/\ hzxid = <<0, 0, 0>>
+/\ cRwTarget = <<0>>
+/\ phase = <<"ELECTED", "NONE", "ELECTED">>
+/\ lastCommitted = <<0, 0, 0>>
+/\ curEpoch = <<0, 1, 1>>
+/\ snapZ = <<0, 0, 0>>
+/\ serving = <<"RO", "NONE", "RO">>
+/\ committed = {}
+/\ fwd = <<{}, {}, {}>>
+/\ commitQ = <<<<>>, <<>>, <<>>>>
+/\ pendingTxns = <<<<>>, <<>>, <<>>>>
+/\ cConn = <<0>>
+/\ cLastZxid = <<0>>
+/\ log = <<{}, {}, {11}>>
+/\ leaderOf = <<3, 0, 0>>
+/\ served = {}
+/\ utdSent = <<{}, {}, {}>>
+/\ nlAcks = <<{}, {}, {}>>
+/\ cSess = <<0>>
+
+State 18: <MCNext line 137, col 40 to line 137, col 72 of module MC>
+/\ lpz = <<0, 0, 11>>
+/\ syncMode = <<"NONE", "NONE", "NONE">>
+/\ acks = <<{}, {}, {}>>
+/\ pktCommitted = <<<<>>, <<>>, <<>>>>
+/\ inbox = <<<<>>, <<>>, <<>>>>
+/\ clog = <<{}, {}, {11}>>
+/\ toLog = <<<<>>, <<>>, <<>>>>
+/\ cReplies = <<<<>>>>
+/\ accEpoch = <<0, 1, 1>>
+/\ dbInit = <<TRUE, FALSE, TRUE>>
+/\ targetFired = FALSE
+/\ pktNotLogged = <<<<>>, <<>>, <<>>>>
+/\ cState = <<"CONNECTEDREADONLY">>
+/\ lepoch = <<0, 0, 0>>
+/\ role = <<"FOLLOWING", "DOWN", "LEADING">>
+/\ cSeenRw = <<FALSE>>
+/\ faults = [aband |-> 1, stop |-> 1, part |-> 0, move |-> 0, write |-> 1]
+/\ targetInfo = [ sid |-> 0,
+  role |-> "NONE",
+  cid |-> 0,
+  cz |-> 0,
+  sz |-> 0,
+  srv |-> "NONE",
+  cls |-> "NONE" ]
+/\ hzxid = <<0, 0, 0>>
+/\ cRwTarget = <<0>>
+/\ phase = <<"ELECTED", "NONE", "ELECTED">>
+/\ lastCommitted = <<0, 0, 0>>
+/\ curEpoch = <<0, 1, 1>>
+/\ snapZ = <<0, 0, 0>>
+/\ serving = <<"RO", "NONE", "RO">>
+/\ committed = {}
+/\ fwd = <<{}, {}, {}>>
+/\ commitQ = <<<<>>, <<>>, <<>>>>
+/\ pendingTxns = <<<<>>, <<>>, <<>>>>
+/\ cConn = <<3>>
+/\ cLastZxid = <<0>>
+/\ log = <<{}, {}, {11}>>
+/\ leaderOf = <<3, 0, 0>>
+/\ served = {}
+/\ utdSent = <<{}, {}, {}>>
+/\ nlAcks = <<{}, {}, {}>>
+/\ cSess = <<3>>
+
+State 19: <MCNext line 132, col 26 to line 132, col 57 of module MC>
+/\ lpz = <<0, 0, 11>>
+/\ syncMode = <<"NONE", "NONE", "NONE">>
+/\ acks = <<{}, {}, {}>>
+/\ pktCommitted = <<<<>>, <<>>, <<>>>>
+/\ inbox = <<<<>>, <<>>, <<>>>>
+/\ clog = <<{}, {}, {11}>>
+/\ toLog = <<<<>>, <<>>, <<>>>>
+/\ cReplies = <<<<11>>>>
+/\ accEpoch = <<0, 1, 1>>
+/\ dbInit = <<TRUE, FALSE, TRUE>>
+/\ targetFired = FALSE
+/\ pktNotLogged = <<<<>>, <<>>, <<>>>>
+/\ cState = <<"CONNECTEDREADONLY">>
+/\ lepoch = <<0, 0, 0>>
+/\ role = <<"FOLLOWING", "DOWN", "LEADING">>
+/\ cSeenRw = <<FALSE>>
+/\ faults = [aband |-> 1, stop |-> 1, part |-> 0, move |-> 0, write |-> 1]
+/\ targetInfo = [ sid |-> 0,
+  role |-> "NONE",
+  cid |-> 0,
+  cz |-> 0,
+  sz |-> 0,
+  srv |-> "NONE",
+  cls |-> "NONE" ]
+/\ hzxid = <<0, 0, 0>>
+/\ cRwTarget = <<0>>
+/\ phase = <<"ELECTED", "NONE", "ELECTED">>
+/\ lastCommitted = <<0, 0, 0>>
+/\ curEpoch = <<0, 1, 1>>
+/\ snapZ = <<0, 0, 0>>
+/\ serving = <<"RO", "NONE", "RO">>
+/\ committed = {}
+/\ fwd = <<{}, {}, {}>>
+/\ commitQ = <<<<>>, <<>>, <<>>>>
+/\ pendingTxns = <<<<>>, <<>>, <<>>>>
+/\ cConn = <<3>>
+/\ cLastZxid = <<0>>
+/\ log = <<{}, {}, {11}>>
+/\ leaderOf = <<3, 0, 0>>
+/\ served = {11}
+/\ utdSent = <<{}, {}, {}>>
+/\ nlAcks = <<{}, {}, {}>>
+/\ cSess = <<3>>
+
+State 20: <MCNext line 133, col 26 to line 133, col 59 of module MC>
+/\ lpz = <<0, 0, 11>>
+/\ syncMode = <<"NONE", "NONE", "NONE">>
+/\ acks = <<{}, {}, {}>>
+/\ pktCommitted = <<<<>>, <<>>, <<>>>>
+/\ inbox = <<<<>>, <<>>, <<>>>>
+/\ clog = <<{}, {}, {11}>>
+/\ toLog = <<<<>>, <<>>, <<>>>>
+/\ cReplies = <<<<>>>>
+/\ accEpoch = <<0, 1, 1>>
+/\ dbInit = <<TRUE, FALSE, TRUE>>
+/\ targetFired = FALSE
+/\ pktNotLogged = <<<<>>, <<>>, <<>>>>
+/\ cState = <<"CONNECTEDREADONLY">>
+/\ lepoch = <<0, 0, 0>>
+/\ role = <<"FOLLOWING", "DOWN", "LEADING">>
+/\ cSeenRw = <<FALSE>>
+/\ faults = [aband |-> 1, stop |-> 1, part |-> 0, move |-> 0, write |-> 1]
+/\ targetInfo = [ sid |-> 0,
+  role |-> "NONE",
+  cid |-> 0,
+  cz |-> 0,
+  sz |-> 0,
+  srv |-> "NONE",
+  cls |-> "NONE" ]
+/\ hzxid = <<0, 0, 0>>
+/\ cRwTarget = <<0>>
+/\ phase = <<"ELECTED", "NONE", "ELECTED">>
+/\ lastCommitted = <<0, 0, 0>>
+/\ curEpoch = <<0, 1, 1>>
+/\ snapZ = <<0, 0, 0>>
+/\ serving = <<"RO", "NONE", "RO">>
+/\ committed = {}
+/\ fwd = <<{}, {}, {}>>
+/\ commitQ = <<<<>>, <<>>, <<>>>>
+/\ pendingTxns = <<<<>>, <<>>, <<>>>>
+/\ cConn = <<3>>
+/\ cLastZxid = <<11>>
+/\ log = <<{}, {}, {11}>>
+/\ leaderOf = <<3, 0, 0>>
+/\ served = {11}
+/\ utdSent = <<{}, {}, {}>>
+/\ nlAcks = <<{}, {}, {}>>
+/\ cSess = <<3>>
+
+State 21: <MCNext line 98, col 26 to line 98, col 54 of module MC>
+/\ lpz = <<0, 0, 11>>
+/\ syncMode = <<"NONE", "NONE", "NONE">>
+/\ acks = <<{}, {}, {}>>
+/\ pktCommitted = <<<<>>, <<>>, <<>>>>
+/\ inbox = <<<<>>, <<>>, <<>>>>
+/\ clog = <<{}, {}, {11}>>
+/\ toLog = <<<<>>, <<>>, <<>>>>
+/\ cReplies = <<<<>>>>
+/\ accEpoch = <<0, 1, 1>>
+/\ dbInit = <<TRUE, FALSE, TRUE>>
+/\ targetFired = FALSE
+/\ pktNotLogged = <<<<>>, <<>>, <<>>>>
+/\ cState = <<"CONNECTING">>
+/\ lepoch = <<0, 0, 0>>
+/\ role = <<"FOLLOWING", "DOWN", "LEADING">>
+/\ cSeenRw = <<FALSE>>
+/\ faults = [aband |-> 1, stop |-> 1, part |-> 0, move |-> 0, write |-> 1]
+/\ targetInfo = [ sid |-> 0,
+  role |-> "NONE",
+  cid |-> 0,
+  cz |-> 0,
+  sz |-> 0,
+  srv |-> "NONE",
+  cls |-> "NONE" ]
+/\ hzxid = <<0, 0, 0>>
+/\ cRwTarget = <<0>>
+/\ phase = <<"ELECTED", "NONE", "ELECTED">>
+/\ lastCommitted = <<0, 0, 0>>
+/\ curEpoch = <<0, 1, 1>>
+/\ snapZ = <<0, 0, 0>>
+/\ serving = <<"RO", "NONE", "NONE">>
+/\ committed = {}
+/\ fwd = <<{}, {}, {}>>
+/\ commitQ = <<<<>>, <<>>, <<>>>>
+/\ pendingTxns = <<<<>>, <<>>, <<>>>>
+/\ cConn = <<0>>
+/\ cLastZxid = <<11>>
+/\ log = <<{}, {}, {11}>>
+/\ leaderOf = <<3, 0, 0>>
+/\ served = {11}
+/\ utdSent = <<{}, {}, {}>>
+/\ nlAcks = <<{}, {}, {}>>
+/\ cSess = <<-1>>
+
+State 22: <MCNext line 137, col 40 to line 137, col 72 of module MC>
+/\ lpz = <<0, 0, 11>>
+/\ syncMode = <<"NONE", "NONE", "NONE">>
+/\ acks = <<{}, {}, {}>>
+/\ pktCommitted = <<<<>>, <<>>, <<>>>>
+/\ inbox = <<<<>>, <<>>, <<>>>>
+/\ clog = <<{}, {}, {11}>>
+/\ toLog = <<<<>>, <<>>, <<>>>>
+/\ cReplies = <<<<>>>>
+/\ accEpoch = <<0, 1, 1>>
+/\ dbInit = <<TRUE, FALSE, TRUE>>
+/\ targetFired = TRUE
+/\ pktNotLogged = <<<<>>, <<>>, <<>>>>
+/\ cState = <<"CONNECTING">>
+/\ lepoch = <<0, 0, 0>>
+/\ role = <<"FOLLOWING", "DOWN", "LEADING">>
+/\ cSeenRw = <<FALSE>>
+/\ faults = [aband |-> 1, stop |-> 1, part |-> 0, move |-> 0, write |-> 1]
+/\ targetInfo = [ sid |-> 1,
+  role |-> "FOLLOWING",
+  cid |-> 1,
+  cz |-> 11,
+  sz |-> 0,
+  srv |-> "RO",
+  cls |-> "C" ]
+/\ hzxid = <<0, 0, 0>>
+/\ cRwTarget = <<0>>
+/\ phase = <<"ELECTED", "NONE", "ELECTED">>
+/\ lastCommitted = <<0, 0, 0>>
+/\ curEpoch = <<0, 1, 1>>
+/\ snapZ = <<0, 0, 0>>
+/\ serving = <<"RO", "NONE", "NONE">>
+/\ committed = {}
+/\ fwd = <<{}, {}, {}>>
+/\ commitQ = <<<<>>, <<>>, <<>>>>
+/\ pendingTxns = <<<<>>, <<>>, <<>>>>
+/\ cConn = <<0>>
+/\ cLastZxid = <<11>>
+/\ log = <<{}, {}, {11}>>
+/\ leaderOf = <<3, 0, 0>>
+/\ served = {11}
+/\ utdSent = <<{}, {}, {}>>
+/\ nlAcks = <<{}, {}, {}>>
+/\ cSess = <<-1>>
+
+780271 states generated, 204461 distinct states found, 55409 states left on queue.
+The depth of the complete state graph search is 22.
+Checkpointing of run /tmp/tlc-states-j2Vqdw/26-11-05-04-59-02.134
+Checkpointing completed at (2026-11-05 04:59:20)
+Finished in 18s at (2026-11-05 04:59:20)
+Trace exploration spec path: ./MC_TTrace_1793854742.tla

@@ -1,0 +1,134 @@
+=== MC-1 repro: 2026-10-29T06:31:08+00:00 source=/users/ZhenyuLi/Specula/runs/20261029-002846-8337/hdfs-adhoc-11/.specula-output/confirmation/MC-1/worktree commit=734dd8a67cd6df56b59ff75aa43de57834a0d248
+=== java: openjdk version "17.0.21" 2026-10-20
+=== mvn test-compile
+[INFO] Compiling 12 proto file(s) to /bulk/specula-adhoc/specula-runs/20261029-002846-8337/hdfs-adhoc-11/.specula-output/confirmation/MC-1/worktree/hadoop-hdfs-project/hadoop-hdfs/target/generated-sources/java
+[INFO] Compiling 727 source files to /bulk/specula-adhoc/specula-runs/20261029-002846-8337/hdfs-adhoc-11/.specula-output/confirmation/MC-1/worktree/hadoop-hdfs-project/hadoop-hdfs/target/classes
+[INFO] Compiling 877 source files to /bulk/specula-adhoc/specula-runs/20261029-002846-8337/hdfs-adhoc-11/.specula-output/confirmation/MC-1/worktree/hadoop-hdfs-project/hadoop-hdfs/target/test-classes
+[INFO] BUILD SUCCESS
+[INFO] Total time:  58.172 s
+=== compiled main classes containing instrumentation: 0
+=== target throw statement (source, pristine 734dd8a67cd)
+553:   public byte[] retrieveDataEncryptionKey(int keyId, byte[] nonce)
+554:       throws InvalidEncryptionKeyException {
+555:     BlockKey key = null;
+556:     synchronized (this) {
+557:       key = allKeys.get(keyId);
+558:       if (key == null) {
+559:         throw new InvalidEncryptionKeyException("Can't re-compute encryption key"
+560:             + " for nonce, since the required block key (keyID=" + keyId
+561:             + ") doesn't exist. Current key: " + currentKey.getKeyId());
+562:       }
+563:     }
+564:     return createPassword(nonce, key.getKey());
+565:   }
+=== javap: bytecode + LineNumberTable of the target method (compiled class)
+  public byte[] retrieveDataEncryptionKey(int, byte[]) throws org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException;
+      25: ifnonnull     49
+      28: new           #467                // class org/apache/hadoop/hdfs/protocol/datatransfer/InvalidEncryptionKeyException
+      45: invokespecial #472                // Method org/apache/hadoop/hdfs/protocol/datatransfer/InvalidEncryptionKeyException."<init>":(Ljava/lang/String;)V
+      48: athrow
+      62: athrow
+      line 555: 0
+      line 556: 2
+      line 557: 7
+      line 558: 24
+      line 559: 28
+      line 561: 37
+      line 563: 49
+      line 564: 63
+=== mvn surefire:test -Dtest=SpeculaAdhocMC1SafeModeKeyRollTest
+[INFO] Running org.apache.hadoop.hdfs.SpeculaAdhocMC1SafeModeKeyRollTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 233.1 s -- in org.apache.hadoop.hdfs.SpeculaAdhocMC1SafeModeKeyRollTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+=== surefire exit code: 0
+=== evidence lines (test stdout, /users/ZhenyuLi/Specula/runs/20261029-002846-8337/hdfs-adhoc-11/.specula-output/confirmation/MC-1/worktree/hadoop-hdfs-project/hadoop-hdfs/target/surefire-reports/org.apache.hadoop.hdfs.SpeculaAdhocMC1SafeModeKeyRollTest-output.txt)
+MC1-EVIDENCE synced (CE state 5): nnSafeMode=false nnSerialNo=814794835 nnCurrentKey=814794834 dnCurrentKey=814794834 dnHasNnCurrentKey=true nnNeedKeyUpdate[dn]=false nnKeys=[814794833(DN:yes) 814794834(DN:yes) 814794835(DN:yes)]
+MC1-EVIDENCE control: two rolls done, no safe mode: nnSafeMode=false nnSerialNo=814794837 nnCurrentKey=814794836 dnCurrentKey=814794835 dnHasNnCurrentKey=true nnNeedKeyUpdate[dn]=true nnKeys=[814794833(DN:yes) 814794834(DN:yes) 814794835(DN:yes) 814794836(DN:yes) 814794837(DN:NO)]
+MC1-EVIDENCE control: DN holds the NN current key (pushed by heartbeat): nnSafeMode=false nnSerialNo=814794837 nnCurrentKey=814794836 dnCurrentKey=814794835 dnHasNnCurrentKey=true nnNeedKeyUpdate[dn]=true nnKeys=[814794833(DN:yes) 814794834(DN:yes) 814794835(DN:yes) 814794836(DN:yes) 814794837(DN:NO)]
+MC1-EVIDENCE control: fresh-client read RETURNED 30 chars, equal=true
+MC1-EVIDENCE control: fresh client's DEK keyId=814794837 (NN currentKey when read started=814794837) dnHasDekKey=true
+MC1-EVIDENCE control: target frame occurrences in DN log = 0
+MC1-EVIDENCE control RESULT: no safe mode -> keys pushed by heartbeat -> fresh-DEK read OK
+MC1-EVIDENCE synced (CE state 5): nnSafeMode=false nnSerialNo=860722965 nnCurrentKey=860722964 dnCurrentKey=860722964 dnHasNnCurrentKey=true nnNeedKeyUpdate[dn]=false nnKeys=[860722965(DN:yes) 860722964(DN:yes) 860722963(DN:yes)]
+MC1-EVIDENCE entered manual safe mode (CE state 6): nnSafeMode=true nnSerialNo=860722965 nnCurrentKey=860722964 dnCurrentKey=860722964 dnHasNnCurrentKey=true nnNeedKeyUpdate[dn]=false nnKeys=[860722965(DN:yes) 860722964(DN:yes) 860722963(DN:yes)]
+MC1-EVIDENCE L0 NN current key unknown to DN after 119 s in safe mode, rolls=2: nnSafeMode=true nnSerialNo=860722967 nnCurrentKey=860722966 dnCurrentKey=860722964 dnHasNnCurrentKey=false nnNeedKeyUpdate[dn]=true nnKeys=[860722965(DN:yes) 860722964(DN:yes) 860722967(DN:NO) 860722966(DN:NO) 860722963(DN:yes)]
+MC1-EVIDENCE L0 safe mode: fresh-client read FAILED after 21798 ms with org.apache.hadoop.hdfs.BlockMissingException: Could not obtain block: BP-1917898158-130.127.134.14-1793255556181:blk_1073741825_1001 file=/non-encrypted-file No live nodes contain current block Block locations: DatanodeInfoWithStorage[127.0.0.1:39145,DS-dcebe6c3-e8a7-4f75-819f-5cae8ff478b1,DISK] Dead nodes:  DatanodeInfoWithStorage[127.0.0.1:39145,DS-dcebe6c3-e8a7-4f75-819f-5cae8ff478b1,DISK]
+MC1-EVIDENCE L0 safe mode: fresh client's DEK keyId=860722966 (NN currentKey when read started=860722966) dnHasDekKey=false
+MC1-EVIDENCE L0 DN LOG: 2026-10-29 06:34:43,754 [org.apache.hadoop.hdfs.server.datanode.DataXceiver@7fd31247] ERROR datanode.DataNode (DataXceiver.java:run(333)) - 127.0.0.1:39145:DataXceiver error processing unknown operation  src: /127.0.0.1:33528 dst: /127.0.0.1:39145
+MC1-EVIDENCE L0 DN LOG:     javax.security.sasl.SaslException: DIGEST-MD5: IO error acquiring password [Caused by org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException: Can't re-compute encryption key for nonce, since the required block key (keyID=860722966) doesn't exist. Current key: 860722964]
+MC1-EVIDENCE L0 DN LOG:     at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer.doSaslHandshake(SaslDataTransferServer.java:415)
+MC1-EVIDENCE L0 DN LOG:     at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer.receive(SaslDataTransferServer.java:124)
+MC1-EVIDENCE L0 DN LOG:     at org.apache.hadoop.hdfs.server.datanode.DataXceiver.run(DataXceiver.java:236)
+MC1-EVIDENCE L0 DN LOG:     Caused by: org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException: Can't re-compute encryption key for nonce, since the required block key (keyID=860722966) doesn't exist. Current key: 860722964
+MC1-EVIDENCE L0 DN LOG:     at org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrieveDataEncryptionKey(BlockTokenSecretManager.java:561)
+MC1-EVIDENCE L0 DN LOG:     at org.apache.hadoop.hdfs.security.token.block.BlockPoolTokenSecretManager.retrieveDataEncryptionKey(BlockPoolTokenSecretManager.java:173)
+MC1-EVIDENCE L0 DN LOG:     at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer.getEncryptionKeyFromUserName(SaslDataTransferServer.java:292)
+MC1-EVIDENCE L0 DN LOG: 2026-10-29 06:34:43,754 [org.apache.hadoop.hdfs.server.datanode.DataXceiver@7bec8965] ERROR datanode.DataNode (DataXceiver.java:run(333)) - 127.0.0.1:39145:DataXceiver error processing unknown operation  src: /127.0.0.1:33540 dst: /127.0.0.1:39145
+MC1-EVIDENCE L0 DN LOG:     javax.security.sasl.SaslException: DIGEST-MD5: IO error acquiring password [Caused by org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException: Can't re-compute encryption key for nonce, since the required block key (keyID=860722966) doesn't exist. Current key: 860722964]
+MC1-EVIDENCE L0 DN LOG:     at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer.doSaslHandshake(SaslDataTransferServer.java:415)
+MC1-EVIDENCE L0 DN LOG:     at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer.receive(SaslDataTransferServer.java:124)
+MC1-EVIDENCE L0 DN LOG:     at org.apache.hadoop.hdfs.server.datanode.DataXceiver.run(DataXceiver.java:236)
+MC1-EVIDENCE L0 DN LOG:     Caused by: org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException: Can't re-compute encryption key for nonce, since the required block key (keyID=860722966) doesn't exist. Current key: 860722964
+MC1-EVIDENCE L0 DN LOG:     at org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrieveDataEncryptionKey(BlockTokenSecretManager.java:561)
+MC1-EVIDENCE L0 DN LOG:     at org.apache.hadoop.hdfs.security.token.block.BlockPoolTokenSecretManager.retrieveDataEncryptionKey(BlockPoolTokenSecretManager.java:173)
+MC1-EVIDENCE L0 DN LOG:     at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer.getEncryptionKeyFromUserName(SaslDataTransferServer.java:292)
+MC1-EVIDENCE L0 DN LOG: 2026-10-29 06:34:45,979 [org.apache.hadoop.hdfs.server.datanode.DataXceiver@3eee187c] ERROR datanode.DataNode (DataXceiver.java:run(333)) - 127.0.0.1:39145:DataXceiver error processing unknown operation  src: /127.0.0.1:33546 dst: /127.0.0.1:39145
+MC1-EVIDENCE L0 DN LOG:     javax.security.sasl.SaslException: DIGEST-MD5: IO error acquiring password [Caused by org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException: Can't re-compute encryption key for nonce, since the required block key (keyID=860722966) doesn't exist. Current key: 860722964]
+MC1-EVIDENCE L0 DN LOG:     at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer.doSaslHandshake(SaslDataTransferServer.java:415)
+MC1-EVIDENCE L0 DN LOG:     at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer.receive(SaslDataTransferServer.java:124)
+MC1-EVIDENCE L0 DN LOG:     at org.apache.hadoop.hdfs.server.datanode.DataXceiver.run(DataXceiver.java:236)
+MC1-EVIDENCE L0 DN LOG:     Caused by: org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException: Can't re-compute encryption key for nonce, since the required block key (keyID=860722966) doesn't exist. Current key: 860722964
+MC1-EVIDENCE L0 DN LOG:     at org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrieveDataEncryptionKey(BlockTokenSecretManager.java:561)
+MC1-EVIDENCE L0 DN LOG:     at org.apache.hadoop.hdfs.security.token.block.BlockPoolTokenSecretManager.retrieveDataEncryptionKey(BlockPoolTokenSecretManager.java:173)
+MC1-EVIDENCE L0 DN LOG:     at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer.getEncryptionKeyFromUserName(SaslDataTransferServer.java:292)
+MC1-EVIDENCE L0 target frame occurrences in DN log = 5
+MC1-EVIDENCE L0 RESULT: target fired with public APIs and configuration only
+MC1-EVIDENCE synced (CE state 5): nnSafeMode=false nnSerialNo=1900529907 nnCurrentKey=1900529906 dnCurrentKey=1900529906 dnHasNnCurrentKey=true nnNeedKeyUpdate[dn]=false nnKeys=[1900529907(DN:yes) 1900529906(DN:yes) 1900529905(DN:yes)]
+MC1-EVIDENCE entered manual safe mode (CE state 6): nnSafeMode=true nnSerialNo=1900529907 nnCurrentKey=1900529906 dnCurrentKey=1900529906 dnHasNnCurrentKey=true nnNeedKeyUpdate[dn]=false nnKeys=[1900529907(DN:yes) 1900529906(DN:yes) 1900529905(DN:yes)]
+MC1-EVIDENCE L1 safe mode, 0 rolls: fresh-client read RETURNED 30 chars, equal=true
+MC1-EVIDENCE L1 safe mode, 0 rolls: fresh client's DEK keyId=1900529906 (NN currentKey when read started=1900529906) dnHasDekKey=true
+MC1-EVIDENCE L1 after roll 1 (CE state 7/8): nnSafeMode=true nnSerialNo=1900529908 nnCurrentKey=1900529907 dnCurrentKey=1900529906 dnHasNnCurrentKey=true nnNeedKeyUpdate[dn]=true nnKeys=[1900529908(DN:NO) 1900529907(DN:yes) 1900529906(DN:yes) 1900529905(DN:yes)]
+MC1-EVIDENCE L1 after roll 2 (CE state 9): nnSafeMode=true nnSerialNo=1900529909 nnCurrentKey=1900529908 dnCurrentKey=1900529906 dnHasNnCurrentKey=false nnNeedKeyUpdate[dn]=true nnKeys=[1900529909(DN:NO) 1900529908(DN:NO) 1900529907(DN:yes) 1900529906(DN:yes) 1900529905(DN:yes)]
+MC1-EVIDENCE L1 heartbeats processed by NN during safe mode: lastUpdateMonotonic advanced by 2920 ms
+MC1-EVIDENCE L1 after 2 more heartbeats: nnSafeMode=true nnSerialNo=1900529909 nnCurrentKey=1900529908 dnCurrentKey=1900529906 dnHasNnCurrentKey=false nnNeedKeyUpdate[dn]=true nnKeys=[1900529909(DN:NO) 1900529908(DN:NO) 1900529907(DN:yes) 1900529906(DN:yes) 1900529905(DN:yes)]
+MC1-EVIDENCE L1 safe mode, 2 rolls: fresh-client read FAILED after 11947 ms with org.apache.hadoop.hdfs.BlockMissingException: Could not obtain block: BP-2122479258-130.127.134.14-1793255705752:blk_1073741825_1001 file=/non-encrypted-file No live nodes contain current block Block locations: DatanodeInfoWithStorage[127.0.0.1:39907,DS-4cc787b1-4da4-482a-9b75-034586110608,DISK] Dead nodes:  DatanodeInfoWithStorage[127.0.0.1:39907,DS-4cc787b1-4da4-482a-9b75-034586110608,DISK]
+MC1-EVIDENCE L1 safe mode, 2 rolls: fresh client's DEK keyId=1900529909 (NN currentKey when read started=1900529909) dnHasDekKey=false
+MC1-EVIDENCE L1 DN LOG: 2026-10-29 06:35:28,436 [org.apache.hadoop.hdfs.server.datanode.DataXceiver@514238a2] ERROR datanode.DataNode (DataXceiver.java:run(333)) - 127.0.0.1:39907:DataXceiver error processing unknown operation  src: /127.0.0.1:58910 dst: /127.0.0.1:39907
+MC1-EVIDENCE L1 DN LOG:     javax.security.sasl.SaslException: DIGEST-MD5: IO error acquiring password [Caused by org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException: Can't re-compute encryption key for nonce, since the required block key (keyID=1900529909) doesn't exist. Current key: 1900529906]
+MC1-EVIDENCE L1 DN LOG:     at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer.doSaslHandshake(SaslDataTransferServer.java:415)
+MC1-EVIDENCE L1 DN LOG:     at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer.receive(SaslDataTransferServer.java:124)
+MC1-EVIDENCE L1 DN LOG:     at org.apache.hadoop.hdfs.server.datanode.DataXceiver.run(DataXceiver.java:236)
+MC1-EVIDENCE L1 DN LOG:     Caused by: org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException: Can't re-compute encryption key for nonce, since the required block key (keyID=1900529909) doesn't exist. Current key: 1900529906
+MC1-EVIDENCE L1 DN LOG:     at org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrieveDataEncryptionKey(BlockTokenSecretManager.java:561)
+MC1-EVIDENCE L1 DN LOG:     at org.apache.hadoop.hdfs.security.token.block.BlockPoolTokenSecretManager.retrieveDataEncryptionKey(BlockPoolTokenSecretManager.java:173)
+MC1-EVIDENCE L1 DN LOG:     at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer.getEncryptionKeyFromUserName(SaslDataTransferServer.java:292)
+MC1-EVIDENCE L1 DN LOG: 2026-10-29 06:35:28,439 [org.apache.hadoop.hdfs.server.datanode.DataXceiver@1440acee] ERROR datanode.DataNode (DataXceiver.java:run(333)) - 127.0.0.1:39907:DataXceiver error processing unknown operation  src: /127.0.0.1:58926 dst: /127.0.0.1:39907
+MC1-EVIDENCE L1 DN LOG:     javax.security.sasl.SaslException: DIGEST-MD5: IO error acquiring password [Caused by org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException: Can't re-compute encryption key for nonce, since the required block key (keyID=1900529909) doesn't exist. Current key: 1900529906]
+MC1-EVIDENCE L1 DN LOG:     at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer.doSaslHandshake(SaslDataTransferServer.java:415)
+MC1-EVIDENCE L1 DN LOG:     at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer.receive(SaslDataTransferServer.java:124)
+MC1-EVIDENCE L1 DN LOG:     at org.apache.hadoop.hdfs.server.datanode.DataXceiver.run(DataXceiver.java:236)
+MC1-EVIDENCE L1 DN LOG:     Caused by: org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException: Can't re-compute encryption key for nonce, since the required block key (keyID=1900529909) doesn't exist. Current key: 1900529906
+MC1-EVIDENCE L1 DN LOG:     at org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrieveDataEncryptionKey(BlockTokenSecretManager.java:561)
+MC1-EVIDENCE L1 DN LOG:     at org.apache.hadoop.hdfs.security.token.block.BlockPoolTokenSecretManager.retrieveDataEncryptionKey(BlockPoolTokenSecretManager.java:173)
+MC1-EVIDENCE L1 DN LOG:     at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer.getEncryptionKeyFromUserName(SaslDataTransferServer.java:292)
+MC1-EVIDENCE L1 DN LOG: 2026-10-29 06:35:29,053 [org.apache.hadoop.hdfs.server.datanode.DataXceiver@1ded5977] ERROR datanode.DataNode (DataXceiver.java:run(333)) - 127.0.0.1:39907:DataXceiver error processing unknown operation  src: /127.0.0.1:58928 dst: /127.0.0.1:39907
+MC1-EVIDENCE L1 DN LOG:     javax.security.sasl.SaslException: DIGEST-MD5: IO error acquiring password [Caused by org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException: Can't re-compute encryption key for nonce, since the required block key (keyID=1900529909) doesn't exist. Current key: 1900529906]
+MC1-EVIDENCE L1 DN LOG:     at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer.doSaslHandshake(SaslDataTransferServer.java:415)
+MC1-EVIDENCE L1 DN LOG:     at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer.receive(SaslDataTransferServer.java:124)
+MC1-EVIDENCE L1 DN LOG:     at org.apache.hadoop.hdfs.server.datanode.DataXceiver.run(DataXceiver.java:236)
+MC1-EVIDENCE L1 DN LOG:     Caused by: org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException: Can't re-compute encryption key for nonce, since the required block key (keyID=1900529909) doesn't exist. Current key: 1900529906
+MC1-EVIDENCE L1 DN LOG:     at org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrieveDataEncryptionKey(BlockTokenSecretManager.java:561)
+MC1-EVIDENCE L1 DN LOG:     at org.apache.hadoop.hdfs.security.token.block.BlockPoolTokenSecretManager.retrieveDataEncryptionKey(BlockPoolTokenSecretManager.java:173)
+MC1-EVIDENCE L1 DN LOG:     at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer.getEncryptionKeyFromUserName(SaslDataTransferServer.java:292)
+MC1-EVIDENCE L1 target frame occurrences in DN log = 5; client DEK refetches logged = 1
+MC1-EVIDENCE L1 persistence check: nnSafeMode=true nnSerialNo=1900529912 nnCurrentKey=1900529911 dnCurrentKey=1900529906 dnHasNnCurrentKey=false nnNeedKeyUpdate[dn]=true nnKeys=[1900529911(DN:NO) 1900529910(DN:NO) 1900529909(DN:NO) 1900529908(DN:NO) 1900529907(DN:yes) 1900529906(DN:yes) 1900529905(DN:yes) 1900529912(DN:NO)]
+MC1-EVIDENCE L1 safe mode, later fresh client: fresh-client read FAILED after 16894 ms with org.apache.hadoop.hdfs.BlockMissingException: Could not obtain block: BP-2122479258-130.127.134.14-1793255705752:blk_1073741825_1001 file=/non-encrypted-file No live nodes contain current block Block locations: DatanodeInfoWithStorage[127.0.0.1:39907,DS-4cc787b1-4da4-482a-9b75-034586110608,DISK] Dead nodes:  DatanodeInfoWithStorage[127.0.0.1:39907,DS-4cc787b1-4da4-482a-9b75-034586110608,DISK]
+MC1-EVIDENCE L1 safe mode, later fresh client: fresh client's DEK keyId=1900529912 (NN currentKey when read started=1900529912) dnHasDekKey=false
+MC1-EVIDENCE L1 persistence: target frame occurrences = 5
+MC1-EVIDENCE L1 after leaving safe mode + heartbeat: nnSafeMode=false nnSerialNo=1900529916 nnCurrentKey=1900529915 dnCurrentKey=1900529915 dnHasNnCurrentKey=true nnNeedKeyUpdate[dn]=false nnKeys=[1900529911(DN:yes) 1900529910(DN:yes) 1900529909(DN:yes) 1900529908(DN:yes) 1900529907(DN:yes) 1900529906(DN:yes) 1900529905(DN:yes) 1900529916(DN:yes) 1900529915(DN:yes) 1900529914(DN:yes) 1900529913(DN:yes) 1900529912(DN:yes)]
+MC1-EVIDENCE L1 after safe mode exit: fresh-client read RETURNED 30 chars, equal=true
+MC1-EVIDENCE L1 after safe mode exit: fresh client's DEK keyId=1900529916 (NN currentKey when read started=1900529916) dnHasDekKey=true
+MC1-EVIDENCE L1 RESULT: target fired in safe mode after two rolls; fresh-DEK reads failed until safe mode was left
+=== per-test results
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 233.1 s -- in org.apache.hadoop.hdfs.SpeculaAdhocMC1SafeModeKeyRollTest

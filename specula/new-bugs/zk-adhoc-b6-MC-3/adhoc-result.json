@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "target": "zk-adhoc-b6",
+  "check": {
+    "file": "zookeeper-server/src/main/java/org/apache/zookeeper/server/ZKDatabase.java",
+    "line": 341,
+    "thrown": "java.lang.IllegalStateException"
+  },
+  "verdict": "REACHED_CONFIRMED",
+  "mechanism": "COMBINED",
+  "scenario": "Scenario 1: A commit for a sync-window proposal never reaches ObserverMaster, and an observer registers on the empty retained queue",
+  "finding": "MC-1",
+  "counterexample": "spec/output/MC_route_S1a_bfs.out",
+  "reproduction": "repro/test_bugMC-1_observer_zxid_gap.java",
+  "stackFrame": "org.apache.zookeeper.server.ZKDatabase.addCommittedProposal(ZKDatabase.java:341)",
+  "bounds": [
+    {
+      "config": "MC_hunt_S1.cfg",
+      "result": "VIOLATION",
+      "states": 4778704,
+      "diameter": 50,
+      "seconds": 59
+    },
+    {
+      "config": "MC_route_S1a.cfg",
+      "result": "VIOLATION",
+      "states": 2446847,
+      "diameter": 50,
+      "seconds": 25
+    },
+    {
+      "config": "MC_hunt_S2.cfg",
+      "result": "VIOLATION",
+      "states": 5350499,
+      "diameter": 50,
+      "seconds": 64
+    },
+    {
+      "config": "MC_hunt_S3.cfg",
+      "result": "VIOLATION",
+      "states": 538592,
+      "diameter": 37,
+      "seconds": 8
+    }
+  ],
+  "traceValidation": {
+    "traces": 3,
+    "passed": 3
+  },
+  "notes": "Mechanism kinds: RESTART (one follower restart, fRestart=1, oRestart=0) plus INTERLEAVING (a commit still outstanding while the follower syncs and the observer reconnects). Chain for MC-1: a proposal follower F receives during sync never reaches ObserverMaster, so its later COMMIT is dropped; the observer reconnects, gets an empty DIFF and is activated on the empty retained queue; the next INFORM leaves a same-epoch zxid gap, and addCommittedProposal throws 'Committed proposal cached out of order: 0x100000004 is not the next proposal of 0x100000002'. The workload-derived test fired the target in all six scenario runs on the instrumented and pristine eab16599 trees, using a real quorum, the real client API and the workload's own Holds utility only; the unmodified workload passes on pristine. The test realizes the order of MC_route_S1a_bfs.out with one difference: in that trace PROPOSAL 3 reaches omProposed before the observer syncs, while in the test /after comes after the sync. The order in findings.json's MC_hunt_S1_bfs_r1.out was not separately realized. Other confirmed routes to the same frame: MC-2 (commit read during sync; fired 6 of 6 on pristine with timing holds, not fired in 25 restart cycles under load without them), MC-3 (retained-queue eviction; needs a non-default size setting, then fires with only writes and observer restarts, 3 of 3 on pristine) and CR-2 (first sync packet skips the continuity check; 3 of 3 on pristine with timing holds). CR-3 is reproduced but threw the target 0 times and is not evidence of reachability. Limits: the ACK hold widens the window and the frequency without it was not measured for MC-1; all peers ran on one host; BFS stopped at the first violation in each config, so the state counts are not exhaustive coverage. MC_route_S1a.cfg is a route check of Scenario 1, listed because it supplies the counterexample. MC.cfg, with all fault counters at 0, passed with 107168 distinct states at diameter 60."
+}
