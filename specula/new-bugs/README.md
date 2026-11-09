@@ -14,7 +14,7 @@ How each was verified: Specula reproduced it in the real system on the unmodifie
 - `repro/`: the tests and scripts run in the real system, and their (small) logs.
 - `confirmation/`: Specula's verdict, investigation and issue for the finding.
 
-All 22 TLC counterexamples were rerun from these published copies on 2026-11-09; each reports the expected violation (hdfs-adhoc-07-MC-1, 7.7M states, did not finish this time; it was violated on 2026-10-29 and 2026-11-07) (`rerun-results.tsv`).
+All 22 TLC counterexamples were rerun from these published copies on 2026-11-09: each reports the expected violation (`rerun-results.tsv`).
 
 ## Cost
 
