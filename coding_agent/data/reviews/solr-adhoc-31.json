@@ -1,0 +1,8 @@
+{
+ "case": "solr-adhoc-31",
+ "verdict": "BUG",
+ "trigger": "perReplicaState collection, 1 shard x 3 replicas. A network partition leaves the followers in a lower term, then the leader node crashes (ZK session closed, process stopped without publishing DOWN). With the production leaderVoteWait the shard is leaderless, and the operator issues FORCELEADER.",
+ "reason": "The election candidate's 'clear leader' message (ShardLeaderElectionContext.java:115-119) is applied by SliceMutator.setShardLeader through the two-argument ZkWriteCommand constructor (SliceMutator.java:177-178). For PRS collections that constructor only attaches PerReplicaStatesOps.touchChildren() (ZkWriteCommand.java:44-47), which adds and removes a dummy entry. Replica.isLeader()/getState() for PRS read the per-replica entries (Replica.java:218,241-244), so the dead node's entry stays active+leader. CollectionsHandler.forceLeaderElection then sees slice.getLeader() active and refuses (CollectionsHandler.java:1475-1478) without checking live nodes. The same scenario on a state.json collection clears the leader and FORCELEADER proceeds. As a result the documented remedy for a leaderless shard cannot be used on PRS collections, and the shard stays without a live leader (writes fail) until leaderVoteWait expires or the dead node returns.",
+ "severity": "operation-failure",
+ "summary": "In perReplicaState collections, a crashed leader's PRS entry stays 'active, leader' because the clear-leader message does not change PRS entries, so FORCELEADER on the leaderless shard is rejected with 'already has an active leader'."
+}

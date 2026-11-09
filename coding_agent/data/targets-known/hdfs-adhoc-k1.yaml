@@ -1,0 +1,13 @@
+id: hdfs-adhoc-k1
+system: Apache Hadoop HDFS
+check:
+  file: hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java
+  line: 482
+  method: BlockTokenSecretManager.retrieveDataEncryptionKey(int, byte[])
+  thrown: org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException
+  guard: key == null   (key = allKeys.get(keyId))
+workload:
+  module: hadoop-hdfs-project/hadoop-hdfs
+  test: org.apache.hadoop.hdfs.server.balancer.TestBalancerWithEncryptedTransfer#testEncryptedBalancer0
+build:
+  test_command: mvn -B -o surefire:test -pl hadoop-hdfs-project/hadoop-hdfs -Dtest='<Class>#<method>' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false

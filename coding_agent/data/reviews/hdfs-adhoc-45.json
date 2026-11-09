@@ -1,0 +1,8 @@
+{
+ "case": "hdfs-adhoc-45",
+ "verdict": "BY_DESIGN",
+ "trigger": "In an HA mini cluster, a rollEditLog RPC on the active NameNode waits for the FS write lock behind NameNode.stop(). stopActiveServices() closes the edit log, then the roll runs while the HA state is still ACTIVE and the RPC server is still up. The test holds the write lock to order the two waiters.",
+ "reason": "The interleaving can really happen: NameNode.stop() (NameNode.java:1237-1244) runs exitState -> FSNamesystem.stopActiveServices(), which closes the edit log under the write lock (FSNamesystem.java:1558-1560) before stopCommonServices stops the RPC server. FSNamesystem.rollEditLog re-checks only checkOperation(JOURNAL) and safe mode (FSNamesystem.java:5372-5373), so endCurrentLogSegment finds the log CLOSED. The consequence is a single failed RPC to a NameNode that is shutting down anyway. Nothing is persisted or corrupted, and nothing aborts. The real caller, the standby's EditLogTailer, catches any IOException, including this RemoteException, and tries the next NameNode (EditLogTailer.java:600-606), or logs and retries on its next period (EditLogTailer.java:438-439). The agent says failover is defeated, but the code shows it is not. This is a transient rejection during shutdown that the caller already handles, not a lasting failure.",
+ "severity": null,
+ "summary": ""
+}

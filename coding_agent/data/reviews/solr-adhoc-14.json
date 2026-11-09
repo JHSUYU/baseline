@@ -1,0 +1,5 @@
+{"case": "solr-adhoc-14", "verdict": "BY_DESIGN",
+ "trigger": "During SPLITSHARD, while the parent shard leader answers the Overseer's checkDiskSpace metrics request, the leader node's ZooKeeper session is expired, so its /live_nodes entry is gone when the Overseer reads it directly.",
+ "reason": "A ZK session expiry of the leader node is a realistic fault, but the check at SplitShardCmd.java:162-166 exists to catch exactly this: the leader just resolved by getLeaderRetry has lost its live node, so its ephemeral leader registration is gone and its cores are being published down. The comment says so ('we just got to know the leader but its live node is gone already!'), and the Stat is recorded as the ephemeral owner the split later fences on. Refusing to start a split whose parent leader is not live in ZK is a correct, safe rejection. The failure is transient and the operation succeeds when retried after the node re-registers. No state is corrupted and nothing is wedged.",
+ "severity": null,
+ "summary": ""}

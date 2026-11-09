@@ -1,0 +1,40 @@
+# hdfs-adhoc-31: BlockPoolManager.remove(old BPOS) removes the bpid mapping of the new BPOS that replaced it during refreshNamenodes. The DN keeps heartbeating for the block pool, but every block-pool lookup (transfer, bad-block report, IBR) fails until it restarts.
+
+Severity (reviewer): **operation-failure**
+
+## The ad hoc check (the prompt's only target)
+
+- `hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java:1838`, `DataNode.getBPOSForBlock(ExtendedBlock)`, throws `java.io.IOException` when `bpos == null   (bpos = blockPoolManager.get(block.getBlockPoolId()))`
+- Starting test: `org.apache.hadoop.hdfs.server.datanode.TestDiskError#testDataTransferWhenBytesPerChecksumIsZero`
+
+## Verified defect (independent reviewer, `../../data/REVIEW-RUBRIC.md`)
+
+**Verdict:** BUG
+
+**Trigger:** An admin renames the nameservice (null -> ns1, same NN address) and runs refreshNamenodes. doRefreshNamenodes starts the new BPOS before it stops and joins the old one, so the two actors overlap. The test only adds delays: the old actor is slow to leave its offerService iteration, and a held DataStorage monitor delays the new actor's storage init.
+
+**Why (root cause in the source):** BlockPoolManager.doRefreshNamenodes starts the new BPOS (startAll, BlockPoolManager.java:236) before it stops and joins the old one (lines 246-249). The new actor's DataNode.initBlockPool calls addBlockPool (DataNode.java:2195), which overwrites bpByBlockPoolId[bpid] (BlockPoolManager.java:71). The old actor's cleanup then calls DataNode.shutdownBlockPool -> BlockPoolManager.remove (DataNode.java:2152). remove deletes the entry by bpid without checking that it still belongs to the old BPOS (BlockPoolManager.java:94), so the new, live BPOS's mapping is lost and nothing re-adds it. Every later getBPOSForBlock call (DataNode.java:1835-1840) then fails until the DN restarts: DNA_TRANSFER re-replication, bad-block reports and similar operations. Incremental block reports are dropped silently (DataNode.java:1742-1748). The interleaving needs only scheduling delays that real I/O or RPC latency can produce. The trigger is a valid admin configuration change.
+
+## The agent's explanation (its `result.json`)
+
+**Why it is a bug (agent):** The block pool is alive and served: DN0 is registered with the NameNode and heartbeating for bpid through the new BPOfferService. The ad hoc coordination between BPOfferServices and BlockPoolManager (addBlockPool on init, remove on shutdown, both keyed by block pool id) should keep bpid mapped to that live BPOS. But BlockPoolManager.remove(t) calls bpByBlockPoolId.remove(t.getBlockPoolId()) without checking that the entry still belongs to t, and addBlockPool silently overwrites the entry. So when an old and a new BPOS for the same block pool overlap during a refreshNamenodes nameservice rename, the old one's cleanup deletes the new one's entry, and nothing puts it back. The check then rejects every later block-pool-scoped operation on a healthy DataNode until it restarts. Consequences: NameNode re-replication commands (DNA_TRANSFER) from this DN always fail, which delays or blocks recovery of under-replicated blocks. Bad-block reports (reportBadBlocks / reportRemoteBadBlock from scanners, readers and DataTransfer) fail, so corrupt replicas are never reported. notifyNamenodeReceivedBlock / DeletedBlock find no BPOS and drop incremental block reports, so new writes to this DN are not acknowledged to the NameNode. getDNRegistrationForBP and other per-pool lookups also fail. The same overlap also has a second outcome (the new BPOS fails storage init with 'attempt to load an used block storage' and exits). In that case the DN is left with no BPOS for the nameservice at all. Either way, the rename via refreshNamenodes leaves the DN broken depending on timing.
+
+**Execution (agent):** 1. MiniDFSCluster with 1 NameNode and 1 DataNode (DN0) in a non-federated config, so DN0's BPOfferService (old BPOS) has nameservice id null. A file with replication 1 is written to DN0. 2. The admin renames the nameservice for the same NameNode (dfs.nameservices=ns1, dfs.namenode.rpc-address.ns1 / servicerpc-address.ns1 = the same address), which is what is done when moving to a named or HA nameservice, and runs refreshNamenodes on DN0. BlockPoolManager.doRefreshNamenodes sees ns1 as toAdd and <default> as toRemove. It creates and starts a new BPOS for ns1, then calls stop() and join() on the old BPOS. 3. Interleaving of the two concurrent actor threads: (a) the old actor thread is slow to leave its offerService loop after stop() (it is held in the DataNodeFaultInjector.endOfferService hook, ignoring the interrupt). (b) The new actor handshakes with the same NameNode, gets the same block pool id, and in DataNode.initBlockPool calls BlockPoolManager.addBlockPool(new), which overwrites bpByBlockPoolId[bpid] (old -> new). It then reaches storage analysis (DataStorage.addStorageLocations); the test holds the DataStorage monitor, which only delays this step. (c) The old actor now exits: cleanUp -> BPOfferService.shutdownActor -> DataNode.shutdownBlockPool(old) -> BlockPoolManager.remove(old). remove() deletes bpByBlockPoolId[bpid] by key without checking that the value is old, so it removes the NEW BPOS's entry. It then calls data.shutdownBlockPool(bpid), and it blocks at storage.removeBlockPoolStorage. (d) Once the monitor is released, the old thread removes the block pool storage first. The new actor then finds the storage unused, loads it, calls data.addBlockPool(bpid) (the dataset is rebuilt with all replicas), registers, heartbeats and sends block reports. The test asserts the new BPOS is alive and initialized, the only BPOS, serving bpid, while dn.getBPOfferService(bpid) == null. 4. A second DataNode is started and the file's replication is raised to 2. The NameNode sends DNA_TRANSFER to DN0 through the live new BPOS. BPOfferService.processCommandFromActive -> DataNode.transferBlocks -> transferBlock -> getBPOSForBlock: blockPoolManager.get(bpid) == null -> java.io.IOException 'cannot locate OfferService thread for bp=...', logged as 'Failed to transfer block'. The test then fails explicitly. The only test interventions are scheduling: a delay in the existing fault-injection hook, and briefly holding a monitor. No system state is fabricated.
+
+**Stack frame (agent):** at org.apache.hadoop.hdfs.server.datanode.DataNode.getBPOSForBlock(DataNode.java:1839)  (the throw statement starting at line 1838; the JVM reports the line of the IOException constructor call, whose argument continues on 1839 - it is the only throw in getBPOSForBlock. Called from DataNode.transferBlock(DataNode.java:2838) <- transferBlocks <- BPOfferService.processCommandFromActive (DNA_TRANSFER))
+
+## Reproduction
+
+- Test: `org.apache.hadoop.hdfs.server.datanode.TestRefreshNamenodesBlockPoolRace#testRenameNameserviceRacesWithOldBposExit`
+- Command: `mvn -B -o test -pl hadoop-hdfs-project/hadoop-hdfs -Dtest='org.apache.hadoop.hdfs.server.datanode.TestRefreshNamenodesBlockPoolRace#testRenameNameserviceRacesWithOldBposExit' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false`
+- Test files (in `repro/`, paths relative to the system's tree): `hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestRefreshNamenodesBlockPoolRace.java`
+- Validation on an unmodified tree with only these files: **REPRODUCED** (1/1 tries hit the check); exception `java.io.IOException: cannot locate OfferService thread for bp=BP-871369539-172.18.0.3-1794081081578`, frame `at org.apache.hadoop.hdfs.server.datanode.DataNode.getBPOSForBlock(DataNode.java:1839)`
+- Production changes by the agent: none
+
+## Time and tokens
+
+| agent time | sessions | tokens (all) | input | output | cache writes | cache reads | cost |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 0h19m | 7 | 2,861,860 | 80 | 58,547 | 299,935 | 2,503,298 | $18.39 |
+
+Agent time excludes usage-limit waits; tokens include subagents; cost is the CLI's list-price estimate.

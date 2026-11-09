@@ -1,0 +1,8 @@
+{
+ "case": "hdfs-adhoc-08",
+ "verdict": "BUG",
+ "trigger": "Two failed writer takeover attempts whose newEpoch RPCs to JN0/JN1 are lost leave JN2 with promise 3 while JN0/JN1 stay at 1. The next writer gets getJournalState answers only from JN0/JN1 (JN2 is slow), so it picks epoch 2 and wins a quorum. JN2 then rejects every request from that writer, and stopping JN0 makes writes fail even though JN1 and JN2 are up.",
+ "reason": "QuorumJournalManager.createNewUniqueEpoch (QuorumJournalManager.java, waitForWriteQuorum over getJournalState) takes max(lastPromisedEpoch) over only the first majority to answer, and it ignores the minority's 'Proposed epoch 2 <= last promise 3' rejection of newEpoch without re-proposing. From then on Journal.checkRequest (Journal.java:486-489) rejects every IPC from the only live writer, for that writer's whole lifetime. The check is enforcing its invariant correctly, but no newer writer exists: the higher promise is left over from aborted attempts, and the client-side epoch selection lets the legitimate writer run with a JN it can never use. The faults (lost RPCs, a slow JN) are allowed. The effect is lost fault tolerance (2 of 3 usable JNs) until the next epoch change. A further single JN failure then aborts the active NN with a JN majority alive. This heals at the next failover, and reaching it needs an unusual fault pattern.",
+ "severity": "minor",
+ "summary": "The writer can establish an epoch below a leftover promise held by a slow JN, and QJM never re-proposes, so that healthy JN is excluded for the writer's lifetime and the NN can no longer survive one more JN failure."
+}

@@ -1,0 +1,13 @@
+id: hbase-adhoc-k1
+system: Apache HBase
+check:
+  file: hbase-server/src/main/java/org/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager.java
+  line: 147
+  method: AuthenticationTokenSecretManager.retrievePassword(AuthenticationTokenIdentifier)
+  thrown: org.apache.hadoop.security.token.SecretManager.InvalidToken
+  guard: masterKey == null   (masterKey = allKeys.get(identifier.getKeyId()))
+workload:
+  module: hbase-server
+  test: org.apache.hadoop.hbase.security.token.TestTokenAuthentication#testTokenAuthentication
+build:
+  test_command: mvn -B -o surefire:test -pl hbase-server -Dtest='<Class>#<method>' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false

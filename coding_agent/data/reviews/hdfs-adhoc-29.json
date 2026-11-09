@@ -1,0 +1,8 @@
+{
+ "case": "hdfs-adhoc-29",
+ "verdict": "BY_DESIGN",
+ "trigger": "With a block recovery in flight on the only replica holder (its writer thread held in a slow write via DataNodeFaultInjector.delayWriteToDisk), the NN restarts and a Mockito spy makes the DN's re-registration fail once with DisallowedDatanodeException. The DN's BPOfferService for the pool is shut down and removed, and then the recovery reaches syncBlock().",
+ "reason": "BPServiceActor deliberately treats DisallowedDatanodeException/UnregisteredNodeException/IncorrectVersionException as fatal: shouldServiceRun=false, and cleanUp -> bpos.shutdownActor -> DataNode.shutdownBlockPool removes the pool (datanode/BPServiceActor.java:792-798 and 1462-1468, DataNode.java:2151-2170). After that the DN no longer serves that block pool and has no NN connection to send commitBlockSynchronization over. BlockRecoveryWorker.getActiveNamenodeForBP (datanode/BlockRecoveryWorker.java:602-605) correctly refuses to go on. recoverBlocks only logs the failure (BlockRecoveryWorker.java:633), and the NN's lease/block recovery times out and is retried. The lasting unavailability the agent describes comes from the designed fatal handling of a NN rejection (the DN has been fenced out of the pool), not from the recovery/BPOS coordination this check guards. Doing the recovery anyway would not help, because a DN expelled from the pool cannot report it.",
+ "severity": null,
+ "summary": null
+}

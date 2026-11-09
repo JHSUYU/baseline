@@ -1,0 +1,8 @@
+{
+ "case": "hdfs-adhoc-50",
+ "verdict": "BUG",
+ "trigger": "Eight independent DFS clients call createSnapshot(dir) on the same snapshottable directory at the same moment without a snapshot name, so the NameNode generates the names.",
+ "reason": "When no name is given, FSDirSnapshotOp.createSnapshot uses Snapshot.generateDefaultSnapshotName() (FSDirSnapshotOp.java:106-107). That name is only a millisecond-precision timestamp, 's'yyyyMMdd-HHmmss.SSS (Snapshot.java:62-65), with no uniqueness guarantee. Two requests serialized under the write lock within the same millisecond get the same name, and the second is rejected by the duplicate-name check (DirectorySnapshottableFeature.java:196-199) although the client never chose a name. The check was meant to reject user-supplied duplicates; here the server's own name generation caused the collision. These are ordinary concurrent client operations. The effect is limited: one request fails with a clear exception, nothing is corrupted, and a client retry succeeds.",
+ "severity": "minor",
+ "summary": "Default snapshot names have only millisecond resolution, so concurrent or back-to-back unnamed createSnapshot calls on one directory fail at random with 'snapshot with the same name already exists'."
+}

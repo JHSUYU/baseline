@@ -1,0 +1,8 @@
+{
+ "case": "hdfs-adhoc-24",
+ "verdict": "BY_DESIGN",
+ "trigger": "HA non-rolling upgrade: NN1 is shut down, NN0 is started with -upgrade (new cTime c1), the DN upgrades to c1, then NN1 is started normally without the -bootstrapStandby step, so it keeps the old cTime c0. NN0 is shut down and the DN restarts, handshaking only with the stale NN1.",
+ "reason": "The DN storage really is newer than what NN1 advertises. NN1 runs on pre-upgrade local metadata because the operator skipped the step the HA upgrade procedure requires: HDFSHighAvailabilityWithQJM.md:721-725 says the other NN 'will be out of sync' and must be re-bootstrapped with -bootstrapStandby. The 'restart as normal' note at line 727 is about NNs that are already in sync during an unfinalized upgrade. BlockPoolSliceStorage.java:404-424 then does its job: it refuses to run block-pool storage whose cTime (c1) is newer than the serving namespace's cTime (c0), which is a stale NameNode. FSImage.java:846-856 checks the shared-log cTime only on -upgrade starts. That is a missing early warning on the NN side, not a wrong decision by the DN check. Once NN1 is re-bootstrapped as documented (or NN0 comes back), the DN joins normally.",
+ "severity": null,
+ "summary": ""
+}

@@ -1,0 +1,8 @@
+{
+ "case": "hdfs-adhoc-12",
+ "verdict": "UNREALISTIC",
+ "trigger": "The test calls the NN's BlockTokenSecretManager.updateKeys(Long.MAX_VALUE) twice back to back and sets needKeyUpdate by hand. It drops the one heartbeat response carrying the KeyUpdateCommand to DN2, then has DN1 replicate a block to DN2 with a token signed by the newest key.",
+ "reason": "Block keys rotate only from HeartbeatManager.Monitor, once per keyUpdateInterval (HeartbeatManager.java:552-557), and every rotation sets needKeyUpdate on all DNs again. A DN that misses one KeyUpdateCommand (BlockManager.addKeyUpdateCommand clears the flag at BlockManager.java:1673-1676) still holds the exported 'next' key, which becomes the current key after that rotation, and the following rotation re-sends all keys. So one lost response, the only fault the test injects, is harmless in the real system. The missing-key state at BlockTokenSecretManager.java:517-520 is reached only because the test compresses two rotations with no intervening heartbeat by calling the internal rotation method directly. The real protocol would need two independent lost responses at two consecutive rotations hours apart. Fire-and-forget clearing of needKeyUpdate is a real weakness, but this reproduction gets there through a shortcut that skips the system's own rotation schedule.",
+ "severity": null,
+ "summary": ""
+}

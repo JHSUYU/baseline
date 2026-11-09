@@ -1,0 +1,14 @@
+id: zk-adhoc-k2
+system: Apache ZooKeeper
+check:
+  file: src/java/main/org/apache/zookeeper/server/SessionTrackerImpl.java
+  line: 310
+  method: SessionTrackerImpl.checkSession(long, Object)
+  thrown: org.apache.zookeeper.KeeperException.SessionMovedException
+  guard: session.owner != owner   (session = sessionsById.get(sessionId); taken when session.owner is already set)
+workload:
+  module: .
+  test: org.apache.zookeeper.test.SessionUpgradeTest#testUpgradeWithEphemeralOnFollower
+build:
+  test_command: ant -Dtestcase=<Class> -Dtest.method=<method> test-core-java
+  note: 'test reports are in build/test/logs/TEST-<package>.<Class>.txt'

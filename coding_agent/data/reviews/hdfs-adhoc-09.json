@@ -1,0 +1,8 @@
+{
+ "case": "hdfs-adhoc-09",
+ "verdict": "BUG",
+ "trigger": "With dfs.journalnode.enable.sync and enable.sync.format on: writer 1 commits txns 4-10 on {B, C} while A lags. Writer 1 crashes, C's journal disk is wiped and C restarts, its JournalNodeSyncer auto-formats it, and B is restarting while writer 2 recovers with {A, C}.",
+ "reason": "JournalNodeSyncer.formatWithSyncer (JournalNodeSyncer.java:253ff) calls Journal.format(force) and the amnesic C immediately counts toward newEpoch and recovery quorums, with nothing gating it on having caught up. Writer 2 therefore recovers from {A, C}, sees only txns 1-3, and reuses txids 4..10 for different edits. Committed edits 4-10 are silently lost on the new active NN, and B's log diverges. Without auto-format C would answer 'not formatted' and writer 2 would block, which is the safe outcome. The check at Journal.java:503-508 fires on B because the new writer's committedTxId (6) is below B's durable committedTxnId (9), so it is detecting genuinely lost commits, not fencing a stale request. The trigger is a disk loss on one JN plus a concurrent JN restart, real operational events for which this feature exists, though it goes beyond plain crash-recovery and needs the non-default sync.format option.",
+ "severity": "data-loss",
+ "summary": "JournalNodeSyncer auto-format lets a wiped JN vote in recovery quorums before it has re-synced, so a new writer can recover without committed edits and reuse their txids (lost acknowledged edits, divergent JN logs)."
+}

@@ -1,0 +1,8 @@
+{
+ "case": "zk-adhoc-01",
+ "verdict": "BUG",
+ "trigger": "3-node ensemble, client with a live global session on a follower keeps writing; operator runs the documented 'restore' admin operation (ZooKeeperServer.restoreFromSnapshot, the exact call Commands.RestoreCommand makes) on the live leader with a snapshot containing that session. The test's tracker subclass only observes and rethrows.",
+ "reason": "ZooKeeperServer.restoreFromSnapshot (ZooKeeperServer.java:611-635) calls createSessionTracker() (line 630) without shutting down the old tracker or starting the new one. The old SessionTrackerImpl thread (SessionTrackerImpl.java:154-168) keeps expiring sessions from an expiry queue that no longer gets touches, because all touches now go to the new tracker. It calls expirer.expire -> ZooKeeperServer.close (ZooKeeperServer.java:702-735), which submits closeSession. PrepRequestProcessor then marks the live session closing in the new tracker, so the client's next requests fail checkSession at SessionTrackerImpl.java:316-317 while the client is CONNECTED and pinging. A session that is being renewed should never be closing. Restore is enabled by default, documented, and used on live quorum members (RestoreQuorumTest), so the trigger is realistic.",
+ "severity": "operation-failure",
+ "summary": "restoreFromSnapshot leaves the old session tracker's expiry thread running (and the new one unstarted), so about one session timeout after an admin restore every pre-existing live session is force-expired: in-flight writes get SESSIONEXPIRED and its ephemerals are deleted."
+}

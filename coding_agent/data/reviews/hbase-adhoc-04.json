@@ -1,0 +1,8 @@
+{
+ "case": "hbase-adhoc-04",
+ "verdict": "BUG",
+ "trigger": "The table is in DISABLE space-quota violation and its quota goes back into observance. The one enableTable request the QuotaObserverChore issues fails at the master (a master coprocessor throws IOException in preEnableTable, i.e. a failed RPC). The client uses retries=0, a valid setting inherited from the starting workload.",
+ "reason": "QuotaObserverChore.updateTableQuota (QuotaObserverChore.java:322-333) writes the observance state to hbase:quota (transitionTable) and to the in-memory store (tableSnapshotStore.setCurrentState, line 325) before it calls QuotaUtil.enableTableIfNotEnabled (line 333). When the enable fails, chore() logs 'Will retry' (line 137). The retry never happens: the next run reads current == target from the store (line 247) and does nothing. A restarted master reloads the same observance state from hbase:quota. The table therefore stays DISABLED for good although its quota is in observance, and every later operation that needs an enabled table, here flush, is rejected at AbstractStateMachineTableProcedure.java:163. The test calls updateTableQuota directly on a chore it builds itself. It passes the same (current, target) pair the real processTablesWithQuotas would pass (line 247-254), and it injects the fault at an RPC boundary, so the path is reachable in production. The check itself is right to reject; the bug is the state the chore leaves behind.",
+ "severity": "outage",
+ "summary": "QuotaObserverChore records the 'in observance' state before re-enabling the table; if that one enable fails, it is never retried and the table stays disabled until an admin enables it."
+}

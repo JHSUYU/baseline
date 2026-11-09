@@ -1,0 +1,8 @@
+{
+ "case": "hbase-adhoc-19",
+ "verdict": "BY_DESIGN",
+ "trigger": "Client A reads descriptor {cf} and builds a property-only change with reopenRegions=false. Client B concurrently adds cf2. A then submits its stale full descriptor {cf}+property, and the ModifyTableProcedure constructor's preflightChecks compares {cf,cf2} with {cf}.",
+ "reason": "Concurrent admin clients are a realistic trigger. However, modifyTable replaces the whole table descriptor, so A's request, built from a stale read, really does remove cf2. If it were accepted, cf2 would be dropped from the schema without reopening regions. The family-count guard at ModifyTableProcedure.java:130-135 correctly rejects a request whose effect is to remove a column family in no-reopen mode. That protects against the lost update rather than causing one. The client gets an error and can re-read the descriptor and retry. The agent's claim that the guard can also be bypassed (the guard passes and cf2 is silently dropped) is not what this test exercises: it concerns the check passing, not the check throwing. Also, the target's guard text (table-name check, line 127) does not match line 134, which is the family-count throw that was actually hit.",
+ "severity": null,
+ "summary": ""
+}

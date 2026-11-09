@@ -1,0 +1,8 @@
+{
+ "case": "zk-adhoc-b4",
+ "verdict": "BUG",
+ "trigger": "Through a TCP proxy, the server's reply to a committed PERSISTENT_SEQUENTIAL create from a ZooKeeperRetry (ZooInspector) client is lost and the connection drops; the client reconnects within the same session. A count hard quota is sized for the application's two creates.",
+ "reason": "ZooKeeperRetry.create (ZooKeeperRetry.java:76-93) handles ConnectionLoss by calling exists(path) on the requested path. For sequential modes that is never the real node name, so it always returns null, and the create is sent again, leaving a duplicate committed sequential node. The duplicate uses up the quota, so the application's next legitimate create is rejected at ZooKeeperServer.java:2201. The server check is correct; the client retry protocol produced the extra node. The orphan stays, so later creates keep failing until someone cleans it up, and sequential-node semantics (queues, locks) break.",
+ "severity": "operation-failure",
+ "summary": "ZooKeeperRetry.create re-sends a sequential create after a lost reply because exists() on the un-suffixed path is always null, creating duplicate znodes that use up hard count quota and make legitimate creates fail."
+}

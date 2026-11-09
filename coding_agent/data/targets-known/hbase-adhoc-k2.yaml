@@ -1,0 +1,13 @@
+id: hbase-adhoc-k2
+system: Apache HBase
+check:
+  file: hbase-server/src/main/java/org/apache/hadoop/hbase/master/HMaster.java
+  line: 2255
+  method: HMaster.addColumn(TableName, ColumnFamilyDescriptor, long, long)
+  thrown: org.apache.hadoop.hbase.InvalidFamilyOperationException
+  guard: old.hasColumnFamily(column.getName())   (old = getTableDescriptors().get(tableName))
+workload:
+  module: hbase-server
+  test: org.apache.hadoop.hbase.master.procedure.TestTableDescriptorModificationFromClient#testAddColumn
+build:
+  test_command: mvn -B -o surefire:test -pl hbase-server -Dtest='<Class>#<method>' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false

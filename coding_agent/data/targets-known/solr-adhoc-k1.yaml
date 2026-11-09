@@ -1,0 +1,14 @@
+id: solr-adhoc-k1
+system: Apache Solr
+check:
+  file: solr/test-framework/src/java/org/apache/solr/cloud/AbstractDistribZkTestBase.java
+  line: 185
+  method: AbstractDistribZkTestBase.waitForRecoveriesToFinish(String, ZkStateReader, boolean, boolean, int)
+  thrown: java.lang.AssertionError
+  guard: 'sawLiveRecovering && cnt == timeoutSeconds && failOnTimeout   (sawLiveRecovering: a slice of zkStateReader.getClusterState().getCollectionOrNull(collection) is in CONSTRUCTION, or a replica on
+    a live node is RECOVERING, DOWN or RECOVERY_FAILED; fail(...) from org.junit.Assert)'
+workload:
+  module: solr/core
+  test: org.apache.solr.cloud.TestCloudRecovery#leaderRecoverFromLogOnStartupTest
+build:
+  test_command: cd solr/core && ant -lib $IVY_USER_DIR/lib test -Dtestcase=<Class> -Dtests.method=<method> -Dtests.jvms=1 -Dtests.useSecurityManager=false -Divy_install_path=$IVY_USER_DIR/lib

@@ -1,0 +1,8 @@
+{
+ "case": "hdfs-adhoc-25",
+ "verdict": "BUG",
+ "trigger": "After a non-rolling NN upgrade (new cTime), the admin hot-adds in one reconfiguration an old disk that missed the upgrade (old cTime) and a brand-new disk. DataNode.refreshVolumes runs addVolume for each in parallel threads, and spy delays on NamespaceInfo.getCTime pin a real interleaving.",
+ "reason": "DataNode.refreshVolumes (DataNode.java ~L1312-1323) submits FsDatasetImpl.addVolume for every new location to a thread pool. DataStorage.prepareVolume (DataStorage.java L324-346) is unsynchronized and calls loadBpStorageDirectories on the one shared BlockPoolSliceStorage per block pool. loadStorageDirectory/doTransition (BlockPoolSliceStorage.java L149-195, L369-419) keep per-directory state read by readProperties (layoutVersion/cTime/namespaceID) in shared instance fields. The stale volume's readProperties overwrites this.cTime between the new volume's doTransition comparison (L404-406) and the re-check at L184-186. The healthy, just-formatted volume is then rejected with 'Datanode CTime ... is not equal to namenode CTime', and FsDatasetImpl.addVolume records a volume failure (L521-524). The spies only delay and return real values, so this is an interleaving the scheduler can produce. The reverse interleaving can also make a stale volume skip its upgrade and get the NN cTime written to its VERSION.",
+ "severity": "operation-failure",
+ "summary": "Concurrent hot-swap volume adds race on shared BlockPoolSliceStorage fields, so a healthy volume is rejected with a spurious cTime mismatch and reported as failed."
+}

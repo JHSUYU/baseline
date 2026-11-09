@@ -1,0 +1,8 @@
+{
+ "case": "zk-adhoc-07",
+ "verdict": "BY_DESIGN",
+ "trigger": "Voters 1-3 plus an observer, with observer masters. Server 1 is silently partitioned from leader 3, which crashes. Servers 2 and 3 form epoch 2, and the observer accepts epoch 2 from server 2. Then the observer is moved (setLearnerMaster) to server 1, which has not yet noticed the partition and still advertises epoch 1.",
+ "reason": "Learner.registerWithLeader (Learner.java:507-526) is meant to reject a leader or learner master whose epoch is lower than the epoch the learner has already accepted. Here it does exactly that and fences a stale observer master (ObserverMaster.getEpochToPropose returns the stale follower's currentEpoch). The observer drops the connection and goes back to finding a master; the stale follower times out after syncLimit*tickTime. The observer's state stays intact, and availability returns once it picks a current master. Rejecting the stale epoch is the intended protection, and the failure is transient.",
+ "severity": null,
+ "summary": ""
+}

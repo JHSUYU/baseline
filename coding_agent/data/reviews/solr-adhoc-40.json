@@ -1,0 +1,8 @@
+{
+ "case": "solr-adhoc-40",
+ "verdict": "BY_DESIGN",
+ "trigger": "The test holds node B's ZkStateReader.AliasesManager monitor so B's aliases.json watch callback is delayed. A time-routed alias is created with its collection on B, and CloudSolrClient (which already sees the alias) sends an update straight to B's core.",
+ "reason": "The window comes from an eventual-consistency lag that the code knowingly accepts. CreateAliasCmd only sleeps 100 ms and says outright that Solr's view of aliases is eventually consistent (CreateAliasCmd.java:75-82). RoutedAliasUpdateProcessor.getAliasProps reads B's cached aliases (RoutedAliasUpdateProcessor.java:130-134) and throws a SERVICE_UNAVAILABLE 'appears to have been removed' exception (RoutedAlias.java:70-72), which is a retryable signal (it is rewrapped as 500 at RoutedAliasUpdateProcessor.java:121-123). The failure lasts only while B's watch is delayed. As soon as B applies the update, the same request succeeds (the test itself shows this), so this is a transient error that heals on its own. There is no lasting failure or data loss beyond a rejected request the client can retry. The 500 rewrap and the misleading message are at most cosmetic.",
+ "severity": null,
+ "summary": ""
+}

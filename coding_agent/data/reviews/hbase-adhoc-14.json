@@ -1,0 +1,8 @@
+{
+ "case": "hbase-adhoc-14",
+ "verdict": "BY_DESIGN",
+ "trigger": "Two overlapping merge requests (A+B and B+C) are constructed while all regions are OPEN and submitted back to back on a 1-RS mini cluster. The first merge consumes B; the second reaches prepareMergeRegion after B was removed from RegionStates.",
+ "reason": "This is the same as two concurrent admin merge RPCs, so the trigger is realistic. But the second merge asks to merge a region that no longer exists because a conflicting merge already merged it away. The prepare-time re-validation in MergeTableRegionsProcedure.java:490-509 is there to catch exactly this kind of stale request after the region lock is acquired. Rejecting it with UnknownRegionException is correct, apart from the slightly misleading 'garbage collected?' wording. The procedure fails and rolls back cleanly. The NPE in rollbackPrepareMerge (MergeTableRegionsProcedure.java:544) is caught by ProcedureExecutor (ProcedureExecutor.java:1760-1765), which logs it as CODE-BUG and still finishes the rollback (the log shows ROLLEDBACK). No region was ever set to MERGING, so nothing is left in a bad state. The first merge succeeds, and the cluster is consistent.",
+ "severity": null,
+ "summary": ""
+}

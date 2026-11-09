@@ -1,0 +1,8 @@
+{
+ "case": "hbase-adhoc-08",
+ "verdict": "BY_DESIGN",
+ "trigger": "Master failover with RS groups enabled. A coprocessor latch slows the new master's scan of the ns family in hbase:meta (its namespace cache load), and a region server crashes during that window.",
+ "reason": "HMaster.initClusterSchemaService (HMaster.java:1610) publishes clusterSchemaService before TableNamespaceManager.start() has filled the cache (ClusterSchemaServiceImpl.doStart, line 60-61). RSGroupUtil.getRSGroupInfo (RSGroupUtil.java:117) therefore reads an empty cache, and getNamespace throws NamespaceNotFoundException at ClusterSchemaServiceImpl.java:111. The race is real, but the effect is transient and the system recovers by itself. AssignmentManager catches the failure ('unable to round-robin assignment', AssignmentManager.java:2634-2636) and puts the regions back in pendingAssignQueue. They are retried until the cache load finishes, and the test itself shows the master initializing and the namespace resolving afterwards. The worst case the agent describes (meta reassignment deadlocking with the cache load) was not demonstrated.",
+ "severity": null,
+ "summary": ""
+}

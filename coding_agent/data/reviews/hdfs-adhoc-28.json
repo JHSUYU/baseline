@@ -1,0 +1,8 @@
+{
+ "case": "hdfs-adhoc-28",
+ "verdict": "BY_DESIGN",
+ "trigger": "The primary DN of a lease (block) recovery is removed from the include list and refreshNodes runs while its recovery thread is delayed. The DN gets DisallowedDatanodeException, shuts down its BPOfferService, and the resumed recovery thread calls getDatanodeID(bpid).",
+ "reason": "The trigger (refreshNodes, a delayed thread) is realistic, but the outcome is a correct rejection of a transient condition. The DN has been disallowed by the NN and its block pool is shut down, so it can no longer act as recovery primary for that pool, and getDatanodeID (BlockRecoveryWorker.java:562-567) fails that attempt. The NN tracks recovery attempts with a timeout (PendingRecoveryBlocks.java:36-75, BlockManager.addBlockRecoveryAttempt L5637). Once the attempt times out, lease recovery is retried with a live primary (the disallowed DN is no longer a candidate). The file's lease is recovered after a delay and no data is lost. The cost is one failed attempt and a misleading 'All datanodes failed' log.",
+ "severity": null,
+ "summary": ""
+}

@@ -1,0 +1,8 @@
+{
+ "case": "hbase-adhoc-12",
+ "verdict": "BUG",
+ "trigger": "Three ordinary admin operations run concurrently: disableTable (held briefly in PRE_OPERATION by a latch), a move of the table's region accepted while the table is still ENABLED, and decommissionRegionServers(offload=true) of the move's destination. The procedure retry back-off is set to 30s, a valid setting.",
+ "reason": "CloseTableRegionsProcedure skips regions that are in transition and backs off (AssignmentManager.submitUnassignProcedure for disabling tables). Meanwhile the already-accepted move reopens the region, which leaves it OPEN with no procedure while the table is DISABLING. HMaster.decommissionRegionServers (HMaster.java:4165-4174) calls moveAsync on that region with no error handling. preTransitCheck sees isTableDisabled, which includes DISABLING (AssignmentManager.java:563-566), and throws DoNotRetryIOException (AssignmentManager.java:771-772). The decommission RPC fails non-retryably after the server has already been marked draining, and the regions after this one, from any table, are not offloaded. Refusing to move a region of a disabling table is correct, but the drain should skip such a region, which the disable is about to close, rather than abort. The impact matches hbase-adhoc-11: the operator has to rerun the drain.",
+ "severity": "minor",
+ "summary": "Decommission with offload aborts with DoNotRetryIOException, leaving the server half-drained, when it meets an OPEN region of a DISABLING table (a state reachable when a move races with disable)."
+}

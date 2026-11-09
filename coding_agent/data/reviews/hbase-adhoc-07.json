@@ -1,0 +1,8 @@
+{
+ "case": "hbase-adhoc-07",
+ "verdict": "BUG",
+ "trigger": "Two clients clone the same snapshot into the same new table at the same time. A latch on the hbase:meta region holds the first CloneSnapshotProcedure's meta write (a slow meta RS). The second clone passes the client tableExists check because there is no table-state row yet.",
+ "reason": "SnapshotManager.restoreOrCloneSnapshot (SnapshotManager.java:1013-1018) sends the request down the restore path whenever master.getTableDescriptors().exists(target) is true. The first clone's WRITE_FS_LAYOUT step has already written that descriptor, while the client-side check in RawAsyncHBaseAdmin.cloneSnapshot (line 2311) reads the meta table-state row, which does not exist yet. The private restoreSnapshot then checks the state of snapshot.getTable(), the snapshot's SOURCE table, instead of the requested target (line 1044-1046). The enabled source table makes it throw an unchecked UnsupportedOperationException about a table the client never touched. The second clone would have to fail anyway, so the visible result here is only a wrong, misleading exception. The same misrouting is worse in a case the test did not show: if the source table is disabled, the inner restoreSnapshot(snapshot, snapshotTableDesc, ...) (line 1083-1104) would restore over the SOURCE table on a request to clone into a new name.",
+ "severity": "minor",
+ "summary": "A clone racing with an in-progress clone of the same name is sent down the restore path, which validates (and would restore) the snapshot's source table instead of the clone target."
+}

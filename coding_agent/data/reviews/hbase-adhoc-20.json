@@ -1,0 +1,8 @@
+{
+ "case": "hbase-adhoc-20",
+ "verdict": "BY_DESIGN",
+ "trigger": "Admin B reads the descriptor. Admin A concurrently adds a column family (round 1) and then a table coprocessor (round 2). B then submits its config-only change, built on the stale descriptor, with reopenRegions=false, and preflightChecks rejects it (the coprocessor check at line 138 in round 2).",
+ "reason": "The trigger is two ordinary concurrent admin clients, which is realistic. But B sends a full replacement descriptor that lacks the coprocessor A just added. Accepting it in no-reopen mode would remove the coprocessor from the descriptor while regions keep running it. isCoprocModified() at ModifyTableProcedure.java:137-139 (and the family-count guard at :130-135) correctly reject a modification that changes coprocessors or families without reopening. The rejection prevents a lost update; it is not a bug. The client can re-read and retry. The supplementary test (testConcurrentAddFamilySilentlyDroppedByNoReopenModify) points to a real-looking lost-update window, where the check passes and prepareModify later re-reads the descriptor. That is a separate issue in which this check does not fire, so it does not make this check's failure a bug.",
+ "severity": null,
+ "summary": ""
+}

@@ -1,0 +1,8 @@
+{
+ "case": "zk-adhoc-06",
+ "verdict": "BY_DESIGN",
+ "trigger": "The old leader logs an uncommitted proposal after both followers crash, then crashes itself. The followers restart and elect a new leader; one follower's connection is delayed by a latch. The old leader restarts, joins through FLE's out-of-election path, and sends ACKEPOCH with a higher zxid while the new leader is still in discovery.",
+ "reason": "Leader.waitForEpochAck (Leader.java:1515-1527) is Zab's discovery-phase safety check: the leader must not establish an epoch with a quorum member whose history is ahead of its own. It rejects such a follower by design rather than reasoning about whether the extra txns were committed. Only that LearnerHandler fails. In the test, the other follower completes the quorum when released, and once electionFinished is set, the restarted server is accepted and truncated. The agent's worse case (the leader waits for this server and times out after initLimit*tickTime) ends in a fresh election, which the ahead server can win, so the system recovers by itself. The check is fencing a state it is designed to reject, and the result is transient.",
+ "severity": null,
+ "summary": ""
+}

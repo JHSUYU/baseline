@@ -1,0 +1,234 @@
+diff --git a/hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSClient.java b/hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSClient.java
+index b0fcba233e3..4c2a967788d 100644
+--- a/hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSClient.java
++++ b/hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSClient.java
+@@ -1710,6 +1710,11 @@ public DataEncryptionKey newDataEncryptionKey() throws IOException {
+     }
+   }
+ 
++  @VisibleForTesting
++  public DataEncryptionKey getEncryptionKey() {
++    return encryptionKey;
++  }
++
+   /**
+    * Get the checksum of the whole file or a range of the file. Note that the
+    * range always starts from the beginning of the file. The file can be
+diff --git a/hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DataStreamer.java b/hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DataStreamer.java
+index 5166c8c79c5..ef5d21a7fb7 100644
+--- a/hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DataStreamer.java
++++ b/hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DataStreamer.java
+@@ -116,6 +116,89 @@
+ class DataStreamer extends Daemon {
+   static final Logger LOG = LoggerFactory.getLogger(DataStreamer.class);
+ 
++  private class RefetchEncryptionKeyPolicy {
++    private int fetchEncryptionKeyTimes = 0;
++    private InvalidEncryptionKeyException lastException;
++    private final DatanodeInfo src;
++
++    RefetchEncryptionKeyPolicy(DatanodeInfo src) {
++      this.src = src;
++    }
++    boolean continueRetryingOrThrow() throws InvalidEncryptionKeyException {
++      if (fetchEncryptionKeyTimes >= 2) {
++        // hit the same exception twice connecting to the node, so
++        // throw the exception and exclude the node.
++        throw lastException;
++      }
++      // Don't exclude this node just yet.
++      // Try again with a new encryption key.
++      LOG.info("Will fetch a new encryption key and retry, "
++          + "encryption key was invalid when connecting to "
++          + this.src + ": ", lastException);
++      // The encryption key used is invalid.
++      dfsClient.clearDataEncryptionKey();
++      return true;
++    }
++
++    /**
++     * Record a connection exception.
++     * @param e
++     * @throws InvalidEncryptionKeyException
++     */
++    void recordFailure(final InvalidEncryptionKeyException e)
++        throws InvalidEncryptionKeyException {
++      fetchEncryptionKeyTimes++;
++      lastException = e;
++    }
++  }
++
++  private class StreamerStreams implements java.io.Closeable {
++    private Socket sock = null;
++    private DataOutputStream out = null;
++    private DataInputStream in = null;
++
++    StreamerStreams(final DatanodeInfo src,
++        final long writeTimeout, final long readTimeout,
++        final Token<BlockTokenIdentifier> blockToken)
++        throws IOException {
++      sock = createSocketForPipeline(src, 2, dfsClient);
++
++      OutputStream unbufOut = NetUtils.getOutputStream(sock, writeTimeout);
++      InputStream unbufIn = NetUtils.getInputStream(sock, readTimeout);
++      IOStreamPair saslStreams = dfsClient.saslClient
++          .socketSend(sock, unbufOut, unbufIn, dfsClient, blockToken, src);
++      unbufOut = saslStreams.out;
++      unbufIn = saslStreams.in;
++      out = new DataOutputStream(new BufferedOutputStream(unbufOut,
++          DFSUtilClient.getSmallBufferSize(dfsClient.getConfiguration())));
++      in = new DataInputStream(unbufIn);
++    }
++
++    void sendTransferBlock(final DatanodeInfo[] targets,
++        final StorageType[] targetStorageTypes,
++        final Token<BlockTokenIdentifier> blockToken) throws IOException {
++      //send the TRANSFER_BLOCK request
++      new Sender(out)
++          .transferBlock(block, blockToken, dfsClient.clientName, targets,
++              targetStorageTypes);
++      out.flush();
++      //ack
++      BlockOpResponseProto transferResponse = BlockOpResponseProto
++          .parseFrom(PBHelperClient.vintPrefixed(in));
++      if (SUCCESS != transferResponse.getStatus()) {
++        throw new IOException("Failed to add a datanode. Response status: "
++            + transferResponse.getStatus());
++      }
++    }
++
++    @Override
++    public void close() throws IOException {
++      IOUtils.closeStream(in);
++      IOUtils.closeStream(out);
++      IOUtils.closeSocket(sock);
++    }
++  }
++
+   /**
+    * Create a socket for a write pipeline
+    *
+@@ -1270,50 +1353,39 @@ private void addDatanode2ExistingPipeline() throws IOException {
+         new IOException("Failed to add a node");
+   }
+ 
++  private long computeTransferWriteTimeout() {
++    return dfsClient.getDatanodeWriteTimeout(2);
++  }
++  private long computeTransferReadTimeout() {
++    // transfer timeout multiplier based on the transfer size
++    // One per 200 packets = 12.8MB. Minimum is 2.
++    int multi = 2
++        + (int) (bytesSent / dfsClient.getConf().getWritePacketSize()) / 200;
++    return dfsClient.getDatanodeReadTimeout(multi);
++  }
++
+   private void transfer(final DatanodeInfo src, final DatanodeInfo[] targets,
+                         final StorageType[] targetStorageTypes,
+                         final Token<BlockTokenIdentifier> blockToken)
+       throws IOException {
+     //transfer replica to the new datanode
+-    Socket sock = null;
+-    DataOutputStream out = null;
+-    DataInputStream in = null;
+-    try {
+-      sock = createSocketForPipeline(src, 2, dfsClient);
+-      final long writeTimeout = dfsClient.getDatanodeWriteTimeout(2);
+-
+-      // transfer timeout multiplier based on the transfer size
+-      // One per 200 packets = 12.8MB. Minimum is 2.
+-      int multi = 2 + (int)(bytesSent /dfsClient.getConf().getWritePacketSize())
+-          / 200;
+-      final long readTimeout = dfsClient.getDatanodeReadTimeout(multi);
+-
+-      OutputStream unbufOut = NetUtils.getOutputStream(sock, writeTimeout);
+-      InputStream unbufIn = NetUtils.getInputStream(sock, readTimeout);
+-      IOStreamPair saslStreams = dfsClient.saslClient.socketSend(sock,
+-          unbufOut, unbufIn, dfsClient, blockToken, src);
+-      unbufOut = saslStreams.out;
+-      unbufIn = saslStreams.in;
+-      out = new DataOutputStream(new BufferedOutputStream(unbufOut,
+-          DFSUtilClient.getSmallBufferSize(dfsClient.getConfiguration())));
+-      in = new DataInputStream(unbufIn);
+-
+-      //send the TRANSFER_BLOCK request
+-      new Sender(out).transferBlock(block, blockToken, dfsClient.clientName,
+-          targets, targetStorageTypes);
+-      out.flush();
++    RefetchEncryptionKeyPolicy policy = new RefetchEncryptionKeyPolicy(src);
++    do {
++      StreamerStreams streams = null;
++      try {
++        final long writeTimeout = computeTransferWriteTimeout();
++        final long readTimeout = computeTransferReadTimeout();
+ 
+-      //ack
+-      BlockOpResponseProto response =
+-          BlockOpResponseProto.parseFrom(PBHelperClient.vintPrefixed(in));
+-      if (SUCCESS != response.getStatus()) {
+-        throw new IOException("Failed to add a datanode");
++        streams = new StreamerStreams(src, writeTimeout, readTimeout,
++            blockToken);
++        streams.sendTransferBlock(targets, targetStorageTypes, blockToken);
++        return;
++      } catch (InvalidEncryptionKeyException e) {
++        policy.recordFailure(e);
++      } finally {
++        IOUtils.closeStream(streams);
+       }
+-    } finally {
+-      IOUtils.closeStream(in);
+-      IOUtils.closeStream(out);
+-      IOUtils.closeSocket(sock);
+-    }
++    } while (policy.continueRetryingOrThrow());
+   }
+ 
+   /**
+diff --git a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockPoolTokenSecretManager.java b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockPoolTokenSecretManager.java
+index cdfe7ec54b1..3e315eec56f 100644
+--- a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockPoolTokenSecretManager.java
++++ b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockPoolTokenSecretManager.java
+@@ -49,7 +49,8 @@ public synchronized void addBlockPool(String bpid,
+     map.put(bpid, secretMgr);
+   }
+ 
+-  synchronized BlockTokenSecretManager get(String bpid) {
++  @VisibleForTesting
++  public synchronized BlockTokenSecretManager get(String bpid) {
+     BlockTokenSecretManager secretMgr = map.get(bpid);
+     if (secretMgr == null) {
+       throw new IllegalArgumentException("Block pool " + bpid
+diff --git a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java
+index b55a2c4ad0e..ba087406023 100644
+--- a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java
++++ b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java
+@@ -435,6 +435,12 @@ public void clearAllKeysForTesting() {
+     allKeys.clear();
+   }
+ 
++  @VisibleForTesting
++  public synchronized boolean hasKey(int keyId) {
++    BlockKey key = allKeys.get(keyId);
++    return key != null;
++  }
++
+   @VisibleForTesting
+   public synchronized int getSerialNoForTesting() {
+     return serialNo;
+diff --git a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java
+index abff79695df..dd7e4265495 100644
+--- a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java
++++ b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java
+@@ -2779,6 +2779,11 @@ DirectoryScanner getDirectoryScanner() {
+     return directoryScanner;
+   }
+ 
++  @VisibleForTesting
++  public BlockPoolTokenSecretManager getBlockPoolTokenSecretManager() {
++    return blockPoolTokenSecretManager;
++  }
++
+   public static void secureMain(String args[], SecureResources resources) {
+     int errorCode = 0;
+     try {

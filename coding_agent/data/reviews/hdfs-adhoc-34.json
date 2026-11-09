@@ -1,0 +1,8 @@
+{
+ "case": "hdfs-adhoc-34",
+ "verdict": "BY_DESIGN",
+ "trigger": "A hand-written pre-federation (LV -16) DN volume with ns1's namespaceID is started in a 2-nameservice federated cluster while ns1's NN is down, so ns2 handshakes first.",
+ "reason": "DataStorage.java:738-744 rejects the volume because it holds ns1's pre-federation data while the DataNode-level transition is being driven by ns2. Without this check, doUpgradePreFederation would format the block pool and link the old blocks under nsInfo.getBlockPoolID(), which here is ns2's (DataStorage.java:834-840). That would put ns1's blocks into the wrong block pool. So the rejection is correct, not spurious. The code also states the precondition for this path: 'There should be only ONE namenode in the cluster for first time upgrade' (DataStorage.java:800). A DN still on a pre-federation layout joining an already federated cluster is outside that precondition. The lasting part, ns2 never retrying, comes from the separate, deliberate policy that a BPOS which never initialized gives up (BPOfferService.java:860-867, BPServiceActor.java:913-921). A DN restart fixes it.",
+ "severity": null,
+ "summary": ""
+}

@@ -1,0 +1,8 @@
+{
+ "case": "hbase-adhoc-31",
+ "verdict": "BY_DESIGN",
+ "trigger": "An RS is gracefully stopped with slow region closes while a region is moved to it; the master keeps retrying OpenRegion with growing backoff. The RS finishes stopping, is expired, and is restarted on the same port, and an already-scheduled retry carrying the old startcode reaches the new incarnation.",
+ "reason": "This is the exact case the startcode check exists for. RSRpcServices.throwOnWrongStartCode (RSRpcServices.java:1878) fences an RPC that was addressed to a dead incarnation (host:port,s1) and arrived at the new process on the same port. The master handles the DoNotRetry: RSProcedureDispatcher.scheduleForRetry gives up (RSProcedureDispatcher.java:307), and RegionRemoteProcedureBase.remoteCallFailed sees the target is no longer online and leaves recovery to the SCP (RegionRemoteProcedureBase.java:126-131). The region is reassigned by the normal SCP/TRSP path. The check prevents a wrong-server open instead of causing a failure, and no lasting consequence is shown.",
+ "severity": null,
+ "summary": ""
+}

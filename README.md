@@ -1,12 +1,13 @@
 # Baselines for GraphChecker's ad hoc coordination checks
 
-Three baselines, each reproducing a paper's approach on the same systems GraphChecker checks:
+Four baselines, each reproducing a paper's approach on the same systems GraphChecker checks:
 
 | directory | approach | what it is |
 | --- | --- | --- |
 | [`crashfuzz/`](crashfuzz/README.md) | CrashFuzz | coverage-guided fault injection into a system's own cluster JUnit tests, Soot-selected I/O sites, the target check as oracle |
 | [`mallory/`](mallory/README.md) | Mallory | greybox fuzzing guided by changes in the run's causal graph: GraphChecker's graph of every native run, Q-learning over injected faults |
 | [`specula/`](specula/README.md) | Specula | an LLM-agent pipeline (code analysis, TLA+ spec, trace-validated model checking with TLC, confirmation in the real system), run once per ad hoc check with the check as its only property |
+| [`coding_agent/`](coding_agent/README.md) | LLM coding agent | Claude Code (Opus 5.5, effort high) with one prompt per ad hoc check and the source tree, no history or network; it writes a test that makes the check fail |
 
 Each directory holds its code, its per-system setup, how to run it on the liftlab cluster (lift02-14, the cluster
 GraphChecker's results come from), and its results; the first results were made on CloudLab and are kept below.

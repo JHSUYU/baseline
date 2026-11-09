@@ -1,0 +1,8 @@
+{
+ "case": "zk-adhoc-02",
+ "verdict": "BY_DESIGN",
+ "trigger": "With local sessions plus upgrading enabled, a client on the leader creates an ephemeral node (upgrade queued; the test delays the leader's request thread with a latch after checkUpgradeSession). The client then drops its connection and reconnects to a follower, which revalidates the session. After that the queued upgrade createSession and the stale create are processed.",
+ "reason": "The ordering is real: the upgrade request is built with owner=null (QuorumZooKeeperServer.java:119), and PrepRequestProcessor's createSession calls zks.setOwner(sessionId, null) (PrepRequestProcessor.java:568), which overwrites the owner that Leader.revalidateSession set (Leader.java:1785-1789). The stale leader-side create then claims the session, and the follower's next write fails at SessionTrackerImpl.java:323. But the consequence is transient and the system recovers by itself. FinalRequestProcessor treats SessionMoved as a connection-level error and tears down the connection (FinalRequestProcessor.java:593-600). The client library reconnects, the follower revalidates, and setOwner restores the correct owner. The stale create was earlier in the leader's order anyway, and applying it fits ordinary ConnectionLoss semantics. The result is one spurious ConnectionLoss and no lasting failure.",
+ "severity": null,
+ "summary": ""
+}

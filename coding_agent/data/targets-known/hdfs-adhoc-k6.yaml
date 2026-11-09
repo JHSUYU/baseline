@@ -1,0 +1,13 @@
+id: hdfs-adhoc-k6
+system: Apache Hadoop HDFS
+check:
+  file: hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLog.java
+  line: 1409
+  method: FSEditLog.endCurrentLogSegment(boolean)
+  thrown: java.lang.IllegalStateException
+  guard: 'Preconditions.checkState(isSegmentOpen(), "Bad state: %s", state)   (isSegmentOpen(): state == State.IN_SEGMENT)'
+workload:
+  module: hadoop-hdfs-project/hadoop-hdfs
+  test: org.apache.hadoop.hdfs.server.namenode.TestEditLogRace#testEditLogRolling[1]
+build:
+  test_command: mvn -B -o surefire:test -pl hadoop-hdfs-project/hadoop-hdfs -Dtest='<Class>#<method>' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false

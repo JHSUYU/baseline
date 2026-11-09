@@ -1,0 +1,8 @@
+{
+ "case": "hbase-adhoc-24",
+ "verdict": "BY_DESIGN",
+ "trigger": "Two concurrent fallback (ZK-based) flush-table procedures; a latch in a RegionServer subclass's getRegions() stalls a non-participant member's ZK event thread after it lists acquired/=[TA,TB], until the master has finished both procedures and deleted their znodes.",
+ "reason": "The trigger (a slow ZK event thread, list then read of znodes) is realistic, but nothing goes wrong as a result. ZKUtil.getData returns null for the deleted znode and ZKProcedureMemberRpcs.java:208-210 throws IAE. That IAE is caught at ZKProcedureMemberRpcs.java:222-224 and passed to sendMemberAborted(null, ...), which only logs and returns when sub==null (ZKProcedureMemberRpcs.java:289-292). So no abort znode is written, both flushes have already succeeded, and the member keeps working. The only effect is a misleading ERROR log line for a procedure that already finished. There is no failed operation, corruption or wedged component.",
+ "severity": null,
+ "summary": ""
+}

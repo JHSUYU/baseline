@@ -1,0 +1,14 @@
+id: solr-adhoc-k2
+system: Apache Solr
+check:
+  file: solr/core/src/java/org/apache/solr/handler/admin/CoreAdminHandler.java
+  line: 560
+  method: CoreAdminHandler.handleCreateAction(SolrQueryRequest, SolrQueryResponse)
+  thrown: org.apache.solr.common.SolrException
+  guard: coreContainer.getZkController() != null && !Overseer.isLegacy(coreContainer.getZkController().getZkStateReader().getClusterProps()) && dcore.getCloudDescriptor().getCoreNodeName() == null   (three
+    nested ifs)
+workload:
+  module: solr/core
+  test: org.apache.solr.cloud.ShardSplitTest#testDistribSearch
+build:
+  test_command: cd solr/core && ant -lib $IVY_USER_DIR/lib test -Dtestcase=<Class> -Dtests.method=<method> -Dtests.jvms=1 -Dtests.useSecurityManager=false -Divy_install_path=$IVY_USER_DIR/lib

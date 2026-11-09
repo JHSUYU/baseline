@@ -1,0 +1,8 @@
+{
+ "case": "hdfs-adhoc-26",
+ "verdict": "BUG",
+ "trigger": "Two upgrade/rollback cycles in a mini cluster. DN1 is down during the first rollback and rejoins (regular start) during the second upgrade. The second upgrade is then rolled back with all DNs started with -rollback.",
+ "reason": "DN1 still holds previous=C0, current=C1 (an upgrade the NN rolled back). Started against the rolled-back NN (C0) it would be refused by the 'newer than the namespace state' branch (BlockPoolSliceStorage.java:419-424). But NN upgrade #2 assigns cTime C2 > C1, so doTransition calls doUpgrade (L414-417). doUpgrade silently deletes the existing unfinalized <bp>/previous (L477-480), the only copy of the C0 state, and preserves the rolled-back C1 state as previous. The NN itself refuses to upgrade while an unfinalized previous exists; the DN does not. At the next rollback, doRollback (L621-626) finds previous cTime C1 > NN cTime C0 and throws InconsistentFSStateException on every volume, so DN1's block pool cannot start. The check is right to reject C1. The bug is the upstream upgrade step that produced that state after an ordinary node outage. Consequence: the DN is unusable for that block pool until an operator wipes its storage, and its pre-upgrade-#1 snapshot is already gone.",
+ "severity": "outage",
+ "summary": "A DataNode that missed a rollback silently discards its unfinalized previous snapshot on the next upgrade and keeps the rolled-back state, so a later rollback fails and its block pool cannot start."
+}

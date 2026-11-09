@@ -1,0 +1,73 @@
+diff --git a/hbase-server/src/main/java/org/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager.java b/hbase-server/src/main/java/org/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager.java
+index 524b6f983f..1f2bec4629 100644
+--- a/hbase-server/src/main/java/org/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager.java
++++ b/hbase-server/src/main/java/org/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager.java
+@@ -143,6 +143,27 @@ public class AuthenticationTokenSecretManager
+       throw new InvalidToken("Token has expired");
+     }
+     AuthenticationKey masterKey = allKeys.get(identifier.getKeyId());
++    if(masterKey == null) {
++      if(zkWatcher.getWatcher().isAborted()) {
++        LOG.error("ZookeeperWatcher is abort");
++        throw new InvalidToken("Token keys could not be sync from zookeeper"
++            + " because of ZookeeperWatcher abort");
++      }
++      synchronized (this) {
++        if (!leaderElector.isAlive() || leaderElector.isStopped()) {
++          LOG.warn("Thread leaderElector[" + leaderElector.getName() + ":"
++              + leaderElector.getId() + "] is stoped or not alive");
++          leaderElector.start();
++          LOG.info("Thread leaderElector [" + leaderElector.getName() + ":"
++              + leaderElector.getId() + "] is started");
++        }
++      }
++      zkWatcher.refreshKeys();
++      if (LOG.isDebugEnabled()) {
++        LOG.debug("Sync token keys from zookeeper");
++      }
++      masterKey = allKeys.get(identifier.getKeyId());
++    }
+     if (masterKey == null) {
+       throw new InvalidToken("Unknown master key for token (id="+
+           identifier.getKeyId()+")");
+diff --git a/hbase-server/src/main/java/org/apache/hadoop/hbase/security/token/ZKSecretWatcher.java b/hbase-server/src/main/java/org/apache/hadoop/hbase/security/token/ZKSecretWatcher.java
+index 2264193bf2..a1c3b6688b 100644
+--- a/hbase-server/src/main/java/org/apache/hadoop/hbase/security/token/ZKSecretWatcher.java
++++ b/hbase-server/src/main/java/org/apache/hadoop/hbase/security/token/ZKSecretWatcher.java
+@@ -18,6 +18,8 @@
+ 
+ package org.apache.hadoop.hbase.security.token;
+ 
++import com.google.common.annotations.VisibleForTesting;
++
+ import java.io.IOException;
+ import java.util.List;
+ 
+@@ -211,4 +213,27 @@ public class ZKSecretWatcher extends ZooKeeperListener {
+       watcher.abort("Failed serializing key "+key.getKeyId(), ioe);
+     }
+   }
++  
++  /**
++   * refresh keys
++   */
++  synchronized void refreshKeys() {
++    try {
++      List<ZKUtil.NodeAndData> nodes =
++          ZKUtil.getChildDataAndWatchForNewChildren(watcher, keysParentZNode);
++      refreshNodes(nodes);
++    } catch (KeeperException ke) {
++      LOG.fatal("Error reading data from zookeeper", ke);
++      watcher.abort("Error reading changed keys from zookeeper", ke);
++    }
++  }
++  
++  /**
++   * get token keys parent node
++   * @return token keys parent node
++   */
++  @VisibleForTesting
++  String getKeysParentZNode() {
++    return keysParentZNode;
++  }
+ }

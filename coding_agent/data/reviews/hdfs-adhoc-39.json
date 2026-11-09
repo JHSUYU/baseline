@@ -1,0 +1,8 @@
+{
+ "case": "hdfs-adhoc-39",
+ "verdict": "BY_DESIGN",
+ "trigger": "With dfs.namenode.file.close.num-committed-allowed=1, all DataNodes' IBRs are paused (DataNodeTestUtils.pauseIBR). A file is closed with its last block still COMMITTED, and then append is attempted while the IBRs stay held for longer than the client's 5s retry window.",
+ "reason": "FSDirAppendOp.java:131-135 deliberately throws RetriableException(NotReplicatedYetException) for a COMMITTED last block, and DFSClient.callAppend retries it (hadoop-hdfs-client DFSClient.java:1404-1420). Enabling num-committed-allowed explicitly trades this, letting close() return before the IBRs arrive. The agent's own test shows the append succeeds once the IBRs are delivered. The rejection is the documented, retriable behaviour for a block whose replicas the NN has not confirmed yet, and the state clears by itself. Holding IBRs back indefinitely only stretches a transient condition.",
+ "severity": null,
+ "summary": null
+}

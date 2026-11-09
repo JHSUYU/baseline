@@ -1,0 +1,8 @@
+{
+ "case": "hdfs-adhoc-11",
+ "verdict": "BUG",
+ "trigger": "Encrypted data transfer with block tokens; a balancer round is running (one NameNodeConnector/KeyManager for the whole doBalance), the NameNode restarts mid-round and regenerates its unpersisted block keys, and a DataNode added after the restart becomes a move target.",
+ "reason": "KeyManager.newDataEncryptionKey (server/balancer/KeyManager.java ~L120-145) caches the DataEncryptionKey until its expiry (token lifetime, 10h by default) and only regenerates it when it expires. BlockKeyUpdater refreshes only the BlockTokenSecretManager, and Balancer.doBalance (Balancer.java ~L899-930) reuses the same connectors for every iteration. The restarted NN has fresh block keys, and a DN that registers afterwards only gets those (BlockTokenSecretManager.addKeys L228-244 merges keys and never brings back old ones). So the new DN's SaslDataTransferServer -> retrieveDataEncryptionKey (BlockTokenSecretManager.java:559) cannot find the balancer's keyId. Nothing in the Dispatcher handles InvalidEncryptionKeyException, whereas DFSClient clears and refetches its key (DFSInputStream L663-669, DataStreamer L1961-1968). Every move to a post-restart DN therefore fails until the key expires or the balancer is restarted. The trigger is realistic: a mini cluster, an NN restart, a DN added, and the real balancer iteration code. The 500ms IPC idle time only stands in for a realistic restart duration.",
+ "severity": "operation-failure",
+ "summary": "After a NameNode restart the Balancer/Mover keeps using a cached data encryption key derived from a lost block key, so all block moves to DataNodes that registered after the restart fail for up to the token lifetime (10h)."
+}

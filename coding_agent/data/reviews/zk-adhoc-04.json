@@ -1,0 +1,8 @@
+{
+ "case": "zk-adhoc-04",
+ "verdict": "BUG",
+ "trigger": "3-node ensemble. The leader crashes, the other two elect a new leader in epoch 2, and the old leader restarts and rejoins through an empty DIFF. With no write in the new epoch, a client reads from the new leader and then moves to the followers (updateServerList; any loss of the client->leader connection has the same effect).",
+ "reason": "Leader.startZkServer sets dataTree.lastProcessedZxid to zk.getZxid() = newEpoch<<32 (Leader.java:1609), and that value reaches clients in reply headers. Followers synced by DIFF never adopt it: Learner.syncWithLeader sets lastProcessedZxid only for SNAP/TRUNC (Learner.java:614, 628). Fully in-sync followers therefore refuse the client at ZooKeeperServer.java:1504-1516 (CLIENT_ZXID_AHEAD) for a zxid that is not the zxid of any transaction. The client is refused again and again until some write happens. In a read-mostly ensemble, a client that cannot reach the leader cannot reconnect at all and may lose its session even though a healthy quorum is up.",
+ "severity": "operation-failure",
+ "summary": "After a leader election with no new write, the leader advertises zxid newEpoch<<32 while DIFF-synced followers keep the old last zxid, so clients that talked to the new leader are refused by every in-sync follower (CLIENT_ZXID_AHEAD) until the next write."
+}

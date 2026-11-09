@@ -1,0 +1,58 @@
+diff --git a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLog.java b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLog.java
+index 547ad577c38..56aa927f819 100644
+--- a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLog.java
++++ b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLog.java
+@@ -1382,10 +1382,15 @@ private void startLogSegment(final long segmentTxId, int layoutVersion)
+     try {
+       editLogStream = journalSet.startLogSegment(segmentTxId, layoutVersion);
+     } catch (IOException ex) {
+-      throw new IOException("Unable to start log segment " +
+-          segmentTxId + ": too few journals successfully started.", ex);
++      final String msg = "Unable to start log segment " + segmentTxId
++          + ": too few journals successfully started.";
++      LOG.error(msg, ex);
++      synchronized (journalSetLock) {
++        IOUtils.cleanupWithLogger(LOG, journalSet);
++      }
++      terminate(1, msg);
+     }
+-    
++
+     curSegmentTxId = segmentTxId;
+     state = State.IN_SEGMENT;
+   }
+diff --git a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/JournalSet.java b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/JournalSet.java
+index 7be7073c5f0..4ab0828ca8a 100644
+--- a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/JournalSet.java
++++ b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/JournalSet.java
+@@ -39,6 +39,7 @@
+ import org.apache.hadoop.hdfs.server.protocol.RemoteEditLog;
+ import org.apache.hadoop.hdfs.server.protocol.RemoteEditLogManifest;
+ 
++import com.google.common.annotations.VisibleForTesting;
+ import com.google.common.base.Preconditions;
+ import com.google.common.collect.ImmutableList;
+ import com.google.common.collect.ImmutableListMultimap;
+@@ -76,7 +77,7 @@ public class JournalSet implements JournalManager {
+    * stream, then the stream will be aborted and set to null.
+    */
+   static class JournalAndStream implements CheckableNameNodeResource {
+-    private final JournalManager journal;
++    private JournalManager journal;
+     private boolean disabled = false;
+     private EditLogOutputStream stream;
+     private final boolean required;
+@@ -146,7 +147,12 @@ public String toString() {
+     void setCurrentStreamForTests(EditLogOutputStream stream) {
+       this.stream = stream;
+     }
+-    
++
++    @VisibleForTesting
++    void setJournalForTests(JournalManager jm) {
++      this.journal = jm;
++    }
++
+     JournalManager getManager() {
+       return journal;
+     }

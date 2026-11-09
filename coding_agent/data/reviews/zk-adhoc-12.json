@@ -1,0 +1,8 @@
+{
+ "case": "zk-adhoc-12",
+ "verdict": "BUG",
+ "trigger": "A transient disk write failure (an IOException from writeLongToFile at the I/O boundary) for the acceptedEpoch file, in the LearnerHandler thread that completes the leader's epoch quorum. Later the leader server is restarted.",
+ "reason": "Leader.getEpochToPropose sets waitingForNewEpoch=false before persisting with self.setAcceptedEpoch(epoch), and calls notifyAll only afterwards (Leader.java:1481-1484). When the write throws in a LearnerHandler, only that handler dies. The leader thread's wait times out, but because waitingForNewEpoch is false it does not throw and returns the epoch (Leader.java:1492-1500). Leadership goes on and setCurrentEpoch(1) succeeds, so the disk holds acceptedEpoch=0 and currentEpoch=1. On the next start QuorumPeer.loadDataBase throws at QuorumPeer.java:1256-1259, and the server cannot start without an operator editing the epoch files. A single recoverable I/O fault thus leaves the server's durable state inconsistent and permanently unable to start.",
+ "severity": "outage",
+ "summary": "A transient failure persisting acceptedEpoch in a LearnerHandler is swallowed: the leader still establishes the epoch and writes currentEpoch > acceptedEpoch, so the server can never restart (\"accepted epoch is less than the current epoch\")."
+}

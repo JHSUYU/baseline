@@ -1,0 +1,8 @@
+{
+ "case": "hbase-adhoc-34",
+ "verdict": "BUG",
+ "trigger": "The delivery of the key-roll ZK notification to the follower AuthenticationTokenSecretManager is delayed (its ZK event thread is held, standing in for a slow event thread or a short ZK disconnect). Meanwhile the follower issues a token signed with the replaced key, and the leader later expires and deletes that key while the token is still unexpired.",
+ "reason": "When the leader rolls a key it sets the old key's expiration to rollTime + tokenMaxLifetime (AuthenticationTokenSecretManager.java:262-266). A follower signs tokens with whatever currentKey it last heard about over ZK, and gives them expiration = issueTime + tokenMaxLifetime (AuthenticationTokenSecretManager.java:121-128). Nothing limits a token's expiration to its key's expiration. A token issued by a stale follower after the roll therefore outlives its key. removeExpiredKeys deletes the key (AuthenticationTokenSecretManager.java:228-236), and retrievePassword rejects an authentic, unexpired token with 'Unknown master key', even after refreshKeys (AuthenticationTokenSecretManager.java:153-160). The trigger is a plain notification delay. The token is rejected for good, but only during the last part of its life, a period about as long as the propagation delay (seconds against a 7-day default lifetime), so the impact is small.",
+ "severity": "minor",
+ "summary": "A follower that is late to see a key roll issues delegation tokens that outlive their signing key; once the leader expires the key, those tokens are rejected as 'Unknown master key' before their stated expiration."
+}

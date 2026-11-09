@@ -1,0 +1,80 @@
+diff --git a/solr/core/src/java/org/apache/solr/cloud/OverseerCollectionMessageHandler.java b/solr/core/src/java/org/apache/solr/cloud/OverseerCollectionMessageHandler.java
+index 8812bbbf512..f4e43b01fc3 100644
+--- a/solr/core/src/java/org/apache/solr/cloud/OverseerCollectionMessageHandler.java
++++ b/solr/core/src/java/org/apache/solr/cloud/OverseerCollectionMessageHandler.java
+@@ -424,25 +424,19 @@ public class OverseerCollectionMessageHandler implements OverseerMessageHandler,
+ 
+   boolean waitForCoreNodeGone(String collectionName, String shard, String replicaName, int timeoutms) throws InterruptedException {
+     TimeOut timeout = new TimeOut(timeoutms, TimeUnit.MILLISECONDS);
+-    // TODO: remove this workaround for SOLR-9440
+-    zkStateReader.registerCore(collectionName);
+-    try {
+-      while (! timeout.hasTimedOut()) {
+-        Thread.sleep(100);
+-        DocCollection docCollection = zkStateReader.getClusterState().getCollection(collectionName);
+-        if (docCollection == null) { // someone already deleted the collection
+-          return true;
+-        }
+-        Slice slice = docCollection.getSlice(shard);
+-        if(slice == null || slice.getReplica(replicaName) == null) {
+-          return true;
+-        }
++    while (! timeout.hasTimedOut()) {
++      Thread.sleep(100);
++      DocCollection docCollection = zkStateReader.getClusterState().getCollection(collectionName);
++      if (docCollection == null) { // someone already deleted the collection
++        return true;
++      }
++      Slice slice = docCollection.getSlice(shard);
++      if(slice == null || slice.getReplica(replicaName) == null) {
++        return true;
+       }
+-      // replica still exists after the timeout
+-      return false;
+-    } finally {
+-      zkStateReader.unregisterCore(collectionName);
+     }
++    // replica still exists after the timeout
++    return false;
+   }
+ 
+   void deleteCoreNode(String collectionName, String replicaName, Replica replica, String core) throws Exception {
+diff --git a/solr/solrj/src/java/org/apache/solr/common/cloud/ZkStateReader.java b/solr/solrj/src/java/org/apache/solr/common/cloud/ZkStateReader.java
+index 4695d7d0719..2a24bda11c2 100644
+--- a/solr/solrj/src/java/org/apache/solr/common/cloud/ZkStateReader.java
++++ b/solr/solrj/src/java/org/apache/solr/common/cloud/ZkStateReader.java
+@@ -158,7 +158,7 @@ public class ZkStateReader implements Closeable {
+ 
+   private final Runnable securityNodeListener;
+ 
+-  private ConcurrentHashMap<String, CollectionWatch> collectionWatches = new ConcurrentHashMap<>();
++  public ConcurrentHashMap<String, CollectionWatch> collectionWatches = new ConcurrentHashMap<>();
+ 
+   private final ExecutorService notifications = ExecutorUtil.newMDCAwareCachedThreadPool("watches");
+ 
+@@ -1340,14 +1340,24 @@ public class ZkStateReader implements Closeable {
+    * @param watcher    the watcher
+    */
+   public void removeCollectionStateWatcher(String collection, CollectionStateWatcher watcher) {
++    AtomicBoolean reconstructState = new AtomicBoolean(false);
+     collectionWatches.compute(collection, (k, v) -> {
+       if (v == null)
+         return null;
+       v.stateWatchers.remove(watcher);
+-      if (v.canBeRemoved())
++      if (v.canBeRemoved()) {
++        watchedCollectionStates.remove(collection);
++        lazyCollectionStates.put(collection, new LazyCollectionRef(collection));
++        reconstructState.set(true);
+         return null;
++      }
+       return v;
+     });
++    if (reconstructState.get()) {
++      synchronized (getUpdateLock()) {
++        constructState(Collections.emptySet());
++      }
++    }
+   }
+ 
+   /* package-private for testing */

@@ -1,0 +1,8 @@
+{
+ "case": "hdfs-adhoc-49",
+ "verdict": "BUG",
+ "trigger": "A client with a valid ipc.client.rpc-timeout.ms (3 s) calls disallowSnapshot('/'). The first handler stalls in a pre-lock authorization step (an external AccessControlEnforcer that is slow on a latch but delegates unchanged). The client times out, fails over, and its retry succeeds. The admin then runs allowSnapshot('/'). Only after that does the stale first handler run.",
+ "reason": "disallowSnapshot is @Idempotent (ClientProtocol.java:1360) and has no retry-cache or ordering protection. The superuser check runs before the write lock (FSNamesystem.java:7241-7242), so an original call delayed past the client timeout can run after the client's acknowledged retry and after a later allowSnapshot. On the root it then runs SnapshotManager.resetSnapshottable, which sets the root's snapshot quota to 0 and removes '/' from snapshottables (SnapshotManager.java:301-306). This silently undoes the admin's last acknowledged operation, and the change is written to the edit log, so it survives restart and reaches the standby. Every later createSnapshot('/') is then rejected by the quota check (DirectorySnapshottableFeature.java:189) until someone notices and re-allows. The slow pre-lock step is a delay the real scheduler can produce (slow external authorizer or GC), not a fabricated state. The quota check itself is right given the state; the bug is the lost update from the unfenced stale duplicate.",
+ "severity": "operation-failure",
+ "summary": "A delayed original of an idempotent disallowSnapshot runs after the client's successful retry and a later allowSnapshot, silently making '/' non-snapshottable (quota 0), so createSnapshot('/') keeps failing."
+}

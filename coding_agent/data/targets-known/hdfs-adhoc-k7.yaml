@@ -1,0 +1,13 @@
+id: hdfs-adhoc-k7
+system: Apache Hadoop HDFS
+check:
+  file: hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java
+  line: 422
+  method: BlockPoolSliceStorage.doTransition(StorageDirectory, NamespaceInfo, StartupOption, List, Configuration)
+  thrown: java.io.IOException
+  guard: 'falls through: !(layoutVersion == DATANODE_LAYOUT_VERSION && cTime == nsInfo.getCTime()) && !(layoutVersion > DATANODE_LAYOUT_VERSION || cTime < nsInfo.getCTime())'
+workload:
+  module: hadoop-hdfs-project/hadoop-hdfs
+  test: org.apache.hadoop.hdfs.TestAdhocWorkload7#run
+build:
+  test_command: mvn -B -o surefire:test -pl hadoop-hdfs-project/hadoop-hdfs -Dtest='<Class>#<method>' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false

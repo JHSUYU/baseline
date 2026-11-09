@@ -1,0 +1,8 @@
+{
+ "case": "hbase-adhoc-15",
+ "verdict": "BY_DESIGN",
+ "trigger": "Two merges sharing r1, (r0,r1) and (r1,r2), are submitted back to back. A stale recovered.edits file on r0 makes the first merge fail in CHECK_CLOSED_REGIONS and roll back. The rollback submits fire-and-forget reopen TRSPs (rollbackCloseRegionsForMerge, MergeTableRegionsProcedure.java:677-692) and releases the locks, so the queued second merge runs prepare while r1 is still CLOSED.",
+ "reason": "The interleaving is realistic: the rollback does not wait for its reopen TRSPs (HBASE-19851 TODO). But the !state.isOpened() rejection at MergeTableRegionsProcedure.java:506-507 is doing its job: it refuses to merge a region that is not open at that moment. The second request conflicts with a concurrently running merge of the same region, and failing it is an acceptable outcome. If the first merge had succeeded, it would have failed anyway (cf. case 14). The effect is transient: r0, r1 and r2 return to OPEN by themselves right afterwards, nothing is lost or wedged, and the caller can simply resubmit. This is a single spurious failure of a conflicting request, not lasting harm.",
+ "severity": null,
+ "summary": ""
+}

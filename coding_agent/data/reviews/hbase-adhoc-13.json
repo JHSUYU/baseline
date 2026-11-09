@@ -1,0 +1,8 @@
+{
+ "case": "hbase-adhoc-13",
+ "verdict": "BUG",
+ "trigger": "The master's clock is 5s ahead of the meta RegionServer's clock, below the 10s warning and 30s rejection thresholds. The test simulates this with a per-thread EnvironmentEdge. The catalog janitor GCs a freshly merged, reference-free region within that skew window, and the merged region is then merged again.",
+ "reason": "RegionStateStore.mergeRegions writes the info:merge* qualifiers with an explicit master timestamp (RegionStateStore.java:419,433-434). deleteMergeQualifiers deletes them with LATEST_TIMESTAMP (RegionStateStore.java:497), which the meta RS resolves with its own, earlier clock. The DeleteColumn marker therefore does not cover the cells, so GCMultipleMergedRegionsProcedure reports success and archives the parents while the qualifiers survive. The next merge is rejected at MergeTableRegionsProcedure.java:492-499 with a misleading 'major compact it' message that compaction cannot fix. Clock skew where the system reads wall-clock time is an allowed trigger. The effect lasts until a later janitor run re-deletes with a timestamp past the original (about one janitor period, 5 min by default), and the user's merge fails in the meantime.",
+ "severity": "minor",
+ "summary": "Under accepted master/RS clock skew, the merge-qualifier delete (RS timestamp) does not cover the qualifiers written with the master timestamp, so a fully GC'd merged region keeps blocking new merges."
+}

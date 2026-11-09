@@ -1,0 +1,8 @@
+{
+ "case": "hbase-adhoc-35",
+ "verdict": "BUG",
+ "trigger": "On a mini cluster, an operator calls the HBCK2 admin API Hbck#setRegionStateInMeta({1588230740 -> CLOSED}) for the hbase:meta region, and then runs hbck1 (HBaseFsck).",
+ "reason": "MasterRpcServices.setRegionStateInMeta accepts the meta region: it resolves it from the AssignmentManager and calls MetaTableAccessor.updateRegionState (MasterRpcServices.java:2696-2710). That method always Puts into the hbase:meta table and has no isMetaRegion guard (MetaTableAccessor.java:781-786). Yet the meta region's state belongs in the master local region, and RegionStateStore routes it there (RegionStateStore.java:238,279). The master reports success but leaves a persistent self-referencing 'hbase:meta,,1' row inside hbase:meta, and the requested state change never reaches the real meta state store. hbck1 then finds two records for 1588230740, one from the locator and one from the bogus row, and aborts with 'Two entries in hbase:meta are same' (HBaseFsck.java:2742). The check is correctly detecting corruption that the master wrote in response to an ordinary, accepted admin request. This is not a rejection of an invalid request, since the master never rejects it. The demonstrated consequence is that every later hbck1 run fails until the row is removed by hand. Possible effects on other meta scanners were not demonstrated.",
+ "severity": "operation-failure",
+ "summary": "setRegionStateInMeta for the hbase:meta region writes a bogus meta row into hbase:meta itself instead of rejecting the request or routing it to the master local region, permanently breaking hbck1 ('Two entries in hbase:meta are same')."
+}

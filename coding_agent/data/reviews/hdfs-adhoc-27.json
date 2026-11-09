@@ -1,0 +1,8 @@
+{
+ "case": "hdfs-adhoc-27",
+ "verdict": "UNREALISTIC",
+ "trigger": "A layout upgrade of a DN with two volumes, where the test edits the second volume's block-pool VERSION file by hand to namespaceID=0.",
+ "reason": "The shared-field flaw is real: StorageInfo.setNamespaceID (StorageInfo.java:227-235) skips its consistency check when either value is 0 and overwrites the shared field, and the deferred upgrade callable then reads this.namespaceID (BlockPoolSliceStorage.java:510-513). But only the value 0 gets past setNamespaceID; any other mismatching namespaceID throws before the field is assigned. A VERSION file whose namespaceID parses as exactly 0 is not produced by any crash, partial write or failure of the system. It is fabricated on-disk state planted by the test. A truncated or missing property throws in getProperty or parseInt instead. With assertions off the consequence would be namespaceID=0 written to the healthy volume's VERSION, but the trigger is not realistic.",
+ "severity": null,
+ "summary": ""
+}

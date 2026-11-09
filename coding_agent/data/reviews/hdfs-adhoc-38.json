@@ -1,0 +1,8 @@
+{
+ "case": "hdfs-adhoc-38",
+ "verdict": "BUG",
+ "trigger": "Ordinary client/admin operations. A file is created without LAZY_PERSIST and written to DISK. Then setStoragePolicy(parentDir, LAZY_PERSIST) is called, or the file is renamed into a LAZY_PERSIST directory, and the file is appended.",
+ "reason": "LAZY_PERSIST is copy-on-create. FSDirWriteFileOp.setNewINodeStoragePolicy fixes it on the inode at create time (namenode/FSDirWriteFileOp.java:815-841), and FSDirAttrOp forbids setting it on an existing file (namenode/FSDirAttrOp.java:446-451). MemoryStorage.md:96 documents that setting it on a directory 'take[s] effect for all new files in the directory'. However, INodeFile.getStoragePolicyID falls back to the parent's policy when the local policy is unspecified (namenode/INodeFile.java:592-597). As a result, existing DISK-resident files are treated as lazy-persist: append (and truncate) is rejected for good at FSDirAppendOp.java:121-123. Worse, LazyPersistFileScrubber.clearCorruptLazyPersistFiles uses the same inherited id (namenode/FSNamesystem.java, clearCorruptLazyPersistFiles: bc.getStoragePolicyID()==lpPolicy.getId()) and deletes such a durable file from the namespace whenever its replicas are briefly missing. The agent's third test demonstrates this deletion: the DN is stopped, the NN restarts and leaves safe mode, and the file is deleted even though the DN's replica is intact. The user never asked for these files to become lazy-persist.",
+ "severity": "data-loss",
+ "summary": "Existing non-lazy-persist files inherit LAZY_PERSIST from a parent directory set later (or after a rename), which makes them permanently un-appendable and lets the LazyPersistFileScrubber delete durable DISK files whose replicas are temporarily unavailable."
+}

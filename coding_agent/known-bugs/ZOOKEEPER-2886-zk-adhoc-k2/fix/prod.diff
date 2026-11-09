@@ -1,0 +1,24 @@
+diff --git a/src/java/main/org/apache/zookeeper/server/FinalRequestProcessor.java b/src/java/main/org/apache/zookeeper/server/FinalRequestProcessor.java
+index 2f60f7813..696c5e5ff 100644
+--- a/src/java/main/org/apache/zookeeper/server/FinalRequestProcessor.java
++++ b/src/java/main/org/apache/zookeeper/server/FinalRequestProcessor.java
+@@ -170,6 +170,9 @@ public void processRequest(Request request) {
+             }
+ 
+             KeeperException ke = request.getException();
++            if (ke instanceof SessionMovedException) {
++                throw ke;
++            }
+             if (ke != null && request.type != OpCode.multi) {
+                 throw ke;
+             }
+@@ -228,6 +231,9 @@ public void processRequest(Request request) {
+                             break;
+                         case OpCode.error:
+                             subResult = new ErrorResult(subTxnResult.err) ;
++                            if (subTxnResult.err == Code.SESSIONMOVED.intValue()) {
++                                throw new SessionMovedException();
++                            }
+                             break;
+                         default:
+                             throw new IOException("Invalid type of op");

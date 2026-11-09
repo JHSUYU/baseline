@@ -1,0 +1,8 @@
+{
+ "case": "zk-adhoc-03",
+ "verdict": "BY_DESIGN",
+ "trigger": "A follower crashes, so the client's session reaches its expiry deadline on the leader. The leader's expirer thread polls the expired bucket and (held by a latch in a metrics counter) has not yet called setSessionClosing. At that moment the client reconnects to another follower, whose REVALIDATE touches the session.",
+ "reason": "The race is real: ExpiryQueue.poll (ExpiryQueue.java:137-153) removes the bucket without the tracker lock. touchSession (SessionTrackerImpl.java:179-194) succeeds because the session is not yet closing, then run() marks it closing and expires it (SessionTrackerImpl.java:160-164), and setOwner throws at SessionTrackerImpl.java:330. But the session really had passed its timeout when the expirer polled it, so expiring it is the correct outcome. The caller catches and logs the exception (Leader.java:1787-1794), and the only anomaly is a brief 'valid' reply before the client gets the Expired event it would have received a few milliseconds later anyway. No state is corrupted and no operation that should succeed fails for good.",
+ "severity": null,
+ "summary": ""
+}

@@ -1,0 +1,8 @@
+{
+ "case": "hbase-adhoc-11",
+ "verdict": "BUG",
+ "trigger": "A split of region P on RS1 is in progress, held between PREPARE and CLOSE_PARENT by a latch in preSplitRegionAction, when an operator calls decommissionRegionServers([RS1], offload=true).",
+ "reason": "SplitTableRegionProcedure.prepareSplitRegion sets P to SPLITTING (SplitTableRegionProcedure.java:590) without attaching a procedure to the RegionStateNode. getRegionsOnServer still lists P. HMaster.decommissionRegionServers (HMaster.java:4165-4174) calls moveAsync for every region with no error handling, and preTransitCheck throws the NON-retryable DoNotRetryRegionException (AssignmentManager.java:768-769) instead of the retryable 'in transition' error. The offload loop aborts after RS1 has already been put on the draining list, so the remaining regions on RS1 are never moved. Because the error is DoNotRetry, the client does not retry. Rejecting a move of a splitting region is reasonable, but a routine auto-split makes a valid drain fail half-done. The operator has to notice and rerun it after the split finishes; the system does not recover by itself.",
+ "severity": "minor",
+ "summary": "Decommission with offload aborts with a non-retryable error, leaving the server draining with regions still on it, if one of its regions is in the SPLITTING window (no procedure attached yet)."
+}

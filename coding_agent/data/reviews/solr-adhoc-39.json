@@ -1,0 +1,5 @@
+{"case": "solr-adhoc-39", "verdict": "BY_DESIGN",
+ "trigger": "A client streams one update request (an add, then a commit) to a TRA collection; after the add is applied, an admin runs DELETEALIAS on the routed alias, and the request's trailing commit then finds the alias gone.",
+ "reason": "The trigger is realistic (a concurrent client request and admin operation), but the check exists for exactly this race: RoutedAlias.newAliasMustExistException is named for it and its message says 'appears to have been removed during request processing' (RoutedAlias.java:70-72). It is thrown when the alias list lookup returns null (RoutedAliasUpdateProcessor.java:244-247). A commit or delete fanned out to 'all collections of the alias' has no defined target once the alias is deleted, so rejecting it with a retryable 503 is the intended behaviour. Solr update requests are not atomic across their commands, so an earlier add having been applied is normal partial-request semantics, not corruption. The collection and its data are intact, and the client can commit the collection directly.",
+ "severity": null,
+ "summary": ""}

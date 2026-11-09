@@ -1,0 +1,8 @@
+{
+ "case": "zk-adhoc-10",
+ "verdict": "BUG",
+ "trigger": "A client on the leader pipelines a large create and right behind it a create request whose body cannot be deserialized (sent over the normal client wire protocol; no server code touched). Ordinary writes from a second client follow. Followers run ObserverMasters.",
+ "reason": "In PrepRequestProcessor.pRequestHelper, readRequestRecord throws before getNextZxid() is called (PrepRequestProcessor.java:781-783). The catch-all handler then stamps the MARSHALLINGERROR error txn with zks.getZxid(), the zxid already given to the previous write (PrepRequestProcessor.java:928-939). The leader proposes the same zxid twice and commits it once, so followers keep a duplicate proposal at the head of ObserverMaster.proposedPkts, and the next COMMIT fails at ObserverMaster.java:371. Zxid uniqueness is a Zab invariant, and any client can send such a packet. Line 371 is reached only under the LOG_ONLY exit handler that tests use. With the default handler the follower instead exits with UNMATCHED_TXN_COMMIT (FollowerZooKeeperServer.commit), which is worse. The agent also reports that the leader can stall all writes when the duplicated write was already committed.",
+ "severity": "outage",
+ "summary": "A malformed client request gets an error txn with an already used zxid (zks.getZxid() instead of getNextZxid()), so the leader proposes a duplicate zxid. Followers then fail commit matching and crash or drop out of the quorum."
+}

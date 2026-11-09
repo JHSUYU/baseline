@@ -1,0 +1,8 @@
+{
+ "case": "hbase-adhoc-22",
+ "verdict": "BUG",
+ "trigger": "Namespace maxregions=2. A 2-region table is created, disabled and truncated with preserveSplits=false, which leaves 1 region. Then an ordinary createTable of a 1-region table in the same namespace is issued.",
+ "reason": "TruncateTableProcedure with preserveSplits=false recreates the table with a single region (TruncateTableProcedure.java:128-130). It never notifies MasterQuotaManager/NamespaceAuditor: there is no quota call anywhere in TruncateTableProcedure, and nothing in quotas/namespace handles truncate. So NamespaceStateManager keeps 2 regions for the table. checkAndUpdateNamespaceTableCount (NamespaceStateManager.java:165-174) then computes 2(cached)+1=3>2 and rejects a create whose real usage is 1+1=2. Retrying never helps; the overcount lasts until the table is deleted or the master restarts. The trigger is plain client operations with valid config.",
+ "severity": "operation-failure",
+ "summary": "truncateTable(preserveSplits=false) does not update the master's namespace quota cache, so the namespace stays overcounted and valid table creates/clones/splits are refused with QuotaExceededException."
+}

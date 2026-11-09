@@ -1,0 +1,12 @@
+diff --git a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSInputStream.java b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSInputStream.java
+index 47efcf339a3..d90317d2bf0 100644
+--- a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSInputStream.java
++++ b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSInputStream.java
+@@ -969,6 +969,7 @@ private void fetchBlockByteRange(LocatedBlock block, long start, long end,
+           // The encryption key used is invalid.
+           refetchEncryptionKey--;
+           dfsClient.clearDataEncryptionKey();
++          continue;
+         } else if (refetchToken > 0 && tokenRefetchNeeded(e, targetAddr)) {
+           refetchToken--;
+           fetchBlockAt(block.getStartOffset());

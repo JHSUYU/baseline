@@ -1,0 +1,35 @@
+commit c3b236ce5d2ca0905d03d63efe74b9f2c8e27436
+Author: Colin McCabe <cmccabe@apache.org>
+Date:   Wed Jan 15 19:23:31 2014 +0000
+
+    HDFS-5766. In DFSInputStream, do not add datanode to deadNodes after InvalidEncryptionKeyException in fetchBlockByteRange (Liang Xie via Colin Patrick McCabe)
+    
+    git-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1558536 13f79535-47bb-0310-9956-ffa450edef68
+
+diff --git a/hadoop-hdfs-project/hadoop-hdfs/CHANGES.txt b/hadoop-hdfs-project/hadoop-hdfs/CHANGES.txt
+index 920f3284686..87ef1ef291d 100644
+--- a/hadoop-hdfs-project/hadoop-hdfs/CHANGES.txt
++++ b/hadoop-hdfs-project/hadoop-hdfs/CHANGES.txt
+@@ -677,6 +677,10 @@ Release 2.4.0 - UNRELEASED
+     HDFS-5762. BlockReaderLocal doesn't return -1 on EOF when doing zero-length
+     reads (Colin Patrick McCabe)
+ 
++    HDFS-5766. In DFSInputStream, do not add datanode to deadNodes after
++    InvalidEncryptionKeyException in fetchBlockByteRange (Liang Xie via Colin
++    Patrick McCabe)
++
+   OPTIMIZATIONS
+ 
+     HDFS-5239.  Allow FSNamesystem lock fairness to be configurable (daryn)
+diff --git a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSInputStream.java b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSInputStream.java
+index 47efcf339a3..d90317d2bf0 100644
+--- a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSInputStream.java
++++ b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSInputStream.java
+@@ -969,6 +969,7 @@ private void fetchBlockByteRange(LocatedBlock block, long start, long end,
+           // The encryption key used is invalid.
+           refetchEncryptionKey--;
+           dfsClient.clearDataEncryptionKey();
++          continue;
+         } else if (refetchToken > 0 && tokenRefetchNeeded(e, targetAddr)) {
+           refetchToken--;
+           fetchBlockAt(block.getStartOffset());

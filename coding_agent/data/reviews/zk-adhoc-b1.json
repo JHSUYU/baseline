@@ -1,0 +1,8 @@
+{
+ "case": "zk-adhoc-b1",
+ "verdict": "BUG",
+ "trigger": "Standalone server with quota enforcement. The server crashes right after committing the client's create of zookeeper_limits and before the create of zookeeper_stats. After the restart the client retries SetQuotaCommand.createQuota on ConnectionLoss.",
+ "reason": "SetQuotaCommand.createQuota creates the limit and stat nodes with two separate, non-atomic creates (SetQuotaCommand.java:235-244). On retry it treats an existing limit node as a complete quota and calls getData(statPath) (SetQuotaCommand.java:253-270), which fails at FinalRequestProcessor.java:673-674 because the stat node was never created. The server's check is correct; the client-side quota protocol produced a half-built quota. The damage lasts: every later setquota on the path fails with NoNode until an admin deletes the nodes by hand. ZooKeeperServer.checkQuota then finds no stat node, logs 'Missing node for stat' and returns (ZooKeeperServer.java:2181-2184), so the hard limit is silently not enforced (5 children created under a limit of 2).",
+ "severity": "operation-failure",
+ "summary": "A crash or connection loss between the two creates in SetQuotaCommand.createQuota leaves zookeeper_limits without zookeeper_stats: setquota then fails with NoNode for good, and the hard quota is silently not enforced."
+}

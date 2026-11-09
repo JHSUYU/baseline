@@ -1,0 +1,46 @@
+# HDFS-17383 (Block transfers fail): not detected
+
+Case `hdfs-adhoc-k2`, run at the bug's buggy version (the parent of its fix, `../../data/known-fixes.json`), one commit `base`, no history.
+
+## The ad hoc check (the prompt's only target)
+
+- `hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java:512`, `BlockTokenSecretManager.retrievePassword(BlockTokenIdentifier)`, throws `org.apache.hadoop.security.token.SecretManager.InvalidToken` when `key == null   (key = allKeys.get(identifier.getKeyId()))`
+- Starting test: `org.apache.hadoop.hdfs.server.namenode.ha.TestAdhocWorkload2#run`
+
+## Judgement (independent reviewer, `../../data/CRITERIA.md`)
+
+**Detected:** no
+
+**What the agent found:** The agent drops (via a Mockito spy that throws after the real sendHeartbeat) every heartbeat response carrying a KeyUpdateCommand to the replication-target DataNode, from both NameNodes, across two key rolls. The NameNode clears needKeyUpdate without an ack, so the target never learns the rolled keys. A later DN-to-DN replication then fails the key==null check in retrievePassword on the target.
+
+**Same root cause as HDFS-17383?** No. The agent's defect is a key update that is lost and never resent: BlockManager.addKeyUpdateCommand (BlockManager.java:1660-1666) calls setNeedKeyUpdate(false) when it builds the response, with no ack or retry. The receiving DN's allKeys therefore lacks the NameNodes' new keys. The HDFS-17383 defect is the DN taking its currentKey from the standby NameNode (BlockTokenSecretManager.addKeys always sets currentKey, BlockTokenSecretManager.java:231, called from BPOfferService.java:430 at registration and BPOfferService.java:823 in processCommandFromStandby), together with a new active not scheduling key updates (FSNamesystem.java:1404, markAllDatanodesStale). The fix hunks change only those places: addKeys(..., updateCurrentKey), false for standby commands and for registration with a standby, BPServiceActor state = nsInfo.getState(), and markAllDatanodesStaleAndSetKeyUpdateIfNeed. They do not touch addKeyUpdateCommand or heartbeat-response delivery. In the agent's run the target lost the updates from both NNs, so the source DN's token would fail whichever NN its currentKey came from. The failure does not depend on the standby overwriting currentKey.
+
+**Realistic?** Partly. Lost heartbeat responses are an allowed RPC fault. But the spy drops only responses that carry a KeyUpdateCommand, from both NNs, repeatedly (4 or more) over two key rolls, while every other heartbeat goes through. That selective, repeated loss is contrived, though an RPC-boundary fault of this kind is technically within the rubric. The question is moot because the root cause is a different defect.
+
+**On the fixed version** (buggy tree + the fix's production changes, `fix/prod.diff`): **REPRODUCED**. REPRODUCED on the fixed tree as well: the same InvalidToken ('required block key (keyID=439118538) doesn't exist') at BlockTokenSecretManager.java:520 (the shifted check line), on the same DataXceiver.writeBlock -> checkAccess path. The fix prevents this bug's failure rather than handling the exception, so the failure surviving the fix confirms the agent hit a different defect.
+
+**Reason:** The agent reproduces the check through a separate key-distribution weakness: KeyUpdateCommands lost in heartbeat responses are never resent, because needKeyUpdate is cleared without an ack. The HDFS-17383 defect is the standby NameNode overwriting the DataNode's currentKey, plus a new active not pushing keys. The fix does not change the code the agent's failure depends on, and the test still fails identically on the fixed version, so the known bug is not detected.
+
+## The agent's explanation (its `result.json`)
+
+**Why it is a bug (agent):** The token is valid: it was signed by a real, unexpired key that the NameNode issued for this block pool. DN-B rejects it only because the key-distribution protocol lost a key update. The NameNode marks the update as delivered (setNeedKeyUpdate(false)) when it builds the heartbeat response, with no acknowledgement and no retry. A single lost or timed-out heartbeat response (network blip, RPC timeout, response dropped while the DN is busy) therefore removes that key update for good. The DN keeps heart-beating normally, but it is never told again until the next roll, and it never re-registers, which would also resync the keys. The design assumption stated in BlockTokenSecretManager (every live DN syncs its keys with the NN at least once per keyUpdateInterval) is broken even though DN-B is live and has heartbeated successfully many times in that interval. Consequence in production (default 10-minute interval): after one lost key-update response, the DN rejects every token signed with the following key as soon as the NN rolls to it, until a later update gets through (at least one heartbeat). After two consecutive losses, it rejects them for a full interval (10 minutes by default). The rejected traffic includes client reads and writes ('Block token verification failed', InvalidBlockTokenException, pipeline recovery or exclusion of the node), DN-to-DN re-replication and balancer moves. Re-replication of under-replicated blocks onto that node fails repeatedly, and reads of blocks whose only live replica is there fail.
+
+**Execution (agent):** 1) HA mini cluster as in TestAdhocWorkload2 (nn0 active, nn1 standby, 2 DataNodes, block tokens enabled, heartbeat 1s), with dfs.block.access.key.update.interval=1 min (the default is 600 min; any value shows the problem, only the waiting time changes). 2) Client writes /adhoc-lost-key-update with replication 1; the replica goes to DN-A; DN-B is the future replication target. 3) Network fault on DN-B: every heartbeat response that carries a KeyUpdateCommand (DNA_ACCESSKEYUPDATE), from nn0 or nn1, is lost after the NameNode has processed the heartbeat (Mockito spy on DN-B's DatanodeProtocol proxy calls the real sendHeartbeat and then throws IOException, i.e. a lost response). All other heartbeats from DN-B succeed, so DN-B stays live and in contact with both NNs. 4) Each NameNode's HeartbeatManager.Monitor rolls its block keys twice (BlockTokenSecretManager.updateKeys: currentKey <- nextKey, a new nextKey is generated) and sets needKeyUpdate on every DatanodeDescriptor. On DN-B's next heartbeat, BlockManager.addKeyUpdateCommand puts the KeyUpdateCommand into the response and immediately clears needKeyUpdate. The response is lost, and the NN never resends it. After the second roll the NNs' currentKey (the nextKey created at the first roll) is not in DN-B's allKeys, while DN-A got every update. 5) The network recovers. Workload continues: setReplication(2). The active nn0 sends DNA_TRANSFER to DN-A; DN-A signs the WRITE block token with its currentKey (the latest key it received from the NNs, keyId=2005519808) and sends WRITE_BLOCK to DN-B. 6) DN-B's DataXceiver.writeBlock -> checkAccess -> BlockTokenSecretManager.checkAccess -> retrievePassword: allKeys.get(2005519808) == null -> InvalidToken('... since the required block key (keyID=2005519808) doesn't exist') at BlockTokenSecretManager.java:512. The replication fails, and client reads/writes on DN-B with tokens from nn0 fail the same way, until the next key roll gets through.
+
+**Stack frame (agent):** at org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrievePassword(BlockTokenSecretManager.java:514)  [the throw statement of the key == null branch: 'throw new InvalidToken(' starts at line 512 and the multi-line expression ends at 514; javap's LineNumberTable maps the 'new InvalidToken' (pc 84) to line 512 and the constructor invokespecial (pc 124, the recorded frame) to line 514]
+
+## Reproduction
+
+- Test: `org.apache.hadoop.hdfs.server.namenode.ha.TestAdhocLostKeyUpdate#run`
+- Command: `mvn -B -o test -pl hadoop-hdfs-project/hadoop-hdfs -Dtest='org.apache.hadoop.hdfs.server.namenode.ha.TestAdhocLostKeyUpdate#run' -DfailIfNoTests=false -Dsurefire.failIfNoSpecifiedTests=false`
+- Test files (in `repro/`, paths relative to the system's tree): `hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/ha/TestAdhocLostKeyUpdate.java`
+- Validation on an unmodified tree with only these files: **REPRODUCED** (1/1 tries hit the check); exception `org.apache.hadoop.security.token.SecretManager$InvalidToken: Can't re-compute password for block_token_identifier (expiryDate=1794144870886, keyId=1432698793, userId=agent, blockPoolId=BP-1369088002-172.18.0.3-1794108747347, blockId=1073741825, access modes=[WRITE], storageTypes= [DISK], storageIds= [DS-584b270c-3736-460a-8105-74d79c03490b]), since the required block key (keyID=1432698793) doesn't`, frame `at org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrievePassword(BlockTokenSecretManager.java:514)`
+- Production changes by the agent: none
+
+## Time and tokens
+
+| agent time | sessions | tokens (all) | input | output | cache writes | cache reads | cost |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 0h08m | 1 | 1,023,848 | 40 | 24,495 | 62,265 | 937,048 | $1.18 |
+
+Agent time excludes usage-limit waits; tokens include subagents; cost is the CLI's list-price estimate.

@@ -1,0 +1,8 @@
+{
+ "case": "hdfs-adhoc-37",
+ "verdict": "UNREALISTIC",
+ "trigger": "A 0.22 image (ns1) is upgraded with its clusterId forced to that of an unrelated 2.5.2 image (ns2, rolling-upgraded, cTime 0). A DN that only ever belonged to ns1 is then reconfigured to add ns2 and started with -rollback while NN1 is down and has not been rolled back.",
+ "reason": "This state cannot be reached by the documented procedures. The first-time pre-federation DN upgrade requires a single NN (DataStorage.java:800). Rolling back means returning the DN to its pre-upgrade, single-namespace layout, which cannot host ns2. Yet the DN is reconfigured during the rollback to add a nameservice it never belonged to. ns2 is a foreign image that shares a cluster ID only because the test forces it with .clusterId(CLUSTER_ID). The NN that owns the snapshot was never rolled back first, as the rollback procedure requires. Given that setup, the check at DataStorage.java:938-947 is a correct refusal: it will not swap in a DN-level pre-federation snapshot on the say-so of an unrelated namespace. Restarting the DN with only ns1 configured, or once NN1 is reachable, succeeds.",
+ "severity": null,
+ "summary": ""
+}

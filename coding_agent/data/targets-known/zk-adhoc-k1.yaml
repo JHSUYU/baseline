@@ -1,0 +1,14 @@
+id: zk-adhoc-k1
+system: Apache ZooKeeper
+check:
+  file: src/java/main/org/apache/zookeeper/server/SessionTrackerImpl.java
+  line: 246
+  method: SessionTrackerImpl.checkSession(long, Object)
+  thrown: org.apache.zookeeper.KeeperException.SessionMovedException
+  guard: session.owner != owner   (session = sessionsById.get(sessionId); taken when session.owner is already set)
+workload:
+  module: .
+  test: org.apache.zookeeper.test.TestAdhocWorkloadK1#run
+build:
+  test_command: ant -Dtestcase=<Class> test-core-java
+  note: 'test reports are in build/test/logs/TEST-<package>.<Class>.txt. The Ant build selects tests by class only; this class has one test method'

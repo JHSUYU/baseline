@@ -1,0 +1,8 @@
+{
+ "case": "hdfs-adhoc-07",
+ "verdict": "BUG",
+ "trigger": "Writer 1 crashes leaving JN2 with an uncommitted txn 5 in in-progress segment 1. Writer 2 recovers segment 1 to 1-4 with JN0+JN1 while JN2's prepareRecovery RPC is delayed (latch in a delegating proxy, i.e. a slow JN). Writer 2 then starts segment 5 and commits txn 5, and only after that do JN2's queued prepareRecovery/acceptRecovery(1-4) run, stamped with committedTxId=5.",
+ "reason": "IPCLoggerChannel.createReqInfo() (IPCLoggerChannel.java:287) runs when the queued call executes on the single-thread executor, so the delayed acceptRecovery for segment 1 carries the writer's current committedTxId, 5, which is a txid of segment 5. Journal.checkRequest (Journal.java:503-510) stores it in the journal-wide committedTxnId. Journal.acceptRecovery (Journal.java:924-926) then reads it as a committed txn of segment 1: JN2's stale [1,5] contains 5 and the correctly recovered [1,4] does not, so it throws AssertionError. Recovery to 1-4 was correct (txn 5 was never committed in segment 1), so this is a false positive of the paranoid check, not a fenced stale request. JN2 never syncs or finalizes segment 1 (the finalizeLogSegment(1,4) queued behind it fails too), and it keeps a stale in-progress edits_1-5 whose txn 5 conflicts with the committed txn 5. The trigger is a slow minority JN plus the real per-logger executor queueing, which QJM is meant to tolerate.",
+ "severity": "operation-failure",
+ "summary": "A lagging JN's acceptRecovery is wrongly rejected because the global committedTxnId, already advanced into the next segment, is compared against the recovered segment's range, leaving that JN permanently unsynchronized for the segment."
+}

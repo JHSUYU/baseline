@@ -1,0 +1,8 @@
+{
+ "case": "hdfs-adhoc-10",
+ "verdict": "BY_DESIGN",
+ "trigger": "JN2 is down when the new writer (epoch 2) runs newEpoch and startLogSegment(4). JN2 restarts and receives journal() for segment 4 with epoch 2 while its lastWriterEpoch is still 1. Later JN0 is stopped.",
+ "reason": "JN2 never opened segment 4, so it must not accept edits for it. If lastWriterEpoch matched, Journal.journal would still reject with 'Can't write, no segment open' (Journal.java:405-406). checkWriteRequest (Journal.java:517-520) is just the first of these equivalent guards. The client handles the failure as designed: IPCLoggerChannel.sendEdits marks the logger outOfSync with the log 'Will try to write to this JN again after the next log roll' (IPCLoggerChannel.java:363-369), and the JN rejoins at the next segment roll. A JN that misses part of a segment is excluded until the next roll by design. The reduced-redundancy window is the documented behaviour, and it heals on its own at the next roll.",
+ "severity": null,
+ "summary": ""
+}

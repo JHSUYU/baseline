@@ -1,0 +1,8 @@
+{
+ "case": "hbase-adhoc-37",
+ "verdict": "BY_DESIGN",
+ "trigger": "A backup master's ZK event thread is held while the active master crashes and its znode is deleted. Loading the backup's master.jsp then reads the cached active-master name and does a fresh ZK read of the master znode for the info port.",
+ "reason": "During a failover there really is no master znode for a moment, so MasterAddressTracker.getMasterInfoPort correctly reports that it has no data (MasterAddressTracker.java:205-206). The only caller on this path, ActiveMasterManager.getActiveMasterInfoPort, catches the exception, logs a WARN and returns 0 (ActiveMasterManager.java:164-170). The page renders anyway, and backupMasterStatus.jsp would call this method even without the stale cache (backupMasterStatus.jsp:29). The result is a transient, handled UI glitch (a link to port 0 for a few moments during failover) that clears once the new master registers. Nothing fails or wedges.",
+ "severity": null,
+ "summary": ""
+}

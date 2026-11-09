@@ -1,0 +1,8 @@
+{
+ "case": "hdfs-adhoc-40",
+ "verdict": "BY_DESIGN",
+ "trigger": "With non-default dfs.namenode.replication.min=2 on a 3-DN cluster, a file is reopened for append and hsynced. Two of its last block's three replica holders are decommissioned, the file is closed, and append is called again.",
+ "reason": "close() completes the block counting decommissioning replicas as usable (blockmanagement/BlockManager.java:1234-1245, HDFS-11486), so readers and close are not blocked. For a new append, BlockManager.isSufficientlyReplicated conservatively counts only live replicas (BlockManager.java:1727-1736), and FSDirAppendOp.java:137-140 refuses to start a new write pipeline on a block whose replicas sit mostly on nodes being retired. The decommission process re-replicates the block to live nodes, after which the same append succeeds. The condition is 'not sufficiently replicated yet' and transient. It lasts only in the agent's setup, where decommissioning 2 of 3 nodes with minReplication=2 makes the decommission itself impossible to finish, an admin-created situation. The block really has fewer live replicas than the configured minimum, so the check rejects as intended, and no state was produced that the coordination should have prevented.",
+ "severity": null,
+ "summary": null
+}

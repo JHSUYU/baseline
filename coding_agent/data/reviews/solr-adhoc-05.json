@@ -1,0 +1,5 @@
+{"case": "solr-adhoc-05", "verdict": "BY_DESIGN",
+ "trigger": "A node hosting a replica is restarted; its background ZkController.register is held (via a log-appender latch) just after waitForState sees the replica, while a client DELETEREPLICA removes that replica (UNLOAD succeeds, replica removed from state.json); register then re-reads the cluster state and finds the replica gone.",
+ "reason": "The trigger (node restart, delay, concurrent DELETEREPLICA) is realistic, but the check at ZkController.java:1273-1275 exists precisely to abort registration of a replica that has been removed from the cluster state, which is what happened: the deletion completed successfully and the core was unloaded by DeleteReplicaCmd's UNLOAD. The fallout is an ERROR log plus a DOWN publish caught in ZkContainer.registerInZk (ZkContainer.java:222-231), and that publish is a no-op for a non-existent replica in non-legacy mode (ReplicaMutator.java:251/261). No operation fails, no data is lost, nothing is wedged; the agent's orphaned-core scenario (UNLOAD lost) is speculative and not demonstrated.",
+ "severity": null,
+ "summary": ""}

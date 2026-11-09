@@ -1,0 +1,8 @@
+{
+ "case": "hdfs-adhoc-31",
+ "verdict": "BUG",
+ "trigger": "An admin renames the nameservice (null -> ns1, same NN address) and runs refreshNamenodes. doRefreshNamenodes starts the new BPOS before it stops and joins the old one, so the two actors overlap. The test only adds delays: the old actor is slow to leave its offerService iteration, and a held DataStorage monitor delays the new actor's storage init.",
+ "reason": "BlockPoolManager.doRefreshNamenodes starts the new BPOS (startAll, BlockPoolManager.java:236) before it stops and joins the old one (lines 246-249). The new actor's DataNode.initBlockPool calls addBlockPool (DataNode.java:2195), which overwrites bpByBlockPoolId[bpid] (BlockPoolManager.java:71). The old actor's cleanup then calls DataNode.shutdownBlockPool -> BlockPoolManager.remove (DataNode.java:2152). remove deletes the entry by bpid without checking that it still belongs to the old BPOS (BlockPoolManager.java:94), so the new, live BPOS's mapping is lost and nothing re-adds it. Every later getBPOSForBlock call (DataNode.java:1835-1840) then fails until the DN restarts: DNA_TRANSFER re-replication, bad-block reports and similar operations. Incremental block reports are dropped silently (DataNode.java:1742-1748). The interleaving needs only scheduling delays that real I/O or RPC latency can produce. The trigger is a valid admin configuration change.",
+ "severity": "operation-failure",
+ "summary": "BlockPoolManager.remove(old BPOS) removes the bpid mapping of the new BPOS that replaced it during refreshNamenodes. The DN keeps heartbeating for the block pool, but every block-pool lookup (transfer, bad-block report, IBR) fails until it restarts."
+}

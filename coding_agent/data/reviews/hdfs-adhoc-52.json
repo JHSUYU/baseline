@@ -1,0 +1,8 @@
+{
+ "case": "hdfs-adhoc-52",
+ "verdict": "BUG",
+ "trigger": "With dfs.namenode.snapshot.deletion.ordered=true, the test creates s0 and s1 and deletes s1 (only marked), then s0. The GC thread really deletes s1 and logs a second OP_DELETE_SNAPSHOT. The admin then turns ordered deletion off and restarts the NameNode, which replays the edits, and runs saveNamespace.",
+ "reason": "This is exactly the replay sequence the code comments say it tolerates (DirectorySnapshottableFeature.java:244-261). For the GC's duplicate delete, removeSnapshot returns null without removing anything. SnapshotManager.deleteSnapshot still calls numSnapshots.getAndDecrement() unconditionally (SnapshotManager.java:546-547), so after replay the global counter is -1 while 0 snapshots exist. The fsimage saver's consistency check Preconditions.checkState(i == sm.getNumSnapshots()) (FSImageFormatPBSnapshot.java:466-467) then fails in every saver thread, and saveNamespace fails. Every trigger step is a supported admin action. The counter stays wrong after each restart because the same edits are replayed, so checkpoints (saveNamespace, standby or secondary checkpoints) fail for good and the edit log grows without bound. The snapshot-limit accounting is also off by one.",
+ "severity": "operation-failure",
+ "summary": "Replaying the tolerated duplicate OP_DELETE_SNAPSHOT after ordered deletion is turned off still decrements numSnapshots, making it -1 so that every fsimage save/checkpoint fails."
+}

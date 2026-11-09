@@ -1,0 +1,8 @@
+{
+ "case": "hdfs-adhoc-30",
+ "verdict": "BY_DESIGN",
+ "trigger": "In an HA MiniDFSCluster, a block recovery ordered by active NN0 is held in RecoveryTaskContiguous.recover() using the DataNodeFaultInjector.delay() hook. Meanwhile NN0 is moved to standby, and the recovery resumes before NN1 has become active, so the DN knows no active NN.",
+ "reason": "When the DN sees no active NN during a failover, BlockRecoveryWorker.getActiveNamenodeForBP throws (datanode/BlockRecoveryWorker.java:607-610) because commitBlockSynchronization can only go to an active NN. recoverBlocks logs and drops the task (BlockRecoveryWorker.java:630-634). Lease/block recovery is an idempotent, retried protocol: callers of recoverLease poll until it returns true, and the new active NN's lease monitor restarts recovery itself. RUR replicas are re-recovered with a new recovery id by the next attempt. The failure is transient, it sits inside the documented failover window, and the system recovers without intervention. No state was produced that correct coordination should have prevented.",
+ "severity": null,
+ "summary": null
+}

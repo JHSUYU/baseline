@@ -1,0 +1,8 @@
+{
+ "case": "hbase-adhoc-10",
+ "verdict": "BY_DESIGN",
+ "trigger": "A region close is slow (preClose sleeps 15s). The client calls Admin.move with a 3s rpc timeout and only 4 retries with a 200ms pause, so its retry of the same move reaches the master while the first move's TRSP is still attached to the region.",
+ "reason": "preTransitCheck (AssignmentManager.java:764-766) rejects a move while another TRSP owns the region, which is exactly its purpose: a second transit must not run concurrently. It throws a retryable HBaseIOException on purpose. Once the original move finishes, a retry to the same destination is a no-op success (HMaster.java 'Skipping move ... already assigned to the same server'). So a client whose retry budget outlasts the move succeeds, and the region is moved correctly either way. The failure appears only because the test sets a retry budget (about 1s of retries) much shorter than the operation. That is the normal ambiguity of an RPC timeout, not wrong state produced by coordination. The missing nonce for move is a design limitation, and there is no lasting consequence.",
+ "severity": null,
+ "summary": ""
+}

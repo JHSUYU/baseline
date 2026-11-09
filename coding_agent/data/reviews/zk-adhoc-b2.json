@@ -1,0 +1,8 @@
+{
+ "case": "zk-adhoc-b2",
+ "verdict": "BUG",
+ "trigger": "Two LeaderElectionSupport candidates, each with its own session. Leader A's session closes (process crash) just after candidate B's getChildren on the election root and before B's per-child getData calls.",
+ "reason": "LeaderElectionSupport.toLeaderOffers calls getData for every child returned by getChildren (LeaderElectionSupport.java:199, 309-310) and does not handle offers that disappear in between. The server correctly returns NoNode (FinalRequestProcessor.java:673-674), but start() catches the exception and calls becomeFailed (LeaderElectionSupport.java:135-140, 270-275). B ends in the terminal FAILED state with its offer still registered. Candidate failure is exactly what the recipe's documented algorithm promises to handle (class javadoc), and becomeReady already tolerates the same race for exists(). Here no leader is elected, and later candidates, which watch only their predecessor, never take over.",
+ "severity": "outage",
+ "summary": "The LeaderElectionSupport recipe fails permanently (FAILED, no leader elected) when a competing candidate's ephemeral offer disappears between getChildren and getData, which happens exactly when a leader crashes."
+}

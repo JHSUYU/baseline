@@ -1,0 +1,8 @@
+{
+ "case": "hdfs-adhoc-14",
+ "verdict": "BUG",
+ "trigger": "With encrypted transfer, block tokens and dfs.encrypt.data.overwrite.downstream.derived.qop on, the NN rolls its block key (one updateKeys plus needKeyUpdate, exactly what HeartbeatManager.Monitor does) while the DNs' heartbeats have not yet delivered the KeyUpdateCommand (delayed heartbeats). A client then writes a 3-replica file.",
+ "reason": "DataXceiver.writeBlock (DataXceiver.java:824-828) re-signs the downstream token with the DN's own getCurrentKey(), and SaslDataTransferClient.updateToken (SaslDataTransferClient.java:450-459) recomputes the password with that key but keeps the identifier's keyId, the key the NN used. When the two differ, the downstream DN's BlockTokenSecretManager.checkAccess (BlockTokenSecretManager.java:417-418) recomputes with the key named by keyId and rejects a genuine, unexpired token. They differ in the window between every NN key roll and the DN's next heartbeat, for tokens issued before a roll, and for longer if a DN misses an update. The client wrongly excludes healthy downstream DNs and the write ends with fewer replicas or fails. The trigger is one real rotation step plus a heartbeat delay, which is a reachable state.",
+ "severity": "operation-failure",
+ "summary": "With overwrite-downstream-derived-QOP, the pipeline head re-signs block tokens with its current key while keeping the original keyId, so downstream DNs reject valid tokens around every block-key roll and pipelines lose replicas or fail."
+}

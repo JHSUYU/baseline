@@ -1,0 +1,153 @@
+diff --git a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockPoolTokenSecretManager.java b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockPoolTokenSecretManager.java
+index 980b474c992..31e4bd4a49e 100644
+--- a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockPoolTokenSecretManager.java
++++ b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockPoolTokenSecretManager.java
+@@ -141,9 +141,9 @@ public void checkAccess(Token<BlockTokenIdentifier> token,
+   /**
+    * See {@link BlockTokenSecretManager#addKeys(ExportedBlockKeys)}.
+    */
+-  public void addKeys(String bpid, ExportedBlockKeys exportedKeys)
+-      throws IOException {
+-    get(bpid).addKeys(exportedKeys);
++  public void addKeys(String bpid, ExportedBlockKeys exportedKeys,
++      boolean updateCurrentKey) throws IOException {
++    get(bpid).addKeys(exportedKeys, updateCurrentKey);
+   }
+ 
+   /**
+diff --git a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java
+index b9f817db519..d2c3fe6eae9 100644
+--- a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java
++++ b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java
+@@ -218,17 +218,23 @@ private synchronized void removeExpiredKeys() {
+     }
+   }
+ 
++  public synchronized void addKeys(ExportedBlockKeys exportedKeys) throws IOException {
++    addKeys(exportedKeys, true);
++  }
++
+   /**
+    * Set block keys, only to be used in worker mode
+    */
+-  public synchronized void addKeys(ExportedBlockKeys exportedKeys)
+-      throws IOException {
++  public synchronized void addKeys(ExportedBlockKeys exportedKeys,
++      boolean updateCurrentKey) throws IOException {
+     if (isMaster || exportedKeys == null) {
+       return;
+     }
+     LOG.info("Setting block keys. BlockPool = {} .", blockPoolId);
+     removeExpiredKeys();
+-    this.currentKey = exportedKeys.getCurrentKey();
++    if (updateCurrentKey || currentKey == null) {
++      this.currentKey = exportedKeys.getCurrentKey();
++    }
+     BlockKey[] receivedKeys = exportedKeys.getAllKeys();
+     for (int i = 0; i < receivedKeys.length; i++) {
+       if (receivedKeys[i] != null) {
+diff --git a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockManager.java b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockManager.java
+index 56c86482bd1..f0c88f37559 100644
+--- a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockManager.java
++++ b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockManager.java
+@@ -789,7 +789,7 @@ void enableRMTerminationForTesting() {
+     checkNSRunning = false;
+   }
+ 
+-  private boolean isBlockTokenEnabled() {
++  protected boolean isBlockTokenEnabled() {
+     return blockTokenSecretManager != null;
+   }
+ 
+diff --git a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/DatanodeManager.java b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/DatanodeManager.java
+index 29327a1611c..b3eb2fd7f97 100644
+--- a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/DatanodeManager.java
++++ b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/DatanodeManager.java
+@@ -2055,10 +2055,13 @@ public void setBalancerBandwidth(long bandwidth) throws IOException {
+     }
+   }
+   
+-  public void markAllDatanodesStale() {
+-    LOG.info("Marking all datanodes as stale");
++  public void markAllDatanodesStaleAndSetKeyUpdateIfNeed() {
++    LOG.info("Marking all datanodes as stale and schedule update block token if need.");
+     synchronized (this) {
+       for (DatanodeDescriptor dn : datanodeMap.values()) {
++        if (blockManager.isBlockTokenEnabled()) {
++          dn.setNeedKeyUpdate(true);
++        }
+         for(DatanodeStorageInfo storage : dn.getStorageInfos()) {
+           storage.markStaleAfterFailover();
+         }
+diff --git a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPOfferService.java b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPOfferService.java
+index 7d5d05bac54..1a2c024c904 100644
+--- a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPOfferService.java
++++ b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPOfferService.java
+@@ -427,8 +427,10 @@ void registrationSucceeded(BPServiceActor bpServiceActor,
+       dn.bpRegistrationSucceeded(bpRegistration, getBlockPoolId());
+       // Add the initial block token secret keys to the DN's secret manager.
+       if (dn.isBlockTokenEnabled) {
++        boolean updateCurrentKey = bpServiceActor.state == null
++            || bpServiceActor.state == HAServiceState.ACTIVE;
+         dn.blockPoolTokenSecretManager.addKeys(getBlockPoolId(),
+-            reg.getExportedKeys());
++            reg.getExportedKeys(), updateCurrentKey);
+       }
+     } finally {
+       writeUnlock();
+@@ -781,7 +783,7 @@ assert getBlockPoolId().equals(bp) :
+       if (dn.isBlockTokenEnabled) {
+         dn.blockPoolTokenSecretManager.addKeys(
+             getBlockPoolId(), 
+-            ((KeyUpdateCommand) cmd).getExportedKeys());
++            ((KeyUpdateCommand) cmd).getExportedKeys(), true);
+       }
+       break;
+     case DatanodeProtocol.DNA_BALANCERBANDWIDTHUPDATE:
+@@ -822,7 +824,7 @@ private boolean processCommandFromStandby(DatanodeCommand cmd,
+       if (dn.isBlockTokenEnabled) {
+         dn.blockPoolTokenSecretManager.addKeys(
+             getBlockPoolId(), 
+-            ((KeyUpdateCommand) cmd).getExportedKeys());
++            ((KeyUpdateCommand) cmd).getExportedKeys(), false);
+       }
+       break;
+     case DatanodeProtocol.DNA_TRANSFER:
+diff --git a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPServiceActor.java b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPServiceActor.java
+index da30d057966..a391b8b8fb6 100755
+--- a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPServiceActor.java
++++ b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPServiceActor.java
+@@ -313,6 +313,7 @@ private void connectToNNAndHandshake() throws IOException {
+     // This also initializes our block pool in the DN if we are
+     // the first NN connection for this BP.
+     bpos.verifyAndSetNamespaceInfo(this, nsInfo);
++    state = nsInfo.getState();
+ 
+     /* set thread name again to include NamespaceInfo when it's available. */
+     this.bpThread.setName(formatThreadName("heartbeating", nnAddr));
+diff --git a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/metrics/DataNodeMetrics.java b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/metrics/DataNodeMetrics.java
+index d5fcfc95442..2e902f694a1 100644
+--- a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/metrics/DataNodeMetrics.java
++++ b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/metrics/DataNodeMetrics.java
+@@ -102,7 +102,7 @@ public class DataNodeMetrics {
+   final MutableQuantiles[]   ramDiskBlocksLazyPersistWindowMsQuantiles;
+ 
+   @Metric MutableCounterLong fsyncCount;
+-  
++
+   @Metric MutableCounterLong volumeFailures;
+ 
+   @Metric("Count of network errors on the datanode")
+diff --git a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSNamesystem.java b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSNamesystem.java
+index 542cc370465..e21c2439868 100644
+--- a/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSNamesystem.java
++++ b/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSNamesystem.java
+@@ -1401,7 +1401,7 @@ void startActiveServices() throws IOException {
+         editLogTailer.catchupDuringFailover();
+         
+         blockManager.setPostponeBlocksFromFuture(false);
+-        blockManager.getDatanodeManager().markAllDatanodesStale();
++        blockManager.getDatanodeManager().markAllDatanodesStaleAndSetKeyUpdateIfNeed();
+         blockManager.clearQueues();
+         blockManager.processAllPendingDNMessages();
+         blockManager.getBlockIdManager().applyImpendingGenerationStamp();

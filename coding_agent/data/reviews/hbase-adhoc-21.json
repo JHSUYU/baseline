@@ -1,0 +1,8 @@
+{
+ "case": "hbase-adhoc-21",
+ "verdict": "BUG",
+ "trigger": "With namespace maxregions=6, a split of a table1 region is aborted after SPLIT_TABLE_REGION_PRE_OPERATION by a master coprocessor that throws IOException in preSplitRegionBeforeMETAAction (a supported veto hook, and equivalent to any rollback-able failure after the reservation, such as recovered.edits or a close or FS error). The split rolls back. A later restoreSnapshot of a 4-region snapshot into another table (real total 2+4=6) is then refused.",
+ "reason": "SplitTableRegionProcedure.preSplitRegion calls masterQuotaManager.onRegionSplit (SplitTableRegionProcedure.java:625), which increments the namespace cache (NamespaceStateManager.java:~98, incRegionCountForTable). rollbackState for PRE_OPERATION only calls postRollBackSplitRegion, which runs the coprocessor hook (SplitTableRegionProcedure.java:396-397, 639-644). MasterQuotaManager.onRegionSplitReverted (MasterQuotaManager.java:646) has no caller in main code. So every rolled-back split permanently inflates the cached region count until a master restart. checkAndUpdateNamespaceRegionCount (NamespaceStateManager.java:126-133) then computes 4-1+4=7>6 from the stale cache and rejects a restore that actually fits the quota. This is a coordination leak, not a correct rejection, and it persists and accumulates.",
+ "severity": "operation-failure",
+ "summary": "A rolled-back split never releases its namespace-quota region reservation (onRegionSplitReverted is never called), so later valid restore/create/split operations in the namespace are refused with QuotaExceededException until the master restarts."
+}
